@@ -49,6 +49,6 @@ SKN27-FINAL-2Team/
 - `app/`: Django 프로젝트 및 서비스 앱
 - `docs/`: 프로젝트 문서와 이미지 자료
 - `etl/`: 크롤링 및 문제 데이터 파이프라인 작업 공간
-- `storage/`: PostgreSQL, Neo4j 관련 저장소 작업 공간
+- `storage/`: 저장소 작업 공간
 - `test/`: 팀원별 테스트 작업 공간
 
