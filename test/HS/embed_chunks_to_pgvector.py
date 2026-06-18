@@ -9,7 +9,7 @@ from typing import Iterable
 
 import psycopg2
 from dotenv import load_dotenv
-from openai import OpenAI
+from openai import OpenAI, RateLimitError
 from psycopg2.extras import Json, execute_values
 
 
@@ -223,12 +223,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--chunk-file", action="append", default=None, help="JSONL chunk filename. Can be repeated.")
     parser.add_argument("--model", default=os.getenv("EMBEDDING_MODEL", "text-embedding-3-small"))
     parser.add_argument("--dimensions", type=int, default=int(os.getenv("EMBEDDING_DIMENSIONS", "1536")))
-    parser.add_argument("--batch-size", type=int, default=100)
+    parser.add_argument("--batch-size", type=int, default=20)
     parser.add_argument("--limit", type=int, default=1000, help="Maximum chunks to embed in this run.")
     parser.add_argument("--skip-upsert", action="store_true", help="Do not load JSONL chunks before embedding.")
     parser.add_argument("--create-index", action="store_true", help="Create ivfflat vector index after embedding.")
     parser.add_argument("--index-lists", type=int, default=100)
     parser.add_argument("--sleep", type=float, default=0.0, help="Seconds to sleep between embedding batches.")
+    parser.add_argument("--rate-limit-sleep", type=float, default=65.0, help="Seconds to wait after OpenAI 429 errors.")
     return parser.parse_args()
 
 
@@ -252,19 +253,31 @@ def main() -> None:
         print(f"upserted_chunks={loaded}")
 
     embedded = 0
+    current_batch_size = args.batch_size
     while embedded < args.limit:
-        batch_limit = min(args.batch_size, args.limit - embedded)
+        batch_limit = min(current_batch_size, args.limit - embedded)
         rows = fetch_unembedded_chunks(conn, args.model, batch_limit)
         if not rows:
             break
 
         chunk_ids = [row[0] for row in rows]
         texts = [row[1] for row in rows]
-        embeddings = embed_texts(client, args.model, texts, args.dimensions)
+        try:
+            embeddings = embed_texts(client, args.model, texts, args.dimensions)
+        except RateLimitError as exc:
+            current_batch_size = max(1, current_batch_size // 2)
+            print(
+                "rate_limit=hit "
+                f"next_batch_size={current_batch_size} "
+                f"sleep_seconds={args.rate_limit_sleep}"
+            )
+            time.sleep(args.rate_limit_sleep)
+            continue
+
         update_embeddings(conn, chunk_ids, embeddings, args.model)
 
         embedded += len(rows)
-        print(f"embedded_chunks={embedded}")
+        print(f"embedded_chunks={embedded} batch_size={len(rows)}")
         if args.sleep:
             time.sleep(args.sleep)
 

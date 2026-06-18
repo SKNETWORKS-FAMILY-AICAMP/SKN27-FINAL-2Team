@@ -31,6 +31,22 @@ docker compose -f storage\docker-compose.yml up -d
 .\.venv\Scripts\python.exe test\HS\run_concept_chat.py "6조 직계제가 뭐야?" --follow-up
 ```
 
+## 임베딩 적재
+
+처음 테스트:
+
+```powershell
+.\.venv\Scripts\python.exe test\HS\embed_chunks_to_pgvector.py --limit 10
+```
+
+전체 임베딩:
+
+```powershell
+.\.venv\Scripts\python.exe test\HS\embed_chunks_to_pgvector.py --limit 40000 --batch-size 10 --sleep 2 --create-index
+```
+
+OpenAI rate limit이 발생하면 스크립트가 자동으로 기다린 뒤 배치 크기를 줄여 이어서 실행합니다. 중간에 중단되어도 다시 실행하면 `embedding IS NULL`인 chunk부터 이어서 처리합니다.
+
 ## 경로 변경
 
 전처리 결과 폴더를 바꾸고 싶으면 `--processed-dir` 옵션을 사용합니다.
