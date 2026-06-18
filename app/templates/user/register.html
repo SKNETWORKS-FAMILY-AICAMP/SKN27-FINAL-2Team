@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>himate | 회원가입</title>
+  <link rel="stylesheet" href="/static/user/css/register.css" />
+  <link rel="stylesheet" href="../../static/user/css/register.css" />
+</head>
+<body>
+  <main class="auth-page">
+    <section class="auth-shell" aria-label="회원가입">
+      <div class="auth-card">
+        <a class="brand" href="/" aria-label="himate 홈">
+          <img src="/static/chatbot/assets/logo.png" alt="himate" data-fallback-src="../../static/chatbot/assets/logo.png" />
+        </a>
+
+        <div class="auth-heading">
+          <h1>회원가입</h1>
+          <p>이메일 아이디로 계정을 만들고 맞춤 학습을 시작하세요.</p>
+        </div>
+
+        <form class="register-form" action="#" method="post">
+          <div class="field">
+            <label for="email">이메일 아이디</label>
+            <div class="input-action">
+              <input id="email" type="email" name="email" autocomplete="email" placeholder="example@email.com" required />
+              <button class="action-button" id="sendCodeButton" type="button">인증번호 발송</button>
+            </div>
+          </div>
+
+          <div class="field verification-field" id="verificationField" hidden>
+            <label for="verificationCode">인증번호</label>
+            <div class="input-action">
+              <input id="verificationCode" type="text" name="verification_code" inputmode="numeric" placeholder="인증번호를 입력하세요." />
+              <button class="action-button" type="button">인증번호 확인</button>
+            </div>
+          </div>
+
+          <label class="field" for="password">
+            <span>비밀번호</span>
+            <input id="password" type="password" name="password" autocomplete="new-password" placeholder="비밀번호를 입력하세요." required />
+          </label>
+
+          <label class="field" for="passwordConfirm">
+            <span>비밀번호 확인</span>
+            <input id="passwordConfirm" type="password" name="password_confirm" autocomplete="new-password" placeholder="비밀번호를 다시 입력하세요." required />
+          </label>
+
+          <div class="agreements" aria-label="약관 동의">
+            <label>
+              <input type="checkbox" name="terms_age" required />
+              <span>이용약관 동의(필수)</span>
+              <a href="#">자세히 보기</a>
+            </label>
+            <label>
+              <input type="checkbox" name="terms_privacy" required />
+              <span>개인정보 수집 및 이용 동의(필수)</span>
+              <a href="#">자세히 보기</a>
+            </label>
+            <label>
+              <input type="checkbox" name="terms_marketing" />
+              <span>마케팅 정보 수신 동의(선택)</span>
+              <a href="#">자세히 보기</a>
+            </label>
+          </div>
+
+          <button class="submit-button" type="submit">회원가입 완료</button>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    document.querySelectorAll("img[data-fallback-src]").forEach((image) => {
+      image.addEventListener("error", () => {
+        if (image.dataset.fallbackTried) return;
+        image.dataset.fallbackTried = "1";
+        image.src = image.dataset.fallbackSrc;
+      });
+    });
+
+    const sendCodeButton = document.getElementById("sendCodeButton");
+    const verificationField = document.getElementById("verificationField");
+    const verificationCode = document.getElementById("verificationCode");
+
+    sendCodeButton.addEventListener("click", () => {
+      verificationField.hidden = false;
+      sendCodeButton.textContent = "재발송";
+      verificationCode.focus();
+    });
+  </script>
+</body>
+</html>
