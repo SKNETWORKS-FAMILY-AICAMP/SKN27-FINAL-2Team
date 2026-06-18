@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>한국사 RAG 구조화 답변 미리보기</title>
+  <style>
+    :root {
+      --ink: #202124;
+      --muted: #667085;
+      --line: #d8dde6;
+      --panel: #f7f8fa;
+      --label: #e8eee8;
+      --highlight: #f2c6d4;
+      --accent: #224f3d;
+      --point: #fff7dc;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: #eceff3;
+      color: var(--ink);
+      font-family: "Malgun Gothic", "Apple SD Gothic Neo", Arial, sans-serif;
+      line-height: 1.62;
+    }
+
+    .page {
+      max-width: 960px;
+      margin: 28px auto;
+      padding: 42px 48px;
+      background: #fff;
+      border: 1px solid #d9dee7;
+      box-shadow: 0 18px 50px rgba(15, 23, 42, 0.12);
+    }
+
+    .chapter {
+      margin-bottom: 28px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 42px;
+      line-height: 1.15;
+      font-weight: 900;
+      letter-spacing: 0;
+    }
+
+    .summary {
+      margin: 0 0 30px;
+      padding: 14px 16px;
+      border-left: 5px solid var(--accent);
+      background: var(--panel);
+      color: #344054;
+      font-size: 16px;
+    }
+
+    .section {
+      margin-top: 32px;
+    }
+
+    .section h2 {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      margin: 0 0 14px;
+      font-size: 29px;
+      line-height: 1.25;
+      font-weight: 900;
+      letter-spacing: 0;
+    }
+
+    .section-number {
+      font-size: 48px;
+      line-height: 1;
+      font-weight: 900;
+      color: #333;
+    }
+
+    .note-table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      border-top: 2px solid #30343b;
+      border-bottom: 2px solid #30343b;
+      background: #fff;
+    }
+
+    .note-table tr + tr {
+      border-top: 1px solid var(--line);
+    }
+
+    .note-table th,
+    .note-table td {
+      padding: 13px 16px;
+      vertical-align: top;
+      font-size: 17px;
+    }
+
+    .note-table th {
+      width: 190px;
+      background: var(--label);
+      color: #3b3f45;
+      text-align: center;
+      font-weight: 700;
+      border-right: 1px solid var(--line);
+      word-break: keep-all;
+    }
+
+    .note-table td {
+      color: #1f2937;
+      word-break: keep-all;
+    }
+
+    mark {
+      padding: 0 3px 1px;
+      background: var(--highlight);
+      color: inherit;
+    }
+
+    .exam-box {
+      margin-top: 34px;
+      padding: 20px 22px;
+      border: 1px solid #e7d88a;
+      background: var(--point);
+    }
+
+    .exam-box h2 {
+      margin: 0 0 10px;
+      font-size: 22px;
+      font-weight: 900;
+    }
+
+    .exam-box ul,
+    .sources ul {
+      margin: 0;
+      padding-left: 22px;
+    }
+
+    .exam-box li + li,
+    .sources li + li {
+      margin-top: 6px;
+    }
+
+    .sources {
+      margin-top: 26px;
+      padding-top: 18px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .sources h2 {
+      margin: 0 0 8px;
+      font-size: 15px;
+      color: #475467;
+    }
+
+    @media (max-width: 720px) {
+      .page {
+        margin: 0;
+        padding: 24px 18px;
+        border: 0;
+        box-shadow: none;
+      }
+
+      h1 {
+        font-size: 30px;
+      }
+
+      .section h2 {
+        font-size: 23px;
+      }
+
+      .section-number {
+        font-size: 34px;
+      }
+
+      .note-table,
+      .note-table tbody,
+      .note-table tr,
+      .note-table th,
+      .note-table td {
+        display: block;
+        width: 100%;
+      }
+
+      .note-table th {
+        text-align: left;
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page" id="app"></main>
+
+  <script>
+    const structuredAnswer = {
+      answer_type: "textbook_note",
+      title: "조선 전기 정치 정리",
+      summary: "조선 전기 정치구조는 중앙 정치기구의 정비와 기능 변화가 중심이며, 의정부와 6조를 중심으로 국정을 운영하였다.",
+      sections: [
+        {
+          heading: "1. 중앙 정치구조의 정비",
+          items: [
+            {
+              term: "정치구조 정비",
+              content: "조선 전기에는 중앙 정치구조를 정비하여 관원 70여 인을 태거하고, 7년 이래 운영되던 구임관제를 10여 관아로 확대하였다."
+            },
+            {
+              term: "군령체제 개편",
+              content: "문종 원년(1451)에 3군-12사제의 군령체제를 3군-5사제로 개편하였다."
+            },
+            {
+              term: "집현전 폐지",
+              content: "세조 2년(1456)에 세종 초 이래의 집현전을 폐지하였다."
+            }
+          ]
+        },
+        {
+          heading: "2. 정치기구의 기능과 구성",
+          items: [
+            {
+              term: "국정 운영 체계",
+              content: "조선 초기에 도평의사사나 의정부가 6조 등 모든 관아를 통령하며 국정을 수행하였고, 태종 5년 이후에는 의정부가 6조를 지휘하면서 국정을 운영하였다."
+            },
+            {
+              term: "의정부서사제",
+              content: "태종 5-13년과 세종 18년-단종대에는 왕→의정부→6조→시·감·관·창·고·서의 체계로 국정을 운영하였다."
+            }
+          ]
+        }
+      ],
+      exam_points: [
+        "조선 전기 중앙 정치기구의 정비 과정",
+        "의정부와 6조의 역할과 국정 운영 체계",
+        "집현전의 폐지와 군령체제 개편"
+      ],
+      highlights: [
+        "중앙 정치구조",
+        "의정부",
+        "6조",
+        "집현전",
+        "3군-5사제",
+        "의정부서사제"
+      ],
+      source_titles: [
+        "중앙 정치구조 > 정치구조의 정비와 정치기구 > 정치구조의 정비",
+        "정치기구의 기능과 구성"
+      ]
+    };
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function highlight(value, terms) {
+      let html = escapeHtml(value);
+      const orderedTerms = [...new Set(terms)].sort((a, b) => b.length - a.length);
+      for (const term of orderedTerms) {
+        const escapedTerm = escapeHtml(term);
+        if (!escapedTerm) continue;
+        html = html.replaceAll(escapedTerm, `<mark>${escapedTerm}</mark>`);
+      }
+      return html;
+    }
+
+    function render(data) {
+      const highlights = data.highlights || [];
+      const sections = (data.sections || []).map((section, index) => {
+        const numberMatch = String(section.heading || "").match(/^(\d+)\.\s*(.*)$/);
+        const number = numberMatch ? numberMatch[1] : String(index + 1);
+        const heading = numberMatch ? numberMatch[2] : section.heading;
+        const rows = (section.items || []).map(item => `
+          <tr>
+            <th>${highlight(item.term || "", highlights)}</th>
+            <td>${highlight(item.content || "", highlights)}</td>
+          </tr>
+        `).join("");
+
+        return `
+          <section class="section">
+            <h2><span class="section-number">${number}</span><span>${highlight(heading, highlights)}</span></h2>
+            <table class="note-table">
+              <tbody>${rows}</tbody>
+            </table>
+          </section>
+        `;
+      }).join("");
+
+      document.getElementById("app").innerHTML = `
+        <header class="chapter">
+          <h1>${highlight(data.title, highlights)}</h1>
+        </header>
+        <p class="summary">${highlight(data.summary, highlights)}</p>
+        ${sections}
+        <section class="exam-box">
+          <h2>한능검 포인트</h2>
+          <ul>
+            ${(data.exam_points || []).map(point => `<li>${highlight(point, highlights)}</li>`).join("")}
+          </ul>
+        </section>
+        <section class="sources">
+          <h2>출처</h2>
+          <ul>
+            ${(data.source_titles || []).map(title => `<li>${escapeHtml(title)}</li>`).join("")}
+          </ul>
+        </section>
+      `;
+    }
+
+    render(structuredAnswer);
+  </script>
+</body>
+</html>
