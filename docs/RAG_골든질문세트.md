@@ -16,7 +16,7 @@
 실행용 JSONL 파일:
 
 ```text
-test/HS/golden_questions.jsonl
+etl/history/embedding/golden_questions.jsonl
 ```
 
 ## 질문 세트
@@ -69,4 +69,3 @@ test/HS/golden_questions.jsonl
 초기 평가는 엄격한 단일 정답보다 `expected_keywords`가 상위 5개 결과의 제목, 본문, metadata에 들어오는지를 본다.
 
 이미지 질문은 `source_type=image_material`이 상위 결과에 포함되고 `thumbnail_url` 또는 `original_image_url`이 있으면 1차 성공으로 본다.
-

@@ -8,9 +8,12 @@ from dataclasses import dataclass
 from pathlib import Path
 
 CURRENT_DIR = Path(__file__).resolve().parent
-PROJECT_ROOT = CURRENT_DIR.parents[1]
-if str(CURRENT_DIR) not in sys.path:
-    sys.path.insert(0, str(CURRENT_DIR))
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+TEST_HS_DIR = PROJECT_ROOT / "test" / "HS"
+DEFAULT_PROCESSED_DIR = PROJECT_ROOT / "etl" / "preprocessing" / "history" / "processed"
+for path in (CURRENT_DIR, TEST_HS_DIR):
+    if str(path) not in sys.path:
+        sys.path.insert(0, str(path))
 
 from rag_prototype.config import RagPaths
 from rag_prototype.retriever import HybridRagRetriever, SearchResult
@@ -217,7 +220,7 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
-    paths = RagPaths(processed_dir=args.processed_dir) if args.processed_dir else RagPaths()
+    paths = RagPaths(processed_dir=args.processed_dir or DEFAULT_PROCESSED_DIR)
     retriever = HybridRagRetriever(paths=paths, top_k=args.top_k)
     questions = load_jsonl(args.golden_file)
     if args.limit:
