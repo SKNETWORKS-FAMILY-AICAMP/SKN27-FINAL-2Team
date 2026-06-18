@@ -25,10 +25,82 @@ TITLE_EXPANSIONS = {
     "대장경": ["팔만대장경", "재조대장경", "고려대장경", "해인사"],
 }
 OVERVIEW_TERMS = ("정리", "요약", "흐름", "개념")
+PERSON_OVERVIEW_TERMS = ("업적", "정책", "정리", "요약", "개념", "설명", "누구", "뭐", "무엇", "알려")
+KING_QUERY_ALIASES = {
+    "세종대왕": {
+        "entity_id": "joseon_sejong",
+        "display_name": "조선 세종",
+        "posthumous_name": "세종",
+        "aliases": ("세종대왕", "조선 세종", "세종"),
+    },
+    "조선 세종": {
+        "entity_id": "joseon_sejong",
+        "display_name": "조선 세종",
+        "posthumous_name": "세종",
+        "aliases": ("세종대왕", "조선 세종", "세종"),
+    },
+    "세종": {
+        "entity_id": "joseon_sejong",
+        "display_name": "조선 세종",
+        "posthumous_name": "세종",
+        "aliases": ("세종대왕", "조선 세종", "세종"),
+    },
+}
+KING_TOPIC_EXPANSIONS = {
+    "joseon_sejong": (
+        "훈민정음",
+        "집현전",
+        "농사직설",
+        "칠정산",
+        "측우기",
+        "장영실",
+        "4군",
+        "6진",
+        "대마도",
+        "공법",
+        "의정부서사제",
+        "세종실록지리지",
+    ),
+}
+LOW_PRIORITY_PERSON_TOPICS = ("풍수", "왕릉", "영릉", "논의")
+MEDIUM_PRIORITY_PERSON_TOPICS = ("지리지", "실록")
+EXCLUDED_PERSON_OVERVIEW_TITLES = (
+    "국문연구",
+    "중앙서리",
+    "도성건설",
+    "정재무",
+    "근대화",
+    "고려사절요",
+)
 
 
 def wants_joseon_early_politics(question: str) -> bool:
     return "조선" in question and ("전기" in question or "초기" in question) and "정치" in question
+
+
+def detect_king_query(question: str) -> dict[str, Any] | None:
+    compact_question = normalize_compact(question)
+    for alias, entity in KING_QUERY_ALIASES.items():
+        if normalize_compact(alias) in compact_question:
+            return entity
+    return None
+
+
+def is_person_overview_query(question: str, king_entity: dict[str, Any] | None) -> bool:
+    if not king_entity:
+        return False
+    compact_question = normalize_compact(question)
+    aliases = [normalize_compact(alias) for alias in king_entity["aliases"]]
+    alias_only = compact_question in aliases
+    return alias_only or any(term in question for term in PERSON_OVERVIEW_TERMS)
+
+
+def build_keyword_question(question: str, king_entity: dict[str, Any] | None) -> str:
+    if not king_entity:
+        return question
+    terms = [question, king_entity["display_name"], *king_entity["aliases"]]
+    terms.extend(KING_TOPIC_EXPANSIONS.get(king_entity["entity_id"], ()))
+    return " ".join(dict.fromkeys(term for term in terms if term))
 
 
 @dataclass(frozen=True)
@@ -101,6 +173,55 @@ def compact_text(text: str, max_length: int = 260) -> str:
     return value[: max_length - 1].rstrip() + "..."
 
 
+def rerank_person_overview_rows(rows: list[dict[str, Any]], king_entity: dict[str, Any]) -> list[dict[str, Any]]:
+    topic_terms = KING_TOPIC_EXPANSIONS.get(king_entity["entity_id"], ())
+    aliases = king_entity["aliases"]
+
+    def adjusted_score(row: dict[str, Any]) -> float:
+        title = row.get("title") or ""
+        chunk_text = row.get("chunk_text") or ""
+        combined = f"{title} {chunk_text}"
+        score = float(row.get("score") or 0.0) * 0.1
+        topic_hit = any(term in combined for term in topic_terms)
+        alias_hit = any(alias in combined for alias in aliases)
+        title_topic_hit = any(term in title for term in topic_terms)
+
+        if title_topic_hit:
+            score += 8.0
+        elif topic_hit and alias_hit:
+            score += 6.0
+        elif topic_hit:
+            score += 3.0
+        elif alias_hit:
+            score += 1.5
+        else:
+            score -= 8.0
+        if alias_hit:
+            score += 0.4
+        if "훈민정음" in combined or "한글" in combined:
+            score += 1.2
+        if "측우기" in combined:
+            score += 0.8
+        if "창제자" in title:
+            score += 1.0
+        if any(term in title for term in LOW_PRIORITY_PERSON_TOPICS):
+            score -= 2.0
+        if any(term in title for term in MEDIUM_PRIORITY_PERSON_TOPICS):
+            score -= 0.8
+        if any(term in title for term in EXCLUDED_PERSON_OVERVIEW_TITLES):
+            score -= 6.0
+        return score
+
+    deduped: dict[str, dict[str, Any]] = {}
+    for row in sorted(rows, key=adjusted_score, reverse=True):
+        document_id = row.get("document_id")
+        if document_id in deduped:
+            continue
+        row["score"] = adjusted_score(row)
+        deduped[document_id] = row
+    return list(deduped.values())
+
+
 class PgVectorHybridRetriever:
     def __init__(
         self,
@@ -120,9 +241,14 @@ class PgVectorHybridRetriever:
 
         embedding = vector_literal(embed_query(question, self.model, self.dimensions))
         image_query = is_image_query(question)
+        king_entity = detect_king_query(question)
+        person_overview_query = is_person_overview_query(question, king_entity)
+        keyword_question = build_keyword_question(question, king_entity if person_overview_query else None)
         overview_query = any(term in question for term in OVERVIEW_TERMS)
         joseon_early_politics = wants_joseon_early_politics(question)
         title_tokens = image_title_tokens(question) if image_query else []
+        king_topic_terms = KING_TOPIC_EXPANSIONS.get(king_entity["entity_id"], ()) if person_overview_query else ()
+        final_limit = max(top_k * 5, top_k) if person_overview_query else top_k
 
         where_parts = ["embedding IS NOT NULL"]
         params: list[Any] = []
@@ -134,6 +260,22 @@ class PgVectorHybridRetriever:
                     title_clauses.append("regexp_replace(lower(title), '\\s+', '', 'g') LIKE %s")
                     params.append(f"%{token}%")
                 where_parts.append("(" + " OR ".join(title_clauses) + ")")
+        elif person_overview_query and king_entity:
+            king_clauses = [
+                "metadata::text ILIKE %s",
+                "metadata::text ILIKE %s",
+                "title ILIKE %s",
+                "chunk_text ILIKE %s",
+            ]
+            params.extend(
+                [
+                    f"%{king_entity['entity_id']}%",
+                    f"%{king_entity['display_name']}%",
+                    f"%{king_entity['posthumous_name']}%",
+                    f"%{king_entity['posthumous_name']}%",
+                ]
+            )
+            where_parts.append("(" + " OR ".join(king_clauses) + ")")
         elif joseon_early_politics:
             where_parts.append(
                 """
@@ -151,6 +293,12 @@ class PgVectorHybridRetriever:
                 """
             )
         where_sql = " AND ".join(where_parts)
+        king_topic_sql = "FALSE"
+        king_topic_params: list[Any] = []
+        if king_topic_terms:
+            king_topic_sql = " OR ".join("(title ILIKE %s OR chunk_text ILIKE %s)" for _ in king_topic_terms)
+            for term in king_topic_terms:
+                king_topic_params.extend([f"%{term}%", f"%{term}%"])
 
         sql = f"""
         WITH base AS (
@@ -221,6 +369,27 @@ class PgVectorHybridRetriever:
                     WHEN %s AND metadata::text ILIKE '%%정치%%' THEN 0.8
                     ELSE 0.0
                   END
+                + CASE
+                    WHEN %s AND metadata::text ILIKE %s THEN 2.4
+                    WHEN %s AND metadata::text ILIKE %s THEN 1.4
+                    WHEN %s AND title ILIKE %s THEN 1.2
+                    WHEN %s AND chunk_text ILIKE %s THEN 0.6
+                    ELSE 0.0
+                  END
+                + CASE
+                    WHEN %s AND ({king_topic_sql}) THEN 1.6
+                    ELSE 0.0
+                  END
+                + CASE
+                    WHEN %s AND source_type = 'image_material' THEN -1.0
+                    WHEN %s AND title ILIKE %s THEN -0.8
+                    WHEN %s AND title ILIKE %s THEN -0.7
+                    WHEN %s AND title ILIKE %s THEN -0.4
+                    WHEN %s AND title ILIKE %s THEN -0.5
+                    WHEN %s AND title ILIKE %s THEN -0.4
+                    WHEN %s AND NOT ({king_topic_sql}) THEN -2.0
+                    ELSE 0.0
+                  END
             ) AS score
         FROM candidates
         ORDER BY score DESC
@@ -229,9 +398,9 @@ class PgVectorHybridRetriever:
 
         query_params: list[Any] = [
             embedding,
-            question,
-            question,
-            question,
+            keyword_question,
+            keyword_question,
+            keyword_question,
             f"%{question}%",
             f"%{question}%",
             f"%{question}%",
@@ -244,13 +413,41 @@ class PgVectorHybridRetriever:
             overview_query,
             joseon_early_politics,
             joseon_early_politics,
-            top_k,
+            person_overview_query,
+            f"%{king_entity['entity_id']}%" if king_entity else "",
+            person_overview_query,
+            f"%{king_entity['display_name']}%" if king_entity else "",
+            person_overview_query,
+            f"%{king_entity['posthumous_name']}%" if king_entity else "",
+            person_overview_query,
+            f"%{king_entity['posthumous_name']}%" if king_entity else "",
+            person_overview_query,
+            *king_topic_params,
+            person_overview_query,
+            person_overview_query,
+            f"%{LOW_PRIORITY_PERSON_TOPICS[0]}%",
+            person_overview_query,
+            f"%{LOW_PRIORITY_PERSON_TOPICS[1]}%",
+            person_overview_query,
+            f"%{LOW_PRIORITY_PERSON_TOPICS[2]}%",
+            person_overview_query,
+            f"%{MEDIUM_PRIORITY_PERSON_TOPICS[0]}%",
+            person_overview_query,
+            f"%{MEDIUM_PRIORITY_PERSON_TOPICS[1]}%",
+            person_overview_query,
+            *king_topic_params,
+            final_limit,
         ]
 
         with connect_db() as conn:
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
                 cur.execute(sql, query_params)
                 rows = cur.fetchall()
+
+        if person_overview_query and king_entity:
+            rows = rerank_person_overview_rows(list(rows), king_entity)[:top_k]
+        else:
+            rows = rows[:top_k]
 
         return [
             PgSearchResult(
