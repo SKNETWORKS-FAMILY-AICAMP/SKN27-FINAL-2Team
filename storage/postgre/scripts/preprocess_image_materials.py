@@ -75,21 +75,7 @@ def iter_csv_rows(input_dir: Path) -> Iterable[dict[str, str]]:
             yield row
 
 
-def resolve_image_path(input_dir: Path, saved_path: str) -> tuple[str | None, bool]:
-    saved_path = clean_text(saved_path)
-    if not saved_path:
-        return None, False
-
-    relative_parts = Path(saved_path.replace("\\", "/")).parts
-    if relative_parts and relative_parts[0] == "한국사 이미지 자료":
-        candidate = input_dir.parent.joinpath(*relative_parts)
-    else:
-        candidate = input_dir / saved_path
-
-    return str(candidate), candidate.exists() and candidate.is_file() and candidate.stat().st_size > 0
-
-
-def build_document(row: dict[str, str], input_dir: Path) -> dict:
+def build_document(row: dict[str, str]) -> dict:
     image_id = clean_text(row.get("이미지ID"))
     title = clean_text(row.get("제목"))
     description = clean_text(row.get("설명"))
@@ -99,7 +85,8 @@ def build_document(row: dict[str, str], input_dir: Path) -> dict:
     category_main, category_sub = split_category(clean_text(row.get("유형")))
     field = clean_text(row.get("분야"))
     keywords = split_keywords(clean_text(row.get("키워드")))
-    image_path, image_available = resolve_image_path(input_dir, clean_text(row.get("저장이미지파일")))
+    thumbnail_url = clean_text(row.get("썸네일URL"))
+    original_image_url = clean_text(row.get("원본이미지URL"))
     period = ", ".join(periods)
     category = clean_text(row.get("유형"))
     category_tags = build_category_tags(
@@ -139,7 +126,7 @@ def build_document(row: dict[str, str], input_dir: Path) -> dict:
         "category": category,
         "keywords": keywords,
         "source_url": clean_text(row.get("상세요청URL")),
-        "image_path": image_path,
+        "image_path": None,
         "metadata": {
             "sequence": clean_text(row.get("순번")),
             "author": clean_text(row.get("작성자")),
@@ -150,10 +137,9 @@ def build_document(row: dict[str, str], input_dir: Path) -> dict:
             "license": clean_text(row.get("이용조건")),
             "related_contents": parse_related_contents(clean_text(row.get("관련콘텐츠"))),
             "list_category": clean_text(row.get("목록분류")),
-            "thumbnail_url": clean_text(row.get("썸네일URL")),
-            "original_image_url": clean_text(row.get("원본이미지URL")),
-            "saved_image_file": clean_text(row.get("저장이미지파일")),
-            "image_available": image_available,
+            "thumbnail_url": thumbnail_url,
+            "original_image_url": original_image_url,
+            "image_available": bool(thumbnail_url or original_image_url),
             "source_file": row.get("_source_file"),
             "category_tags": category_tags,
             "chronology": chronology,
@@ -178,7 +164,8 @@ def build_chunk(document: dict) -> dict:
             "category": document["category"],
             "keywords": document["keywords"],
             "source_url": document["source_url"],
-            "image_path": document["image_path"],
+            "thumbnail_url": document["metadata"].get("thumbnail_url"),
+            "original_image_url": document["metadata"].get("original_image_url"),
         },
     }
 
@@ -199,7 +186,7 @@ def main() -> None:
     args = parser.parse_args()
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
-    documents = [build_document(row, args.input_dir) for row in iter_csv_rows(args.input_dir)]
+    documents = [build_document(row) for row in iter_csv_rows(args.input_dir)]
     documents = [doc for doc in documents if doc["title"] and doc["content"]]
     chunks = [build_chunk(document) for document in documents]
 

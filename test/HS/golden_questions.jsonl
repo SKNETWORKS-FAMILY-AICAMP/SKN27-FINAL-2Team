@@ -1,0 +1,40 @@
+{"id":"GQ001","query":"조선 전기 6조 직계제 설명해줘","intent":"concept","expected_era":"조선 전기","expected_source_type":"historical_overview","expected_keywords":["6조","직계제","태종","의정부"],"requires_image":false}
+{"id":"GQ002","query":"조선 전기 정치 제도 정리해줘","intent":"concept","expected_era":"조선 전기","expected_source_type":"historical_overview","expected_keywords":["의정부","6조","경국대전","집현전"],"requires_image":false}
+{"id":"GQ003","query":"태종과 세종의 통치 체제 차이 알려줘","intent":"compare","expected_era":"조선 전기","expected_source_type":"historical_overview","expected_keywords":["태종","세종","6조 직계제","의정부 서사제"],"requires_image":false}
+{"id":"GQ004","query":"훈민정음 창제 배경 설명해줘","intent":"concept","expected_era":"조선 전기","expected_source_type":"historical_overview","expected_keywords":["훈민정음","세종","집현전","문자"],"requires_image":false}
+{"id":"GQ005","query":"경국대전이 왜 중요한지 알려줘","intent":"concept","expected_era":"조선 전기","expected_source_type":"historical_overview","expected_keywords":["경국대전","성종","법전","통치 체제"],"requires_image":false}
+{"id":"GQ006","query":"사림이 성장한 배경 설명해줘","intent":"concept","expected_era":["조선 전기","조선 후기"],"expected_source_type":"historical_overview","expected_keywords":["사림","성종","훈구","향촌"],"requires_image":false}
+{"id":"GQ007","query":"붕당 정치가 생긴 이유가 뭐야","intent":"concept","expected_era":"조선 후기","expected_source_type":"historical_overview","expected_keywords":["붕당","사림","동인","서인"],"requires_image":false}
+{"id":"GQ008","query":"임진왜란 이후 조선 사회 변화 정리해줘","intent":"summary","expected_era":"조선 후기","expected_source_type":"historical_overview","expected_keywords":["임진왜란","비변사","대동법","신분제"],"requires_image":false}
+{"id":"GQ009","query":"대동법이 뭔지 쉽게 설명해줘","intent":"concept","expected_era":"조선 후기","expected_source_type":"historical_overview","expected_keywords":["대동법","공납","쌀","광해군"],"requires_image":false}
+{"id":"GQ010","query":"영정법과 대동법 차이 알려줘","intent":"compare","expected_era":"조선 후기","expected_source_type":"historical_overview","expected_keywords":["영정법","대동법","전세","공납"],"requires_image":false}
+{"id":"GQ011","query":"전시과 제도가 뭐야","intent":"concept","expected_era":"고려 시대","expected_source_type":"historical_overview","expected_keywords":["전시과","고려","토지","관료"],"requires_image":false}
+{"id":"GQ012","query":"고려의 토지 제도 흐름 정리해줘","intent":"summary","expected_era":"고려 시대","expected_source_type":"historical_overview","expected_keywords":["역분전","전시과","녹과전","과전법"],"requires_image":false}
+{"id":"GQ013","query":"문벌 귀족 사회의 특징 알려줘","intent":"concept","expected_era":"고려 시대","expected_source_type":["historical_overview","historical_source"],"expected_keywords":["문벌 귀족","음서","공음전","혼인"],"requires_image":false}
+{"id":"GQ014","query":"무신 정변이 일어난 배경 설명해줘","intent":"concept","expected_era":"고려 시대","expected_source_type":"historical_overview","expected_keywords":["무신 정변","문신 우대","정중부","의종"],"requires_image":false}
+{"id":"GQ015","query":"권문세족과 신진 사대부 차이 알려줘","intent":"compare","expected_era":"고려 시대","expected_source_type":"historical_overview","expected_keywords":["권문세족","신진 사대부","성리학","토지"],"requires_image":false}
+{"id":"GQ016","query":"고려 말 과전법이 왜 시행됐어","intent":"concept","expected_era":"고려 시대","expected_source_type":"historical_overview","expected_keywords":["과전법","신진 사대부","권문세족","토지 개혁"],"requires_image":false}
+{"id":"GQ017","query":"고려 불교 정책 정리해줘","intent":"summary","expected_era":"고려 시대","expected_source_type":"historical_overview","expected_keywords":["불교","광종","의천","지눌"],"requires_image":false}
+{"id":"GQ018","query":"팔만대장경 만든 이유 알려줘","intent":"concept","expected_era":"고려 시대","expected_source_type":"historical_overview","expected_keywords":["팔만대장경","몽골","불교","대장경"],"requires_image":false}
+{"id":"GQ019","query":"삼국 통일 과정 정리해줘","intent":"summary","expected_era":"삼국 시대","expected_source_type":"historical_overview","expected_keywords":["신라","백제","고구려","나당 연합"],"requires_image":false}
+{"id":"GQ020","query":"고구려의 전성기 왕과 업적 알려줘","intent":"concept","expected_era":"삼국 시대","expected_source_type":"historical_overview","expected_keywords":["광개토 대왕","장수왕","남진 정책"],"requires_image":false}
+{"id":"GQ021","query":"백제 문화의 특징 설명해줘","intent":"concept","expected_era":"삼국 시대","expected_source_type":"historical_overview","expected_keywords":["백제","무령왕릉","일본","불교"],"requires_image":false}
+{"id":"GQ022","query":"신라 골품제가 뭔지 알려줘","intent":"concept","expected_era":"삼국 시대","expected_source_type":"historical_overview","expected_keywords":["골품제","신라","성골","진골"],"requires_image":false}
+{"id":"GQ023","query":"발해가 고구려를 계승했다는 근거 알려줘","intent":"evidence","expected_era":["통일 신라와 발해","삼국 시대"],"expected_source_type":"historical_source","expected_keywords":["발해","고구려","대조영","계승"],"requires_image":false}
+{"id":"GQ024","query":"통일 신라의 민정문서가 보여주는 내용은 뭐야","intent":"evidence","expected_era":"통일 신라와 발해","expected_source_type":"historical_source","expected_keywords":["민정문서","촌락","인구","토지"],"requires_image":false}
+{"id":"GQ025","query":"연천 전곡리 유적 사진 보여줘","intent":"image","expected_era":"선사","expected_source_type":"image_material","expected_keywords":["연천","전곡리","주먹도끼"],"requires_image":true}
+{"id":"GQ026","query":"구석기 시대 대표 유물 이미지 찾아줘","intent":"image","expected_era":"선사","expected_source_type":"image_material","expected_keywords":["구석기","주먹도끼","찍개"],"requires_image":true}
+{"id":"GQ027","query":"빗살무늬 토기 사진 자료 있어?","intent":"image","expected_era":"선사","expected_source_type":"image_material","expected_keywords":["빗살무늬 토기","신석기","토기"],"requires_image":true}
+{"id":"GQ028","query":"고인돌 사진 보여줘","intent":"image","expected_era":["삼국 이전","선사"],"expected_source_type":"image_material","expected_keywords":["고인돌","청동기","무덤"],"requires_image":true}
+{"id":"GQ029","query":"무령왕릉 관련 이미지 찾아줘","intent":"image","expected_era":"삼국 시대","expected_source_type":"image_material","expected_keywords":["무령왕릉","백제","공주"],"requires_image":true}
+{"id":"GQ030","query":"첨성대 사진과 설명 알려줘","intent":"image","expected_era":"삼국 시대","expected_source_type":"image_material","expected_keywords":["첨성대","신라","천문"],"requires_image":true}
+{"id":"GQ031","query":"고려청자 이미지 보여줘","intent":"image","expected_era":"고려 시대","expected_source_type":"image_material","expected_keywords":["고려청자","청자","상감"],"requires_image":true}
+{"id":"GQ032","query":"훈민정음 해례본 이미지 자료 찾아줘","intent":"image","expected_era":["조선 전기","조선"],"expected_source_type":"image_material","expected_keywords":["훈민정음","해례본","세종"],"requires_image":true}
+{"id":"GQ033","query":"독립협회 활동 정리해줘","intent":"concept","expected_era":"근대","expected_source_type":"historical_overview","expected_keywords":["독립협회","독립문","만민공동회"],"requires_image":false}
+{"id":"GQ034","query":"갑오개혁 내용 요약해줘","intent":"summary","expected_era":["근대","개항기","갑오개혁"],"expected_source_type":"historical_overview","expected_keywords":["갑오개혁","군국기무처","신분제 폐지"],"requires_image":false}
+{"id":"GQ035","query":"을사늑약이 왜 중요한 사건이야","intent":"concept","expected_era":"근대","expected_source_type":["historical_overview","historical_source"],"expected_keywords":["을사늑약","외교권","통감부"],"requires_image":false}
+{"id":"GQ036","query":"3.1 운동 배경과 영향 알려줘","intent":"summary","expected_era":"근대","expected_source_type":"historical_overview","expected_keywords":["3.1 운동","민족 자결주의","대한민국 임시정부"],"requires_image":false}
+{"id":"GQ037","query":"대한민국 임시정부의 활동 설명해줘","intent":"concept","expected_era":"근대","expected_source_type":"historical_overview","expected_keywords":["임시정부","상하이","한인 애국단"],"requires_image":false}
+{"id":"GQ038","query":"광복 이후 좌우 합작 운동 설명해줘","intent":"concept","expected_era":"현대","expected_source_type":"historical_overview","expected_keywords":["좌우 합작","여운형","김규식"],"requires_image":false}
+{"id":"GQ039","query":"6월 민주 항쟁이 뭐야","intent":"concept","expected_era":"현대","expected_source_type":["historical_overview","historical_source"],"expected_keywords":["6월 민주 항쟁","직선제","민주화"],"requires_image":false}
+{"id":"GQ040","query":"한국사능력검정시험에서 조선 전기 정치는 어떻게 외우면 좋아?","intent":"study_tip","expected_era":"조선 전기","expected_source_type":"historical_overview","expected_keywords":["조선 전기","태종","세종","성종","경국대전"],"requires_image":false}
