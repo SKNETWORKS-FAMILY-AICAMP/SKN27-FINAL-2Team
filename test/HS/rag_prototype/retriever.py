@@ -24,6 +24,28 @@ STOPWORDS = {
     "차이",
     "한국사",
     "한능검",
+    "이유",
+    "배경",
+    "목적",
+    "만든",
+}
+IMAGE_QUERY_TERMS = {
+    "이미지",
+    "사진",
+    "그림",
+    "유물",
+    "유적",
+    "자료",
+    "찾아줘",
+    "보여줘",
+    "조회",
+    "있어",
+}
+IMAGE_TITLE_IGNORE_TERMS = IMAGE_QUERY_TERMS | {
+    "시대",
+    "대표",
+    "관련",
+    "설명",
 }
 
 QUERY_EXPANSIONS = {
@@ -35,6 +57,21 @@ QUERY_EXPANSIONS = {
     "조선전기": ["조선 초기", "조선 초기의"],
     "전기": ["초기"],
     "정치": ["정치구조", "통치", "관료", "의정부", "육조"],
+    "전성기": ["광개토", "광개토대왕", "장수왕", "남진"],
+    "고구려": ["광개토", "광개토대왕", "장수왕"],
+    "을사늑약": ["을사조약", "제2차 한일협약", "외교권", "통감부"],
+    "3.1": ["3·1운동", "삼일운동", "민족 자결주의", "대한민국 임시정부"],
+    "3·1": ["3.1운동", "삼일운동", "민족 자결주의", "대한민국 임시정부"],
+    "삼일운동": ["3.1운동", "3·1운동", "민족 자결주의", "대한민국 임시정부"],
+    "6월": ["6월 민주 항쟁", "6·10", "6.10", "직선제", "민주화"],
+    "민주항쟁": ["6월 민주 항쟁", "6·10", "직선제", "민주화"],
+    "이미지": ["사진", "그림", "유물", "유적", "자료"],
+    "사진": ["이미지", "그림", "유물", "유적", "자료"],
+    "구석기": ["주먹도끼", "찍개", "석장리", "전곡리"],
+    "신석기": ["빗살무늬", "토기", "암사동"],
+    "청동기": ["고인돌", "비파형동검", "민무늬토기"],
+    "팔만대장경": ["대장경", "재조대장경", "고려대장경", "몽골", "해인사"],
+    "대장경": ["팔만대장경", "재조대장경", "고려대장경", "몽골", "해인사"],
 }
 
 
@@ -84,6 +121,43 @@ def compact_text(text: str, max_length: int = 420) -> str:
     if len(text) <= max_length:
         return text
     return text[: max_length - 1].rstrip() + "..."
+
+
+def normalize_compact(text: str) -> str:
+    return re.sub(r"\s+", "", (text or "").lower())
+
+
+def image_title_query_tokens(query_tokens: list[str]) -> list[str]:
+    tokens = []
+    for token in query_tokens:
+        if token in IMAGE_TITLE_IGNORE_TERMS:
+            continue
+        if len(token) < 2:
+            continue
+        if token not in tokens:
+            tokens.append(token)
+    return tokens
+
+
+def image_title_matches(document: RagDocument, title_tokens: list[str]) -> bool:
+    if document.source_type != "image_material":
+        return False
+    if not title_tokens:
+        return True
+    title = normalize_compact(document.title)
+    return any(normalize_compact(token) in title for token in title_tokens)
+
+
+def important_query_terms(query_tokens: list[str]) -> list[str]:
+    terms = []
+    for token in query_tokens:
+        if token in STOPWORDS or token in IMAGE_QUERY_TERMS:
+            continue
+        if len(token) < 3:
+            continue
+        if token not in terms:
+            terms.append(token)
+    return terms
 
 
 def load_jsonl(path: Path) -> Iterable[dict]:
@@ -190,6 +264,26 @@ def keyword_score(query: str, query_tokens: list[str], document: RagDocument, to
     if rare_hits >= 2:
         score += rare_hits * 1.2
 
+    for term in important_query_terms(query_tokens):
+        compact_term = normalize_compact(term)
+        if compact_term in normalize_compact(document.title):
+            score += 6.0
+        elif compact_term in normalize_compact(metadata_text):
+            score += 3.0
+        elif compact_term in compact_doc:
+            score += 1.0
+
+    if "이유" in query and "이유" in title and not any(
+        normalize_compact(term) in normalize_compact(document.title)
+        for term in important_query_terms(query_tokens)
+    ):
+        score -= 5.0
+
+    if ("3.1" in query or "3·1" in query or "삼일" in query) and any(
+        marker in compact_doc for marker in ("3·1", "3.1", "삼일운동")
+    ):
+        score += 8.0
+
     period_match = ("조선" in query and ("전기" in query or "초기" in query) and ("조선 초기" in metadata_text or "조선 전기" in metadata_text))
     field_match = "정치" in query and ("정치" in metadata_text or "통치" in metadata_text)
     if period_match:
@@ -219,7 +313,9 @@ def vector_score(query_counts: Counter[str], token_counts: Counter[str]) -> floa
 
 def source_weight(source_type: str, image_query: bool = False, overview_query: bool = False) -> float:
     if image_query and source_type == "image_material":
-        return 1.25
+        return 2.2
+    if image_query and source_type != "image_material":
+        return 0.55
     if overview_query:
         weights = {
             "historical_source": 0.9,
@@ -244,14 +340,20 @@ class HybridRagRetriever:
     def search(self, query: str, top_k: int | None = None) -> list[SearchResult]:
         query_tokens = expand_query_tokens(query, tokenize(query))
         query_counts = Counter(query_tokens)
-        image_query = any(token in query for token in ("이미지", "사진", "그림", "유물"))
+        image_query = any(token in query for token in IMAGE_QUERY_TERMS)
+        title_tokens = image_title_query_tokens(query_tokens) if image_query else []
         overview_query = any(token in query for token in ("정리", "요약", "흐름", "개념"))
         results: list[SearchResult] = []
 
         for document, token_counts in document_token_index(self.cache_key):
+            if image_query and not image_title_matches(document, title_tokens):
+                continue
             k_score = keyword_score(query, query_tokens, document, token_counts)
             v_score = vector_score(query_counts, token_counts)
             score = ((k_score * 0.65) + (v_score * 0.35)) * source_weight(document.source_type, image_query, overview_query)
+            if image_query and document.source_type == "image_material":
+                if document.metadata.get("thumbnail_url") or document.metadata.get("original_image_url"):
+                    score += 2.0
             if score > 0:
                 results.append(SearchResult(document, score, k_score, v_score))
 
@@ -292,7 +394,8 @@ def source_payload(results: list[SearchResult]) -> list[dict]:
                 "title": document.title,
                 "score": round(result.score, 4),
                 "source_url": document.metadata.get("source_url"),
-                "image_path": document.metadata.get("image_path"),
+                "thumbnail_url": document.metadata.get("thumbnail_url"),
+                "original_image_url": document.metadata.get("original_image_url"),
                 "snippet": compact_text(document.chunk_text),
             }
         )

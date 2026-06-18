@@ -1,0 +1,2390 @@
+[
+  {
+    "id": "GQ001",
+    "query": "조선 전기 6조 직계제 설명해줘",
+    "passed": true,
+    "keyword_hit": true,
+    "source_type_hit": true,
+    "era_hit": true,
+    "image_hit": true,
+    "reciprocal_rank": 1.0,
+    "matched_keywords": [
+      "6조",
+      "직계제",
+      "태종",
+      "의정부"
+    ],
+    "top_results": [
+      {
+        "rank": 1,
+        "title": "≪경국대전≫상의 직계아문 > 가. 의정부·6조·승정원·사헌부·사간원",
+        "source_type": "historical_overview",
+        "score": 3.1987,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_023_0030_0010_0020_0020_0010",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 2,
+        "title": "육조의 권한 강화",
+        "source_type": "historical_source",
+        "score": 2.5054,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_074_0030",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 3,
+        "title": "조선 초기의 양전",
+        "source_type": "historical_source",
+        "score": 2.2115,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_082_0070",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 4,
+        "title": "의정부 서사제",
+        "source_type": "historical_source",
+        "score": 2.0229,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_074_0040",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 5,
+        "title": "조선초기 역사서술의 완성",
+        "source_type": "historical_source",
+        "score": 1.9692,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_093_0040",
+        "thumbnail_url": null,
+        "original_image_url": null
+      }
+    ]
+  },
+  {
+    "id": "GQ002",
+    "query": "조선 전기 정치 제도 정리해줘",
+    "passed": true,
+    "keyword_hit": true,
+    "source_type_hit": true,
+    "era_hit": true,
+    "image_hit": true,
+    "reciprocal_rank": 1.0,
+    "matched_keywords": [
+      "의정부",
+      "6조",
+      "경국대전",
+      "집현전"
+    ],
+    "top_results": [
+      {
+        "rank": 1,
+        "title": "통치 구조 > 관료체제의 특징",
+        "source_type": "historical_overview",
+        "score": 4.9024,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_023_0020_0020_0010",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 2,
+        "title": "중앙 정치구조 > 정치구조의 정비와 정치기구 > 정치구조의 정비",
+        "source_type": "historical_overview",
+        "score": 4.2605,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_023_0030_0010_0010",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 3,
+        "title": "≪경국대전≫상의 직계아문 > 가. 의정부·6조·승정원·사헌부·사간원",
+        "source_type": "historical_overview",
+        "score": 4.2363,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_023_0030_0010_0020_0020_0010",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 4,
+        "title": "통치기구",
+        "source_type": "historical_overview",
+        "score": 4.172,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_023_0020_0020_0020",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 5,
+        "title": "중앙의 정치조직 > 중앙의 통치기구 > 고려 초기의 정치제도 > 건국 초기의 정치기구",
+        "source_type": "historical_overview",
+        "score": 4.1402,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_013_0020_0010_0010_0010",
+        "thumbnail_url": null,
+        "original_image_url": null
+      }
+    ]
+  },
+  {
+    "id": "GQ003",
+    "query": "태종과 세종의 통치 체제 차이 알려줘",
+    "passed": true,
+    "keyword_hit": true,
+    "source_type_hit": true,
+    "era_hit": true,
+    "image_hit": true,
+    "reciprocal_rank": 1.0,
+    "matched_keywords": [
+      "태종",
+      "세종"
+    ],
+    "top_results": [
+      {
+        "rank": 1,
+        "title": "고려의 지방행정체제",
+        "source_type": "historical_source",
+        "score": 3.7829,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_046_0090",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 2,
+        "title": "신라 지방통치체제의 성립과 운영",
+        "source_type": "historical_source",
+        "score": 3.7109,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_011_0080",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 3,
+        "title": "통치 구조 > 관료체제의 특징",
+        "source_type": "historical_overview",
+        "score": 3.5371,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_023_0020_0020_0010",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 4,
+        "title": "조선의 통치규범",
+        "source_type": "historical_source",
+        "score": 3.4736,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_074_0070",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 5,
+        "title": "세종 28년의 양 체제 개혁",
+        "source_type": "historical_overview",
+        "score": 3.4648,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_024_0070_0020_0030",
+        "thumbnail_url": null,
+        "original_image_url": null
+      }
+    ]
+  },
+  {
+    "id": "GQ004",
+    "query": "훈민정음 창제 배경 설명해줘",
+    "passed": true,
+    "keyword_hit": true,
+    "source_type_hit": true,
+    "era_hit": true,
+    "image_hit": true,
+    "reciprocal_rank": 1.0,
+    "matched_keywords": [
+      "훈민정음",
+      "세종",
+      "집현전",
+      "문자"
+    ],
+    "top_results": [
+      {
+        "rank": 1,
+        "title": "훈민정음 해례 후서",
+        "source_type": "historical_source",
+        "score": 6.3129,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_091_0020",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 2,
+        "title": "훈민정음 반대 상소와 세종의 반박",
+        "source_type": "historical_source",
+        "score": 6.2463,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_091_0040",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 3,
+        "title": "훈민정음의 창제 > ≪훈민정음≫(해례본)",
+        "source_type": "historical_overview",
+        "score": 5.9152,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_026_0020_0020_0010",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 4,
+        "title": "훈민정음의 창제 > 창제의 시기",
+        "source_type": "historical_overview",
+        "score": 5.9087,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_026_0020_0020_0020_0010",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 5,
+        "title": "국문학 > 훈민정음 창제와 국문학",
+        "source_type": "historical_overview",
+        "score": 5.8998,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_027_0040_0020_0010",
+        "thumbnail_url": null,
+        "original_image_url": null
+      }
+    ]
+  },
+  {
+    "id": "GQ005",
+    "query": "경국대전이 왜 중요한지 알려줘",
+    "passed": true,
+    "keyword_hit": true,
+    "source_type_hit": true,
+    "era_hit": true,
+    "image_hit": true,
+    "reciprocal_rank": 1.0,
+    "matched_keywords": [
+      "경국대전",
+      "법전"
+    ],
+    "top_results": [
+      {
+        "rank": 1,
+        "title": "경국대전의 수세 규정",
+        "source_type": "historical_source",
+        "score": 6.4185,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_081_0020",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 2,
+        "title": "≪경국대전≫의 편찬과 계승 > ≪경국대전≫이전의 법전편찬 > 태조대의≪경제육전≫",
+        "source_type": "historical_overview",
+        "score": 5.4202,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_022_0020_0050_0010_0010",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 3,
+        "title": "≪국조오례의≫와≪경국대전≫의 복식",
+        "source_type": "historical_overview",
+        "score": 5.4014,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_031_0060_0060_0010_0030",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 4,
+        "title": "≪경국대전≫편찬의 사적 의의",
+        "source_type": "historical_overview",
+        "score": 5.3971,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_022_0020_0050_0040",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 5,
+        "title": "≪경국대전≫의 편찬 > 편찬동기와 경과",
+        "source_type": "historical_overview",
+        "score": 5.3939,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_022_0020_0050_0020_0010",
+        "thumbnail_url": null,
+        "original_image_url": null
+      }
+    ]
+  },
+  {
+    "id": "GQ006",
+    "query": "사림이 성장한 배경 설명해줘",
+    "passed": true,
+    "keyword_hit": true,
+    "source_type_hit": true,
+    "era_hit": true,
+    "image_hit": true,
+    "reciprocal_rank": 1.0,
+    "matched_keywords": [
+      "사림",
+      "성종",
+      "훈구",
+      "향촌"
+    ],
+    "top_results": [
+      {
+        "rank": 1,
+        "title": "사림의 사회적 기반",
+        "source_type": "historical_overview",
+        "score": 2.8432,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_028_0030_0010_0020",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 2,
+        "title": "사림의 득세",
+        "source_type": "historical_overview",
+        "score": 2.3231,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_030_0020_0010_0030",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 3,
+        "title": "사림세력의 진출과 사화 > 사림의 중앙진출",
+        "source_type": "historical_overview",
+        "score": 2.3026,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_028_0030_0020_0010",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 4,
+        "title": "사림의 득세와 붕당의 출현 > 사림의 득세 > 명종대의 정세",
+        "source_type": "historical_overview",
+        "score": 2.2974,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_030_0020_0010_0010",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 5,
+        "title": "사림의 성향과 특징",
+        "source_type": "historical_overview",
+        "score": 2.295,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_028_0030_0030_0030",
+        "thumbnail_url": null,
+        "original_image_url": null
+      }
+    ]
+  },
+  {
+    "id": "GQ007",
+    "query": "붕당 정치가 생긴 이유가 뭐야",
+    "passed": true,
+    "keyword_hit": true,
+    "source_type_hit": true,
+    "era_hit": true,
+    "image_hit": true,
+    "reciprocal_rank": 0.5,
+    "matched_keywords": [
+      "붕당"
+    ],
+    "top_results": [
+      {
+        "rank": 1,
+        "title": "통치 구조 > 관료체제의 특징",
+        "source_type": "historical_overview",
+        "score": 3.8309,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_023_0020_0020_0010",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 2,
+        "title": "붕당정치하의 정치구조의 변동 > 비변사의 강화 > 설립 배경과 혁파 과정",
+        "source_type": "historical_overview",
+        "score": 3.6697,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_030_0040_0010_0010",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 3,
+        "title": "의정부 서사제",
+        "source_type": "historical_source",
+        "score": 3.314,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_074_0040",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 4,
+        "title": "황제권 중심의 정치구조와 대한국국제",
+        "source_type": "historical_source",
+        "score": 3.2327,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_120_0040",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 5,
+        "title": "중앙 정치구조 > 정치구조의 정비와 정치기구 > 정치구조의 정비",
+        "source_type": "historical_overview",
+        "score": 3.1466,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_023_0030_0010_0010",
+        "thumbnail_url": null,
+        "original_image_url": null
+      }
+    ]
+  },
+  {
+    "id": "GQ008",
+    "query": "임진왜란 이후 조선 사회 변화 정리해줘",
+    "passed": true,
+    "keyword_hit": true,
+    "source_type_hit": true,
+    "era_hit": true,
+    "image_hit": true,
+    "reciprocal_rank": 1.0,
+    "matched_keywords": [
+      "임진왜란",
+      "대동법",
+      "신분제"
+    ],
+    "top_results": [
+      {
+        "rank": 1,
+        "title": "임진왜란 이후 진휼청 제도의 변천",
+        "source_type": "historical_overview",
+        "score": 4.5713,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_030_0050_0020_0030",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 2,
+        "title": "임진왜란 이후의 대유구관계",
+        "source_type": "historical_overview",
+        "score": 4.5575,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_022_0030_0050_0060",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 3,
+        "title": "임진왜란 이후의 관계 > 임란시 동남아국가의 참전",
+        "source_type": "historical_overview",
+        "score": 4.5004,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_022_0030_0060_0050_0010",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 4,
+        "title": "주생활 > 사회변동과 주거계층의 변화",
+        "source_type": "historical_overview",
+        "score": 4.3706,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_034_0040_0020_0030_0010",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 5,
+        "title": "민중세력의 성장 > 신분제의 이완과 민중사회의 성장 > 사족지배구조의 정착과 신분구조의 변화",
+        "source_type": "historical_overview",
+        "score": 4.3232,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_036_0020_0010_0010",
+        "thumbnail_url": null,
+        "original_image_url": null
+      }
+    ]
+  },
+  {
+    "id": "GQ009",
+    "query": "대동법이 뭔지 쉽게 설명해줘",
+    "passed": true,
+    "keyword_hit": true,
+    "source_type_hit": true,
+    "era_hit": true,
+    "image_hit": true,
+    "reciprocal_rank": 1.0,
+    "matched_keywords": [
+      "대동법",
+      "공납",
+      "쌀",
+      "광해군"
+    ],
+    "top_results": [
+      {
+        "rank": 1,
+        "title": "대동법 시행",
+        "source_type": "historical_source",
+        "score": 3.5576,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_102_0040",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 2,
+        "title": "대동법의 제정·시행",
+        "source_type": "historical_overview",
+        "score": 2.7387,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_030_0060_0010_0010_0030",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 3,
+        "title": "대동법의 실시 결과와 의의",
+        "source_type": "historical_overview",
+        "score": 2.7289,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_030_0060_0010_0030",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 4,
+        "title": "대동법의 시행과 상공업의 변화 > 대동법의 시행 > 공납제의 변통과 대동법의 실시 > 사대동의 발생",
+        "source_type": "historical_overview",
+        "score": 2.7281,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_030_0060_0010_0010_0010",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 5,
+        "title": "요역제의 붕괴와 모립제의 대두 > 요역제 변동의 추이와 대동법의 성립",
+        "source_type": "historical_overview",
+        "score": 2.7075,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_030_0050_0040_0010",
+        "thumbnail_url": null,
+        "original_image_url": null
+      }
+    ]
+  },
+  {
+    "id": "GQ010",
+    "query": "영정법과 대동법 차이 알려줘",
+    "passed": true,
+    "keyword_hit": true,
+    "source_type_hit": true,
+    "era_hit": true,
+    "image_hit": true,
+    "reciprocal_rank": 1.0,
+    "matched_keywords": [
+      "영정법",
+      "대동법",
+      "전세",
+      "공납"
+    ],
+    "top_results": [
+      {
+        "rank": 1,
+        "title": "대동법 시행",
+        "source_type": "historical_source",
+        "score": 6.517,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_102_0040",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 2,
+        "title": "영정법 시행",
+        "source_type": "historical_source",
+        "score": 6.4136,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_102_0020",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 3,
+        "title": "대동법의 제정·시행",
+        "source_type": "historical_overview",
+        "score": 5.4153,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_030_0060_0010_0010_0030",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 4,
+        "title": "대동법의 실시 결과와 의의",
+        "source_type": "historical_overview",
+        "score": 5.4013,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_030_0060_0010_0030",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 5,
+        "title": "대동법의 시행과 상공업의 변화 > 대동법의 시행 > 공납제의 변통과 대동법의 실시 > 사대동의 발생",
+        "source_type": "historical_overview",
+        "score": 5.4001,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_030_0060_0010_0010_0010",
+        "thumbnail_url": null,
+        "original_image_url": null
+      }
+    ]
+  },
+  {
+    "id": "GQ011",
+    "query": "전시과 제도가 뭐야",
+    "passed": true,
+    "keyword_hit": true,
+    "source_type_hit": true,
+    "era_hit": true,
+    "image_hit": true,
+    "reciprocal_rank": 1.0,
+    "matched_keywords": [
+      "전시과",
+      "고려",
+      "토지"
+    ],
+    "top_results": [
+      {
+        "rank": 1,
+        "title": "전시과 제도와 토지 소유",
+        "source_type": "historical_source",
+        "score": 8.2131,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_057_0020",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 2,
+        "title": "전시과의 시행",
+        "source_type": "historical_source",
+        "score": 7.0184,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_057_0010",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 3,
+        "title": "전시과 체제 > 전시과 제도 > 건국 직후의 토지지배관계와 역분전의 설치 > 토지지배의 내용",
+        "source_type": "historical_overview",
+        "score": 6.806,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_014_0020_0010_0010_0010",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 4,
+        "title": "수취 제도",
+        "source_type": "historical_source",
+        "score": 6.6676,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_057_0030",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 5,
+        "title": "전시과제도와 농장",
+        "source_type": "historical_overview",
+        "score": 5.8981,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_001_0040_0030_0020_0020",
+        "thumbnail_url": null,
+        "original_image_url": null
+      }
+    ]
+  },
+  {
+    "id": "GQ012",
+    "query": "고려의 토지 제도 흐름 정리해줘",
+    "passed": true,
+    "keyword_hit": true,
+    "source_type_hit": true,
+    "era_hit": true,
+    "image_hit": true,
+    "reciprocal_rank": 1.0,
+    "matched_keywords": [
+      "역분전",
+      "전시과",
+      "과전법"
+    ],
+    "top_results": [
+      {
+        "rank": 1,
+        "title": "토지제도와 농업 > 토지제도 > 과전법체제의 확립 > 고려 말 사전개혁의 방향",
+        "source_type": "historical_overview",
+        "score": 4.5366,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_024_0020_0010_0010_0010",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 2,
+        "title": "전시과 체제 > 전시과 제도 > 건국 직후의 토지지배관계와 역분전의 설치 > 토지지배의 내용",
+        "source_type": "historical_overview",
+        "score": 4.3826,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_014_0020_0010_0010_0010",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 3,
+        "title": "고려 제도의 독자성",
+        "source_type": "historical_overview",
+        "score": 3.5239,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_013_0020_0030_0020_0020",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 4,
+        "title": "고려 전품제와 토지 등급",
+        "source_type": "historical_source",
+        "score": 3.4022,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_057_0050",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 5,
+        "title": "전시과 제도와 토지 소유",
+        "source_type": "historical_source",
+        "score": 3.3788,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_057_0020",
+        "thumbnail_url": null,
+        "original_image_url": null
+      }
+    ]
+  },
+  {
+    "id": "GQ013",
+    "query": "문벌 귀족 사회의 특징 알려줘",
+    "passed": true,
+    "keyword_hit": true,
+    "source_type_hit": true,
+    "era_hit": true,
+    "image_hit": true,
+    "reciprocal_rank": 1.0,
+    "matched_keywords": [
+      "문벌 귀족",
+      "음서",
+      "혼인"
+    ],
+    "top_results": [
+      {
+        "rank": 1,
+        "title": "문벌 귀족의 생활",
+        "source_type": "historical_source",
+        "score": 5.5919,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_060_0030",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 2,
+        "title": "청평산 문수원기",
+        "source_type": "historical_source",
+        "score": 4.3706,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_060_0050",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 3,
+        "title": "경원 이씨의 영화",
+        "source_type": "historical_source",
+        "score": 4.1846,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_060_0020",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 4,
+        "title": "장화왕후와 왕건",
+        "source_type": "historical_source",
+        "score": 4.1585,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_060_0010",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 5,
+        "title": "처사 곽여",
+        "source_type": "historical_source",
+        "score": 4.0241,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_060_0040",
+        "thumbnail_url": null,
+        "original_image_url": null
+      }
+    ]
+  },
+  {
+    "id": "GQ014",
+    "query": "무신 정변이 일어난 배경 설명해줘",
+    "passed": true,
+    "keyword_hit": true,
+    "source_type_hit": true,
+    "era_hit": true,
+    "image_hit": true,
+    "reciprocal_rank": 1.0,
+    "matched_keywords": [
+      "무신 정변",
+      "정중부",
+      "의종"
+    ],
+    "top_results": [
+      {
+        "rank": 1,
+        "title": "무신정변",
+        "source_type": "historical_source",
+        "score": 4.2607,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_050_0010",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 2,
+        "title": "이제현의 무신집권기 문신 인식과 유학 진흥책",
+        "source_type": "historical_source",
+        "score": 2.856,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_061_0030",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 3,
+        "title": "혜공왕 말년(780)의 정변 ― 중대의 종말",
+        "source_type": "historical_overview",
+        "score": 2.2695,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_011_0020_0010_0020",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 4,
+        "title": "승려와 무신 정권의 충돌",
+        "source_type": "historical_source",
+        "score": 2.2156,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_061_0010",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 5,
+        "title": "정변의 행동대원",
+        "source_type": "historical_overview",
+        "score": 2.177,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_038_0060_0020_0020",
+        "thumbnail_url": null,
+        "original_image_url": null
+      }
+    ]
+  },
+  {
+    "id": "GQ015",
+    "query": "권문세족과 신진 사대부 차이 알려줘",
+    "passed": true,
+    "keyword_hit": true,
+    "source_type_hit": true,
+    "era_hit": true,
+    "image_hit": true,
+    "reciprocal_rank": 1.0,
+    "matched_keywords": [
+      "권문세족",
+      "신진 사대부",
+      "성리학",
+      "토지"
+    ],
+    "top_results": [
+      {
+        "rank": 1,
+        "title": "권문세족과 신진사대부 > 권문세족의 성립과 그 성격",
+        "source_type": "historical_overview",
+        "score": 9.396,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_019_0020_0020_0010",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 2,
+        "title": "신진 사대부의 성장",
+        "source_type": "historical_source",
+        "score": 7.0385,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_061_0060",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 3,
+        "title": "신진사대부의 성장",
+        "source_type": "historical_overview",
+        "score": 5.2636,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_019_0020_0020_0030_0030",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 4,
+        "title": "사대부의 성격과 용어에 대한 논의",
+        "source_type": "historical_overview",
+        "score": 5.2352,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_019_0020_0020_0020_0020",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 5,
+        "title": "나. 신진사대부의 성장과 분화",
+        "source_type": "historical_overview",
+        "score": 5.221,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_019_0020_0020_0030_0030_0020",
+        "thumbnail_url": null,
+        "original_image_url": null
+      }
+    ]
+  },
+  {
+    "id": "GQ016",
+    "query": "고려 말 과전법이 왜 시행됐어",
+    "passed": true,
+    "keyword_hit": true,
+    "source_type_hit": true,
+    "era_hit": true,
+    "image_hit": true,
+    "reciprocal_rank": 1.0,
+    "matched_keywords": [
+      "과전법"
+    ],
+    "top_results": [
+      {
+        "rank": 1,
+        "title": "토지제도와 농업 > 토지제도 > 과전법체제의 확립 > 고려 말 사전개혁의 방향",
+        "source_type": "historical_overview",
+        "score": 5.2808,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_024_0020_0010_0010_0010",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 2,
+        "title": "과전법의 시행",
+        "source_type": "historical_source",
+        "score": 4.9644,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_080_0010",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 3,
+        "title": "전세제도의 개편 > 과전법에 규정된 양전·수조제",
+        "source_type": "historical_overview",
+        "score": 4.3067,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_024_0020_0010_0030_0010",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 4,
+        "title": "사전의 개혁과 과전법의 성립",
+        "source_type": "historical_overview",
+        "score": 4.2814,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_024_0020_0010_0010_0030",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 5,
+        "title": "과전법의 내용과 그 운용 > 가. 토지분급 규정",
+        "source_type": "historical_overview",
+        "score": 4.1356,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_024_0020_0010_0010_0040_0010",
+        "thumbnail_url": null,
+        "original_image_url": null
+      }
+    ]
+  },
+  {
+    "id": "GQ017",
+    "query": "고려 불교 정책 정리해줘",
+    "passed": true,
+    "keyword_hit": true,
+    "source_type_hit": true,
+    "era_hit": true,
+    "image_hit": true,
+    "reciprocal_rank": 1.0,
+    "matched_keywords": [
+      "불교",
+      "광종"
+    ],
+    "top_results": [
+      {
+        "rank": 1,
+        "title": "고려 불교계의 동향",
+        "source_type": "historical_overview",
+        "score": 4.5324,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_016_0020_0010_0040_0020",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 2,
+        "title": "원의 정치간섭과 불교 > 고려와 원과의 관계",
+        "source_type": "historical_overview",
+        "score": 4.5043,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_021_0020_0010_0050_0010",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 3,
+        "title": "광종대의 불교통합운동과 천태학의 연구 > 광종대의 불교통합운동 > 가. 고려 초의 교선융합사조",
+        "source_type": "historical_overview",
+        "score": 4.0852,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_016_0020_0010_0020_0010_0010",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 4,
+        "title": "불교 > 억불정책과 교단의 존폐 > 억불정책의 전개",
+        "source_type": "historical_overview",
+        "score": 4.0681,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_026_0030_0020_0010_0010",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 5,
+        "title": "여진정벌과 9성 > 가. 고려의 대여진 기미정책의 성공",
+        "source_type": "historical_overview",
+        "score": 3.9736,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_015_0030_0030_0010_0020_0010",
+        "thumbnail_url": null,
+        "original_image_url": null
+      }
+    ]
+  },
+  {
+    "id": "GQ018",
+    "query": "팔만대장경 만든 이유 알려줘",
+    "passed": true,
+    "keyword_hit": true,
+    "source_type_hit": true,
+    "era_hit": true,
+    "image_hit": true,
+    "reciprocal_rank": 1.0,
+    "matched_keywords": [
+      "팔만대장경",
+      "몽골",
+      "불교",
+      "대장경"
+    ],
+    "top_results": [
+      {
+        "rank": 1,
+        "title": "인쇄술의 발달 – 팔만대장경과 상정고금예문",
+        "source_type": "historical_source",
+        "score": 5.3761,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_072_0010",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 2,
+        "title": "합천 해인사 대장경판",
+        "source_type": "image_material",
+        "score": 4.4862,
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_040_05700&whereStr=",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_040/ki_040_05700.thumbnail.jpg",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_040/ki_040_05700.jpg"
+      },
+      {
+        "rank": 3,
+        "title": "대장경을 각판하면서 기도하며 올리는 글",
+        "source_type": "historical_source",
+        "score": 4.4752,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_067_0070",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 4,
+        "title": "대장경판의 해인사 전래와 유통 > 가. 해인사에의 전래",
+        "source_type": "historical_overview",
+        "score": 4.2895,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_021_0020_0010_0070_0040_0010",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 5,
+        "title": "합천 해인사 대장경판 일부",
+        "source_type": "image_material",
+        "score": 4.2533,
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_040_05800&whereStr=",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_040/ki_040_05800.thumbnail.jpg",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_040/ki_040_05800.jpg"
+      }
+    ]
+  },
+  {
+    "id": "GQ019",
+    "query": "삼국 통일 과정 정리해줘",
+    "passed": true,
+    "keyword_hit": true,
+    "source_type_hit": true,
+    "era_hit": true,
+    "image_hit": true,
+    "reciprocal_rank": 1.0,
+    "matched_keywords": [
+      "신라",
+      "백제",
+      "고구려"
+    ],
+    "top_results": [
+      {
+        "rank": 1,
+        "title": "삼국통일 > 삼국통일 과정 > 세기 신라의 내정변화",
+        "source_type": "historical_overview",
+        "score": 5.8602,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_009_0020_0010_0010",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 2,
+        "title": "왕건의 즉위와 후삼국의 통일 > 궁예의 몰락과 왕건의 즉위",
+        "source_type": "historical_overview",
+        "score": 4.5406,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_012_0020_0010_0020_0010",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 3,
+        "title": "후삼국의 통일",
+        "source_type": "historical_overview",
+        "score": 4.3896,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_012_0020_0010_0020_0030",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 4,
+        "title": "삼국통일의 역사적 의의",
+        "source_type": "historical_overview",
+        "score": 4.0675,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_009_0020_0020_0020",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 5,
+        "title": "삼국통일의 역사적 의의 > 민족융합의 문제",
+        "source_type": "historical_overview",
+        "score": 4.0411,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_009_0020_0020_0010",
+        "thumbnail_url": null,
+        "original_image_url": null
+      }
+    ]
+  },
+  {
+    "id": "GQ020",
+    "query": "고구려의 전성기 왕과 업적 알려줘",
+    "passed": true,
+    "keyword_hit": true,
+    "source_type_hit": true,
+    "era_hit": true,
+    "image_hit": true,
+    "reciprocal_rank": 1.0,
+    "matched_keywords": [
+      "광개토 대왕",
+      "장수왕",
+      "남진 정책"
+    ],
+    "top_results": [
+      {
+        "rank": 1,
+        "title": "평양 천도와 남진",
+        "source_type": "historical_source",
+        "score": 3.5101,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_009_0050",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 2,
+        "title": "광개토왕의 영역확장",
+        "source_type": "historical_source",
+        "score": 3.4773,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_009_0040",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 3,
+        "title": "고구려의 서예",
+        "source_type": "historical_overview",
+        "score": 3.2331,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_008_0050_0030_0010",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 4,
+        "title": "충주 고구려비와 중원 지역",
+        "source_type": "historical_source",
+        "score": 3.0578,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_009_0060",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 5,
+        "title": "개로왕이 위나라에 고구려 정벌을 요청한 외교문서",
+        "source_type": "historical_source",
+        "score": 3.0523,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_010_0030",
+        "thumbnail_url": null,
+        "original_image_url": null
+      }
+    ]
+  },
+  {
+    "id": "GQ021",
+    "query": "백제 문화의 특징 설명해줘",
+    "passed": true,
+    "keyword_hit": true,
+    "source_type_hit": true,
+    "era_hit": true,
+    "image_hit": true,
+    "reciprocal_rank": 1.0,
+    "matched_keywords": [
+      "백제",
+      "일본",
+      "불교"
+    ],
+    "top_results": [
+      {
+        "rank": 1,
+        "title": "백제의 미륵신앙과 미륵사",
+        "source_type": "historical_source",
+        "score": 3.6255,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_023_0020",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 2,
+        "title": "왜로 전파된 백제의 박사와 지식",
+        "source_type": "historical_source",
+        "score": 3.5231,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_028_0100",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 3,
+        "title": "백제의 불교 공인",
+        "source_type": "historical_source",
+        "score": 3.4881,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_022_0020",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 4,
+        "title": "백제의 석가불 신앙",
+        "source_type": "historical_source",
+        "score": 3.4874,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_023_0010",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 5,
+        "title": "건축 > 건축기법과 특징",
+        "source_type": "historical_overview",
+        "score": 2.9373,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_027_0050_0020_0010",
+        "thumbnail_url": null,
+        "original_image_url": null
+      }
+    ]
+  },
+  {
+    "id": "GQ022",
+    "query": "신라 골품제가 뭔지 알려줘",
+    "passed": true,
+    "keyword_hit": true,
+    "source_type_hit": true,
+    "era_hit": true,
+    "image_hit": true,
+    "reciprocal_rank": 1.0,
+    "matched_keywords": [
+      "골품제",
+      "신라",
+      "성골",
+      "진골"
+    ],
+    "top_results": [
+      {
+        "rank": 1,
+        "title": "신라의 골품제",
+        "source_type": "historical_source",
+        "score": 7.0912,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_018_0060",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 2,
+        "title": "사회구조 > 신라사회의 대본이 되는 골품제도",
+        "source_type": "historical_overview",
+        "score": 5.2561,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_007_0050_0040_0010",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 3,
+        "title": "골품제 실시에 대한 반발",
+        "source_type": "historical_source",
+        "score": 5.246,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_018_0070",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 4,
+        "title": "골품제도의 퇴화 > 골품제의 사회적 기반의 축소",
+        "source_type": "historical_overview",
+        "score": 4.8595,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_011_0020_0040_0010",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 5,
+        "title": "경위제－골품제도와의 대응관계－",
+        "source_type": "historical_overview",
+        "score": 4.2836,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_007_0050_0040_0040_0010",
+        "thumbnail_url": null,
+        "original_image_url": null
+      }
+    ]
+  },
+  {
+    "id": "GQ023",
+    "query": "발해가 고구려를 계승했다는 근거 알려줘",
+    "passed": true,
+    "keyword_hit": true,
+    "source_type_hit": true,
+    "era_hit": true,
+    "image_hit": true,
+    "reciprocal_rank": 1.0,
+    "matched_keywords": [
+      "고구려"
+    ],
+    "top_results": [
+      {
+        "rank": 1,
+        "title": "광개토왕의 영역확장",
+        "source_type": "historical_source",
+        "score": 3.3279,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_009_0040",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 2,
+        "title": "고구려의 서예",
+        "source_type": "historical_overview",
+        "score": 3.2331,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_008_0050_0030_0010",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 3,
+        "title": "개로왕이 위나라에 고구려 정벌을 요청한 외교문서",
+        "source_type": "historical_source",
+        "score": 2.9631,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_010_0030",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 4,
+        "title": "충주 고구려비와 중원 지역",
+        "source_type": "historical_source",
+        "score": 2.7805,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_009_0060",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 5,
+        "title": "고구려와 전연의 대립과 위기",
+        "source_type": "historical_source",
+        "score": 2.7705,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_013_0120",
+        "thumbnail_url": null,
+        "original_image_url": null
+      }
+    ]
+  },
+  {
+    "id": "GQ024",
+    "query": "통일 신라의 민정문서가 보여주는 내용은 뭐야",
+    "passed": true,
+    "keyword_hit": true,
+    "source_type_hit": true,
+    "era_hit": true,
+    "image_hit": true,
+    "reciprocal_rank": 0.5,
+    "matched_keywords": [
+      "민정문서",
+      "촌락",
+      "토지"
+    ],
+    "top_results": [
+      {
+        "rank": 1,
+        "title": "통일신라시대의 향가",
+        "source_type": "historical_source",
+        "score": 3.7155,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_043_0030",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 2,
+        "title": "신라의 촌락 지배",
+        "source_type": "historical_source",
+        "score": 3.4309,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_033_0050",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 3,
+        "title": "신라 전성기의 모습",
+        "source_type": "historical_source",
+        "score": 3.2548,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_031_0010",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 4,
+        "title": "도의와 신라의 선종",
+        "source_type": "historical_source",
+        "score": 3.2214,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_042_0010",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 5,
+        "title": "신라의 한시선",
+        "source_type": "historical_source",
+        "score": 3.1561,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_043_0040",
+        "thumbnail_url": null,
+        "original_image_url": null
+      }
+    ]
+  },
+  {
+    "id": "GQ025",
+    "query": "연천 전곡리 유적 사진 보여줘",
+    "passed": true,
+    "keyword_hit": true,
+    "source_type_hit": true,
+    "era_hit": true,
+    "image_hit": true,
+    "reciprocal_rank": 1.0,
+    "matched_keywords": [
+      "연천",
+      "전곡리",
+      "주먹도끼"
+    ],
+    "top_results": [
+      {
+        "rank": 1,
+        "title": "연천 전곡리 유적 출토 주먹도끼",
+        "source_type": "image_material",
+        "score": 7.7699,
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_010_00091&whereStr=",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_00091.thumbnail.jpg",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_00091.jpg"
+      },
+      {
+        "rank": 2,
+        "title": "연천 전곡리 유적 전경",
+        "source_type": "image_material",
+        "score": 7.335,
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_010_00090&whereStr=",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_00090.thumbnail.jpg",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_00090.jpg"
+      },
+      {
+        "rank": 3,
+        "title": "연천 전곡리 출토 주먹도끼",
+        "source_type": "image_material",
+        "score": 6.9557,
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_010_00100&whereStr=",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_00100.thumbnail.jpg",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_00100.jpg"
+      },
+      {
+        "rank": 4,
+        "title": "파주 금파리 유적, 파주 가월리와 주월리 유적, 연천 원당리 유적 출토 주먹도끼",
+        "source_type": "image_material",
+        "score": 5.3179,
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_010_00150&whereStr=",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_00150.thumbnail.jpg",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_00150.jpg"
+      },
+      {
+        "rank": 5,
+        "title": "연천 학곡리 고인돌",
+        "source_type": "image_material",
+        "score": 4.7878,
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_010_02000&whereStr=",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_02000.thumbnail.jpg",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_02000.jpg"
+      }
+    ]
+  },
+  {
+    "id": "GQ026",
+    "query": "구석기 시대 대표 유물 이미지 찾아줘",
+    "passed": true,
+    "keyword_hit": true,
+    "source_type_hit": true,
+    "era_hit": true,
+    "image_hit": true,
+    "reciprocal_rank": 1.0,
+    "matched_keywords": [
+      "구석기",
+      "주먹도끼",
+      "찍개"
+    ],
+    "top_results": [
+      {
+        "rank": 1,
+        "title": "공주 석장리 유적 출토 주먹도끼",
+        "source_type": "image_material",
+        "score": 7.843,
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_010_00171&whereStr=",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_00171.thumbnail.jpg",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_00171.jpg"
+      },
+      {
+        "rank": 2,
+        "title": "연천 전곡리 유적 출토 주먹도끼",
+        "source_type": "image_material",
+        "score": 7.8338,
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_010_00091&whereStr=",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_00091.thumbnail.jpg",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_00091.jpg"
+      },
+      {
+        "rank": 3,
+        "title": "연천 전곡리 출토 주먹도끼",
+        "source_type": "image_material",
+        "score": 7.2877,
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_010_00100&whereStr=",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_00100.thumbnail.jpg",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_00100.jpg"
+      },
+      {
+        "rank": 4,
+        "title": "연천 전곡리 유적 전경",
+        "source_type": "image_material",
+        "score": 7.2156,
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_010_00090&whereStr=",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_00090.thumbnail.jpg",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_00090.jpg"
+      },
+      {
+        "rank": 5,
+        "title": "공주 석장리 유적 전경",
+        "source_type": "image_material",
+        "score": 7.0334,
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_010_00170&whereStr=",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_00170.thumbnail.jpg",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_00170.jpg"
+      }
+    ]
+  },
+  {
+    "id": "GQ027",
+    "query": "빗살무늬 토기 사진 자료 있어?",
+    "passed": true,
+    "keyword_hit": true,
+    "source_type_hit": true,
+    "era_hit": true,
+    "image_hit": true,
+    "reciprocal_rank": 1.0,
+    "matched_keywords": [
+      "빗살무늬 토기",
+      "신석기",
+      "토기"
+    ],
+    "top_results": [
+      {
+        "rank": 1,
+        "title": "서울 암사동 유적 빗살무늬토기",
+        "source_type": "image_material",
+        "score": 7.2918,
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_010_01300&whereStr=",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_01300.thumbnail.jpg",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_01300.jpg"
+      },
+      {
+        "rank": 2,
+        "title": "창원 현동 유적에서 출토된 배모양 토기",
+        "source_type": "image_material",
+        "score": 5.0264,
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_020_16500&whereStr=",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_020/ki_020_16500.thumbnail.jpg",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_020/ki_020_16500.jpg"
+      },
+      {
+        "rank": 3,
+        "title": "강원 양양 오산리 출토 덧무늬토기",
+        "source_type": "image_material",
+        "score": 5.0038,
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_010_01000&whereStr=",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_01000.thumbnail.jpg",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_01000.jpg"
+      },
+      {
+        "rank": 4,
+        "title": "의주 미송리 동굴유적 출토 미송리식 토기",
+        "source_type": "image_material",
+        "score": 4.9972,
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_010_03580&whereStr=",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_03580.thumbnail.jpg",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_03580.jpg"
+      },
+      {
+        "rank": 5,
+        "title": "부산 동삼동 패총(조개더미) 출토 그물무늬 토기 및 사슴무늬 토기",
+        "source_type": "image_material",
+        "score": 4.4191,
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_010_01402&whereStr=",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_01402.thumbnail.jpg",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_01402.jpg"
+      }
+    ]
+  },
+  {
+    "id": "GQ028",
+    "query": "고인돌 사진 보여줘",
+    "passed": true,
+    "keyword_hit": true,
+    "source_type_hit": true,
+    "era_hit": true,
+    "image_hit": true,
+    "reciprocal_rank": 1.0,
+    "matched_keywords": [
+      "고인돌",
+      "청동기",
+      "무덤"
+    ],
+    "top_results": [
+      {
+        "rank": 1,
+        "title": "울주 검단리 고인돌",
+        "source_type": "image_material",
+        "score": 6.3952,
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_010_02700&whereStr=",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_02700.thumbnail.jpg",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_02700.jpg"
+      },
+      {
+        "rank": 2,
+        "title": "연천 학곡리 고인돌",
+        "source_type": "image_material",
+        "score": 6.2716,
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_010_02000&whereStr=",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_02000.thumbnail.jpg",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_02000.jpg"
+      },
+      {
+        "rank": 3,
+        "title": "화순 고인돌 유적",
+        "source_type": "image_material",
+        "score": 6.2372,
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_010_02210&whereStr=",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_02210.thumbnail.jpg",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_02210.jpg"
+      },
+      {
+        "rank": 4,
+        "title": "안악 로암리 고인돌",
+        "source_type": "image_material",
+        "score": 5.7648,
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_010_01990&whereStr=",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_01990.thumbnail.jpg",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_01990.jpg"
+      },
+      {
+        "rank": 5,
+        "title": "강화 부근리 고인돌",
+        "source_type": "image_material",
+        "score": 5.6701,
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_010_02100&whereStr=",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_02100.thumbnail.jpg",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_02100.jpg"
+      }
+    ]
+  },
+  {
+    "id": "GQ029",
+    "query": "무령왕릉 관련 이미지 찾아줘",
+    "passed": true,
+    "keyword_hit": true,
+    "source_type_hit": true,
+    "era_hit": true,
+    "image_hit": true,
+    "reciprocal_rank": 1.0,
+    "matched_keywords": [
+      "무령왕릉",
+      "백제",
+      "공주"
+    ],
+    "top_results": [
+      {
+        "rank": 1,
+        "title": "공주 무령왕릉",
+        "source_type": "image_material",
+        "score": 5.763,
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_020_05300&whereStr=",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_020/ki_020_05300.thumbnail.jpg",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_020/ki_020_05300.jpg"
+      },
+      {
+        "rank": 2,
+        "title": "공주 무령왕릉 내부",
+        "source_type": "image_material",
+        "score": 5.6344,
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_020_05400&whereStr=",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_020/ki_020_05400.thumbnail.jpg",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_020/ki_020_05400.jpg"
+      },
+      {
+        "rank": 3,
+        "title": "공주 백제 무령왕릉에서 발견된 석수",
+        "source_type": "image_material",
+        "score": 5.5878,
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_020_05600&whereStr=",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_020/ki_020_05600.thumbnail.jpg",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_020/ki_020_05600.jpg"
+      },
+      {
+        "rank": 4,
+        "title": "공주 백제 무령왕릉에서 발견된 왕비 묘지석",
+        "source_type": "image_material",
+        "score": 5.5864,
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_020_05700&whereStr=",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_020/ki_020_05700.thumbnail.jpg",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_020/ki_020_05700.jpg"
+      },
+      {
+        "rank": 5,
+        "title": "공주 백제 무령왕릉에서 발견된 연꽃무늬 은잔과 청동 받침",
+        "source_type": "image_material",
+        "score": 5.5689,
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_020_05500&whereStr=",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_020/ki_020_05500.thumbnail.jpg",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_020/ki_020_05500.jpg"
+      }
+    ]
+  },
+  {
+    "id": "GQ030",
+    "query": "첨성대 사진과 설명 알려줘",
+    "passed": true,
+    "keyword_hit": true,
+    "source_type_hit": true,
+    "era_hit": true,
+    "image_hit": true,
+    "reciprocal_rank": 1.0,
+    "matched_keywords": [
+      "첨성대",
+      "신라",
+      "천문"
+    ],
+    "top_results": [
+      {
+        "rank": 1,
+        "title": "경주 첨성대",
+        "source_type": "image_material",
+        "score": 6.1315,
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_020_14000&whereStr=",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_020/ki_020_14000.thumbnail.jpg",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_020/ki_020_14000.jpg"
+      }
+    ]
+  },
+  {
+    "id": "GQ031",
+    "query": "고려청자 이미지 보여줘",
+    "passed": true,
+    "keyword_hit": true,
+    "source_type_hit": true,
+    "era_hit": true,
+    "image_hit": true,
+    "reciprocal_rank": 1.0,
+    "matched_keywords": [
+      "고려청자",
+      "청자"
+    ],
+    "top_results": [
+      {
+        "rank": 1,
+        "title": "고려청자 인물형 주전자",
+        "source_type": "image_material",
+        "score": 5.6094,
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_040_08700&whereStr=",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_040/ki_040_08700.thumbnail.jpg",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_040/ki_040_08700.jpg"
+      },
+      {
+        "rank": 2,
+        "title": "완도 해저에서 발굴된 고려 청자",
+        "source_type": "image_material",
+        "score": 5.0271,
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_040_08800&whereStr=",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_040/ki_040_08800.thumbnail.jpg",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_040/ki_040_08800.jpg"
+      }
+    ]
+  },
+  {
+    "id": "GQ032",
+    "query": "훈민정음 해례본 이미지 자료 찾아줘",
+    "passed": true,
+    "keyword_hit": true,
+    "source_type_hit": true,
+    "era_hit": true,
+    "image_hit": true,
+    "reciprocal_rank": 1.0,
+    "matched_keywords": [
+      "훈민정음",
+      "해례본",
+      "세종"
+    ],
+    "top_results": [
+      {
+        "rank": 1,
+        "title": "훈민정음 해례본",
+        "source_type": "image_material",
+        "score": 7.5309,
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_08100&whereStr=",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_050/ki_050_08100.thumbnail.jpg",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_050/ki_050_08100.jpg"
+      },
+      {
+        "rank": 2,
+        "title": "훈민정음 언해본",
+        "source_type": "image_material",
+        "score": 5.6482,
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_08200&whereStr=",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_050/ki_050_08200.thumbnail.jpg",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_050/ki_050_08200.jpg"
+      }
+    ]
+  },
+  {
+    "id": "GQ033",
+    "query": "독립협회 활동 정리해줘",
+    "passed": true,
+    "keyword_hit": true,
+    "source_type_hit": true,
+    "era_hit": true,
+    "image_hit": true,
+    "reciprocal_rank": 1.0,
+    "matched_keywords": [
+      "독립협회",
+      "독립문",
+      "만민공동회"
+    ],
+    "top_results": [
+      {
+        "rank": 1,
+        "title": "독립협회의 활동 > 독립의식의 계발 > 독립기념물의 건립",
+        "source_type": "historical_overview",
+        "score": 7.3536,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_041_0050_0010_0010",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 2,
+        "title": "정치활동전개기의 조직과 운영 > 정치활동에서 드러난 독립협회의 정치적 역할 인식",
+        "source_type": "historical_overview",
+        "score": 7.2863,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_041_0040_0020_0020_0010",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 3,
+        "title": "독립협회의 조직과 사상 > 서재필의 귀국활동과 독립협회 창립",
+        "source_type": "historical_overview",
+        "score": 6.8983,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_041_0040_0010",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 4,
+        "title": "독립협회 복설운동",
+        "source_type": "historical_overview",
+        "score": 5.4306,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_041_0060_0010_0030",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 5,
+        "title": "독립협회의 조직과 운영",
+        "source_type": "historical_overview",
+        "score": 5.418,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_041_0040_0020",
+        "thumbnail_url": null,
+        "original_image_url": null
+      }
+    ]
+  },
+  {
+    "id": "GQ034",
+    "query": "갑오개혁 내용 요약해줘",
+    "passed": true,
+    "keyword_hit": true,
+    "source_type_hit": true,
+    "era_hit": true,
+    "image_hit": true,
+    "reciprocal_rank": 1.0,
+    "matched_keywords": [
+      "갑오개혁",
+      "군국기무처"
+    ],
+    "top_results": [
+      {
+        "rank": 1,
+        "title": "제3차 개혁의 내용",
+        "source_type": "historical_overview",
+        "score": 5.055,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_040_0040_0030_0030",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 2,
+        "title": "제2차 개혁의 내용",
+        "source_type": "historical_overview",
+        "score": 5.0308,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_040_0040_0020_0030",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 3,
+        "title": "제1차 개혁의 내용 > 대외관계의 개혁",
+        "source_type": "historical_overview",
+        "score": 5.0202,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_040_0040_0010_0030_0010",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 4,
+        "title": "갑오개혁기의 가족관계의 변화 > 가. 군국기무처시기의 가족관계",
+        "source_type": "historical_overview",
+        "score": 4.8637,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_044_0040_0020_0040_0020_0010",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 5,
+        "title": "주거 > 갑오개혁과 주거문화의 변화",
+        "source_type": "historical_overview",
+        "score": 4.5114,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_044_0040_0050_0030_0010",
+        "thumbnail_url": null,
+        "original_image_url": null
+      }
+    ]
+  },
+  {
+    "id": "GQ035",
+    "query": "을사늑약이 왜 중요한 사건이야",
+    "passed": true,
+    "keyword_hit": true,
+    "source_type_hit": true,
+    "era_hit": true,
+    "image_hit": true,
+    "reciprocal_rank": 1.0,
+    "matched_keywords": [
+      "을사늑약",
+      "외교권",
+      "통감부"
+    ],
+    "top_results": [
+      {
+        "rank": 1,
+        "title": "을사늑약(을사조약, 제2차 한일협약)",
+        "source_type": "historical_source",
+        "score": 7.3319,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_121_0030",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 2,
+        "title": "정미조약(제3차 한일협약)",
+        "source_type": "historical_source",
+        "score": 2.7054,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_121_0080",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 3,
+        "title": "제2차 영·일 동맹",
+        "source_type": "historical_source",
+        "score": 2.5081,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_121_0020",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 4,
+        "title": "장지연의 시일야방성대곡",
+        "source_type": "historical_source",
+        "score": 2.2949,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_121_0040",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 5,
+        "title": "1913년 『신한민보』에 실린 한일협약도(韓日脅約圖) 삽화",
+        "source_type": "image_material",
+        "score": 2.1847,
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_060_13700&whereStr=",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_060/ki_060_13700.thumbnail.jpg",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_060/ki_060_13700.jpg"
+      }
+    ]
+  },
+  {
+    "id": "GQ036",
+    "query": "3.1 운동 배경과 영향 알려줘",
+    "passed": true,
+    "keyword_hit": true,
+    "source_type_hit": true,
+    "era_hit": true,
+    "image_hit": true,
+    "reciprocal_rank": 1.0,
+    "matched_keywords": [
+      "민족 자결주의",
+      "대한민국 임시정부"
+    ],
+    "top_results": [
+      {
+        "rank": 1,
+        "title": "대한민국임시정부의 수립과 활동 > 임시정부의 수립과 초기 활동 > 임시정부 수립의 배경 > 세계대전의 종전과 민족자결주의",
+        "source_type": "historical_overview",
+        "score": 5.7002,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_048_0030_0010_0010_0010",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 2,
+        "title": "임시정부 개편 노력",
+        "source_type": "historical_source",
+        "score": 5.4195,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_123_0115",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 3,
+        "title": "임시정부 ‘개조파’와 ‘창조파’",
+        "source_type": "historical_source",
+        "score": 5.0438,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_123_0120",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 4,
+        "title": "3·1운동의 주도와 임시정부 수립 활동",
+        "source_type": "historical_overview",
+        "score": 4.9132,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_051_0050_0020_0010_0030",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 5,
+        "title": "임시정부의 이승만 대통령 탄핵",
+        "source_type": "historical_source",
+        "score": 4.8748,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_123_0130",
+        "thumbnail_url": null,
+        "original_image_url": null
+      }
+    ]
+  },
+  {
+    "id": "GQ037",
+    "query": "대한민국 임시정부의 활동 설명해줘",
+    "passed": true,
+    "keyword_hit": true,
+    "source_type_hit": true,
+    "era_hit": true,
+    "image_hit": true,
+    "reciprocal_rank": 1.0,
+    "matched_keywords": [
+      "임시정부",
+      "상하이"
+    ],
+    "top_results": [
+      {
+        "rank": 1,
+        "title": "대한민국임시정부의 어려운 형편",
+        "source_type": "historical_source",
+        "score": 7.2266,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_126_0055",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 2,
+        "title": "대한민국임시정부의 수립과 활동 > 임시정부의 수립과 초기 활동 > 임시정부 수립의 배경 > 세계대전의 종전과 민족자결주의",
+        "source_type": "historical_overview",
+        "score": 7.1877,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_048_0030_0010_0010_0010",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 3,
+        "title": "대한민국 임시정부 대일 선전 성명서",
+        "source_type": "historical_source",
+        "score": 6.9439,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_127_0020",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 4,
+        "title": "라. 대한민국 임시정부의 수립",
+        "source_type": "historical_overview",
+        "score": 6.0752,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_047_0040_0040_0020_0010_0040",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 5,
+        "title": "임시정부 개편 노력",
+        "source_type": "historical_source",
+        "score": 6.0653,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_123_0115",
+        "thumbnail_url": null,
+        "original_image_url": null
+      }
+    ]
+  },
+  {
+    "id": "GQ038",
+    "query": "광복 이후 좌우 합작 운동 설명해줘",
+    "passed": true,
+    "keyword_hit": true,
+    "source_type_hit": true,
+    "era_hit": true,
+    "image_hit": true,
+    "reciprocal_rank": 1.0,
+    "matched_keywords": [
+      "좌우 합작",
+      "여운형",
+      "김규식"
+    ],
+    "top_results": [
+      {
+        "rank": 1,
+        "title": "좌우 합작 위원회의 좌우 합작 7원칙",
+        "source_type": "historical_source",
+        "score": 4.1938,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_144_0150",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 2,
+        "title": "1930년대 후반기 이후 국내 여성농민조직운동과 조국광복회운동",
+        "source_type": "historical_overview",
+        "score": 3.1197,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_050_0030_0030_0040_0020",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 3,
+        "title": "중도세력과 좌우합작운동",
+        "source_type": "historical_overview",
+        "score": 2.9972,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_052_0030_0020_0030",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 4,
+        "title": "대한 광복회 강령 및 기본 계획",
+        "source_type": "historical_source",
+        "score": 2.4024,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_123_0010",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 5,
+        "title": "대한 독립 농민 총연맹 창립",
+        "source_type": "historical_source",
+        "score": 2.3647,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_158_0040",
+        "thumbnail_url": null,
+        "original_image_url": null
+      }
+    ]
+  },
+  {
+    "id": "GQ039",
+    "query": "6월 민주 항쟁이 뭐야",
+    "passed": true,
+    "keyword_hit": true,
+    "source_type_hit": true,
+    "era_hit": true,
+    "image_hit": true,
+    "reciprocal_rank": 1.0,
+    "matched_keywords": [
+      "6월 민주 항쟁",
+      "직선제",
+      "민주화"
+    ],
+    "top_results": [
+      {
+        "rank": 1,
+        "title": "6·29 민주화 선언",
+        "source_type": "historical_source",
+        "score": 6.4733,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_151_0050",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 2,
+        "title": "5·18 민주화 운동시 광주 시민 궐기문",
+        "source_type": "historical_source",
+        "score": 6.179,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_151_0010",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 3,
+        "title": "5.18민주화운동에 대한 고등법원 및 대법원 판결문",
+        "source_type": "historical_source",
+        "score": 5.7125,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_151_0020",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 4,
+        "title": "6·10 국민 대회 선언",
+        "source_type": "historical_source",
+        "score": 5.4199,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_151_0040",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 5,
+        "title": "현행 대한민국 헌법(1987. 10)",
+        "source_type": "historical_source",
+        "score": 5.3677,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_151_0060",
+        "thumbnail_url": null,
+        "original_image_url": null
+      }
+    ]
+  },
+  {
+    "id": "GQ040",
+    "query": "한국사능력검정시험에서 조선 전기 정치는 어떻게 외우면 좋아?",
+    "passed": true,
+    "keyword_hit": true,
+    "source_type_hit": true,
+    "era_hit": true,
+    "image_hit": true,
+    "reciprocal_rank": 1.0,
+    "matched_keywords": [
+      "조선 전기",
+      "태종",
+      "세종",
+      "성종",
+      "경국대전"
+    ],
+    "top_results": [
+      {
+        "rank": 1,
+        "title": "의정부 서사제",
+        "source_type": "historical_source",
+        "score": 3.4003,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_074_0040",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 2,
+        "title": "통치 구조 > 관료체제의 특징",
+        "source_type": "historical_overview",
+        "score": 3.288,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_023_0020_0020_0010",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 3,
+        "title": "조선의 통치규범",
+        "source_type": "historical_source",
+        "score": 3.0021,
+        "source_url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_074_0070",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 4,
+        "title": "중앙 정치구조 > 정치구조의 정비와 정치기구 > 정치구조의 정비",
+        "source_type": "historical_overview",
+        "score": 2.8522,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_023_0030_0010_0010",
+        "thumbnail_url": null,
+        "original_image_url": null
+      },
+      {
+        "rank": 5,
+        "title": "≪경국대전≫상의 직계아문 > 가. 의정부·6조·승정원·사헌부·사간원",
+        "source_type": "historical_overview",
+        "score": 2.8344,
+        "source_url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_023_0030_0010_0020_0020_0010",
+        "thumbnail_url": null,
+        "original_image_url": null
+      }
+    ]
+  }
+]
