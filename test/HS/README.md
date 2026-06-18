@@ -15,6 +15,12 @@
 
 ## 실행
 
+DB 인프라를 먼저 올릴 때는 프로젝트 루트에서 실행합니다.
+
+```powershell
+docker compose -f storage\docker-compose.yml up -d
+```
+
 ```powershell
 .\.venv\Scripts\python.exe test\HS\run_concept_chat.py "조선 전기 정치 정리해줘"
 ```
@@ -51,7 +57,7 @@ test/HS/
 
 ```text
 1. PostgreSQL documents/document_chunks 테이블 적재
-2. pgvector 또는 Qdrant 임베딩 검색 연결
+2. pgvector 임베딩 검색 연결
 3. LLM 답변 생성기 연결
 4. 문제풀이 기록 기반 context 추가
 5. app/chatbot API로 이동

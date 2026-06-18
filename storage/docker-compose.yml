@@ -5,14 +5,14 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-history_rag}
-      POSTGRES_USER: ${POSTGRES_USER:-history_user}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-history_password}
+      POSTGRES_USER: ${POSTGRES_USER:-himate}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-himate1234}
       TZ: Asia/Seoul
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./storage/postgre/init:/docker-entrypoint-initdb.d:ro
+      - ./init.sql:/docker-entrypoint-initdb.d/01_extensions.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 10s
@@ -26,7 +26,7 @@ services:
     container_name: skn27-neo4j
     restart: unless-stopped
     environment:
-      NEO4J_AUTH: ${NEO4J_USER:-neo4j}/${NEO4J_PASSWORD:-history_password}
+      NEO4J_AUTH: ${NEO4J_USER:-neo4j}/${NEO4J_PASSWORD:-himate1234}
       NEO4J_server_memory_heap_initial__size: ${NEO4J_HEAP_INITIAL:-512m}
       NEO4J_server_memory_heap_max__size: ${NEO4J_HEAP_MAX:-1G}
       NEO4J_server_memory_pagecache_size: ${NEO4J_PAGECACHE:-512m}

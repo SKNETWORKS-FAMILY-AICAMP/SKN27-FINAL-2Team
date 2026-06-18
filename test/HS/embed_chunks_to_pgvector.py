@@ -39,8 +39,8 @@ def connect_db():
         host=os.getenv("POSTGRES_HOST", "localhost"),
         port=int(os.getenv("POSTGRES_PORT", "5432")),
         dbname=os.getenv("POSTGRES_DB", "history_rag"),
-        user=os.getenv("POSTGRES_USER", "history_user"),
-        password=os.getenv("POSTGRES_PASSWORD", "history_password"),
+        user=os.getenv("POSTGRES_USER", "himate"),
+        password=os.getenv("POSTGRES_PASSWORD", "himate1234"),
     )
 
 
