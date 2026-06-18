@@ -181,8 +181,8 @@ def write_jsonl(path: Path, rows: Iterable[dict]) -> int:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--input-dir", type=Path, default=Path("storage/postgre/한국사 이미지 자료"))
-    parser.add_argument("--output-dir", type=Path, default=Path("storage/postgre/processed"))
+    parser.add_argument("--input-dir", type=Path, default=Path("etl/preprocessing/history/raw_data/한국사 이미지 자료"))
+    parser.add_argument("--output-dir", type=Path, default=Path("etl/preprocessing/history/processed"))
     args = parser.parse_args()
 
     args.output_dir.mkdir(parents=True, exist_ok=True)

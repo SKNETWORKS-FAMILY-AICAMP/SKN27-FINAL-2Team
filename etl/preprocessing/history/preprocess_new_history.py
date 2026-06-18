@@ -239,8 +239,8 @@ def write_jsonl(path: Path, rows: Iterable[dict]) -> int:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--input-dir", type=Path, default=Path("storage/postgre/신편 한국사 csv"))
-    parser.add_argument("--output-dir", type=Path, default=Path("storage/postgre/processed"))
+    parser.add_argument("--input-dir", type=Path, default=Path("etl/preprocessing/history/raw_data/신편 한국사 csv"))
+    parser.add_argument("--output-dir", type=Path, default=Path("etl/preprocessing/history/processed"))
     parser.add_argument("--chunk-size", type=int, default=1200)
     parser.add_argument("--chunk-overlap", type=int, default=150)
     args = parser.parse_args()
