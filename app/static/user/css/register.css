@@ -242,3 +242,145 @@ input {
     grid-column: 2;
   }
 }
+
+/* himate landing visual refresh */
+:root {
+  --bg: #ffffff;
+  --ink: #0e0f0c;
+  --muted: #5f665a;
+  --line: #dce4d4;
+  --accent: #163300;
+  --green: #9fe870;
+  --shadow: 0 24px 58px rgba(14, 15, 12, 0.12);
+}
+
+body {
+  background:
+    linear-gradient(180deg, rgba(159, 232, 112, 0.18), transparent 42%),
+    #fff;
+  color: var(--ink);
+  font-family: Arial, "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+  line-height: 1.5;
+}
+
+.auth-card {
+  border-color: var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.96);
+}
+
+.brand {
+  width: auto;
+  height: auto;
+  justify-content: center;
+  margin-bottom: 28px;
+  overflow: visible;
+}
+
+.brand img {
+  display: none;
+}
+
+.brand::after {
+  content: "himate";
+  color: var(--accent);
+  font-size: 32px;
+  line-height: 1;
+  font-weight: 950;
+}
+
+.auth-heading h1 {
+  color: var(--ink);
+  font-size: clamp(38px, 5vw, 58px);
+  line-height: 1.02;
+  font-weight: 950;
+}
+
+.auth-heading p,
+.field label,
+.field > span,
+.agreements label,
+.agreements a,
+.field input::placeholder {
+  color: var(--muted);
+}
+
+.field label,
+.field > span {
+  font-weight: 900;
+}
+
+.field input {
+  border-color: var(--line);
+  border-radius: 8px;
+}
+
+.field input:focus {
+  border-color: var(--green);
+  box-shadow: 0 0 0 4px rgba(159, 232, 112, 0.28);
+}
+
+.agreements {
+  border-top-color: var(--line);
+}
+
+.agreements input {
+  accent-color: var(--green);
+}
+
+.action-button {
+  border-color: #cfd8c7;
+  color: var(--accent);
+}
+
+.submit-button {
+  background: var(--green);
+  color: var(--accent);
+  box-shadow: none;
+}
+
+@media (min-width: 721px) {
+  body {
+    overflow: hidden;
+  }
+
+  .auth-page {
+    min-height: 100svh;
+    padding: 16px;
+  }
+
+  .auth-card {
+    padding: 22px 34px 24px;
+  }
+
+  .brand {
+    margin-bottom: 16px;
+  }
+
+  .auth-heading h1 {
+    font-size: clamp(34px, 4vw, 48px);
+  }
+
+  .auth-heading p {
+    margin-bottom: 16px;
+  }
+
+  .register-form {
+    gap: 10px;
+  }
+
+  .field {
+    gap: 6px;
+  }
+
+  .field input,
+  .action-button,
+  .submit-button {
+    height: 42px;
+  }
+
+  .agreements {
+    gap: 6px;
+    padding-top: 8px;
+  }
+}

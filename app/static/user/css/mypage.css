@@ -608,3 +608,356 @@ a {
     justify-items: center;
   }
 }
+
+/* himate landing visual refresh */
+:root {
+  --bg: #ffffff;
+  --panel: #ffffff;
+  --ink: #0e0f0c;
+  --muted: #5f665a;
+  --line: #dce4d4;
+  --accent: #163300;
+  --accent-soft: #eef5e8;
+  --green: #9fe870;
+  --shadow: 0 24px 58px rgba(14, 15, 12, 0.12);
+}
+
+body {
+  background: #fff;
+  color: var(--ink);
+  font-family: Arial, "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+  line-height: 1.5;
+}
+
+.site-header {
+  min-height: 64px;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  border-bottom-color: rgba(220, 228, 212, 0.8);
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.brand {
+  width: auto;
+  height: auto;
+  overflow: visible;
+}
+
+.brand img {
+  display: none;
+}
+
+.brand::after {
+  content: "himate";
+  color: var(--accent);
+  font-size: 22px;
+  line-height: 1;
+  font-weight: 950;
+}
+
+.main-nav a {
+  border-radius: 999px;
+  color: #24301f;
+}
+
+.main-nav a:hover,
+.main-nav a.active {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.outline-button,
+.ghost-button {
+  border-radius: 999px;
+}
+
+.outline-button {
+  border-color: #cfd8c7;
+  color: var(--accent);
+}
+
+.ghost-button {
+  border-color: transparent;
+  background: var(--green);
+  color: var(--accent);
+}
+
+.mypage {
+  background:
+    linear-gradient(180deg, rgba(159, 232, 112, 0.16), transparent 260px),
+    #fff;
+}
+
+.page-title,
+.summary-strip,
+.panel {
+  border-color: var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.96);
+}
+
+.page-title h1,
+.summary-strip strong,
+.panel-heading h2,
+.time-metric strong,
+.metric strong,
+.chatbot-stats strong,
+.donut-chart strong {
+  color: var(--ink);
+  font-weight: 950;
+}
+
+.page-title h1 {
+  font-size: clamp(46px, 6vw, 72px);
+  line-height: 0.98;
+}
+
+.page-title p,
+.summary-strip span,
+.panel-heading a,
+.time-metric span,
+.chatbot-panel p,
+.weak-list em,
+.chatbot-stats span,
+.plan-item span,
+.calendar-week.labels span {
+  color: var(--muted);
+}
+
+.quick-actions a,
+.time-metric,
+.chatbot-stats div,
+.plan-item,
+.calendar,
+.calendar-week .planned {
+  background: #f4f8ef;
+  border-color: var(--line);
+  color: var(--accent);
+}
+
+.quick-actions a {
+  border-radius: 999px;
+}
+
+.section-mark,
+.weak-list strong,
+.plan-item strong,
+.calendar-week span {
+  color: var(--accent);
+}
+
+.weak-list span,
+.mini-progress span,
+.plan-item.done i,
+.calendar-week .today,
+.calendar-week .done {
+  background: var(--green);
+  color: var(--accent);
+}
+
+.mini-progress {
+  background: #dce4d4;
+}
+
+.donut-chart::after {
+  background: #fff;
+}
+
+@media (min-width: 981px) {
+  body {
+    overflow: hidden;
+  }
+
+  .site-header {
+    min-height: 56px;
+    padding-inline: clamp(18px, 4vw, 56px);
+  }
+
+  .main-nav a,
+  .outline-button,
+  .ghost-button {
+    min-height: 36px;
+    height: 36px;
+    padding-inline: 14px;
+    font-size: 13px;
+  }
+
+  .mypage {
+    height: calc(100svh - 56px);
+    display: grid;
+    grid-template-rows: auto auto auto 1fr auto;
+    gap: 10px;
+    padding: 14px clamp(18px, 4vw, 42px);
+    overflow: hidden;
+  }
+
+  .page-title {
+    margin: 0;
+    padding: 16px 24px;
+  }
+
+  .page-title h1 {
+    font-size: clamp(34px, 4vw, 48px);
+    line-height: 1;
+  }
+
+  .summary-strip,
+  .quick-actions,
+  .analytics-grid {
+    margin: 0;
+  }
+
+  .summary-strip article {
+    min-height: 64px;
+    padding: 10px 16px;
+  }
+
+  .summary-strip strong {
+    font-size: 22px;
+  }
+
+  .quick-actions {
+    gap: 8px;
+  }
+
+  .quick-actions a {
+    height: 38px;
+    font-size: 13px;
+  }
+
+  .analytics-grid,
+  .bottom-grid {
+    gap: 10px;
+  }
+
+  .metric-panel,
+  .weakness-panel,
+  .donut-panel,
+  .chatbot-panel,
+  .plan-panel,
+  .calendar-panel {
+    padding: 14px;
+  }
+
+  .panel-heading,
+  .panel-heading.compact {
+    margin-bottom: 10px;
+  }
+
+  .panel-heading h2 {
+    font-size: 18px;
+  }
+
+  .panel-heading.compact h2 {
+    font-size: 16px;
+  }
+
+  .time-metric {
+    min-height: 76px;
+    padding: 12px;
+  }
+
+  .time-metric strong {
+    font-size: 26px;
+  }
+
+  .weak-list {
+    gap: 6px;
+  }
+
+  .weak-list div {
+    gap: 7px;
+  }
+
+  .donut-layout {
+    grid-template-columns: 96px 1fr;
+    gap: 10px;
+  }
+
+  .donut-chart {
+    width: 96px;
+    height: 96px;
+  }
+
+  .donut-chart::after {
+    inset: 15px;
+  }
+
+  .chatbot-stats {
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+
+  .chatbot-stats div {
+    min-height: 58px;
+    padding: 8px;
+  }
+
+  .chatbot-stats strong {
+    font-size: 17px;
+  }
+
+  .bottom-grid {
+    min-height: 0;
+  }
+
+  .plan-list {
+    gap: 8px;
+  }
+
+  .plan-item {
+    padding: 10px 12px;
+  }
+
+  .calendar {
+    gap: 5px;
+    padding: 10px;
+  }
+
+  .calendar-week {
+    gap: 5px;
+  }
+
+  .calendar-week span {
+    min-height: 30px;
+  }
+}
+
+/* Mypage can scroll naturally because it has dashboard-level content. */
+@media (min-width: 981px) {
+  body {
+    overflow: auto;
+  }
+
+  .mypage {
+    height: auto;
+    min-height: calc(100svh - 56px);
+    display: block;
+    overflow: visible;
+    padding: 32px clamp(18px, 4vw, 42px) 54px;
+  }
+
+  .page-title {
+    margin-bottom: 20px;
+    padding: 24px 32px;
+  }
+
+  .summary-strip,
+  .quick-actions,
+  .analytics-grid {
+    margin-bottom: 18px;
+  }
+
+  .analytics-grid,
+  .bottom-grid {
+    gap: 18px;
+  }
+
+  .metric-panel,
+  .weakness-panel,
+  .donut-panel,
+  .chatbot-panel,
+  .plan-panel,
+  .calendar-panel {
+    padding: 24px;
+  }
+}

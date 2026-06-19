@@ -537,3 +537,287 @@ a {
     grid-template-columns: 1fr;
   }
 }
+
+/* himate landing visual refresh */
+:root {
+  --bg: #ffffff;
+  --ink: #0e0f0c;
+  --muted: #5f665a;
+  --line: #dce4d4;
+  --accent: #163300;
+  --accent-soft: #eef5e8;
+  --green: #9fe870;
+  --shadow: 0 24px 58px rgba(14, 15, 12, 0.12);
+}
+
+body {
+  background: #fff;
+  color: var(--ink);
+  font-family: Arial, "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+  line-height: 1.5;
+}
+
+.site-header {
+  min-height: 64px;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  border-bottom-color: rgba(220, 228, 212, 0.8);
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.brand,
+.site-brand,
+.site-header .brand {
+  width: auto;
+  height: auto;
+  overflow: visible;
+}
+
+.brand img,
+.site-brand img,
+.site-header .brand img {
+  display: none;
+}
+
+.brand::after,
+.site-brand::after {
+  content: "himate";
+  color: var(--accent);
+  font-size: 22px;
+  line-height: 1;
+  font-weight: 950;
+}
+
+.main-nav a {
+  border-radius: 999px;
+  color: #24301f;
+}
+
+.main-nav a:hover,
+.main-nav a.active {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.ghost-button {
+  border-color: transparent;
+  border-radius: 999px;
+  background: var(--green);
+  color: var(--accent);
+}
+
+.exam-page {
+  min-height: calc(100svh - 64px);
+  background:
+    linear-gradient(180deg, rgba(159, 232, 112, 0.16), transparent 34%),
+    #fff;
+}
+
+.exam-shell,
+.question-card,
+.timer-card,
+.number-card,
+.progress-box {
+  border-color: var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.96);
+}
+
+.exam-title h1,
+.question-card h2,
+.number-card h2,
+.timer-card strong {
+  color: var(--ink);
+  font-weight: 950;
+}
+
+.exam-title h1 {
+  font-size: clamp(38px, 5vw, 58px);
+}
+
+.exam-title span,
+.progress-box strong,
+.progress-box em,
+.question-type,
+.question-source,
+.timer-card span {
+  color: var(--muted);
+}
+
+.progress-box,
+.question-source,
+.timer-card,
+.number-card {
+  background: #f4f8ef;
+}
+
+.progress-track {
+  background: #dce4d4;
+}
+
+.progress-track span,
+.question-badge,
+.submit-button,
+.number-grid button.active {
+  background: var(--green);
+  color: var(--accent);
+}
+
+.question-badge,
+.question-type,
+.nav-button,
+.submit-button,
+.ghost-button {
+  border-radius: 999px;
+}
+
+.question-label,
+.choice span {
+  color: var(--accent);
+}
+
+.choice {
+  border-color: var(--line);
+  color: var(--ink);
+}
+
+.choice span {
+  background: var(--accent-soft);
+}
+
+.choice.selected {
+  border-color: var(--green);
+  background: #f4f8ef;
+  box-shadow: 0 0 0 3px rgba(159, 232, 112, 0.22);
+}
+
+.choice.selected span,
+.number-grid button.answered:not(.active) {
+  background: var(--green);
+  color: var(--accent);
+}
+
+.nav-button {
+  color: var(--accent);
+}
+
+.submit-button {
+  box-shadow: none;
+}
+
+@media (min-width: 901px) {
+  body {
+    overflow: hidden;
+  }
+
+  .site-header {
+    min-height: 56px;
+    padding-inline: clamp(18px, 4vw, 56px);
+  }
+
+  .main-nav a,
+  .ghost-button {
+    min-height: 36px;
+    height: 36px;
+    padding-inline: 14px;
+    font-size: 13px;
+  }
+
+  .exam-page {
+    min-height: calc(100svh - 56px);
+    height: calc(100svh - 56px);
+    padding: 12px clamp(18px, 4vw, 42px);
+    overflow: hidden;
+  }
+
+  .exam-shell {
+    min-height: 0;
+    height: 100%;
+    gap: 10px;
+    padding: 16px;
+  }
+
+  .exam-header {
+    gap: 14px;
+    padding-bottom: 10px;
+  }
+
+  .exam-title h1 {
+    font-size: clamp(30px, 4vw, 42px);
+  }
+
+  .progress-box {
+    padding: 9px 12px;
+  }
+
+  .exam-layout {
+    gap: 12px;
+  }
+
+  .question-panel {
+    gap: 10px;
+  }
+
+  .question-badge,
+  .question-type {
+    height: 30px;
+    font-size: 12px;
+  }
+
+  .question-card {
+    gap: 10px;
+    padding: 16px;
+  }
+
+  .question-card h2 {
+    font-size: 21px;
+    line-height: 1.28;
+  }
+
+  .question-source {
+    padding: 12px 14px;
+    font-size: 14px;
+  }
+
+  .choice-list {
+    gap: 7px;
+  }
+
+  .choice {
+    min-height: 40px;
+  }
+
+  .question-actions {
+    gap: 10px;
+  }
+
+  .nav-button,
+  .submit-button {
+    height: 42px;
+  }
+
+  .side-panel {
+    gap: 10px;
+    padding-left: 12px;
+  }
+
+  .timer-card {
+    padding: 14px;
+  }
+
+  .timer-card strong {
+    font-size: 30px;
+  }
+
+  .number-card {
+    padding: 14px;
+  }
+
+  .number-card h2 {
+    margin-bottom: 10px;
+    font-size: 18px;
+  }
+
+  .number-grid {
+    gap: 7px;
+  }
+}
