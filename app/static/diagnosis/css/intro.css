@@ -554,3 +554,247 @@ a {
     flex-direction: column;
   }
 }
+
+/* himate landing visual refresh */
+:root {
+  --bg: #ffffff;
+  --ink: #0e0f0c;
+  --muted: #5f665a;
+  --line: #dce4d4;
+  --accent: #163300;
+  --accent-soft: #eef5e8;
+  --green: #9fe870;
+  --shadow: 0 24px 58px rgba(14, 15, 12, 0.12);
+}
+
+body {
+  background: #fff;
+  color: var(--ink);
+  font-family: Arial, "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+  line-height: 1.5;
+}
+
+.site-header {
+  min-height: 64px;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  border-bottom-color: rgba(220, 228, 212, 0.8);
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.brand {
+  width: auto;
+  height: auto;
+  overflow: visible;
+}
+
+.brand img {
+  display: none;
+}
+
+.brand::after {
+  content: "himate";
+  color: var(--accent);
+  font-size: 22px;
+  line-height: 1;
+  font-weight: 950;
+}
+
+.main-nav a {
+  border-radius: 999px;
+  color: #24301f;
+}
+
+.main-nav a:hover,
+.main-nav a.active {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.ghost-button {
+  border-color: transparent;
+  border-radius: 999px;
+  background: var(--green);
+  color: var(--accent);
+}
+
+.diagnosis-page {
+  min-height: calc(100svh - 64px);
+  background:
+    linear-gradient(180deg, rgba(159, 232, 112, 0.18), transparent 34%),
+    #fff;
+}
+
+.intro-card,
+.notice-grid {
+  border-color: var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.96);
+}
+
+.intro-heading h1,
+.notice-section h2,
+.notice-grid strong,
+.info-table strong {
+  color: var(--ink);
+  font-weight: 950;
+}
+
+.intro-heading h1 {
+  font-size: clamp(44px, 7vw, 78px);
+  line-height: 0.98;
+}
+
+.intro-heading p,
+.notice-grid p,
+.guide-copy p,
+.info-table span {
+  color: var(--muted);
+}
+
+.guide-copy article,
+.info-table,
+.step-flow article {
+  border-color: var(--line);
+  background: #fff;
+}
+
+.guide-copy strong,
+.step-flow article {
+  background: #f4f8ef;
+}
+
+.guide-copy strong,
+.step-flow strong {
+  color: var(--accent);
+}
+
+.step-flow span,
+.start-button {
+  background: var(--green);
+  color: var(--accent);
+}
+
+.start-button {
+  border-radius: 999px;
+  box-shadow: none;
+}
+
+.hero-illust {
+  display: none;
+}
+
+.intro-hero {
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 901px) {
+  body {
+    overflow: hidden;
+  }
+
+  .site-header {
+    min-height: 56px;
+    padding-inline: clamp(18px, 4vw, 56px);
+  }
+
+  .main-nav a,
+  .ghost-button {
+    min-height: 36px;
+    height: 36px;
+    padding-inline: 14px;
+    font-size: 13px;
+  }
+
+  .diagnosis-page {
+    min-height: calc(100svh - 56px);
+    padding: 12px clamp(18px, 4vw, 42px);
+  }
+
+  .intro-layout {
+    gap: 10px;
+  }
+
+  .intro-card {
+    gap: 10px;
+    padding: 18px 24px;
+  }
+
+  .intro-hero {
+    min-height: auto;
+  }
+
+  .intro-heading h1 {
+    font-size: clamp(36px, 5vw, 56px);
+  }
+
+  .intro-heading p {
+    margin-top: 8px;
+    font-size: 14px;
+  }
+
+  .step-flow {
+    gap: 8px;
+  }
+
+  .step-flow article {
+    min-height: 64px;
+    padding: 9px;
+  }
+
+  .intro-content {
+    gap: 18px;
+  }
+
+  .guide-copy {
+    gap: 6px;
+  }
+
+  .guide-copy article {
+    min-height: 38px;
+  }
+
+  .guide-copy strong {
+    font-size: 14px;
+  }
+
+  .guide-copy p {
+    font-size: 13px;
+  }
+
+  .info-table {
+    min-height: 150px;
+  }
+
+  .info-table article {
+    padding: 16px 12px;
+  }
+
+  .info-table strong {
+    font-size: 20px;
+  }
+
+  .notice-section {
+    gap: 6px;
+  }
+
+  .notice-section h2 {
+    font-size: 20px;
+  }
+
+  .notice-grid article {
+    min-height: 74px;
+    padding: 12px 20px;
+  }
+
+  .notice-grid strong {
+    font-size: 18px;
+  }
+
+  .notice-grid p {
+    font-size: 13px;
+  }
+
+  .start-button {
+    height: 44px;
+  }
+}

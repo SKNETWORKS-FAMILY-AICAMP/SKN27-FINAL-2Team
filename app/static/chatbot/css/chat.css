@@ -538,3 +538,248 @@
       }
       td { padding-top: 11px; }
     }
+
+    /* himate landing visual refresh */
+    :root {
+      --bg: #ffffff;
+      --panel: #ffffff;
+      --ink: #0e0f0c;
+      --muted: #5f665a;
+      --line: #dce4d4;
+      --label: #f4f8ef;
+      --accent: #163300;
+      --accent-soft: #eef5e8;
+      --user: #163300;
+      --soft: #f4f8ef;
+      --point: #fff9d8;
+      --point-line: #eadf94;
+      --danger: #b42318;
+      --shadow: 0 24px 58px rgba(14, 15, 12, 0.12);
+    }
+
+    body {
+      background: #fff;
+      color: var(--ink);
+      font-family: Arial, "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+      line-height: 1.5;
+    }
+
+    .chat-page {
+      background:
+        linear-gradient(180deg, rgba(159, 232, 112, 0.16), transparent 260px),
+        #fff;
+      border-color: var(--line);
+    }
+
+    .chat-header {
+      height: 64px;
+      background: rgba(255, 255, 255, 0.92);
+      border-bottom-color: var(--line);
+    }
+
+    .brand-logo {
+      display: none;
+    }
+
+    .chat-header::before {
+      content: "himate";
+      color: var(--accent);
+      font-size: 22px;
+      line-height: 1;
+      font-weight: 950;
+    }
+
+    .header-meta,
+    .mode-desc,
+    .guide-desc,
+    .side-hero-copy,
+    .sources,
+    .loading {
+      color: var(--muted);
+    }
+
+    .left-sidebar,
+    .right-sidebar {
+      background: #f7faf4;
+    }
+
+    .side-title,
+    .mode-name,
+    .guide-name,
+    .side-hero-title,
+    .bot-label,
+    .image-meta strong {
+      color: var(--accent);
+    }
+
+    .mode-card,
+    .guide-card,
+    .side-hero,
+    .bot .bubble,
+    .image-card,
+    .composer-box {
+      border-color: var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .mode-card.active,
+    .guide-card.active {
+      border-color: var(--green, #9fe870);
+      background: var(--accent-soft);
+      box-shadow: none;
+    }
+
+    .side-hero {
+      display: none;
+    }
+
+    .user .bubble {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .bot-label {
+      background: var(--accent-soft);
+      border-bottom-color: var(--line);
+      font-weight: 900;
+    }
+
+    .bot-dot,
+    .send {
+      background: #9fe870;
+      color: var(--accent);
+    }
+
+    .avatar {
+      display: none;
+    }
+
+    .message.bot {
+      gap: 0;
+    }
+
+    .title,
+    .section-title,
+    .exam h2,
+    .sources h2 {
+      color: var(--ink);
+      font-weight: 950;
+    }
+
+    .summary {
+      border-left-color: #9fe870;
+      background: var(--soft);
+      color: var(--muted);
+    }
+
+    th {
+      background: var(--label);
+      color: var(--accent);
+    }
+
+    td {
+      color: var(--ink);
+    }
+
+    .exam {
+      border-color: var(--point-line);
+      border-radius: 8px;
+    }
+
+    .composer {
+      background: #fff;
+      border-top-color: var(--line);
+    }
+
+    .question-input::placeholder {
+      color: #8b9486;
+    }
+
+    @media (min-width: 901px) {
+      .chat-header {
+        height: 56px;
+        padding-inline: 22px;
+      }
+
+      .left-sidebar,
+      .right-sidebar {
+        padding: 14px;
+      }
+
+      .chat-layout {
+        grid-template-columns: 220px minmax(0, 1fr) 260px;
+      }
+
+      .mode-list,
+      .guide-list {
+        gap: 8px;
+      }
+
+      .mode-card,
+      .guide-card {
+        padding: 10px;
+      }
+
+      .mode-name,
+      .guide-name {
+        margin-bottom: 2px;
+      }
+
+      .mode-desc,
+      .guide-desc {
+        font-size: 12px;
+      }
+
+      .chat-stream {
+        padding: 18px 22px;
+      }
+
+      .message {
+        margin-bottom: 16px;
+      }
+
+      .note {
+        padding: 18px 22px 20px;
+      }
+
+      .title {
+        font-size: 26px;
+      }
+
+      .summary {
+        margin-bottom: 18px;
+      }
+
+      .section {
+        margin-top: 20px;
+      }
+
+      th,
+      td {
+        padding: 9px 12px;
+        font-size: 14px;
+      }
+
+      .exam {
+        margin-top: 20px;
+        padding: 12px 14px;
+      }
+
+      .composer {
+        padding: 10px 16px;
+      }
+
+      .composer-box {
+        padding: 8px 10px;
+      }
+
+      .question-input {
+        min-height: 32px;
+      }
+
+      .send {
+        width: 34px;
+        height: 34px;
+      }
+    }
