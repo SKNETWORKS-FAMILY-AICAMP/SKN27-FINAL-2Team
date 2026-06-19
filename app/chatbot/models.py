@@ -14,7 +14,7 @@ class ChatSessions(models.Model):
     turn_count = models.IntegerField()
     status = models.CharField(max_length=20)
     created_at = models.DateTimeField()
-    user = models.ForeignKey('UserAccounts', models.DO_NOTHING)
+    user = models.ForeignKey('user.UserAccounts', models.DO_NOTHING)
 
     class Meta:
         managed = False

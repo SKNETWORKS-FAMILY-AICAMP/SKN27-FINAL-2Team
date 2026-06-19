@@ -39,7 +39,7 @@ class QuestionOptions(models.Model):
 
 class SolveSessions(models.Model):
     session_id = models.BigAutoField(primary_key=True)
-    user = models.ForeignKey('UserAccounts', models.DO_NOTHING)
+    user = models.ForeignKey('user.UserAccounts', models.DO_NOTHING)
     session_type = models.CharField(max_length=20)
     total_count = models.IntegerField()
     elapsed_sec = models.IntegerField(blank=True, null=True)
