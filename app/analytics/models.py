@@ -10,7 +10,7 @@ from django.db import models
 
 class StudyPlanMypage(models.Model):
     studyplan_id = models.BigAutoField(primary_key=True)
-    user = models.ForeignKey('user.UserAccounts', models.DO_NOTHING)
+    user = models.ForeignKey('UserAccounts', models.DO_NOTHING)
     study_plans = models.TextField(blank=True, null=True)
     study_plan_items = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField()
@@ -23,7 +23,7 @@ class StudyPlanMypage(models.Model):
 
 class NoteMypage(models.Model):
     note_id = models.BigAutoField(primary_key=True)
-    user = models.ForeignKey('user.UserAccounts', models.DO_NOTHING)
+    user = models.ForeignKey('UserAccounts', models.DO_NOTHING)
     created_at = models.DateTimeField()
     modified_at = models.DateTimeField()
     title = models.CharField(max_length=50)
