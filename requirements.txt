@@ -1,6 +1,7 @@
 python-dotenv==1.2.2
 
 django==6.0.6
+djangorestframework
 
 psycopg2-binary==2.9.12
 neo4j==6.2.0
