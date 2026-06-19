@@ -92,3 +92,35 @@ select {
   color: #ffffff !important;
   box-shadow: 0 16px 34px rgba(47, 67, 183, 0.3) !important;
 }
+
+.auth-messages,
+.verification-message {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 14px;
+}
+
+.auth-message,
+.verification-message {
+  border: 1px solid var(--hm-line);
+  border-radius: 14px;
+  padding: 10px 12px;
+  background: var(--hm-soft);
+  color: var(--hm-green);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.auth-message.error,
+.verification-message.error {
+  border-color: #ffc4c4;
+  background: #fff1f1;
+  color: #b42318;
+}
+
+.auth-message.success,
+.verification-message.success {
+  border-color: var(--hm-lime);
+  background: #f2ffe8;
+  color: var(--hm-green);
+}

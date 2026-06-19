@@ -46,15 +46,25 @@
           </div>
         </aside>
 
-        <div class="chat-stream" id="chatStream">
-          <div class="message bot">
-            <div class="avatar"><img src="{% static 'chatbot/assets/main_image.png' %}" alt="" /></div>
-            <div class="bubble">
-              <div class="bot-label"><span class="bot-dot"></span><span>himate</span></div>
-              <div class="markdown-answer">안녕하세요. 한국사 개념이나 한능검 문제를 질문해 주세요.</div>
+        <section class="chat-panel" aria-label="챗봇 대화">
+          <div class="chat-stream" id="chatStream">
+            <div class="message bot">
+              <div class="avatar"><img src="{% static 'chatbot/assets/main_image.png' %}" alt="" /></div>
+              <div class="bubble">
+                <div class="bot-label"><span class="bot-dot"></span><span>himate</span></div>
+                <div class="markdown-answer">안녕하세요. 한국사 개념이나 한능검 문제를 질문해 주세요.</div>
+              </div>
             </div>
           </div>
-        </div>
+
+          <form class="composer" id="chatForm">
+            {% csrf_token %}
+            <div class="composer-box">
+              <textarea class="question-input" id="questionInput" rows="1" placeholder="한국사 개념을 질문해 주세요. 예: 지눌의 업적"></textarea>
+              <button class="send" id="sendButton" type="submit">↑</button>
+            </div>
+          </form>
+        </section>
 
         <aside class="right-sidebar" aria-label="챗봇 이용방법">
           <h2 class="side-title">챗봇 이용방법</h2>
@@ -84,13 +94,6 @@
       </div>
     </section>
 
-    <form class="composer" id="chatForm">
-      {% csrf_token %}
-      <div class="composer-box">
-        <textarea class="question-input" id="questionInput" rows="1" placeholder="한국사 개념을 질문해 주세요. 예: 지눌의 업적"></textarea>
-        <button class="send" id="sendButton" type="submit">↑</button>
-      </div>
-    </form>
   </main>
 
   <script>
@@ -385,4 +388,5 @@
   </script>
 </body>
 </html>
+
 

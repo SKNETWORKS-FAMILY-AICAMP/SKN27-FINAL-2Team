@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="ko">
 <head>
   <meta charset="utf-8" />
@@ -34,7 +34,16 @@
           <p>이메일 아이디로 계정을 만들고 맞춤 학습을 시작하세요.</p>
         </div>
 
+        {% if messages %}
+          <div class="auth-messages" role="status" aria-live="polite">
+            {% for message in messages %}
+              <p class="auth-message {{ message.tags }}">{{ message }}</p>
+            {% endfor %}
+          </div>
+        {% endif %}
+
         <form class="register-form" action="#" method="post">
+          {% csrf_token %}
           <div class="field">
             <label for="email">이메일 아이디</label>
             <div class="input-action">
@@ -46,10 +55,20 @@
           <div class="field verification-field" id="verificationField" hidden>
             <label for="verificationCode">인증번호</label>
             <div class="input-action">
-              <input id="verificationCode" type="text" name="verification_code" inputmode="numeric" placeholder="인증번호를 입력하세요." />
-              <button class="action-button" type="button">인증번호 확인</button>
+              <input id="verificationCode" type="text" name="verification_code" inputmode="numeric" maxlength="6" placeholder="인증번호를 입력하세요." />
+              <button class="action-button" id="verifyCodeButton" type="button">인증번호 확인</button>
             </div>
           </div>
+          <p class="verification-message" id="verificationMessage" aria-live="polite"></p>
+
+          <div class="field">
+            <label for="nickname">닉네임</label>
+            <div class="input-action">
+              <input id="nickname" type="text" name="nickname" maxlength="30" autocomplete="nickname" placeholder="닉네임을 입력하세요." required />
+              <button class="action-button" id="checkNicknameButton" type="button">중복확인</button>
+            </div>
+          </div>
+          <p class="verification-message" id="nicknameMessage" aria-live="polite"></p>
 
           <label class="field" for="password">
             <span>비밀번호</span>
@@ -97,12 +116,148 @@
     const sendCodeButton = document.getElementById("sendCodeButton");
     const verificationField = document.getElementById("verificationField");
     const verificationCode = document.getElementById("verificationCode");
+    const verifyCodeButton = document.getElementById("verifyCodeButton");
+    const checkNicknameButton = document.getElementById("checkNicknameButton");
 
-    sendCodeButton.addEventListener("click", () => {
-      verificationField.hidden = false;
-      sendCodeButton.textContent = "재발송";
-      verificationCode.focus();
+    const emailInput = document.getElementById("email");
+    const nicknameInput = document.getElementById("nickname");
+    const csrfToken = document.querySelector("[name=csrfmiddlewaretoken]").value;
+    const verificationMessage = document.getElementById("verificationMessage");
+    const nicknameMessage = document.getElementById("nicknameMessage");
+    let isNicknameChecked = false;
+    let checkedNickname = "";
+
+    nicknameInput.addEventListener("input", () => {
+      isNicknameChecked = false;
+      checkedNickname = "";
+      nicknameMessage.textContent = "";
+      nicknameMessage.className = "verification-message";
+    });
+
+    sendCodeButton.addEventListener("click", async () => {
+      const email = emailInput.value.trim();
+      if (!email) {
+        verificationMessage.textContent = "이메일을 먼저 입력해 주세요.";
+        verificationMessage.className = "verification-message error";
+        emailInput.focus();
+        return;
+      }
+
+      sendCodeButton.disabled = true;
+      sendCodeButton.textContent = "발송 중";
+
+      try {
+        const response = await fetch("/user/send-verification-code/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": csrfToken,
+          },
+          body: JSON.stringify({ email }),
+        });
+        const data = await response.json();
+        verificationMessage.textContent = data.message || "인증번호 발송 요청을 처리했습니다.";
+        verificationMessage.className = response.ok
+          ? "verification-message success"
+          : "verification-message error";
+
+        if (response.ok) {
+          verificationField.hidden = false;
+          sendCodeButton.textContent = "재발송";
+          verificationCode.focus();
+        } else {
+          sendCodeButton.textContent = "인증번호 발송";
+        }
+      } catch (error) {
+        verificationMessage.textContent = "인증번호 발송 중 오류가 발생했습니다.";
+        verificationMessage.className = "verification-message error";
+        sendCodeButton.textContent = "인증번호 발송";
+      } finally {
+        sendCodeButton.disabled = false;
+      }
+    });
+
+    verifyCodeButton.addEventListener("click", async () => {
+      const email = emailInput.value.trim();
+      const code = verificationCode.value.trim();
+      if (!email || !code) {
+        verificationMessage.textContent = "이메일과 인증번호를 입력해 주세요.";
+        verificationMessage.className = "verification-message error";
+        return;
+      }
+
+      verifyCodeButton.disabled = true;
+      try {
+        const response = await fetch("/user/verify-verification-code/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": csrfToken,
+          },
+          body: JSON.stringify({ email, code }),
+        });
+        const data = await response.json();
+        verificationMessage.textContent = data.message || "인증번호 확인을 처리했습니다.";
+        verificationMessage.className = response.ok
+          ? "verification-message success"
+          : "verification-message error";
+      } catch (error) {
+        verificationMessage.textContent = "인증번호 확인 중 오류가 발생했습니다.";
+        verificationMessage.className = "verification-message error";
+      } finally {
+        verifyCodeButton.disabled = false;
+      }
+    });
+
+    checkNicknameButton.addEventListener("click", async () => {
+      const nickname = nicknameInput.value.trim();
+      if (!nickname) {
+        nicknameMessage.textContent = "닉네임을 입력해 주세요.";
+        nicknameMessage.className = "verification-message error";
+        nicknameInput.focus();
+        return;
+      }
+
+      checkNicknameButton.disabled = true;
+      checkNicknameButton.textContent = "확인 중";
+
+      try {
+        const response = await fetch("/user/check-nickname/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": csrfToken,
+          },
+          body: JSON.stringify({ nickname }),
+        });
+        const data = await response.json();
+        nicknameMessage.textContent = data.message || "닉네임 중복확인을 처리했습니다.";
+        nicknameMessage.className = response.ok
+          ? "verification-message success"
+          : "verification-message error";
+        isNicknameChecked = response.ok;
+        checkedNickname = response.ok ? nickname : "";
+      } catch (error) {
+        nicknameMessage.textContent = "닉네임 중복확인 중 오류가 발생했습니다.";
+        nicknameMessage.className = "verification-message error";
+        isNicknameChecked = false;
+        checkedNickname = "";
+      } finally {
+        checkNicknameButton.disabled = false;
+        checkNicknameButton.textContent = "중복확인";
+      }
+    });
+
+    document.querySelector(".register-form").addEventListener("submit", (event) => {
+      const nickname = nicknameInput.value.trim();
+      if (!isNicknameChecked || checkedNickname !== nickname) {
+        event.preventDefault();
+        nicknameMessage.textContent = "닉네임 중복확인을 먼저 해주세요.";
+        nicknameMessage.className = "verification-message error";
+        nicknameInput.focus();
+      }
     });
   </script>
 </body>
 </html>
+
