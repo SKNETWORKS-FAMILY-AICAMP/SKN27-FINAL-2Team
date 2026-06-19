@@ -14,7 +14,7 @@
     </a>
     <nav class="main-nav" aria-label="학습 메뉴">
       <a href="/diagnosis/">진단평가</a>
-      <a href="#">문제풀이</a>
+      <a href="/question/">문제풀이</a>
       <a href="/chatbot/">챗봇</a>
       <a class="active" href="/user/mypage/">나의 학습실</a>
     </nav>
@@ -47,7 +47,7 @@
       <article class="panel metric-panel">
         <div class="panel-heading compact">
           <h2>평균 풀이시간</h2>
-          <a href="#">자세히 보기</a>
+
         </div>
         <div class="time-metric">
           <strong>02:34</strong>
@@ -59,7 +59,7 @@
       <article class="panel weakness-panel">
         <div class="panel-heading compact">
           <h2>취약점 분석</h2>
-          <a href="#">전체 목록</a>
+
         </div>
         <div class="weak-list">
           <div><span>1</span><strong>해방 직후 정세</strong><em>28%</em></div>
@@ -124,10 +124,28 @@
           <a href="#">월간 보기</a>
         </div>
         <div class="calendar">
+          <div class="calendar-top">
+            <div>
+              <span class="calendar-month">2026. 06</span>
+              <strong>이번 달 학습 리듬</strong>
+            </div>
+            <div class="calendar-streak"><span>12</span>일 연속</div>
+          </div>
           <div class="calendar-week labels"><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span><span>일</span></div>
-          <div class="calendar-week"><span>10</span><span>11</span><span class="done">12</span><span>13</span><span class="done">14</span><span>15</span><span class="today">16</span></div>
-          <div class="calendar-week"><span>17</span><span class="planned">18</span><span>19</span><span class="planned">20</span><span>21</span><span>22</span><span>23</span></div>
-          <div class="calendar-week"><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span></div>
+          <div class="calendar-week">
+            <span>10</span><span>11</span><span class="done">12<em>완료</em></span><span>13</span><span class="done">14<em>완료</em></span><span>15</span><span class="today">16<em>오늘</em></span>
+          </div>
+          <div class="calendar-week">
+            <span>17</span><span class="planned">18<em>예정</em></span><span>19</span><span class="planned">20<em>예정</em></span><span>21</span><span>22</span><span>23</span>
+          </div>
+          <div class="calendar-week">
+            <span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span>
+          </div>
+          <div class="calendar-legend" aria-label="달력 범례">
+            <span><i class="done-dot"></i>학습 완료</span>
+            <span><i class="planned-dot"></i>학습 예정</span>
+            <span><i class="today-dot"></i>오늘</span>
+          </div>
         </div>
       </section>
     </section>

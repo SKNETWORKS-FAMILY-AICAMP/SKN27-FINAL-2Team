@@ -3,18 +3,18 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>himate | 진단평가</title>
-  <link rel="stylesheet" href="/static/diagnosis/css/exam.css" />
-  <link rel="stylesheet" href="../../static/diagnosis/css/exam.css" />
+  <title>himate | 문제풀이</title>
+  <link rel="stylesheet" href="/static/question/css/exam.css" />
+  <link rel="stylesheet" href="../../static/question/css/exam.css" />
 </head>
 <body>
-  <header class="site-header" aria-label="진단평가 메뉴">
+  <header class="site-header" aria-label="문제풀이 메뉴">
     <a class="brand site-brand" href="/" aria-label="himate 홈">
       <img src="/static/chatbot/assets/logo.png" alt="himate" data-fallback-src="../../static/chatbot/assets/logo.png" />
     </a>
     <nav class="main-nav" aria-label="학습 메뉴">
-      <a class="active" href="/diagnosis/">진단평가</a>
-      <a href="/question/">문제풀이</a>
+      <a href="/diagnosis/">진단평가</a>
+      <a class="active" href="/question/">문제풀이</a>
       <a href="/chatbot/">챗봇</a>
       <a href="/user/mypage/">나의 학습실</a>
     </nav>
@@ -24,10 +24,10 @@
   </header>
 
   <main class="exam-page">
-    <section class="exam-shell" aria-label="진단평가 문제 풀이">
+    <section class="exam-shell" aria-label="문제 풀이">
       <header class="exam-header">
         <div class="exam-title">
-          <span>진단평가</span>
+          <span>문제풀이</span>
           <h1>문제 풀이</h1>
         </div>
         <div class="progress-box" aria-label="문항 진행률">
@@ -67,7 +67,12 @@
           </footer>
         </section>
 
-        <aside class="side-panel" aria-label="진단평가 상태">
+        <aside class="side-panel" aria-label="문제풀이 상태">
+          <section class="save-card">
+            <button id="saveProgressButton" type="button">문제 저장</button>
+            <p id="saveStatus">풀이 중인 문제를 저장할 수 있습니다.</p>
+          </section>
+
           <section class="timer-card">
             <span>남은 시간</span>
             <strong id="timerText">20:00</strong>
@@ -112,7 +117,7 @@
       });
     });
 
-    const questions = [
+    const defaultQuestions = [
       {
         type: "한국사 기본 개념",
         title: "다음 중 흥선 대원군의 정책으로 옳은 것은?",
@@ -235,8 +240,11 @@
       },
     ];
 
-    let currentIndex = 0;
-    const answers = Array(questions.length).fill(null);
+    const savedProgress = JSON.parse(localStorage.getItem("questionInProgress") || "null");
+    const shouldResume = new URLSearchParams(window.location.search).get("resume") === "1";
+    const questions = shouldResume && savedProgress?.questions?.length ? savedProgress.questions : defaultQuestions;
+    let currentIndex = shouldResume && Number.isInteger(savedProgress?.currentIndex) ? savedProgress.currentIndex : 0;
+    const answers = shouldResume && savedProgress?.answers?.length ? savedProgress.answers : Array(questions.length).fill(null);
     const questionBadge = document.getElementById("questionBadge");
     const questionType = document.getElementById("questionType");
     const questionTitle = document.getElementById("questionTitle");
@@ -249,8 +257,42 @@
     const nextButton = document.getElementById("nextButton");
     const submitButton = document.getElementById("submitButton");
     const timerText = document.getElementById("timerText");
-    let remainingSeconds = 20 * 60;
+    const saveProgressButton = document.getElementById("saveProgressButton");
+    const saveStatus = document.getElementById("saveStatus");
+    let remainingSeconds = shouldResume && Number.isInteger(savedProgress?.remainingSeconds) ? savedProgress.remainingSeconds : 20 * 60;
     let isTimeOver = false;
+
+    function currentSession(status = "in_progress") {
+      return {
+        condition: savedProgress?.condition || JSON.parse(localStorage.getItem("questionGenerationCondition") || "null"),
+        questions,
+        answers,
+        currentIndex,
+        remainingSeconds,
+        status,
+        savedAt: new Date().toISOString(),
+      };
+    }
+
+    function saveProgress(showMessage = true) {
+      localStorage.setItem("questionInProgress", JSON.stringify(currentSession()));
+
+      if (showMessage) {
+        saveStatus.textContent = "현재 풀이 상태가 저장되었습니다.";
+        saveStatus.classList.add("is-saved");
+      }
+    }
+
+    function finishExam() {
+      localStorage.setItem("questionResult", JSON.stringify({
+        questions,
+        answers,
+        submittedAt: new Date().toISOString(),
+        condition: savedProgress?.condition || JSON.parse(localStorage.getItem("questionGenerationCondition") || "null"),
+      }));
+      localStorage.removeItem("questionInProgress");
+      window.location.href = "/question/result/";
+    }
 
     function renderQuestion() {
       const question = questions[currentIndex];
@@ -271,6 +313,7 @@
       }).join("");
 
       numberButtons.forEach((button, index) => {
+        button.hidden = index >= questions.length;
         button.classList.toggle("active", index === currentIndex);
         button.classList.toggle("answered", answers[index] !== null);
       });
@@ -285,6 +328,7 @@
         button.addEventListener("click", () => {
           if (isTimeOver) return;
           answers[currentIndex] = Number(button.dataset.choice);
+          saveProgress(false);
           renderQuestion();
         });
       });
@@ -294,6 +338,7 @@
       if (isTimeOver) return;
       if (nextIndex < 0 || nextIndex >= questions.length) return;
       currentIndex = nextIndex;
+      saveProgress(false);
       renderQuestion();
     }
 
@@ -302,13 +347,10 @@
     submitButton.addEventListener("click", () => {
       if (isTimeOver) return;
       answers[currentIndex] = answers[currentIndex] ?? null;
-      localStorage.setItem("diagnosisResult", JSON.stringify({
-        questions,
-        answers,
-        submittedAt: new Date().toISOString(),
-      }));
-      window.location.href = "/diagnosis/result/";
+      numberButtons[currentIndex].classList.add("answered");
+      finishExam();
     });
+    saveProgressButton.addEventListener("click", () => saveProgress(true));
     numberButtons.forEach((button) => {
       button.addEventListener("click", () => moveQuestion(Number(button.dataset.index)));
     });
@@ -331,6 +373,7 @@
         button.disabled = true;
       });
       submitButton.textContent = "시간 종료";
+      finishExam();
     }
 
     renderTimer();

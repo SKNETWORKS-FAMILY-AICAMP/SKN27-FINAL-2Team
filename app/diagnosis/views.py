@@ -7,3 +7,7 @@ def diagnosis_intro(request):
 
 def diagnosis_exam(request):
     return render(request, "diagnosis/exam.html")
+
+
+def diagnosis_result(request):
+    return render(request, "diagnosis/result.html")
