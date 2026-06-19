@@ -1,0 +1,382 @@
+﻿{% load static %}
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>himate 한국사 챗봇</title>
+  <link rel="stylesheet" href="{% static 'chatbot/css/chat.css' %}" />
+</head>
+<body>
+  <main class="chat-page">
+    <header class="chat-header" aria-label="챗봇 메뉴">
+      <a class="brand" href="/" aria-label="himate 홈">himate</a>
+      <nav class="main-nav" aria-label="학습 메뉴">
+        <a href="/diagnosis/">진단 평가</a>
+        <a href="/question/">문제 풀이</a>
+        <a class="active" href="/chatbot/">챗봇</a>
+        <a href="/user/mypage/">나의 학습실</a>
+      </nav>
+      <nav class="header-actions" aria-label="계정 메뉴">
+        <a class="pill-button" href="/user/mypage/">나의 학습실</a>
+      </nav>
+    </header>
+
+    <section class="messages">
+      <div class="chat-layout">
+        <aside class="left-sidebar" aria-label="질문 유형 선택">
+          <h2 class="side-title">질문 유형</h2>
+          <div class="mode-list">
+            <button class="mode-card active" type="button" data-mode="history">
+              <span class="mode-name">한국사 질문</span>
+              <p class="mode-desc">개념, 사건, 인물, 시대 흐름을 교재형으로 정리합니다.</p>
+            </button>
+            <button class="mode-card" type="button" data-mode="question">
+              <span class="mode-name">문제 질문</span>
+              <p class="mode-desc">풀었던 문제, 선지, 오답 이유를 바탕으로 설명합니다.</p>
+            </button>
+          </div>
+
+          <div class="side-hero">
+            <img src="{% static 'chatbot/assets/main_image.png' %}" alt="" />
+            <p class="side-hero-title">개념을 한 장 노트처럼</p>
+            <p class="side-hero-copy">질문하면 근거 자료를 찾아 한능검 스타일로 정리해드립니다.</p>
+          </div>
+        </aside>
+
+        <div class="chat-stream" id="chatStream">
+          <div class="message bot">
+            <div class="avatar"><img src="{% static 'chatbot/assets/main_image.png' %}" alt="" /></div>
+            <div class="bubble">
+              <div class="bot-label"><span class="bot-dot"></span><span>himate</span></div>
+              <div class="markdown-answer">안녕하세요. 한국사 개념이나 한능검 문제를 질문해 주세요.</div>
+            </div>
+          </div>
+        </div>
+
+        <aside class="right-sidebar" aria-label="챗봇 이용방법">
+          <h2 class="side-title">챗봇 이용방법</h2>
+          <div class="guide-list">
+            <button class="guide-card active" type="button">
+              <span class="guide-name">개념 질문하기</span>
+              <p class="guide-desc">“지눌의 업적”, “조선 전기 정치”처럼 묻습니다.</p>
+            </button>
+            <button class="guide-card" type="button">
+              <span class="guide-name">흐름 정리 요청</span>
+              <p class="guide-desc">시대순, 원인-과정-결과 형식으로 정리할 수 있습니다.</p>
+            </button>
+            <button class="guide-card" type="button">
+              <span class="guide-name">한능검 포인트</span>
+              <p class="guide-desc">시험에 자주 나오는 키워드와 함정을 따로 확인합니다.</p>
+            </button>
+            <button class="guide-card" type="button">
+              <span class="guide-name">출처 확인</span>
+              <p class="guide-desc">답변 아래 출처에서 사용된 사료와 한국사 자료를 봅니다.</p>
+            </button>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <form class="composer" id="chatForm">
+      {% csrf_token %}
+      <div class="composer-box">
+        <textarea class="question-input" id="questionInput" rows="1" placeholder="한국사 개념을 질문해 주세요. 예: 지눌의 업적"></textarea>
+        <button class="send" id="sendButton" type="submit">↑</button>
+      </div>
+    </form>
+  </main>
+
+  <script>
+    const chatStream = document.getElementById("chatStream");
+    const form = document.getElementById("chatForm");
+    const input = document.getElementById("questionInput");
+    const sendButton = document.getElementById("sendButton");
+    const csrfToken = document.querySelector("[name=csrfmiddlewaretoken]").value;
+    let mode = "history";
+
+    document.querySelectorAll(".mode-card").forEach((button) => {
+      button.addEventListener("click", () => {
+        document.querySelectorAll(".mode-card").forEach((item) => item.classList.remove("active"));
+        button.classList.add("active");
+        mode = button.dataset.mode;
+        input.placeholder = mode === "history"
+          ? "한국사 개념을 질문해 주세요. 예: 지눌의 업적"
+          : "문제나 선지에 대해 질문해 주세요. 예: 이 선지가 왜 틀렸어?";
+      });
+    });
+
+    input.addEventListener("input", () => {
+      input.style.height = "auto";
+      input.style.height = Math.min(input.scrollHeight, 120) + "px";
+    });
+
+    input.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" && !event.shiftKey) {
+        event.preventDefault();
+        form.requestSubmit();
+      }
+    });
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const question = input.value.trim();
+      if (!question) return;
+
+      appendUserMessage(question);
+      input.value = "";
+      input.style.height = "auto";
+      sendButton.disabled = true;
+      const loading = appendLoadingMessage();
+
+      try {
+        const response = await fetch("{% url 'chatbot:rag_chat_api' %}", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": csrfToken,
+          },
+          body: JSON.stringify({
+            question,
+            mode,
+            answer_format: "structured",
+            top_k: 5,
+          }),
+        });
+        const data = await response.json();
+        loading.remove();
+
+        if (!response.ok) {
+          appendErrorMessage(data.error || "답변 생성에 실패했습니다.", data.detail);
+          return;
+        }
+
+        appendBotMessage(data);
+      } catch (error) {
+        loading.remove();
+        appendErrorMessage("네트워크 오류가 발생했습니다.", error.message);
+      } finally {
+        sendButton.disabled = false;
+        input.focus();
+      }
+    });
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function appendUserMessage(text) {
+      const wrapper = document.createElement("div");
+      wrapper.className = "message user";
+      wrapper.innerHTML = `<div class="bubble">${escapeHtml(text)}</div>`;
+      chatStream.appendChild(wrapper);
+      scrollToBottom();
+    }
+
+    function appendLoadingMessage() {
+      const wrapper = document.createElement("div");
+      wrapper.className = "message bot";
+      wrapper.innerHTML = `
+        <div class="avatar"><img src="{% static 'chatbot/assets/main_image.png' %}" alt="" /></div>
+        <div class="bubble">
+          <div class="bot-label"><span class="bot-dot"></span><span>검색 중</span></div>
+          <div class="loading">관련 한국사 자료를 찾고 답변을 정리하고 있습니다.</div>
+        </div>
+      `;
+      chatStream.appendChild(wrapper);
+      scrollToBottom();
+      return wrapper;
+    }
+
+    function appendErrorMessage(message, detail) {
+      const wrapper = document.createElement("div");
+      wrapper.className = "message bot";
+      wrapper.innerHTML = `
+        <div class="avatar"><img src="{% static 'chatbot/assets/main_image.png' %}" alt="" /></div>
+        <div class="bubble">
+          <div class="bot-label"><span class="bot-dot"></span><span>오류</span></div>
+          <div class="error">${escapeHtml(message)}${detail ? `<br>${escapeHtml(detail)}` : ""}</div>
+        </div>
+      `;
+      chatStream.appendChild(wrapper);
+      scrollToBottom();
+    }
+
+    function appendBotMessage(data) {
+      const wrapper = document.createElement("div");
+      wrapper.className = "message bot";
+      const imageGallery = renderImageGallery(data.sources || [], data.structured_answer);
+      const content = data.structured_answer
+        ? renderStructuredAnswer(data.structured_answer, data.sources || [])
+        : `<div class="markdown-answer">${escapeHtml(data.answer || "답변을 생성하지 못했습니다.")}</div>`;
+      wrapper.innerHTML = `
+        <div class="avatar"><img src="{% static 'chatbot/assets/main_image.png' %}" alt="" /></div>
+        <div class="bubble">
+          <div class="bot-label"><span class="bot-dot"></span><span>개념 정리</span></div>
+          ${imageGallery}
+          ${content}
+        </div>
+      `;
+      chatStream.appendChild(wrapper);
+      scrollToBottom();
+    }
+
+    function renderStructuredAnswer(answer, sources) {
+      const sections = (answer.sections || []).map((section, index) => {
+        const numberMatch = String(section.heading || "").match(/^(\d+)\.\s*(.*)$/);
+        const number = numberMatch ? numberMatch[1] : String(index + 1);
+        const heading = numberMatch ? numberMatch[2] : section.heading;
+        const rows = (section.items || [])
+          .filter((item) => !isImageItem(item))
+          .map((item) => `
+          <tr>
+            <th>${escapeHtml(item.term)}</th>
+            <td>${escapeHtml(item.content)}</td>
+          </tr>
+        `).join("");
+        if (!rows) return "";
+
+        return `
+          <section class="section">
+            <h2 class="section-title"><span class="section-number">${escapeHtml(number)}</span><span>${escapeHtml(heading)}</span></h2>
+            <table><tbody>${rows}</tbody></table>
+          </section>
+        `;
+      }).join("");
+
+      const sourceTitles = answer.source_titles || [];
+      const sourceItems = sourceTitles.length
+        ? sourceTitles.map((title) => `<li>${escapeHtml(title)}</li>`).join("")
+        : sources.slice(0, 3).map((source) => `<li>${escapeHtml(source.title)}</li>`).join("");
+
+      return `
+        <article class="note">
+          <h1 class="title">${escapeHtml(answer.title)}</h1>
+          <p class="summary">${escapeHtml(answer.summary)}</p>
+          ${sections}
+          <section class="exam">
+            <h2>한능검 포인트</h2>
+            <ul>${(answer.exam_points || []).map((point) => `<li>${escapeHtml(point)}</li>`).join("")}</ul>
+          </section>
+          <section class="sources">
+            <h2>출처</h2>
+            <ul>${sourceItems}</ul>
+          </section>
+        </article>
+      `;
+    }
+
+    function isImageUrl(value) {
+      return /^https?:\/\/.+\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i.test(String(value || "").trim());
+    }
+
+    function proxiedImageUrl(url) {
+      if (!url) return "";
+      try {
+        const parsed = new URL(url);
+        if (parsed.hostname === "contents.history.go.kr") {
+          return `{% url 'chatbot:image_proxy' %}?url=${encodeURIComponent(url)}`;
+        }
+      } catch (error) {
+        return url;
+      }
+      return url;
+    }
+
+    function isImageItem(item) {
+      const term = String(item?.term || "");
+      const content = String(item?.content || "");
+      return isImageUrl(content) || (term.includes("사진") && content.startsWith("http"));
+    }
+
+    function structuredImageSources(answer) {
+      const result = [];
+      for (const section of answer?.sections || []) {
+        for (const item of section.items || []) {
+          if (!isImageItem(item)) continue;
+          result.push({
+            title: item.term || answer.title || "이미지 자료",
+            source_name: "한국사 이미지 자료",
+            original_image_url: item.content,
+            source_url: item.content,
+          });
+        }
+      }
+      return result;
+    }
+
+    function renderImageGallery(sources, structuredAnswer) {
+      const mergedSources = [
+        ...sources,
+        ...structuredImageSources(structuredAnswer),
+      ];
+      const seen = new Set();
+      const imageSources = mergedSources
+        .filter((source) => source.original_image_url || source.thumbnail_url)
+        .filter((source) => {
+          const url = source.original_image_url || source.thumbnail_url;
+          if (seen.has(url)) return false;
+          seen.add(url);
+          return true;
+        })
+        .slice(0, 4);
+      if (!imageSources.length) return "";
+
+      return `
+        <section class="image-gallery" aria-label="이미지 자료">
+          ${imageSources.map((source) => {
+            const imageUrl = source.thumbnail_url || source.original_image_url;
+            const proxiedUrl = proxiedImageUrl(imageUrl);
+            const sourceUrl = source.source_url || source.original_image_url || imageUrl;
+            return `
+              <article class="image-card">
+                <a href="${escapeHtml(sourceUrl)}" target="_blank" rel="noreferrer">
+                  <img
+                    src="${escapeHtml(proxiedUrl)}"
+                    data-original-src="${escapeHtml(imageUrl)}"
+                    alt="${escapeHtml(source.title || "한국사 이미지 자료")}"
+                    loading="lazy"
+                    referrerpolicy="no-referrer"
+                    onerror="handleImageError(this)"
+                  />
+                </a>
+                <div class="image-fallback" hidden>
+                  <strong>이미지를 바로 불러오지 못했습니다.</strong>
+                  <span>카드를 클릭해 원본 자료를 확인해 주세요.</span>
+                </div>
+                <div class="image-meta">
+                  <strong>${escapeHtml(source.title || "이미지 자료")}</strong>
+                  <span>${escapeHtml(source.source_name || "한국사 이미지 자료")}</span>
+                </div>
+              </article>
+            `;
+          }).join("")}
+        </section>
+      `;
+    }
+
+    function handleImageError(image) {
+      if (!image.dataset.directTried && image.dataset.originalSrc && image.src !== image.dataset.originalSrc) {
+        image.dataset.directTried = "1";
+        image.src = image.dataset.originalSrc;
+        return;
+      }
+
+      const card = image.closest(".image-card");
+      const fallback = card?.querySelector(".image-fallback");
+      image.hidden = true;
+      if (fallback) fallback.hidden = false;
+    }
+
+    function scrollToBottom() {
+      chatStream.scrollTop = chatStream.scrollHeight;
+    }
+  </script>
+</body>
+</html>
+

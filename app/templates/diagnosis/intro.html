@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>himate | 진단평가 안내</title>
+  <link rel="stylesheet" href="/static/diagnosis/css/intro.css" />
+  <link rel="stylesheet" href="../../static/diagnosis/css/intro.css" />
+</head>
+<body>
+  <header class="site-header" aria-label="진단평가 메뉴">
+    <a class="brand" href="/" aria-label="himate 홈">
+      <img src="/static/chatbot/assets/logo.png" alt="himate" data-fallback-src="../../static/chatbot/assets/logo.png" />
+    </a>
+    <nav class="main-nav" aria-label="학습 메뉴">
+      <a class="active" href="/diagnosis/">진단평가</a>
+      <a href="/question/">문제풀이</a>
+      <a href="/chatbot/">챗봇</a>
+      <a href="/user/mypage/">나의 학습실</a>
+    </nav>
+    <nav class="header-actions" aria-label="계정 메뉴">
+      <a class="ghost-button" href="/user/login/">로그아웃</a>
+    </nav>
+  </header>
+
+  <main class="diagnosis-page">
+    <section class="intro-layout" aria-label="초기 진단 안내">
+      <section class="intro-card">
+        <div class="intro-hero">
+          <div class="intro-heading">
+            <h1>진단평가</h1>
+            <p>현재 실력을 정확히 진단하고, 취약한 개념과 보완이 필요한 부분을 분석해 드려요.</p>
+          </div>
+          <div class="hero-illust" aria-hidden="true">
+            <span class="bubble chart-icon"><i></i><i></i><i></i></span>
+            <span class="bubble paw-icon">•</span>
+            <img src="/static/chatbot/assets/main_image.png" alt="" data-fallback-src="../../static/chatbot/assets/main_image.png" />
+          </div>
+        </div>
+
+        <div class="step-flow" aria-label="진단 진행 단계">
+          <article><span>1</span><strong>평가 안내</strong><p>개요와 유의사항 확인</p></article>
+          <article><span>2</span><strong>문제 응시</strong><p>영역별 문제 풀이</p></article>
+          <article><span>3</span><strong>AI 분석</strong><p>취약 개념과 오답 분석</p></article>
+          <article><span>4</span><strong>학습 계획</strong><p>맞춤 학습 순서 추천</p></article>
+        </div>
+
+        <div class="intro-content">
+          <section class="guide-copy" aria-label="진단평가 설명">
+            <article><strong>목적</strong><p>개인별 학습 출발점을 정합니다.</p></article>
+            <article><strong>문항수</strong><p>핵심 개념 중심의 20문항입니다.</p></article>
+            <article><strong>소요시간</strong><p>약 10분 내외로 완료됩니다.</p></article>
+            <article><strong>범위</strong><p>한국사 전 범위를 고르게 확인합니다.</p></article>
+            <article><strong>진행방식</strong><p>결과 분석과 추천 학습 순서를 제공합니다.</p></article>
+          </section>
+
+          <section class="info-table" aria-label="진단평가 정보">
+            <article><span>문항 수</span><strong>20문항</strong></article>
+            <article><span>소요시간</span><strong>10분</strong></article>
+            <article><span>범위</span><strong>한국사 전 범위</strong></article>
+          </section>
+        </div>
+      </section>
+
+      <section class="notice-section" aria-label="안내 사항">
+        <h2>안내 사항</h2>
+        <div class="notice-grid">
+          <article>
+            <strong>제출</strong>
+            <p>모든 문항을 푼 뒤 제출하면 결과 분석이 바로 시작됩니다.</p>
+          </article>
+          <article>
+            <strong>재진단 가능</strong>
+            <p>학습 후 언제든 다시 진단하여 성장 변화를 확인할 수 있습니다.</p>
+          </article>
+        </div>
+      </section>
+
+      <div class="start-actions">
+        <a class="start-button" href="/diagnosis/exam/">진단평가 시작하기</a>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    document.querySelectorAll("img[data-fallback-src]").forEach((image) => {
+      image.addEventListener("error", () => {
+        if (image.dataset.fallbackTried) return;
+        image.dataset.fallbackTried = "1";
+        image.src = image.dataset.fallbackSrc;
+      });
+    });
+  </script>
+</body>
+</html>

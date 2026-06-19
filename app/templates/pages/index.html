@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>himate | AI 한국사 학습 메이트</title>
+  <link rel="stylesheet" href="/static/pages/css/index.css" />
+  <link rel="stylesheet" href="../../static/pages/css/index.css" />
+</head>
+<body>
+  <header class="site-header" aria-label="himate 메인 메뉴">
+    <a class="brand" href="/" aria-label="himate 홈">himate</a>
+    <nav class="main-nav" aria-label="서비스 메뉴">
+      <a href="{% if request.user.is_authenticated %}/diagnosis/{% else %}/user/login/{% endif %}">진단 평가</a>
+      <a href="{% if request.user.is_authenticated %}/question/{% else %}/user/login/{% endif %}">문제 풀이</a>
+      <a href="{% if request.user.is_authenticated %}/chatbot/{% else %}/user/login/{% endif %}">챗봇</a>
+      <a href="{% if request.user.is_authenticated %}/user/mypage/{% else %}/user/login/{% endif %}">나의 학습실</a>
+    </nav>
+    <nav class="header-actions" aria-label="계정 메뉴">
+      {% if request.user.is_authenticated %}
+      <a class="pill-button" href="/user/mypage/">나의 학습실</a>
+      {% else %}
+      <a class="pill-button" href="/user/login/">로그인</a>
+      {% endif %}
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero snap-section" aria-label="himate 소개">
+      <p class="eyebrow">Korean history, made lighter</p>
+      <h1>
+        <span>한국사 공부, 여기</span>
+        <strong>HI MATE와</strong>
+        <span>시작하세요</span>
+      </h1>
+      <p class="hero-copy">
+        진단평가, 개념 정리, 문제 질문, 오답 흐름까지 한 곳에서 연결되는 AI 학습 메이트입니다.
+      </p>
+      <div class="hero-actions">
+        <a class="primary-button" href="/user/register/">회원가입</a>
+        <a class="secondary-button" href="/user/login/">로그인</a>
+      </div>
+    </section>
+
+    <section class="feature-section snap-section feature-01" aria-label="AI 진단">
+      <div class="feature-copy reveal">
+        <span class="feature-number">01</span>
+        <h2>AI가 먼저 실력을 진단해요</h2>
+        <p>간단한 진단평가를 풀면 현재 수준, 취약 개념, 예상 성취도를 한눈에 보여줍니다.</p>
+        <a class="primary-button small" href="{% if request.user.is_authenticated %}/diagnosis/{% else %}/user/login/{% endif %}">진단평가 보기</a>
+      </div>
+      <div class="feature-visual diagnosis-visual reveal reveal-delay-1" aria-hidden="true">
+        <div class="score-card">
+          <span>진단 결과</span>
+          <strong>72%</strong>
+          <em>취약 이해도</em>
+        </div>
+        <div class="grade-card">
+          <span>예상 등급</span>
+          <strong>B+</strong>
+        </div>
+        <ul class="mini-list">
+          <li>고려 후기 제도</li>
+          <li>조선 전기 정치</li>
+          <li>근현대 흐름</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="feature-section snap-section feature-02" aria-label="학습 계획">
+      <div class="feature-visual plan-visual reveal" aria-hidden="true">
+        <div class="calendar-strip">
+          <span>월</span><span>화</span><span class="active">수</span><span>목</span><span>금</span>
+        </div>
+        <div class="plan-item done"><i></i><strong>진단 결과 확인</strong><span>완료</span></div>
+        <div class="plan-item"><i></i><strong>취약 개념 복습</strong><span>15분</span></div>
+        <div class="plan-item"><i></i><strong>오답노트 정리</strong><span>10분</span></div>
+      </div>
+      <div class="feature-copy reveal reveal-delay-1">
+        <span class="feature-number">02</span>
+        <h2>목표 시험일까지 계획을 세워줘요</h2>
+        <p>D-day와 현재 실력을 기준으로 오늘 할 공부, 이번 주 학습량, 복습 타이밍을 추천합니다.</p>
+        <a class="primary-button small" href="{% if request.user.is_authenticated %}/user/mypage/{% else %}/user/login/{% endif %}">학습 계획 보기</a>
+      </div>
+    </section>
+
+    <section class="feature-section snap-section feature-03" aria-label="문제 생성">
+      <div class="feature-copy reveal">
+        <span class="feature-number">03</span>
+        <h2>원하는 문제를 바로 만들어요</h2>
+        <p>카테고리, 시대, 문제 유형, 난이도를 선택하면 AI가 맞춤 문제와 해설을 만듭니다.</p>
+        <a class="primary-button small" href="{% if request.user.is_authenticated %}/question/{% else %}/user/login/{% endif %}">문제 풀기</a>
+      </div>
+      <div class="feature-visual question-visual reveal reveal-delay-1" aria-hidden="true">
+        <div class="filter-row">
+          <span>한국사</span><span>조선 후기</span><span>사료 해석형</span>
+        </div>
+        <h3>다음 자료에 나타난 정책의 목적으로 옳은 것은?</h3>
+        <ol>
+          <li>왕권 강화를 추진하였다.</li>
+          <li>신분제 폐지를 단행하였다.</li>
+          <li>외세 배척 운동을 전개하였다.</li>
+        </ol>
+        <div class="hint-line">오답 포인트 · 시대와 제도명을 먼저 확인하세요.</div>
+      </div>
+    </section>
+
+    <section class="feature-section snap-section feature-04" aria-label="챗봇 학습">
+      <div class="feature-visual chat-visual reveal" aria-hidden="true">
+        <div class="chat-bubble user">지눌의 업적 정리해줘</div>
+        <div class="chat-bubble bot">정혜쌍수와 돈오점수를 중심으로 수선사 결사를 이끌었습니다.</div>
+        <div class="chat-input">궁금한 내용을 입력하세요.</div>
+      </div>
+      <div class="feature-copy reveal reveal-delay-1">
+        <span class="feature-number">04</span>
+        <h2>모르는 개념은 챗봇에게 물어봐요</h2>
+        <p>개념 질문부터 문제 질문까지 RAG 기반 답변으로 근거와 한능검 포인트를 함께 확인합니다.</p>
+        <a class="primary-button small" href="{% if request.user.is_authenticated %}/chatbot/{% else %}/user/login/{% endif %}">챗봇 시작하기</a>
+      </div>
+    </section>
+
+    <section class="feature-section snap-section feature-05" aria-label="학습 성장">
+      <div class="feature-copy reveal">
+        <span class="feature-number">05</span>
+        <h2>나의 학습실에서 성장 추이를 확인해요</h2>
+        <p>D-day, 정답률, 평균 풀이 시간, 푼 문제 수, 연속 학습일을 확인하며 학습 흐름을 이어갑니다.</p>
+        <a class="primary-button small" href="{% if request.user.is_authenticated %}/user/mypage/{% else %}/user/login/{% endif %}">학습실 보기</a>
+      </div>
+      <div class="feature-visual growth-visual reveal reveal-delay-1" aria-hidden="true">
+        <div class="metric-grid">
+          <article><span>D-day</span><strong>D-28</strong></article>
+          <article><span>정답률</span><strong>72%</strong></article>
+          <article><span>평균 시간</span><strong>02:34</strong></article>
+          <article><span>연속 학습</span><strong>12일</strong></article>
+        </div>
+        <div class="line-chart">
+          <i></i><i></i><i></i><i></i><i></i><i></i>
+        </div>
+      </div>
+    </section>
+
+    <section class="cta-section snap-section" aria-label="시작하기">
+      <div class="cta-panel reveal">
+        <span>지금, himate와 함께</span>
+        <h2>더 스마트하게 공부하세요.</h2>
+        <p>AI가 실력을 분석하고, 오늘 할 공부까지 알려줍니다.</p>
+        <a class="primary-button" href="{% if request.user.is_authenticated %}/chatbot/{% else %}/user/login/{% endif %}">시작하기</a>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const revealItems = document.querySelectorAll(".reveal");
+
+    if ("IntersectionObserver" in window) {
+      const revealObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+            revealObserver.unobserve(entry.target);
+          }
+        });
+      }, {
+        rootMargin: "0px 0px -10% 0px",
+        threshold: 0.2,
+      });
+
+      revealItems.forEach((item) => revealObserver.observe(item));
+    } else {
+      revealItems.forEach((item) => item.classList.add("is-visible"));
+    }
+  </script>
+</body>
+</html>

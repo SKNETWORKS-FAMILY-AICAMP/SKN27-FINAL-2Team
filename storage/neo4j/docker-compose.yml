@@ -1,0 +1,32 @@
+services:
+  neo4j:
+    image: neo4j:5.26.27-community
+    container_name: skn27-neo4j
+    restart: unless-stopped
+    environment:
+      NEO4J_AUTH: ${NEO4J_USER}/${NEO4J_PASSWORD}
+      NEO4J_server_memory_heap_initial__size: ${NEO4J_HEAP_INITIAL}
+      NEO4J_server_memory_heap_max__size: ${NEO4J_HEAP_MAX}
+      NEO4J_server_memory_pagecache_size: ${NEO4J_PAGECACHE}
+      TZ: Asia/Seoul
+    ports:
+      - "${NEO4J_HTTP_PORT}:7474"
+      - "${NEO4J_BOLT_PORT}:7687"
+    volumes:
+      - neo4j_data:/data
+      - neo4j_logs:/logs
+      - ./neo4j_import:/var/lib/neo4j/import
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "cypher-shell -u \"${NEO4J_USER}\" -p \"$${NEO4J_AUTH#*/}\" 'RETURN 1'",
+        ]
+      interval: 15s
+      timeout: 10s
+      retries: 8
+volumes:
+  neo4j_data:
+    name: skn27-neo4j-data
+  neo4j_logs:
+    name: skn27-neo4j-logs
