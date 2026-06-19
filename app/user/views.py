@@ -11,3 +11,7 @@ def register_page(request):
 
 def mypage(request):
     return render(request, "user/mypage.html")
+
+
+def wrong_note(request):
+    return render(request, "user/wrong_note.html")

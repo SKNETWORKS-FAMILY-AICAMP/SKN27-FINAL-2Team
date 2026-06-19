@@ -1,30 +1,5 @@
-:root {
-  --bg: #fbf7f2;
-  --panel: #ffffff;
-  --ink: #202936;
-  --muted: #8a6b4e;
-  --line: #ead9c7;
-  --accent: #8a5f3d;
-  --accent-strong: #6f4a2f;
-  --accent-soft: #fff3e6;
-  --green: #18a66b;
-  --green-soft: #e7f8f0;
-  --shadow: 0 22px 54px rgba(95, 62, 34, 0.14);
-}
-
 * {
   box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  min-height: 100svh;
-  background:
-    radial-gradient(circle at 78% 18%, rgba(185, 137, 88, 0.17), transparent 210px),
-    linear-gradient(135deg, #fffaf4, #f7efe6);
-  color: var(--ink);
-  font-family: "Malgun Gothic", "Apple SD Gothic Neo", Arial, sans-serif;
-  line-height: 1.6;
 }
 
 a {
@@ -175,24 +150,6 @@ input {
   white-space: nowrap;
 }
 
-.login-button,
-.signup-button {
-  height: 50px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 8px;
-  font-weight: 900;
-}
-
-.login-button {
-  border: 0;
-  background: linear-gradient(180deg, #18b979, var(--green));
-  color: #fff;
-  cursor: pointer;
-  box-shadow: 0 12px 24px rgba(24, 166, 107, 0.18);
-}
-
 .divider {
   display: flex;
   align-items: center;
@@ -209,14 +166,7 @@ input {
   background: var(--line);
 }
 
-.signup-button {
-  border: 1px solid var(--green);
-  background: #fff;
-  color: var(--green);
-}
-
-@media (max-width: 520px) {
-  .login-page {
+@media (max-width: 520px) {.login-page {
     padding: 16px;
   }
 
@@ -245,28 +195,6 @@ input {
   }
 }
 
-/* himate landing visual refresh */
-:root {
-  --bg: #ffffff;
-  --panel: #ffffff;
-  --ink: #0e0f0c;
-  --muted: #5f665a;
-  --line: #dce4d4;
-  --accent: #163300;
-  --accent-strong: #10270c;
-  --accent-soft: #eef5e8;
-  --green: #9fe870;
-  --green-soft: #f4f8ef;
-  --shadow: 0 24px 58px rgba(14, 15, 12, 0.12);
-}
-
-body {
-  background: #fff;
-  color: var(--ink);
-  font-family: Arial, "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
-  line-height: 1.5;
-}
-
 .login-page {
   background:
     linear-gradient(180deg, rgba(159, 232, 112, 0.18), transparent 42%),
@@ -289,14 +217,6 @@ body {
 
 .brand img {
   display: none;
-}
-
-.brand::after {
-  content: "himate";
-  color: var(--accent);
-  font-size: 32px;
-  line-height: 1;
-  font-weight: 950;
 }
 
 .login-heading h1 {
@@ -337,23 +257,7 @@ body {
   color: var(--accent);
 }
 
-.login-button {
-  background: var(--green);
-  color: var(--accent);
-  box-shadow: none;
-}
-
-.signup-button {
-  border-color: #cfd8c7;
-  color: var(--accent);
-}
-
-@media (min-width: 721px) {
-  body {
-    overflow: hidden;
-  }
-
-  .login-page {
+@media (min-width: 721px) {.login-page {
     min-height: 100svh;
     padding: 20px;
   }

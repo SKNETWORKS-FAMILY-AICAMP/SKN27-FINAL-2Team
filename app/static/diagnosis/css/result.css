@@ -1,28 +1,5 @@
-:root {
-  --lime: #9fe870;
-  --lime-dark: #163300;
-  --ink: #0e0f0c;
-  --muted: #5f665a;
-  --soft: #f4f8ef;
-  --line: #dce4d4;
-  --danger: #e5484d;
-  --blue: #0877ff;
-  --shadow: 0 24px 58px rgba(14, 15, 12, 0.12);
-}
-
 * {
   box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  min-height: 100svh;
-  background:
-    linear-gradient(180deg, rgba(159, 232, 112, 0.16), transparent 260px),
-    #fff;
-  color: var(--ink);
-  font-family: Arial, "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
-  line-height: 1.5;
 }
 
 a {
@@ -34,84 +11,10 @@ button {
   font: inherit;
 }
 
-.site-header {
-  min-height: 64px;
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  gap: clamp(14px, 2vw, 26px);
-  padding: 0 clamp(18px, 5vw, 76px);
-  background: rgba(255, 255, 255, 0.92);
-  border-bottom: 1px solid rgba(220, 228, 212, 0.8);
-}
-
 .brand {
   color: var(--lime-dark);
   font-size: 22px;
   font-weight: 950;
-}
-
-.main-nav,
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: clamp(10px, 1.6vw, 18px);
-}
-
-.main-nav {
-  justify-content: center;
-}
-
-.main-nav a {
-  min-height: 36px;
-  display: inline-flex;
-  align-items: center;
-  border-radius: 999px;
-  padding: 0 12px;
-  color: #24301f;
-  font-size: 14px;
-  font-weight: 850;
-  white-space: nowrap;
-}
-
-.main-nav a.active {
-  background: var(--soft);
-  color: var(--lime-dark);
-}
-
-.ghost-button,
-.primary-button,
-.outline-button,
-.dark-button {
-  min-height: 40px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 999px;
-  padding: 0 18px;
-  font-size: 14px;
-  font-weight: 900;
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-.ghost-button,
-.primary-button {
-  border: 0;
-  background: var(--lime);
-  color: var(--lime-dark);
-}
-
-.outline-button {
-  border: 1px solid #cfd8c7;
-  background: #fff;
-  color: var(--lime-dark);
-}
-
-.dark-button {
-  border: 0;
-  background: var(--lime-dark);
-  color: #fff;
 }
 
 .dark-button.active {
@@ -466,16 +369,9 @@ button {
   font-weight: 900;
 }
 
-@media (max-width: 900px) {
-  .site-header,
-  .review-top,
+@media (max-width: 900px) {.review-top,
   .diagnosis-summary {
     grid-template-columns: 1fr;
-  }
-
-  .main-nav {
-    justify-content: flex-start;
-    overflow-x: auto;
   }
 
   .question-jump {

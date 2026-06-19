@@ -6,6 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>himate 한국사 챗봇</title>
   <link rel="stylesheet" href="{% static 'chatbot/css/chat.css' %}" />
+  <link rel="stylesheet" href="/static/himate.css" />
+  <link rel="stylesheet" href="/static/layout.css" />
 </head>
 <body>
   <main class="chat-page">
@@ -56,23 +58,27 @@
 
         <aside class="right-sidebar" aria-label="챗봇 이용방법">
           <h2 class="side-title">챗봇 이용방법</h2>
-          <div class="guide-list">
-            <button class="guide-card active" type="button">
-              <span class="guide-name">개념 질문하기</span>
-              <p class="guide-desc">“지눌의 업적”, “조선 전기 정치”처럼 묻습니다.</p>
-            </button>
-            <button class="guide-card" type="button">
-              <span class="guide-name">흐름 정리 요청</span>
-              <p class="guide-desc">시대순, 원인-과정-결과 형식으로 정리할 수 있습니다.</p>
-            </button>
-            <button class="guide-card" type="button">
-              <span class="guide-name">한능검 포인트</span>
-              <p class="guide-desc">시험에 자주 나오는 키워드와 함정을 따로 확인합니다.</p>
-            </button>
-            <button class="guide-card" type="button">
-              <span class="guide-name">출처 확인</span>
-              <p class="guide-desc">답변 아래 출처에서 사용된 사료와 한국사 자료를 봅니다.</p>
-            </button>
+          <div class="guide-note">
+            <article>
+              <span>01</span>
+              <strong>질문 유형을 먼저 선택하세요.</strong>
+              <p>한국사 개념은 <b>한국사 질문</b>, 풀던 문제나 선지는 <b>문제 질문</b>을 누른 뒤 질문합니다.</p>
+            </article>
+            <article>
+              <span>02</span>
+              <strong>원하는 답변 모양을 말해도 됩니다.</strong>
+              <p>“표로 정리해줘”, “시대순으로 설명해줘”, “한능검 포인트만 뽑아줘”처럼 요청할 수 있습니다.</p>
+            </article>
+            <article>
+              <span>03</span>
+              <strong>사진 자료는 제목을 정확히 써주세요.</strong>
+              <p>“첨성대 사진 보여줘”처럼 이미지 이름이 들어가면 관련 자료를 함께 찾습니다.</p>
+            </article>
+            <article>
+              <span>04</span>
+              <strong>답변 아래 출처를 확인하세요.</strong>
+              <p>사용된 한국사 자료와 이미지 자료의 근거를 함께 볼 수 있습니다.</p>
+            </article>
           </div>
         </aside>
       </div>
