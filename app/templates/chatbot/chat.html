@@ -9,9 +9,17 @@
 </head>
 <body>
   <main class="chat-page">
-    <header class="chat-header">
-      <img class="brand-logo" src="{% static 'chatbot/assets/logo.png' %}" alt="himate" />
-      <div class="header-meta">Hybrid RAG · 한국사 학습 챗봇</div>
+    <header class="chat-header" aria-label="챗봇 메뉴">
+      <a class="brand" href="/" aria-label="himate 홈">himate</a>
+      <nav class="main-nav" aria-label="학습 메뉴">
+        <a href="/diagnosis/">진단 평가</a>
+        <a href="/question/">문제 풀이</a>
+        <a class="active" href="/chatbot/">챗봇</a>
+        <a href="/user/mypage/">나의 학습실</a>
+      </nav>
+      <nav class="header-actions" aria-label="계정 메뉴">
+        <a class="pill-button" href="/user/mypage/">나의 학습실</a>
+      </nav>
     </header>
 
     <section class="messages">

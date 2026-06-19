@@ -1,0 +1,36 @@
+@import url("/static/diagnosis/css/exam.css");
+
+.side-panel {
+  grid-template-rows: auto auto 1fr;
+}
+
+.save-card {
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fffaf4;
+}
+
+.save-card button {
+  height: 44px;
+  border: 0;
+  border-radius: 8px;
+  background: #2f241b;
+  color: #fff;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.save-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.save-card p.is-saved {
+  color: var(--green);
+}

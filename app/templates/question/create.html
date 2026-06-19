@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>himate | 문제 생성</title>
+  <link rel="stylesheet" href="/static/question/css/create.css" />
+  <link rel="stylesheet" href="../../static/question/css/create.css" />
+</head>
+<body>
+  <header class="site-header" aria-label="문제풀이 메뉴">
+    <a class="brand" href="/" aria-label="himate 홈">himate</a>
+    <nav class="main-nav" aria-label="학습 메뉴">
+      <a href="/diagnosis/">진단평가</a>
+      <a class="active" href="/question/">문제풀이</a>
+      <a href="/chatbot/">챗봇</a>
+      <a href="/user/mypage/">나의 학습실</a>
+    </nav>
+    <nav class="header-actions" aria-label="계정 메뉴">
+      <a class="ghost-button" href="/user/login/">로그아웃</a>
+    </nav>
+  </header>
+
+  <main class="create-page">
+    <section class="create-shell" aria-label="문제 생성 조건">
+      <header class="create-title">
+        <span>Question Builder</span>
+        <h1>문제 생성 조건</h1>
+        <p>원하는 시대, 주제, 난이도, 문제 수와 유형을 선택하면 맞춤 문제 풀이로 이동합니다.</p>
+      </header>
+
+      <section class="condition-panel">
+        <div class="condition-row" data-select-type="multiple">
+          <h2>시대</h2>
+          <div class="option-list">
+            <button type="button" data-value="선사">선사</button>
+            <button type="button" data-value="삼국">삼국</button>
+            <button type="button" data-value="고려">고려</button>
+            <button type="button" data-value="조선">조선</button>
+            <button type="button" data-value="근대">근대</button>
+            <button type="button" data-value="현대">현대</button>
+          </div>
+        </div>
+
+        <div class="condition-row" data-select-type="multiple">
+          <h2>주제</h2>
+          <div class="option-list">
+            <button type="button" data-value="정치">정치</button>
+            <button type="button" data-value="경제">경제</button>
+            <button type="button" data-value="사회">사회</button>
+            <button type="button" data-value="문화">문화</button>
+            <button type="button" data-value="외교">외교</button>
+          </div>
+        </div>
+
+        <div class="condition-row" data-select-type="single">
+          <h2>난이도</h2>
+          <div class="option-list compact">
+            <button type="button" data-value="상">상</button>
+            <button type="button" data-value="중" class="selected">중</button>
+            <button type="button" data-value="하">하</button>
+          </div>
+        </div>
+
+        <div class="condition-row" data-select-type="single">
+          <h2>문제 수</h2>
+          <div class="option-list compact">
+            <button type="button" data-value="10" class="selected">10</button>
+            <button type="button" data-value="20">20</button>
+            <button type="button" data-value="30">30</button>
+            <button type="button" data-value="40">40</button>
+            <button type="button" data-value="50">50</button>
+          </div>
+        </div>
+
+        <div class="condition-row" data-select-type="multiple">
+          <h2>유형</h2>
+          <div class="option-list">
+            <button type="button" data-value="연표">연표</button>
+            <button type="button" data-value="사료">사료</button>
+            <button type="button" data-value="개념">개념</button>
+            <button type="button" data-value="인물">인물</button>
+            <button type="button" data-value="지역">지역</button>
+          </div>
+        </div>
+      </section>
+
+      <footer class="create-actions">
+        <button class="secondary-button" id="resetButton" type="button">초기화</button>
+        <div>
+          <button class="primary-button" id="createButton" type="button">문제지 생성</button>
+          <button class="outline-button" id="loadButton" type="button">문제 불러오기</button>
+        </div>
+      </footer>
+    </section>
+  </main>
+
+  <script>
+    const rows = document.querySelectorAll(".condition-row");
+    const resetButton = document.getElementById("resetButton");
+    const createButton = document.getElementById("createButton");
+    const loadButton = document.getElementById("loadButton");
+
+    rows.forEach((row) => {
+      row.querySelectorAll("button").forEach((button) => {
+        button.addEventListener("click", () => {
+          if (row.dataset.selectType === "single") {
+            row.querySelectorAll("button").forEach((item) => item.classList.remove("selected"));
+            button.classList.add("selected");
+            return;
+          }
+
+          button.classList.toggle("selected");
+        });
+      });
+    });
+
+    function collectCondition() {
+      const condition = {};
+
+      rows.forEach((row) => {
+        const key = row.querySelector("h2").textContent.trim();
+        const selected = [...row.querySelectorAll(".selected")].map((button) => button.dataset.value);
+        condition[key] = row.dataset.selectType === "single" ? selected[0] || null : selected;
+      });
+
+      return condition;
+    }
+
+    resetButton.addEventListener("click", () => {
+      rows.forEach((row) => {
+        row.querySelectorAll("button").forEach((button) => button.classList.remove("selected"));
+      });
+
+      document.querySelector('[data-value="중"]').classList.add("selected");
+      document.querySelector('[data-value="10"]').classList.add("selected");
+    });
+
+    createButton.addEventListener("click", () => {
+      const condition = collectCondition();
+      const session = {
+        condition,
+        createdAt: new Date().toISOString(),
+        status: "in_progress",
+      };
+
+      localStorage.setItem("questionGenerationCondition", JSON.stringify(condition));
+      localStorage.setItem("questionInProgress", JSON.stringify(session));
+      window.location.href = "/question/exam/";
+    });
+
+    loadButton.addEventListener("click", () => {
+      const saved = localStorage.getItem("questionInProgress");
+
+      if (!saved) {
+        alert("불러올 풀이 중 문제가 없습니다.");
+        return;
+      }
+
+      window.location.href = "/question/exam/?resume=1";
+    });
+  </script>
+</body>
+</html>

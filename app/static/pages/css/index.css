@@ -34,6 +34,9 @@ a {
 }
 
 .site-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
   min-height: 64px;
   display: grid;
   grid-template-columns: auto 1fr auto;

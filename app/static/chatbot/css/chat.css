@@ -45,26 +45,66 @@
 
     .chat-header {
       height: 64px;
-      display: flex;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
       align-items: center;
-      justify-content: space-between;
+      gap: clamp(14px, 2vw, 26px);
       padding: 0 24px;
       background: var(--panel);
       border-bottom: 1px solid var(--line);
       z-index: 5;
     }
 
-    .brand-logo {
-      width: 148px;
-      height: 44px;
-      object-fit: contain;
-      object-position: left center;
-      display: block;
+    .brand {
+      color: var(--accent);
+      font-size: 22px;
+      line-height: 1;
+      font-weight: 950;
+      text-decoration: none;
     }
 
-    .header-meta {
-      color: #8a6b4e;
-      font-size: 13px;
+    .main-nav,
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: clamp(10px, 1.6vw, 18px);
+    }
+
+    .main-nav {
+      min-width: 0;
+      justify-content: center;
+    }
+
+    .main-nav a {
+      color: #24301f;
+      font-size: 14px;
+      font-weight: 850;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .main-nav a:hover,
+    .main-nav a.active {
+      color: var(--accent);
+    }
+
+    .header-actions {
+      justify-content: flex-end;
+    }
+
+    .pill-button {
+      min-height: 40px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      padding: 0 22px;
+      background: #9fe870;
+      color: var(--accent);
+      font-size: 14px;
+      font-weight: 900;
+      text-decoration: none;
+      white-space: nowrap;
     }
 
     .messages {
@@ -521,8 +561,18 @@
     @media (max-width: 720px) {
       .chat-page { border: 0; }
       .chat-header { padding: 0 16px; }
-      .header-meta { display: none; }
-      .brand-logo { width: 128px; }
+      .chat-header {
+        grid-template-columns: 1fr auto;
+        row-gap: 10px;
+        height: auto;
+        padding: 14px 16px;
+      }
+      .main-nav {
+        grid-column: 1 / -1;
+        justify-content: flex-start;
+        overflow-x: auto;
+      }
+      .header-actions { display: none; }
       .message.bot { gap: 7px; }
       .avatar { width: 28px; height: 28px; }
       .bubble { border-radius: 12px; }
@@ -577,19 +627,6 @@
       border-bottom-color: var(--line);
     }
 
-    .brand-logo {
-      display: none;
-    }
-
-    .chat-header::before {
-      content: "himate";
-      color: var(--accent);
-      font-size: 22px;
-      line-height: 1;
-      font-weight: 950;
-    }
-
-    .header-meta,
     .mode-desc,
     .guide-desc,
     .side-hero-copy,

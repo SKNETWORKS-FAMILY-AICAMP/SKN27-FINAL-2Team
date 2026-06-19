@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>himate | 진단평가 결과</title>
+  <link rel="stylesheet" href="/static/diagnosis/css/result.css" />
+  <link rel="stylesheet" href="../../static/diagnosis/css/result.css" />
+</head>
+<body>
+  <header class="site-header" aria-label="진단평가 결과 메뉴">
+    <a class="brand" href="/" aria-label="himate 홈">himate</a>
+    <nav class="main-nav" aria-label="학습 메뉴">
+      <a class="active" href="/diagnosis/">진단평가</a>
+      <a href="/question/">문제풀이</a>
+      <a href="/chatbot/">챗봇</a>
+      <a href="/user/mypage/">나의 학습실</a>
+    </nav>
+    <nav class="header-actions" aria-label="계정 메뉴">
+      <a class="ghost-button" href="/user/login/">로그아웃</a>
+    </nav>
+  </header>
+
+  <main class="result-page">
+    <section class="review-shell" aria-label="문제별 해설">
+      <header class="review-top">
+        <div>
+          <span class="page-kicker">진단평가 해설</span>
+          <h1>문제별 결과 확인</h1>
+        </div>
+        <div class="question-jump" id="questionJump" aria-label="문제 번호 이동"></div>
+      </header>
+
+      <section class="answer-summary" aria-label="답안 요약">
+        <article>
+          <span>문제 번호</span>
+          <strong id="questionNumber">1번</strong>
+        </article>
+        <article>
+          <span>결과</span>
+          <strong id="resultState">정답</strong>
+        </article>
+        <article>
+          <span>사용자 답안</span>
+          <strong id="userAnswer">2번</strong>
+        </article>
+        <article>
+          <span>정답</span>
+          <strong id="correctAnswer">2번</strong>
+        </article>
+      </section>
+
+      <section class="question-box" aria-label="문제 내용">
+        <div class="box-heading">
+          <span>문제</span>
+          <strong id="questionType">한국사 기본 개념</strong>
+        </div>
+        <h2 id="questionTitle">다음 중 흥선 대원군의 정책으로 옳은 것은?</h2>
+        <p id="questionSource">세도 정치의 폐단을 바로잡고 왕권을 강화하기 위한 개혁 정책을 추진하였다.</p>
+        <ol class="choice-review" id="choiceReview"></ol>
+      </section>
+
+      <section class="explain-grid" aria-label="해설 상세">
+        <article>
+          <h2>해설</h2>
+          <p id="explanation">흥선 대원군은 왕권 강화를 위해 서원을 정리하고 비변사를 축소했습니다.</p>
+        </article>
+        <article>
+          <h2>오답설명</h2>
+          <p id="wrongExplanation">비변사 기능 강화, 통리기무아문 설치 등은 시대와 주체가 다릅니다.</p>
+        </article>
+        <article>
+          <h2>핵심개념</h2>
+          <p id="coreConcept">흥선 대원군의 개혁: 서원 철폐, 비변사 축소, 경복궁 중건, 호포제.</p>
+        </article>
+      </section>
+
+      <nav class="review-actions" aria-label="해설 이동">
+        <button class="outline-button" id="prevQuestion" type="button">이전 문제</button>
+        <button class="outline-button" id="nextQuestion" type="button">다음 문제</button>
+        <button class="dark-button" id="wrongOnly" type="button">틀린 문제 보기</button>
+        <button class="primary-button" id="pdfSave" type="button">오답노트 저장</button>
+      </nav>
+    </section>
+
+    <section class="diagnosis-summary" aria-label="전체 진단 결과">
+      <div class="summary-copy">
+        <span class="page-kicker">진단 결과</span>
+
+        <p>풀었던 문제 전체를 기반으로 현재 수준, 정답률, 취약 유형을 요약합니다.</p>
+      </div>
+      <div class="summary-grid">
+        <article>
+          <span>현재 수준</span>
+          <strong id="levelText" style = "color: red;">B+</strong>
+          <p id="levelDescription">기본 개념은 안정적이고, 시대 구분 문제 보완이 필요합니다.</p>
+        </article>
+        <article>
+          <span>정답률</span>
+          <strong id="accuracyText" style="color: red;">0%</strong>
+          <p id="accuracyCount">0 / 20</p>
+        </article>
+        <article>
+          <span>취약 TOP 3</span>
+          <ul id="weakTopics"></ul>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const fallbackQuestions = [
+      {
+        type: "한국사 기본 개념",
+        title: "다음 중 흥선 대원군의 정책으로 옳은 것은?",
+        source: "세도 정치의 폐단을 바로잡고 왕권을 강화하기 위한 개혁 정책을 추진하였다.",
+        choices: ["비변사의 기능을 강화하였다.", "서원을 대폭 정리하였다.", "당백전 발행을 중단하였다.", "통리기무아문을 설치하였다.", "대한제국 수립을 선포하였다."],
+      },
+      {
+        type: "고대 국가",
+        title: "삼국 시대 백제의 문화유산으로 옳은 것은?",
+        source: "백제는 일본 고대 문화 형성에도 영향을 주었고, 세련된 불교 문화를 발전시켰다.",
+        choices: ["첨성대", "무령왕릉", "팔만대장경", "불국사 삼층석탑", "경천사지 십층석탑"],
+      },
+    ];
+
+    const answerKey = [2, 2, 3, 1, 1, 2, 1, 2, 2, 1, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1];
+    const conceptMap = {
+      "한국사 기본 개념": "흥선 대원군의 개혁: 비변사 축소, 서원 철폐, 호포제, 경복궁 중건.",
+      "고대 국가": "백제 문화: 무령왕릉, 금동대향로, 일본 문화 전파.",
+      "고려 정치": "무신 집권기 권력 기구와 최씨 정권의 통치 체제를 구분합니다.",
+      "조선 제도": "조선 지방 행정은 8도, 관찰사, 수령, 향리, 유향소를 함께 봅니다.",
+      "근대 개혁": "갑오개혁은 신분제 폐지, 과거제 폐지, 근대 제도 개편이 핵심입니다.",
+    };
+
+    const saved = JSON.parse(localStorage.getItem("diagnosisResult") || "null");
+    const questions = saved?.questions?.length ? saved.questions : fallbackQuestions;
+    const answers = saved?.answers?.length ? saved.answers : Array(questions.length).fill(null);
+    let currentIndex = 0;
+    let wrongMode = false;
+
+    const questionNumber = document.getElementById("questionNumber");
+    const resultState = document.getElementById("resultState");
+    const userAnswer = document.getElementById("userAnswer");
+    const correctAnswer = document.getElementById("correctAnswer");
+    const questionType = document.getElementById("questionType");
+    const questionTitle = document.getElementById("questionTitle");
+    const questionSource = document.getElementById("questionSource");
+    const choiceReview = document.getElementById("choiceReview");
+    const explanation = document.getElementById("explanation");
+    const wrongExplanation = document.getElementById("wrongExplanation");
+    const coreConcept = document.getElementById("coreConcept");
+    const questionJump = document.getElementById("questionJump");
+    const accuracyText = document.getElementById("accuracyText");
+    const accuracyCount = document.getElementById("accuracyCount");
+    const levelText = document.getElementById("levelText");
+    const levelDescription = document.getElementById("levelDescription");
+    const weakTopics = document.getElementById("weakTopics");
+
+    function correctOf(index) {
+      return answerKey[index] || 1;
+    }
+
+    function isCorrect(index) {
+      return answers[index] === correctOf(index);
+    }
+
+    function answerLabel(value) {
+      return value ? `${value}번` : "미응답";
+    }
+
+    function renderJump() {
+      questionJump.innerHTML = questions.map((_, index) => `
+        <button class="${index === currentIndex ? "active" : ""} ${isCorrect(index) ? "correct" : "wrong"}" type="button" data-index="${index}">
+          ${index + 1}
+        </button>
+      `).join("");
+
+      questionJump.querySelectorAll("button").forEach((button) => {
+        button.addEventListener("click", () => {
+          currentIndex = Number(button.dataset.index);
+          renderQuestion();
+        });
+      });
+    }
+
+    function renderQuestion() {
+      const question = questions[currentIndex];
+      const correct = correctOf(currentIndex);
+      const selected = answers[currentIndex];
+      const passed = isCorrect(currentIndex);
+
+      questionNumber.textContent = `${currentIndex + 1}번`;
+      resultState.textContent = passed ? "정답" : "오답";
+      resultState.className = passed ? "is-correct" : "is-wrong";
+      userAnswer.textContent = answerLabel(selected);
+      correctAnswer.textContent = answerLabel(correct);
+      questionType.textContent = question.type;
+      questionTitle.textContent = question.title;
+      questionSource.textContent = question.source;
+      choiceReview.innerHTML = question.choices.map((choice, index) => {
+        const number = index + 1;
+        const classes = [
+          number === correct ? "correct" : "",
+          number === selected ? "selected" : "",
+        ].filter(Boolean).join(" ");
+        return `<li class="${classes}"><span>${number}</span><b>${choice}</b></li>`;
+      }).join("");
+
+      explanation.textContent = `${answerLabel(correct)}이 정답입니다. 문제의 핵심 단서는 "${question.source}"에 있습니다.`;
+      wrongExplanation.textContent = selected && selected !== correct
+        ? `${answerLabel(selected)}은(는) 시대, 주체, 제도 중 하나가 맞지 않습니다. 정답 선지의 핵심 키워드를 먼저 확인하세요.`
+        : "오답 선지는 시대 구분이나 제도 명칭이 달라 헷갈리기 쉽습니다.";
+      coreConcept.textContent = conceptMap[question.type] || "문제 키워드, 시대, 제도명을 연결해 개념을 정리하세요.";
+      renderJump();
+      renderSummary();
+    }
+
+    function renderSummary() {
+      const total = questions.length;
+      const correctCount = questions.filter((_, index) => isCorrect(index)).length;
+      const accuracy = total ? Math.round((correctCount / total) * 100) : 0;
+      accuracyText.textContent = `${accuracy}%`;
+      accuracyCount.textContent = `${correctCount} / ${total}`;
+      levelText.textContent = accuracy >= 80 ? "1급" : accuracy >= 70 ? "2급" : accuracy >= 60 ? "3급" : "재시험";
+      levelDescription.textContent = accuracy >= 80
+        ? "상위권 수준입니다. 고난도 사료와 시대 통합 문제를 보완하세요."
+        : accuracy >= 70
+          ? "기본 개념은 안정적입니다. 오답 문제의 시대 구분과 제도명을 보완하세요."
+          : accuracy >= 60
+            ? "핵심 흐름은 잡혀 있습니다. 취약 시대를 중심으로 복습하세요."
+            : "재시험 권장 수준입니다. 핵심 개념부터 다시 정리하는 것이 좋습니다.";
+
+      const wrongTypes = questions
+        .map((question, index) => ({ type: question.type, wrong: !isCorrect(index) }))
+        .filter((item) => item.wrong)
+        .map((item) => item.type)
+        .slice(0, 3);
+      const topics = wrongTypes.length ? wrongTypes : ["시대 구분", "제도 명칭", "사료 키워드"];
+      weakTopics.innerHTML = topics.map((topic) => `<li>${topic}</li>`).join("");
+    }
+
+    function move(delta) {
+      const targets = wrongMode
+        ? questions.map((_, index) => index).filter((index) => !isCorrect(index))
+        : questions.map((_, index) => index);
+      const currentPosition = Math.max(0, targets.indexOf(currentIndex));
+      const nextPosition = Math.min(Math.max(currentPosition + delta, 0), targets.length - 1);
+      currentIndex = targets[nextPosition] ?? currentIndex;
+      renderQuestion();
+    }
+
+    document.getElementById("prevQuestion").addEventListener("click", () => move(-1));
+    document.getElementById("nextQuestion").addEventListener("click", () => move(1));
+    document.getElementById("wrongOnly").addEventListener("click", (event) => {
+      wrongMode = !wrongMode;
+      event.currentTarget.classList.toggle("active", wrongMode);
+      const firstWrong = questions.findIndex((_, index) => !isCorrect(index));
+      if (wrongMode && firstWrong >= 0) currentIndex = firstWrong;
+      renderQuestion();
+    });
+    document.getElementById("pdfSave").addEventListener("click", () => window.print());
+
+    renderQuestion();
+  </script>
+</body>
+</html>
