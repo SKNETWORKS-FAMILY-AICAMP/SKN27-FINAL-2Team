@@ -1,45 +1,10 @@
-:root {
-  --bg: #fbf7f2;
-  --panel: #ffffff;
-  --ink: #202936;
-  --muted: #8a6b4e;
-  --line: #ead9c7;
-  --accent: #8a5f3d;
-  --accent-soft: #fff3e6;
-  --green: #18a66b;
-  --shadow: 0 22px 54px rgba(95, 62, 34, 0.14);
-}
-
 * {
   box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  min-height: 100svh;
-  background:
-    radial-gradient(circle at 82% 14%, rgba(185, 137, 88, 0.15), transparent 210px),
-    linear-gradient(135deg, #fffaf4, #f7efe6);
-  color: var(--ink);
-  font-family: "Malgun Gothic", "Apple SD Gothic Neo", Arial, sans-serif;
-  line-height: 1.6;
 }
 
 a {
   color: inherit;
   text-decoration: none;
-}
-
-.site-header {
-  min-height: 84px;
-  display: grid;
-  grid-template-columns: 220px minmax(0, 1fr) 220px;
-  align-items: center;
-  gap: 22px;
-  padding: 0 clamp(20px, 5vw, 64px);
-  border-bottom: 1px solid rgba(234, 217, 199, 0.72);
-  background: rgba(255, 250, 244, 0.82);
-  backdrop-filter: blur(18px);
 }
 
 .brand {
@@ -56,63 +21,6 @@ a {
   display: block;
   object-fit: contain;
   object-position: left center;
-}
-
-.main-nav {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-}
-
-.main-nav a {
-  min-height: 42px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 15px;
-  border-radius: 8px;
-  color: #6f4f34;
-  font-size: 14px;
-  font-weight: 900;
-  white-space: nowrap;
-}
-
-.main-nav a:hover,
-.main-nav a.active {
-  background: var(--accent-soft);
-  color: var(--accent);
-}
-
-.header-actions {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 10px;
-}
-
-.outline-button,
-.ghost-button {
-  height: 42px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 16px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 900;
-}
-
-.outline-button {
-  border: 1px solid var(--accent);
-  background: #fff;
-  color: var(--accent);
-}
-
-.ghost-button {
-  border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.85);
-  color: #6f4f34;
 }
 
 .mypage {
@@ -611,8 +519,7 @@ a {
 .planned-dot { background: #b7d7a2; }
 .today-dot { background: var(--accent); }
 
-@media (max-width: 980px) {
-  .summary-strip {
+@media (max-width: 980px) {.summary-strip {
     grid-template-columns: repeat(2, 1fr);
   }
 
@@ -633,32 +540,8 @@ a {
   }
 }
 
-@media (max-width: 700px) {
-  .site-header {
-    height: auto;
-    grid-template-columns: 1fr;
-    align-items: stretch;
-    gap: 10px;
-    padding: 14px 18px;
-  }
-
-  .brand {
+@media (max-width: 700px) {.brand {
     align-self: center;
-  }
-
-  .main-nav {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
-  }
-
-  .header-actions {
-    justify-content: stretch;
-  }
-
-  .outline-button,
-  .ghost-button {
-    flex: 1;
   }
 
   .summary-strip,
@@ -693,33 +576,6 @@ a {
   }
 }
 
-/* himate landing visual refresh */
-:root {
-  --bg: #ffffff;
-  --panel: #ffffff;
-  --ink: #0e0f0c;
-  --muted: #5f665a;
-  --line: #dce4d4;
-  --accent: #163300;
-  --accent-soft: #eef5e8;
-  --green: #9fe870;
-  --shadow: 0 24px 58px rgba(14, 15, 12, 0.12);
-}
-
-body {
-  background: #fff;
-  color: var(--ink);
-  font-family: Arial, "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
-  line-height: 1.5;
-}
-
-.site-header {
-  min-height: 64px;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  border-bottom-color: rgba(220, 228, 212, 0.8);
-  background: rgba(255, 255, 255, 0.92);
-}
-
 .brand {
   width: auto;
   height: auto;
@@ -728,41 +584,6 @@ body {
 
 .brand img {
   display: none;
-}
-
-.brand::after {
-  content: "himate";
-  color: var(--accent);
-  font-size: 22px;
-  line-height: 1;
-  font-weight: 950;
-}
-
-.main-nav a {
-  border-radius: 999px;
-  color: #24301f;
-}
-
-.main-nav a:hover,
-.main-nav a.active {
-  background: var(--accent-soft);
-  color: var(--accent);
-}
-
-.outline-button,
-.ghost-button {
-  border-radius: 999px;
-}
-
-.outline-button {
-  border-color: #cfd8c7;
-  color: var(--accent);
-}
-
-.ghost-button {
-  border-color: transparent;
-  background: var(--green);
-  color: var(--accent);
 }
 
 .mypage {
@@ -846,26 +667,7 @@ body {
   background: #fff;
 }
 
-@media (min-width: 981px) {
-  body {
-    overflow: hidden;
-  }
-
-  .site-header {
-    min-height: 56px;
-    padding-inline: clamp(18px, 4vw, 56px);
-  }
-
-  .main-nav a,
-  .outline-button,
-  .ghost-button {
-    min-height: 36px;
-    height: 36px;
-    padding-inline: 14px;
-    font-size: 13px;
-  }
-
-  .mypage {
+@media (min-width: 981px) {.mypage {
     height: calc(100svh - 56px);
     display: grid;
     grid-template-rows: auto auto auto 1fr auto;
@@ -1007,12 +809,7 @@ body {
 }
 
 /* Mypage can scroll naturally because it has dashboard-level content. */
-@media (min-width: 981px) {
-  body {
-    overflow: auto;
-  }
-
-  .mypage {
+@media (min-width: 981px) {.mypage {
     height: auto;
     min-height: calc(100svh - 56px);
     display: block;
@@ -1136,8 +933,7 @@ body {
   opacity: 0.78;
 }
 
-@media (max-width: 700px) {
-  .calendar {
+@media (max-width: 700px) {.calendar {
     padding: 14px;
   }
 

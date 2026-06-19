@@ -1,16 +1,3 @@
-:root {
-  --lime: #9fe870;
-  --lime-dark: #163300;
-  --ink: #0e0f0c;
-  --muted: #5f665a;
-  --soft: #f4f8ef;
-  --line: #dce4d4;
-  --blue: #9ddedc;
-  --peach: #ffc79d;
-  --lavender: #d9d2ff;
-  --shadow: 0 24px 58px rgba(14, 15, 12, 0.12);
-}
-
 * {
   box-sizing: border-box;
 }
@@ -20,31 +7,9 @@ html {
   scroll-snap-type: y mandatory;
 }
 
-body {
-  margin: 0;
-  background: #fff;
-  color: var(--ink);
-  font-family: Arial, "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
-  line-height: 1.5;
-}
-
 a {
   color: inherit;
   text-decoration: none;
-}
-
-.site-header {
-  position: sticky;
-  top: 0;
-  z-index: 50;
-  min-height: 64px;
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  gap: clamp(14px, 2vw, 26px);
-  padding: 0 clamp(18px, 5vw, 76px);
-  background: #fff;
-  border-bottom: 1px solid rgba(220, 228, 212, 0.8);
 }
 
 .brand {
@@ -52,55 +17,6 @@ a {
   font-size: 22px;
   font-weight: 950;
   letter-spacing: 0;
-}
-
-.main-nav,
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: clamp(10px, 1.6vw, 18px);
-}
-
-.main-nav {
-  justify-content: center;
-  min-width: 0;
-}
-
-.main-nav a {
-  color: #24301f;
-  font-size: 14px;
-  font-weight: 850;
-  white-space: nowrap;
-}
-
-.header-actions {
-  justify-content: flex-end;
-}
-
-.pill-button,
-.primary-button,
-.secondary-button {
-  min-height: 40px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 999px;
-  padding: 0 22px;
-  font-size: 14px;
-  font-weight: 900;
-  white-space: nowrap;
-}
-
-.pill-button,
-.primary-button {
-  background: var(--lime);
-  color: var(--lime-dark);
-}
-
-.secondary-button {
-  border: 1px solid #cfd8c7;
-  background: #fff;
-  color: var(--lime-dark);
 }
 
 .small {
@@ -530,21 +446,8 @@ a {
   transition-delay: 0.12s;
 }
 
-@media (max-width: 980px) {
-  html {
+@media (max-width: 980px) {html {
     scroll-snap-type: none;
-  }
-
-  .site-header {
-    grid-template-columns: 1fr auto;
-    row-gap: 10px;
-    padding: 14px 18px;
-  }
-
-  .main-nav {
-    grid-column: 1 / -1;
-    justify-content: flex-start;
-    overflow-x: auto;
   }
 
   .feature-section {
@@ -576,12 +479,7 @@ a {
   }
 }
 
-@media (max-width: 640px) {
-  .header-actions {
-    display: none;
-  }
-
-  .hero {
+@media (max-width: 640px) {.hero {
     min-height: auto;
     padding: 58px 18px 72px;
   }
@@ -610,8 +508,7 @@ a {
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  html {
+@media (prefers-reduced-motion: reduce) {html {
     scroll-behavior: auto;
   }
 

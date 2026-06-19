@@ -1,26 +1,5 @@
-:root {
-  --bg: #fbf7f2;
-  --ink: #202936;
-  --muted: #8a6b4e;
-  --line: #ead9c7;
-  --accent: #8a5f3d;
-  --green: #18a66b;
-  --shadow: 0 22px 54px rgba(95, 62, 34, 0.14);
-}
-
 * {
   box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  min-height: 100svh;
-  background:
-    radial-gradient(circle at 78% 18%, rgba(185, 137, 88, 0.17), transparent 210px),
-    linear-gradient(135deg, #fffaf4, #f7efe6);
-  color: var(--ink);
-  font-family: "Malgun Gothic", "Apple SD Gothic Neo", Arial, sans-serif;
-  line-height: 1.6;
 }
 
 a {
@@ -133,18 +112,6 @@ input {
   gap: 10px;
 }
 
-.action-button {
-  height: 48px;
-  border: 1px solid var(--green);
-  border-radius: 8px;
-  background: #fff;
-  color: var(--green);
-  font-size: 13px;
-  font-weight: 900;
-  cursor: pointer;
-  white-space: nowrap;
-}
-
 .verification-field {
   animation: reveal 0.22s ease both;
 }
@@ -183,18 +150,6 @@ input {
   white-space: nowrap;
 }
 
-.submit-button {
-  height: 52px;
-  margin-top: 4px;
-  border: 0;
-  border-radius: 8px;
-  background: linear-gradient(180deg, #18b979, var(--green));
-  color: #fff;
-  font-weight: 900;
-  cursor: pointer;
-  box-shadow: 0 12px 24px rgba(24, 166, 107, 0.18);
-}
-
 @keyframes reveal {
   from {
     opacity: 0;
@@ -207,8 +162,7 @@ input {
   }
 }
 
-@media (max-width: 560px) {
-  .auth-page {
+@media (max-width: 560px) {.auth-page {
     padding: 16px;
   }
 
@@ -243,26 +197,6 @@ input {
   }
 }
 
-/* himate landing visual refresh */
-:root {
-  --bg: #ffffff;
-  --ink: #0e0f0c;
-  --muted: #5f665a;
-  --line: #dce4d4;
-  --accent: #163300;
-  --green: #9fe870;
-  --shadow: 0 24px 58px rgba(14, 15, 12, 0.12);
-}
-
-body {
-  background:
-    linear-gradient(180deg, rgba(159, 232, 112, 0.18), transparent 42%),
-    #fff;
-  color: var(--ink);
-  font-family: Arial, "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
-  line-height: 1.5;
-}
-
 .auth-card {
   border-color: var(--line);
   border-radius: 8px;
@@ -279,14 +213,6 @@ body {
 
 .brand img {
   display: none;
-}
-
-.brand::after {
-  content: "himate";
-  color: var(--accent);
-  font-size: 32px;
-  line-height: 1;
-  font-weight: 950;
 }
 
 .auth-heading h1 {
@@ -328,23 +254,7 @@ body {
   accent-color: var(--green);
 }
 
-.action-button {
-  border-color: #cfd8c7;
-  color: var(--accent);
-}
-
-.submit-button {
-  background: var(--green);
-  color: var(--accent);
-  box-shadow: none;
-}
-
-@media (min-width: 721px) {
-  body {
-    overflow: hidden;
-  }
-
-  .auth-page {
+@media (min-width: 721px) {.auth-page {
     min-height: 100svh;
     padding: 16px;
   }
