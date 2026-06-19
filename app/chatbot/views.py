@@ -6,6 +6,7 @@ import urllib.parse
 import urllib.request
 
 from django.http import HttpResponse, JsonResponse
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from django.views.decorators.http import require_GET
 from django.views.decorators.http import require_POST
@@ -13,12 +14,16 @@ from django.views.decorators.http import require_POST
 from .rag_service import build_history_rag_answer
 
 
+@login_required
 def chat_page(request):
     return render(request, "chatbot/chat.html")
 
 
 @require_POST
 def rag_chat_api(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "로그인이 필요합니다."}, status=401)
+
     try:
         payload = json.loads(request.body.decode("utf-8"))
     except json.JSONDecodeError:

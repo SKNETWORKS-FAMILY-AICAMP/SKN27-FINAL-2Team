@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>himate | 정보 수정</title>
+  <link rel="stylesheet" href="/static/user/css/profile_edit.css" />
+  <link rel="stylesheet" href="/static/himate.css" />
+  <link rel="stylesheet" href="/static/layout.css" />
+</head>
+<body>
+  <header class="site-header" aria-label="정보수정 메뉴">
+    <a class="brand" href="/" aria-label="himate 홈">himate</a>
+    <nav class="main-nav" aria-label="학습 메뉴">
+      <a href="/diagnosis/">진단 평가</a>
+      <a href="/question/">문제 풀이</a>
+      <a href="/chatbot/">챗봇</a>
+      <a class="active" href="/user/mypage/">나의 학습실</a>
+    </nav>
+    <nav class="header-actions" aria-label="계정 메뉴">
+      <a class="ghost-button" href="/user/logout/">로그아웃</a>
+    </nav>
+  </header>
+
+  <main class="profile-page">
+    <section class="profile-shell" aria-label="정보 수정">
+      <div class="profile-copy">
+        <p class="page-kicker">Study settings</p>
+        <h1>내 학습 정보를<br />가볍게 맞춰두세요</h1>
+        <p>
+          하루에 공부할 수 있는 시간과 시험일을 기준으로 학습실의 추천 흐름을 더 정확하게 만들 수 있습니다.
+        </p>
+      </div>
+
+      <form class="profile-card" method="post" action="/user/profile/edit/">
+        {% csrf_token %}
+        <div class="card-heading">
+          <span>himate</span>
+          <h2>정보 수정</h2>
+        </div>
+
+        {% if messages %}
+          <div class="auth-messages" role="status" aria-live="polite">
+            {% for message in messages %}
+              <p class="auth-message {{ message.tags }}">{{ message }}</p>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        <label class="profile-field" for="nickname">
+          <span>닉네임</span>
+          <input id="nickname" name="nickname" type="text" maxlength="30" value="{{ request.user.nickname }}" required />
+        </label>
+
+        <label class="profile-field" for="dailyAvailableHours">
+          <span>학습 가용시간</span>
+          <div class="hour-input">
+            <input
+              id="dailyAvailableHours"
+              name="daily_available_hours"
+              type="number"
+              min="0.5"
+              max="12"
+              step="0.5"
+              value="{{ profile.daily_available_hours }}"
+              required
+            />
+            <em>시간 / 하루</em>
+          </div>
+        </label>
+
+        <label class="profile-field" for="examDate">
+          <span>시험일</span>
+          <input id="examDate" name="exam_date" type="date" value="{{ profile.exam_date|date:'Y-m-d' }}" />
+        </label>
+
+        <div class="profile-preview" aria-label="저장되는 정보">
+          <article>
+            <span>로그인 이메일</span>
+            <strong>{{ request.user.email }}</strong>
+          </article>
+          <article>
+            <span>계정 상태</span>
+            <strong>{{ request.user.status }}</strong>
+          </article>
+        </div>
+
+        <div class="profile-actions">
+          <a class="ghost-button" href="/user/mypage/">취소</a>
+          <button class="primary-button" type="submit">저장하기</button>
+        </div>
+      </form>
+    </section>
+  </main>
+</body>
+</html>
