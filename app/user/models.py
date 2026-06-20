@@ -53,10 +53,11 @@ class EmailVerificationCode(models.Model):
     purpose = models.CharField(max_length=20, default="register")
     is_used = models.BooleanField(default=False)
     expires_at = models.DateTimeField()
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField()
     used_at = models.DateTimeField(blank=True, null=True)
 
     class Meta:
+        managed = False
         db_table = "email_verification_codes"
         indexes = [
             models.Index(fields=["email", "purpose", "is_used"]),
@@ -82,8 +83,9 @@ class UserStudyProfile(models.Model):
     )
     daily_available_hours = models.DecimalField(max_digits=3, decimal_places=1, default=1.0)
     exam_date = models.DateField(blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField()
+    updated_at = models.DateTimeField()
 
     class Meta:
+        managed = False
         db_table = "user_study_profiles"
