@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="ko">
 <head>
   <meta charset="utf-8" />
@@ -21,19 +21,28 @@
       <a class="active" href="/user/mypage/">나의 학습실</a>
     </nav>
     <nav class="header-actions" aria-label="계정 메뉴">
-      <a class="outline-button" href="#">정보 수정</a>
-      <a class="ghost-button" href="/user/login/">로그아웃</a>
+      <a class="outline-button" href="/user/profile/edit/">정보 수정</a>
+      <a class="ghost-button" href="/user/logout/">로그아웃</a>
     </nav>
   </header>
 
   <main class="mypage">
     <section class="page-title">
-      <p>OO님의 마이페이지</p>
+      <p>{{ request.user.nickname }}님의 마이페이지</p>
       <h1>나의 학습실</h1>
     </section>
 
     <section class="summary-strip" aria-label="학습 요약">
-      <article><span>D-day</span><strong>D - 28</strong></article>
+      <article>
+        <span>D-day</span>
+        <strong>
+          {% if d_day != None %}
+            {% if d_day > 0 %}D - {{ d_day }}{% elif d_day == 0 %}D-day{% else %}D + {{ d_day|cut:"-" }}{% endif %}
+          {% else %}
+            미설정
+          {% endif %}
+        </strong>
+      </article>
       <article><span>정답률</span><strong>72%</strong></article>
       <article><span>이번 주 내가 푼 문제 수</span><strong>84문제</strong></article>
       <article><span>연속 학습일수</span><strong>12일</strong></article>
@@ -164,3 +173,4 @@
   </script>
 </body>
 </html>
+
