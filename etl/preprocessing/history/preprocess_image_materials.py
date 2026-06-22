@@ -55,17 +55,6 @@ def split_category(value: str) -> tuple[str, str]:
     return main, sub
 
 
-def parse_related_contents(value: str) -> list[dict[str, str]]:
-    contents = []
-    for line in clean_text(value).splitlines():
-        if "|" in line:
-            title, url = line.split("|", 1)
-            contents.append({"title": title.strip(), "url": url.strip()})
-        elif line.strip():
-            contents.append({"title": line.strip(), "url": ""})
-    return contents
-
-
 def iter_csv_rows(input_dir: Path) -> Iterable[dict[str, str]]:
     csv_path = input_dir / "한국사_이미지_자료.csv"
     with csv_path.open("r", encoding="utf-8-sig", newline="") as fp:
@@ -79,8 +68,7 @@ def build_document(row: dict[str, str]) -> dict:
     image_id = clean_text(row.get("이미지ID"))
     title = clean_text(row.get("제목"))
     description = clean_text(row.get("설명"))
-    list_summary = clean_text(row.get("목록요약"))
-    content_body = description or list_summary
+    content_body = description
     periods = split_comma_values(clean_text(row.get("시대")))
     category_main, category_sub = split_category(clean_text(row.get("유형")))
     field = clean_text(row.get("분야"))
@@ -129,13 +117,10 @@ def build_document(row: dict[str, str]) -> dict:
         "image_path": None,
         "metadata": {
             "sequence": clean_text(row.get("순번")),
-            "author": clean_text(row.get("작성자")),
             "periods": periods,
             "category_main": category_main,
             "category_sub": category_sub,
             "image_source": clean_text(row.get("이미지출처")),
-            "license": clean_text(row.get("이용조건")),
-            "related_contents": parse_related_contents(clean_text(row.get("관련콘텐츠"))),
             "list_category": clean_text(row.get("목록분류")),
             "thumbnail_url": thumbnail_url,
             "original_image_url": original_image_url,
@@ -181,7 +166,7 @@ def write_jsonl(path: Path, rows: Iterable[dict]) -> int:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--input-dir", type=Path, default=Path("etl/preprocessing/history/raw_data/한국사 이미지 자료"))
+    parser.add_argument("--input-dir", type=Path, default=Path("etl/raw_data/한국사 이미지 자료"))
     parser.add_argument("--output-dir", type=Path, default=Path("etl/preprocessing/history/processed"))
     args = parser.parse_args()
 

@@ -88,17 +88,19 @@ def send_verification_code(request):
     if UserAccounts.objects.filter(email=email, deleted_at__isnull=True).exists():
         return JsonResponse({"ok": False, "message": "이미 가입된 이메일입니다."}, status=400)
 
+    now = timezone.now()
     code = f"{random.randint(0, 999999):06d}"
     EmailVerificationCode.objects.filter(
         email=email,
         purpose="register",
         is_used=False,
-    ).update(is_used=True, used_at=timezone.now())
+    ).update(is_used=True, used_at=now)
     verification = EmailVerificationCode.objects.create(
         email=email,
         code=code,
         purpose="register",
-        expires_at=timezone.now() + timedelta(minutes=5),
+        created_at=now,
+        expires_at=now + timedelta(minutes=5),
     )
 
     try:

@@ -32,7 +32,7 @@ a {
 }
 
 .hero {
-  min-height: calc(100svh - 64px);
+  min-height: 100svh;
   display: grid;
   place-items: center;
   align-content: center;
@@ -83,6 +83,12 @@ a {
   justify-content: center;
   gap: 12px;
   flex-wrap: wrap;
+}
+
+.hero-actions .primary-button {
+  border: 2px solid #ffffff !important;
+  background: #ffffff !important;
+  color: var(--hm-green) !important;
 }
 
 .feature-section {
@@ -417,6 +423,7 @@ a {
 
 .cta-panel h2 {
   margin: 0;
+  color: #ffffff;
   font-size: clamp(54px, 7vw, 108px);
   line-height: 0.98;
   font-weight: 950;
