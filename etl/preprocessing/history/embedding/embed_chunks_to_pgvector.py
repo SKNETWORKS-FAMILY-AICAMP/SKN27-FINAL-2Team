@@ -13,7 +13,7 @@ from openai import OpenAI, RateLimitError
 from psycopg2.extras import Json, execute_values
 
 
-PROJECT_ROOT = Path(__file__).resolve().parents[3]
+PROJECT_ROOT = Path(__file__).resolve().parents[4]
 DEFAULT_PROCESSED_DIR = PROJECT_ROOT / "etl" / "preprocessing" / "history" / "processed"
 DEFAULT_CHUNK_FILES = [
     "historical_sources.chunks.jsonl",
