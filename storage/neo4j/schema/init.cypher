@@ -1,5 +1,6 @@
 MATCH (n)
 WHERE n:TermName OR n:TermTimes OR n:TermLink
+    OR n:CategoryName
 DETACH DELETE n;
 
 CREATE CONSTRAINT term_name_unique IF NOT EXISTS
@@ -10,9 +11,15 @@ CREATE CONSTRAINT term_times_unique IF NOT EXISTS
 FOR (tt:TermTimes)
 REQUIRE tt.name IS UNIQUE;
 
+DROP CONSTRAINT term_link_path_unique IF EXISTS;
+
 CREATE CONSTRAINT term_lk_unique IF NOT EXISTS
 FOR (lk:TermLink)
 REQUIRE lk.value IS UNIQUE;
+
+CREATE CONSTRAINT category_name_unique IF NOT EXISTS
+FOR (cn:CategoryName)
+REQUIRE cn.name IS UNIQUE;
 
 LOAD CSV WITH HEADERS FROM 'file:///history_terms.csv' AS row
 WITH
@@ -51,8 +58,12 @@ CALL (t, term_times) {
     MERGE (t)-[:HAS_PERIOD]->(tt)
 }
 CALL (t, term_lk) {
-    WITH t, term_lk
-    WHERE term_lk <> ''
+    WITH t, term_lk, [category IN split(term_lk, '>') WHERE trim(category) <> '' | trim(category)] AS categories
+    WHERE size(categories) > 0
     MERGE (lk:TermLink {value: term_lk})
+    SET lk.name = categories[size(categories) - 1],
+        lk.top_category = categories[0]
     MERGE (t)-[:HAS_CATEGORY]->(lk)
+    MERGE (cn:CategoryName {name: categories[size(categories) - 1]})
+    MERGE (lk)-[:HAS_CATEGORY_NAME]->(cn)
 };
