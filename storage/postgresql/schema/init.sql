@@ -21,7 +21,8 @@ CREATE TABLE IF NOT EXISTS user_accounts (
     status          VARCHAR(20)     NOT NULL DEFAULT 'active',
     created_at      TIMESTAMP       NOT NULL DEFAULT NOW(),
     updated_at      TIMESTAMP       NOT NULL DEFAULT NOW(),
-    deleted_at      TIMESTAMP       NULL
+    deleted_at      TIMESTAMP       NULL,
+    last_login      TIMESTAMP       NULL
 );
 
 -- 2. 문제
@@ -128,4 +129,25 @@ CREATE TABLE IF NOT EXISTS study_plan_mypage (
     study_plan_items    TEXT            NULL,               -- 날짜별 학습 목록 (JSON 형태 권장)
     created_at          TIMESTAMP       NOT NULL DEFAULT NOW(),
     modified_at         TIMESTAMP       NOT NULL DEFAULT NOW()
+);
+
+-- 11. 이메일 인증 코드 테이블
+CREATE TABLE IF NOT EXISTS email_verification_codes (
+    id          BIGSERIAL       PRIMARY KEY,
+    email       VARCHAR(255)    NOT NULL,
+    code        VARCHAR(6)      NOT NULL,
+    purpose     VARCHAR(20)     NOT NULL DEFAULT 'register',
+    is_used     BOOLEAN         NOT NULL DEFAULT FALSE,
+    expires_at  TIMESTAMP       NOT NULL,
+    created_at  TIMESTAMP       NOT NULL DEFAULT NOW(),
+    used_at     TIMESTAMP       NULL
+);
+
+-- 12. 사용자 학습 프로필 테이블
+CREATE TABLE IF NOT EXISTS user_study_profiles (
+    user_id                 BIGINT          PRIMARY KEY REFERENCES user_accounts(user_id) ON DELETE CASCADE,
+    daily_available_hours   DECIMAL(3,1)    NOT NULL DEFAULT 1.0,
+    exam_date               DATE            NULL,
+    created_at              TIMESTAMP       NOT NULL DEFAULT NOW(),
+    updated_at              TIMESTAMP       NOT NULL DEFAULT NOW()
 );
