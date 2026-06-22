@@ -43,15 +43,15 @@
           {% endif %}
         </strong>
       </article>
-      <article><span>정답률</span><strong>72%</strong></article>
-      <article><span>이번 주 내가 푼 문제 수</span><strong>84문제</strong></article>
+      <article><span>정답률</span><strong>{{ solve_stats.answer_rate }}%</strong></article>
+      <article><span>내가 푼 문제 수</span><strong>{{ solve_stats.solved_count }}문제</strong></article>
       <article><span>연속 학습일수</span><strong>12일</strong></article>
     </section>
 
     <nav class="quick-actions" aria-label="학습 바로가기">
       <a href="/question/exam/">오늘의 문제</a>
       <a href="/user/wrong-note/">오답노트</a>
-      <a href="/question/result/">내가 푼 문제</a>
+      <a href="/user/solved-problems/">내가 푼 문제</a>
     </nav>
 
     <section class="analytics-grid" aria-label="학습 대시보드">
@@ -61,10 +61,10 @@
 
         </div>
         <div class="time-metric">
-          <strong>02:34</strong>
-          <span>지난주보다 18초 단축</span>
+          <strong>{{ solve_stats.avg_question_time }}</strong>
+          <span>문제당 평균 · 세트당 {{ solve_stats.avg_session_time }}</span>
         </div>
-        <div class="mini-progress"><span style="width: 68%"></span></div>
+        <div class="mini-progress"><span style="width: {{ solve_stats.answer_rate }}%"></span></div>
       </article>
 
       <article class="panel weakness-panel">
@@ -84,7 +84,7 @@
       <article class="panel donut-panel">
         <div class="panel-heading compact">
           <h2>유형별 오답률</h2>
-          <a href="#">상세 보기</a>
+          <a href="/user/wrong-rate-detail/">상세 보기</a>
         </div>
         <div class="donut-layout">
           <div class="donut-chart"><strong>38%</strong><span>취약 비율</span></div>
@@ -102,11 +102,15 @@
           <a href="/chatbot/">챗봇 열기</a>
         </div>
         <div class="chatbot-stats">
-          <div><strong>31회</strong><span>이번 주 질문</span></div>
-          <div><strong>14개</strong><span>개념 정리</span></div>
-          <div><strong>9개</strong><span>오답 해설</span></div>
+          <div><strong>{{ chat_stats.total_count }}회</strong><span>전체 세션</span></div>
+          {% for type_stat in chat_stats.type_counts %}
+            <div><strong>{{ type_stat.count }}회</strong><span>{{ type_stat.chat_type }}</span></div>
+          {% empty %}
+            <div><strong>0회</strong><span>기록 없음</span></div>
+            <div><strong>0회</strong><span>기록 없음</span></div>
+          {% endfor %}
         </div>
-        <p>가장 많이 질문한 주제는 근현대 정치예요.</p>
+        <p>가장 많이 사용한 챗봇 유형은 {{ chat_stats.top_type }}입니다.</p>
       </article>
     </section>
 
