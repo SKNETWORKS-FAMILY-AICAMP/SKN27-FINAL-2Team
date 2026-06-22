@@ -1,26 +1,19 @@
-# This is an auto-generated Django model module.
-# You'll have to do the following manually to clean this up:
-#   * Rearrange models' order
-#   * Make sure each model has one field with primary_key=True
-#   * Make sure each ForeignKey and OneToOneField has `on_delete` set to the desired behavior
-#   * Remove `managed = False` lines if you wish to allow Django to create, modify, and delete the table
-# Feel free to rename the models, but don't rename db_table values or field names.
 from django.db import models
 from django.utils import timezone
 
 
 class UserAccounts(models.Model):
     user_id = models.BigAutoField(primary_key=True)
-    email = models.CharField(unique=True, max_length=255)
+    email = models.CharField(max_length=255, unique=True)
     password_hash = models.CharField(max_length=255)
-    nickname = models.CharField(max_length=30)
-    login_fail_count = models.IntegerField()
-    is_locked = models.BooleanField()
+    nickname = models.CharField(max_length=50, blank=True, null=True)
+    login_fail_count = models.IntegerField(default=0)
+    is_locked = models.BooleanField(default=False)
     locked_at = models.DateTimeField(blank=True, null=True)
     last_login = models.DateTimeField(blank=True, null=True)
-    status = models.CharField(max_length=20)
-    created_at = models.DateTimeField()
-    updated_at = models.DateTimeField()
+    status = models.CharField(max_length=20, default='active')
+    created_at = models.DateTimeField(blank=True, null=True)
+    updated_at = models.DateTimeField(blank=True, null=True)
     deleted_at = models.DateTimeField(blank=True, null=True)
 
     class Meta:
@@ -41,7 +34,7 @@ class UserAccounts(models.Model):
 
     @property
     def is_active(self):
-        return self.status == "active" and self.deleted_at is None and not self.is_locked
+        return self.status == 'active'
 
     def get_username(self):
         return self.email
@@ -49,43 +42,45 @@ class UserAccounts(models.Model):
 
 class EmailVerificationCode(models.Model):
     email = models.EmailField(max_length=255, db_index=True)
-    code = models.CharField(max_length=6)
-    purpose = models.CharField(max_length=20, default="register")
+    code = models.CharField(max_length=10)
+    purpose = models.CharField(max_length=20, default='register')
     is_used = models.BooleanField(default=False)
-    expires_at = models.DateTimeField()
-    created_at = models.DateTimeField()
+    created_at = models.DateTimeField(blank=True, null=True)
+    expires_at = models.DateTimeField(blank=True, null=True)
     used_at = models.DateTimeField(blank=True, null=True)
 
     class Meta:
         managed = False
-        db_table = "email_verification_codes"
+        db_table = 'email_verification_codes'
         indexes = [
-            models.Index(fields=["email", "purpose", "is_used"]),
+            models.Index(fields=['email', 'purpose']),
         ]
 
     @property
     def is_expired(self):
-        return timezone.now() >= self.expires_at
+        if self.expires_at is None:
+            return True
+        return timezone.now() > self.expires_at
 
     def mark_used(self):
         self.is_used = True
         self.used_at = timezone.now()
-        self.save(update_fields=["is_used", "used_at"])
+        self.save(update_fields=['is_used', 'used_at'])
 
 
 class UserStudyProfile(models.Model):
     user = models.OneToOneField(
         UserAccounts,
-        models.CASCADE,
-        db_column="user_id",
+        on_delete=models.CASCADE,
+        related_name='study_profile',
+        db_column='user_id',
         primary_key=True,
-        related_name="study_profile",
     )
-    daily_available_hours = models.DecimalField(max_digits=3, decimal_places=1, default=1.0)
+    daily_available_hours = models.DecimalField(
+        max_digits=4, decimal_places=1, blank=True, null=True
+    )
     exam_date = models.DateField(blank=True, null=True)
-    created_at = models.DateTimeField()
-    updated_at = models.DateTimeField()
 
     class Meta:
         managed = False
-        db_table = "user_study_profiles"
+        db_table = 'user_study_profiles'
