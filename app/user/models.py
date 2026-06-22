@@ -45,7 +45,7 @@ class EmailVerificationCode(models.Model):
     code = models.CharField(max_length=10)
     purpose = models.CharField(max_length=20, default='register')
     is_used = models.BooleanField(default=False)
-    created_at = models.DateTimeField(blank=True, null=True)
+    created_at = models.DateTimeField(default=timezone.now)
     expires_at = models.DateTimeField(blank=True, null=True)
     used_at = models.DateTimeField(blank=True, null=True)
 
@@ -77,7 +77,7 @@ class UserStudyProfile(models.Model):
         primary_key=True,
     )
     daily_available_hours = models.DecimalField(
-        max_digits=4, decimal_places=1, blank=True, null=True
+        max_digits=4, decimal_places=1, blank=True, default=1.0
     )
     exam_date = models.DateField(blank=True, null=True)
 

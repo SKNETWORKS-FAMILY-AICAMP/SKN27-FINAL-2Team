@@ -138,15 +138,13 @@ def infer_period(book_title: str, title: str) -> str:
 def build_document(row: dict[str, str]) -> dict:
     book_no = clean_text(row.get("권번호"))
     book_title = clean_text(row.get("권명"))
-    page_order = clean_text(row.get("페이지순서"))
     title = clean_text(row.get("제목"))
     body = clean_text(row.get("본문"))
     footnote = clean_text(row.get("각주"))
-    image_description = clean_text(row.get("이미지설명"))
     hierarchy = parse_title_hierarchy(title)
     period = infer_period(book_title, title)
-    original_id = clean_text(row.get("페이지ID")) or f"nh_{book_no}_{page_order}_{stable_id(title)}"
-    keywords = split_keywords(book_title, title, period, image_description)
+    original_id = clean_text(row.get("페이지ID")) or f"nh_{book_no}_{stable_id(title, body)}"
+    keywords = split_keywords(book_title, title, period)
     category = " > ".join(part for part in hierarchy.values() if part)
     category_tags = build_category_tags(
         title=title,
@@ -161,14 +159,12 @@ def build_document(row: dict[str, str]) -> dict:
         period=period,
         category=f"{book_title} > {category}",
         content=body,
-        extra_text=image_description,
+        extra_text="",
     )
 
     content_parts = [body]
     if footnote:
         content_parts.append(f"[각주]\n{footnote}")
-    if image_description:
-        content_parts.append(f"[이미지 설명]\n{image_description}")
 
     return {
         "doc_id": original_id if original_id.startswith("nh_") else f"nh_{original_id}",
@@ -183,14 +179,10 @@ def build_document(row: dict[str, str]) -> dict:
         "category": category,
         "keywords": keywords,
         "source_url": clean_text(row.get("원본URL")),
-        "image_path": clean_text(row.get("이미지파일")) or None,
         "metadata": {
             "book_no": book_no,
             "book_title": book_title,
-            "page_order": page_order,
             "page_id": clean_text(row.get("페이지ID")),
-            "image_url": clean_text(row.get("이미지URL")),
-            "image_description": image_description,
             "source_file": row.get("_source_file"),
             "category_tags": category_tags,
             "chronology": chronology,
@@ -221,7 +213,6 @@ def build_chunks(document: dict, chunk_size: int, overlap: int) -> list[dict]:
                     "category": document["category"],
                     "keywords": document["keywords"],
                     "source_url": document["source_url"],
-                    "image_path": document["image_path"],
                 },
             }
         )
@@ -239,7 +230,7 @@ def write_jsonl(path: Path, rows: Iterable[dict]) -> int:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--input-dir", type=Path, default=Path("etl/preprocessing/history/raw_data/신편 한국사 csv"))
+    parser.add_argument("--input-dir", type=Path, default=Path("etl/raw_data/신편 한국사 csv"))
     parser.add_argument("--output-dir", type=Path, default=Path("etl/preprocessing/history/processed"))
     parser.add_argument("--chunk-size", type=int, default=1200)
     parser.add_argument("--chunk-overlap", type=int, default=150)
