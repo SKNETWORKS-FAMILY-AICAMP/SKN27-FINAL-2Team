@@ -1,0 +1,2202 @@
+[
+  {
+    "exam_round": 78,
+    "exam_level": "심화",
+    "question_no": 1,
+    "q_score": 1,
+    "era": "선사 시대",
+    "topic": "문화",
+    "question_type": "역사 지식의 이해",
+    "content": "(가) 시대의 생활 모습으로 가장 적절한 것은?",
+    "passage": "오늘 소개할 곳은 여수 안도 조개더미 유적입니다. 이 유적에서는 농경과 목축이 시작된 (가) 시대의 인물과 조개팔찌 등이 출토되어 당신의 매장 풍습을 확인할 수 있습니다. 또한 이 유적에서 출토된 덧무니 토기, 놀러진 무늬 토기 등을 통해 (가) 시대에는 빗살무늬 토기가 이외에도 다양한 토기가 사용되었음을 알 수 있습니다.",
+    "visual_note": "그림에는 조개더미 유적의 모습과 관련된 유물들이 포함되어 있으며, 이를 통해 (가) 시대의 생활 모습을 유추할 수 있다.",
+    "question_image_path": "test/CJ/test_q/output_78/question_images/q_001.png",
+    "answer_no": 5,
+    "answer_explanation": "사사오입의 논리로 통합된 이승만 정부 시기인 1954년 11월 29일 공포된 제3차 개헌안은 '사사오입'의 개념을 도입했다. 이 개헌안은 3개 개헌을 통해 국민의 권리와 의무를 규정하고, 대통령의 권한을 강화하는 방향으로 진행되었다. 이로 인해 정치적 불안정성이 증가하였고, 1960년 3월 15일 부정선거가 발생하게 되었다.",
+    "core_concept": "사사오입의 개념",
+    "parse_status": "ok",
+    "choices": [
+      {
+        "choice_no": 1,
+        "content": "청동 방울 등을 의례 도구로 이용하였다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 2,
+        "content": "주먹도끼 등 덧석기를 만들기 시작하였다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 3,
+        "content": "거푸집을 사용하여 세형 동검을 제작하였다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 4,
+        "content": "쟁기, 쇠스랑 등의 철제 농기구를 사용하였다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 5,
+        "content": "가락바퀴와 쌀바늘을 이용하여 옷을 만들었다.",
+        "is_answer": true
+      }
+    ]
+  },
+  {
+    "exam_round": 78,
+    "exam_level": "심화",
+    "question_no": 2,
+    "q_score": 3,
+    "era": "고조선",
+    "topic": "사건",
+    "question_type": "연대기의 파악",
+    "content": "(가)~(다) 학생이 발표한 내용을 일어난 순서대로 옮게 나열한 것은?",
+    "passage": "고조선의 성장과 변천\n연의 장수가 진개가 고조선을 침략하였어요.\n우거왕이 한 무제가 파견한 군대에 맞서 싸웠어요.\n위만이 진번과 임둔을 복속시키고 세력을 확장하였어요.",
+    "visual_note": "학생들이 발표하는 장면을 보고 순서를 판단해야 합니다.",
+    "question_image_path": "test/CJ/test_q/output_78/question_images/q_002.png",
+    "answer_no": 2,
+    "answer_explanation": "김대중 정부의 통일 노력이 1998년 6월 15일 발표된 '남북 공동 선언'으로 대표된다. 이 선언은 남북 간의 화해와 협력을 강조하며, 경제적 협력과 인도적 문제 해결을 위한 기초를 마련하였다. 그러나 이 과정에서 정치적 갈등과 이견이 발생하기도 했다.",
+    "core_concept": "남북 공동 선언",
+    "parse_status": "ok",
+    "choices": [
+      {
+        "choice_no": 1,
+        "content": "(가) - (나) - (다)",
+        "is_answer": false
+      },
+      {
+        "choice_no": 2,
+        "content": "(가) - (다) - (나)",
+        "is_answer": true
+      },
+      {
+        "choice_no": 3,
+        "content": "(나) - (가) - (다)",
+        "is_answer": false
+      },
+      {
+        "choice_no": 4,
+        "content": "(가) - (나) - (다)",
+        "is_answer": false
+      },
+      {
+        "choice_no": 5,
+        "content": "(다) - (가) - (나)",
+        "is_answer": false
+      }
+    ]
+  },
+  {
+    "exam_round": 78,
+    "exam_level": "심화",
+    "question_no": 3,
+    "q_score": 2,
+    "era": "삼국 시대",
+    "topic": "문화",
+    "question_type": "역사 자료의 분석 및 해석",
+    "content": "(가), (나) 나라에 대한 설명으로 옳은 것은?",
+    "passage": "(가) 해마다 5월이면 씨뿌리기를 마치고 귀신에게 제사를 지낸다. 떡을 지어 모여서 노래와 춤을 즐기며 술 마시는 것을 밥낮으로 쉬지 않는다. ...... 귀신을 믿기 때문에 국웅의 각한 사람씩을 세워서 천신에 대한 제사를 주관하니, 이를 천곤이라 부른다.\n\n-『삼국지』 위서 동이전 -\n\n(나) 은력(殷歷) 정월에 하늘에 제사를 지나는 극중대회에서는 날마다 마시고 먹고 노래하고 춤추는데, 이를 영고라 한다. 이때에는 형옥(刑獄)을 중단하고 죄수를 풀어 준다.\n\n-『삼국지』 위서 동이전 -",
+    "visual_note": "",
+    "question_image_path": "test/CJ/test_q/output_78/question_images/q_003.png",
+    "answer_no": 1,
+    "answer_explanation": "이 문항은 5대의 사료를 통해 국가의 성립과 발전을 다루고 있다. 특히, 국가의 형성과 관련된 다양한 요소를 분석하며, 각 사료가 제시하는 역사적 사실을 통해 국가의 정체성을 이해하는 데 기여한다. 이 과정에서 국가의 정치적, 사회적 구조를 파악할 수 있다.",
+    "core_concept": "국가의 형성과 발전",
+    "parse_status": "ok",
+    "choices": [
+      {
+        "choice_no": 1,
+        "content": "(가) - 신성 지역인 소도가 있었다.",
+        "is_answer": true
+      },
+      {
+        "choice_no": 2,
+        "content": "(가) - 혼인 풍습으로 민며느리제가 있었다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 3,
+        "content": "(나) - 위화부, 영객부 등의 관청이 있었다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 4,
+        "content": "(나) - 왕 아래 상가, 대로, 패자 등의 관직이 있었다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 5,
+        "content": "(가), (나) - 음락 간의 경계를 강조하는 책화가 있었다.",
+        "is_answer": false
+      }
+    ]
+  },
+  {
+    "exam_round": 78,
+    "exam_level": "심화",
+    "question_no": 4,
+    "q_score": 3,
+    "era": "삼국 시대",
+    "topic": "군사",
+    "question_type": "역사 상황 및 쟁점의 인식",
+    "content": "믿줄 그은 ‘왕’에 대한 설명으로 옳은 것은?",
+    "passage": "우리 군이 관산성을 공격하여 김무령이 이끄는 신라군과 전투를 벌였는데, 어찌 되었는지 아닌가? 왕께서 몸소 보병과 기병을 거느리고 구천에 이르렀는데, 신라군의 기습을 받아 돌아가셨다. 결국 우리 군이 크게 패했다는군.",
+    "visual_note": "그림 속 인물들이 대화하는 장면을 보고 문제를 풀어야 한다.",
+    "question_image_path": "test/CJ/test_q/output_78/question_images/q_004.png",
+    "answer_no": 5,
+    "answer_explanation": "백제는 고구려와의 관계에서 군사적, 외교적 노력을 기울였으며, 특히 5세기 중반부터 6세기 초까지의 시기에 고구려와의 전투에서 여러 차례 승리를 거두었다. 그러나 백제의 군사적 힘은 고구려에 비해 상대적으로 약했으며, 외교적으로는 신라와의 동맹을 통해 고구려에 대항하려 했다. 이러한 외교적 노력은 백제의 생존에 중요한 역할을 하였고, 고구려와의 갈등 속에서도 백제의 문화와 정치적 기반을 유지하는 데 기여하였다.",
+    "core_concept": "백제의 고구려와의 외교 및 군사적 관계",
+    "parse_status": "ok",
+    "choices": [
+      {
+        "choice_no": 1,
+        "content": "수도를 응진으로 옮겼다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 2,
+        "content": "백가의 난을 평정하였다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 3,
+        "content": "금마저에 미륵사를 창건하였다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 4,
+        "content": "고흥에게 서기를 편찬하게 하였다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 5,
+        "content": "달기를 보내 고구려의 도살성을 점령하였다.",
+        "is_answer": true
+      }
+    ]
+  },
+  {
+    "exam_round": 78,
+    "exam_level": "심화",
+    "question_no": 5,
+    "q_score": 2,
+    "era": "남북국 시대",
+    "topic": "문화",
+    "question_type": "역사 자료의 분석 및 해석",
+    "content": "(가)에 대한 설명으로 옳은 것은?",
+    "passage": "이것은 (가)의 쌍영총 벽화 속 공양 행렬을 모사한 것입니다. 승려를 앞세워 공양에 나서고 있는 귀족 부인의 모습에서 전진의 승려 순도를 통해 불교가 수용된 이후 (가)의 귀족 사회에 불교가 확산되었음을 확인할 수 있습니다.",
+    "visual_note": "그림은 쌍영총 벽화 속 공양 행렬을 보여주고 있으며, 이를 통해 불교의 확산을 확인할 수 있다.",
+    "question_image_path": "test/CJ/test_q/output_78/question_images/q_005.png",
+    "answer_no": 2,
+    "answer_explanation": "이 문항은 고구려의 국가에 대한 설명으로, 고구려의 정치적, 사회적 특징을 다루고 있다. 고구려는 강력한 중앙집권 체제를 갖추었으며, 군사적 힘을 바탕으로 한 영토 확장을 통해 강국으로 성장했다. 또한, 고구려의 문화는 불교와 도교의 영향을 받았고, 이는 고구려의 예술과 건축에 반영되었다. 오답으로는 고구려의 정치적 구조와 관련 없는 내용이 포함되어 있다.",
+    "core_concept": "고구려의 중앙집권 체제",
+    "parse_status": "ok",
+    "choices": [
+      {
+        "choice_no": 1,
+        "content": "지방의 22달로에 왕족을 파견하였다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 2,
+        "content": "태학과 경당을 두어 인재를 양성하였다.",
+        "is_answer": true
+      },
+      {
+        "choice_no": 3,
+        "content": "10월에 무천이라는 제천 행사를 개최하였다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 4,
+        "content": "사회 질서를 유지하기 위해 범금 8조를 만들었다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 5,
+        "content": "물시계인 누각을 만들고 누각박사를 두어 시간을 측정하였다.",
+        "is_answer": false
+      }
+    ]
+  },
+  {
+    "exam_round": 78,
+    "exam_level": "심화",
+    "question_no": 6,
+    "q_score": 2,
+    "era": "고조선",
+    "topic": "사회",
+    "question_type": "역사 자료의 분석 및 해석",
+    "content": "믿줄 그은 ‘이 국가’의 사회 모습으로 가장 적절한 것은?",
+    "passage": "이 목관은 이 국가의 마지막 수도였던 부여의 생복리 유적에서 출토된 잔관대식기입니다. 관청에서 곡식을 빌리고 같은 사람들의 이름과 곡식의 양이 기록되어 있어 당시 사람들의 생활 모습을 엿볼 수 있습니다.",
+    "visual_note": "그림에는 목관과 관련된 설명이 포함되어 있으며, 이를 통해 당시 사회의 곡식 관리 방식을 이해할 수 있다.",
+    "question_image_path": "test/CJ/test_q/output_78/question_images/q_006.png",
+    "answer_no": 4,
+    "answer_explanation": "이 문항은 '이 국가의 사회 모습'에 대한 질문으로, 고구려의 사회 구조와 관련된 내용을 다룬다. 고구려는 귀족과 평민으로 나뉘며, 귀족은 정치적 권력을 행사하고 평민은 농업에 종사했다. 또한, 고구려의 사회는 군사적 성격이 강해 군사 조직이 중요한 역할을 했다. 오답으로는 고구려의 사회 구조와 무관한 내용이 포함되어 있다.",
+    "core_concept": "고구려의 사회 구조",
+    "parse_status": "ok",
+    "choices": [
+      {
+        "choice_no": 1,
+        "content": "서옥제라는 호인 풍습이 있었다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 2,
+        "content": "수도에 서시와 남시를 설치하였다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 3,
+        "content": "골품에 따라 관직 승진을 제한하였다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 4,
+        "content": "6좌평 아래에 달솔 등의 관등이 있었다.",
+        "is_answer": true
+      },
+      {
+        "choice_no": 5,
+        "content": "을파소를 등용하고 진대법을 시행하였다.",
+        "is_answer": false
+      }
+    ]
+  },
+  {
+    "exam_round": 78,
+    "exam_level": "심화",
+    "question_no": 7,
+    "q_score": 1,
+    "era": "삼국 시대",
+    "topic": "군사",
+    "question_type": "역사 상황 및 쟁점의 인식",
+    "content": "다음 상황 이후에 있었던 사실로 옳은 것은?",
+    "passage": "겨울에 왕이 장차 백제를 쳐서 대야성에서의 싸움을 되갚으려고 이찬 김춘추를 고구려에 보내서 군사를 청하였다. 대야성 전투에서 패하였을 때 도독인 품석이 아내도 죽었는데, 바로 춘추의 딸이었다. 춘추가 이를 듣고 기둥에 기대어 서서 하루 종일 눈도 깜빡이지 않았고, 사람이나 물건이 그 앞을 지나가도 알지 못하였다. 익숙고 말하기를, “아! 대왕부가 되어 이제 백제를 살기지 못하겠는가?”라고 하고는 곧 왕에게 나아가 말하기를, “신이 고구려에 사신으로 가서 군사를 청하여 백제를 원수로 갚고자 합니다.”라고 하자 왕이 허락하였다.",
+    "visual_note": "",
+    "question_image_path": "test/CJ/test_q/output_78/question_images/q_007.png",
+    "answer_no": 4,
+    "answer_explanation": "이 문항은 '다양한 전쟁의 배경'에 대한 이해를 요구한다. 전쟁의 원인과 결과를 분석하는 것이 중요하며, 특히 삼국 통일 전쟁의 맥락에서 각국의 정치적 상황과 외교적 관계를 고려해야 한다. 또한, 전쟁이 각국에 미친 영향과 그로 인한 사회적 변화도 중요한 요소로 작용한다. 따라서, 전쟁의 배경을 이해하기 위해서는 각국의 역사적 맥락을 종합적으로 분석해야 한다.",
+    "core_concept": "삼국 통일 전쟁의 배경과 영향",
+    "parse_status": "ok",
+    "choices": [
+      {
+        "choice_no": 1,
+        "content": "진흥왕이 대가야를 멸하하였다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 2,
+        "content": "이사부가 우산국을 복속시켰다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 3,
+        "content": "을지문덕이 살수에서 대승을 거두었다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 4,
+        "content": "계백이 이끄는 군대가 황산벌에서 항전하였다.",
+        "is_answer": true
+      },
+      {
+        "choice_no": 5,
+        "content": "광개토 대왕이 신라에 침입한 왜를 격퇴하였다.",
+        "is_answer": false
+      }
+    ]
+  },
+  {
+    "exam_round": 78,
+    "exam_level": "심화",
+    "question_no": 8,
+    "q_score": 2,
+    "era": "남북국 시대",
+    "topic": "정치",
+    "question_type": "역사 상황 및 쟁점의 인식",
+    "content": "믿줄 그은 ‘시기’에 있었던 사실로 옳은 것은?",
+    "passage": "저는 경주 흥덕왕릉에 와 있습니다. 흥덕왕은 혜공왕 피살 이후 왕위 쟁탈전이 거듭된 시기에 즉위하여 정국을 안정시키는 데 힘썼습니다. 하지만 그의 사후 또다시 진골 귀족들의 왕위 다툼이 반복되면서 혼란이 가중되었습니다.",
+    "visual_note": "그림 속 인물과 배경은 흥덕왕릉을 나타내며, 문제를 풀기 위해 이 그림을 참고해야 합니다.",
+    "question_image_path": "test/CJ/test_q/output_78/question_images/q_008.png",
+    "answer_no": 3,
+    "answer_explanation": "‘신라 하대에 있었던 사실’에 대한 질문으로, 신라의 정치적 상황과 관련된 내용을 다루고 있다. 신라 하대는 정치적 혼란과 외적의 침입이 잦았던 시기로, 이러한 배경 속에서 신라의 왕권이 약화되었음을 설명하고 있다. 특히, 신라의 귀족 세력과의 갈등이 심화되었고, 이로 인해 왕권이 더욱 불안정해졌다는 점이 강조된다. 또한, 신라 하대의 역사적 사건들이 후에 고려와 조선의 정치적 구조에 미친 영향도 언급된다.",
+    "core_concept": "신라 하대의 정치적 혼란",
+    "parse_status": "ok",
+    "choices": [
+      {
+        "choice_no": 1,
+        "content": "비담과 염종의 난이 진압되었다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 2,
+        "content": "김흠돌이 반란을 피하다 처형되었다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 3,
+        "content": "김흠창이 응천주에서 반란을 일으켰다.",
+        "is_answer": true
+      },
+      {
+        "choice_no": 4,
+        "content": "원광이 왕명으로 결사표를 작성하였다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 5,
+        "content": "이차돈의 순교를 계기로 불교가 공인되었다.",
+        "is_answer": false
+      }
+    ]
+  },
+  {
+    "exam_round": 78,
+    "exam_level": "심화",
+    "question_no": 9,
+    "q_score": 2,
+    "era": "고려",
+    "topic": "문화",
+    "question_type": "역사 자료의 분석 및 해석",
+    "content": "(가) 국가의 문화유산으로 옳은 것은?",
+    "passage": "이것은 중국 지린성 룽터우산 고분군에서 출토된 (가)의 효의황후와 순목황후의 묘지(墓誌)입니다. 묘지에는 각기 보렐라 건륭이라는 문안 대사선 대의 독자적인 연호가 기록되어 있고, 황후라는 글자가 새겨져 있어 (가)이/가 황제국의 제도를 운영하였음을 알 수 있습니다.",
+    "visual_note": "그림 속에서 효의황후와 순목황후의 묘지와 관련된 문화유산을 찾기 위해 각 선택지에 있는 불상들을 비교해야 합니다.",
+    "question_image_path": "test/CJ/test_q/output_78/question_images/q_009.png",
+    "answer_no": 3,
+    "answer_explanation": "발해의 문화유산에 대한 설명으로, 발해는 7세기 중반부터 10세기 초까지 존재한 국가로, 다양한 문화유산을 남겼다. 특히, 발해의 불교 문화는 중요한 특징으로, 불상과 사찰이 많이 남아 있다. 발해의 불상은 신라와의 관계 속에서 발전하였으며, 발해의 불교는 중국과의 교류를 통해 더욱 풍부해졌다. 발해의 문화유산은 그 시대의 역사적 배경을 이해하는 데 중요한 자료가 된다.",
+    "core_concept": "발해의 불교 문화",
+    "parse_status": "ok",
+    "choices": [
+      {
+        "choice_no": 1,
+        "content": "금동여래입상",
+        "is_answer": false
+      },
+      {
+        "choice_no": 2,
+        "content": "금동대좌불상",
+        "is_answer": false
+      },
+      {
+        "choice_no": 3,
+        "content": "금동관음보살상",
+        "is_answer": true
+      },
+      {
+        "choice_no": 4,
+        "content": "금동미륵보살상",
+        "is_answer": false
+      },
+      {
+        "choice_no": 5,
+        "content": "금동아미타여래상",
+        "is_answer": false
+      }
+    ]
+  },
+  {
+    "exam_round": 78,
+    "exam_level": "심화",
+    "question_no": 10,
+    "q_score": 2,
+    "era": "남북국 시대",
+    "topic": "통합",
+    "question_type": "역사 상황 및 쟁점의 인식",
+    "content": "믿줄 그은 ‘이 전투’ 이후에 전개된 사실로 옳은 것은?",
+    "passage": "이 그림은 우리 역사 속 충신, 효자, 열녀 등의 이야기가 담긴 동국신속삼강행실도에 수록되어 있습니다. 여기에는 후삼국 통일 과정에서 벌어진 이 전투 당시 위기에 빠진 왕건을 구하기 위해 싸우다가 전사한 장정공 신숭겸이 그려져 있습니다.",
+    "visual_note": "그림 속에서 전투 장면과 관련된 인물이나 사건을 확인하여 문제를 풀어야 합니다.",
+    "question_image_path": "test/CJ/test_q/output_78/question_images/q_010.png",
+    "answer_no": 4,
+    "answer_explanation": "문항은 '이 전투 이후에 결정된 사실'에 대한 것으로, 전투의 결과가 이후의 역사적 사건에 미친 영향을 설명하고 있다. 이 전투는 한국 역사에서 중요한 전환점으로, 전투의 승리로 인해 정치적, 사회적 변화가 일어났음을 강조한다. 또한, 전투의 배경과 관련된 여러 요소들이 설명되며, 그로 인해 발생한 후속 사건들이 역사에 미친 영향을 다룬다.",
+    "core_concept": "전투의 역사적 중요성",
+    "parse_status": "ok",
+    "choices": [
+      {
+        "choice_no": 1,
+        "content": "각간 대공이 반란을 일으켰다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 2,
+        "content": "안승이 보덕국왕으로 임명되었다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 3,
+        "content": "궁에가 국호를 태봉으로 바꾸었다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 4,
+        "content": "김선평, 권행 등이 고창 전투에서 활약하였다.",
+        "is_answer": true
+      },
+      {
+        "choice_no": 5,
+        "content": "대조영이 천문령에서 당의 군대를 격파하였다.",
+        "is_answer": false
+      }
+    ]
+  },
+  {
+    "exam_round": 78,
+    "exam_level": "심화",
+    "question_no": 11,
+    "q_score": 2,
+    "era": "고려",
+    "topic": "정치",
+    "question_type": "역사 지식의 이해",
+    "content": "왕에 대한 설명으로 옳은 것은?",
+    "passage": "삼국 이전에는 아직 과거(科舉)의 법이 없었고, 고려의 태조는 먼저 학교를 세웠으나 과거로 인재를 뽑기는 것을 하지 않았다. (가) 이/가 쌍기의 의견을 받아들여 과거로써 관리를 선발하였다. 이로부터 문풍(文風)이 비로소 일어났다. …… 과거에는 제술·명령 두 업(業)과 의업·복업·지리업·율업 등의 잡업이 있었다.",
+    "visual_note": "",
+    "question_image_path": "test/CJ/test_q/output_78/question_images/q_011.png",
+    "answer_no": 4,
+    "answer_explanation": "",
+    "core_concept": "",
+    "parse_status": "ok",
+    "choices": [
+      {
+        "choice_no": 1,
+        "content": "외침에 대비하여 광군사를 창설하였다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 2,
+        "content": "12목을 설치하고 지방관을 파견하였다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 3,
+        "content": "관악 진흥을 위해 양현고를 설치하였다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 4,
+        "content": "노비안검법을 실시하여 호족 세력을 견제하였다.",
+        "is_answer": true
+      },
+      {
+        "choice_no": 5,
+        "content": "정계와 계백료서를 지어 관리의 규범을 제시하였다.",
+        "is_answer": false
+      }
+    ]
+  },
+  {
+    "exam_round": 78,
+    "exam_level": "심화",
+    "question_no": 12,
+    "q_score": 1,
+    "era": "고려",
+    "topic": "경제",
+    "question_type": "역사 탐구의 설계 및 수행",
+    "content": "(가)에 들어갈 내용으로 가장 적절한 것은?",
+    "passage": "탐구 활동 계획서\n주제: ○○ 시대의 경제 활동\n방법: 문헌 조사, 인터넷 검색 등\n내용\n- 사원 수공업의 발달\n- 해동통보의 주조와 발행\n- 다점, 주점 등 관점의 운영\n- (가)",
+    "visual_note": "탐구 활동 계획서의 내용을 바탕으로 (가)에 적합한 내용을 선택해야 합니다.",
+    "question_image_path": "test/CJ/test_q/output_78/question_images/q_012.png",
+    "answer_no": 3,
+    "answer_explanation": "문항 12는 'OO 시대의 경제 활동'에 대한 내용으로, 해당 시대의 경제적 특징과 관련된 여러 요소를 다루고 있다. 특히, 산업 수익의 발달과 함께 주거 형태의 변화가 중요한 포인트로 언급된다. 이 시기에 경제 활동은 다양한 분야에서 활발히 이루어졌으며, 특히 상업과 농업의 상호작용이 두드러졌다. 이러한 요소들은 당시 사회 구조와 밀접하게 연결되어 있으며, 경제적 변화가 사회 전반에 미친 영향을 설명하고 있다.",
+    "core_concept": "경제 활동의 변화",
+    "parse_status": "ok",
+    "choices": [
+      {
+        "choice_no": 1,
+        "content": "덕대의 전문적인 광산 경영",
+        "is_answer": false
+      },
+      {
+        "choice_no": 2,
+        "content": "고추, 담배 등 상품 작물 재배",
+        "is_answer": false
+      },
+      {
+        "choice_no": 3,
+        "content": "박란도를 통한 국제 무역의 양상",
+        "is_answer": true
+      },
+      {
+        "choice_no": 4,
+        "content": "덩이쇠 수출을 통해 본 낙랑과의 교역",
+        "is_answer": false
+      },
+      {
+        "choice_no": 5,
+        "content": "청해진을 거점으로 한 동아시아 해상 무역",
+        "is_answer": false
+      }
+    ]
+  },
+  {
+    "exam_round": 78,
+    "exam_level": "심화",
+    "question_no": 13,
+    "q_score": 1,
+    "era": "고려",
+    "topic": "군사",
+    "question_type": "역사 상황 및 쟁점의 인식",
+    "content": "(가)에 대한 고려의 대응으로 옳은 것은?",
+    "passage": "이/가 승세를 타고 정주의 선덕관성에 난입하여 죽이고 노략할 것이 셀 수 없었다. 다시 운전을 보며 임관을 대신하여 치게 하였는데, 또 패배하니 군의 기제가 진작되지 않았다. …… 숙종이 노하여 친지신명에게 고하고 신령의 도움을 빌려 적경(賊境)을 소탕할 것을 빌었다. 마침내 병사들을 훈련하고 군량을 비축하여 재반격을 도모하였다.",
+    "visual_note": "",
+    "question_image_path": "test/CJ/test_q/output_78/question_images/q_013.png",
+    "answer_no": 5,
+    "answer_explanation": "문항 13은 '여진에 대한 고려의 대응'에 대해 설명하고 있다. 여진의 침입에 대한 고려의 대응은 군사적 측면에서의 전략과 외교적 노력을 포함한다. 특히, 고려는 여진의 위협에 대응하기 위해 군사적 방어를 강화하고, 외교적 협상을 통해 안정적인 관계를 유지하려고 했다. 이러한 대응은 고려의 정치적 안정과 군사적 역량을 높이는 데 기여했으며, 여진과의 관계에서 중요한 전환점을 마련했다.",
+    "core_concept": "여진에 대한 군사적 및 외교적 대응",
+    "parse_status": "ok",
+    "choices": [
+      {
+        "choice_no": 1,
+        "content": "강화도로 도움을 요청하였던.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 2,
+        "content": "박익이 적의 근거지를 토벌하였다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 3,
+        "content": "양구가 곽주성을 급습하여 탈환하였다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 4,
+        "content": "송문주가 죽주성에서 적군을 격퇴하였다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 5,
+        "content": "동북 9성을 축조하고 경계를 알리는 비석을 건립하였다.",
+        "is_answer": true
+      }
+    ]
+  },
+  {
+    "exam_round": 78,
+    "exam_level": "심화",
+    "question_no": 14,
+    "q_score": 2,
+    "era": "조선 전기",
+    "topic": "문화",
+    "question_type": "역사 자료의 분석 및 해석",
+    "content": "다음 중 직지심체요절과 관련된 건축물로 알맞은 것은?",
+    "passage": "이것은 청주 흥덕사에서 간행된 직지심체요절입니다. 백은 화상이 부처와 여러 고승의 가르침에서 중요한 내용을 뽑아 편찬한 책으로, 현존하는 금속활자 인쇄본 중 가장 오래된 것입니다.",
+    "visual_note": "주어진 그림에서 직지심체요절과 관련된 건축물을 찾아야 합니다.",
+    "question_image_path": "test/CJ/test_q/output_78/question_images/q_014.png",
+    "answer_no": 3,
+    "answer_explanation": "정답은 (가) 시대의 인식, 메타스 전시관으로, 이는 '이것은 청주 동락서원에서 가면 직지심체요절입니다'라는 내용이 나와 있다. 이 전시관은 청주에서 중요한 역할을 하며, 역사적 인식의 중요성을 강조하고 있다. 또한, 청주가 고전 문화를 계승하는 장소로서의 의미를 지니고 있음을 보여준다.",
+    "core_concept": "청주 동락서원과 직지심체요절의 역사적 중요성",
+    "parse_status": "ok",
+    "choices": [
+      {
+        "choice_no": 1,
+        "content": "선택지 내용",
+        "is_answer": false
+      },
+      {
+        "choice_no": 2,
+        "content": "선택지 내용",
+        "is_answer": false
+      },
+      {
+        "choice_no": 3,
+        "content": "선택지 내용",
+        "is_answer": true
+      },
+      {
+        "choice_no": 4,
+        "content": "선택지 내용",
+        "is_answer": false
+      },
+      {
+        "choice_no": 5,
+        "content": "선택지 내용",
+        "is_answer": false
+      }
+    ]
+  },
+  {
+    "exam_round": 78,
+    "exam_level": "심화",
+    "question_no": 15,
+    "q_score": 2,
+    "era": "조선 전기",
+    "topic": "제도",
+    "question_type": "역사 지식의 이해",
+    "content": "이 국가에서 볼 수 있는 모습으로 가장 적절한 것은?",
+    "passage": "오늘 수업 시간에 배운 이 국가의 지방 행정 제도에 대해 말해 볼까요? 5도와 양계를 두어 지방을 통치하였어요. 지방관이 파견된 주현과 파견되지 않은 속현이 있었어요.",
+    "visual_note": "그림에는 학생들이 수업을 듣고 있는 모습과 지방관이 구향찰요를 읽고 있는 장면이 포함되어 있습니다.",
+    "question_image_path": "test/CJ/test_q/output_78/question_images/q_015.png",
+    "answer_no": 4,
+    "answer_explanation": "문항 15는 '이 국가에서 볼 수 있는 모습으로 가장 적절한 것은?'이라는 질문으로, 정답은 '주차장에서 공무원 하행'이다. 이 선택지는 공무원이 주차장에서 활동하는 모습을 잘 나타내고 있으며, 다른 선택지들은 관련성이 떨어진다. 따라서 이 문항은 공무원의 역할과 관련된 상황을 이해하는 데 중요한 의미를 가진다.",
+    "core_concept": "공무원의 역할",
+    "parse_status": "ok",
+    "choices": [
+      {
+        "choice_no": 1,
+        "content": "주자감에서 공부하는 학생",
+        "is_answer": false
+      },
+      {
+        "choice_no": 2,
+        "content": "구향찰요를 읽고 있는 지방관",
+        "is_answer": false
+      },
+      {
+        "choice_no": 3,
+        "content": "시장을 감독하는 동시전의 관리",
+        "is_answer": false
+      },
+      {
+        "choice_no": 4,
+        "content": "제원보에서 곡식을 지급받는 농민",
+        "is_answer": true
+      },
+      {
+        "choice_no": 5,
+        "content": "세책가에서 춘향전을 빌리는 부녀자",
+        "is_answer": false
+      }
+    ]
+  },
+  {
+    "exam_round": 78,
+    "exam_level": "심화",
+    "question_no": 16,
+    "q_score": 2,
+    "era": "조선 전기",
+    "topic": "사건",
+    "question_type": "역사 지식의 이해",
+    "content": "믿줄 그은 ‘임금’의 재위 시기에 있었던 사실로 옳은 것은?",
+    "passage": "역적 기철이 노책·권검과 함께 반역을 꾀며 나라의 화근이 되었습니다. 기철 등은 황후의 인척으로 상국(上國)의 위엄을 빌려서 하늘에 닿을 듯한 기세를 엄자 임금을 위협하고 억제하였습니다. …… 또한 일당 몇 명을 시켜 상국의 사신이라 속이고 조서를 가지고 있다가 사칭하면서 궁문까지 도달하여 장차 임금과 신하들을 몰살시키고자 자신의 욕심을 채우려 하니, …… 역적을 제포한 뒤, 또 다른 변란이 일어날 것을 우려하여 [황제께 미리 보고드릴 것을] 없이 법에 따라 그 모두를 처단하였습니다.",
+    "visual_note": "",
+    "question_image_path": "test/CJ/test_q/output_78/question_images/q_016.png",
+    "answer_no": 3,
+    "answer_explanation": "문항 16은 '입법 과정에 대해 있었던 사실로 옳은 것은?'이라는 질문이다. 정답은 '법률의 제정 과정은 공청회를 통해 이루어진다'이다. 이 선택지는 입법 과정의 투명성과 시민 참여의 중요성을 강조하며, 다른 선택지들은 사실과 다르거나 부정확하다. 따라서 이 문항은 입법 과정의 이해를 돕는 데 중요한 역할을 한다.",
+    "core_concept": "입법 과정",
+    "parse_status": "ok",
+    "choices": [
+      {
+        "choice_no": 1,
+        "content": "배중손이 진도 용장성에서 항전하였다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 2,
+        "content": "최영이 홍산 전투에서 큰 승리를 거두었다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 3,
+        "content": "유인우, 이자춘 등이 쌍성총관부를 수복하였다.",
+        "is_answer": true
+      },
+      {
+        "choice_no": 4,
+        "content": "김방경이 이끄는 군대가 일본 원정에 참여하였다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 5,
+        "content": "만적이 개경에서 노비를 모아 반란을 모의하였다.",
+        "is_answer": false
+      }
+    ]
+  },
+  {
+    "exam_round": 78,
+    "exam_level": "심화",
+    "question_no": 17,
+    "q_score": 2,
+    "era": "고려",
+    "topic": "사상·종교",
+    "question_type": "역사 지식의 이해",
+    "content": "그의 대표적인 활동에 대해 알려 주세요.",
+    "passage": "그림 속 인물에 대해 알려 주세요.",
+    "visual_note": "그림 속 인물에 대한 설명을 보고 그 인물의 활동을 추론해야 합니다.",
+    "question_image_path": "test/CJ/test_q/output_78/question_images/q_017.png",
+    "answer_no": 5,
+    "answer_explanation": "문항 17은 '인물과 그에 대한 설명으로 옳은 것'에 대한 질문이다. 정답은 'A'로, 해당 인물의 활동과 관련된 설명이 정확하게 제시되었다. 오답인 'B'는 인물의 활동을 잘못 해석한 것으로, 역사적 사실과 일치하지 않는다. 따라서, 인물의 활동을 정확히 이해하는 것이 중요하다.",
+    "core_concept": "인물의 역사적 활동",
+    "parse_status": "ok",
+    "choices": [
+      {
+        "choice_no": 1,
+        "content": "불교 설화를 중심으로 삼국유사를 지었다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 2,
+        "content": "법화 신앙을 바탕으로 백련 결사를 이끌었다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 3,
+        "content": "선문염송을 편찬하고 유불 일치설을 주장하였다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 4,
+        "content": "보현십원기를 지어 불교 교리를 대중에게 전파하였다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 5,
+        "content": "이론과 수행을 함께 강조하는 교관겸수를 제시하였다.",
+        "is_answer": true
+      }
+    ]
+  },
+  {
+    "exam_round": 78,
+    "exam_level": "심화",
+    "question_no": 18,
+    "q_score": 2,
+    "era": "고려",
+    "topic": "인물",
+    "question_type": "역사 상황 및 쟁점의 인식",
+    "content": "(가), (나) 인물에 대한 설명으로 옳은 것은?",
+    "passage": "인물로 본 문헌 사회의 동요\n주제: 인물로 본 문헌 사회의 동요\n방법: 문헌 조사, 데이터베이스 활용\n탐구 내용\n인물명\t인물 소개\t관련 사건\n(가)\t인종과 중첩된 혼인 관계를 맺어 권력을 강화한 외척\t척조경과 함께 난을 일으키고, 왕의 거처를 남궁으로 옮김.\n(나)\t풍수지리설을 내세워 천도를 주장한 승려\t서경에서 반란을 일으켜 연호를 천파로 하는 대위국을 선포함.\n정중부\t이의방을 제거하고 최고 권력자에 등극한 무신\t보현원에서 정변을 주도하고 왕을 폐위시킴.",
+    "visual_note": "표에 나열된 인물과 그에 대한 설명 및 관련 사건을 참고하여 문제를 풀어야 합니다.",
+    "question_image_path": "test/CJ/test_q/output_78/question_images/q_018.png",
+    "answer_no": 4,
+    "answer_explanation": "문항 18은 '인물로 본 문별 사회의 동요'에 대한 질문이다. 정답은 '가'와 '나'로, 인물의 사회적 역할과 그에 따른 사회적 변화가 잘 설명되어 있다. 오답은 인물의 역할을 축소하거나 잘못 해석한 경우로, 사회적 맥락을 이해하는 것이 중요하다.",
+    "core_concept": "사회적 변화와 인물의 역할",
+    "parse_status": "ok",
+    "choices": [
+      {
+        "choice_no": 1,
+        "content": "(가) - 시무 28조를 국왕에게 올렸다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 2,
+        "content": "(가) - 화통도감의 설치를 건의하였다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 3,
+        "content": "(나) - 정변을 일으켜 목적을 폐지하였다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 4,
+        "content": "(나) - 칭제 건원과 국국 정법을 주장하였다.",
+        "is_answer": true
+      },
+      {
+        "choice_no": 5,
+        "content": "(가), (나) - 교정별감이 되어 국정을 장악하였다.",
+        "is_answer": false
+      }
+    ]
+  },
+  {
+    "exam_round": 78,
+    "exam_level": "심화",
+    "question_no": 19,
+    "q_score": 3,
+    "era": "조선 전기",
+    "topic": "사건",
+    "question_type": "역사 지식의 이해",
+    "content": "(가) 왕의 재위 시기에 있었던 사실로 옳은 것은?",
+    "passage": "이곳은 영주시 순흥면에 있는 금성대군 신단입니다. 금성대군은 사육신과 함께 (가)의 복위를 추진한 혐으로 순흥에 유배되었고, 이듬해 다시 지역 유생과 (가)의 복위를 모의하다가 발각되어 죽임을 당하였습니다.",
+    "visual_note": "금성대군 신단의 사진을 보고 관련된 역사적 사실을 이해해야 한다.",
+    "question_image_path": "test/CJ/test_q/output_78/question_images/q_019.png",
+    "answer_no": 1,
+    "answer_explanation": "이 문항은 조선 시대의 특정 사건에 대한 이해를 요구한다. 조선의 왕이 제시한 사료를 통해 당시의 정치적 상황과 사회적 배경을 분석해야 한다. 특히, 왕의 정책과 그에 따른 사회적 반응을 살펴보는 것이 중요하다. 이와 함께, 해당 사료가 제시하는 역사적 맥락을 이해하고, 그로 인해 발생한 사건의 의미를 파악하는 것이 핵심이다.",
+    "core_concept": "조선 시대의 정치적 상황",
+    "parse_status": "ok",
+    "choices": [
+      {
+        "choice_no": 1,
+        "content": "이징옥이 함길도에서 반란을 일으켰다.",
+        "is_answer": true
+      },
+      {
+        "choice_no": 2,
+        "content": "이괄이 난을 일으켜 한양을 점령하였다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 3,
+        "content": "허적과 윤휴 등 남인이 대거 축출되었다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 4,
+        "content": "위훈 삭제를 주장한 조광조 일파가 제거되었다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 5,
+        "content": "정여립 모반 사건을 계기로 기축옥사가 발생하였다.",
+        "is_answer": false
+      }
+    ]
+  },
+  {
+    "exam_round": 78,
+    "exam_level": "심화",
+    "question_no": 20,
+    "q_score": 3,
+    "era": "조선 전기",
+    "topic": "제도",
+    "question_type": "역사 지식의 이해",
+    "content": "(가) 기구에 대한 설명으로 옳은 것은?",
+    "passage": "이 그림은 (가) 소속 관리들의 모임인 금오계를 기록한첩(帖)의 일부입니다. 조옥(趙沃) 또는 금오(金鰲)라고도 불린 (가) 의 신임 도사들은 금오계첩을 제작하고 면신례를 치른 후 선배 도사들과 나누어 가졌습니다.",
+    "visual_note": "그림은 금오계첩을 보여주며, 기구에 대한 설명을 이해하는 데 도움이 됩니다.",
+    "question_image_path": "test/CJ/test_q/output_78/question_images/q_020.png",
+    "answer_no": 5,
+    "answer_explanation": "이 문항은 '가'가 가구에 대한 설명으로 옳은지를 묻고 있다. 정답은 '가'가 소규모 관리의 의미를 포함하고 있다는 점에서 적절하다. 오답으로는 '나'와 '다'가 있으며, 이들은 각각의 설명이 '가'와 다르게 해석될 수 있음을 보여준다. 따라서 '가'가 가장 적합한 설명으로 평가된다.",
+    "core_concept": "소규모 관리",
+    "parse_status": "ok",
+    "choices": [
+      {
+        "choice_no": 1,
+        "content": "수도의 행정과 치안을 담당하였다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 2,
+        "content": "천문, 지리, 기후 등에 관한 사무를 맡았다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 3,
+        "content": "제화, 직제학 등의 관직 외에 검서관이 있었다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 4,
+        "content": "왕에게 경서 등을 강론하는 경연을 주관하였다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 5,
+        "content": "국왕 직속 사법 기구로 반역죄, 강상죄 등을 다루었다.",
+        "is_answer": true
+      }
+    ]
+  },
+  {
+    "exam_round": 78,
+    "exam_level": "심화",
+    "question_no": 21,
+    "q_score": 3,
+    "era": "조선 전기",
+    "topic": "인물",
+    "question_type": "역사 지식의 이해",
+    "content": "다음 설명 중 그에 대한 설명으로 옳은 것은?",
+    "passage": "그가 중대한 일을 처리하고 대의(大義)를 결단한 마치 강이 흘러가는 것과 같아서 조야(朝野)가 의지하고 중히 여겼다. 오랫동안 예조를 관장하여 사대교린을 자신의 소임으로 삼았다. …… 그는 직접 일본에 건너가 무슨 산천·관제·풍속 등을 두루 알아서 해동제국기를 지어 올렸다.",
+    "visual_note": "",
+    "question_image_path": "test/CJ/test_q/output_78/question_images/q_021.png",
+    "answer_no": 1,
+    "answer_explanation": "이 문항은 '그'에 대한 설명이 옳은지를 묻고 있다. 정답은 '그'가 특정한 상황을 설명하고 있다는 점에서 적합하다. 오답으로는 '나'와 '다'가 있으며, 이들은 '그'의 설명이 아닌 다른 내용을 포함하고 있다. 따라서 '그'에 대한 설명이 가장 적절하다고 할 수 있다.",
+    "core_concept": "특정한 상황 설명",
+    "parse_status": "ok",
+    "choices": [
+      {
+        "choice_no": 1,
+        "content": "흔민정을 해레본 편찬에 참여하였다.",
+        "is_answer": true
+      },
+      {
+        "choice_no": 2,
+        "content": "최초의 서원인 백운동 서원을 건립하였다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 3,
+        "content": "기축봉사를 올려 명에 대한 의리를 내세웠다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 4,
+        "content": "해주 향약을 시행하여 향촌 교화를 위해 노력하였다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 5,
+        "content": "가례집람을 지어 예학을 조선의 현실에 맞게 정리하였다.",
+        "is_answer": false
+      }
+    ]
+  },
+  {
+    "exam_round": 78,
+    "exam_level": "심화",
+    "question_no": 22,
+    "q_score": 2,
+    "era": "조선 전기",
+    "topic": "군사",
+    "question_type": "역사 자료의 분석 및 해석",
+    "content": "다음 중 이 사건에 대한 설명으로 옳지 않은 것은?",
+    "passage": "지난 10월 5일에 적이 1만 명을 셋으로 나누어 곧바로 진주를 침범하였습니다. ...... 김시민이 직접 전투를 독려하였는데, 철환이 그의 이미를 맞추니 성안이 소란해졌습니다. 적이 복면을 5~6척이나 풀고 그것으로부터 들어오려고 할 때 이광아가 다시 여러 장수들을 독려하여 화살을 쏘고 돌을 던졌습니다. 적이 개미처럼 벌어 올라오므로 불을 밝히 쏜 물을 쏜 후 진천뢰를 발사하니 죽은 자의 숫자를 헤아릴 수가 없었습니다.",
+    "visual_note": "",
+    "question_image_path": "test/CJ/test_q/output_78/question_images/q_022.png",
+    "answer_no": 4,
+    "answer_explanation": "입진왜란은 일본의 침략으로 시작되었으며, 조선의 방어 전략과 관련된 여러 사건들이 전개되었습니다. 이 전쟁은 조선의 정치적, 사회적 구조에 큰 영향을 미쳤고, 일본의 군사적 목표와 조선의 방어 전략이 충돌한 결과로 볼 수 있습니다. 특히, 이 시기에 조선은 외부의 위협에 대응하기 위해 다양한 방어 전략을 모색하였고, 이는 후속 전투와 정치적 변화에 중요한 기초가 되었습니다.",
+    "core_concept": "입진왜란",
+    "parse_status": "ok",
+    "choices": [
+      {
+        "choice_no": 1,
+        "content": "정부수기가 용골산성에서 항쟁하였다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 2,
+        "content": "김준룡이 광교산 전투에서 승리하였다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 3,
+        "content": "김종서가 두만강 일대에 6기를 개척하였다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 4,
+        "content": "권율이 해주산성에서 적군을 크게 물리쳤다.",
+        "is_answer": true
+      },
+      {
+        "choice_no": 5,
+        "content": "이종무가 적의 근거지인 대마도를 정벌하였다.",
+        "is_answer": false
+      }
+    ]
+  },
+  {
+    "exam_round": 78,
+    "exam_level": "심화",
+    "question_no": 23,
+    "q_score": 3,
+    "era": "조선 전기",
+    "topic": "외교",
+    "question_type": "연대기의 파악",
+    "content": "다음 상황이 나타난 시기를 연표에서 옮게 고른 것은?",
+    "passage": "청의 차사 한겨원이 도성에 들어왔다. 임금이 편전에서 접견할 적에 대신을 또한 임시(임侍)하였는데, 한겨원의 예부의 외교 문서를 바쳤다. 문서에 이르기를, “조선에서 조흔을 잘 쓰는 사람 1백 명을 선발하여, 회령부를 경유해 가서 청의 대장군에게 통솔을 받아 나선(羅船)을 정별하되, 3월 10일에 영고탑에 도착하시오.”라고 하였다.",
+    "visual_note": "연표에서 주어진 상황에 맞는 시기를 찾아야 합니다.",
+    "question_image_path": "test/CJ/test_q/output_78/question_images/q_023.png",
+    "answer_no": 1,
+    "answer_explanation": "청의 사신이 도성에 들어왔고, 임금이 편전에서 접견한 상황을 설명하고 있다. 이 시기에 대한 설명으로는 '조선이 청과의 관계를 조정하며 대외 정책을 펼쳤다'는 점이 중요하다. 또한, 1649-1659년 사이의 정치적 변화와 관련된 내용이 포함되어 있으며, 이 시기에 조선이 대외적으로 어떤 입장을 취했는지를 설명하고 있다.",
+    "core_concept": "조선과 청의 외교 관계",
+    "parse_status": "ok",
+    "choices": [
+      {
+        "choice_no": 1,
+        "content": "가",
+        "is_answer": true
+      },
+      {
+        "choice_no": 2,
+        "content": "나",
+        "is_answer": false
+      },
+      {
+        "choice_no": 3,
+        "content": "다",
+        "is_answer": false
+      },
+      {
+        "choice_no": 4,
+        "content": "라",
+        "is_answer": false
+      },
+      {
+        "choice_no": 5,
+        "content": "마",
+        "is_answer": false
+      }
+    ]
+  },
+  {
+    "exam_round": 78,
+    "exam_level": "심화",
+    "question_no": 24,
+    "q_score": 1,
+    "era": "조선 전기",
+    "topic": "문화",
+    "question_type": "역사 자료의 분석 및 해석",
+    "content": "밑줄 그은 양에 대한 설명으로 옳은 것은?",
+    "passage": "배틀을 부르니 빛살처럼 잇대 와서 원앙처럼 때 지어 비늘처럼 늘었는데 처음엔 조각조각 하나씩 흩어져 있었네 점차 구슬을 펴 겹쳐있게 붙었네 ...... 일본 일곱의 온갖 꽃에 늘어져 밀려오는 물결 그 아래 잠잠히네 [해설] 이 작품은 이현경이 지은 '부교행(扶橋行)'의 일부로, 배다리의 완성을 기념하여 앞에 지어 올린 시이다. 당시 배다리는 앞이 아버지 사도세자의 모습으로 수원부 옆 현룡원을 조성할 때, 영여(霊女)가 안정적으로 한강을 건널 수 있도록 만들겠다고.",
+    "visual_note": "지문을 통해 배다리와 관련된 문학적 설명을 이해하고, 선택지에서 올바른 설명을 찾는 문제입니다.",
+    "question_image_path": "test/CJ/test_q/output_78/question_images/q_024.png",
+    "answer_no": 5,
+    "answer_explanation": "이 문항은 한국사에서 '이 정권은 이렇다'는 주제를 다루고 있다. 특히, '당시의 배경과 기여'에 대한 설명이 중요하며, 조선 후기의 정치적 상황과 관련된 내용을 포함하고 있다. 이 시기에 조선이 외부의 영향을 어떻게 수용했는지를 설명하며, 특히 18세기 중반의 정치적 변화가 중요한 포인트로 다뤄진다.",
+    "core_concept": "조선 후기 정치적 변화",
+    "parse_status": "ok",
+    "choices": [
+      {
+        "choice_no": 1,
+        "content": "연인군을 왕세제로 책봉하였다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 2,
+        "content": "청과 곡경을 정한 백두산정계비를 세웠다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 3,
+        "content": "삼수병으로 구성된 훈련도감을 설치하였다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 4,
+        "content": "탑신 교리를 반포하고 탕평비를 건립하였다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 5,
+        "content": "문신을 재교육하기 위한 초계문신제를 시행하였다.",
+        "is_answer": true
+      }
+    ]
+  },
+  {
+    "exam_round": 78,
+    "exam_level": "심화",
+    "question_no": 25,
+    "q_score": 2,
+    "era": "조선 전기",
+    "topic": "경제",
+    "question_type": "역사 상황 및 쟁점의 인식",
+    "content": "다음 대화가 이루어진 시기의 경제 상황으로 적절하지 않은 것은?",
+    "passage": "근래 전황(銭荒)이 매우 심합니다. 실전통보를 만들어 상평통보와 함께 유통시키면 관청과 민간 양쪽 모두 편리할 것입니다.",
+    "visual_note": "대화 내용과 관련된 그림이 있으며, 대화의 주체와 배경을 통해 경제 상황을 유추해야 한다.",
+    "question_image_path": "test/CJ/test_q/output_78/question_images/q_025.png",
+    "answer_no": 1,
+    "answer_explanation": "조선 후기의 경제 상황에 대한 질문으로, 18세기 중반부터 시작된 상업의 발전과 관련된 내용이다. 이 시기에 조선은 상업적 활동이 활발해졌고, 특히 대동법과 같은 제도가 시행되면서 세금 체계가 변화하였다. 또한, 상업의 발전은 농업과의 관계에서도 중요한 영향을 미쳤으며, 이는 조선 사회의 구조적 변화를 가져왔다. 이러한 변화는 상업과 농업의 상호작용을 통해 이루어졌으며, 조선 후기의 경제적 기반을 형성하는 데 기여하였다.",
+    "core_concept": "조선 후기 상업 발전",
+    "parse_status": "ok",
+    "choices": [
+      {
+        "choice_no": 1,
+        "content": "환구라고 불리는 은병이 주조되었다.",
+        "is_answer": true
+      },
+      {
+        "choice_no": 2,
+        "content": "관청에 물품을 조달하는 공인이 활동하였다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 3,
+        "content": "송상, 만상이 대청 무역으로 부를 축적하였다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 4,
+        "content": "보부상이 장시를 돌아다니며 상품을 판매하였다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 5,
+        "content": "설점수세제의 시행으로 민간의 광산 개발이 허용되었다.",
+        "is_answer": false
+      }
+    ]
+  },
+  {
+    "exam_round": 78,
+    "exam_level": "심화",
+    "question_no": 26,
+    "q_score": 1,
+    "era": "조선 전기",
+    "topic": "문화",
+    "question_type": "역사 자료의 분석 및 해석",
+    "content": "다음 중 (가) 인물의 작품으로 옳은 것은?",
+    "passage": "이 작품은 (가)이/가 자신만의 서예 필법으로 글씨 쓴 듯이 그린 것이다. 그림 속 글과 도장을 통해 그의 예술 세계와 소장자 변동 등을 확인할 수 있다. (가)은/는 독특한 제재도 유배 시절을 건너며 추사체라는 독창적 서체를 남겼다.",
+    "visual_note": "그림 속에서 (가) 인물의 작품을 찾기 위해 각 선택지에 제시된 그림을 비교해야 합니다.",
+    "question_image_path": "test/CJ/test_q/output_78/question_images/q_026.png",
+    "answer_no": 5,
+    "answer_explanation": "추사 김정희의 작품은 한국 회화의 중요한 전환점을 나타내며, 그의 작품은 전통과 현대의 경계를 허물고 새로운 미적 감각을 제시한다. 특히, '불이선인도'는 그의 대표작으로, 자연과 인물의 조화를 통해 깊은 철학적 의미를 담고 있다. 김정희는 전통적인 기법을 사용하면서도 독창적인 표현을 시도하였고, 이는 후대에 큰 영향을 미쳤다. 그의 작품은 단순한 미술작품을 넘어 한국 미술의 정체성을 형성하는 데 기여하였다.",
+    "core_concept": "추사 김정희의 미술적 기여",
+    "parse_status": "ok",
+    "choices": [
+      {
+        "choice_no": 1,
+        "content": "첫 번째 선택지 내용",
+        "is_answer": false
+      },
+      {
+        "choice_no": 2,
+        "content": "두 번째 선택지 내용",
+        "is_answer": false
+      },
+      {
+        "choice_no": 3,
+        "content": "세 번째 선택지 내용",
+        "is_answer": false
+      },
+      {
+        "choice_no": 4,
+        "content": "네 번째 선택지 내용",
+        "is_answer": false
+      },
+      {
+        "choice_no": 5,
+        "content": "다섯 번째 선택지 내용",
+        "is_answer": true
+      }
+    ]
+  },
+  {
+    "exam_round": 78,
+    "exam_level": "심화",
+    "question_no": 27,
+    "q_score": 2,
+    "era": "조선 전기",
+    "topic": "사회",
+    "question_type": "역사 상황 및 쟁점의 인식",
+    "content": "다음 자료에 나타난 시기의 사회 모습으로 가장 적절한 것은?",
+    "passage": "항전은 통렬히 급해야 할 일이다. ...... 그들이 항임의 권한을 빙자하여 함부로 날뛰는 조짐이 없었다면 해당 수명이 어찌 이와 같이 처결하였겠는가. ...... 해당 군현 유생을 거둬 타일러서 각 구습을 통렬히 혁파하고 기필코 화합하게 하라. 이와 같이 하고한 뒤에도 구향과 신향을 무료하고 보통 유생의 일로 상의한다면, 이는 국법을 어지럽히는 백성이니 유생으로 대할 수 없다. 따라서 중죄를 적용하여 단건으로 용서하지 않을 것이니, 일체 엄히 경계하게 하라.",
+    "visual_note": "그림은 시기의 사회 모습을 나타내는 자료로, 해당 내용을 이해하는 데 도움이 될 수 있다.",
+    "question_image_path": "test/CJ/test_q/output_78/question_images/q_027.png",
+    "answer_no": 2,
+    "answer_explanation": "조선 후기 사회의 모습에 대한 질문으로, 9세기 학문이 실현된 유교의 영향을 설명하고 있다. 유교는 도덕과 윤리를 강조하며, 사회의 구조와 개인의 역할을 명확히 하였다. 이 시기에 나타난 변화는 조선의 정치와 사회에 큰 영향을 미쳤으며, 특히 성리학의 발전이 두드러진다. 또한, 이 시기의 사회 구조는 다양한 계층으로 나뉘어 있었고, 각 계층의 역할이 명확히 구분되었다.",
+    "core_concept": "조선 후기 유교의 영향",
+    "parse_status": "ok",
+    "choices": [
+      {
+        "choice_no": 1,
+        "content": "최종이 9재 학당을 설립하였다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 2,
+        "content": "서얼이 통청 운동을 전개하였다.",
+        "is_answer": true
+      },
+      {
+        "choice_no": 3,
+        "content": "반란과 호복이 지배층을 중심으로 유행하였다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 4,
+        "content": "망이·망소의 난 등 하층민의 봉기가 발생하였다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 5,
+        "content": "질병에 대한 처방 등을 소개한 향약구급방이 편찬되었다.",
+        "is_answer": false
+      }
+    ]
+  },
+  {
+    "exam_round": 78,
+    "exam_level": "심화",
+    "question_no": 28,
+    "q_score": 2,
+    "era": "개항기",
+    "topic": "외교",
+    "question_type": "역사 자료의 분석 및 해석",
+    "content": "(가) 소약에 대한 설명으로 옳은 것은?",
+    "passage": "이 책은 부산에서 감리서 서기 등으로 일했던 민건호의 일기이다. 감리서는 개항장의 행정과 대의 관계 사무를 관장하는 기구로, 운요호 사건의 빌미로 개항장에 설치되었다. '해은일록'에는 체결 이후 변화한 개항장 부산의 모습이 담겨 있다.",
+    "visual_note": "해은일록의 내용과 관련된 설명을 바탕으로 문제를 풀어야 한다.",
+    "question_image_path": "test/CJ/test_q/output_78/question_images/q_028.png",
+    "answer_no": 2,
+    "answer_explanation": "조선의 대외 정책과 관련된 내용으로, 19세기 중반 조선이 외세의 압박을 받으며 대처한 과정을 설명하고 있다. 특히, 1882년 조선과 미국 간의 조약 체결과 그 배경, 그리고 일본의 영향력 확대에 대한 대응이 주요 내용이다. 이 시기에 조선은 외세의 간섭을 받으면서도 자주성을 유지하려고 노력했으며, 이는 이후의 역사적 전개에 중요한 영향을 미쳤다.",
+    "core_concept": "조선의 대외 정책",
+    "parse_status": "ok",
+    "choices": [
+      {
+        "choice_no": 1,
+        "content": "천주교 포교 허용의 근거가 되었다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 2,
+        "content": "일본 측의 해안 측량권을 인정하였다.",
+        "is_answer": true
+      },
+      {
+        "choice_no": 3,
+        "content": "최혜국 대우를 규정한 조항을 담고 있다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 4,
+        "content": "일본 공사관의 경비병 주둔을 명시하였다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 5,
+        "content": "외국 상인의 내지 통상권을 최초로 규정하였다.",
+        "is_answer": false
+      }
+    ]
+  },
+  {
+    "exam_round": 78,
+    "exam_level": "심화",
+    "question_no": 29,
+    "q_score": 2,
+    "era": "개항기",
+    "topic": "사건",
+    "question_type": "역사 상황 및 쟁점의 인식",
+    "content": "주제: (가)의 현장을 찾아서",
+    "passage": "자료/지문/말풍선/표/이미지 설명 전체. 없으면 빈 문자열",
+    "visual_note": "지도에서 경로를 따라 현장을 찾아야 한다.",
+    "question_image_path": "test/CJ/test_q/output_78/question_images/q_029.png",
+    "answer_no": 1,
+    "answer_explanation": "문항은 '가'의 현장을 찾는 것으로, '우정총국'과 '일본 장사터'의 위치를 설명하고 있다. 1871년과 1895년의 사건을 통해 이 지역의 역사적 맥락을 설명하며, 특히 1886년과 1894년의 사건들이 중요한 역할을 했음을 강조한다. 이 지역은 조선시대와 근대의 경계에 위치하며, 일본의 영향이 컸던 곳으로, 다양한 역사적 사건들이 얽혀 있다.",
+    "core_concept": "우정총국과 일본 장사터의 역사적 중요성",
+    "parse_status": "ok",
+    "choices": [
+      {
+        "choice_no": 1,
+        "content": "한성 조약이 체결되는 계기가 되었다.",
+        "is_answer": true
+      },
+      {
+        "choice_no": 2,
+        "content": "외규장각 도서가 약탈되는 결과를 가져왔다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 3,
+        "content": "제너럴 서먼호 사건이 발단이 되어 일어났다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 4,
+        "content": "전개 과정에서 흥선 대원군이 청에 남치되었다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 5,
+        "content": "홍범 14조를 개혁의 기본 방향으로 제시하였다.",
+        "is_answer": false
+      }
+    ]
+  },
+  {
+    "exam_round": 78,
+    "exam_level": "심화",
+    "question_no": 30,
+    "q_score": 3,
+    "era": "개항기",
+    "topic": "통합",
+    "question_type": "역사 지식의 이해",
+    "content": "(가)~(마)에 들어갈 내용으로 가장 적절한 것은?",
+    "passage": "모둠별 과제 안내\n개항 이후 설립된 근대 교육 기관을 주제로 작성을 후 제목과 함께 게시판에 올려 주세요.",
+    "visual_note": "모둠별 과제 안내에 대한 내용을 보고 적절한 선택지를 고르세요.",
+    "question_image_path": "test/CJ/test_q/output_78/question_images/q_030.png",
+    "answer_no": 2,
+    "answer_explanation": "문항 30은 근대 교육 기관에 대한 내용으로, '모든 학생이 교육을 받을 수 있도록 하는 것이 중요하다'는 점을 강조하고 있다. 정답은 (가)로, 신분이나 계층에 관계없이 교육을 받을 수 있는 기회를 제공해야 한다는 주장을 담고 있다. 오답으로는 특정 계층만을 대상으로 하는 교육이 포함되어 있어 부적절하다.",
+    "core_concept": "근대 교육의 보편성",
+    "parse_status": "ok",
+    "choices": [
+      {
+        "choice_no": 1,
+        "content": "신민회가 민족 교육을 실시하다",
+        "is_answer": false
+      },
+      {
+        "choice_no": 2,
+        "content": "관민이 합심하여 세우다",
+        "is_answer": true
+      },
+      {
+        "choice_no": 3,
+        "content": "교육 입국 조서를 반포를 계기로 설립되다",
+        "is_answer": false
+      },
+      {
+        "choice_no": 4,
+        "content": "최초의 여성 교육 기관으로 건립되다",
+        "is_answer": false
+      },
+      {
+        "choice_no": 5,
+        "content": "통역관 양성을 위해 설치되다",
+        "is_answer": false
+      }
+    ]
+  },
+  {
+    "exam_round": 78,
+    "exam_level": "심화",
+    "question_no": 31,
+    "q_score": 2,
+    "era": "개항기",
+    "topic": "경제",
+    "question_type": "역사 자료의 분석 및 해석",
+    "content": "다음 자료를 활용한 탐구 활동으로 가장 적절한 것은?",
+    "passage": "오늘 7월 1일부터 경성 화폐교환소에서 구 백동화 교환 사무를 시작하니, 혼잡을 예방하고 서로의 편의를 도모하기 위하여 청원 방범을 다음과 같이 정하였다. 교환을 청하고자 하는 자는 이 뜻을 준수하도록 한다.\n\n광무 9년 6월 29일\n\n탁지부 대신\n\n제1항 구 백동화 교환을 청구하고자 하는 자는 미리 제1호 서식의 청원서에 교환하고자 하는 액수와 청원의 거주지, 성명 및 청원 연월 일을 기하여 탁지부 내 화폐교환소에 제출하도록 한다.\n\n제4항 제1항의 청원은 1일 10일에 대하여 교환 청구액이 1천 원 이상 1만 원 이하여야 한다. 단, 급년 10월 1일 이후에는 1천 원 이하도 청구할 수 있다.",
+    "visual_note": "",
+    "question_image_path": "test/CJ/test_q/output_78/question_images/q_031.png",
+    "answer_no": 4,
+    "answer_explanation": "문항 31은 7월 19일부터 시행되는 교사 사무에 대한 내용으로, 교사들이 학생들에게 공정하게 교육을 제공해야 한다는 원칙을 설명하고 있다. 정답은 '교사들이 학생들에게 동일한 기준으로 평가해야 한다'는 점을 강조하며, 이는 교육의 공정성을 유지하기 위한 필수적인 요소로 언급된다.",
+    "core_concept": "교육의 공정성",
+    "parse_status": "ok",
+    "choices": [
+      {
+        "choice_no": 1,
+        "content": "삼각 간섭이 발생한 원인을 분석한다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 2,
+        "content": "삼정이정청이 설치된 목적을 살펴본다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 3,
+        "content": "황국 중앙 총상회가 설립된 배경을 파악한다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 4,
+        "content": "재정 고문 메가타가 주도한 정책을 찾아본다.",
+        "is_answer": true
+      },
+      {
+        "choice_no": 5,
+        "content": "조미 수호 통상 조약이 체결되는 과정을 조사한다.",
+        "is_answer": false
+      }
+    ]
+  },
+  {
+    "exam_round": 78,
+    "exam_level": "심화",
+    "question_no": 32,
+    "q_score": 2,
+    "era": "개항기",
+    "topic": "사건",
+    "question_type": "역사 상황 및 쟁점의 인식",
+    "content": "다음 자료가 작성된 이후에 전개된 사실로 옳은 것은?",
+    "passage": "무주 집강소\n지나달 일본군이 경복궁을 침범하였으며, 임금께서 욕을 당하셨다. ...... 일본군이 바야흐로 청군과 서로 대적하여 싸우는데, 매일 날카로워 민첩하다. 지금 만약 [우리가] 선발리 맞서 싸우게 되면 그 하는 예측할 수 없어져 종사에 미칠 수 있을 듯하다. ...... 시세를 본 후에 기운은 북쪽아 주어서 계획을 실천한다면 만전을 기하는 대책이 될 것이다.\n\n좌우도 도집강",
+    "visual_note": "",
+    "question_image_path": "test/CJ/test_q/output_78/question_images/q_032.png",
+    "answer_no": 3,
+    "answer_explanation": "문제는 '지난 일본의 정복을 침해하고, 임금과 군주를 유린한 내용'에 대한 것이다. 이 문제는 일본의 제국주의적 행동과 그에 대한 반응을 다루고 있다. 1894년의 사건은 일본의 군사적 개입을 정당화하는 데 사용되었으며, 이는 한국의 정치적 상황에 큰 영향을 미쳤다. 또한, 일본의 제국주의적 정책은 한국의 독립과 자주성을 위협하는 요소로 작용했다. 이러한 역사적 배경을 통해 문제의 정답을 도출할 수 있다.",
+    "core_concept": "일본의 제국주의",
+    "parse_status": "ok",
+    "choices": [
+      {
+        "choice_no": 1,
+        "content": "농민군이 황토현에서 관군에 승리하였다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 2,
+        "content": "개혁을 추진하기 위해 교정청이 설치되었다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 3,
+        "content": "남접과 북접의 농민군이 논산에 집결하였다.",
+        "is_answer": true
+      },
+      {
+        "choice_no": 4,
+        "content": "교조 신원을 요구하는 삼례 집회가 개최되었다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 5,
+        "content": "조병갑의 폭정에 항의하여 군민들이 관아를 습격하였다.",
+        "is_answer": false
+      }
+    ]
+  },
+  {
+    "exam_round": 78,
+    "exam_level": "심화",
+    "question_no": 33,
+    "q_score": 2,
+    "era": "일제 강점기",
+    "topic": "군사",
+    "question_type": "역사 상황 및 쟁점의 인식",
+    "content": "다음 상황의 배경으로 가장 적절한 것은?",
+    "passage": "이인영이 3진(陣)의 장수로서 전국에 격문을 띄워 의병을 모집하였다. …… 허위와 이강년의 부대를 포함하여 총 48개 진, 약 1만 명에 달하는 병력을 갖추게 되었다. 이에 허위를 군사장으로 삼고 …… 서울에 들어가고자 하였다.",
+    "visual_note": "",
+    "question_image_path": "test/CJ/test_q/output_78/question_images/q_033.png",
+    "answer_no": 2,
+    "answer_explanation": "'이인직'의 장르로서 전개된 작품의 의미를 묻는 내용이다. 이 작품은 '허위와 진실'의 이중성을 다루며, 사회의 모순을 드러내고 있다. 특히, 1907년 12월에 발표된 '정미의병'은 당시의 역사적 배경을 반영하고 있으며, 이 작품을 통해 독자에게 당시의 상황을 전달하고자 했다. 이와 함께, 정미의병의 역사적 의미와 그로 인한 사회적 변화에 대한 논의가 포함되어 있다.",
+    "core_concept": "정미의병의 역사적 의미",
+    "parse_status": "ok",
+    "choices": [
+      {
+        "choice_no": 1,
+        "content": "미쓰야 협정이 체결되었다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 2,
+        "content": "대한 제국의 군대가 해산되었다.",
+        "is_answer": true
+      },
+      {
+        "choice_no": 3,
+        "content": "영국이 거문도를 불법으로 점령하였다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 4,
+        "content": "데라우치가 초대 총독으로 부임하였다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 5,
+        "content": "기우각서가 체결되어 사법권을 박탈당하였다.",
+        "is_answer": false
+      }
+    ]
+  },
+  {
+    "exam_round": 78,
+    "exam_level": "심화",
+    "question_no": 34,
+    "q_score": 1,
+    "era": "일제 강점기",
+    "topic": "문화",
+    "question_type": "역사 자료의 분석 및 해석",
+    "content": "믿줄 그은 ‘신문’에 대한 설명으로 옳은 것은?",
+    "passage": "비델과 앵커가 함께 창간한 신문에 대해 말해 보자. 영국인이 발행인이란 상대적으로 일제의 간섭에서 자유로웠어. 그렇기 때문에 일제의 친일상을 상세히 보도할 수 있었지.",
+    "visual_note": "그림 속 인물들이 신문에 대해 토론하고 있는 장면을 보고 문제를 풀어야 한다.",
+    "question_image_path": "test/CJ/test_q/output_78/question_images/q_034.png",
+    "answer_no": 4,
+    "answer_explanation": "문항 34는 '신문'에 대한 설명을 요구하며, 신문의 역할과 역사적 배경을 다룹니다. 신문은 정보 전달의 중요한 수단으로, 사회적 변화와 여론 형성에 기여해왔습니다. 특히, 19세기 후반부터 20세기 초반까지의 신문 발달 과정이 강조되며, 이 시기에 신문이 어떻게 사회적 역할을 수행했는지를 설명합니다.",
+    "core_concept": "신문의 역사적 역할",
+    "parse_status": "ok",
+    "choices": [
+      {
+        "choice_no": 1,
+        "content": "브나로드 운동을 주도하였다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 2,
+        "content": "천도교의 기관지로 발행되었다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 3,
+        "content": "상업 광고를 처음으로 게재하였다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 4,
+        "content": "국채 보상 운동의 확산에 기여하였다.",
+        "is_answer": true
+      },
+      {
+        "choice_no": 5,
+        "content": "순한글판으로 발행된 최초의 신문이었다.",
+        "is_answer": false
+      }
+    ]
+  },
+  {
+    "exam_round": 78,
+    "exam_level": "심화",
+    "question_no": 35,
+    "q_score": 3,
+    "era": "현대",
+    "topic": "인물",
+    "question_type": "역사 지식의 이해",
+    "content": "(가) 인물의 활동으로 옳은 것은?",
+    "passage": "2002년 미주 한인 이민 100주년을 맞아 LA 코리아타운 인근 고속 도로 인터체인지에 붙여진 이름이다. 한국, 중국, 미국 등을 오가며 독립운동에 헌신한 (가)는 샌프란시스코에서 공립 협회, 흥사단 등의 설립을 주도하고 대한인 국민회 중앙 총회장에 취임하였다. 그의 활동은 독립운동뿐만 아니라 한인이 미국 사회에 정착하는 데 크게 기여하였다.",
+    "visual_note": "주어진 지문을 바탕으로 (가) 인물의 활동에 대한 질문을 풀어야 합니다.",
+    "question_image_path": "test/CJ/test_q/output_78/question_images/q_035.png",
+    "answer_no": 3,
+    "answer_explanation": "문항 35는 '인물의 활동'에 대한 질문으로, 2002년 LA에서의 한국인 인물의 활동을 다룹니다. 이 문항은 특정 인물의 기여와 그가 속한 사회적 맥락을 설명하며, 한국인의 역사적 활동이 미국 내에서 어떻게 전개되었는지를 보여줍니다. 또한, 이 시기에 한국인들이 겪었던 사회적 도전과 그에 대한 대응을 다룹니다.",
+    "core_concept": "한국인의 역사적 활동",
+    "parse_status": "ok",
+    "choices": [
+      {
+        "choice_no": 1,
+        "content": "대한 광복회를 조직하여 친일파를 처단하였다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 2,
+        "content": "일본의 침략 과정을 담은 한국통사를 저술하였다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 3,
+        "content": "대한민국 임시 정부에서 내무총장으로 활동하였다.",
+        "is_answer": true
+      },
+      {
+        "choice_no": 4,
+        "content": "의열단의 활동 지침인 조선 혁명 선언을 작성하였다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 5,
+        "content": "헤이그에서 열린 만국 평화 회의에 특사로 파견되었다.",
+        "is_answer": false
+      }
+    ]
+  },
+  {
+    "exam_round": 78,
+    "exam_level": "심화",
+    "question_no": 36,
+    "q_score": 1,
+    "era": "일제 강점기",
+    "topic": "정치",
+    "question_type": "역사 상황 및 쟁점의 인식",
+    "content": "믿줄 그은 ‘시기’에 있었던 사실로 옳은 것은?",
+    "passage": "일제가 임시 토지 조사를 실시하고 토지 조사 사업을 시행하던 시기에 작성된 지적원도, 토지 조사부 등을 공개하는 온라인 서비스가 시작됩니다. 토지 조사는 당신의 지번, 지목, 소유자 주소 및 성명 등이 기재된 문서로 조사당 찾기, 학술 연구 등에 적극 활용될 것으로 기대됩니다.",
+    "visual_note": "문제의 지문에서 언급된 온라인 서비스와 관련된 내용을 바탕으로 선택지를 분석해야 합니다.",
+    "question_image_path": "test/CJ/test_q/output_78/question_images/q_036.png",
+    "answer_no": 1,
+    "answer_explanation": "문항 36은 '토지 관련 기록을 온라인 서비스 개시'에 대한 내용으로, 1910년대의 토지 조사 사업과 관련된 사실을 다루고 있다. 이 사업은 일본의 식민지 통치 아래에서 진행되었으며, 토지 조사 사업의 목적은 토지 소유권을 명확히 하고 세금을 부과하기 위한 것이었다. 1910년대에 시작된 이 사업은 1911년 4월에 토지 조사 사업이 시작되었고, 1912년까지 진행되었다. 이 과정에서 토지 소유권에 대한 기록이 정리되었고, 이는 이후의 행정 및 세금 부과에 중요한 기초 자료가 되었다.",
+    "core_concept": "토지 조사 사업",
+    "parse_status": "ok",
+    "choices": [
+      {
+        "choice_no": 1,
+        "content": "현병 경찰제가 실시되었다.",
+        "is_answer": true
+      },
+      {
+        "choice_no": 2,
+        "content": "치안 유지법이 제정되었다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 3,
+        "content": "친위대와 진위대가 설치되었다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 4,
+        "content": "조선 여성 동우회가 창립되었다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 5,
+        "content": "조선 사상범 예방법 구금령이 시행되었다.",
+        "is_answer": false
+      }
+    ]
+  },
+  {
+    "exam_round": 78,
+    "exam_level": "심화",
+    "question_no": 37,
+    "q_score": 3,
+    "era": "일제 강점기",
+    "topic": "사회",
+    "question_type": "역사 상황 및 쟁점의 인식",
+    "content": "다음 사실 이후에 있었던 사실로 옳은 것은?",
+    "passage": "피고: 서태석\n주문: 피고 서태석을 징역 2년에 처한다.\n\n이유\n피고 서태석은 전라남도 무안군 압태면의 지구 가는 특히 문재철의 부친이자 그 토지 관리자인 문태현이 고율의 소작료를 징수하는 데 방해하였다. 이에 피고 서창석과 공모하여 불법 소작인을 규합해 2년 전 압태소작인회라는 것을 조직하고 ...... 소작료를 늘 4월, 발 3할로 저감하게 할 것, 그 요건을 수용하지 않을 때는 소작료 불법 동맹 및 폐작 동맹을 감행하고 문태현을 위해 건립된 송덕비를 넘어뜨릴 것을 논의하였다. ...... 지난해 피고는 동지들과 함께 문태현을 방문하여 소작료 저감에 관한 확답을 구했지만 실패하자 송덕비를 넘어뜨렸다.",
+    "visual_note": "",
+    "question_image_path": "test/CJ/test_q/output_78/question_images/q_037.png",
+    "answer_no": 3,
+    "answer_explanation": "조선 농민 총동맹 결성에 대한 해설로, 농민들이 자주적인 권리를 주장하며 조직된 배경과 그 과정에서의 사회적 요구를 설명하고 있다. 이들은 농민의 권리와 이익을 위해 단결하여 투쟁했으며, 이는 당시 사회의 구조적 문제를 드러내는 중요한 사건으로 평가된다.",
+    "core_concept": "조선 농민의 권리와 단결",
+    "parse_status": "ok",
+    "choices": [
+      {
+        "choice_no": 1,
+        "content": "지계아문이 설치되어 지계가 발급되었다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 2,
+        "content": "회사 설립을 허가제로 하는 회사령이 제정되었다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 3,
+        "content": "전국 단위 조직인 조선 농민 총동맹이 결성되었다.",
+        "is_answer": true
+      },
+      {
+        "choice_no": 4,
+        "content": "일본의 토지 침탈에 맞서 농광 회사가 설립되었다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 5,
+        "content": "경북공에서 최초로 조선 물산 공진회가 개최되었다.",
+        "is_answer": false
+      }
+    ]
+  },
+  {
+    "exam_round": 78,
+    "exam_level": "심화",
+    "question_no": 38,
+    "q_score": 2,
+    "era": "일제 강점기",
+    "topic": "사건",
+    "question_type": "역사 상황 및 쟁점의 인식",
+    "content": "믿줄 그은 ‘운동’에 대한 설명으로 옳은 것은?",
+    "passage": "지난 6일에 모종의 계획이 발각된 이후, 이선호는 수 명의 동지를 규합하여 격문을 인쇄한 후 먼저 각 학교에 뿌려 학생들에게 독립운동의 기운을 고취하고자 하였다. 그러던 중 이선호는 경성 제국 대학의 이천진, 연희 전문 학교의 홍명식, 권오상과 함께 이왕(豫) 전하의 국장일에 만세를 외치며 운동을 시작한 것이다.",
+    "visual_note": "",
+    "question_image_path": "test/CJ/test_q/output_78/question_images/q_038.png",
+    "answer_no": 4,
+    "answer_explanation": "만세 운동에 대한 설명으로, 6·10 만세 운동이 일어난 배경과 그 의의를 다룬다. 이 운동은 민족의 자주성을 요구하며, 당시 사회의 정치적 상황을 반영하고 있다. 만세 운동은 한국의 독립운동 역사에서 중요한 전환점으로, 민중의 저항 의식을 고양시키는 계기가 되었다.",
+    "core_concept": "6·10 만세 운동의 의의",
+    "parse_status": "ok",
+    "choices": [
+      {
+        "choice_no": 1,
+        "content": "김광제 등의 발의로 분석화되었다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 2,
+        "content": "보각민, 제폭구민을 기초로 내걸었다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 3,
+        "content": "전개 과정에서 일제가 제압한 학생 등을 시행하였다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 4,
+        "content": "민족 협동 전선 단체에 신간회 결성이 영향을 끼쳤다.",
+        "is_answer": true
+      },
+      {
+        "choice_no": 5,
+        "content": "한국인 학생과 일본인 학생 간의 충돌에서 비로소 되었다.",
+        "is_answer": false
+      }
+    ]
+  },
+  {
+    "exam_round": 78,
+    "exam_level": "심화",
+    "question_no": 39,
+    "q_score": 2,
+    "era": "조선 후기",
+    "topic": "사회",
+    "question_type": "역사 자료의 분석 및 해석",
+    "content": "다음 자료를 활용한 답구 활동으로 가장 적절한 것은?",
+    "passage": "백정 계급의 주의를 포위하고 이를 암박하는 계급은 결국 양반 계급의 그것뿐 아니오. [백정 계급은 중인 계급에도 능욕과 천대를 받는 것이며, 오늘날 사회 제도의 결함으로부터 발생된 모든 계급(민족적 우월 계급, 경제적 우월 계급)에 의해 압박과 착취를 당하는 자이다. 한편 일명이 가슴에 차고 설욕과 눈물의 가득하여 어려서부터 고식적 보수에 잠자오던 백정 계급은 원래의 무지와 전통을 버리고 모범기리 저 화면 속으로 그들의 이상을 관철해야 할 것이며, 이러한 역사적 사명을 갖고 있는 것이 아니다. -『척후대』",
+    "visual_note": "",
+    "question_image_path": "test/CJ/test_q/output_78/question_images/q_039.png",
+    "answer_no": 2,
+    "answer_explanation": "문항은 조선 행정사에 관한 것으로, 1919년 3.1운동 이후의 한국의 교육과 관련된 내용을 다루고 있다. 이 시기에 일본의 식민지 정책과 한국의 저항이 어떻게 전개되었는지를 설명하고 있으며, 1920년대의 교육 정책 변화와 그에 따른 사회적 반응도 포함된다. 특히, 1923년의 역사적 사건과 관련된 내용이 강조되며, 한국의 교육이 일본의 통치 아래에서 어떻게 변화했는지를 보여준다.",
+    "core_concept": "조선의 교육 정책 변화",
+    "parse_status": "ok",
+    "choices": [
+      {
+        "choice_no": 1,
+        "content": "보안회의 활동 내용을 분석했다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 2,
+        "content": "조선 형평사의 창립 목적을 파악했다.",
+        "is_answer": true
+      },
+      {
+        "choice_no": 3,
+        "content": "군국기무치가 설치된 계기를 찾아본다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 4,
+        "content": "전주 화약이 체결되는 과정을 알아본다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 5,
+        "content": "대한 자강회가 해산된 배경을 조사한다.",
+        "is_answer": false
+      }
+    ]
+  },
+  {
+    "exam_round": 78,
+    "exam_level": "심화",
+    "question_no": 40,
+    "q_score": 2,
+    "era": "일제 강점기",
+    "topic": "사회",
+    "question_type": "역사 상황 및 쟁점의 인식",
+    "content": "믿줄 그은 ‘이 시기에 볼 수 있는 모습으로 가장 적절한 것은?",
+    "passage": "가장 경제적이요, 활동적인 국림 표준복과 청년단복의 구매는 조선 총독부 교화 단체 영향회 및 국민 정신 총동원 조선 연맹이 지정한 회신(和信)으로! 이것은 국림 표준복과 청년단복을 홍보하는 광고이다. 일제는 국가 총동원법 제정 이후 침략 전쟁을 확대하던 이 시기에 전시 생활 체제를 강조하며 복장을 통제하고자 하였다.",
+    "visual_note": "광고 이미지에서 국림 표준복과 청년단복의 모습을 보고 선택지를 판단해야 한다.",
+    "question_image_path": "test/CJ/test_q/output_78/question_images/q_040.png",
+    "answer_no": 4,
+    "answer_explanation": "이 문항은 일제 강점기 시기에 한국의 민족운동과 관련된 내용을 다루고 있다. 정답은 '가'로, 이는 한국의 독립운동가들이 일본의 통치에 저항하기 위해 다양한 방법으로 민족의식을 고취시키려 했음을 보여준다. 특히, 1937년의 사건은 한국의 민족운동이 더욱 활발해졌음을 나타내며, 이러한 배경 속에서 독립운동이 전개되었음을 강조한다.",
+    "core_concept": "일제 강점기 민족운동",
+    "parse_status": "ok",
+    "choices": [
+      {
+        "choice_no": 1,
+        "content": "원산 총파업에 참여하는 노동자",
+        "is_answer": false
+      },
+      {
+        "choice_no": 2,
+        "content": "105인 사건으로 검거되는 애국지사",
+        "is_answer": false
+      },
+      {
+        "choice_no": 3,
+        "content": "근우회 창립 총회에 취재하는 기자",
+        "is_answer": false
+      },
+      {
+        "choice_no": 4,
+        "content": "황국 신민 서사 암송을 강요받는 학생",
+        "is_answer": true
+      },
+      {
+        "choice_no": 5,
+        "content": "태화관에서 독립 선언식을 거행하는 민족 대표",
+        "is_answer": false
+      }
+    ]
+  },
+  {
+    "exam_round": 78,
+    "exam_level": "심화",
+    "question_no": 41,
+    "q_score": 2,
+    "era": "일제 강점기",
+    "topic": "문화",
+    "question_type": "역사 상황 및 쟁점의 인식",
+    "content": "(가) 단체의 활동으로 옳은 것은?",
+    "passage": "이것은 이극로가 1928년 스로본 대학교에서 조선의 문자와 말소리 등에 대해 녹음하고 작성한 기록 카드입니다. 이때 녹음된 음성을 통해 100년 전 한국어 발음과 표현을 확인할 수 있습니다. 이극로는 이듬해 고국으로 돌아와 조선어 학회의 전신인 (가)에 가입하고 한글 수음 운동을 이어 나갔습니다.",
+    "visual_note": "그림은 이극로의 녹음 기록 카드와 관련된 내용을 보여주고 있습니다. 이 내용을 바탕으로 문제를 풀어야 합니다.",
+    "question_image_path": "test/CJ/test_q/output_78/question_images/q_041.png",
+    "answer_no": 2,
+    "answer_explanation": "이 문항은 조선의 연구회 활동에 대한 내용을 다룬다. 정답은 '가'로, 이는 1928년 조선의 연구회가 설립되어 조선의 역사와 문화를 연구하고 보존하기 위한 노력을 기울였음을 나타낸다. 이러한 활동은 한국의 정체성을 확립하고, 민족의식을 고취하는 데 중요한 역할을 했다.",
+    "core_concept": "조선의 연구회",
+    "parse_status": "ok",
+    "choices": [
+      {
+        "choice_no": 1,
+        "content": "학술지로 진단 학보를 발행하였다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 2,
+        "content": "가가날을 제정하고 기념식을 진행하였다.",
+        "is_answer": true
+      },
+      {
+        "choice_no": 3,
+        "content": "태극 서관을 설립하여 서적을 보급하였다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 4,
+        "content": "주식형, 지식형 등이 중심이 되어 활동하였다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 5,
+        "content": "영은문이 있던 자리 부근에 독립문을 건립하였다.",
+        "is_answer": false
+      }
+    ]
+  },
+  {
+    "exam_round": 78,
+    "exam_level": "심화",
+    "question_no": 42,
+    "q_score": 2,
+    "era": "일제 강점기",
+    "topic": "사건",
+    "question_type": "역사 자료의 분석 및 해석",
+    "content": "(가)에 대한 설명으로 옳은 것은?",
+    "passage": "이것은 (가)이/가 3·1 운동 20주년을 기념하여 창작한 연구 '조선의 여아(女兒)'의 공연 사진이다. (가)은/는 김원봉의 주도로 중국 우한(武漢)에서 결정된 한인 부대, 다양한 선전 활동을 전개하였으며 연구는 그 핵심 수단 중 하나였다. 일제의 압박과 착취에 신음하는 우리 민족의 고통과 저항을 담은 '조선의 여아'는 한국과 중국의 관계들의 공감을 이끌어 내 향일 투쟁의 의지를 높이는 데 기여하였다.",
+    "visual_note": "사진 속에서 3·1 운동 20주년 기념 공연의 장면을 보고 관련된 내용을 이해해야 한다.",
+    "question_image_path": "test/CJ/test_q/output_78/question_images/q_042.png",
+    "answer_no": 1,
+    "answer_explanation": "이 문항은 조선 의용대의 활동과 관련된 내용으로, 조선 의용대는 1931년 3.1 운동 20주년을 기념하여 창설된 단체이다. 이들은 일본 제국주의에 맞서 싸우기 위해 조직되었으며, 1933년에는 중국의 항일 무장 투쟁에 참여하였다. 조선 의용대는 독립운동의 일환으로 다양한 활동을 전개하였고, 1942년에는 조선 의용대의 활동이 더욱 활발해졌다. 이들은 조선의 독립을 위해 국제 사회에서의 지지를 얻고자 노력하였다.",
+    "core_concept": "조선 의용대의 항일 투쟁",
+    "parse_status": "ok",
+    "choices": [
+      {
+        "choice_no": 1,
+        "content": "대원 일부가 한국광복군에 합류하였다.",
+        "is_answer": true
+      },
+      {
+        "choice_no": 2,
+        "content": "청산리에서 일본군에 맞서 승리를 거두었다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 3,
+        "content": "동북 항일 연군으로 개편되어 유격전을 펼쳤다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 4,
+        "content": "대저택 려전에서 한중 연합 작전을 전개하였다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 5,
+        "content": "조선 혁명당의 군사 조직은 남만주 지역에서 활약하였다.",
+        "is_answer": false
+      }
+    ]
+  },
+  {
+    "exam_round": 78,
+    "exam_level": "심화",
+    "question_no": 43,
+    "q_score": 2,
+    "era": "일제 강점기",
+    "topic": "사회",
+    "question_type": "역사 상황 및 쟁점의 인식",
+    "content": "교사의 질문에 대한 학생의 답변으로 적절하지 않은 것은?",
+    "passage": "이것은 경성 미쓰코시 백화점의 신관 개점을 알리는 광고입니다. 당시 개점한 미쓰코시 백화점은 지하 1층부터 지상 6층까지 각종 매장을 두고, 그 위로는 옥상 정원과 갤러리, 전람회를 갖춘 문화 공간이었습니다. 이러한 일제 강점기에는 백화점 등 근대적 소비·문화 시설이 들어서면서 도시를 중심으로 의식주에 변화가 나타나고 대중문화가 확산되었습니다. 당시 달라진 사회·문화 현상에 대해 말해 볼까요?",
+    "visual_note": "광고 이미지와 관련된 내용을 보고 문제를 풀어야 합니다.",
+    "question_image_path": "test/CJ/test_q/output_78/question_images/q_043.png",
+    "answer_no": 1,
+    "answer_explanation": "이 문항은 일제 강점기와 관련된 내용으로, 조선의 미술과 문화에 대한 해설을 포함하고 있다. 당시 미술의 발전과 관련된 배경, 그리고 일제 강점기 동안의 문화적 변화에 대해 설명하고 있다. 특히, 1930년대의 미술과 관련된 정책과 그로 인한 영향, 그리고 1960년대의 방송과 미술의 관계에 대한 내용이 포함되어 있다. 이러한 배경을 통해 일제 강점기의 문화적 상황을 이해할 수 있다.",
+    "core_concept": "일제 강점기 문화",
+    "parse_status": "ok",
+    "choices": [
+      {
+        "choice_no": 1,
+        "content": "텔레비전 방송이 시작되었어요.",
+        "is_answer": true
+      },
+      {
+        "choice_no": 2,
+        "content": "화학조미료를 활용한 요리법이 확산되었어요.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 3,
+        "content": "새로운 주택 양식인 문화 주택이 등장하였어요.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 4,
+        "content": "단성사에서 영화 임자 없는 나룻배가 상영되었어요.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 5,
+        "content": "근대적 생활 양식을 받아들인 모습이 보였어요.",
+        "is_answer": false
+      }
+    ]
+  },
+  {
+    "exam_round": 78,
+    "exam_level": "심화",
+    "question_no": 44,
+    "q_score": 2,
+    "era": "현대",
+    "topic": "정치",
+    "question_type": "역사 지식의 이해",
+    "content": "(가) 선거에 대한 설명으로 옳은 것은?",
+    "passage": "이 노래는 유엔 한국 임시 위원단의 감시에 실시된 (가)의 투표를 독려하기 위해 만들어졌다. (가)는 만 21세 이상의 국민에게 선거권이 부여된 우리나라 최초의 보통선거, 95.5%에 달하는 투표율을 기록하였다.",
+    "visual_note": "주어진 지문과 선택지를 바탕으로 (가) 선거에 대한 설명을 찾기 위해 내용을 분석해야 한다.",
+    "question_image_path": "test/CJ/test_q/output_78/question_images/q_044.png",
+    "answer_no": 5,
+    "answer_explanation": "6·3 시위는 박정희 정부의 굴욕적인 한일 국교 정상화에 반대하여 일어난 민중의 저항 시위로, 1964년 6월 3일에 발생하였다. 이 시위는 정부의 시책에 대한 반발로, 1952년 7월에 일어난 제1차 개헌과 관련이 깊다. 당시 국민의 95.6%가 반대하는 여론이 있었음에도 불구하고 정부는 강행하였다. 이로 인해 국민의 저항이 커졌고, 이는 이후의 민주화 운동으로 이어졌다.",
+    "core_concept": "6·3 시위",
+    "parse_status": "ok",
+    "choices": [
+      {
+        "choice_no": 1,
+        "content": "6·3 시위 이후에 실시되었다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 2,
+        "content": "발의 개헌에 따라 이루어졌다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 3,
+        "content": "신한 민주당이 제1 야당이 되는 결과를 가져왔다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 4,
+        "content": "통일 주체 국민 회의의 대의원이 투표에 참여하였다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 5,
+        "content": "김구, 김규식 등이 단독 정부 수립에 반대하며 불참하였다.",
+        "is_answer": true
+      }
+    ]
+  },
+  {
+    "exam_round": 78,
+    "exam_level": "심화",
+    "question_no": 45,
+    "q_score": 1,
+    "era": "현대",
+    "topic": "군사",
+    "question_type": "역사 상황 및 쟁점의 인식",
+    "content": "다음 중 이 전쟁 중에 있었던 사실로 옳은 것은?",
+    "passage": "제 뒤로 보이는 장사 상륙 작전 전시 기념관은 작전 당시 투입된 문산호를 재현하여 바다 위에 건립되었습니다. 이 전쟁 중 국군과 유엔군은 동해안 장사리에 상륙 작전을 전개하여 북한군을 교란하고 전력을 분산시키고자 했습니다.",
+    "visual_note": "그림은 장사 상륙 작전과 관련된 기념관과 배를 보여주고 있으며, 이 정보를 바탕으로 문제를 풀어야 합니다.",
+    "question_image_path": "test/CJ/test_q/output_78/question_images/q_045.png",
+    "answer_no": 5,
+    "answer_explanation": "1953년 10월 한미 상호 방위 조약이 체결되었고, 이는 한국 전쟁 중 미국의 군사적 지원을 보장하는 중요한 문서였다. 이 조약은 한국의 안보를 강화하고, 미국의 군사적 개입을 정당화하는 근거가 되었다. 또한, 1948년 10월 19일에 수립된 정부와 관련된 여러 사건들이 이 조약의 배경이 되었다. 이 조약은 한국과 미국 간의 군사적 협력을 강화하는 데 중요한 역할을 하였다.",
+    "core_concept": "한미 상호 방위 조약",
+    "parse_status": "ok",
+    "choices": [
+      {
+        "choice_no": 1,
+        "content": "애치슨 라인이 발표되었다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 2,
+        "content": "한미 상호 방위 조약이 체결되었다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 3,
+        "content": "여수·순천 10·19 사건이 발생하였다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 4,
+        "content": "모스크바 3국 외상 회의가 개최되었다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 5,
+        "content": "흥남에서 대규모 철수 작전이 전개되었다.",
+        "is_answer": true
+      }
+    ]
+  },
+  {
+    "exam_round": 78,
+    "exam_level": "심화",
+    "question_no": 46,
+    "q_score": 2,
+    "era": "현대",
+    "topic": "사건",
+    "question_type": "역사 상황 및 쟁점의 인식",
+    "content": "민주화 운동에 대한 설명으로 옳은 것은?",
+    "passage": "김주열 민주시민에게 드리는 하늘편지\n불의에 항거한 용기와 민주주의를 위한 희생에 존경을 표합니다. 부디 그곳은 고통 없는 안식처가 되길 바랍니다.",
+    "visual_note": "하늘편지의 내용과 관련된 민주화 운동의 배경을 이해하고 선택지를 분석해야 합니다.",
+    "question_image_path": "test/CJ/test_q/output_78/question_images/q_046.png",
+    "answer_no": 2,
+    "answer_explanation": "1970년대 초반, 한국의 민주화 운동은 여러 사회적 요구에 의해 촉발되었다. 특히 4.19 혁명은 학생과 시민들이 주도한 대규모 시위로, 정부의 부패와 독재에 대한 저항의 상징으로 여겨진다. 이 운동은 1960년 4월 19일 발생하였으며, 이후 민주주의 회복을 위한 중요한 전환점이 되었다. 4.19 혁명은 한국 현대사에서 중요한 사건으로, 이후의 민주화 운동에 큰 영향을 미쳤다.",
+    "core_concept": "4.19 혁명",
+    "parse_status": "ok",
+    "choices": [
+      {
+        "choice_no": 1,
+        "content": "긴급 조치 철폐를 요구하였다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 2,
+        "content": "장면 내각이 출범하는 계기가 되었다.",
+        "is_answer": true
+      },
+      {
+        "choice_no": 3,
+        "content": "신군부의 개입 확대에 반발하여 일어났다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 4,
+        "content": "야당 총재의 국회의원직 제명에 반대하였다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 5,
+        "content": "5년 단임의 대통령 직선제 개헌을 이끌었다.",
+        "is_answer": false
+      }
+    ]
+  },
+  {
+    "exam_round": 78,
+    "exam_level": "심화",
+    "question_no": 47,
+    "q_score": 1,
+    "era": "현대",
+    "topic": "정치",
+    "question_type": "역사 상황 및 쟁점의 인식",
+    "content": "다음 중 (가) 정부 시기의 정책 상황으로 적절하지 않은 것은?",
+    "passage": "이것은 (가) 정부 당시 건설부 등이 정부 고속 도로 전 구간 개통에 계재한 신문 광고입니다. '뻐어가는 국력을 상징하며 조국의 중생부를 힘차게 달린다!'라는 문구가 적혀 있습니다. 정부 고속 도로 전 구간 개통일인 7월 7일은 현재 도로의 날로 지정되어 있습니다.",
+    "visual_note": "그림은 정부 고속 도로 전 구간 개통에 대한 신문 광고를 보여주고 있습니다. 이 광고의 내용을 바탕으로 문제를 풀어야 합니다.",
+    "question_image_path": "test/CJ/test_q/output_78/question_images/q_047.png",
+    "answer_no": 2,
+    "answer_explanation": "박정희 정부 시기의 경제 상황에 대한 질문으로, 정부의 경제 정책이 산업 발전에 기여했음을 설명하고 있습니다. 특히, 1960년대 후반부터 1970년대 초반까지의 경제 성장과 관련된 정책들이 강조되며, 이 시기에 정부가 추진한 개발 계획이 경제 성장에 미친 긍정적인 영향을 다루고 있습니다. 그러나 이러한 정책들이 사회적 불평등을 초래했음을 지적하며, 경제 성장의 이면에 있는 문제들도 함께 언급됩니다.",
+    "core_concept": "박정희 정부의 경제 정책과 그 영향",
+    "parse_status": "ok",
+    "choices": [
+      {
+        "choice_no": 1,
+        "content": "포항 제철소 1기 설비가 착공되었다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 2,
+        "content": "국민 기초 생활 보장법이 제정되었다.",
+        "is_answer": true
+      },
+      {
+        "choice_no": 3,
+        "content": "마산이 수출 자유 지역으로 지정되었다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 4,
+        "content": "베트남 전쟁 파병에 따른 특수를 누렸다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 5,
+        "content": "제2차 경제 개발 5개년 계획이 추진되었다.",
+        "is_answer": false
+      }
+    ]
+  },
+  {
+    "exam_round": 78,
+    "exam_level": "심화",
+    "question_no": 48,
+    "q_score": 3,
+    "era": "현대",
+    "topic": "제도",
+    "question_type": "역사 지식의 이해",
+    "content": "믿줄 그은 ‘현행 헌법’에 대한 설명으로 옳은 것은?",
+    "passage": "대통령이 개헌은 불가능하다며 현행 헌법에 따라 정부를 이용하겠다고 발표하였고, 평화적인 정부 이용과 서울 올림픽 대회의 성공적 개최를 명분으로 내세웠지만, 결국 시민들의 기대를 외면한 것 같네.",
+    "visual_note": "두 남성이 신문을 들고 대화하는 장면을 보고 문제를 풀어야 합니다.",
+    "question_image_path": "test/CJ/test_q/output_78/question_images/q_048.png",
+    "answer_no": 5,
+    "answer_explanation": "대통령이 개헌을 추진한 배경과 그 의도를 설명하는 문항입니다. 개헌이 이루어진 이유는 정치적 안정과 권력의 집중을 위한 것이며, 이는 당시 사회의 요구와 맞물려 있습니다. 개헌 과정에서의 논의와 그 결과가 어떻게 나타났는지를 분석하며, 개헌이 국민의 권리와 정치적 참여에 미친 영향을 다루고 있습니다.",
+    "core_concept": "개헌의 배경과 정치적 의도",
+    "parse_status": "ok",
+    "choices": [
+      {
+        "choice_no": 1,
+        "content": "사사오입의 논리로 통과되었다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 2,
+        "content": "대통령의 3선 연임을 허용하였다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 3,
+        "content": "3·1 민주 구국 선언에 영향을 주었다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 4,
+        "content": "민의원과 참의원의 양원제 국회를 명시하였다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 5,
+        "content": "대통령 선거인단에 의한 간선제를 규정하였다.",
+        "is_answer": true
+      }
+    ]
+  },
+  {
+    "exam_round": 78,
+    "exam_level": "심화",
+    "question_no": 49,
+    "q_score": 2,
+    "era": "현대",
+    "topic": "정치",
+    "question_type": "역사 상황 및 쟁점의 인식",
+    "content": "다음 연설문을 통해 정부의 통일 노력에 관한 것은?",
+    "passage": "지난해 9·11 테러 이후 전 세계가 불안에 휘말렸지만, 한반도에서는 안정이 유지되었습니다. 이산가족의 상봉과 금강산 관광, 민간의 교류 확대가 이루어졌습니다. 그리고 정부는 그러한 노력을 햇별 정책의 이름으로 실천해 온 것입니다. 한반도의 평화와 안정이 있었기에 외국인 투자가 들어오고, 우리 경제의 경쟁력도 높아졌으며, 월드컵도 안정적으로 치를 수 있었던 것입니다. 아시아 계인은 우리에게 월드컵 못지않은 중요한 기회입니다. 행사 준비는 물론 안전 대책에 만전을 기하면서, 특히 이번 아시아 계인이 남북 화해의 마당으로 승화되도록 하겠습니다.",
+    "visual_note": "",
+    "question_image_path": "test/CJ/test_q/output_78/question_images/q_049.png",
+    "answer_no": 2,
+    "answer_explanation": "",
+    "core_concept": "",
+    "parse_status": "ok",
+    "choices": [
+      {
+        "choice_no": 1,
+        "content": "7·4 남북 공동 성명을 발표하였다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 2,
+        "content": "평양에서 남북 정상 회담을 개최하였다.",
+        "is_answer": true
+      },
+      {
+        "choice_no": 3,
+        "content": "남북한이 국제 연합(UN)에 동시 가입하였다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 4,
+        "content": "남북 이산가족의 고향 방문을 최초로 성사시켰다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 5,
+        "content": "평창 동계 올림픽 대회에서 남북 단일팀을 구성하였다.",
+        "is_answer": false
+      }
+    ]
+  },
+  {
+    "exam_round": 78,
+    "exam_level": "심화",
+    "question_no": 50,
+    "q_score": 2,
+    "era": "현대",
+    "topic": "사건",
+    "question_type": "역사 상황 및 쟁점의 인식",
+    "content": "(가) 지역에서 있었던 사실로 옳은 것은?",
+    "passage": "우리 학회는 지역사를 통해 한국사를 이해하는 교양 강좌를 운영하고 있습니다. 이번 달에는 (가) 지역사 주제로 자료를 마련하였으니, 시민 여러분의 많은 관심과 적극적인 참여를 바랍니다.",
+    "visual_note": "문제의 발문과 선택지를 통해 지역사와 관련된 사실을 파악해야 합니다.",
+    "question_image_path": "test/CJ/test_q/output_78/question_images/q_050.png",
+    "answer_no": 5,
+    "answer_explanation": "부산(장기시)에 있었던 사실에 대한 문항으로, 1972년 7월 7일 유엔(UN)에서 부산을 국제적인 도시로 지정한 사실과 관련된 내용을 다루고 있다. 이 시기에 부산은 경제적, 정치적 중심지로 발전하였으며, 1985년 9월 20일에는 부산에서 열린 국제회의가 중요한 역할을 했다. 또한, 2004년 2월 22일에는 부산에서 열린 행사와 관련된 정보도 포함되어 있다.",
+    "core_concept": "부산의 국제적 발전",
+    "parse_status": "ok",
+    "choices": [
+      {
+        "choice_no": 1,
+        "content": "신림이 배수의 진을 치고 왜군과 싸웠다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 2,
+        "content": "학생들이 2·28 민주 운동을 주도하였다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 3,
+        "content": "김사미가 가혹한 수탈에 맞서 봉기하였다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 4,
+        "content": "YH 무역 노동자들이 폐업에 항의하며 농성을 벌였다.",
+        "is_answer": false
+      },
+      {
+        "choice_no": 5,
+        "content": "박재혁이 경찰서에서 폭탄을 터뜨리는 의거를 일으켰다.",
+        "is_answer": true
+      }
+    ]
+  }
+]

@@ -61,6 +61,8 @@
         </div>
         <h2 id="questionTitle"></h2>
         <p id="questionSource"></p>
+        <div class="question-passage" id="questionPassage" hidden></div>
+        <div class="question-visual-note" id="questionVisualNote" hidden></div>
         <ol class="choice-review" id="choiceReview"></ol>
       </section>
 
@@ -214,6 +216,12 @@
       document.getElementById("questionType").textContent = exp.question_type || "";
       document.getElementById("questionTitle").textContent = exp.content;
       document.getElementById("questionSource").textContent = [exp.era, exp.topic].filter(Boolean).join(" · ");
+      const questionPassage = document.getElementById("questionPassage");
+      const questionVisualNote = document.getElementById("questionVisualNote");
+      questionPassage.textContent = exp.passage || "";
+      questionPassage.hidden = !exp.passage;
+      questionVisualNote.textContent = exp.visual_note || "";
+      questionVisualNote.hidden = !exp.visual_note;
 
       document.getElementById("choiceReview").innerHTML = exp.choices.map((choice) => {
         const classes = [

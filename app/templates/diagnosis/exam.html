@@ -50,6 +50,8 @@
             <p class="question-label">문제</p>
             <h2 id="questionTitle"></h2>
             <div class="question-source" id="questionSource"></div>
+            <div class="question-passage" id="questionPassage" hidden></div>
+            <div class="question-visual-note" id="questionVisualNote" hidden></div>
             <div class="choice-list" id="choiceList" role="radiogroup" aria-label="선택지"></div>
           </article>
 
@@ -108,6 +110,9 @@
       question_id: q.question_id,
       type: q.question_type,
       title: q.content,
+      passage: q.passage || "",
+      visualNote: q.visual_note || "",
+      imagePath: q.question_image_path || "",
       source: [q.era, q.topic].filter(Boolean).join(" · "),
       q_score: q.q_score,
       choices: q.choices, // [{choice_id, choice_no, content}]
@@ -121,6 +126,8 @@
     const questionType = document.getElementById("questionType");
     const questionTitle = document.getElementById("questionTitle");
     const questionSource = document.getElementById("questionSource");
+    const questionPassage = document.getElementById("questionPassage");
+    const questionVisualNote = document.getElementById("questionVisualNote");
     const choiceList = document.getElementById("choiceList");
     const progressFill = document.getElementById("progressFill");
     const progressText = document.getElementById("progressText");
@@ -145,6 +152,10 @@
       questionType.textContent = question.type || "";
       questionTitle.textContent = question.title;
       questionSource.textContent = question.source;
+      questionPassage.textContent = question.passage;
+      questionPassage.hidden = !question.passage;
+      questionVisualNote.textContent = question.visualNote;
+      questionVisualNote.hidden = !question.visualNote;
       progressFill.style.width = `${((currentIndex + 1) / questions.length) * 100}%`;
       progressText.textContent = `${currentIndex + 1} / ${questions.length}`;
 

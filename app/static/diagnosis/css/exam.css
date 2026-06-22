@@ -160,6 +160,7 @@ a {
 }
 
 .question-card {
+  min-height: 0;
   display: grid;
   align-content: start;
   gap: 14px;
@@ -167,6 +168,7 @@ a {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: #fff;
+  overflow: auto;
 }
 
 .question-label {
@@ -194,6 +196,26 @@ a {
   font-size: 15px;
   font-weight: 800;
   word-break: keep-all;
+}
+
+.question-passage,
+.question-visual-note {
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.65;
+  white-space: pre-wrap;
+  word-break: keep-all;
+}
+
+.question-visual-note {
+  background: #f8fbf4;
+  color: var(--muted);
+  font-size: 14px;
 }
 
 .choice-list {
@@ -561,6 +583,13 @@ a {
   .question-source {
     padding: 12px 14px;
     font-size: 14px;
+  }
+
+  .question-passage,
+  .question-visual-note {
+    padding: 12px 14px;
+    font-size: 14px;
+    line-height: 1.55;
   }
 
   .choice-list {
