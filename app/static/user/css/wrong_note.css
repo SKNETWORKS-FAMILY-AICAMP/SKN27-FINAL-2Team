@@ -1,0 +1,484 @@
+* {
+  box-sizing: border-box;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+select {
+  font: inherit;
+}
+
+.brand {
+  width: auto;
+  height: auto;
+  display: inline-flex;
+  align-items: center;
+  overflow: visible;
+  color: var(--green);
+  font-size: 28px;
+  font-weight: 950;
+  letter-spacing: 0;
+}
+
+.brand img {
+  display: none;
+}
+
+.wrong-note-page {
+  min-height: calc(100vh - 72px);
+  width: min(1480px, 100%);
+  margin: 0 auto;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 12px;
+  padding: 18px 3vw 24px;
+}
+
+.note-title {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.note-title p {
+  margin: 0 0 4px;
+  color: var(--green);
+  font-size: 13px;
+  font-weight: 950;
+}
+
+.note-title h1 {
+  margin: 0;
+  color: var(--ink);
+  font-size: clamp(36px, 4vw, 52px);
+  line-height: 0.95;
+  font-weight: 950;
+  letter-spacing: 0;
+}
+
+.note-workspace {
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 10px;
+  padding: 14px;
+  border: 2px solid var(--green);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: var(--shadow);
+}
+
+.note-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.toolbar-actions {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.back-button,
+.delete-button,
+.filter-menu summary {
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--green);
+  border-radius: 999px;
+  background: var(--white);
+  color: var(--green);
+  font-weight: 950;
+  cursor: pointer;
+}
+
+.back-button {
+  width: 44px;
+  font-size: 26px;
+}
+
+.delete-button,
+.filter-menu summary {
+  min-width: 78px;
+  padding: 0 16px;
+}
+
+.delete-button {
+  border-color: var(--red);
+  color: var(--red);
+}
+
+.filter-menu {
+  position: relative;
+}
+
+.filter-menu summary {
+  list-style: none;
+}
+
+.filter-menu summary::-webkit-details-marker {
+  display: none;
+}
+
+.filter-panel {
+  position: absolute;
+  right: 0;
+  top: 52px;
+  z-index: 4;
+  width: 230px;
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 2px solid var(--green);
+  border-radius: 18px;
+  background: var(--white);
+  box-shadow: var(--shadow);
+}
+
+.filter-panel label {
+  display: grid;
+  gap: 6px;
+  color: var(--green);
+  font-size: 13px;
+  font-weight: 950;
+}
+
+.filter-panel select {
+  height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--soft);
+  color: var(--ink);
+  font-weight: 850;
+  padding: 0 12px;
+}
+
+.note-layout {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(460px, 1.08fr) minmax(520px, 1.24fr) 260px;
+  gap: 12px;
+}
+
+.question-note,
+.explain-note,
+.note-list-panel {
+  min-height: 0;
+  overflow: hidden;
+  border: 2px solid var(--green);
+  border-radius: 18px;
+  background: var(--white);
+}
+
+.question-note {
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  gap: 10px;
+  padding: 12px;
+}
+
+.note-heading,
+.answer-ribbon,
+.note-list-panel h2 {
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-radius: 14px;
+  background: var(--green);
+  color: var(--lime);
+  font-weight: 950;
+}
+
+.note-heading {
+  justify-content: space-between;
+  padding: 0 14px;
+}
+
+.note-heading span {
+  font-size: 14px;
+}
+
+.note-heading strong {
+  min-height: 26px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: var(--lime);
+  color: var(--green);
+  font-size: 13px;
+}
+
+.question-card {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--soft);
+}
+
+.question-card h2 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 17px;
+  line-height: 1.35;
+  font-weight: 950;
+  letter-spacing: 0;
+}
+
+.question-card p {
+  margin: 0;
+  padding: 9px 12px;
+  border-left: 5px solid var(--lime);
+  border-radius: 8px;
+  background: var(--white);
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.4;
+}
+
+.choice-list {
+  min-height: 0;
+  overflow: auto;
+  display: grid;
+  align-content: start;
+  gap: 6px;
+  margin: 0;
+  padding: 0 2px 2px;
+  list-style: none;
+}
+
+.choice-list li {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  gap: 8px;
+  align-items: start;
+  padding: 8px 10px;
+  border: 2px solid var(--line);
+  border-radius: 14px;
+  background: var(--white);
+}
+
+.choice-list span {
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--soft);
+  color: var(--green);
+  font-size: 12px;
+  font-weight: 950;
+}
+
+.choice-list b {
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.42;
+}
+
+.choice-list li.correct {
+  border-color: var(--green);
+  background: rgba(155, 234, 111, 0.18);
+}
+
+.choice-list li.selected {
+  border-color: rgba(242, 48, 66, 0.42);
+}
+
+.choice-list li.selected span {
+  background: var(--red);
+  color: var(--white);
+}
+
+.choice-list li.correct span {
+  background: var(--green);
+  color: var(--lime);
+}
+
+.explain-note {
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
+}
+
+.answer-ribbon {
+  justify-content: flex-start;
+  margin: 12px 12px 0;
+  padding: 0 14px;
+}
+
+.answer-ribbon strong {
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--lime);
+  color: var(--green);
+}
+
+.explain-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  padding: 10px 12px;
+}
+
+.explain-tabs button {
+  min-height: 38px;
+  border: 2px solid var(--line);
+  border-radius: 999px;
+  background: var(--soft);
+  color: var(--ink);
+  font-weight: 950;
+  cursor: pointer;
+}
+
+.explain-tabs button.active {
+  border-color: var(--green);
+  background: var(--green);
+  color: var(--lime);
+}
+
+.explain-body {
+  min-height: 0;
+  overflow: auto;
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  margin: 0 12px 12px;
+  padding: 16px;
+  border-radius: 14px;
+  background:
+    linear-gradient(rgba(18, 59, 6, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(18, 59, 6, 0.08) 1px, transparent 1px),
+    #fbfff8;
+  background-size: 26px 26px;
+}
+
+.explain-body h2 {
+  margin: 0;
+  color: var(--green);
+  font-size: 20px;
+  line-height: 1.2;
+  font-weight: 950;
+  letter-spacing: 0;
+}
+
+.explain-text p,
+.explain-text li {
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.55;
+}
+
+.explain-text p {
+  margin: 0;
+}
+
+.wrong-explain-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.wrong-explain-list li {
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.86);
+}
+
+.note-list-panel {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  padding: 12px;
+}
+
+.note-list-panel h2 {
+  justify-content: center;
+  margin: 0 0 10px;
+  font-size: 16px;
+}
+
+.note-list {
+  min-height: 0;
+  overflow: auto;
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  padding-right: 3px;
+}
+
+.note-list button {
+  display: grid;
+  gap: 4px;
+  padding: 10px;
+  border: 2px solid var(--line);
+  border-radius: 14px;
+  background: var(--soft);
+  text-align: left;
+  cursor: pointer;
+}
+
+.note-list button.active {
+  border-color: var(--green);
+  background: var(--green);
+}
+
+.note-list button.active span,
+.note-list button.active strong {
+  color: var(--lime);
+}
+
+.note-list span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 950;
+}
+
+.note-list strong {
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.3;
+  font-weight: 950;
+}
+
+.empty-list {
+  margin: 0;
+  padding: 18px;
+  border-radius: 14px;
+  background: var(--soft);
+  color: var(--muted);
+  font-weight: 900;
+  text-align: center;
+}
+
+@media (max-width: 980px) {.wrong-note-page {
+    padding: 24px;
+  }
+
+  .note-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .note-list-panel {
+    min-height: 280px;
+  }
+}

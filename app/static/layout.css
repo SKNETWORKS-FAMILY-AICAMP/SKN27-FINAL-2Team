@@ -1,0 +1,126 @@
+.exam-page,
+.result-page,
+.intro-page,
+.mypage,
+.wrong-note-page,
+.create-page,
+.chat-page,
+.login-page,
+.auth-page {
+  background: transparent !important;
+}
+
+.exam-shell,
+.review-shell,
+.diagnosis-summary,
+.intro-card,
+.page-title,
+.summary-strip,
+.panel,
+.login-card,
+.auth-card,
+.condition-panel,
+.note-workspace,
+.chat-layout,
+.composer-shell {
+  border-color: var(--hm-green) !important;
+  border-radius: 22px !important;
+  background: rgba(255, 255, 255, 0.86) !important;
+  box-shadow: var(--hm-shadow) !important;
+}
+
+.condition-panel,
+.note-workspace {
+  border-width: 2px !important;
+}
+
+input,
+textarea,
+select {
+  border-color: var(--hm-line) !important;
+  border-radius: 14px !important;
+}
+
+.mypage .analytics-grid .panel {
+  border: 0 !important;
+}
+
+.mypage .analytics-grid .metric-panel,
+.mypage .analytics-grid .weakness-panel,
+.mypage .analytics-grid .donut-panel,
+.mypage .analytics-grid .chatbot-panel {
+  outline: 0 !important;
+}
+
+.diagnosis-page,
+.create-page {
+  min-height: calc(100vh - 72px) !important;
+  display: block !important;
+  padding: 64px 5vw 34px !important;
+}
+
+.intro-layout,
+.create-shell {
+  width: min(1320px, 100%) !important;
+  margin: 0 auto !important;
+}
+
+.intro-card {
+  padding-top: 24px !important;
+}
+
+.intro-hero {
+  min-height: auto !important;
+  align-items: start !important;
+}
+
+.intro-heading h1,
+.create-title h1 {
+  margin-top: 0 !important;
+  font-size: clamp(42px, 5vw, 64px) !important;
+  line-height: 0.98 !important;
+}
+
+.intro-heading p,
+.create-title p {
+  margin-top: 10px !important;
+}
+
+#createButton {
+  border-color: rgb(125, 93, 255) !important;
+  background: rgb(125, 93, 255) !important;
+  color: #ffffff !important;
+  box-shadow: 0 16px 34px rgba(47, 67, 183, 0.3) !important;
+}
+
+.auth-messages,
+.verification-message {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 14px;
+}
+
+.auth-message,
+.verification-message {
+  border: 1px solid var(--hm-line);
+  border-radius: 14px;
+  padding: 10px 12px;
+  background: var(--hm-soft);
+  color: var(--hm-green);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.auth-message.error,
+.verification-message.error {
+  border-color: #ffc4c4;
+  background: #fff1f1;
+  color: #b42318;
+}
+
+.auth-message.success,
+.verification-message.success {
+  border-color: var(--hm-lime);
+  background: #f2ffe8;
+  color: var(--hm-green);
+}

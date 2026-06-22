@@ -1,0 +1,321 @@
+﻿<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>himate | 오답노트</title>
+  <link rel="stylesheet" href="/static/user/css/wrong_note.css" />
+  <link rel="stylesheet" href="../../static/user/css/wrong_note.css" />
+  <link rel="stylesheet" href="/static/himate.css" />
+  <link rel="stylesheet" href="/static/layout.css" />
+</head>
+<body>
+  <header class="site-header" aria-label="오답노트 메뉴">
+    <a class="brand" href="/" aria-label="himate 홈">
+      <img src="/static/chatbot/assets/logo.png" alt="himate" data-fallback-src="../../static/chatbot/assets/logo.png" />
+    </a>
+    <nav class="main-nav" aria-label="학습 메뉴">
+      <a href="/diagnosis/">진단 평가</a>
+      <a href="/question/">문제 풀이</a>
+      <a href="/chatbot/">챗봇</a>
+      <a class="active" href="/user/mypage/">나의 학습실</a>
+    </nav>
+    <nav class="header-actions" aria-label="계정 메뉴">
+      <a class="outline-button" href="/user/mypage/">마이페이지</a>
+      <a class="ghost-button" href="/user/logout/">로그아웃</a>
+    </nav>
+  </header>
+
+  <main class="wrong-note-page">
+    <section class="note-title">
+      <p>My Review Note</p>
+      <h1>오답노트</h1>
+    </section>
+
+    <section class="note-workspace" aria-label="오답노트 상세">
+      <div class="note-toolbar">
+        <button class="back-button" id="backButton" type="button" aria-label="마이페이지로 돌아가기">‹</button>
+        <div class="toolbar-actions">
+          <button class="delete-button" id="deleteButton" type="button">삭제</button>
+          <details class="filter-menu">
+            <summary>필터</summary>
+            <div class="filter-panel">
+              <label>
+                시대
+                <select id="eraFilter">
+                  <option value="all">전체</option>
+                  <option value="고대">고대</option>
+                  <option value="고려">고려</option>
+                  <option value="조선">조선</option>
+                  <option value="근대">근대</option>
+                  <option value="현대">현대</option>
+                </select>
+              </label>
+              <label>
+                유형
+                <select id="typeFilter">
+                  <option value="all">전체</option>
+                  <option value="제도">제도</option>
+                  <option value="문화">문화</option>
+                  <option value="정치">정치</option>
+                  <option value="사료">사료</option>
+                </select>
+              </label>
+            </div>
+          </details>
+        </div>
+      </div>
+
+      <div class="note-layout">
+        <article class="question-note" aria-label="오답 문제">
+          <div class="note-heading">
+            <span id="noteMeta">조선 · 제도</span>
+            <strong id="noteQuestionNumber">문제 1</strong>
+          </div>
+          <div class="question-card">
+            <h2 id="questionTitle">조선 후기 수취 제도 개편에 대한 설명으로 옳은 것은?</h2>
+            <p id="questionSource">균역법은 군포 부담을 줄이기 위해 시행되었다.</p>
+          </div>
+          <ol class="choice-list" id="choiceList"></ol>
+        </article>
+
+        <article class="explain-note" aria-label="오답 설명">
+          <div class="answer-ribbon">
+            <span>정답</span>
+            <strong id="correctAnswerBadge">①</strong>
+          </div>
+          <div class="explain-tabs" role="tablist" aria-label="설명 탭">
+            <button class="active" type="button" data-tab="solution">해설</button>
+            <button type="button" data-tab="wrong">오답 설명</button>
+            <button type="button" data-tab="concept">핵심 개념</button>
+          </div>
+          <div class="explain-body">
+            <h2 id="explainTitle">정답 해설</h2>
+            <div class="explain-text" id="explainText">균역법은 영조 때 군포를 1필로 줄여 백성의 군역 부담을 완화한 정책입니다.</div>
+          </div>
+        </article>
+
+        <aside class="note-list-panel" aria-label="문제 목록">
+          <h2>문제 목록</h2>
+          <div class="note-list" id="noteList"></div>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    document.querySelectorAll("img[data-fallback-src]").forEach((image) => {
+      image.addEventListener("error", () => {
+        if (image.dataset.fallbackTried) return;
+        image.dataset.fallbackTried = "1";
+        image.src = image.dataset.fallbackSrc;
+      });
+    });
+
+    const fallbackNotes = [
+      {
+        id: 1,
+        era: "조선",
+        type: "제도",
+        title: "조선 후기 수취 제도 개편에 대한 설명으로 옳은 것은?",
+        source: "균역법은 군포 부담을 줄이기 위해 시행되었다.",
+        choices: ["대동법은 공물을 쌀 등으로 납부하게 하였다.", "균역법은 군포를 2필로 늘렸다.", "영정법은 토지 1결당 세금을 20두로 고정하였다.", "호포제는 흥선 대원군 이전에 전국 시행되었다.", "진대법은 조선 후기 상품 화폐 경제 정책이다."],
+        answer: 1,
+        userAnswer: 2,
+        solution: "대동법은 공납의 폐단을 줄이기 위해 토산물 대신 쌀, 베, 동전 등으로 납부하게 한 제도입니다.",
+        wrongs: [
+          "② 균역법은 군포를 2필로 늘린 것이 아니라 1필로 줄인 제도입니다.",
+          "③ 영정법은 토지 1결당 전세를 4두로 고정한 제도입니다.",
+          "④ 호포제는 흥선 대원군이 양반에게도 군포를 부과한 정책입니다.",
+          "⑤ 진대법은 고구려 고국천왕 때 실시된 구휼 제도입니다.",
+        ],
+        concept: "조선 후기 수취 제도는 영정법, 대동법, 균역법을 순서와 목적 중심으로 정리하면 좋습니다.",
+      },
+      {
+        id: 2,
+        era: "고려",
+        type: "문화",
+        title: "몽골 침입 시기 제작된 고려의 불교 문화유산은?",
+        source: "외적을 물리치려는 염원을 담아 대장경판을 새겼다.",
+        choices: ["무령왕릉", "팔만대장경", "첨성대", "분황사 모전석탑", "경천사지 십층석탑"],
+        answer: 2,
+        userAnswer: 5,
+        solution: "팔만대장경은 몽골 침입 시기 부처의 힘으로 외적을 물리치려는 염원을 담아 제작되었습니다.",
+        wrongs: [
+          "① 무령왕릉은 백제 웅진 시기의 왕릉입니다.",
+          "③ 첨성대는 신라 선덕여왕 때 축조된 천문 관측 시설입니다.",
+          "④ 분황사 모전석탑은 신라의 석탑입니다.",
+          "⑤ 경천사지 십층석탑은 고려 후기 원의 영향을 받은 석탑입니다.",
+        ],
+        concept: "고려 문화는 팔만대장경, 직지심체요절, 상감 청자처럼 제작 배경과 시대를 함께 묶어 외우세요.",
+      },
+      {
+        id: 3,
+        era: "근대",
+        type: "정치",
+        title: "갑오개혁의 내용으로 옳은 것은?",
+        source: "근대적 제도 개혁을 추진하며 신분제와 과거제 등에 변화를 가져왔다.",
+        choices: ["과거제를 폐지하였다.", "훈련도감을 설치하였다.", "영정법을 시행하였다.", "비변사를 설치하였다.", "집현전을 폐지하였다."],
+        answer: 1,
+        userAnswer: 4,
+        solution: "갑오개혁에서는 신분제 폐지, 과거제 폐지, 은본위 화폐 제도 등 근대 제도 개편이 추진되었습니다.",
+        wrongs: [
+          "② 훈련도감은 임진왜란 중 설치된 조선의 중앙 군영입니다.",
+          "③ 영정법은 조선 후기 전세를 고정한 수취 제도입니다.",
+          "④ 비변사는 조선 중기 이후 군사와 국정 운영을 담당한 기구입니다.",
+          "⑤ 집현전 폐지는 세조 때의 일입니다.",
+        ],
+        concept: "근대 개혁 문제는 갑오개혁, 을미개혁, 광무개혁의 핵심 조치를 구분하는 것이 중요합니다.",
+      },
+      {
+        id: 4,
+        era: "현대",
+        type: "사료",
+        title: "자주, 평화, 민족 대단결 원칙을 담은 남북 합의는?",
+        source: "1972년에 발표된 남북 간 공동 성명이다.",
+        choices: ["6·15 남북 공동 선언", "7·4 남북 공동 성명", "남북 기본 합의서", "10·4 선언", "한반도 비핵화 공동 선언"],
+        answer: 2,
+        userAnswer: 1,
+        solution: "7·4 남북 공동 성명은 자주, 평화, 민족 대단결의 통일 원칙을 제시했습니다.",
+        wrongs: [
+          "① 6·15 남북 공동 선언은 2000년에 발표되었습니다.",
+          "③ 남북 기본 합의서는 1991년에 채택되었습니다.",
+          "④ 10·4 선언은 2007년에 발표되었습니다.",
+          "⑤ 한반도 비핵화 공동 선언은 1991년에 채택되었습니다.",
+        ],
+        concept: "통일 정책은 발표 연도와 핵심 표현을 함께 암기하면 선지 구분이 쉬워집니다.",
+      },
+    ];
+
+    let notes = JSON.parse(localStorage.getItem("wrongNotes") || "null") || fallbackNotes;
+    let activeId = notes[0]?.id || null;
+    let activeTab = "solution";
+
+    const noteList = document.getElementById("noteList");
+    const choiceList = document.getElementById("choiceList");
+    const noteMeta = document.getElementById("noteMeta");
+    const noteQuestionNumber = document.getElementById("noteQuestionNumber");
+    const questionTitle = document.getElementById("questionTitle");
+    const questionSource = document.getElementById("questionSource");
+    const explainTitle = document.getElementById("explainTitle");
+    const explainText = document.getElementById("explainText");
+    const correctAnswerBadge = document.getElementById("correctAnswerBadge");
+    const eraFilter = document.getElementById("eraFilter");
+    const typeFilter = document.getElementById("typeFilter");
+
+    function filteredNotes() {
+      return notes.filter((note) => {
+        const eraMatched = eraFilter.value === "all" || note.era === eraFilter.value;
+        const typeMatched = typeFilter.value === "all" || note.type === typeFilter.value;
+        return eraMatched && typeMatched;
+      });
+    }
+
+    function currentNote() {
+      return notes.find((note) => note.id === activeId) || filteredNotes()[0] || notes[0] || null;
+    }
+
+    function renderList() {
+      const list = filteredNotes();
+      noteList.innerHTML = list.length ? list.map((note) => `
+        <button class="${note.id === activeId ? "active" : ""}" type="button" data-id="${note.id}">
+          <span>${note.era} · ${note.type}</span>
+          <strong>${note.title}</strong>
+        </button>
+      `).join("") : `<p class="empty-list">조건에 맞는 오답이 없습니다.</p>`;
+
+      noteList.querySelectorAll("button").forEach((button) => {
+        button.addEventListener("click", () => {
+          activeId = Number(button.dataset.id);
+          activeTab = "solution";
+          render();
+        });
+      });
+    }
+
+    function renderDetail() {
+      const note = currentNote();
+
+      if (!note) {
+        noteMeta.textContent = "오답 없음";
+        noteQuestionNumber.textContent = "문제 0";
+        questionTitle.textContent = "저장된 오답 문제가 없습니다.";
+        questionSource.textContent = "문제를 풀고 오답노트에 저장하면 이곳에서 확인할 수 있습니다.";
+        choiceList.innerHTML = "";
+        explainTitle.textContent = "해설";
+        explainText.textContent = "오답노트가 비어 있습니다.";
+        return;
+      }
+
+      activeId = note.id;
+      noteMeta.textContent = `${note.era} · ${note.type}`;
+      noteQuestionNumber.textContent = `문제 ${note.id}`;
+      correctAnswerBadge.textContent = ["①", "②", "③", "④", "⑤"][note.answer - 1] || `${note.answer}번`;
+      questionTitle.textContent = note.title;
+      questionSource.textContent = note.source;
+      choiceList.innerHTML = note.choices.map((choice, index) => {
+        const number = index + 1;
+        const classes = [
+          number === note.answer ? "correct" : "",
+          number === note.userAnswer ? "selected" : "",
+        ].filter(Boolean).join(" ");
+        return `<li class="${classes}"><span>${number}</span><b>${choice}</b></li>`;
+      }).join("");
+
+      const wrongItems = note.wrongs?.length
+        ? note.wrongs
+        : note.choices
+            .map((choice, index) => ({ number: index + 1, choice }))
+            .filter((item) => item.number !== note.answer)
+            .map((item) => `${["①", "②", "③", "④", "⑤"][item.number - 1]} ${item.choice}은(는) 문제의 시대, 제도, 주체 중 핵심 조건과 맞지 않습니다.`);
+      const tabMap = {
+        solution: ["해설", `<p>${note.solution}</p>`],
+        wrong: ["오답 설명", `<ul class="wrong-explain-list">${wrongItems.map((item) => `<li>${item}</li>`).join("")}</ul>`],
+        concept: ["핵심 개념", `<p>${note.concept}</p>`],
+      };
+      explainTitle.textContent = tabMap[activeTab][0];
+      explainText.innerHTML = tabMap[activeTab][1];
+    }
+
+    function renderTabs() {
+      document.querySelectorAll(".explain-tabs button").forEach((button) => {
+        button.classList.toggle("active", button.dataset.tab === activeTab);
+      });
+    }
+
+    function render() {
+      if (!filteredNotes().some((note) => note.id === activeId)) {
+        activeId = filteredNotes()[0]?.id || notes[0]?.id || null;
+      }
+      renderList();
+      renderDetail();
+      renderTabs();
+    }
+
+    document.getElementById("backButton").addEventListener("click", () => {
+      window.location.href = "/user/mypage/";
+    });
+
+    document.getElementById("deleteButton").addEventListener("click", () => {
+      if (!activeId) return;
+      notes = notes.filter((note) => note.id !== activeId);
+      localStorage.setItem("wrongNotes", JSON.stringify(notes));
+      activeId = filteredNotes()[0]?.id || notes[0]?.id || null;
+      render();
+    });
+
+    document.querySelectorAll(".explain-tabs button").forEach((button) => {
+      button.addEventListener("click", () => {
+        activeTab = button.dataset.tab;
+        render();
+      });
+    });
+
+    eraFilter.addEventListener("change", render);
+    typeFilter.addEventListener("change", render);
+
+    render();
+  </script>
+</body>
+</html>
+

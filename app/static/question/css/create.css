@@ -1,0 +1,157 @@
+* {
+  box-sizing: border-box;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font: inherit;
+}
+
+.brand {
+  font-size: 28px;
+  font-weight: 950;
+  letter-spacing: 0;
+  color: var(--green);
+}
+
+.create-page {
+  min-height: calc(100vh - 72px);
+  display: grid;
+  place-items: center;
+  padding: 18px 5vw;
+}
+
+.create-shell {
+  width: min(1180px, 100%);
+  display: grid;
+  gap: 14px;
+}
+
+.create-title {
+  display: grid;
+  gap: 4px;
+}
+
+.create-title span {
+  color: var(--green);
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.create-title h1 {
+  margin: 0;
+  font-size: clamp(38px, 5vw, 58px);
+  line-height: 0.95;
+  letter-spacing: 0;
+}
+
+.create-title p {
+  max-width: 640px;
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.condition-panel {
+  display: grid;
+  gap: 0;
+  overflow: hidden;
+  border: 2px solid var(--ink);
+  border-radius: 22px;
+  background: var(--white);
+}
+
+.condition-row {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 14px;
+  align-items: center;
+  padding: 14px 22px;
+  border-bottom: 1px solid var(--line);
+}
+
+.condition-row:last-child {
+  border-bottom: 0;
+}
+
+.condition-row h2 {
+  margin: 0;
+  font-size: 23px;
+  font-weight: 950;
+}
+
+.option-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  align-items: center;
+}
+
+.option-list.compact {
+  max-width: none;
+}
+
+.option-list button {
+  min-width: 86px;
+  min-height: 42px;
+  padding: 0 18px;
+  border: 2px solid var(--line);
+  border-radius: 999px;
+  background: var(--soft);
+  color: var(--ink);
+  font-size: 16px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
+
+.option-list button:hover {
+  transform: translateY(-2px);
+  border-color: var(--green);
+}
+
+.option-list button.selected {
+  border-color: var(--green);
+  background: var(--green);
+  color: var(--lime);
+}
+
+.create-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.create-actions div {
+  display: flex;
+  gap: 12px;
+}
+
+@media (max-width: 860px) {.create-page {
+    min-height: calc(100vh - 122px);
+    align-items: start;
+    padding: 24px;
+  }
+
+  .condition-row {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 20px;
+  }
+
+  .create-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .create-actions div {
+    flex-direction: column;
+  }
+}

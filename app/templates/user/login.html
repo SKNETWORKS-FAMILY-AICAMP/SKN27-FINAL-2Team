@@ -1,0 +1,88 @@
+﻿<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>himate | 로그인</title>
+  <link rel="stylesheet" href="/static/user/css/login.css" />
+  <link rel="stylesheet" href="../../static/user/css/login.css" />
+  <link rel="stylesheet" href="/static/himate.css" />
+  <link rel="stylesheet" href="/static/layout.css" />
+</head>
+<body>
+  <header class="site-header" aria-label="로그인 메뉴">
+    <a class="brand" href="/" aria-label="himate 홈">himate</a>
+    <nav class="main-nav" aria-label="학습 메뉴">
+      <a href="/diagnosis/">진단 평가</a>
+      <a href="/question/">문제 풀이</a>
+      <a href="/chatbot/">챗봇</a>
+      <a href="/user/mypage/">나의 학습실</a>
+    </nav>
+    <nav class="header-actions" aria-label="계정 메뉴">
+      <a class="pill-button" href="/user/login/">로그인</a>
+    </nav>
+  </header>
+  <main class="login-page">
+    <section class="login-shell" aria-label="로그인">
+      <div class="login-card">
+        <a class="brand" href="/" aria-label="himate 홈">
+          <img src="/static/chatbot/assets/logo.png" alt="himate" data-fallback-src="../../static/chatbot/assets/logo.png" />
+        </a>
+
+        <div class="login-heading">
+          <h1>로그인</h1>
+          <p>이메일 아이디로 로그인하고 학습을 이어가세요.</p>
+        </div>
+
+        {% if messages %}
+          <div class="auth-messages" role="status" aria-live="polite">
+            {% for message in messages %}
+              <p class="auth-message {{ message.tags }}">{{ message }}</p>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        <form class="login-form" action="#" method="post">
+          {% csrf_token %}
+          <label class="field">
+            <span>이메일 아이디</span>
+            <input type="email" name="email" autocomplete="email" placeholder="example@email.com" required />
+          </label>
+
+          <label class="field">
+            <span>비밀번호</span>
+            <input type="password" name="password" autocomplete="current-password" placeholder="비밀번호를 입력하세요" required />
+          </label>
+
+          <div class="form-row">
+            <label class="remember">
+              <input type="checkbox" name="remember" />
+              <span>로그인 상태 유지</span>
+            </label>
+            <a class="find-link" href="#">비밀번호 찾기</a>
+          </div>
+
+          <button class="login-button" type="submit">로그인</button>
+
+          <div class="divider"><span>아직 회원이 아니신가요?</span></div>
+
+          <a class="signup-button" href="/user/register/">회원가입</a>
+        </form>
+      </div>
+
+      
+    </section>
+  </main>
+
+  <script>
+    document.querySelectorAll("img[data-fallback-src]").forEach((image) => {
+      image.addEventListener("error", () => {
+        if (image.dataset.fallbackTried) return;
+        image.dataset.fallbackTried = "1";
+        image.src = image.dataset.fallbackSrc;
+      });
+    });
+  </script>
+</body>
+</html>
+

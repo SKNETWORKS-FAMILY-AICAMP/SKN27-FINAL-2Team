@@ -1,0 +1,176 @@
+﻿<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>himate | 나의 학습실</title>
+  <link rel="stylesheet" href="/static/user/css/mypage.css" />
+  <link rel="stylesheet" href="../../static/user/css/mypage.css" />
+  <link rel="stylesheet" href="/static/himate.css" />
+  <link rel="stylesheet" href="/static/layout.css" />
+</head>
+<body>
+  <header class="site-header" aria-label="마이페이지 메뉴">
+    <a class="brand" href="/" aria-label="himate 홈">
+      <img src="/static/chatbot/assets/logo.png" alt="himate" data-fallback-src="../../static/chatbot/assets/logo.png" />
+    </a>
+    <nav class="main-nav" aria-label="학습 메뉴">
+      <a href="/diagnosis/">진단 평가</a>
+      <a href="/question/">문제 풀이</a>
+      <a href="/chatbot/">챗봇</a>
+      <a class="active" href="/user/mypage/">나의 학습실</a>
+    </nav>
+    <nav class="header-actions" aria-label="계정 메뉴">
+      <a class="outline-button" href="/user/profile/edit/">정보 수정</a>
+      <a class="ghost-button" href="/user/logout/">로그아웃</a>
+    </nav>
+  </header>
+
+  <main class="mypage">
+    <section class="page-title">
+      <p>{{ request.user.nickname }}님의 마이페이지</p>
+      <h1>나의 학습실</h1>
+    </section>
+
+    <section class="summary-strip" aria-label="학습 요약">
+      <article>
+        <span>D-day</span>
+        <strong>
+          {% if d_day != None %}
+            {% if d_day > 0 %}D - {{ d_day }}{% elif d_day == 0 %}D-day{% else %}D + {{ d_day|cut:"-" }}{% endif %}
+          {% else %}
+            미설정
+          {% endif %}
+        </strong>
+      </article>
+      <article><span>정답률</span><strong>72%</strong></article>
+      <article><span>이번 주 내가 푼 문제 수</span><strong>84문제</strong></article>
+      <article><span>연속 학습일수</span><strong>12일</strong></article>
+    </section>
+
+    <nav class="quick-actions" aria-label="학습 바로가기">
+      <a href="/question/exam/">오늘의 문제</a>
+      <a href="/user/wrong-note/">오답노트</a>
+      <a href="/chatbot/">출제 경향 분석</a>
+    </nav>
+
+    <section class="analytics-grid" aria-label="학습 대시보드">
+      <article class="panel metric-panel">
+        <div class="panel-heading compact">
+          <h2>평균 풀이시간</h2>
+
+        </div>
+        <div class="time-metric">
+          <strong>02:34</strong>
+          <span>지난주보다 18초 단축</span>
+        </div>
+        <div class="mini-progress"><span style="width: 68%"></span></div>
+      </article>
+
+      <article class="panel weakness-panel">
+        <div class="panel-heading compact">
+          <h2>취약점 분석</h2>
+
+        </div>
+        <div class="weak-list">
+          <div><span>1</span><strong>해방 직후 정세</strong><em>28%</em></div>
+          <div><span>2</span><strong>통일신라 문화</strong><em>34%</em></div>
+          <div><span>3</span><strong>삼국 항쟁 흐름</strong><em>38%</em></div>
+          <div><span>4</span><strong>실학과 조선 후기</strong><em>42%</em></div>
+          <div><span>5</span><strong>현대 정치 제도</strong><em>46%</em></div>
+        </div>
+      </article>
+
+      <article class="panel donut-panel">
+        <div class="panel-heading compact">
+          <h2>유형별 오답률</h2>
+          <a href="#">상세 보기</a>
+        </div>
+        <div class="donut-layout">
+          <div class="donut-chart"><strong>38%</strong><span>취약 비율</span></div>
+          <ul>
+            <li><i class="danger"></i>시대별 38%</li>
+            <li><i class="warn"></i>유형별 42%</li>
+            <li><i class="good"></i>주제별 20%</li>
+          </ul>
+        </div>
+      </article>
+
+      <article class="panel chatbot-panel">
+        <div class="panel-heading compact">
+          <h2>챗봇통계</h2>
+          <a href="/chatbot/">챗봇 열기</a>
+        </div>
+        <div class="chatbot-stats">
+          <div><strong>31회</strong><span>이번 주 질문</span></div>
+          <div><strong>14개</strong><span>개념 정리</span></div>
+          <div><strong>9개</strong><span>오답 해설</span></div>
+        </div>
+        <p>가장 많이 질문한 주제는 근현대 정치예요.</p>
+      </article>
+    </section>
+
+    <section class="bottom-grid">
+      <section class="panel plan-panel" aria-label="학습 계획">
+        <div class="panel-heading">
+          <div>
+            <span class="section-mark">01</span>
+            <h2>학습계획</h2>
+          </div>
+          <a href="#">전체 계획 보기</a>
+        </div>
+        <div class="plan-list">
+          <article class="plan-item done"><i></i><div><strong>광복 전후 정치 변화 10문제</strong><span>완료 · 20분</span></div></article>
+          <article class="plan-item"><i></i><div><strong>취약 개념 복습</strong><span>오늘 추천 · 15분</span></div></article>
+          <article class="plan-item"><i></i><div><strong>오답노트 정리</strong><span>오늘 추천 · 10분</span></div></article>
+        </div>
+      </section>
+
+      <section class="panel calendar-panel" aria-label="학습 달력">
+        <div class="panel-heading">
+          <div>
+            <span class="section-mark">02</span>
+            <h2>달력</h2>
+          </div>
+          <a href="#">월간 보기</a>
+        </div>
+        <div class="calendar">
+          <div class="calendar-top">
+            <div>
+              <span class="calendar-month">2026. 06</span>
+              <strong>이번 달 학습 리듬</strong>
+            </div>
+            <div class="calendar-streak"><span>12</span>일 연속</div>
+          </div>
+          <div class="calendar-week labels"><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span><span>일</span></div>
+          <div class="calendar-week">
+            <span>10</span><span>11</span><span class="done">12<em>완료</em></span><span>13</span><span class="done">14<em>완료</em></span><span>15</span><span class="today">16<em>오늘</em></span>
+          </div>
+          <div class="calendar-week">
+            <span>17</span><span class="planned">18<em>예정</em></span><span>19</span><span class="planned">20<em>예정</em></span><span>21</span><span>22</span><span>23</span>
+          </div>
+          <div class="calendar-week">
+            <span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span>
+          </div>
+          <div class="calendar-legend" aria-label="달력 범례">
+            <span><i class="done-dot"></i>학습 완료</span>
+            <span><i class="planned-dot"></i>학습 예정</span>
+            <span><i class="today-dot"></i>오늘</span>
+          </div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    document.querySelectorAll("img[data-fallback-src]").forEach((image) => {
+      image.addEventListener("error", () => {
+        if (image.dataset.fallbackTried) return;
+        image.dataset.fallbackTried = "1";
+        image.src = image.dataset.fallbackSrc;
+      });
+    });
+  </script>
+</body>
+</html>
+
