@@ -9,20 +9,15 @@ COMMON_TYPES = {
         "nickname": "str",
         "studyPlans": "list[StudyPlan]",
     },
-    # 사용자가 학습 중이거나 저장한 역사 용어.
+    # 사용자 학습계획 정보
     "StudyPlan": {
-        "termName": "str",
-        "termCh": "str | None",
-        "termTimes": "str",
-        "categories": "list[Category]",
         "studyPlanId": "int",
         "studyPlanName": "str",
         "studyPlanDescription": "str",
-        "studyPlanStartDate": "date",
-        "studyPlanEndDate": "date",
+        "studyPlanStartDate": "datetime",
+        "studyPlanEndDate": "datetime",
         "studyPlanStatus": "str",
         "studyPlanCreatedAt": "datetime",
-        "studyPlanUpdatedAt": "datetime",
     },
     # 역사 용어에 연결된 카테고리 정보.
     "Category": {
