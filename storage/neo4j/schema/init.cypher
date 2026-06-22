@@ -1,2 +1,71 @@
-LOAD CSV WITH HEADERS FROM 'file:///교육부 국사편찬위원회_한국역사용어시소러스 정보_20211028(1).csv'
-MERGE ()
+MATCH (n)
+WHERE n:TermName OR n:TermTimes OR n:TermLink
+    OR n:CategoryName
+DETACH DELETE n;
+
+CREATE CONSTRAINT term_name_unique IF NOT EXISTS
+FOR (t:TermName)
+REQUIRE (t.term_name, t.term_ch, t.term_times) IS UNIQUE;
+
+CREATE CONSTRAINT term_times_unique IF NOT EXISTS
+FOR (tt:TermTimes)
+REQUIRE tt.name IS UNIQUE;
+
+DROP CONSTRAINT term_link_path_unique IF EXISTS;
+
+CREATE CONSTRAINT term_lk_unique IF NOT EXISTS
+FOR (lk:TermLink)
+REQUIRE lk.value IS UNIQUE;
+
+CREATE CONSTRAINT category_name_unique IF NOT EXISTS
+FOR (cn:CategoryName)
+REQUIRE cn.name IS UNIQUE;
+
+LOAD CSV WITH HEADERS FROM 'file:///history_terms.csv' AS row
+WITH
+    trim(coalesce(row.term_name, '')) AS term_name,
+    trim(coalesce(row.term_ch, '')) AS term_ch,
+    trim(coalesce(row.term_year, '')) AS term_year,
+    trim(coalesce(row.term_times, '')) AS term_times,
+    trim(coalesce(row.term_lk, '')) AS raw_term_lk,
+    trim(coalesce(row.term_desc, '')) AS term_desc
+WITH
+    term_name,
+    term_ch,
+    term_year,
+    term_times,
+    CASE
+        WHEN raw_term_lk = '_NULL_' THEN ''
+        WHEN raw_term_lk <> '_NULL_' THEN raw_term_lk
+    END AS term_lk,
+    term_desc
+WHERE term_name <> '' AND term_times <> '현대'
+MERGE (t:TermName {
+    term_name: term_name,
+    term_ch: term_ch,
+    term_times: term_times
+})
+SET t.term_name = term_name,
+    t.term_ch = term_ch,
+    t.term_year = term_year,
+    t.term_times = term_times,
+    t.term_desc = term_desc
+WITH t, term_times, term_lk
+CALL (t, term_times) {
+    WITH t, term_times
+    WHERE term_times <> ''
+    MERGE (tt:TermTimes {name: term_times})
+    MERGE (t)-[:IN_PERIOD]->(tt)
+}
+CALL (t, term_lk) {
+    WITH t, [category_path IN split(term_lk, '>>') WHERE trim(category_path) <> '' | trim(category_path)] AS category_paths
+    UNWIND category_paths AS category_path
+    WITH t, category_path, [category IN split(category_path, '>') WHERE trim(category) <> '' | trim(category)] AS categories
+    WHERE size(categories) > 0
+    MERGE (lk:TermLink {value: category_path})
+    SET lk.name = categories[size(categories) - 1],
+        lk.top_category = categories[0]
+    MERGE (lk)-[:HAS_TERM]->(t)
+    MERGE (cn:CategoryName {name: categories[size(categories) - 1]})
+    MERGE (cn)-[:HAS_PATH]->(lk)
+};
