@@ -148,6 +148,33 @@ def upsert_chunks(conn, chunk_files: list[Path]) -> int:
     return len(rows)
 
 
+def collect_chunk_ids_by_source_type(chunk_files: list[Path]) -> dict[str, set[str]]:
+    chunk_ids_by_source_type: dict[str, set[str]] = {}
+    for path in chunk_files:
+        for row in load_jsonl(path):
+            source_type = row["source_type"]
+            chunk_ids_by_source_type.setdefault(source_type, set()).add(row["chunk_id"])
+    return chunk_ids_by_source_type
+
+
+def delete_missing_chunks(conn, chunk_files: list[Path]) -> int:
+    chunk_ids_by_source_type = collect_chunk_ids_by_source_type(chunk_files)
+    deleted = 0
+    with conn.cursor() as cur:
+        for source_type, chunk_ids in chunk_ids_by_source_type.items():
+            cur.execute(
+                """
+                DELETE FROM rag.document_chunks
+                WHERE source_type = %s
+                  AND NOT (chunk_id = ANY(%s))
+                """,
+                (source_type, list(chunk_ids)),
+            )
+            deleted += cur.rowcount
+    conn.commit()
+    return deleted
+
+
 def fetch_unembedded_chunks(conn, embedding_model: str, limit: int) -> list[tuple[str, str]]:
     with conn.cursor() as cur:
         cur.execute(
@@ -226,6 +253,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--batch-size", type=int, default=20)
     parser.add_argument("--limit", type=int, default=1000, help="Maximum chunks to embed in this run.")
     parser.add_argument("--skip-upsert", action="store_true", help="Do not load JSONL chunks before embedding.")
+    parser.add_argument(
+        "--delete-missing",
+        action="store_true",
+        help="Delete existing DB chunks for loaded source types when their chunk_id is no longer present in JSONL.",
+    )
     parser.add_argument("--create-index", action="store_true", help="Create ivfflat vector index after embedding.")
     parser.add_argument("--index-lists", type=int, default=100)
     parser.add_argument("--sleep", type=float, default=0.0, help="Seconds to sleep between embedding batches.")
@@ -247,6 +279,10 @@ def main() -> None:
     client = OpenAI()
 
     ensure_table(conn, args.dimensions)
+
+    if args.delete_missing:
+        deleted = delete_missing_chunks(conn, chunk_files)
+        print(f"deleted_missing_chunks={deleted}")
 
     if not args.skip_upsert:
         loaded = upsert_chunks(conn, chunk_files)

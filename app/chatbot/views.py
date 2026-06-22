@@ -34,6 +34,7 @@ def rag_chat_api(request):
         return JsonResponse({"error": "질문을 입력해 주세요."}, status=400)
 
     mode = payload.get("mode") or "history"
+    intent = payload.get("intent") or "concept"
     answer_format = payload.get("answer_format") or "structured"
     follow_up = bool(payload.get("follow_up", False))
     top_k = int(payload.get("top_k") or 5)
@@ -42,6 +43,7 @@ def rag_chat_api(request):
         result = build_history_rag_answer(
             question=question,
             mode=mode,
+            intent=intent,
             answer_format=answer_format,
             follow_up=follow_up,
             top_k=top_k,

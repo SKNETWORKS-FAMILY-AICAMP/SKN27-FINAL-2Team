@@ -5,9 +5,9 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>himate 한국사 챗봇</title>
-  <link rel="stylesheet" href="{% static 'chatbot/css/chat.css' %}" />
   <link rel="stylesheet" href="/static/himate.css" />
   <link rel="stylesheet" href="/static/layout.css" />
+  <link rel="stylesheet" href="{% static 'chatbot/css/chat.css' %}?v=chat-typing-1" />
 </head>
 <body>
   <main class="chat-page">
@@ -26,31 +26,24 @@
 
     <section class="messages">
       <div class="chat-layout">
-        <aside class="left-sidebar" aria-label="질문 유형 선택">
-          <h2 class="side-title">질문 유형</h2>
-          <div class="mode-list">
-            <button class="mode-card active" type="button" data-mode="history">
-              <span class="mode-name">한국사 질문</span>
-              <p class="mode-desc">개념, 사건, 인물, 시대 흐름을 교재형으로 정리합니다.</p>
-            </button>
-            <button class="mode-card" type="button" data-mode="question">
-              <span class="mode-name">문제 질문</span>
-              <p class="mode-desc">풀었던 문제, 선지, 오답 이유를 바탕으로 설명합니다.</p>
-            </button>
-          </div>
+        <aside class="left-sidebar session-sidebar" aria-label="저장된 대화 세션">
+          <button class="new-session-button" id="newSessionButton" type="button">+ 새 채팅</button>
+          <label class="session-search">
+            <span>채팅 검색</span>
+            <input id="sessionSearchInput" type="search" placeholder="대화 검색" />
+          </label>
 
-          <div class="side-hero">
-            <img src="{% static 'chatbot/assets/main_image.png' %}" alt="" />
-            <p class="side-hero-title">개념을 한 장 노트처럼</p>
-            <p class="side-hero-copy">질문하면 근거 자료를 찾아 한능검 스타일로 정리해드립니다.</p>
+          <div class="session-top">
+            <h2 class="side-title">최근 대화</h2>
           </div>
+          <div class="session-list" id="sessionList" aria-label="저장된 세션 목록"></div>
         </aside>
 
         <section class="chat-panel" aria-label="챗봇 대화">
           <div class="chat-stream" id="chatStream">
             <div class="message bot">
               <div class="avatar"><img src="{% static 'chatbot/assets/main_image.png' %}" alt="" /></div>
-              <div class="bubble">
+              <div class="bubble bot-bubble">
                 <div class="bot-label"><span class="bot-dot"></span><span>himate</span></div>
                 <div class="markdown-answer">안녕하세요. 한국사 개념이나 한능검 문제를 질문해 주세요.</div>
               </div>
@@ -60,37 +53,13 @@
           <form class="composer" id="chatForm">
             {% csrf_token %}
             <div class="composer-box">
-              <textarea class="question-input" id="questionInput" rows="1" placeholder="한국사 개념을 질문해 주세요. 예: 지눌의 업적"></textarea>
+              <button class="composer-plus" type="button" aria-label="추가 옵션">+</button>
+              <textarea class="question-input" id="questionInput" rows="1" placeholder="한국사 개념, 문제 질문, 학습 대화를 입력해 주세요."></textarea>
               <button class="send" id="sendButton" type="submit">↑</button>
             </div>
           </form>
         </section>
 
-        <aside class="right-sidebar" aria-label="챗봇 이용방법">
-          <h2 class="side-title">챗봇 이용방법</h2>
-          <div class="guide-note">
-            <article>
-              <span>01</span>
-              <strong>질문 유형을 먼저 선택하세요.</strong>
-              <p>한국사 개념은 <b>한국사 질문</b>, 풀던 문제나 선지는 <b>문제 질문</b>을 누른 뒤 질문합니다.</p>
-            </article>
-            <article>
-              <span>02</span>
-              <strong>원하는 답변 모양을 말해도 됩니다.</strong>
-              <p>“표로 정리해줘”, “시대순으로 설명해줘”, “한능검 포인트만 뽑아줘”처럼 요청할 수 있습니다.</p>
-            </article>
-            <article>
-              <span>03</span>
-              <strong>사진 자료는 제목을 정확히 써주세요.</strong>
-              <p>“첨성대 사진 보여줘”처럼 이미지 이름이 들어가면 관련 자료를 함께 찾습니다.</p>
-            </article>
-            <article>
-              <span>04</span>
-              <strong>답변 아래 출처를 확인하세요.</strong>
-              <p>사용된 한국사 자료와 이미지 자료의 근거를 함께 볼 수 있습니다.</p>
-            </article>
-          </div>
-        </aside>
       </div>
     </section>
 
@@ -102,18 +71,28 @@
     const input = document.getElementById("questionInput");
     const sendButton = document.getElementById("sendButton");
     const csrfToken = document.querySelector("[name=csrfmiddlewaretoken]").value;
-    let mode = "history";
+    const sessionList = document.getElementById("sessionList");
+    const newSessionButton = document.getElementById("newSessionButton");
+    const sessionSearchInput = document.getElementById("sessionSearchInput");
+    const STORAGE_KEY = "himate_chat_sessions";
+    let mode = "auto";
+    let sessions = loadSessions();
+    let activeSessionId = sessions[0]?.id || createSession("새 대화").id;
 
-    document.querySelectorAll(".mode-card").forEach((button) => {
-      button.addEventListener("click", () => {
-        document.querySelectorAll(".mode-card").forEach((item) => item.classList.remove("active"));
-        button.classList.add("active");
-        mode = button.dataset.mode;
-        input.placeholder = mode === "history"
-          ? "한국사 개념을 질문해 주세요. 예: 지눌의 업적"
-          : "문제나 선지에 대해 질문해 주세요. 예: 이 선지가 왜 틀렸어?";
-      });
+    saveSessions();
+    renderSessionList();
+    renderActiveSession();
+
+    newSessionButton.addEventListener("click", () => {
+      const session = createSession("새 대화");
+      activeSessionId = session.id;
+      saveSessions();
+      renderSessionList();
+      renderActiveSession();
+      input.focus();
     });
+
+    sessionSearchInput.addEventListener("input", renderSessionList);
 
     input.addEventListener("input", () => {
       input.style.height = "auto";
@@ -131,14 +110,27 @@
       event.preventDefault();
       const question = input.value.trim();
       if (!question) return;
+      const intent = classifyChatIntent(question);
 
       appendUserMessage(question);
+      addMessageToActiveSession({ sender: "user", text: question });
       input.value = "";
       input.style.height = "auto";
+
+      if (intent === "casual" || intent === "chat") {
+        const localAnswer = buildLocalChatAnswer(question);
+        const localData = { answer: localAnswer, intent, sources: [] };
+        appendBotMessage(localData);
+        addMessageToActiveSession({ sender: "bot", data: localData, intent });
+        input.focus();
+        return;
+      }
+
       sendButton.disabled = true;
       const loading = appendLoadingMessage();
 
       try {
+        const answerFormat = intent === "concept" ? "structured" : "text";
         const response = await fetch("{% url 'chatbot:rag_chat_api' %}", {
           method: "POST",
           headers: {
@@ -148,11 +140,13 @@
           body: JSON.stringify({
             question,
             mode,
-            answer_format: "structured",
+            intent,
+            answer_format: answerFormat,
             top_k: 5,
           }),
         });
         const data = await response.json();
+        data.intent = intent;
         loading.remove();
 
         if (!response.ok) {
@@ -161,6 +155,7 @@
         }
 
         appendBotMessage(data);
+        addMessageToActiveSession({ sender: "bot", data, intent });
       } catch (error) {
         loading.remove();
         appendErrorMessage("네트워크 오류가 발생했습니다.", error.message);
@@ -187,14 +182,63 @@
       scrollToBottom();
     }
 
+    function classifyChatIntent(question) {
+      const text = String(question || "").trim().toLowerCase();
+      const compact = text.replace(/\s+/g, "");
+      if (/^(안녕|안녕하세요|ㅎㅇ|하이|hi|hello|헬로|고마워|감사|ㄱㅅ)$/.test(compact)) {
+        return "casual";
+      }
+      if (/(사진|이미지|그림|도판|자료사진|유물사진|문화재사진|보여줘|보여줄래|찾아줘|가져와|띄워줘)/.test(text)
+          && /(사진|이미지|그림|도판|보여|찾아|가져|띄워)/.test(text)) {
+        return "image";
+      }
+      if (/(문제|선지|보기|정답|오답|해설|풀이|몇\s*번|왜\s*틀|왜\s*맞|기출|문항)/.test(text)) {
+        return "question";
+      }
+      if (/(날씨|기온|비\s*와|비와|눈\s*와|눈와|미세먼지|내일|오늘|시간|날짜|요일|잡담|농담|힘들|공부법|계획|동기부여|뭐해|도와줘)/.test(text)
+          && !/(한국사|조선|고려|신라|백제|고구려|발해|근대|현대|왕|전쟁|제도|사건|인물)/.test(text)) {
+        return "chat";
+      }
+      return "concept";
+    }
+
+    function buildLocalChatAnswer(question) {
+      const text = String(question || "");
+      if (/고마워|감사|ㄱㅅ/.test(text)) {
+        return "천만에요. 필요하시면 한국사 개념 정리나 문제 해설도 바로 도와드리겠습니다.";
+      }
+      if (/날씨|기온|비\s*와|비와|눈\s*와|눈와|미세먼지/.test(text)) {
+        return "지금 챗봇에는 실시간 날씨 조회 기능은 연결되어 있지 않습니다. 대신 한국사 개념 정리, 문제 해설, 이미지 자료 조회는 바로 도와드릴 수 있습니다.";
+      }
+      if (/시간|날짜|요일/.test(text)) {
+        return "현재 시간이나 날짜 같은 실시간 정보 조회는 아직 챗봇 기능에 연결되어 있지 않습니다. 한국사 학습 질문을 주시면 자료를 바탕으로 답변드리겠습니다.";
+      }
+      if (/공부법|계획|동기부여|힘들/.test(text)) {
+        return "좋습니다. 학습 상담은 대화형으로 도와드릴게요. 현재 목표 급수, 시험일까지 남은 기간, 하루 공부 가능 시간을 알려주시면 한국사 공부 순서를 같이 잡아드리겠습니다.";
+      }
+      return "안녕하세요. 한국사 개념 정리, 문제 해설, 이미지 자료 조회까지 편하게 물어보세요.";
+    }
+
+    function appendWelcomeMessage() {
+      const wrapper = document.createElement("div");
+      wrapper.className = "message bot";
+      wrapper.innerHTML = `
+        <div class="avatar"><img src="{% static 'chatbot/assets/main_image.png' %}" alt="" /></div>
+        <div class="bubble bot-bubble">
+          <div class="bot-label"><span class="bot-dot"></span><span>himate</span></div>
+          <div class="markdown-answer">한국사 개념 질문, 문제 질문, 가벼운 학습 대화까지 편하게 물어보세요.</div>
+        </div>
+      `;
+      chatStream.appendChild(wrapper);
+    }
+
     function appendLoadingMessage() {
       const wrapper = document.createElement("div");
       wrapper.className = "message bot";
       wrapper.innerHTML = `
         <div class="avatar"><img src="{% static 'chatbot/assets/main_image.png' %}" alt="" /></div>
-        <div class="bubble">
-          <div class="bot-label"><span class="bot-dot"></span><span>검색 중</span></div>
-          <div class="loading">관련 한국사 자료를 찾고 답변을 정리하고 있습니다.</div>
+        <div class="bubble bot-bubble typing-bubble" aria-label="답변 생성 중">
+          <span></span><span></span><span></span>
         </div>
       `;
       chatStream.appendChild(wrapper);
@@ -207,7 +251,7 @@
       wrapper.className = "message bot";
       wrapper.innerHTML = `
         <div class="avatar"><img src="{% static 'chatbot/assets/main_image.png' %}" alt="" /></div>
-        <div class="bubble">
+        <div class="bubble bot-bubble">
           <div class="bot-label"><span class="bot-dot"></span><span>오류</span></div>
           <div class="error">${escapeHtml(message)}${detail ? `<br>${escapeHtml(detail)}` : ""}</div>
         </div>
@@ -219,20 +263,170 @@
     function appendBotMessage(data) {
       const wrapper = document.createElement("div");
       wrapper.className = "message bot";
-      const imageGallery = renderImageGallery(data.sources || [], data.structured_answer);
-      const content = data.structured_answer
+      const intent = data.intent || "concept";
+      if (data.not_found || isInsufficientStructuredAnswer(data.structured_answer)) {
+        wrapper.innerHTML = `
+          <div class="avatar"><img src="{% static 'chatbot/assets/main_image.png' %}" alt="" /></div>
+          <div class="bubble bot-bubble no-result-bubble">
+            ${renderConversationalAnswer(data.answer || "검색 결과가 없습니다.")}
+          </div>
+        `;
+        chatStream.appendChild(wrapper);
+        scrollToBottom();
+        return;
+      }
+      const shouldShowImages = intent === "image";
+      const shouldShowStructured = intent === "concept" && data.structured_answer;
+      const imageGallery = shouldShowImages ? renderImageGallery(data.sources || [], data.structured_answer) : "";
+      const content = shouldShowStructured
         ? renderStructuredAnswer(data.structured_answer, data.sources || [])
-        : `<div class="markdown-answer">${escapeHtml(data.answer || "답변을 생성하지 못했습니다.")}</div>`;
+        : renderConversationalAnswer(data.answer || data.structured_answer?.summary || "답변을 생성하지 못했습니다.");
+      const label = intent === "concept" ? "개념 정리"
+        : intent === "image" ? "이미지 자료"
+        : intent === "question" ? "문제 해설"
+        : "himate";
       wrapper.innerHTML = `
         <div class="avatar"><img src="{% static 'chatbot/assets/main_image.png' %}" alt="" /></div>
-        <div class="bubble">
-          <div class="bot-label"><span class="bot-dot"></span><span>개념 정리</span></div>
+        <div class="bubble bot-bubble">
+          <div class="bot-label"><span class="bot-dot"></span><span>${escapeHtml(label)}</span></div>
           ${imageGallery}
           ${content}
         </div>
       `;
       chatStream.appendChild(wrapper);
       scrollToBottom();
+    }
+
+    function loadSessions() {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (error) {
+        return [];
+      }
+    }
+
+    function saveSessions() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions.slice(0, 30)));
+    }
+
+    function createSession(title) {
+      const session = {
+        id: `session-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+        title,
+        updatedAt: new Date().toISOString(),
+        messages: [],
+      };
+      sessions.unshift(session);
+      return session;
+    }
+
+    function getActiveSession() {
+      let session = sessions.find((item) => item.id === activeSessionId);
+      if (!session) {
+        session = createSession("새 대화");
+        activeSessionId = session.id;
+        saveSessions();
+      }
+      return session;
+    }
+
+    function addMessageToActiveSession(message) {
+      const session = getActiveSession();
+      session.messages.push({ ...message, createdAt: new Date().toISOString() });
+      const firstUserMessage = session.messages.find((item) => item.sender === "user");
+      if (firstUserMessage) {
+        session.title = firstUserMessage.text.slice(0, 24) || "새 대화";
+      }
+      session.updatedAt = new Date().toISOString();
+      sessions = [session, ...sessions.filter((item) => item.id !== session.id)];
+      activeSessionId = session.id;
+      saveSessions();
+      renderSessionList();
+    }
+
+    function renderSessionList() {
+      const keyword = (sessionSearchInput?.value || "").trim().toLowerCase();
+      const visibleSessions = keyword
+        ? sessions.filter((session) => String(session.title || "").toLowerCase().includes(keyword))
+        : sessions;
+
+      sessionList.innerHTML = visibleSessions.map((session) => `
+        <button class="session-item ${session.id === activeSessionId ? "active" : ""}" type="button" data-session-id="${escapeHtml(session.id)}">
+          <span class="session-copy">
+            <strong>${escapeHtml(session.title || "새 대화")}</strong>
+            <span>${session.messages.length}개 메시지</span>
+          </span>
+          <span class="session-delete" role="button" tabindex="0" aria-label="대화 삭제" data-session-id="${escapeHtml(session.id)}">삭제</span>
+        </button>
+      `).join("") || `<p class="empty-session">저장된 대화가 없습니다.</p>`;
+
+      sessionList.querySelectorAll(".session-item").forEach((button) => {
+        button.addEventListener("click", () => {
+          activeSessionId = button.dataset.sessionId;
+          renderSessionList();
+          renderActiveSession();
+        });
+      });
+
+      sessionList.querySelectorAll(".session-delete").forEach((button) => {
+        button.addEventListener("click", (event) => {
+          event.stopPropagation();
+          deleteSession(button.dataset.sessionId);
+        });
+        button.addEventListener("keydown", (event) => {
+          if (event.key !== "Enter" && event.key !== " ") return;
+          event.preventDefault();
+          event.stopPropagation();
+          deleteSession(button.dataset.sessionId);
+        });
+      });
+    }
+
+    function deleteSession(sessionId) {
+      sessions = sessions.filter((session) => session.id !== sessionId);
+      if (!sessions.length) {
+        const session = createSession("새 대화");
+        activeSessionId = session.id;
+      } else if (activeSessionId === sessionId) {
+        activeSessionId = sessions[0].id;
+      }
+      saveSessions();
+      renderSessionList();
+      renderActiveSession();
+    }
+
+    function renderActiveSession() {
+      chatStream.innerHTML = "";
+      const session = getActiveSession();
+      if (!session.messages.length) {
+        appendWelcomeMessage();
+        scrollToBottom();
+        return;
+      }
+      session.messages.forEach((message) => {
+        if (message.sender === "user") appendUserMessage(message.text);
+        if (message.sender === "bot") appendBotMessage({ ...message.data, intent: message.intent || message.data?.intent });
+      });
+      scrollToBottom();
+    }
+
+    function isInsufficientStructuredAnswer(answer) {
+      if (!answer) return false;
+      const terms = ["확인 불가", "근거 부족", "답변 불가", "답변할 수 없", "찾을 수 없", "부족합니다", "부족하여"];
+      const sectionText = (answer.sections || []).map((section) => {
+        const itemText = (section.items || []).map((item) => `${item.term || ""} ${item.content || ""}`).join(" ");
+        return `${section.heading || ""} ${itemText}`;
+      }).join(" ");
+      const text = `${answer.title || ""} ${answer.summary || ""} ${(answer.exam_points || []).join(" ")} ${sectionText}`;
+      return terms.some((term) => text.includes(term));
+    }
+
+    function renderConversationalAnswer(answer) {
+      const html = escapeHtml(answer)
+        .replace(/\n{2,}/g, "</p><p>")
+        .replace(/\n/g, "<br>");
+      return `<div class="markdown-answer conversational-answer"><p>${html}</p></div>`;
     }
 
     function renderStructuredAnswer(answer, sources) {

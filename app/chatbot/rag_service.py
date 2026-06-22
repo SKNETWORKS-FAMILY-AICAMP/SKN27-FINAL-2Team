@@ -14,16 +14,127 @@ from llm_answer_generator import LLMAnswerGenerator  # noqa: E402
 from pgvector_retriever import PgVectorHybridRetriever, result_to_payload  # noqa: E402
 
 
+SUPPORTED_INTENTS = {"concept", "question", "image", "chat", "casual"}
+NOT_FOUND_ANSWER = "검색 결과가 없습니다."
+INSUFFICIENT_ANSWER_TERMS = (
+    "확인 불가",
+    "근거 부족",
+    "답변 불가",
+    "답변할 수 없",
+    "찾을 수 없",
+    "부족합니다",
+    "부족하여",
+)
+
+
+def normalize_intent(intent: str | None, answer_format: str) -> str:
+    value = (intent or "").strip().lower()
+    if value in SUPPORTED_INTENTS:
+        return value
+    if answer_format == "structured":
+        return "concept"
+    return "question"
+
+
+def no_rag_answer(question: str, intent: str) -> dict[str, Any]:
+    if intent == "chat":
+        answer = "현재 챗봇은 한국사 학습 질문과 문제 해설을 중심으로 답변합니다."
+    elif intent == "casual":
+        answer = "안녕하세요. 한국사 개념 정리, 문제 해설, 이미지 자료 조회를 도와드릴 수 있습니다."
+    else:
+        answer = NOT_FOUND_ANSWER
+    return {
+        "question": question,
+        "mode": "auto",
+        "intent": intent,
+        "answer_format": "text",
+        "answer": answer,
+        "structured_answer": None,
+        "not_found": intent not in {"chat", "casual"},
+        "llm": None,
+        "sources": [],
+    }
+
+
+def has_enough_evidence(results: list[Any], intent: str) -> bool:
+    if not results:
+        return False
+
+    best = results[0]
+    if intent == "image":
+        return any(
+            result.source_type == "image_material"
+            and (result.metadata.get("original_image_url") or result.metadata.get("thumbnail_url"))
+            for result in results
+        )
+
+    best_keyword = max(float(result.keyword_score or 0.0) for result in results)
+    best_score = float(best.score or 0.0)
+    if best_keyword >= 0.12:
+        return True
+    if best_keyword >= 0.05 and best_score >= 0.35:
+        return True
+    return False
+
+
+def not_found_answer(question: str, intent: str) -> dict[str, Any]:
+    return {
+        "question": question,
+        "mode": "auto",
+        "intent": intent,
+        "answer_format": "text",
+        "answer": NOT_FOUND_ANSWER,
+        "structured_answer": None,
+        "not_found": True,
+        "llm": None,
+        "sources": [],
+    }
+
+
+def is_insufficient_structured_answer(answer: dict[str, Any] | None) -> bool:
+    if not answer:
+        return False
+    title = str(answer.get("title") or "")
+    summary = str(answer.get("summary") or "")
+    exam_points = " ".join(str(point) for point in answer.get("exam_points") or [])
+    sections = " ".join(
+        f"{section.get('heading', '')} "
+        + " ".join(f"{item.get('term', '')} {item.get('content', '')}" for item in section.get("items") or [])
+        for section in answer.get("sections") or []
+        if isinstance(section, dict)
+    )
+    combined = f"{title} {summary} {exam_points} {sections}"
+    return any(term in combined for term in INSUFFICIENT_ANSWER_TERMS)
+
+
+def is_insufficient_text_answer(answer: str | None) -> bool:
+    combined = str(answer or "")
+    return any(term in combined for term in INSUFFICIENT_ANSWER_TERMS)
+
+
 def build_history_rag_answer(
     question: str,
     mode: str = "history",
+    intent: str = "concept",
     answer_format: str = "structured",
     follow_up: bool = False,
     top_k: int = 5,
 ) -> dict[str, Any]:
+    intent = normalize_intent(intent, answer_format)
+    if intent in {"chat", "casual"}:
+        return no_rag_answer(question, intent)
+
+    if intent in {"question", "image"}:
+        answer_format = "text"
+    elif intent == "concept":
+        answer_format = "structured"
+
     retriever = PgVectorHybridRetriever()
     results = retriever.search(question, top_k=top_k)
     sources = [result_to_payload(result) for result in results]
+
+    if not has_enough_evidence(results, intent):
+        return not_found_answer(question, intent)
 
     generator = LLMAnswerGenerator.from_env()
     if answer_format == "structured":
@@ -32,6 +143,8 @@ def build_history_rag_answer(
             sources,
             follow_up=follow_up or mode == "question",
         )
+        if is_insufficient_structured_answer(structured_answer):
+            return not_found_answer(question, intent)
         answer = None
     else:
         structured_answer = None
@@ -41,13 +154,17 @@ def build_history_rag_answer(
             style="textbook",
             follow_up=follow_up or mode == "question",
         )
+        if is_insufficient_text_answer(answer):
+            return not_found_answer(question, intent)
 
     return {
         "question": question,
         "mode": mode,
+        "intent": intent,
         "answer_format": answer_format,
         "answer": answer,
         "structured_answer": structured_answer,
+        "not_found": False,
         "llm": {
             "provider": generator.config.provider,
             "model": generator.config.model,
