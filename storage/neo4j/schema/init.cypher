@@ -55,15 +55,17 @@ CALL (t, term_times) {
     WITH t, term_times
     WHERE term_times <> ''
     MERGE (tt:TermTimes {name: term_times})
-    MERGE (t)-[:HAS_PERIOD]->(tt)
+    MERGE (t)-[:IN_PERIOD]->(tt)
 }
 CALL (t, term_lk) {
-    WITH t, term_lk, [category IN split(term_lk, '>') WHERE trim(category) <> '' | trim(category)] AS categories
+    WITH t, [category_path IN split(term_lk, '>>') WHERE trim(category_path) <> '' | trim(category_path)] AS category_paths
+    UNWIND category_paths AS category_path
+    WITH t, category_path, [category IN split(category_path, '>') WHERE trim(category) <> '' | trim(category)] AS categories
     WHERE size(categories) > 0
-    MERGE (lk:TermLink {value: term_lk})
+    MERGE (lk:TermLink {value: category_path})
     SET lk.name = categories[size(categories) - 1],
         lk.top_category = categories[0]
-    MERGE (t)-[:HAS_CATEGORY]->(lk)
+    MERGE (lk)-[:HAS_TERM]->(t)
     MERGE (cn:CategoryName {name: categories[size(categories) - 1]})
-    MERGE (lk)-[:HAS_CATEGORY_NAME]->(cn)
+    MERGE (cn)-[:HAS_PATH]->(lk)
 };
