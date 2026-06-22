@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>himate | 내가 푼 문제</title>
+  <link rel="stylesheet" href="/static/user/css/solved_problems.css" />
+  <link rel="stylesheet" href="../../static/user/css/solved_problems.css" />
+  <link rel="stylesheet" href="/static/himate.css" />
+  <link rel="stylesheet" href="/static/layout.css" />
+</head>
+<body>
+  <header class="site-header" aria-label="내가 푼 문제 메뉴">
+    <a class="brand" href="/" aria-label="himate 홈">
+      <img src="/static/chatbot/assets/logo.png" alt="himate" data-fallback-src="../../static/chatbot/assets/logo.png" />
+    </a>
+    <nav class="main-nav" aria-label="학습 메뉴">
+      <a href="/diagnosis/">진단 평가</a>
+      <a href="/question/">문제 풀이</a>
+      <a href="/chatbot/">챗봇</a>
+      <a class="active" href="/user/mypage/">나의 학습실</a>
+    </nav>
+    <nav class="header-actions" aria-label="계정 메뉴">
+      <a class="outline-button" href="/user/mypage/">마이페이지</a>
+      <a class="ghost-button" href="/user/logout/">로그아웃</a>
+    </nav>
+  </header>
+
+  <main class="solved-page">
+    {% if selected_session %}
+      <section class="review-shell" aria-label="세션별 문제 결과">
+        <header class="review-top">
+          <div>
+            <span class="page-kicker">Session #{{ selected_session.session_id }}</span>
+            <h1>문제별 결과 확인</h1>
+          </div>
+          <div class="question-jump" id="questionJump" aria-label="문제 번호 이동"></div>
+        </header>
+
+        <section class="session-overview" aria-label="세션 요약">
+          <article><span>문항 묶음</span><strong>{{ selected_session.total_count }}문항</strong></article>
+          <article><span>상태</span><strong>{{ selected_session.status }}</strong></article>
+          <article><span>점수</span><strong>{{ selected_session.total_score|default:"0" }}</strong></article>
+          <article><span>풀이시간</span><strong id="sessionElapsed">-</strong></article>
+        </section>
+
+        <section class="answer-summary" aria-label="답안 요약">
+          <article><span>문제 번호</span><strong id="questionNumber">1번</strong></article>
+          <article><span>결과</span><strong id="resultState">-</strong></article>
+          <article><span>사용자 답안</span><strong id="userAnswer">-</strong></article>
+          <article><span>정답</span><strong id="correctAnswer">-</strong></article>
+        </section>
+
+        <section class="question-box" aria-label="문제 내용">
+          <div class="box-heading">
+            <span>문제</span>
+            <strong id="questionType">-</strong>
+          </div>
+          <h2 id="questionTitle">문제를 불러오는 중입니다.</h2>
+          <p id="questionMeta"></p>
+          <ol class="choice-review" id="choiceReview"></ol>
+        </section>
+
+        <section class="explain-grid" aria-label="해설 상세">
+          <article>
+            <h2>해설</h2>
+            <p id="explanation">-</p>
+          </article>
+          <article>
+            <h2>선택지 해설</h2>
+            <p id="choiceExplanation">-</p>
+          </article>
+          <article>
+            <h2>핵심개념</h2>
+            <p id="coreConcept">-</p>
+          </article>
+        </section>
+
+        <nav class="review-actions" aria-label="해설 이동">
+          <a class="outline-button" href="/user/solved-problems/">세션 목록</a>
+          <button class="outline-button" id="prevQuestion" type="button">이전 문제</button>
+          <button class="primary-button" id="nextQuestion" type="button">다음 문제</button>
+        </nav>
+      </section>
+
+      {{ record_payload|json_script:"recordPayload" }}
+      <script>
+        const records = JSON.parse(document.getElementById("recordPayload").textContent);
+        let currentIndex = 0;
+
+        const questionJump = document.getElementById("questionJump");
+        const questionNumber = document.getElementById("questionNumber");
+        const resultState = document.getElementById("resultState");
+        const userAnswer = document.getElementById("userAnswer");
+        const correctAnswer = document.getElementById("correctAnswer");
+        const questionType = document.getElementById("questionType");
+        const questionTitle = document.getElementById("questionTitle");
+        const questionMeta = document.getElementById("questionMeta");
+        const choiceReview = document.getElementById("choiceReview");
+        const explanation = document.getElementById("explanation");
+        const choiceExplanation = document.getElementById("choiceExplanation");
+        const coreConcept = document.getElementById("coreConcept");
+        const prevQuestion = document.getElementById("prevQuestion");
+        const nextQuestion = document.getElementById("nextQuestion");
+
+        function answerLabel(value) {
+          return value ? `${value}번` : "미응답";
+        }
+
+        function renderJump() {
+          questionJump.innerHTML = records.map((record, index) => `
+            <button class="${index === currentIndex ? "active" : ""} ${record.is_correct ? "correct" : "wrong"}" type="button" data-index="${index}">
+              ${index + 1}
+            </button>
+          `).join("");
+
+          questionJump.querySelectorAll("button").forEach((button) => {
+            button.addEventListener("click", () => {
+              currentIndex = Number(button.dataset.index);
+              renderQuestion();
+            });
+          });
+        }
+
+        function renderQuestion() {
+          if (!records.length) return;
+          const record = records[currentIndex];
+          const selectedOption = record.options.find((option) => option.choice_no === record.selected_no);
+
+          questionNumber.textContent = `${record.number}번`;
+          resultState.textContent = record.is_correct ? "정답" : "오답";
+          resultState.className = record.is_correct ? "is-correct" : "is-wrong";
+          userAnswer.textContent = answerLabel(record.selected_no);
+          correctAnswer.textContent = answerLabel(record.answer_no);
+          questionType.textContent = record.question_type;
+          questionTitle.textContent = record.content;
+          questionMeta.textContent = `${record.era} · ${record.topic} · ${record.time_spent}`;
+          choiceReview.innerHTML = record.options.map((option) => {
+            const classes = [
+              option.choice_no === record.answer_no ? "correct" : "",
+              option.choice_no === record.selected_no ? "selected" : "",
+            ].filter(Boolean).join(" ");
+            return `<li class="${classes}"><span>${option.choice_no}</span><b>${option.content}</b></li>`;
+          }).join("");
+          explanation.textContent = record.answer_explanation || "해설이 등록되지 않았습니다.";
+          choiceExplanation.textContent = selectedOption?.choice_explanation || "선택지별 해설이 등록되지 않았습니다.";
+          coreConcept.textContent = record.core_concept || "핵심 개념이 등록되지 않았습니다.";
+          prevQuestion.disabled = currentIndex === 0;
+          nextQuestion.disabled = currentIndex === records.length - 1;
+          renderJump();
+        }
+
+        prevQuestion.addEventListener("click", () => {
+          currentIndex = Math.max(0, currentIndex - 1);
+          renderQuestion();
+        });
+
+        nextQuestion.addEventListener("click", () => {
+          currentIndex = Math.min(records.length - 1, currentIndex + 1);
+          renderQuestion();
+        });
+
+        renderQuestion();
+      </script>
+    {% else %}
+      <section class="solved-title">
+        <p>{{ request.user.nickname }}님의 풀이 기록</p>
+        <h1>내가 푼 문제</h1>
+      </section>
+
+      <section class="bundle-panel" aria-label="풀이 묶음 목록">
+        <div class="bundle-heading">
+          <strong>{{ session_cards|length }}개</strong>
+        </div>
+
+        <div class="bundle-list">
+          {% for item in session_cards %}
+            <a class="bundle-card" href="/user/solved-problems/?session_id={{ item.session.session_id }}">
+              <div>
+                <span>Session #{{ item.session.session_id }}</span>
+                <h3>{{ item.date_label }}</h3>
+              </div>
+              <dl>
+                <div><dt>문항 수</dt><dd>{{ item.session.total_count }}문항</dd></div>
+                <div><dt>정답률</dt><dd>{{ item.answer_rate }}%</dd></div>
+                <div><dt>풀이시간</dt><dd>{{ item.elapsed_time }}</dd></div>
+                <div><dt>상태</dt><dd>{{ item.session.status }}</dd></div>
+              </dl>
+            </a>
+          {% empty %}
+            <div class="empty-state wide">
+              <strong>풀이 기록이 없습니다</strong>
+            </div>
+          {% endfor %}
+        </div>
+      </section>
+    {% endif %}
+  </main>
+
+  <script>
+    document.querySelectorAll("img[data-fallback-src]").forEach((image) => {
+      image.addEventListener("error", () => {
+        if (image.dataset.fallbackTried) return;
+        image.dataset.fallbackTried = "1";
+        image.src = image.dataset.fallbackSrc;
+      });
+    });
+  </script>
+</body>
+</html>
