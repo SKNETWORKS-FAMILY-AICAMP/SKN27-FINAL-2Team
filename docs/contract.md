@@ -19,12 +19,6 @@ COMMON_TYPES = {
         "studyPlanStatus": "str",
         "studyPlanCreatedAt": "datetime",
     },
-    # 역사 용어에 연결된 카테고리 정보.
-    "Category": {
-        "categoryName": "str",
-        "categoryCh": "str | None",
-        "categoryTimes": "str",
-    },
     # 정답 정보 없이 클라이언트에 전달되는 문제 정보.
     "Question": {
         "questionId": "int",
@@ -70,13 +64,6 @@ COMMON_TYPES = {
         "content": "str",
         "createdAt": "datetime",
     },
-    # Neo4j 기반 용어 검색 또는 그래프 조회에서 반환되는 역사 용어.
-    "HistoryTerm": {
-        "termName": "str",
-        "termCh": "str | None",
-        "termTimes": "str",
-        "categories": "list[Category]",
-    },
 }
 
 # 각 페이지가 최초 로딩과 사용자 액션마다 필요한 데이터를 정의한다.
@@ -97,7 +84,7 @@ PAGE_CONTRACTS = [
                     "accessToken": "str",
                     "user": "User",
                 },
-                "navigateTo": "dashboardPage",
+                "navigateTo": "myPage",
             }
         ],
     },
@@ -124,18 +111,24 @@ PAGE_CONTRACTS = [
         ],
     },
     {
-        # 로그인 후 첫 화면으로 최근 학습 현황과 주요 이동 경로를 제공한다.
-        "page": "dashboardPage",
-        "route": "/dashboard",
+        # 로그인 후 첫 화면으로 사용자 정보, 분석, 노트, 학습 계획을 함께 제공한다.
+        "page": "myPage",
+        "route": "/mypage",
         "pageInputs": {
             "accessToken": "str",
         },
         "initialData": {
             "user": "User",
             "recentSolveSessions": "list[SolveSessionSummary]",
+            "analyticsPeriod": "DateRange",
             "analyticsSummary": "AnalyticsSummary",
+            "analyticsByEra": "list[EraStat]",
+            "analyticsByTopic": "list[TopicStat]",
+            "analyticsScoreTrend": "list[ScoreTrend]",
             "weakTopics": "list[WeakTopic]",
             "recommendedStudyTargets": "list[RecommendedStudyTarget]",
+            "notes": "list[NoteSummary]",
+            "studyPlans": "list[StudyPlan]",
         },
         "actions": [
             {
@@ -145,10 +138,32 @@ PAGE_CONTRACTS = [
                 "navigateTo": "quizSetupPage",
             },
             {
-                "name": "goToAnalytics",
+                "name": "changeAnalyticsPeriod",
+                "send": {
+                    "fromDate": "date",
+                    "toDate": "date",
+                },
+                "receive": {
+                    "analyticsPeriod": "DateRange",
+                    "analyticsSummary": "AnalyticsSummary",
+                    "analyticsByEra": "list[EraStat]",
+                    "analyticsByTopic": "list[TopicStat]",
+                    "analyticsScoreTrend": "list[ScoreTrend]",
+                    "weakTopics": "list[WeakTopic]",
+                    "recommendedStudyTargets": "list[RecommendedStudyTarget]",
+                },
+            },
+            {
+                "name": "goToNote",
                 "send": {},
                 "receive": {},
-                "navigateTo": "analyticsPage",
+                "navigateTo": "notePage",
+            },
+            {
+                "name": "goToStudyPlan",
+                "send": {},
+                "receive": {},
+                "navigateTo": "studyPlanPage",
             },
         ],
     },
@@ -275,36 +290,6 @@ PAGE_CONTRACTS = [
         ],
     },
     {
-        # 기간, 시대, 주제, 점수 추이 기준으로 학습 성과를 집계한다.
-        "page": "analyticsPage",
-        "route": "/analytics",
-        "initialData": {
-            "period": "DateRange",
-            "summary": "AnalyticsSummary",
-            "byEra": "list[EraStat]",
-            "byTopic": "list[TopicStat]",
-            "weakTopics": "list[WeakTopic]",
-            "scoreTrend": "list[ScoreTrend]",
-            "recommendedStudyTargets": "list[RecommendedStudyTarget]",
-        },
-        "actions": [
-            {
-                "name": "changePeriod",
-                "send": {
-                    "fromDate": "date",
-                    "toDate": "date",
-                },
-                "receive": {
-                    "summary": "AnalyticsSummary",
-                    "byEra": "list[EraStat]",
-                    "byTopic": "list[TopicStat]",
-                    "weakTopics": "list[WeakTopic]",
-                    "scoreTrend": "list[ScoreTrend]",
-                },
-            }
-        ],
-    },
-    {
         # 채팅 세션을 관리하고 사용자 메시지를 AI 응답 로직으로 보낸다.
         "page": "chatPage",
         "route": "/chat",
@@ -396,41 +381,6 @@ PAGE_CONTRACTS = [
                     "createdAt": "datetime",
                 },
             }
-        ],
-    },
-    {
-        # 역사 용어를 검색하고 선택한 용어의 Neo4j 그래프 데이터를 조회한다.
-        "page": "historySearchPage",
-        "route": "/history",
-        "initialData": {
-            "categoryNames": "list[str]",
-            "termTimes": "list[str]",
-        },
-        "actions": [
-            {
-                "name": "searchTerms",
-                "send": {
-                    "keyword": "str",
-                    "categoryName": "str | None",
-                    "termTimes": "str | None",
-                },
-                "receive": {
-                    "terms": "list[HistoryTerm]",
-                },
-            },
-            {
-                "name": "openTermGraph",
-                "send": {
-                    "termName": "str",
-                    "termCh": "str | None",
-                    "termTimes": "str",
-                },
-                "receive": {
-                    "nodes": "list[GraphNode]",
-                    "relationships": "list[GraphRelationship]",
-                },
-                "navigateTo": "historyGraphPage",
-            },
         ],
     },
 ]
