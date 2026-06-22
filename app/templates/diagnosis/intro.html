@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="ko">
 <head>
   <meta charset="utf-8" />
@@ -79,7 +79,7 @@
       </section>
 
       <div class="start-actions">
-        <a class="start-button" href="/diagnosis/exam/">진단평가 시작하기</a>
+        <button class="start-button" id="startButton" type="button">진단평가 시작하기</button>
       </div>
     </section>
   </main>
@@ -92,7 +92,44 @@
         image.src = image.dataset.fallbackSrc;
       });
     });
+
+    function getCookie(name) {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop().split(";").shift();
+      return null;
+    }
+
+    document.getElementById("startButton").addEventListener("click", async () => {
+      const button = document.getElementById("startButton");
+      button.disabled = true;
+      button.textContent = "준비 중...";
+
+      try {
+        const res = await fetch("/diagnosis/api/start/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": getCookie("csrftoken"),
+          },
+          body: JSON.stringify({}),
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.error || "서버 오류");
+        }
+
+        const data = await res.json();
+        data.startedAt = Date.now();
+        sessionStorage.setItem("diagnosisSession", JSON.stringify(data));
+        window.location.href = "/diagnosis/exam/";
+      } catch (e) {
+        alert(`진단평가를 시작할 수 없습니다: ${e.message}`);
+        button.disabled = false;
+        button.textContent = "진단평가 시작하기";
+      }
+    });
   </script>
 </body>
 </html>
-
