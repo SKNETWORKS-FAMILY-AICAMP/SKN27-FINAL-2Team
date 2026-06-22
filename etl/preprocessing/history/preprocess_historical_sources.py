@@ -155,8 +155,6 @@ def build_document(row: dict[str, str]) -> dict:
         "source_url": clean_text(row.get("상세URL")),
         "image_path": None,
         "metadata": {
-            "period_code": clean_text(row.get("시대코드")),
-            "field_code": clean_text(row.get("분야코드")),
             "toc_path": toc_path,
             "markdown_file": clean_text(row.get("Markdown파일")),
             "reference": references,
@@ -221,7 +219,7 @@ def write_jsonl(path: Path, rows: Iterable[dict]) -> int:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--input-dir", type=Path, default=Path("etl/preprocessing/history/raw_data/사료로 본 한국사"))
+    parser.add_argument("--input-dir", type=Path, default=Path("etl/raw_data/사료로 본 한국사"))
     parser.add_argument("--output-dir", type=Path, default=Path("etl/preprocessing/history/processed"))
     parser.add_argument("--chunk-size", type=int, default=1200)
     parser.add_argument("--chunk-overlap", type=int, default=150)
