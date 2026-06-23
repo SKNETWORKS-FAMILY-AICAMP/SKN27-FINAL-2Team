@@ -61,8 +61,14 @@
 
         </div>
         <div class="time-metric">
-          <strong>{{ solve_stats.avg_question_time }}</strong>
-          <span>문제당 평균 · 세트당 {{ solve_stats.avg_session_time }}</span>
+          <article>
+            <span>문제당 평균</span>
+            <strong>{{ solve_stats.avg_question_time }}</strong>
+          </article>
+          <article>
+            <span>문제 전체 평균</span>
+            <strong>{{ solve_stats.avg_session_time }}</strong>
+          </article>
         </div>
         <div class="mini-progress"><span style="width: {{ solve_stats.answer_rate }}%"></span></div>
       </article>
@@ -87,11 +93,16 @@
           <a href="/user/wrong-rate-detail/">상세 보기</a>
         </div>
         <div class="donut-layout">
-          <div class="donut-chart"><strong>38%</strong><span>취약 비율</span></div>
+          <div class="donut-chart"><strong>{{ type_wrong_stats.overall_rate }}%</strong><span>오답 비율</span></div>
           <ul>
-            <li><i class="danger"></i>시대별 38%</li>
-            <li><i class="warn"></i>유형별 42%</li>
-            <li><i class="good"></i>주제별 20%</li>
+            {% for item in type_wrong_stats.items %}
+              <li>
+                <i class="{% if forloop.counter == 1 %}danger{% elif forloop.counter == 2 %}warn{% else %}good{% endif %}"></i>
+                {{ item.label }} {{ item.rate }}%
+              </li>
+            {% empty %}
+              <li><i class="good"></i>기록 없음 0%</li>
+            {% endfor %}
           </ul>
         </div>
       </article>
@@ -115,55 +126,71 @@
     </section>
 
     <section class="bottom-grid">
-      <section class="panel plan-panel" aria-label="학습 계획">
-        <div class="panel-heading">
+      <section class="panel planner-panel" aria-label="학습 플래너">
+        <div class="panel-heading planner-heading">
           <div>
-            <span class="section-mark">01</span>
-            <h2>학습계획</h2>
+            <span class="section-mark"></span>
+            <h2>학습플래너</h2>
           </div>
-          <a href="#">전체 계획 보기</a>
+          <button class="planner-change" id="openPlanModal" type="button">학습일 변경</button>
         </div>
-        <div class="plan-list">
-          <article class="plan-item done"><i></i><div><strong>광복 전후 정치 변화 10문제</strong><span>완료 · 20분</span></div></article>
-          <article class="plan-item"><i></i><div><strong>취약 개념 복습</strong><span>오늘 추천 · 15분</span></div></article>
-          <article class="plan-item"><i></i><div><strong>오답노트 정리</strong><span>오늘 추천 · 10분</span></div></article>
-        </div>
-      </section>
 
-      <section class="panel calendar-panel" aria-label="학습 달력">
-        <div class="panel-heading">
-          <div>
-            <span class="section-mark">02</span>
-            <h2>달력</h2>
-          </div>
-          <a href="#">월간 보기</a>
-        </div>
-        <div class="calendar">
-          <div class="calendar-top">
-            <div>
-              <span class="calendar-month">2026. 06</span>
-              <strong>이번 달 학습 리듬</strong>
+        <div class="planner-board">
+          <section class="planner-calendar" aria-label="월간 학습 달력">
+            <div class="planner-month">
+              <button id="prevPlannerMonth" type="button" aria-label="이전 달">‹</button>
+              <strong id="plannerMonthLabel">2026년 06월</strong>
+              <button id="nextPlannerMonth" type="button" aria-label="다음 달">›</button>
             </div>
-            <div class="calendar-streak"><span>12</span>일 연속</div>
-          </div>
-          <div class="calendar-week labels"><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span><span>일</span></div>
-          <div class="calendar-week">
-            <span>10</span><span>11</span><span class="done">12<em>완료</em></span><span>13</span><span class="done">14<em>완료</em></span><span>15</span><span class="today">16<em>오늘</em></span>
-          </div>
-          <div class="calendar-week">
-            <span>17</span><span class="planned">18<em>예정</em></span><span>19</span><span class="planned">20<em>예정</em></span><span>21</span><span>22</span><span>23</span>
-          </div>
-          <div class="calendar-week">
-            <span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span>
-          </div>
-          <div class="calendar-legend" aria-label="달력 범례">
-            <span><i class="done-dot"></i>학습 완료</span>
-            <span><i class="planned-dot"></i>학습 예정</span>
-            <span><i class="today-dot"></i>오늘</span>
-          </div>
+            <div class="calendar-week labels"><span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span></div>
+            <div class="planner-calendar-grid" id="plannerCalendarGrid"></div>
+          </section>
+
+          <section class="planner-day" aria-label="선택 날짜 학습 일정">
+            <div class="planner-day-top">
+              <div>
+                <span id="plannerDayKicker">오늘의 계획</span>
+                <strong id="plannerDayLabel">06월 16일</strong>
+              </div>
+              <div class="planner-tabs" aria-label="보기 방식">
+                <button class="active" type="button">일별</button>
+                <button type="button">주별</button>
+                <button type="button">월별</button>
+              </div>
+            </div>
+
+            <div class="plan-list planner-lessons" id="plannerLessons"></div>
+          </section>
         </div>
       </section>
     </section>
+
+    <div class="planner-modal" id="plannerModal" hidden>
+      <section class="planner-dialog" role="dialog" aria-modal="true" aria-labelledby="plannerDialogTitle">
+        <button class="planner-close" id="closePlanModal" type="button" aria-label="닫기">×</button>
+        <header>
+          <h2 id="plannerDialogTitle">학습일 변경</h2>
+          <p>선택된 날짜의 학습일을 다른 날짜로 옮길 수 있습니다.</p>
+        </header>
+        <div class="planner-dialog-grid">
+          <article>
+            <span>STEP 1</span>
+            <strong>변경할 학습을 선택해 주세요</strong>
+            <label><input type="checkbox" checked /> 취약 개념 복습</label>
+            <label><input type="checkbox" /> 오답노트 정리</label>
+          </article>
+          <article>
+            <span>STEP 2</span>
+            <strong>변경할 날짜를 선택해 주세요</strong>
+            <input type="date" value="2026-06-17" />
+          </article>
+        </div>
+        <footer>
+          <button class="outline-button" id="cancelPlanModal" type="button">취소</button>
+          <button class="primary-button" type="button">저장</button>
+        </footer>
+      </section>
+    </div>
   </main>
 
   <script>
@@ -174,6 +201,145 @@
         image.src = image.dataset.fallbackSrc;
       });
     });
+
+    const plannerModal = document.getElementById("plannerModal");
+    const openPlanModal = document.getElementById("openPlanModal");
+    const closePlanModal = document.getElementById("closePlanModal");
+    const cancelPlanModal = document.getElementById("cancelPlanModal");
+    const plannerCalendarGrid = document.getElementById("plannerCalendarGrid");
+    const plannerMonthLabel = document.getElementById("plannerMonthLabel");
+    const prevPlannerMonth = document.getElementById("prevPlannerMonth");
+    const nextPlannerMonth = document.getElementById("nextPlannerMonth");
+    const plannerDayKicker = document.getElementById("plannerDayKicker");
+    const plannerDayLabel = document.getElementById("plannerDayLabel");
+    const plannerLessons = document.getElementById("plannerLessons");
+    let plannerDate = new Date(2026, 5, 1);
+    const todayKey = "2026-06-16";
+    let selectedPlannerKey = todayKey;
+    const plannerPlans = {
+      "2026-06-09": [
+        { title: "고려 정치 제도 복습", meta: "완료 · 개념 정리 · 15분", done: true },
+      ],
+      "2026-06-11": [
+        { title: "통일신라 문화 10문제", meta: "완료 · 문제 풀이 · 20분", done: true },
+      ],
+      "2026-06-16": [
+        { title: "광복 전후 정치 변화 10문제", meta: "완료 · 문제 풀이 · 20분", done: true },
+        { title: "취약 개념 복습", meta: "오늘 추천 · 고려 후기 제도 · 15분", done: false },
+        { title: "오답노트 정리", meta: "오답 기반 · 사료형 문제 · 10분", done: false },
+      ],
+      "2026-06-17": [
+        { title: "조선 후기 경제 흐름", meta: "예정 · 개념 정리 · 20분", done: false },
+        { title: "사료형 문제 10문항", meta: "예정 · 문제 풀이 · 15분", done: false },
+      ],
+      "2026-06-19": [
+        { title: "현대 정치 제도 복습", meta: "예정 · 취약 보완 · 15분", done: false },
+      ],
+    };
+    const completedKeys = new Set(["2026-06-09", "2026-06-11"]);
+    const plannedKeys = new Set(["2026-06-17", "2026-06-19"]);
+
+    const formatDateKey = (date) => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    };
+
+    const renderPlannerCalendar = () => {
+      const year = plannerDate.getFullYear();
+      const month = plannerDate.getMonth();
+      plannerMonthLabel.textContent = `${year}년 ${String(month + 1).padStart(2, "0")}월`;
+
+      const firstDate = new Date(year, month, 1);
+      const gridStart = new Date(year, month, 1 - firstDate.getDay());
+      const weeks = [];
+
+      for (let weekIndex = 0; weekIndex < 5; weekIndex += 1) {
+        const cells = [];
+        for (let dayIndex = 0; dayIndex < 7; dayIndex += 1) {
+          const cellDate = new Date(gridStart);
+          cellDate.setDate(gridStart.getDate() + weekIndex * 7 + dayIndex);
+          const key = formatDateKey(cellDate);
+          const classes = [];
+          if (cellDate.getMonth() !== month) classes.push("muted");
+          if (key === todayKey) classes.push("today");
+          if (key === selectedPlannerKey) classes.push("selected");
+          if (completedKeys.has(key)) classes.push("done");
+          if (plannedKeys.has(key)) classes.push("planned");
+          const label = key === todayKey ? "<em>오늘</em>" : completedKeys.has(key) ? "<em>완료</em>" : plannedKeys.has(key) ? "<em>예정</em>" : "";
+          cells.push(`<button type="button" class="${classes.join(" ")}" data-date="${key}">${cellDate.getDate()}${label}</button>`);
+        }
+        weeks.push(`<div class="calendar-week">${cells.join("")}</div>`);
+      }
+
+      plannerCalendarGrid.innerHTML = weeks.join("");
+      plannerCalendarGrid.querySelectorAll("[data-date]").forEach((button) => {
+        button.addEventListener("click", () => {
+          selectedPlannerKey = button.dataset.date;
+          const [yearValue, monthValue] = selectedPlannerKey.split("-").map(Number);
+          plannerDate = new Date(yearValue, monthValue - 1, 1);
+          renderPlannerCalendar();
+          renderPlannerLessons();
+        });
+      });
+    };
+
+    const renderPlannerLessons = () => {
+      const [yearValue, monthValue, dayValue] = selectedPlannerKey.split("-").map(Number);
+      const isToday = selectedPlannerKey === todayKey;
+      plannerDayKicker.textContent = isToday ? "오늘의 계획" : "선택한 날짜";
+      plannerDayLabel.textContent = `${String(monthValue).padStart(2, "0")}월 ${String(dayValue).padStart(2, "0")}일`;
+
+      const plans = plannerPlans[selectedPlannerKey] || [];
+      if (!plans.length) {
+        plannerLessons.innerHTML = `
+          <article class="plan-item empty">
+            <i></i>
+            <div><strong>등록된 학습 계획이 없습니다</strong><span>학습일 변경에서 새 일정을 연결해 주세요.</span></div>
+          </article>
+        `;
+        return;
+      }
+
+      plannerLessons.innerHTML = plans.map((plan, index) => `
+        <article class="plan-item${plan.done ? " done" : ""}" data-plan-index="${index}">
+          <i></i>
+          <div><strong>${plan.title}</strong><span>${plan.meta}</span></div>
+          <button type="button">삭제</button>
+        </article>
+      `).join("");
+
+      plannerLessons.querySelectorAll(".plan-item button").forEach((button) => {
+        button.addEventListener("click", () => {
+          const item = button.closest(".plan-item");
+          const index = Number(item.dataset.planIndex);
+          plannerPlans[selectedPlannerKey].splice(index, 1);
+          renderPlannerLessons();
+        });
+      });
+    };
+
+    const setPlannerModal = (isOpen) => {
+      plannerModal.hidden = !isOpen;
+      document.body.classList.toggle("modal-open", isOpen);
+    };
+    prevPlannerMonth.addEventListener("click", () => {
+      plannerDate = new Date(plannerDate.getFullYear(), plannerDate.getMonth() - 1, 1);
+      renderPlannerCalendar();
+    });
+    nextPlannerMonth.addEventListener("click", () => {
+      plannerDate = new Date(plannerDate.getFullYear(), plannerDate.getMonth() + 1, 1);
+      renderPlannerCalendar();
+    });
+    openPlanModal.addEventListener("click", () => setPlannerModal(true));
+    closePlanModal.addEventListener("click", () => setPlannerModal(false));
+    cancelPlanModal.addEventListener("click", () => setPlannerModal(false));
+    plannerModal.addEventListener("click", (event) => {
+      if (event.target === plannerModal) setPlannerModal(false);
+    });
+    renderPlannerCalendar();
+    renderPlannerLessons();
   </script>
 </body>
 </html>

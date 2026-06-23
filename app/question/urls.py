@@ -8,4 +8,5 @@ urlpatterns = [
     path("", views.question_create, name="create"),
     path("exam/", views.question_exam, name="exam"),
     path("result/", views.question_result, name="result"),
+    path("api/submit/", views.submit_question_result, name="submit_result"),
 ]
