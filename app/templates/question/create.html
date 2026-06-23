@@ -92,7 +92,9 @@
         <div>
           <button class="primary-button" id="createButton" type="button" style="color": yellow;
           >문제지 생성</button>
+          {% if request.user.is_authenticated %}
           <button class="outline-button" id="loadButton" type="button">문제 불러오기</button>
+          {% endif %}
         </div>
       </footer>
     </section>
@@ -152,16 +154,18 @@
       window.location.href = "/question/exam/";
     });
 
-    loadButton.addEventListener("click", () => {
-      const saved = localStorage.getItem("questionInProgress");
+    if (loadButton) {
+      loadButton.addEventListener("click", () => {
+        const saved = localStorage.getItem("questionInProgress");
 
-      if (!saved) {
-        alert("불러올 풀이 중 문제가 없습니다.");
-        return;
-      }
+        if (!saved) {
+          alert("불러올 풀이 중 문제가 없습니다.");
+          return;
+        }
 
-      window.location.href = "/question/exam/?resume=1";
-    });
+        window.location.href = "/question/exam/?resume=1";
+      });
+    }
   </script>
 </body>
 </html>

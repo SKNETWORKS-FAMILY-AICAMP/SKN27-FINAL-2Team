@@ -85,7 +85,8 @@ CREATE TABLE IF NOT EXISTS solve_sessions (
     elapsed_sec     INT             NULL,                   -- 총 소요 시간(초)
     status          VARCHAR(20)     NOT NULL DEFAULT 'in_progress',  -- 'in_progress' | 'completed'
     answer_rate     FLOAT           NULL,                   -- 정답률
-    total_score     INT             NULL                    -- 총 점수
+    total_score     INT             NULL,                   -- 총 점수
+    recorded_date   DATE            NOT NULL DEFAULT CURRENT_DATE  -- 기록 일시
 );
 
 -- 7. 문제별 풀이 기록
