@@ -34,7 +34,8 @@ CREATE TABLE IF NOT EXISTS questions (
     q_score             INT             NOT NULL,           -- 배점
     era                 VARCHAR(50)     NOT NULL,           -- 시대
     topic               VARCHAR(50)     NOT NULL,           -- 주제
-    question_type       VARCHAR(20)     NOT NULL,           -- 문제 유형
+    question_type       VARCHAR(50)     NOT NULL,           -- 대유형
+    question_subtype    VARCHAR(50)     NOT NULL DEFAULT U&'\BBF8\BD84\B958', -- 소유형
     content             TEXT            NOT NULL,           -- 발문
     passage             TEXT            NULL,               -- 자료/지문
     visual_note         TEXT            NULL,               -- 이미지/도표 설명

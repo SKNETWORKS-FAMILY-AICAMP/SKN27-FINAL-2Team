@@ -70,10 +70,12 @@
         </section>
 
         <aside class="side-panel" aria-label="문제풀이 상태">
+          {% if request.user.is_authenticated %}
           <section class="save-card">
             <button id="saveProgressButton" type="button">문제 저장</button>
             <p id="saveStatus">풀이 중인 문제를 저장할 수 있습니다.</p>
           </section>
+          {% endif %}
 
           <section class="timer-card">
             <span>남은 시간</span>
@@ -82,28 +84,7 @@
 
           <section class="number-card">
             <h2>문항 목록</h2>
-            <div class="number-grid" aria-label="문항 번호">
-              <button class="active" type="button" data-index="0">1</button>
-              <button type="button" data-index="1">2</button>
-              <button type="button" data-index="2">3</button>
-              <button type="button" data-index="3">4</button>
-              <button type="button" data-index="4">5</button>
-              <button type="button" data-index="5">6</button>
-              <button type="button" data-index="6">7</button>
-              <button type="button" data-index="7">8</button>
-              <button type="button" data-index="8">9</button>
-              <button type="button" data-index="9">10</button>
-              <button type="button" data-index="10">11</button>
-              <button type="button" data-index="11">12</button>
-              <button type="button" data-index="12">13</button>
-              <button type="button" data-index="13">14</button>
-              <button type="button" data-index="14">15</button>
-              <button type="button" data-index="15">16</button>
-              <button type="button" data-index="16">17</button>
-              <button type="button" data-index="17">18</button>
-              <button type="button" data-index="18">19</button>
-              <button type="button" data-index="19">20</button>
-            </div>
+            <div class="number-grid" id="numberGrid" aria-label="문항 번호"></div>
           </section>
         </aside>
       </div>
@@ -244,9 +225,11 @@
 
     const savedProgress = JSON.parse(localStorage.getItem("questionInProgress") || "null");
     const shouldResume = new URLSearchParams(window.location.search).get("resume") === "1";
-    const questions = shouldResume && savedProgress?.questions?.length ? savedProgress.questions : defaultQuestions;
-    let currentIndex = shouldResume && Number.isInteger(savedProgress?.currentIndex) ? savedProgress.currentIndex : 0;
-    const answers = shouldResume && savedProgress?.answers?.length ? savedProgress.answers : Array(questions.length).fill(null);
+    const savedCondition = savedProgress?.condition || JSON.parse(localStorage.getItem("questionGenerationCondition") || "null");
+    let sessionId = savedProgress?.sessionId || null;
+    let questions = [];
+    let currentIndex = 0;
+    let answers = [];
     const questionBadge = document.getElementById("questionBadge");
     const questionType = document.getElementById("questionType");
     const questionTitle = document.getElementById("questionTitle");
@@ -254,7 +237,8 @@
     const choiceList = document.getElementById("choiceList");
     const progressFill = document.getElementById("progressFill");
     const progressText = document.getElementById("progressText");
-    const numberButtons = [...document.querySelectorAll(".number-grid button")];
+    const numberGrid = document.getElementById("numberGrid");
+    let numberButtons = [];
     const prevButton = document.getElementById("prevButton");
     const nextButton = document.getElementById("nextButton");
     const submitButton = document.getElementById("submitButton");
@@ -264,9 +248,94 @@
     let remainingSeconds = shouldResume && Number.isInteger(savedProgress?.remainingSeconds) ? savedProgress.remainingSeconds : 20 * 60;
     let isTimeOver = false;
 
+    function getCookie(name) {
+      return document.cookie
+        .split(";")
+        .map((cookie) => cookie.trim())
+        .find((cookie) => cookie.startsWith(`${name}=`))
+        ?.split("=")[1] || "";
+    }
+
+    function conditionToRequest(condition) {
+      return {
+        eras: condition?.["시대"] || [],
+        topics: condition?.["주제"] || [],
+        difficulties: condition?.["난이도"] || [],
+        question_types: condition?.["대유형"] || [],
+        question_subtypes: condition?.["소유형"] || [],
+        count: Number(condition?.["문제 수"] || 10),
+      };
+    }
+
+    function toExamQuestion(question) {
+      const source = [question.passage, question.visual_note].filter(Boolean).join("\n\n");
+      return {
+        questionId: question.question_id,
+        type: question.question_subtype ? `${question.question_type} · ${question.question_subtype}` : question.question_type,
+        title: question.content,
+        source: source || `${question.era} · ${question.topic}`,
+        choices: question.choices.map((choice) => choice.content),
+        choiceIds: question.choices.map((choice) => choice.choice_id),
+      };
+    }
+
+    async function loadQuestions() {
+      if (shouldResume && savedProgress?.questions?.length) {
+        sessionId = savedProgress.sessionId || null;
+        questions = savedProgress.questions;
+        currentIndex = Number.isInteger(savedProgress.currentIndex) ? savedProgress.currentIndex : 0;
+        answers = savedProgress.answers?.length ? savedProgress.answers : Array(questions.length).fill(null);
+        return;
+      }
+
+      if (!savedCondition) {
+        questions = defaultQuestions;
+        answers = Array(questions.length).fill(null);
+        return;
+      }
+
+      try {
+        const response = await fetch("/question/api/start/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": getCookie("csrftoken") || "{{ csrf_token }}",
+          },
+          body: JSON.stringify(conditionToRequest(savedCondition)),
+        });
+        const payload = await response.json();
+
+        if (!response.ok) {
+          throw new Error(payload.error || "문제 생성에 실패했습니다.");
+        }
+
+        sessionId = payload.session_id;
+        questions = payload.questions.map(toExamQuestion);
+        answers = Array(questions.length).fill(null);
+        if (sessionId) {
+          localStorage.setItem("questionInProgress", JSON.stringify(currentSession()));
+        }
+      } catch (error) {
+        alert(error.message);
+        questions = defaultQuestions;
+        answers = Array(questions.length).fill(null);
+      }
+    }
+
+    function renderNumberButtons() {
+      numberGrid.innerHTML = questions.map((_, index) => (
+        `<button type="button" data-index="${index}">${index + 1}</button>`
+      )).join("");
+      numberButtons = [...numberGrid.querySelectorAll("button")];
+      numberButtons.forEach((button) => {
+        button.addEventListener("click", () => moveQuestion(Number(button.dataset.index)));
+      });
+    }
+
     function currentSession(status = "in_progress") {
       return {
-        condition: savedProgress?.condition || JSON.parse(localStorage.getItem("questionGenerationCondition") || "null"),
+        sessionId,
+        condition: savedCondition,
         questions,
         answers,
         currentIndex,
@@ -277,9 +346,11 @@
     }
 
     function saveProgress(showMessage = true) {
+      if (!sessionId) return;
+
       localStorage.setItem("questionInProgress", JSON.stringify(currentSession()));
 
-      if (showMessage) {
+      if (showMessage && saveStatus) {
         saveStatus.textContent = "현재 풀이 상태가 저장되었습니다.";
         saveStatus.classList.add("is-saved");
       }
@@ -290,7 +361,7 @@
         questions,
         answers,
         submittedAt: new Date().toISOString(),
-        condition: savedProgress?.condition || JSON.parse(localStorage.getItem("questionGenerationCondition") || "null"),
+        condition: savedCondition,
       }));
       localStorage.removeItem("questionInProgress");
       window.location.href = "/question/result/";
@@ -298,6 +369,7 @@
 
     function renderQuestion() {
       const question = questions[currentIndex];
+      if (!question) return;
       questionBadge.textContent = `문항 번호 ${currentIndex + 1}`;
       questionType.textContent = question.type;
       questionTitle.textContent = question.title;
@@ -315,7 +387,6 @@
       }).join("");
 
       numberButtons.forEach((button, index) => {
-        button.hidden = index >= questions.length;
         button.classList.toggle("active", index === currentIndex);
         button.classList.toggle("answered", answers[index] !== null);
       });
@@ -352,13 +423,9 @@
       numberButtons[currentIndex].classList.add("answered");
       finishExam();
     });
-    saveProgressButton.addEventListener("click", () => saveProgress(true));
-    numberButtons.forEach((button) => {
-      button.addEventListener("click", () => moveQuestion(Number(button.dataset.index)));
-    });
-
-    renderQuestion();
-
+    if (saveProgressButton) {
+      saveProgressButton.addEventListener("click", () => saveProgress(true));
+    }
     function renderTimer() {
       const minutes = String(Math.floor(remainingSeconds / 60)).padStart(2, "0");
       const seconds = String(remainingSeconds % 60).padStart(2, "0");
@@ -378,17 +445,23 @@
       finishExam();
     }
 
-    renderTimer();
-    const timerId = setInterval(() => {
-      remainingSeconds -= 1;
-      if (remainingSeconds <= 0) {
-        clearInterval(timerId);
-        remainingSeconds = 0;
-        finishExamByTime();
-        return;
-      }
+    async function initExam() {
+      await loadQuestions();
+      renderNumberButtons();
+      renderQuestion();
       renderTimer();
-    }, 1000);
+      setInterval(() => {
+        remainingSeconds -= 1;
+        if (remainingSeconds <= 0) {
+          remainingSeconds = 0;
+          finishExamByTime();
+          return;
+        }
+        renderTimer();
+      }, 1000);
+    }
+
+    initExam();
   </script>
 </body>
 </html>

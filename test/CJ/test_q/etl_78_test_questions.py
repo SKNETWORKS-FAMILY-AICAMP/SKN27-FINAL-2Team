@@ -46,6 +46,7 @@ QUESTION_PDF = DOCS_DIR / "78회+한국사_문제지(심화).pdf"
 ANSWER_PDF = DOCS_DIR / "78회+한국사_답지(심화).pdf"
 EXPLANATION_PDF = DOCS_DIR / "한국사능력검정시험 78회 심화 해설 한Pro.pdf"
 ALTER_SQL = ROOT_DIR / "storage" / "postgresql" / "schema" / "alter_questions_for_exam_assets.sql"
+SUBTYPE_ALTER_SQL = ROOT_DIR / "storage" / "postgresql" / "schema" / "alter_questions_for_question_subtype.sql"
 
 QUESTION_TYPES = [
     "역사 지식의 이해",
@@ -54,6 +55,14 @@ QUESTION_TYPES = [
     "역사 자료의 분석 및 해석",
     "역사 탐구의 설계 및 수행",
     "결론의 도출 및 평가",
+]
+
+QUESTION_SUBTYPES = [
+    "개념",
+    "인물",
+    "사료",
+    "연표",
+    "지역",
 ]
 
 ERA_VALUES = [
@@ -527,6 +536,7 @@ def apply_classification(records: list[dict[str, Any]], classification: dict[int
         record["era"] = item.get("era") or record["era"]
         record["topic"] = item.get("topic") or record["topic"]
         record["question_type"] = item.get("question_type") or record["question_type"]
+        record["question_subtype"] = item.get("question_subtype") or record["question_subtype"]
 
 
 def classify_records_with_openai(records: list[dict[str, Any]], limit: int | None = None) -> dict[int, dict[str, str]]:
@@ -549,6 +559,7 @@ def classify_records_with_openai(records: list[dict[str, Any]], limit: int | Non
     client = OpenAI()
     targets = records[:limit] if limit else records
     question_types = "\n".join(f"- {value}" for value in QUESTION_TYPES)
+    question_subtypes = "\n".join(f"- {value}" for value in QUESTION_SUBTYPES)
     eras = "\n".join(f"- {value}" for value in ERA_VALUES)
     topics = "\n".join(f"- {value}" for value in TOPIC_VALUES)
 
@@ -568,6 +579,9 @@ def classify_records_with_openai(records: list[dict[str, Any]], limit: int | Non
 허용 question_type:
 {question_types}
 
+허용 question_subtype:
+{question_subtypes}
+
 허용 era:
 {eras}
 
@@ -586,7 +600,8 @@ def classify_records_with_openai(records: list[dict[str, Any]], limit: int | Non
 {{
   "era": "허용 era 중 하나",
   "topic": "허용 topic 중 하나",
-  "question_type": "허용 question_type 중 하나"
+  "question_type": "허용 question_type 중 하나",
+  "question_subtype": "허용 question_subtype 중 하나"
 }}
 """
         try:
@@ -604,6 +619,11 @@ def classify_records_with_openai(records: list[dict[str, Any]], limit: int | Non
                     data.get("question_type"),
                     QUESTION_TYPES,
                     "역사 자료의 분석 및 해석",
+                ),
+                "question_subtype": normalize_allowed(
+                    data.get("question_subtype"),
+                    QUESTION_SUBTYPES,
+                    "개념",
                 ),
             }
             classification[q_no] = item
@@ -656,6 +676,7 @@ def build_seed_records(
             "era": "미분류",
             "topic": "미분류",
             "question_type": "미분류",
+            "question_subtype": "미분류",
             "content": content,
             "passage": passage,
             "visual_note": extracted.get("visual_note") or "",
@@ -697,19 +718,21 @@ def import_records_to_db(records: list[dict[str, Any]]) -> None:
         with conn, conn.cursor() as cur:
             if ALTER_SQL.exists():
                 cur.execute(ALTER_SQL.read_text(encoding="utf-8"))
+            if SUBTYPE_ALTER_SQL.exists():
+                cur.execute(SUBTYPE_ALTER_SQL.read_text(encoding="utf-8"))
 
             for record in records:
                 cur.execute(
                     """
                     INSERT INTO questions (
                         exam_round, exam_level, question_no,
-                        q_score, era, topic, question_type,
+                        q_score, era, topic, question_type, question_subtype,
                         content, passage, visual_note, question_image_path, parse_status,
                         answer_no, answer_explanation, core_concept
                     )
                     VALUES (
                         %(exam_round)s, %(exam_level)s, %(question_no)s,
-                        %(q_score)s, %(era)s, %(topic)s, %(question_type)s,
+                        %(q_score)s, %(era)s, %(topic)s, %(question_type)s, %(question_subtype)s,
                         %(content)s, %(passage)s, %(visual_note)s, %(question_image_path)s, %(parse_status)s,
                         %(answer_no)s, %(answer_explanation)s, %(core_concept)s
                     )
@@ -719,6 +742,7 @@ def import_records_to_db(records: list[dict[str, Any]]) -> None:
                         era = EXCLUDED.era,
                         topic = EXCLUDED.topic,
                         question_type = EXCLUDED.question_type,
+                        question_subtype = EXCLUDED.question_subtype,
                         content = EXCLUDED.content,
                         passage = EXCLUDED.passage,
                         visual_note = EXCLUDED.visual_note,

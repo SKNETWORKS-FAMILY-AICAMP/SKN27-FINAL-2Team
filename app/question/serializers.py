@@ -19,6 +19,7 @@ class QuestionData(serializers.Serializer):
     era = serializers.CharField()
     topic = serializers.CharField()
     question_type = serializers.CharField()
+    question_subtype = serializers.CharField()
     choices = ChoiceData(many=True)
 
 
@@ -34,8 +35,9 @@ class SavedQuestionData(QuestionData):
 class FilterOptionsResponse(serializers.Serializer):
     eras = serializers.ListField(child=serializers.CharField())
     topics = serializers.ListField(child=serializers.CharField())
-    scores = serializers.ListField(child=serializers.IntegerField())
+    difficulties = serializers.ListField(child=serializers.CharField())
     question_types = serializers.ListField(child=serializers.CharField())
+    question_subtypes = serializers.ListField(child=serializers.CharField())
     counts = serializers.ListField(child=serializers.IntegerField())
 
 
@@ -43,8 +45,13 @@ class FilterOptionsResponse(serializers.Serializer):
 class StartQuestionsRequest(serializers.Serializer):
     eras = serializers.ListField(child=serializers.CharField(), required=False, default=list)
     topics = serializers.ListField(child=serializers.CharField(), required=False, default=list)
-    scores = serializers.ListField(child=serializers.IntegerField(), required=False, default=list)
+    difficulties = serializers.ListField(
+        child=serializers.ChoiceField(choices=["상", "중", "하"]),
+        required=False,
+        default=list,
+    )
     question_types = serializers.ListField(child=serializers.CharField(), required=False, default=list)
+    question_subtypes = serializers.ListField(child=serializers.CharField(), required=False, default=list)
     count = serializers.IntegerField(min_value=1, default=20)
 
 
