@@ -27,7 +27,7 @@ class QuestionData(serializers.Serializer):
 class SavedQuestionData(QuestionData):
     selected_choice_id = serializers.IntegerField(allow_null=True)
     selected_choice_no = serializers.IntegerField(allow_null=True)
-    time_spent_sec = serializers.IntegerField(allow_null=True)
+    time_spent_ms = serializers.IntegerField(allow_null=True)
     is_answered = serializers.BooleanField()
 
 
@@ -93,7 +93,7 @@ class InProgressSessionsResponse(serializers.Serializer):
 class SaveAnswerRequest(serializers.Serializer):
     question_id = serializers.IntegerField()
     choice_id = serializers.IntegerField(allow_null=True, required=False, default=None)
-    time_spent_sec = serializers.IntegerField(allow_null=True, required=False, default=None)
+    time_spent_ms = serializers.IntegerField(allow_null=True, required=False, default=None)
     elapsed_sec = serializers.IntegerField(allow_null=True, required=False, default=None)
 
 
@@ -103,5 +103,6 @@ class SaveAnswerResponse(serializers.Serializer):
     question_id = serializers.IntegerField()
     selected_choice_id = serializers.IntegerField(allow_null=True)
     selected_choice_no = serializers.IntegerField(allow_null=True)
+    time_spent_ms = serializers.IntegerField(allow_null=True)
     elapsed_sec = serializers.IntegerField(allow_null=True)
     is_answered = serializers.BooleanField()

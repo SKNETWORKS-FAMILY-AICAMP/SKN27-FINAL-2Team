@@ -320,7 +320,7 @@
       sessionId = payload.session_id;
       questions = payload.questions.map(toExamQuestion);
       answers = payload.questions.map((question) => question.selected_choice_no || null);
-      questionTimeSpent = payload.questions.map((question) => question.time_spent_sec || 0);
+      questionTimeSpent = payload.questions.map((question) => question.time_spent_ms || 0);
       currentIndex = answers.findIndex((answer) => answer === null);
       if (currentIndex < 0) currentIndex = 0;
       totalExamSeconds = secondsByQuestionCount(payload.total_count || questions.length);
@@ -431,9 +431,9 @@
     }
 
     function currentQuestionTimeSpent() {
-      const savedSeconds = questionTimeSpent[currentIndex] || 0;
-      const currentSeconds = Math.max(Math.floor((Date.now() - currentQuestionStartedAt) / 1000), 0);
-      return savedSeconds + currentSeconds;
+      const savedMs = questionTimeSpent[currentIndex] || 0;
+      const currentMs = Math.max(Date.now() - currentQuestionStartedAt, 0);
+      return savedMs + currentMs;
     }
 
     function commitCurrentQuestionTime() {
@@ -465,7 +465,7 @@
 
       const selectedNo = answers[currentIndex];
       const choiceId = selectedNo ? question.choiceIds[selectedNo - 1] : null;
-      const timeSpentSec = commitCurrentQuestionTime();
+      const timeSpentMs = commitCurrentQuestionTime();
       localStorage.setItem("questionInProgress", JSON.stringify(currentSession()));
 
       if (showMessage && saveStatus) {
@@ -483,7 +483,7 @@
         body: JSON.stringify({
           question_id: question.questionId,
           choice_id: choiceId,
-          time_spent_sec: timeSpentSec,
+          time_spent_ms: timeSpentMs,
           elapsed_sec: elapsedSeconds(),
         }),
       });

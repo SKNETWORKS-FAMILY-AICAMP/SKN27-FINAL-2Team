@@ -148,7 +148,7 @@ def _serialize_session_questions(records):
             "choices": choices,
             "selected_choice_id": selected_choice_id,
             "selected_choice_no": record.selected_no,
-            "time_spent_sec": record.time_spent_sec,
+            "time_spent_ms": record.time_spent_ms,
             "is_answered": record.selected_no is not None,
         })
     return serialized_questions
@@ -490,8 +490,8 @@ def question_save_answer(request, session_id):
 
     record.selected_no = selected_choice_no
     record.is_correct = is_correct
-    record.time_spent_sec = data["time_spent_sec"]
-    record.save(update_fields=["selected_no", "is_correct", "time_spent_sec"])
+    record.time_spent_ms = data["time_spent_ms"]
+    record.save(update_fields=["selected_no", "is_correct", "time_spent_ms"])
 
     if data["elapsed_sec"] is not None:
         session.elapsed_sec = data["elapsed_sec"]
@@ -502,6 +502,7 @@ def question_save_answer(request, session_id):
         "question_id": question_id,
         "selected_choice_id": selected_choice_id,
         "selected_choice_no": selected_choice_no,
+        "time_spent_ms": record.time_spent_ms,
         "elapsed_sec": session.elapsed_sec,
         "is_answered": selected_choice_no is not None,
     })
