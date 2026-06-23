@@ -1,5 +1,5 @@
 from analytics.models import NoteMypage
-from analytics.service.analystic import analytics_summary
+from analytics.service.analytics import analytics_summary
 from analytics.service.studyplan import get_study_plan_info
 
 
