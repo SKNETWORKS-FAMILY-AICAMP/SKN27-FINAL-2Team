@@ -10,13 +10,13 @@ from rest_framework.response import Response
 
 from .models import QuestionOptions, Questions, SolveRecords, SolveSessions
 from .serializers import (
-    InProgressSessionsResponseSerializer,
-    QuestionAnswerRequestSerializer,
-    QuestionAnswerResponseSerializer,
-    QuestionFiltersResponseSerializer,
-    QuestionSessionResponseSerializer,
-    QuestionStartRequestSerializer,
-    QuestionStartResponseSerializer,
+    FilterOptionsResponse,
+    InProgressSessionsResponse,
+    SaveAnswerRequest,
+    SaveAnswerResponse,
+    SavedSessionResponse,
+    StartQuestionsRequest,
+    StartQuestionsResponse,
 )
 
 
@@ -170,7 +170,7 @@ def question_filters(request):
     if total_count and not counts:
         counts = [total_count]
 
-    serializer = QuestionFiltersResponseSerializer({
+    serializer = FilterOptionsResponse({
         "eras": _distinct_values(qs, "era"),
         "topics": _distinct_values(qs, "topic"),
         "scores": list(qs.values_list("q_score", flat=True).distinct().order_by("q_score")),
@@ -184,7 +184,7 @@ def question_filters(request):
 # 선택한 조건으로 문제를 생성한다.
 # 로그인 사용자는 풀이 세션을 DB에 저장하고, 비로그인 사용자는 오늘의 고정 10문항만 반환한다.
 def question_start(request):
-    req_serializer = QuestionStartRequestSerializer(data=request.data)
+    req_serializer = StartQuestionsRequest(data=request.data)
     if not req_serializer.is_valid():
         return Response(req_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -243,7 +243,7 @@ def question_start(request):
             for question in questions
         ])
 
-    serializer = QuestionStartResponseSerializer({
+    serializer = StartQuestionsResponse({
         "session_id": session.session_id if session else None,
         "total_count": count,
         "is_saved": session is not None,
@@ -290,7 +290,7 @@ def question_in_progress_sessions(request):
         )
     }
 
-    serializer = InProgressSessionsResponseSerializer({
+    serializer = InProgressSessionsResponse({
         "sessions": [
             {
                 "session_id": session.session_id,
@@ -333,7 +333,7 @@ def question_session(request, session_id):
         .select_related("question")
         .order_by("record_id")
     )
-    serializer = QuestionSessionResponseSerializer({
+    serializer = SavedSessionResponse({
         "session_id": session.session_id,
         "session_type": session.session_type,
         "total_count": session.total_count,
@@ -355,7 +355,7 @@ def question_save_answer(request, session_id):
             status=status.HTTP_401_UNAUTHORIZED,
         )
 
-    req_serializer = QuestionAnswerRequestSerializer(data=request.data)
+    req_serializer = SaveAnswerRequest(data=request.data)
     if not req_serializer.is_valid():
         return Response(req_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -415,7 +415,7 @@ def question_save_answer(request, session_id):
     record.time_spent_sec = data["time_spent_sec"]
     record.save(update_fields=["selected_no", "is_correct", "time_spent_sec"])
 
-    serializer = QuestionAnswerResponseSerializer({
+    serializer = SaveAnswerResponse({
         "session_id": session.session_id,
         "question_id": question_id,
         "selected_choice_id": selected_choice_id,
