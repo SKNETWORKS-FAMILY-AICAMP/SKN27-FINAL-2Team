@@ -512,6 +512,7 @@ def _build_mypage_type_wrong_stats(user):
     return {
         "overall_rate": max(0, min(100, overall_rate)),
         "items": visible_items,
+        "has_records": total_count > 0,
     }
 
 

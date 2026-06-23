@@ -132,13 +132,18 @@ ollama serve
 .\.venv\Scripts\python.exe test\HS\run_concept_chat.py "전시과 설명해줘" --processed-dir storage\postgre\processed
 ```
 
-`rag_prototype/config.py`의 `RagPaths`만 바꾸면 나중에 `ai/rag` 또는 `app/chatbot`으로 옮겨도 검색 대상 경로를 쉽게 교체할 수 있습니다.
+운영 RAG 모듈은 `app/chatbot/rag`에 있고, 이 폴더에는 실행 확인용 스크립트만 남깁니다. 검색 대상 경로는 `app/chatbot/rag/rag_prototype/config.py`의 `RagPaths`에서 관리합니다.
 
 ## 구성
 
 ```text
 test/HS/
   run_concept_chat.py
+  run_pgvector_rag.py
+
+app/chatbot/rag/
+  llm_answer_generator.py
+  pgvector_retriever.py
   rag_prototype/
     config.py
     retriever.py
@@ -153,5 +158,5 @@ test/HS/
 2. pgvector 임베딩 검색 연결
 3. LLM 답변 생성기 연결
 4. 문제풀이 기록 기반 context 추가
-5. app/chatbot API로 이동
+5. app/chatbot API 연동 상태 유지
 ```

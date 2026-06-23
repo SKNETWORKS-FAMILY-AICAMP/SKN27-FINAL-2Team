@@ -93,16 +93,21 @@
           <a href="/user/wrong-rate-detail/">상세 보기</a>
         </div>
         <div class="donut-layout">
-          <div class="donut-chart"><strong>{{ type_wrong_stats.overall_rate }}%</strong><span>오답 비율</span></div>
+          <div class="donut-chart{% if not type_wrong_stats.has_records %} is-empty{% endif %}">
+            <strong>{{ type_wrong_stats.overall_rate }}%</strong>
+            <span>{% if type_wrong_stats.has_records %}오답 비율{% else %}기록 없음{% endif %}</span>
+          </div>
           <ul>
-            {% for item in type_wrong_stats.items %}
-              <li>
-                <i class="{% if forloop.counter == 1 %}danger{% elif forloop.counter == 2 %}warn{% else %}good{% endif %}"></i>
-                {{ item.label }} {{ item.rate }}%
-              </li>
-            {% empty %}
-              <li><i class="good"></i>기록 없음 0%</li>
-            {% endfor %}
+            {% if type_wrong_stats.has_records %}
+              {% for item in type_wrong_stats.items %}
+                <li>
+                  <i class="{% if forloop.counter == 1 %}danger{% elif forloop.counter == 2 %}warn{% else %}good{% endif %}"></i>
+                  {{ item.label }} {{ item.rate }}%
+                </li>
+              {% endfor %}
+            {% else %}
+              <li class="empty-state">풀이 기록 없음</li>
+            {% endif %}
           </ul>
         </div>
       </article>
@@ -343,4 +348,3 @@
   </script>
 </body>
 </html>
-

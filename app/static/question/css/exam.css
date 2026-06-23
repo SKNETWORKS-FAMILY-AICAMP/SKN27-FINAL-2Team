@@ -1,7 +1,75 @@
 @import url("/static/diagnosis/css/exam.css");
 
+html,
+body {
+  min-height: 100%;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
+
 .side-panel {
-  grid-template-rows: auto auto 1fr;
+  grid-template-rows: auto auto auto 1fr;
+}
+
+.exit-top-button {
+  justify-self: stretch;
+  width: 100%;
+  height: 44px !important;
+  border: 0 !important;
+  border-radius: 8px !important;
+  background: #2f241b !important;
+  color: #fff !important;
+  font-weight: 900 !important;
+  cursor: pointer;
+}
+
+.site-header .brand,
+.site-header .site-brand,
+.site-header .brand img,
+.site-header .site-brand img {
+  min-height: 0 !important;
+}
+
+.exam-page {
+  display: block !important;
+  height: auto !important;
+  min-height: calc(100vh - 72px) !important;
+  padding-bottom: 56px !important;
+  overflow: visible !important;
+}
+
+.exam-shell {
+  display: block !important;
+  height: auto !important;
+  min-height: 0 !important;
+}
+
+.exam-header {
+  margin-bottom: 16px;
+}
+
+.exam-layout,
+.question-panel,
+.question-card {
+  min-height: 0;
+}
+
+.question-card {
+  overflow: visible;
+}
+
+.question-panel {
+  display: flex !important;
+  flex-direction: column;
+}
+
+.question-actions {
+  flex-shrink: 0;
+  margin-top: 14px;
+}
+
+.number-card {
+  min-height: 0;
 }
 
 .save-card {
@@ -33,4 +101,35 @@
 
 .save-card p.is-saved {
   color: var(--green);
+}
+
+.save-card p.is-error {
+  color: #c2410c;
+}
+
+@media (min-width: 901px) {
+  .exam-page {
+    display: block !important;
+    height: auto !important;
+    min-height: calc(100vh - 72px) !important;
+    padding-top: 18px;
+    padding-bottom: 72px !important;
+    overflow: visible !important;
+  }
+
+  .exam-shell {
+    display: block !important;
+    height: auto !important;
+    min-height: 0 !important;
+  }
+
+  .exam-layout {
+    align-items: start;
+  }
+
+  .side-panel {
+    align-self: start;
+    position: sticky;
+    top: 90px;
+  }
 }

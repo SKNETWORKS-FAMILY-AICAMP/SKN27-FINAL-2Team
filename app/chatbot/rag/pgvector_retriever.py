@@ -11,10 +11,10 @@ from dotenv import load_dotenv
 from openai import OpenAI
 from psycopg2.extras import RealDictCursor
 
-from rag_prototype.retriever import expand_query_tokens, tokenize
+from .rag_prototype.retriever import expand_query_tokens, tokenize
 
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
 IMAGE_QUERY_TERMS = ("이미지", "사진", "그림", "유물", "유적", "자료", "찾아줘", "보여줘", "조회")
 IMAGE_TITLE_IGNORE_TERMS = set(IMAGE_QUERY_TERMS) | {"시대", "대표", "관련", "설명"}
 TITLE_EXPANSIONS = {
@@ -54,12 +54,32 @@ KING_TOPIC_EXPANSIONS = {
         "칠정산",
         "측우기",
         "장영실",
+        "앙부일구",
+        "자격루",
+        "혼천의",
+        "천문",
+        "과학기술",
         "4군",
         "6진",
         "대마도",
         "공법",
         "의정부서사제",
         "세종실록지리지",
+    ),
+}
+SPECIAL_TOPIC_EXPANSIONS = {
+    "장영실": (
+        "장영실",
+        "앙부일구",
+        "자격루",
+        "측우기",
+        "혼천의",
+        "세종대",
+        "세종",
+        "천문",
+        "과학기술",
+        "해시계",
+        "물시계",
     ),
 }
 LOW_PRIORITY_PERSON_TOPICS = ("풍수", "왕릉", "영릉", "논의")
@@ -95,11 +115,26 @@ def is_person_overview_query(question: str, king_entity: dict[str, Any] | None) 
     return alias_only or any(term in question for term in PERSON_OVERVIEW_TERMS)
 
 
-def build_keyword_question(question: str, king_entity: dict[str, Any] | None) -> str:
+def detect_special_topic_terms(question: str) -> tuple[str, ...]:
+    compact_question = normalize_compact(question)
+    terms: list[str] = []
+    for trigger, expansions in SPECIAL_TOPIC_EXPANSIONS.items():
+        if normalize_compact(trigger) in compact_question:
+            terms.extend(expansions)
+    return tuple(dict.fromkeys(terms))
+
+
+def build_keyword_question(
+    question: str,
+    king_entity: dict[str, Any] | None,
+    extra_terms: tuple[str, ...] = (),
+) -> str:
     if not king_entity:
-        return question
+        terms = [question, *extra_terms]
+        return " ".join(dict.fromkeys(term for term in terms if term))
     terms = [question, king_entity["display_name"], *king_entity["aliases"]]
     terms.extend(KING_TOPIC_EXPANSIONS.get(king_entity["entity_id"], ()))
+    terms.extend(extra_terms)
     return " ".join(dict.fromkeys(term for term in terms if term))
 
 
@@ -173,9 +208,15 @@ def compact_text(text: str, max_length: int = 260) -> str:
     return value[: max_length - 1].rstrip() + "..."
 
 
-def rerank_person_overview_rows(rows: list[dict[str, Any]], king_entity: dict[str, Any]) -> list[dict[str, Any]]:
+def rerank_person_overview_rows(
+    rows: list[dict[str, Any]],
+    king_entity: dict[str, Any],
+    focus_terms: tuple[str, ...] = (),
+) -> list[dict[str, Any]]:
     topic_terms = KING_TOPIC_EXPANSIONS.get(king_entity["entity_id"], ())
     aliases = king_entity["aliases"]
+    broad_focus_terms = {"세종", "세종대", "조선", "천문", "과학기술"}
+    strong_focus_terms = tuple(term for term in focus_terms if term not in broad_focus_terms)
 
     def adjusted_score(row: dict[str, Any]) -> float:
         title = row.get("title") or ""
@@ -185,6 +226,15 @@ def rerank_person_overview_rows(rows: list[dict[str, Any]], king_entity: dict[st
         topic_hit = any(term in combined for term in topic_terms)
         alias_hit = any(alias in combined for alias in aliases)
         title_topic_hit = any(term in title for term in topic_terms)
+        focus_hit = any(term in combined for term in strong_focus_terms)
+        title_focus_hit = any(term in title for term in strong_focus_terms)
+
+        if title_focus_hit:
+            score += 12.0
+        elif focus_hit:
+            score += 8.0
+        elif strong_focus_terms:
+            score -= 4.0
 
         if title_topic_hit:
             score += 8.0
@@ -242,8 +292,13 @@ class PgVectorHybridRetriever:
         embedding = vector_literal(embed_query(question, self.model, self.dimensions))
         image_query = is_image_query(question)
         king_entity = detect_king_query(question)
+        special_topic_terms = detect_special_topic_terms(question)
         person_overview_query = is_person_overview_query(question, king_entity)
-        keyword_question = build_keyword_question(question, king_entity if person_overview_query else None)
+        keyword_question = build_keyword_question(
+            question,
+            king_entity if person_overview_query else None,
+            special_topic_terms,
+        )
         overview_query = any(term in question for term in OVERVIEW_TERMS)
         joseon_early_politics = wants_joseon_early_politics(question)
         title_tokens = image_title_tokens(question) if image_query else []
@@ -275,7 +330,28 @@ class PgVectorHybridRetriever:
                     f"%{king_entity['posthumous_name']}%",
                 ]
             )
+            for term in special_topic_terms:
+                king_clauses.extend(
+                    [
+                        "title ILIKE %s",
+                        "chunk_text ILIKE %s",
+                        "metadata::text ILIKE %s",
+                    ]
+                )
+                params.extend([f"%{term}%", f"%{term}%", f"%{term}%"])
             where_parts.append("(" + " OR ".join(king_clauses) + ")")
+        elif special_topic_terms:
+            special_clauses = []
+            for term in special_topic_terms:
+                special_clauses.extend(
+                    [
+                        "title ILIKE %s",
+                        "chunk_text ILIKE %s",
+                        "metadata::text ILIKE %s",
+                    ]
+                )
+                params.extend([f"%{term}%", f"%{term}%", f"%{term}%"])
+            where_parts.append("(" + " OR ".join(special_clauses) + ")")
         elif joseon_early_politics:
             where_parts.append(
                 """
@@ -445,7 +521,7 @@ class PgVectorHybridRetriever:
                 rows = cur.fetchall()
 
         if person_overview_query and king_entity:
-            rows = rerank_person_overview_rows(list(rows), king_entity)[:top_k]
+            rows = rerank_person_overview_rows(list(rows), king_entity, special_topic_terms)[:top_k]
         else:
             rows = rows[:top_k]
 

@@ -1,17 +1,10 @@
 from __future__ import annotations
 
-import sys
-from pathlib import Path
 from typing import Any
 
-
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
-HS_RAG_DIR = PROJECT_ROOT / "test" / "HS"
-if str(HS_RAG_DIR) not in sys.path:
-    sys.path.insert(0, str(HS_RAG_DIR))
-
-from llm_answer_generator import LLMAnswerGenerator  # noqa: E402
-from pgvector_retriever import PgVectorHybridRetriever, result_to_payload  # noqa: E402
+from .graph_service import build_graph_context
+from .rag.llm_answer_generator import LLMAnswerGenerator
+from .rag.pgvector_retriever import PgVectorHybridRetriever, result_to_payload
 
 
 SUPPORTED_INTENTS = {"concept", "question", "image", "chat", "casual"}
@@ -53,6 +46,7 @@ def no_rag_answer(question: str, intent: str) -> dict[str, Any]:
         "not_found": intent not in {"chat", "casual"},
         "llm": None,
         "sources": [],
+        "graph_context": None,
     }
 
 
@@ -77,7 +71,7 @@ def has_enough_evidence(results: list[Any], intent: str) -> bool:
     return False
 
 
-def not_found_answer(question: str, intent: str) -> dict[str, Any]:
+def not_found_answer(question: str, intent: str, graph_context: dict[str, Any] | None = None) -> dict[str, Any]:
     return {
         "question": question,
         "mode": "auto",
@@ -88,7 +82,16 @@ def not_found_answer(question: str, intent: str) -> dict[str, Any]:
         "not_found": True,
         "llm": None,
         "sources": [],
+        "graph_context": graph_context,
     }
+
+
+def build_enriched_question(question: str, graph_context: dict[str, Any]) -> str:
+    keywords = graph_context.get("keywords") or []
+    if not keywords:
+        return question
+    keyword_text = " ".join(str(keyword) for keyword in keywords[:24] if keyword)
+    return f"{question} {keyword_text}".strip()
 
 
 def is_insufficient_structured_answer(answer: dict[str, Any] | None) -> bool:
@@ -129,12 +132,15 @@ def build_history_rag_answer(
     elif intent == "concept":
         answer_format = "structured"
 
+    graph_context = build_graph_context(question, limit=8)
+    search_question = build_enriched_question(question, graph_context)
+
     retriever = PgVectorHybridRetriever()
-    results = retriever.search(question, top_k=top_k)
+    results = retriever.search(search_question, top_k=max(top_k, 8 if graph_context.get("keywords") else top_k))
     sources = [result_to_payload(result) for result in results]
 
     if not has_enough_evidence(results, intent):
-        return not_found_answer(question, intent)
+        return not_found_answer(question, intent, graph_context)
 
     generator = LLMAnswerGenerator.from_env()
     if answer_format == "structured":
@@ -144,7 +150,7 @@ def build_history_rag_answer(
             follow_up=follow_up or mode == "question",
         )
         if is_insufficient_structured_answer(structured_answer):
-            return not_found_answer(question, intent)
+            return not_found_answer(question, intent, graph_context)
         answer = None
     else:
         structured_answer = None
@@ -155,7 +161,7 @@ def build_history_rag_answer(
             follow_up=follow_up or mode == "question",
         )
         if is_insufficient_text_answer(answer):
-            return not_found_answer(question, intent)
+            return not_found_answer(question, intent, graph_context)
 
     return {
         "question": question,
@@ -171,4 +177,5 @@ def build_history_rag_answer(
             "temperature": generator.config.temperature,
         },
         "sources": sources,
+        "graph_context": graph_context,
     }

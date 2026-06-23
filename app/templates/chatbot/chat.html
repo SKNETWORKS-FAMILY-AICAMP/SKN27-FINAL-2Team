@@ -53,7 +53,7 @@
           <form class="composer" id="chatForm">
             {% csrf_token %}
             <div class="composer-box">
-              <button class="composer-plus" type="button" aria-label="추가 옵션">+</button>
+              <button class="problem-picker-trigger" id="problemPickerButton" type="button">문제 선택</button>
               <textarea class="question-input" id="questionInput" rows="1" placeholder="한국사 개념, 문제 질문, 학습 대화를 입력해 주세요."></textarea>
               <button class="send" id="sendButton" type="submit">↑</button>
             </div>
@@ -65,6 +65,25 @@
 
   </main>
 
+  <div class="problem-picker-modal" id="problemPickerModal" hidden>
+    <button class="problem-picker-backdrop" id="problemPickerBackdrop" type="button" aria-label="문제 선택 닫기"></button>
+    <section class="problem-picker-dialog" role="dialog" aria-modal="true" aria-labelledby="problemPickerTitle">
+      <header class="problem-picker-head">
+        <div>
+          <span>solved-problems</span>
+          <h2 id="problemPickerTitle">풀었던 문제 선택</h2>
+        </div>
+        <button class="problem-picker-close" id="problemPickerClose" type="button" aria-label="닫기">×</button>
+      </header>
+      <label class="problem-picker-search">
+        <span>문제 검색</span>
+        <input id="problemPickerSearch" type="search" placeholder="시대, 주제, 문제 내용 검색" />
+      </label>
+      <div class="problem-picker-status" id="problemPickerStatus">문제 목록을 불러오는 중입니다.</div>
+      <div class="problem-picker-list" id="problemPickerList" aria-label="풀었던 문제 목록"></div>
+    </section>
+  </div>
+
   <script>
     const chatStream = document.getElementById("chatStream");
     const form = document.getElementById("chatForm");
@@ -74,10 +93,19 @@
     const sessionList = document.getElementById("sessionList");
     const newSessionButton = document.getElementById("newSessionButton");
     const sessionSearchInput = document.getElementById("sessionSearchInput");
+    const problemPickerButton = document.getElementById("problemPickerButton");
+    const problemPickerModal = document.getElementById("problemPickerModal");
+    const problemPickerBackdrop = document.getElementById("problemPickerBackdrop");
+    const problemPickerClose = document.getElementById("problemPickerClose");
+    const problemPickerSearch = document.getElementById("problemPickerSearch");
+    const problemPickerStatus = document.getElementById("problemPickerStatus");
+    const problemPickerList = document.getElementById("problemPickerList");
     const STORAGE_KEY = "himate_chat_sessions";
     let mode = "auto";
     let sessions = loadSessions().filter((session) => Array.isArray(session.messages) && session.messages.length > 0);
     let activeSessionId = createSession("새 대화").id;
+    let solvedProblems = [];
+    let solvedProblemsLoaded = false;
 
     saveSessions();
     renderSessionList();
@@ -93,6 +121,16 @@
     });
 
     sessionSearchInput.addEventListener("input", renderSessionList);
+    problemPickerButton.addEventListener("click", openProblemPicker);
+    problemPickerBackdrop.addEventListener("click", closeProblemPicker);
+    problemPickerClose.addEventListener("click", closeProblemPicker);
+    problemPickerSearch.addEventListener("input", renderProblemPickerList);
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && !problemPickerModal.hidden) {
+        closeProblemPicker();
+      }
+    });
 
     input.addEventListener("input", () => {
       input.style.height = "auto";
@@ -217,6 +255,110 @@
         return "좋습니다. 학습 상담은 대화형으로 도와드릴게요. 현재 목표 급수, 시험일까지 남은 기간, 하루 공부 가능 시간을 알려주시면 한국사 공부 순서를 같이 잡아드리겠습니다.";
       }
       return "안녕하세요. 한국사 개념 정리, 문제 해설, 이미지 자료 조회까지 편하게 물어보세요.";
+    }
+
+    async function openProblemPicker() {
+      problemPickerModal.hidden = false;
+      problemPickerSearch.value = "";
+      problemPickerSearch.focus();
+      if (!solvedProblemsLoaded) {
+        await loadSolvedProblems();
+      } else {
+        renderProblemPickerList();
+      }
+    }
+
+    function closeProblemPicker() {
+      problemPickerModal.hidden = true;
+      input.focus();
+    }
+
+    async function loadSolvedProblems() {
+      problemPickerStatus.textContent = "문제 목록을 불러오는 중입니다.";
+      problemPickerList.innerHTML = "";
+      try {
+        const response = await fetch("{% url 'chatbot:solved_problem_options_api' %}", {
+          headers: { "X-CSRFToken": csrfToken },
+        });
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.error || "문제 목록을 불러오지 못했습니다.");
+        }
+        solvedProblems = Array.isArray(data.problems) ? data.problems : [];
+        solvedProblemsLoaded = true;
+        renderProblemPickerList();
+      } catch (error) {
+        problemPickerStatus.textContent = error.message;
+      }
+    }
+
+    function renderProblemPickerList() {
+      const keyword = problemPickerSearch.value.trim().toLowerCase();
+      const filtered = keyword
+        ? solvedProblems.filter((problem) => {
+            const text = [
+              problem.content,
+              problem.era,
+              problem.topic,
+              problem.question_type,
+              problem.core_concept,
+              problem.options?.map((option) => option.content).join(" "),
+            ].join(" ").toLowerCase();
+            return text.includes(keyword);
+          })
+        : solvedProblems;
+
+      if (!solvedProblems.length) {
+        problemPickerStatus.textContent = "아직 풀었던 문제가 없습니다.";
+        problemPickerList.innerHTML = "";
+        return;
+      }
+
+      problemPickerStatus.textContent = `${filtered.length}개 문제`;
+      problemPickerList.innerHTML = filtered.map((problem) => `
+        <article class="problem-picker-item">
+          <button type="button" data-record-id="${escapeHtml(problem.record_id)}">
+            <span class="problem-picker-meta">
+              Session #${escapeHtml(problem.session_id)} · ${escapeHtml(problem.number)}번 · ${escapeHtml(problem.era || "-")} · ${escapeHtml(problem.topic || "-")}
+            </span>
+            <strong>${escapeHtml(problem.content || "문제 내용 없음")}</strong>
+            <span class="problem-picker-result ${problem.is_correct ? "correct" : "wrong"}">
+              ${problem.is_correct ? "정답" : "오답"} · 내 답 ${escapeHtml(answerLabel(problem.selected_no))} · 정답 ${escapeHtml(answerLabel(problem.answer_no))}
+            </span>
+          </button>
+        </article>
+      `).join("") || `<p class="problem-picker-empty">검색 결과가 없습니다.</p>`;
+
+      problemPickerList.querySelectorAll("button[data-record-id]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const problem = solvedProblems.find((item) => String(item.record_id) === String(button.dataset.recordId));
+          if (problem) selectProblemForChat(problem);
+        });
+      });
+    }
+
+    function answerLabel(value) {
+      return value ? `${value}번` : "미응답";
+    }
+
+    function selectProblemForChat(problem) {
+      const options = (problem.options || [])
+        .map((option) => `${option.choice_no}. ${option.content}`)
+        .join("\n");
+      const context = [
+        "선택한 문제를 바탕으로 설명해줘.",
+        "",
+        `[문제] ${problem.content || ""}`,
+        options ? `[보기]\n${options}` : "",
+        `[내 답] ${answerLabel(problem.selected_no)}`,
+        `[정답] ${answerLabel(problem.answer_no)}`,
+        `[분류] ${problem.era || "-"} / ${problem.topic || "-"} / ${problem.question_type || "-"}`,
+      ].filter(Boolean).join("\n");
+
+      input.value = context;
+      input.style.height = "auto";
+      input.style.height = Math.min(input.scrollHeight, 120) + "px";
+      closeProblemPicker();
     }
 
     function appendWelcomeMessage() {
@@ -456,16 +598,22 @@
       const sourceItems = sourceTitles.length
         ? sourceTitles.map((title) => `<li>${escapeHtml(title)}</li>`).join("")
         : sources.slice(0, 3).map((source) => `<li>${escapeHtml(source.title)}</li>`).join("");
+      const examPoints = (answer.exam_points || []).filter((point) => String(point || "").trim());
+      const examSection = examPoints.length
+        ? `
+          <section class="exam">
+            <h2>한능검 포인트</h2>
+            <ul>${examPoints.map((point) => `<li>${escapeHtml(point)}</li>`).join("")}</ul>
+          </section>
+        `
+        : "";
 
       return `
         <article class="note">
           <h1 class="title">${escapeHtml(answer.title)}</h1>
           <p class="summary">${escapeHtml(answer.summary)}</p>
           ${sections}
-          <section class="exam">
-            <h2>한능검 포인트</h2>
-            <ul>${(answer.exam_points || []).map((point) => `<li>${escapeHtml(point)}</li>`).join("")}</ul>
-          </section>
+          ${examSection}
           <section class="sources">
             <h2>출처</h2>
             <ul>${sourceItems}</ul>

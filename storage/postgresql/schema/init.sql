@@ -97,7 +97,7 @@ CREATE TABLE IF NOT EXISTS solve_records (
     question_id     BIGINT          NOT NULL REFERENCES questions(question_id),
     selected_no     INT             NULL,                   -- 사용자 선택 번호 (미응답 시 NULL)
     is_correct      BOOLEAN         NOT NULL DEFAULT FALSE, -- 정답 여부
-    time_spent_sec  INT             NULL,                   -- 해당 문제 소요 시간(초)
+    time_spent_ms   INT             NULL,                   -- 해당 문제 소요 시간(ms)
     q_type          VARCHAR(20)     NOT NULL,               -- 문제 유형 (통계용 복사)
     topic           VARCHAR(50)     NOT NULL,               -- 주제 (통계용 복사)
     era             VARCHAR(20)     NOT NULL,               -- 시대 (통계용 복사)
