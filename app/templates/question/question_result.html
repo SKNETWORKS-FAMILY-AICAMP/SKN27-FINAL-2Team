@@ -50,6 +50,10 @@
           <span>정답</span>
           <strong id="correctAnswer">2번</strong>
         </article>
+        <article>
+          <span>풀이 시간</span>
+          <strong id="timeSpent">00:00</strong>
+        </article>
       </section>
 
       <section class="question-box" aria-label="문제 내용">
@@ -138,6 +142,7 @@
     const saved = JSON.parse(localStorage.getItem("questionResult") || "null");
     const questions = saved?.questions?.length ? saved.questions : fallbackQuestions;
     const answers = saved?.answers?.length ? saved.answers : Array(questions.length).fill(null);
+    const questionTimeSpent = saved?.questionTimeSpent?.length === questions.length ? saved.questionTimeSpent : Array(questions.length).fill(null);
     let currentIndex = 0;
     let wrongMode = false;
 
@@ -145,6 +150,7 @@
     const resultState = document.getElementById("resultState");
     const userAnswer = document.getElementById("userAnswer");
     const correctAnswer = document.getElementById("correctAnswer");
+    const timeSpent = document.getElementById("timeSpent");
     const questionType = document.getElementById("questionType");
     const questionTitle = document.getElementById("questionTitle");
     const questionSource = document.getElementById("questionSource");
@@ -160,7 +166,15 @@
     const weakTopics = document.getElementById("weakTopics");
 
     function correctOf(index) {
-      return answerKey[index] || 1;
+      return questions[index]?.answer_no || answerKey[index % answerKey.length] || 1;
+    }
+
+    function formatDuration(seconds) {
+      if (seconds === null || seconds === undefined) return "00:00";
+      const safeSeconds = Math.max(0, Math.round(Number(seconds) || 0));
+      const minutes = String(Math.floor(safeSeconds / 60)).padStart(2, "0");
+      const rest = String(safeSeconds % 60).padStart(2, "0");
+      return `${minutes}:${rest}`;
     }
 
     function isCorrect(index) {
@@ -197,6 +211,7 @@
       resultState.className = passed ? "is-correct" : "is-wrong";
       userAnswer.textContent = answerLabel(selected);
       correctAnswer.textContent = answerLabel(correct);
+      timeSpent.textContent = formatDuration(questionTimeSpent[currentIndex]);
       questionType.textContent = question.type;
       questionTitle.textContent = question.title;
       questionSource.textContent = question.source;
