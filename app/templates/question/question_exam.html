@@ -70,6 +70,10 @@
         </section>
 
         <aside class="side-panel" aria-label="문제풀이 상태">
+          <section class="save-card exit-card">
+            <button class="exit-top-button" id="exitButton" type="button">나가기</button>
+          </section>
+
           {% if request.user.is_authenticated %}
           <section class="save-card">
             <button id="saveProgressButton" type="button">문제 저장</button>
@@ -224,12 +228,23 @@
     ];
 
     const savedProgress = JSON.parse(localStorage.getItem("questionInProgress") || "null");
-    const shouldResume = new URLSearchParams(window.location.search).get("resume") === "1";
-    const savedCondition = savedProgress?.condition || JSON.parse(localStorage.getItem("questionGenerationCondition") || "null");
-    let sessionId = savedProgress?.sessionId || null;
+    const searchParams = new URLSearchParams(window.location.search);
+    const shouldStartNew = searchParams.get("new") === "1";
+    const shouldResume = searchParams.get("resume") === "1";
+    const resumeSessionId = Number(searchParams.get("session_id") || 0);
+    if (shouldStartNew) {
+      localStorage.removeItem("questionInProgress");
+      localStorage.removeItem("questionGenerationCondition");
+    }
+    const savedCondition = shouldResume
+      ? savedProgress?.condition
+      : JSON.parse(sessionStorage.getItem("questionGenerationCondition") || "null");
+    let sessionId = shouldResume ? savedProgress?.sessionId || null : null;
     let questions = [];
     let currentIndex = 0;
     let answers = [];
+    let questionTimeSpent = [];
+    let currentQuestionStartedAt = Date.now();
     const questionBadge = document.getElementById("questionBadge");
     const questionType = document.getElementById("questionType");
     const questionTitle = document.getElementById("questionTitle");
@@ -239,14 +254,27 @@
     const progressText = document.getElementById("progressText");
     const numberGrid = document.getElementById("numberGrid");
     let numberButtons = [];
+    const exitButton = document.getElementById("exitButton");
     const prevButton = document.getElementById("prevButton");
     const nextButton = document.getElementById("nextButton");
     const submitButton = document.getElementById("submitButton");
     const timerText = document.getElementById("timerText");
     const saveProgressButton = document.getElementById("saveProgressButton");
     const saveStatus = document.getElementById("saveStatus");
-    let remainingSeconds = shouldResume && Number.isInteger(savedProgress?.remainingSeconds) ? savedProgress.remainingSeconds : 20 * 60;
+    let remainingSeconds = shouldResume && Number.isInteger(savedProgress?.remainingSeconds) ? savedProgress.remainingSeconds : 0;
+    let totalExamSeconds = 0;
     let isTimeOver = false;
+
+    function secondsByQuestionCount(count) {
+      const minutesByCount = {
+        50: 80,
+        40: 65,
+        30: 50,
+        20: 35,
+        10: 20,
+      };
+      return (minutesByCount[count] || 20) * 60;
+    }
 
     function getCookie(name) {
       return document.cookie
@@ -279,24 +307,66 @@
       };
     }
 
+    async function loadSavedSession(savedSessionId) {
+      const response = await fetch(`/question/api/session/${savedSessionId}/`, {
+        credentials: "same-origin",
+      });
+      const payload = await response.json();
+
+      if (!response.ok) {
+        throw new Error(payload.error || "저장된 문제를 불러오지 못했습니다.");
+      }
+
+      sessionId = payload.session_id;
+      questions = payload.questions.map(toExamQuestion);
+      answers = payload.questions.map((question) => question.selected_choice_no || null);
+      questionTimeSpent = payload.questions.map((question) => question.time_spent_sec || 0);
+      currentIndex = answers.findIndex((answer) => answer === null);
+      if (currentIndex < 0) currentIndex = 0;
+      totalExamSeconds = secondsByQuestionCount(payload.total_count || questions.length);
+      remainingSeconds = Number.isInteger(payload.remaining_sec)
+        ? payload.remaining_sec
+        : Math.max(totalExamSeconds - (payload.elapsed_sec || 0), 0);
+      localStorage.setItem("questionInProgress", JSON.stringify(currentSession()));
+    }
+
     async function loadQuestions() {
+      if (shouldResume && resumeSessionId) {
+        try {
+          await loadSavedSession(resumeSessionId);
+          return;
+        } catch (error) {
+          alert(error.message);
+          window.location.href = "/question/";
+          return;
+        }
+      }
+
       if (shouldResume && savedProgress?.questions?.length) {
         sessionId = savedProgress.sessionId || null;
         questions = savedProgress.questions;
         currentIndex = Number.isInteger(savedProgress.currentIndex) ? savedProgress.currentIndex : 0;
         answers = savedProgress.answers?.length ? savedProgress.answers : Array(questions.length).fill(null);
+        questionTimeSpent = savedProgress.questionTimeSpent?.length
+          ? savedProgress.questionTimeSpent
+          : Array(questions.length).fill(0);
+        totalExamSeconds = secondsByQuestionCount(questions.length);
+        if (!remainingSeconds) {
+          remainingSeconds = totalExamSeconds;
+        }
         return;
       }
 
       if (!savedCondition) {
-        questions = defaultQuestions;
-        answers = Array(questions.length).fill(null);
+        alert("문제 생성 조건이 없습니다. 문제 생성 화면으로 돌아갑니다.");
+        window.location.href = "/question/";
         return;
       }
 
       try {
         const response = await fetch("/question/api/start/", {
           method: "POST",
+          credentials: "same-origin",
           headers: {
             "Content-Type": "application/json",
             "X-CSRFToken": getCookie("csrftoken") || "{{ csrf_token }}",
@@ -306,19 +376,29 @@
         const payload = await response.json();
 
         if (!response.ok) {
-          throw new Error(payload.error || "문제 생성에 실패했습니다.");
+          const details = [];
+          if (Number.isInteger(payload.available_count)) details.push(`가능 ${payload.available_count}개`);
+          if (Number.isInteger(payload.requested_count)) details.push(`요청 ${payload.requested_count}개`);
+          if (Number.isInteger(payload.score)) details.push(`${payload.score}점 문제`);
+          throw new Error(`${payload.error || "문제 생성에 실패했습니다."}${details.length ? ` (${details.join(" / ")})` : ""}`);
         }
 
         sessionId = payload.session_id;
         questions = payload.questions.map(toExamQuestion);
         answers = Array(questions.length).fill(null);
+        questionTimeSpent = Array(questions.length).fill(0);
+        totalExamSeconds = secondsByQuestionCount(questions.length);
+        remainingSeconds = totalExamSeconds;
         if (sessionId) {
           localStorage.setItem("questionInProgress", JSON.stringify(currentSession()));
         }
       } catch (error) {
+        sessionStorage.removeItem("questionGenerationCondition");
+        localStorage.removeItem("questionGenerationCondition");
+        localStorage.removeItem("questionInProgress");
         alert(error.message);
-        questions = defaultQuestions;
-        answers = Array(questions.length).fill(null);
+        window.location.href = "/question/";
+        return;
       }
     }
 
@@ -338,6 +418,7 @@
         condition: savedCondition,
         questions,
         answers,
+        questionTimeSpent,
         currentIndex,
         remainingSeconds,
         status,
@@ -345,14 +426,82 @@
       };
     }
 
-    function saveProgress(showMessage = true) {
-      if (!sessionId) return;
+    function elapsedSeconds() {
+      return Math.max(totalExamSeconds - remainingSeconds, 0);
+    }
 
+    function currentQuestionTimeSpent() {
+      const savedSeconds = questionTimeSpent[currentIndex] || 0;
+      const currentSeconds = Math.max(Math.floor((Date.now() - currentQuestionStartedAt) / 1000), 0);
+      return savedSeconds + currentSeconds;
+    }
+
+    function commitCurrentQuestionTime() {
+      if (!questions[currentIndex]) return null;
+      questionTimeSpent[currentIndex] = currentQuestionTimeSpent();
+      currentQuestionStartedAt = Date.now();
+      return questionTimeSpent[currentIndex];
+    }
+
+    async function saveProgress(showMessage = true) {
+      if (!sessionId) {
+        if (showMessage && saveStatus) {
+          saveStatus.textContent = "저장할 풀이 세션이 없습니다.";
+          saveStatus.classList.remove("is-saved");
+          saveStatus.classList.add("is-error");
+        }
+        return;
+      }
+
+      const question = questions[currentIndex];
+      if (!question?.questionId) {
+        if (showMessage && saveStatus) {
+          saveStatus.textContent = "문제 저장에 실패했습니다.";
+          saveStatus.classList.remove("is-saved");
+          saveStatus.classList.add("is-error");
+        }
+        return;
+      }
+
+      const selectedNo = answers[currentIndex];
+      const choiceId = selectedNo ? question.choiceIds[selectedNo - 1] : null;
+      const timeSpentSec = commitCurrentQuestionTime();
       localStorage.setItem("questionInProgress", JSON.stringify(currentSession()));
+
+      if (showMessage && saveStatus) {
+        saveStatus.textContent = "문제 저장 중입니다.";
+        saveStatus.classList.remove("is-saved", "is-error");
+      }
+
+      const response = await fetch(`/question/api/session/${sessionId}/answer/`, {
+        method: "PATCH",
+        credentials: "same-origin",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCookie("csrftoken") || "{{ csrf_token }}",
+        },
+        body: JSON.stringify({
+          question_id: question.questionId,
+          choice_id: choiceId,
+          time_spent_sec: timeSpentSec,
+          elapsed_sec: elapsedSeconds(),
+        }),
+      });
+
+      if (!response.ok) {
+        const payload = await response.json();
+        if (showMessage && saveStatus) {
+          saveStatus.textContent = "문제 저장에 실패했습니다.";
+          saveStatus.classList.remove("is-saved");
+          saveStatus.classList.add("is-error");
+        }
+        throw new Error(payload.error || "풀이 상태 저장에 실패했습니다.");
+      }
 
       if (showMessage && saveStatus) {
         saveStatus.textContent = "현재 풀이 상태가 저장되었습니다.";
         saveStatus.classList.add("is-saved");
+        saveStatus.classList.remove("is-error");
       }
     }
 
@@ -374,6 +523,7 @@
       questionType.textContent = question.type;
       questionTitle.textContent = question.title;
       questionSource.textContent = question.source;
+      currentQuestionStartedAt = Date.now();
       progressFill.style.width = `${((currentIndex + 1) / questions.length) * 100}%`;
       progressText.textContent = `${currentIndex + 1} / ${questions.length}`;
       choiceList.innerHTML = question.choices.map((choice, index) => {
@@ -398,33 +548,65 @@
 
     function bindChoiceButtons() {
       document.querySelectorAll(".choice").forEach((button) => {
-        button.addEventListener("click", () => {
+        button.addEventListener("click", async () => {
           if (isTimeOver) return;
           answers[currentIndex] = Number(button.dataset.choice);
-          saveProgress(false);
+          try {
+            await saveProgress(false);
+          } catch (error) {
+            console.error(error);
+          }
           renderQuestion();
         });
       });
     }
 
-    function moveQuestion(nextIndex) {
+    async function moveQuestion(nextIndex) {
       if (isTimeOver) return;
       if (nextIndex < 0 || nextIndex >= questions.length) return;
+      try {
+        await saveProgress(false);
+      } catch (error) {
+        console.error(error);
+      }
       currentIndex = nextIndex;
-      saveProgress(false);
       renderQuestion();
     }
 
     prevButton.addEventListener("click", () => moveQuestion(currentIndex - 1));
     nextButton.addEventListener("click", () => moveQuestion(currentIndex + 1));
-    submitButton.addEventListener("click", () => {
+    exitButton.addEventListener("click", async () => {
+      try {
+        await saveProgress(false);
+      } catch (error) {
+        console.error(error);
+      }
+      window.location.href = "/question/";
+    });
+    submitButton.addEventListener("click", async () => {
       if (isTimeOver) return;
       answers[currentIndex] = answers[currentIndex] ?? null;
       numberButtons[currentIndex].classList.add("answered");
+      try {
+        await saveProgress(false);
+      } catch (error) {
+        console.error(error);
+      }
       finishExam();
     });
     if (saveProgressButton) {
-      saveProgressButton.addEventListener("click", () => saveProgress(true));
+      saveProgressButton.addEventListener("click", async () => {
+        try {
+          await saveProgress(true);
+        } catch (error) {
+          if (saveStatus) {
+            saveStatus.textContent = "문제 저장에 실패했습니다.";
+            saveStatus.classList.remove("is-saved");
+            saveStatus.classList.add("is-error");
+          }
+          alert(error.message);
+        }
+      });
     }
     function renderTimer() {
       const minutes = String(Math.floor(remainingSeconds / 60)).padStart(2, "0");

@@ -134,6 +134,11 @@ button {
   gap: 12px;
 }
 
+.create-actions .left-actions {
+  display: flex;
+  gap: 12px;
+}
+
 @media (max-width: 860px) {.create-page {
     min-height: calc(100vh - 122px);
     align-items: start;
@@ -152,6 +157,10 @@ button {
   }
 
   .create-actions div {
+    flex-direction: column;
+  }
+
+  .create-actions .left-actions {
     flex-direction: column;
   }
 }

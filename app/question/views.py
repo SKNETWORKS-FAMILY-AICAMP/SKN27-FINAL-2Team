@@ -23,6 +23,13 @@ from .serializers import (
 PRACTICE_SESSION_TYPE = "practice"
 GUEST_DAILY_COUNT = 10
 GUEST_QUESTION_BASE_DATE = date(2026, 6, 23)
+TIME_LIMIT_SECONDS_BY_COUNT = {
+    50: 80 * 60,
+    40: 65 * 60,
+    30: 50 * 60,
+    20: 35 * 60,
+    10: 20 * 60,
+}
 SCORE_RATIO = {
     3: 1,
     2: 3,
@@ -52,9 +59,9 @@ def question_result(request):
 
 
 # 문제 생성/풀이에 사용할 기본 문제 목록을 조회한다.
-# placeholder로 생성된 임시 문항은 실제 풀이 대상에서 제외한다.
+# 현재 테스트 데이터는 이미지 기반 문항도 포함하므로 questions 테이블의 전체 문항을 풀이 대상으로 사용한다.
 def _base_question_queryset():
-    return Questions.objects.exclude(content=PLACEHOLDER_CONTENT)
+    return Questions.objects.all()
 
 
 # 특정 컬럼의 고유 값을 목록으로 반환한다.
@@ -168,6 +175,11 @@ def _daily_guest_question_ids(question_ids):
     ]
 
 
+# 문제 수에 따라 풀이 제한 시간을 초 단위로 반환한다.
+def _time_limit_seconds(total_count):
+    return TIME_LIMIT_SECONDS_BY_COUNT.get(total_count, 20 * 60)
+
+
 # 요청 문항 수를 3점:2점:1점 = 1:3:1 비율로 나눈다.
 # 일부 난이도만 선택한 경우에는 선택한 난이도끼리 같은 비율 기준으로 다시 나눈다.
 def _score_counts(total_count, selected_scores):
@@ -224,10 +236,6 @@ def _sample_questions_by_score(qs, count, selected_scores):
 # 문제 생성 화면에서 사용할 필터 조건 목록을 제공한다.
 def question_filters(request):
     qs = _base_question_queryset()
-    total_count = qs.count()
-    counts = [count for count in [10, 20, 30, 50] if count <= total_count]
-    if total_count and not counts:
-        counts = [total_count]
 
     q_filters = FilterOptionsResponse({
         "eras": _distinct_values(qs, "era"),
@@ -235,7 +243,7 @@ def question_filters(request):
         "difficulties": ["상", "중", "하"],
         "question_types": _distinct_values(qs, "question_type"),
         "question_subtypes": _distinct_values(qs, "question_subtype"),
-        "counts": counts,
+        "counts": [10, 20, 30, 40, 50],
     })
     return Response(q_filters.data, status=status.HTTP_200_OK)
 
@@ -293,6 +301,7 @@ def question_start(request):
             user_id=user_id,
             session_type=PRACTICE_SESSION_TYPE,
             total_count=count,
+            elapsed_sec=0,
             status="in_progress",
             recorded_date=date.today(),
         )
@@ -404,6 +413,8 @@ def question_save_session(request, session_id):
         "session_id": session.session_id,
         "session_type": session.session_type,
         "total_count": session.total_count,
+        "elapsed_sec": session.elapsed_sec,
+        "remaining_sec": max(_time_limit_seconds(session.total_count) - (session.elapsed_sec or 0), 0),
         "status": session.status,
         "answered_count": sum(1 for record in records if record.selected_no is not None),
         "questions": _serialize_session_questions(records),
@@ -475,18 +486,23 @@ def question_save_answer(request, session_id):
             )
         selected_choice_id = option.choice_id
         selected_choice_no = option.choice_no
-        is_correct = option.is_answer
+        is_correct = selected_choice_no == record.question.answer_no
 
     record.selected_no = selected_choice_no
     record.is_correct = is_correct
     record.time_spent_sec = data["time_spent_sec"]
     record.save(update_fields=["selected_no", "is_correct", "time_spent_sec"])
 
+    if data["elapsed_sec"] is not None:
+        session.elapsed_sec = data["elapsed_sec"]
+        session.save(update_fields=["elapsed_sec"])
+
     serializer = SaveAnswerResponse({
         "session_id": session.session_id,
         "question_id": question_id,
         "selected_choice_id": selected_choice_id,
         "selected_choice_no": selected_choice_no,
+        "elapsed_sec": session.elapsed_sec,
         "is_answered": selected_choice_no is not None,
     })
     return Response(serializer.data, status=status.HTTP_200_OK)
