@@ -1,5 +1,6 @@
-"""프론트엔드와 백엔드 병렬 개발을 위한 페이지별 데이터 계약."""
-```
+# 프론트엔드와 백엔드 병렬 개발을 위한 페이지별 데이터 계약
+
+```python
 # 여러 페이지 계약에서 공통으로 재사용하는 요청/응답 객체 형태.
 COMMON_TYPES = {
     # 대시보드, 채팅, 노트, 학습 계획에서 공통으로 사용하는 사용자 정보.
@@ -9,15 +10,31 @@ COMMON_TYPES = {
         "nickname": "str",
         "studyPlans": "list[StudyPlan]",
     },
-    # 사용자 학습계획 정보
+    # 사용자에게 보여줄 학습계획 요약과 날짜별 상세 계획.
     "StudyPlan": {
         "studyPlanId": "int",
-        "studyPlanName": "str",
-        "studyPlanDescription": "str",
-        "studyPlanStartDate": "datetime",
-        "studyPlanEndDate": "datetime",
-        "studyPlanStatus": "str",
-        "studyPlanCreatedAt": "datetime",
+        "summary": "str",
+        "totalDays": "int",
+        "dailyAvailableMinutes": "int",
+        "plans": "list[StudyPlanDay]",
+        "createdAt": "datetime",
+        "updatedAt": "datetime",
+    },
+    # 하루 단위 학습계획.
+    "StudyPlanDay": {
+        "date": "date",
+        "blocks": "list[StudyPlanBlock]",
+    },
+    # 하루 계획 안에 들어가는 개별 학습 블록.
+    "StudyPlanBlock": {
+        "blockType": "newWeakness | review | predictionFocus",
+        "classification": "시대 | 유형 | 주제",
+        "label": "str",
+        "activity": "str",
+        "questionCount": "int",
+        "estimatedMinutes": "int",
+        "priorityScore": "float",
+        "reason": "str",
     },
     # 정답 정보 없이 클라이언트에 전달되는 문제 정보.
     "Question": {
@@ -42,6 +59,82 @@ COMMON_TYPES = {
         "answerRate": "float",
         "totalScore": "int",
     },
+    # 최근 문제 풀이 세션 요약.
+    "SolveSessionSummary": {
+        "sessionId": "int",
+        "sessionType": "str",
+        "totalCount": "int",
+        "answerRate": "float",
+        "totalScore": "int",
+        "createdAt": "datetime",
+    },
+    # 풀이 결과 상세 화면에서 보여줄 문항별 풀이 기록.
+    "SolveRecordDetail": {
+        "recordId": "int",
+        "questionId": "int",
+        "content": "str",
+        "selectedNo": "int | None",
+        "isCorrect": "bool",
+        "timeSpentSec": "int | None",
+        "correctAnswer": "CorrectAnswer",
+        "answerExplanation": "str",
+        "choiceExplanation": "str | None",
+    },
+    # 답안 제출 후 내려주는 정답 정보.
+    "CorrectAnswer": {
+        "answerNo": "int | None",
+        "answerText": "str | None",
+    },
+    # 오답 복습 대상으로 넘기는 문항 요약.
+    "ReviewTarget": {
+        "questionId": "int",
+        "content": "str",
+        "userAnswer": "str | None",
+        "correctAnswer": "str",
+        "explanation": "str",
+    },
+    # 기간 필터.
+    "DateRange": {
+        "fromDate": "date",
+        "toDate": "date",
+    },
+    # 마이페이지 상단 분석 요약.
+    "AnalyticsSummary": {
+        "totalSolveCount": "int",
+        "averageScore": "float",
+        "averageAnswerRate": "float",
+        "averageTimeSec": "int | None",
+    },
+    # 시대별 분석 결과.
+    "EraStat": {
+        "era": "str",
+        "totalCount": "int",
+        "answerRate": "float",
+        "wrongRate": "float",
+        "averageTimeSec": "int | None",
+    },
+    # 유형별 분석 결과.
+    "TypeStat": {
+        "questionType": "str",
+        "totalCount": "int",
+        "answerRate": "float",
+        "wrongRate": "float",
+        "averageTimeSec": "int | None",
+    },
+    # 주제별 분석 결과.
+    "TopicStat": {
+        "topic": "str",
+        "totalCount": "int",
+        "answerRate": "float",
+        "wrongRate": "float",
+        "averageTimeSec": "int | None",
+    },
+    # 날짜별 점수 변화.
+    "ScoreTrend": {
+        "date": "date",
+        "averageScore": "float",
+        "averageAnswerRate": "float",
+    },
     # 사용자의 정답률이 낮은 시대 또는 주제.
     "WeakTopic": {
         "era": "str",
@@ -49,7 +142,7 @@ COMMON_TYPES = {
         "wrongCount": "int",
         "answerRate": "float",
     },
-    # 문제 풀이 또는 분석 결과를 바탕으로 생성된 학습 추천 대상.
+    # 퀴즈 결과에서 바로 학습계획을 만들 때 쓰는 간단 추천 대상.
     "RecommendedStudyTarget": {
         "era": "str",
         "topic": "str",
@@ -57,12 +150,41 @@ COMMON_TYPES = {
         "priority": "int",
         "recommendedQuestionCount": "int",
     },
+    # 사용자의 풀이 결과에서 계산된 취약 학습 대상.
+    "WeakTarget": {
+        "classification": "시대 | 유형 | 주제",
+        "label": "str",
+        "wrongRate": "float",
+        "averageTimeSec": "int",
+    },
+    # 기출 기반 출제 예상 로직에서 전달하는 우선 학습 대상.
+    "PredictedTarget": {
+        "classification": "시대 | 유형 | 주제",
+        "label": "str",
+        "predictionScore": "float",
+        "reason": "str",
+    },
     # 하나의 채팅 세션 안에서 주고받는 메시지.
     "ChatMessage": {
         "messageId": "int",
         "senderType": "user | assistant",
         "content": "str",
         "createdAt": "datetime",
+    },
+    # 채팅 목록에 표시할 채팅 세션 요약.
+    "ChatSession": {
+        "chatSessionId": "str",
+        "title": "str",
+        "createdAt": "datetime",
+    },
+    # question 앱에서 제공하는 노트 목록 요약.
+    "NoteSummary": {
+        "noteId": "int",
+        "title": "str",
+        "era": "str | None",
+        "topic": "str | None",
+        "createdAt": "datetime",
+        "updatedAt": "datetime",
     },
 }
 
@@ -111,7 +233,8 @@ PAGE_CONTRACTS = [
         ],
     },
     {
-        # 로그인 후 첫 화면으로 사용자 정보, 분석, 노트, 학습 계획을 함께 제공한다.
+        # 로그인 후 첫 화면으로 사용자 정보, 분석, 학습 계획을 함께 제공한다.
+        # notes 데이터는 question 앱에서 별도로 제공한다.
         "page": "myPage",
         "route": "/mypage",
         "pageInputs": {
@@ -123,11 +246,11 @@ PAGE_CONTRACTS = [
             "analyticsPeriod": "DateRange",
             "analyticsSummary": "AnalyticsSummary",
             "analyticsByEra": "list[EraStat]",
+            "analyticsByType": "list[TypeStat]",
             "analyticsByTopic": "list[TopicStat]",
             "analyticsScoreTrend": "list[ScoreTrend]",
-            "weakTopics": "list[WeakTopic]",
+            "weakTargets": "list[WeakTarget]",
             "recommendedStudyTargets": "list[RecommendedStudyTarget]",
-            "notes": "list[NoteSummary]",
             "studyPlans": "list[StudyPlan]",
         },
         "actions": [
@@ -147,9 +270,10 @@ PAGE_CONTRACTS = [
                     "analyticsPeriod": "DateRange",
                     "analyticsSummary": "AnalyticsSummary",
                     "analyticsByEra": "list[EraStat]",
+                    "analyticsByType": "list[TypeStat]",
                     "analyticsByTopic": "list[TopicStat]",
                     "analyticsScoreTrend": "list[ScoreTrend]",
-                    "weakTopics": "list[WeakTopic]",
+                    "weakTargets": "list[WeakTarget]",
                     "recommendedStudyTargets": "list[RecommendedStudyTarget]",
                 },
             },
@@ -276,6 +400,7 @@ PAGE_CONTRACTS = [
                 "navigateTo": "noteDetailPage",
             },
             {
+                # 방금 푼 결과의 추천 대상만 사용해 빠르게 학습계획을 만드는 간단 생성 액션.
                 "name": "createStudyPlan",
                 "send": {
                     "recommendedStudyTargets": "list[RecommendedStudyTarget]",
@@ -360,7 +485,7 @@ PAGE_CONTRACTS = [
         ],
     },
     {
-        # 학습 계획을 조회하거나 생성하며 분석 추천 결과를 선택적으로 활용한다.
+        # 학습계획 설계 로직에 따라 날짜별 학습 블록을 조회하거나 생성한다.
         "page": "studyPlanPage",
         "route": "/study-plans",
         "initialData": {
@@ -370,15 +495,13 @@ PAGE_CONTRACTS = [
             {
                 "name": "createStudyPlan",
                 "send": {
-                    "studyPlans": "str",
-                    "term": "str",
-                    "recommendedStudyTargets": "list[RecommendedStudyTarget] | None",
+                    "dailyAvailableHours": "float",
+                    "remainingDays": "int",
+                    "weakTargets": "list[WeakTarget]",
+                    "predictedTargets": "list[PredictedTarget] | None",
                 },
                 "receive": {
-                    "studyPlanId": "int",
-                    "studyPlans": "str",
-                    "term": "str",
-                    "createdAt": "datetime",
+                    "studyPlan": "StudyPlan",
                 },
             }
         ],
