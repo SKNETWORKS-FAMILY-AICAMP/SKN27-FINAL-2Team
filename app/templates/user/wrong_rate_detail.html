@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>himate | 오답률 상세</title>
+  <link rel="stylesheet" href="/static/user/css/wrong_rate_detail.css" />
+  <link rel="stylesheet" href="../../static/user/css/wrong_rate_detail.css" />
+  <link rel="stylesheet" href="/static/himate.css" />
+  <link rel="stylesheet" href="/static/layout.css" />
+</head>
+<body>
+  <header class="site-header" aria-label="오답률 상세 메뉴">
+    <a class="brand" href="/" aria-label="himate 홈">
+      <img src="/static/chatbot/assets/logo.png" alt="himate" data-fallback-src="../../static/chatbot/assets/logo.png" />
+    </a>
+    <nav class="main-nav" aria-label="학습 메뉴">
+      <a href="/diagnosis/">진단 평가</a>
+      <a href="/question/">문제 풀이</a>
+      <a href="/chatbot/">챗봇</a>
+      <a class="active" href="/user/mypage/">나의 학습실</a>
+    </nav>
+    <nav class="header-actions" aria-label="계정 메뉴">
+      <a class="outline-button" href="/user/mypage/">마이페이지</a>
+      <a class="ghost-button" href="/user/logout/">로그아웃</a>
+    </nav>
+  </header>
+
+  <main class="wrong-rate-page">
+    <section class="wrong-rate-title">
+      <p>{{ request.user.nickname }}님의 취약점 분석</p>
+      <h1>유형별 오답률 상세</h1>
+    </section>
+
+    <section class="rate-section" aria-labelledby="eraTitle">
+      <div class="section-heading">
+        <h2 id="eraTitle">시대별 분석</h2>
+      </div>
+      <div class="rate-bars">
+        {% for item in era_stats %}
+          <article class="rate-bar-card {{ item.status_class }}" id="era-{{ forloop.counter }}">
+            <div class="bar-label">
+              <strong>{{ item.label }}</strong>
+            </div>
+            <div class="bar-body">
+              <div class="bar-meta">
+                <span>{{ item.total }}문제</span>
+                <strong>{{ item.rate }}%</strong>
+              </div>
+              <div class="bar-track"><i style="width: {{ item.rate }}%"></i></div>
+            </div>
+            <div class="bar-status">
+              <span class="status-badge {{ item.status_class }}">{{ item.status_label }}</span>
+            </div>
+          </article>
+        {% endfor %}
+      </div>
+    </section>
+
+    <section class="rate-section" aria-labelledby="typeTitle">
+      <div class="section-heading">
+        <h2 id="typeTitle">유형별 분석</h2>
+      </div>
+      <div class="rate-bars">
+        {% for item in type_stats %}
+          <article class="rate-bar-card {{ item.status_class }}" id="type-{{ forloop.counter }}">
+            <div class="bar-label">
+              <strong>{{ item.label }}</strong>
+            </div>
+            <div class="bar-body">
+              <div class="bar-meta">
+                <span>{{ item.total }}문제</span>
+                <strong>{{ item.rate }}%</strong>
+              </div>
+              <div class="bar-track"><i style="width: {{ item.rate }}%"></i></div>
+            </div>
+            <div class="bar-status">
+              <span class="status-badge {{ item.status_class }}">{{ item.status_label }}</span>
+            </div>
+          </article>
+        {% endfor %}
+      </div>
+    </section>
+
+    <section class="rate-section" aria-labelledby="topicTitle">
+      <div class="section-heading">
+        <h2 id="topicTitle">주제별 분석</h2>
+      </div>
+      <div class="rate-bars">
+        {% for item in topic_stats %}
+          <article class="rate-bar-card {{ item.status_class }}" id="topic-{{ forloop.counter }}">
+            <div class="bar-label">
+              <strong>{{ item.label }}</strong>
+            </div>
+            <div class="bar-body">
+              <div class="bar-meta">
+                <span>{{ item.total }}문제</span>
+                <strong>{{ item.rate }}%</strong>
+              </div>
+              <div class="bar-track"><i style="width: {{ item.rate }}%"></i></div>
+            </div>
+            <div class="bar-status">
+              <span class="status-badge {{ item.status_class }}">{{ item.status_label }}</span>
+            </div>
+          </article>
+        {% endfor %}
+      </div>
+    </section>
+  </main>
+
+  <script>
+    document.querySelectorAll("img[data-fallback-src]").forEach((image) => {
+      image.addEventListener("error", () => {
+        if (image.dataset.fallbackTried) return;
+        image.dataset.fallbackTried = "1";
+        image.src = image.dataset.fallbackSrc;
+      });
+    });
+  </script>
+</body>
+</html>

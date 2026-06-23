@@ -9,10 +9,15 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import make_password
 from django.core.mail import send_mail
+from django.db import connection
+from django.db.models import Avg, Count, Min, Q, Sum
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
+
+from chatbot.models import ChatSessions
+from question.models import Analytics, QuestionOptions, SolveRecords, SolveSessions
 
 from .models import EmailVerificationCode, UserAccounts, UserStudyProfile
 
@@ -165,16 +170,31 @@ def logout_page(request):
 
 @login_required
 def mypage(request):
-    profile, _ = UserStudyProfile.objects.get_or_create(user=request.user)
+    profile = _get_or_create_study_profile(request.user)
     d_day = None
     if profile.exam_date:
         d_day = (profile.exam_date - timezone.localdate()).days
-    return render(request, "user/mypage.html", {"profile": profile, "d_day": d_day})
+
+    solve_stats = _build_solve_stats(request.user)
+    chat_stats = _build_chat_stats(request.user)
+    type_wrong_stats = _build_mypage_type_wrong_stats(request.user)
+
+    return render(
+        request,
+        "user/mypage.html",
+        {
+            "profile": profile,
+            "d_day": d_day,
+            "solve_stats": solve_stats,
+            "chat_stats": chat_stats,
+            "type_wrong_stats": type_wrong_stats,
+        },
+    )
 
 
 @login_required
 def profile_edit(request):
-    profile, _ = UserStudyProfile.objects.get_or_create(user=request.user)
+    profile = _get_or_create_study_profile(request.user)
 
     if request.method == "POST":
         nickname = (request.POST.get("nickname") or "").strip()
@@ -206,9 +226,7 @@ def profile_edit(request):
                 request.user.updated_at = timezone.now()
                 request.user.save(update_fields=["nickname", "updated_at"])
 
-                profile.daily_available_hours = hours
-                profile.exam_date = parsed_exam_date
-                profile.save(update_fields=["daily_available_hours", "exam_date", "updated_at"])
+                _update_study_profile(request.user, hours, parsed_exam_date)
                 messages.success(request, "학습 정보가 저장되었습니다.")
                 return redirect("/user/mypage/")
 
@@ -218,6 +236,333 @@ def profile_edit(request):
 @login_required
 def wrong_note(request):
     return render(request, "user/wrong_note.html")
+
+
+@login_required
+def wrong_rate_detail(request):
+    era_stats = _build_wrong_rate_group(
+        request.user,
+        "era",
+        ["선사", "삼국", "고려", "조선", "근대", "현대"],
+    )
+    type_stats = _build_wrong_rate_group(
+        request.user,
+        "q_type",
+        ["연표", "사료", "개념", "인물", "지역"],
+    )
+    topic_stats = _build_wrong_rate_group(
+        request.user,
+        "topic",
+        ["정치", "경제", "사회", "문화", "외교"],
+    )
+
+    return render(
+        request,
+        "user/wrong_rate_detail.html",
+        {
+            "era_stats": era_stats,
+            "type_stats": type_stats,
+            "topic_stats": topic_stats,
+        },
+    )
+
+
+@login_required
+def solved_problems(request):
+    sessions = list(
+        SolveSessions.objects.filter(user=request.user)
+        .order_by("-session_id")
+    )
+    selected_session = None
+    selected_session_id = request.GET.get("session_id")
+    if selected_session_id:
+        selected_session = next(
+            (session for session in sessions if str(session.session_id) == selected_session_id),
+            None,
+        )
+
+    records = []
+    option_map = {}
+    if selected_session:
+        records = list(
+            SolveRecords.objects.filter(session=selected_session)
+            .select_related("question")
+            .order_by("record_id")
+        )
+        question_ids = [record.question_id for record in records]
+        options = QuestionOptions.objects.filter(question_id__in=question_ids).order_by(
+            "question_id",
+            "choice_no",
+        )
+        for option in options:
+            option_map.setdefault(option.question_id, []).append(option)
+
+    session_cards = []
+    analytics_dates = {
+        row["session_id"]: row["first_date"]
+        for row in Analytics.objects.filter(session__in=sessions)
+        .values("session_id")
+        .annotate(first_date=Min("date"))
+    }
+    for session in sessions:
+        answer_rate = session.answer_rate or 0
+        answer_rate_percent = round(answer_rate * 100 if answer_rate <= 1 else answer_rate)
+        solved_date = analytics_dates.get(session.session_id)
+        session_cards.append(
+            {
+                "session": session,
+                "answer_rate": max(0, min(100, answer_rate_percent)),
+                "elapsed_time": _format_duration(session.elapsed_sec),
+                "date_label": f"{solved_date.month}월 {solved_date.day}일 푼 문제" if solved_date else f"Session #{session.session_id}",
+                "is_active": selected_session and session.session_id == selected_session.session_id,
+            }
+        )
+
+    record_cards = []
+    record_payload = []
+    for index, record in enumerate(records, start=1):
+        question = record.question
+        options = option_map.get(question.question_id, [])
+        record_cards.append(
+            {
+                "record": record,
+                "question": question,
+                "number": index,
+                "options": options,
+                "time_spent": _format_duration(record.time_spent_sec),
+                "selected_label": f"{record.selected_no}번" if record.selected_no else "미응답",
+                "answer_label": f"{question.answer_no}번",
+            }
+        )
+        record_payload.append(
+            {
+                "number": index,
+                "question_id": question.question_id,
+                "content": question.content,
+                "question_type": question.question_type,
+                "answer_no": question.answer_no,
+                "answer_explanation": question.answer_explanation,
+                "core_concept": question.core_concept,
+                "selected_no": record.selected_no,
+                "is_correct": record.is_correct,
+                "time_spent": _format_duration(record.time_spent_sec),
+                "era": record.era,
+                "topic": record.topic,
+                "q_score": record.q_score,
+                "options": [
+                    {
+                        "choice_no": option.choice_no,
+                        "content": option.content,
+                        "is_answer": option.is_answer,
+                        "choice_explanation": option.choice_explanation,
+                    }
+                    for option in options
+                ],
+            }
+        )
+
+    return render(
+        request,
+        "user/solved_problems.html",
+        {
+            "session_cards": session_cards,
+            "selected_session": selected_session,
+            "record_cards": record_cards,
+            "record_payload": record_payload,
+        },
+    )
+
+
+def _get_or_create_study_profile(user):
+    now = timezone.now()
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """
+            INSERT INTO user_study_profiles (
+                user_id,
+                daily_available_hours,
+                exam_date,
+                created_at,
+                updated_at
+            )
+            VALUES (%s, %s, NULL, %s, %s)
+            ON CONFLICT (user_id) DO NOTHING
+            """,
+            [user.user_id, 1.0, now, now],
+        )
+    return UserStudyProfile.objects.get(user=user)
+
+
+def _update_study_profile(user, daily_available_hours, exam_date):
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """
+            UPDATE user_study_profiles
+            SET daily_available_hours = %s,
+                exam_date = %s,
+                updated_at = %s
+            WHERE user_id = %s
+            """,
+            [daily_available_hours, exam_date, timezone.now(), user.user_id],
+        )
+
+
+def _format_duration(seconds):
+    if seconds is None:
+        return "00:00"
+    seconds = max(0, int(round(seconds)))
+    minutes, seconds = divmod(seconds, 60)
+    return f"{minutes:02d}:{seconds:02d}"
+
+
+def _build_solve_stats(user):
+    completed_sessions = SolveSessions.objects.filter(
+        user=user,
+        status="completed",
+    )
+    records = SolveRecords.objects.filter(session__user=user)
+    record_stats = records.aggregate(
+        avg_question_time=Avg("time_spent_sec"),
+        solved_count=Count("record_id"),
+    )
+    session_stats = completed_sessions.aggregate(
+        avg_session_time=Avg("elapsed_sec"),
+        total_session_time=Sum("elapsed_sec"),
+        session_count=Count("session_id"),
+        avg_answer_rate=Avg("answer_rate"),
+    )
+    avg_answer_rate = session_stats["avg_answer_rate"] or 0
+    answer_rate_percent = round(avg_answer_rate * 100 if avg_answer_rate <= 1 else avg_answer_rate)
+
+    return {
+        "avg_question_time": _format_duration(record_stats["avg_question_time"]),
+        "avg_session_time": _format_duration(session_stats["avg_session_time"]),
+        "total_session_time": _format_duration(session_stats["total_session_time"]),
+        "solved_count": record_stats["solved_count"] or 0,
+        "session_count": session_stats["session_count"] or 0,
+        "answer_rate": max(0, min(100, answer_rate_percent)),
+    }
+
+
+def _build_chat_stats(user):
+    sessions = ChatSessions.objects.filter(user=user)
+    total_count = sessions.count()
+    type_counts = list(
+        sessions.values("chat_type")
+        .annotate(count=Count("session_id"))
+        .order_by("-count", "chat_type")
+    )
+    top_type = type_counts[0]["chat_type"] if type_counts else "없음"
+
+    return {
+        "total_count": total_count,
+        "type_counts": type_counts[:2],
+        "top_type": top_type,
+    }
+
+
+def _build_mypage_type_wrong_stats(user):
+    preferred_order = ["연표", "사료", "개념", "인물", "지역"]
+    rows = (
+        SolveRecords.objects.filter(session__user=user)
+        .values("q_type")
+        .annotate(
+            total=Count("record_id"),
+            wrong=Count("record_id", filter=Q(is_correct=False)),
+        )
+    )
+    row_map = {
+        (row["q_type"] or "미분류"): {
+            "total": row["total"] or 0,
+            "wrong": row["wrong"] or 0,
+        }
+        for row in rows
+    }
+
+    labels = list(preferred_order)
+    for label in row_map:
+        if label not in labels:
+            labels.append(label)
+
+    items = []
+    total_count = 0
+    wrong_count = 0
+    for label in labels:
+        item = row_map.get(label, {"total": 0, "wrong": 0})
+        total = item["total"]
+        wrong = item["wrong"]
+        total_count += total
+        wrong_count += wrong
+        rate = round((wrong / total) * 100) if total else 0
+        items.append(
+            {
+                "label": label,
+                "total": total,
+                "wrong": wrong,
+                "rate": max(0, min(100, rate)),
+            }
+        )
+
+    ranked_items = sorted(items, key=lambda item: (-item["rate"], -item["total"], item["label"]))
+    visible_items = [item for item in ranked_items if item["total"]][:3]
+    if not visible_items:
+        visible_items = items[:3]
+
+    overall_rate = round((wrong_count / total_count) * 100) if total_count else 0
+    return {
+        "overall_rate": max(0, min(100, overall_rate)),
+        "items": visible_items,
+    }
+
+
+def _build_wrong_rate_group(user, field_name, preferred_order):
+    rows = (
+        SolveRecords.objects.filter(session__user=user)
+        .values(field_name)
+        .annotate(
+            total=Count("record_id"),
+            wrong=Count("record_id", filter=Q(is_correct=False)),
+        )
+    )
+    row_map = {
+        (row[field_name] or "미분류"): {
+            "total": row["total"] or 0,
+            "wrong": row["wrong"] or 0,
+        }
+        for row in rows
+    }
+
+    labels = list(preferred_order)
+    for label in row_map:
+        if label not in labels:
+            labels.append(label)
+
+    stats = []
+    for label in labels:
+        item = row_map.get(label, {"total": 0, "wrong": 0})
+        total = item["total"]
+        wrong = item["wrong"]
+        rate = round((wrong / total) * 100) if total else 0
+        if not total:
+            status_label = "데이터 부족"
+            status_class = "empty"
+        elif rate >= 20:
+            status_label = "취약"
+            status_class = "weak"
+        else:
+            status_label = "안정"
+            status_class = "stable"
+        stats.append(
+            {
+                "label": label,
+                "total": total,
+                "wrong": wrong,
+                "rate": max(0, min(100, rate)),
+                "status_label": status_label,
+                "status_class": status_class,
+            }
+        )
+    return stats
 
 
 def _extract_email(request):
