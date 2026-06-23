@@ -187,6 +187,27 @@ button {
   word-break: keep-all;
 }
 
+.question-passage,
+.question-visual-note {
+  margin-top: 12px;
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.65;
+  white-space: pre-wrap;
+  word-break: keep-all;
+}
+
+.question-visual-note {
+  background: #f8fbf4;
+  color: var(--muted);
+  font-size: 14px;
+}
+
 .choice-review {
   display: grid;
   gap: 8px;

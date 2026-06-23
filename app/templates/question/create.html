@@ -55,12 +55,12 @@
           </div>
         </div>
 
-        <div class="condition-row" data-select-type="single">
+        <div class="condition-row" data-select-type="multiple">
           <h2>난이도</h2>
           <div class="option-list compact">
-            <button type="button" data-value="상">상</button>
+            <button type="button" data-value="상" class="selected">상</button>
             <button type="button" data-value="중" class="selected">중</button>
-            <button type="button" data-value="하">하</button>
+            <button type="button" data-value="하" class="selected">하</button>
           </div>
         </div>
 
@@ -76,7 +76,19 @@
         </div>
 
         <div class="condition-row" data-select-type="multiple">
-          <h2>유형</h2>
+          <h2>대유형</h2>
+          <div class="option-list">
+            <button type="button" data-value="역사 지식의 이해">역사 지식의 이해</button>
+            <button type="button" data-value="연대기의 파악">연대기의 파악</button>
+            <button type="button" data-value="역사 상황 및 쟁점의 인식">역사 상황 및 쟁점의 인식</button>
+            <button type="button" data-value="역사 자료의 분석 및 해석">역사 자료의 분석 및 해석</button>
+            <button type="button" data-value="역사 탐구의 설계 및 수행">역사 탐구의 설계 및 수행</button>
+            <button type="button" data-value="결론의 도출 및 평가">결론의 도출 및 평가</button>
+          </div>
+        </div>
+
+        <div class="condition-row" data-select-type="multiple">
+          <h2>소유형</h2>
           <div class="option-list">
             <button type="button" data-value="연표">연표</button>
             <button type="button" data-value="사료">사료</button>
@@ -92,7 +104,9 @@
         <div>
           <button class="primary-button" id="createButton" type="button" style="color": yellow;
           >문제지 생성</button>
+          {% if request.user.is_authenticated %}
           <button class="outline-button" id="loadButton" type="button">문제 불러오기</button>
+          {% endif %}
         </div>
       </footer>
     </section>
@@ -135,7 +149,9 @@
         row.querySelectorAll("button").forEach((button) => button.classList.remove("selected"));
       });
 
+      document.querySelector('[data-value="상"]').classList.add("selected");
       document.querySelector('[data-value="중"]').classList.add("selected");
+      document.querySelector('[data-value="하"]').classList.add("selected");
       document.querySelector('[data-value="10"]').classList.add("selected");
     });
 
@@ -152,16 +168,18 @@
       window.location.href = "/question/exam/";
     });
 
-    loadButton.addEventListener("click", () => {
-      const saved = localStorage.getItem("questionInProgress");
+    if (loadButton) {
+      loadButton.addEventListener("click", () => {
+        const saved = localStorage.getItem("questionInProgress");
 
-      if (!saved) {
-        alert("불러올 풀이 중 문제가 없습니다.");
-        return;
-      }
+        if (!saved) {
+          alert("불러올 풀이 중 문제가 없습니다.");
+          return;
+        }
 
-      window.location.href = "/question/exam/?resume=1";
-    });
+        window.location.href = "/question/exam/?resume=1";
+      });
+    }
   </script>
 </body>
 </html>

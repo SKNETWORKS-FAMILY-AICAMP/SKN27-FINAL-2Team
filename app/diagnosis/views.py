@@ -137,6 +137,9 @@ def diagnosis_start(request):
         serialized_questions.append({
             "question_id": q.question_id,
             "content": q.content,
+            "passage": q.passage,
+            "visual_note": q.visual_note,
+            "question_image_path": q.question_image_path,
             "q_score": q.q_score,
             "era": q.era,
             "topic": q.topic,
@@ -446,6 +449,9 @@ def diagnosis_explanation(request, session_id, question_id):
     resp_serializer = DiagnosisExplanationResponseSerializer({
         "question_id": question.question_id,
         "content": question.content,
+        "passage": question.passage,
+        "visual_note": question.visual_note,
+        "question_image_path": question.question_image_path,
         "era": question.era,
         "topic": question.topic,
         "question_type": question.question_type,

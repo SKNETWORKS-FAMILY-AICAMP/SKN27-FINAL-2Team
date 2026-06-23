@@ -10,11 +10,19 @@ from django.db import models
 
 class Questions(models.Model):
     question_id = models.BigAutoField(primary_key=True)
+    exam_round = models.IntegerField(blank=True, null=True)
+    exam_level = models.CharField(max_length=20, blank=True, null=True)
+    question_no = models.IntegerField(blank=True, null=True)
     q_score = models.IntegerField()
     era = models.CharField(max_length=50)
     topic = models.CharField(max_length=50)
-    question_type = models.CharField(max_length=20)
+    question_type = models.CharField(max_length=50)
+    question_subtype = models.CharField(max_length=50)
     content = models.TextField()
+    passage = models.TextField(blank=True, null=True)
+    visual_note = models.TextField(blank=True, null=True)
+    question_image_path = models.TextField(blank=True, null=True)
+    parse_status = models.CharField(max_length=20, blank=True, null=True)
     answer_no = models.IntegerField()
     answer_explanation = models.TextField()
     core_concept = models.CharField(max_length=255)
@@ -46,6 +54,7 @@ class SolveSessions(models.Model):
     status = models.CharField(max_length=20)
     answer_rate = models.FloatField(blank=True, null=True)
     total_score = models.IntegerField(blank=True, null=True)
+    recorded_date = models.DateField()
 
     class Meta:
         managed = False

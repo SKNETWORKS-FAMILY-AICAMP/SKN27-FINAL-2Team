@@ -28,14 +28,23 @@ CREATE TABLE IF NOT EXISTS user_accounts (
 -- 2. 문제
 CREATE TABLE IF NOT EXISTS questions (
     question_id         BIGSERIAL       PRIMARY KEY,
+    exam_round          INT             NULL,               -- 시험 회차
+    exam_level          VARCHAR(20)     NULL,               -- 시험 등급 (심화/기본)
+    question_no         INT             NULL,               -- 회차 내 문항 번호
     q_score             INT             NOT NULL,           -- 배점
     era                 VARCHAR(50)     NOT NULL,           -- 시대
     topic               VARCHAR(50)     NOT NULL,           -- 주제
-    question_type       VARCHAR(20)     NOT NULL,           -- 문제 유형
-    content             TEXT            NOT NULL,           -- 지문
+    question_type       VARCHAR(50)     NOT NULL,           -- 대유형
+    question_subtype    VARCHAR(50)     NOT NULL DEFAULT U&'\BBF8\BD84\B958', -- 소유형
+    content             TEXT            NOT NULL,           -- 발문
+    passage             TEXT            NULL,               -- 자료/지문
+    visual_note         TEXT            NULL,               -- 이미지/도표 설명
+    question_image_path TEXT            NULL,               -- 문항 이미지 경로
+    parse_status        VARCHAR(20)     NULL,               -- 파싱 상태
     answer_no           INT             NOT NULL,           -- 정답 번호
     answer_explanation  TEXT            NOT NULL,           -- 정답 해설
-    core_concept        VARCHAR(255)    NOT NULL            -- 핵심 개념
+    core_concept        VARCHAR(255)    NOT NULL,           -- 핵심 개념
+    UNIQUE (exam_round, exam_level, question_no)
 );
 
 -- 3. 문제 선택지
@@ -77,7 +86,8 @@ CREATE TABLE IF NOT EXISTS solve_sessions (
     elapsed_sec     INT             NULL,                   -- 총 소요 시간(초)
     status          VARCHAR(20)     NOT NULL DEFAULT 'in_progress',  -- 'in_progress' | 'completed'
     answer_rate     FLOAT           NULL,                   -- 정답률
-    total_score     INT             NULL                    -- 총 점수
+    total_score     INT             NULL,                   -- 총 점수
+    recorded_date   DATE            NOT NULL DEFAULT CURRENT_DATE  -- 기록 일시
 );
 
 -- 7. 문제별 풀이 기록
