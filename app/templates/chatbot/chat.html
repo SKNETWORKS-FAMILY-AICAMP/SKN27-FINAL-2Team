@@ -7,7 +7,7 @@
   <title>himate 한국사 챗봇</title>
   <link rel="stylesheet" href="/static/himate.css" />
   <link rel="stylesheet" href="/static/layout.css" />
-  <link rel="stylesheet" href="{% static 'chatbot/css/chat.css' %}?v=chat-typing-1" />
+  <link rel="stylesheet" href="{% static 'chatbot/css/chat.css' %}?v=chat-new-session-1" />
 </head>
 <body>
   <main class="chat-page">
@@ -76,8 +76,8 @@
     const sessionSearchInput = document.getElementById("sessionSearchInput");
     const STORAGE_KEY = "himate_chat_sessions";
     let mode = "auto";
-    let sessions = loadSessions();
-    let activeSessionId = sessions[0]?.id || createSession("새 대화").id;
+    let sessions = loadSessions().filter((session) => Array.isArray(session.messages) && session.messages.length > 0);
+    let activeSessionId = createSession("새 대화").id;
 
     saveSessions();
     renderSessionList();

@@ -136,8 +136,8 @@ a {
 }
 
 .bottom-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  display: block;
+  width: 100%;
   gap: 18px;
 }
 
@@ -181,22 +181,40 @@ a {
 
 .time-metric {
   display: grid;
-  gap: 7px;
+  gap: 8px;
   min-height: 116px;
   align-content: center;
-  padding: 18px;
+  padding: 10px;
   border-radius: 8px;
   background: #fffaf4;
 }
 
-.time-metric strong {
-  color: #2f241b;
-  font-size: 34px;
-  line-height: 1;
-  font-weight: 900;
+.time-metric article {
+  display: grid;
+  grid-template-columns: minmax(72px, 0.9fr) minmax(0, 1.1fr);
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.82);
 }
 
-.time-metric span,
+.time-metric article span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+  word-break: keep-all;
+}
+
+.time-metric strong {
+  color: #2f241b;
+  font-size: 22px;
+  line-height: 1;
+  font-weight: 900;
+  text-align: right;
+}
+
 .chatbot-panel p {
   margin: 0;
   color: var(--muted);
@@ -265,7 +283,7 @@ a {
   display: grid;
   grid-template-columns: 128px 1fr;
   gap: 16px;
-  align-items: center;
+  align-items: start;
 }
 
 .donut-chart {
@@ -276,6 +294,7 @@ a {
   border-radius: 50%;
   background: conic-gradient(#f05f68 0 38%, #ffcb72 38% 80%, #65c996 80% 100%);
   position: relative;
+  margin-top: 12px;
 }
 
 .donut-chart::after {
@@ -414,14 +433,18 @@ a {
   gap: 8px;
 }
 
-.calendar-week span {
+.calendar-week span,
+.calendar-week button {
   min-height: 44px;
   display: grid;
   place-items: center;
+  border: 0;
   border-radius: 8px;
   background: #fff;
   color: #4d3524;
+  font: inherit;
   font-weight: 900;
+  cursor: pointer;
 }
 
 .calendar-week.labels span {
@@ -434,6 +457,10 @@ a {
 .calendar-week .done { background: #e7f8f0; color: var(--green); }
 .calendar-week .planned { background: var(--accent-soft); color: var(--accent); }
 .calendar-week .today { background: var(--accent); color: #fff; }
+.calendar-week .selected {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
 
 .calendar-top {
   display: flex;
@@ -519,6 +546,272 @@ a {
 .planned-dot { background: #b7d7a2; }
 .today-dot { background: var(--accent); }
 
+.planner-panel {
+  grid-column: 1 / -1;
+  width: 100%;
+  padding: 24px;
+  overflow-x: auto;
+  overflow-y: visible;
+}
+
+.planner-heading {
+  align-items: center;
+}
+
+.planner-change {
+  min-height: 38px;
+  padding: 0 18px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--accent);
+  font-weight: 950;
+  cursor: pointer;
+}
+
+.planner-board {
+  display: grid;
+  grid-template-columns: minmax(430px, 0.95fr) minmax(360px, 1.05fr);
+  min-width: 820px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.planner-calendar,
+.planner-day {
+  padding: 24px;
+}
+
+.planner-calendar {
+  border-right: 1px solid var(--line);
+  background:
+    linear-gradient(180deg, rgba(159, 232, 112, 0.18), transparent 150px),
+    #fbfdf8;
+}
+
+.planner-month,
+.planner-day-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.planner-month strong {
+  color: var(--ink);
+  font-size: 26px;
+  line-height: 1;
+  font-weight: 950;
+}
+
+.planner-month button {
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: #fff;
+  color: var(--accent);
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.planner-calendar .calendar-week {
+  gap: 7px;
+}
+
+.planner-calendar-grid {
+  display: grid;
+  gap: 7px;
+}
+
+.planner-calendar .calendar-week span,
+.planner-calendar .calendar-week button {
+  min-height: 52px;
+}
+
+.planner-calendar .calendar-week .muted {
+  color: #bec8b8;
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.planner-day {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  background: #fff;
+}
+
+.planner-day-top span {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 950;
+}
+
+.planner-day-top strong {
+  display: block;
+  margin-top: 4px;
+  color: var(--ink);
+  font-size: 27px;
+  line-height: 1;
+  font-weight: 950;
+}
+
+.planner-tabs {
+  display: inline-flex;
+  gap: 6px;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #f4f8ef;
+}
+
+.planner-tabs button {
+  min-width: 48px;
+  height: 30px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font-weight: 950;
+  cursor: pointer;
+}
+
+.planner-tabs button.active {
+  background: var(--green);
+  color: var(--accent);
+}
+
+.planner-lessons {
+  align-content: start;
+  gap: 10px;
+}
+
+.planner-lessons .plan-item {
+  grid-template-columns: 22px minmax(0, 1fr) auto;
+  background: #f4f8ef;
+}
+
+.planner-lessons .plan-item button {
+  min-height: 30px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 950;
+  cursor: pointer;
+}
+
+.planner-modal[hidden] {
+  display: none;
+}
+
+.planner-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(18, 36, 8, 0.34);
+}
+
+.planner-dialog {
+  width: min(680px, 100%);
+  position: relative;
+  padding: 24px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 26px 70px rgba(22, 51, 0, 0.24);
+}
+
+.planner-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: #fff;
+  color: var(--accent);
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.planner-dialog h2 {
+  margin: 0 0 6px;
+  color: var(--ink);
+  font-size: 28px;
+  font-weight: 950;
+}
+
+.planner-dialog p {
+  margin: 0 0 18px;
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.planner-dialog-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.planner-dialog-grid article {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  min-height: 172px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #f4f8ef;
+}
+
+.planner-dialog-grid span {
+  color: var(--green);
+  font-size: 13px;
+  font-weight: 950;
+}
+
+.planner-dialog-grid strong {
+  color: var(--accent);
+  font-size: 15px;
+  font-weight: 950;
+}
+
+.planner-dialog-grid label {
+  color: var(--ink);
+  font-weight: 850;
+}
+
+.planner-dialog-grid input[type="date"] {
+  height: 42px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0 12px;
+  color: var(--ink);
+  font-weight: 900;
+}
+
+.planner-dialog footer {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+body.modal-open {
+  overflow: hidden;
+}
+
 @media (max-width: 980px) {.summary-strip {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -536,6 +829,10 @@ a {
   }
 
   .bottom-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .planner-dialog-grid {
     grid-template-columns: 1fr;
   }
 }
@@ -566,13 +863,38 @@ a {
   .donut-panel,
   .chatbot-panel,
   .plan-panel,
-  .calendar-panel {
+  .calendar-panel,
+  .planner-panel {
     padding: 20px;
   }
 
   .donut-layout {
     grid-template-columns: 1fr;
     justify-items: center;
+  }
+
+  .planner-calendar,
+  .planner-day {
+    padding: 16px;
+  }
+
+  .planner-month strong,
+  .planner-day-top strong {
+    font-size: 22px;
+  }
+
+  .planner-day-top {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .planner-lessons .plan-item {
+    grid-template-columns: 22px minmax(0, 1fr);
+  }
+
+  .planner-lessons .plan-item button {
+    grid-column: 2;
+    justify-self: start;
   }
 }
 
@@ -720,7 +1042,8 @@ a {
   .donut-panel,
   .chatbot-panel,
   .plan-panel,
-  .calendar-panel {
+  .calendar-panel,
+  .planner-panel {
     padding: 14px;
   }
 
@@ -838,7 +1161,8 @@ a {
   .donut-panel,
   .chatbot-panel,
   .plan-panel,
-  .calendar-panel {
+  .calendar-panel,
+  .planner-panel {
     padding: 24px;
   }
 }
@@ -861,7 +1185,8 @@ a {
   gap: 7px;
 }
 
-.calendar-week span {
+.calendar-week span,
+.calendar-week button {
   position: relative;
   min-height: 56px;
   align-content: center;
@@ -928,7 +1253,8 @@ a {
   pointer-events: none;
 }
 
-.calendar-week span em {
+.calendar-week span em,
+.calendar-week button em {
   color: currentColor;
   opacity: 0.78;
 }
@@ -946,12 +1272,117 @@ a {
     gap: 5px;
   }
 
-  .calendar-week span {
+  .calendar-week span,
+  .calendar-week button {
     min-height: 48px;
     font-size: 13px;
   }
 
-  .calendar-week span em {
+  .calendar-week span em,
+  .calendar-week button em {
     display: none;
   }
+}
+
+/* Learning planner merged card */
+.planner-panel .panel-heading {
+  margin-bottom: 16px;
+}
+
+.planner-panel .calendar-week span,
+.planner-panel .calendar-week button {
+  min-height: 54px;
+}
+
+.planner-panel .calendar-week .muted {
+  color: #b9c4b1;
+  background: rgba(255, 255, 255, 0.62);
+  box-shadow: none;
+}
+
+.planner-panel .planner-lessons .plan-item {
+  min-height: 76px;
+}
+
+.planner-panel .calendar-week .planned::after,
+.planner-panel .calendar-week .done::after,
+.planner-panel .calendar-week .today::after {
+  content: none !important;
+  display: none !important;
+}
+
+@media (min-width: 981px) {
+  .bottom-grid {
+    display: block !important;
+    width: 100% !important;
+  }
+
+  .planner-panel {
+    width: 100% !important;
+    max-width: none !important;
+    padding: 24px;
+  }
+
+  .planner-board {
+    width: 100% !important;
+    min-height: 0;
+    grid-template-columns: minmax(520px, 0.95fr) minmax(420px, 1.05fr) !important;
+  }
+
+  .planner-calendar,
+  .planner-day {
+    min-width: 0;
+  }
+
+  .planner-panel .calendar-week span {
+    min-height: 46px !important;
+  }
+}
+
+.planner-panel .calendar-week button {
+  position: relative;
+  min-height: 54px;
+  align-content: center;
+  gap: 4px;
+  border: 1px solid transparent;
+  background: rgba(255, 255, 255, 0.92);
+  color: #24301f;
+  box-shadow: 0 8px 18px rgba(14, 15, 12, 0.05);
+}
+
+.planner-panel .calendar-week button.done {
+  border-color: rgba(159, 232, 112, 0.7);
+  background: #eefeeb;
+  color: var(--accent);
+}
+
+.planner-panel .calendar-week button.planned {
+  border-color: rgba(22, 51, 0, 0.14);
+  background: #fff;
+  color: var(--accent);
+}
+
+.planner-panel .calendar-week button.today {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 12px 24px rgba(22, 51, 0, 0.18);
+}
+
+.planner-panel .calendar-week button.selected {
+  outline: 2px solid var(--green);
+  outline-offset: -5px;
+}
+
+.planner-panel .calendar-week button em {
+  color: currentColor;
+  opacity: 0.78;
+  font-size: 10px;
+  line-height: 1;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.planner-lessons .plan-item.empty {
+  grid-template-columns: 22px minmax(0, 1fr);
 }

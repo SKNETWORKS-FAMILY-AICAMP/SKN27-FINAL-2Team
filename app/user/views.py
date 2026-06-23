@@ -177,6 +177,7 @@ def mypage(request):
 
     solve_stats = _build_solve_stats(request.user)
     chat_stats = _build_chat_stats(request.user)
+    type_wrong_stats = _build_mypage_type_wrong_stats(request.user)
 
     return render(
         request,
@@ -186,6 +187,7 @@ def mypage(request):
             "d_day": d_day,
             "solve_stats": solve_stats,
             "chat_stats": chat_stats,
+            "type_wrong_stats": type_wrong_stats,
         },
     )
 
@@ -456,6 +458,60 @@ def _build_chat_stats(user):
         "total_count": total_count,
         "type_counts": type_counts[:2],
         "top_type": top_type,
+    }
+
+
+def _build_mypage_type_wrong_stats(user):
+    preferred_order = ["연표", "사료", "개념", "인물", "지역"]
+    rows = (
+        SolveRecords.objects.filter(session__user=user)
+        .values("q_type")
+        .annotate(
+            total=Count("record_id"),
+            wrong=Count("record_id", filter=Q(is_correct=False)),
+        )
+    )
+    row_map = {
+        (row["q_type"] or "미분류"): {
+            "total": row["total"] or 0,
+            "wrong": row["wrong"] or 0,
+        }
+        for row in rows
+    }
+
+    labels = list(preferred_order)
+    for label in row_map:
+        if label not in labels:
+            labels.append(label)
+
+    items = []
+    total_count = 0
+    wrong_count = 0
+    for label in labels:
+        item = row_map.get(label, {"total": 0, "wrong": 0})
+        total = item["total"]
+        wrong = item["wrong"]
+        total_count += total
+        wrong_count += wrong
+        rate = round((wrong / total) * 100) if total else 0
+        items.append(
+            {
+                "label": label,
+                "total": total,
+                "wrong": wrong,
+                "rate": max(0, min(100, rate)),
+            }
+        )
+
+    ranked_items = sorted(items, key=lambda item: (-item["rate"], -item["total"], item["label"]))
+    visible_items = [item for item in ranked_items if item["total"]][:3]
+    if not visible_items:
+        visible_items = items[:3]
+
+    overall_rate = round((wrong_count / total_count) * 100) if total_count else 0
+    return {
+        "overall_rate": max(0, min(100, overall_rate)),
+        "items": visible_items,
     }
 
 
