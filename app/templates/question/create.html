@@ -100,7 +100,10 @@
       </section>
 
       <footer class="create-actions">
-        <button class="secondary-button" id="resetButton" type="button">초기화</button>
+        <div class="left-actions">
+          <button class="secondary-button" id="resetButton" type="button">초기화</button>
+          <button class="secondary-button" id="selectAllButton" type="button">전체 선택</button>
+        </div>
         <div>
           <button class="primary-button" id="createButton" type="button" style="color": yellow;
           >문제지 생성</button>
@@ -115,8 +118,61 @@
   <script>
     const rows = document.querySelectorAll(".condition-row");
     const resetButton = document.getElementById("resetButton");
+    const selectAllButton = document.getElementById("selectAllButton");
     const createButton = document.getElementById("createButton");
     const loadButton = document.getElementById("loadButton");
+
+    const filterMap = {
+      "시대": "eras",
+      "주제": "topics",
+      "난이도": "difficulties",
+      "문제 수": "counts",
+      "대유형": "question_types",
+      "소유형": "question_subtypes",
+    };
+
+    function rowByLabel(label) {
+      return [...rows].find((row) => row.querySelector("h2").textContent.trim() === label);
+    }
+
+    function renderOptions(row, values) {
+      if (!row || !values?.length) return;
+
+      const label = row.querySelector("h2").textContent.trim();
+      const optionList = row.querySelector(".option-list");
+      const isSingle = row.dataset.selectType === "single";
+      optionList.innerHTML = values.map((value, index) => {
+        const selected = (isSingle && index === 0) || label === "난이도" ? " selected" : "";
+        return `<button type="button" data-value="${value}" class="${selected.trim()}">${value}</button>`;
+      }).join("");
+
+      optionList.querySelectorAll("button").forEach((button) => {
+        button.addEventListener("click", () => {
+          if (isSingle) {
+            optionList.querySelectorAll("button").forEach((item) => item.classList.remove("selected"));
+            button.classList.add("selected");
+            return;
+          }
+          button.classList.toggle("selected");
+        });
+      });
+    }
+
+    async function loadFilterOptions() {
+      try {
+        const response = await fetch("/question/api/filters/", {
+          credentials: "same-origin",
+        });
+        const payload = await response.json();
+        if (!response.ok) return;
+
+        Object.entries(filterMap).forEach(([label, key]) => {
+          renderOptions(rowByLabel(label), payload[key]);
+        });
+      } catch (error) {
+        console.error(error);
+      }
+    }
 
     rows.forEach((row) => {
       row.querySelectorAll("button").forEach((button) => {
@@ -155,31 +211,59 @@
       document.querySelector('[data-value="10"]').classList.add("selected");
     });
 
-    createButton.addEventListener("click", () => {
-      const condition = collectCondition();
-      const session = {
-        condition,
-        createdAt: new Date().toISOString(),
-        status: "in_progress",
-      };
+    selectAllButton.addEventListener("click", () => {
+      rows.forEach((row) => {
+        const label = row.querySelector("h2").textContent.trim();
+        const buttons = [...row.querySelectorAll("button")];
 
-      localStorage.setItem("questionGenerationCondition", JSON.stringify(condition));
-      localStorage.setItem("questionInProgress", JSON.stringify(session));
-      window.location.href = "/question/exam/";
-    });
+        buttons.forEach((button) => button.classList.remove("selected"));
 
-    if (loadButton) {
-      loadButton.addEventListener("click", () => {
-        const saved = localStorage.getItem("questionInProgress");
-
-        if (!saved) {
-          alert("불러올 풀이 중 문제가 없습니다.");
+        if (label === "문제 수") {
+          const count50Button = buttons.find((button) => button.dataset.value === "50");
+          (count50Button || buttons.at(-1))?.classList.add("selected");
           return;
         }
 
-        window.location.href = "/question/exam/?resume=1";
+        buttons.forEach((button) => button.classList.add("selected"));
+      });
+    });
+
+    createButton.addEventListener("click", () => {
+      const condition = collectCondition();
+
+      sessionStorage.setItem("questionGenerationCondition", JSON.stringify(condition));
+      localStorage.removeItem("questionGenerationCondition");
+      localStorage.removeItem("questionInProgress");
+      window.location.href = "/question/exam/?new=1";
+    });
+
+    if (loadButton) {
+      loadButton.addEventListener("click", async () => {
+        try {
+          const response = await fetch("/question/api/sessions/in-progress/", {
+            credentials: "same-origin",
+          });
+          const payload = await response.json();
+
+          if (!response.ok) {
+            throw new Error(payload.error || "저장된 문제를 불러오지 못했습니다.");
+          }
+
+          const session = payload.sessions?.[0];
+          if (!session) {
+            alert("불러올 풀이 중 문제가 없습니다.");
+            return;
+          }
+
+          window.location.href = `/question/exam/?resume=1&session_id=${session.session_id}`;
+        } catch (error) {
+          alert(error.message);
+          return;
+        }
       });
     }
+
+    loadFilterOptions();
   </script>
 </body>
 </html>
