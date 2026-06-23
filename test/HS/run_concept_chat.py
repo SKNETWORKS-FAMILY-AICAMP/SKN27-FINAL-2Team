@@ -2,11 +2,16 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
 
-from rag_prototype.concept_chat import ConceptChatbotService
-from rag_prototype.config import RagPaths
-from rag_prototype.retriever import HybridRagRetriever
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+from app.chatbot.rag.rag_prototype.concept_chat import ConceptChatbotService
+from app.chatbot.rag.rag_prototype.config import RagPaths
+from app.chatbot.rag.rag_prototype.retriever import HybridRagRetriever
 
 
 def main() -> None:

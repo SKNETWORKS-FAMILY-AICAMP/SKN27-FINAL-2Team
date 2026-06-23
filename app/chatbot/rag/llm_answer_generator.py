@@ -33,7 +33,9 @@ Markdown 가로선(---)은 사용하지 마세요."""
 STRUCTURED_SYSTEM_PROMPT = """당신은 한국사능력검정시험을 준비하는 학습자를 돕는 한국사 튜터입니다.
 반드시 제공된 검색 근거 안에서만 답변하세요.
 출력은 JSON 객체 하나만 반환하세요. Markdown 코드블록, 설명 문장, 주석은 쓰지 마세요.
-근거가 부족하면 summary에 부족하다고 적고, 확실한 내용만 sections에 넣으세요."""
+근거가 부족하면 summary에 부족하다고 적고, 확실한 내용만 sections에 넣으세요.
+exam_points에는 한국사능력검정시험에서 직접 암기하거나 출제 포인트로 볼 만한 시대, 사건, 제도, 인물 업적, 비교 포인트만 넣으세요.
+단순한 근거 요약, 불확실성, 가족관계 단정 주의, 출처 문장 반복은 exam_points에 넣지 말고 빈 배열로 두세요."""
 
 
 @dataclass(frozen=True)
@@ -119,7 +121,7 @@ def build_structured_prompt(question: str, sources: list[dict[str, Any]], follow
       ]
     }}
   ],
-  "exam_points": ["시험 포인트"],
+  "exam_points": ["실제 한능검 출제/암기 포인트만 작성. 없으면 빈 배열"],
   "highlights": ["강조할 핵심 키워드"],
   "source_titles": ["사용한 출처 title"]
 }}"""
@@ -158,13 +160,75 @@ def extract_json_object(text: str) -> dict[str, Any]:
     return parsed
 
 
+EXAM_POINT_BLOCK_TERMS = (
+    "단정",
+    "근거",
+    "부족",
+    "확실",
+    "추정",
+    "이름",
+    "부인",
+    "어머니",
+    "아버지",
+    "낳았다",
+    "나온다",
+    "제공된",
+    "검색",
+    "출처",
+)
+EXAM_POINT_ALLOW_TERMS = (
+    "한능검",
+    "시험",
+    "출제",
+    "암기",
+    "시대",
+    "왕",
+    "정책",
+    "제도",
+    "사건",
+    "개혁",
+    "전쟁",
+    "운동",
+    "조약",
+    "문화",
+    "경제",
+    "정치",
+    "사회",
+    "불교",
+    "유교",
+    "토지",
+    "세금",
+    "관청",
+    "업적",
+    "비교",
+    "순서",
+    "흐름",
+)
+
+
+def filter_exam_points(points: list[Any]) -> list[str]:
+    filtered: list[str] = []
+    for point in points:
+        text = re.sub(r"\s+", " ", str(point or "")).strip()
+        if not text:
+            continue
+        if any(term in text for term in EXAM_POINT_BLOCK_TERMS) and not any(
+            term in text for term in EXAM_POINT_ALLOW_TERMS
+        ):
+            continue
+        if text not in filtered:
+            filtered.append(text)
+    return filtered[:5]
+
+
 def normalize_structured_answer(value: dict[str, Any]) -> dict[str, Any]:
+    exam_points = value.get("exam_points") if isinstance(value.get("exam_points"), list) else []
     return {
         "answer_type": str(value.get("answer_type") or "textbook_note"),
         "title": str(value.get("title") or "한국사 개념 정리"),
         "summary": str(value.get("summary") or ""),
         "sections": value.get("sections") if isinstance(value.get("sections"), list) else [],
-        "exam_points": value.get("exam_points") if isinstance(value.get("exam_points"), list) else [],
+        "exam_points": filter_exam_points(exam_points),
         "highlights": value.get("highlights") if isinstance(value.get("highlights"), list) else [],
         "source_titles": value.get("source_titles") if isinstance(value.get("source_titles"), list) else [],
     }
