@@ -17,124 +17,89 @@ from .rag_prototype.retriever import expand_query_tokens, tokenize
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 IMAGE_QUERY_TERMS = ("이미지", "사진", "그림", "유물", "유적", "자료", "찾아줘", "보여줘", "조회")
 IMAGE_TITLE_IGNORE_TERMS = set(IMAGE_QUERY_TERMS) | {"시대", "대표", "관련", "설명"}
-TITLE_EXPANSIONS = {
-    "구석기": ["주먹도끼", "찍개", "석장리", "전곡리"],
-    "신석기": ["빗살무늬", "토기", "암사동"],
-    "청동기": ["고인돌", "비파형동검", "민무늬토기"],
-    "팔만대장경": ["대장경", "재조대장경", "고려대장경", "해인사"],
-    "대장경": ["팔만대장경", "재조대장경", "고려대장경", "해인사"],
+OVERVIEW_TERMS = ("정리", "요약", "흐름", "개념", "설명", "알려", "누구", "업적", "정책")
+OVERVIEW_IGNORE_TERMS = {
+    "정리",
+    "요약",
+    "흐름",
+    "개념",
+    "설명",
+    "설명해줘",
+    "알려",
+    "알려줘",
+    "누구",
+    "뭐",
+    "무엇",
+    "업적",
+    "정책",
+    "대해",
+    "대한",
 }
-OVERVIEW_TERMS = ("정리", "요약", "흐름", "개념")
-PERSON_OVERVIEW_TERMS = ("업적", "정책", "정리", "요약", "개념", "설명", "누구", "뭐", "무엇", "알려")
-KING_QUERY_ALIASES = {
-    "세종대왕": {
-        "entity_id": "joseon_sejong",
-        "display_name": "조선 세종",
-        "posthumous_name": "세종",
-        "aliases": ("세종대왕", "조선 세종", "세종"),
-    },
-    "조선 세종": {
-        "entity_id": "joseon_sejong",
-        "display_name": "조선 세종",
-        "posthumous_name": "세종",
-        "aliases": ("세종대왕", "조선 세종", "세종"),
-    },
-    "세종": {
-        "entity_id": "joseon_sejong",
-        "display_name": "조선 세종",
-        "posthumous_name": "세종",
-        "aliases": ("세종대왕", "조선 세종", "세종"),
-    },
-}
-KING_TOPIC_EXPANSIONS = {
-    "joseon_sejong": (
-        "훈민정음",
-        "집현전",
-        "농사직설",
-        "칠정산",
-        "측우기",
-        "장영실",
-        "앙부일구",
-        "자격루",
-        "혼천의",
-        "천문",
-        "과학기술",
-        "4군",
-        "6진",
-        "대마도",
-        "공법",
-        "의정부서사제",
-        "세종실록지리지",
-    ),
-}
-SPECIAL_TOPIC_EXPANSIONS = {
-    "장영실": (
-        "장영실",
-        "앙부일구",
-        "자격루",
-        "측우기",
-        "혼천의",
-        "세종대",
-        "세종",
-        "천문",
-        "과학기술",
-        "해시계",
-        "물시계",
-    ),
-}
-LOW_PRIORITY_PERSON_TOPICS = ("풍수", "왕릉", "영릉", "논의")
-MEDIUM_PRIORITY_PERSON_TOPICS = ("지리지", "실록")
-EXCLUDED_PERSON_OVERVIEW_TITLES = (
-    "국문연구",
-    "중앙서리",
-    "도성건설",
-    "정재무",
-    "근대화",
-    "고려사절요",
+GENERIC_OVERVIEW_CONTEXT_TERMS = (
+    "개요",
+    "핵심 내용",
+    "특징",
+    "배경",
+    "의의",
+    "업적",
+    "활동",
+    "시대",
+    "관련 내용",
+    "한능검",
 )
+ACHIEVEMENT_CONTEXT_TERMS = (
+    "창제",
+    "설치",
+    "정비",
+    "편찬",
+    "제작",
+    "반포",
+    "개혁",
+    "발명",
+    "시행",
+)
+ACHIEVEMENT_QUERY_TERMS = ("업적", "정책", "활동")
+HONORIFIC_SUFFIXES = ("대왕",)
 
 
-def wants_joseon_early_politics(question: str) -> bool:
-    return "조선" in question and ("전기" in question or "초기" in question) and "정치" in question
-
-
-def detect_king_query(question: str) -> dict[str, Any] | None:
-    compact_question = normalize_compact(question)
-    for alias, entity in KING_QUERY_ALIASES.items():
-        if normalize_compact(alias) in compact_question:
-            return entity
-    return None
-
-
-def is_person_overview_query(question: str, king_entity: dict[str, Any] | None) -> bool:
-    if not king_entity:
-        return False
-    compact_question = normalize_compact(question)
-    aliases = [normalize_compact(alias) for alias in king_entity["aliases"]]
-    alias_only = compact_question in aliases
-    return alias_only or any(term in question for term in PERSON_OVERVIEW_TERMS)
-
-
-def detect_special_topic_terms(question: str) -> tuple[str, ...]:
-    compact_question = normalize_compact(question)
+def overview_focus_terms(question: str) -> tuple[str, ...]:
+    tokens = expand_query_tokens(question, tokenize(question))
     terms: list[str] = []
-    for trigger, expansions in SPECIAL_TOPIC_EXPANSIONS.items():
-        if normalize_compact(trigger) in compact_question:
-            terms.extend(expansions)
-    return tuple(dict.fromkeys(terms))
+    for token in tokens:
+        normalized = token.strip()
+        if len(normalized) < 2 or normalized in OVERVIEW_IGNORE_TERMS:
+            continue
+        if normalized.endswith("에") and len(normalized) > 2:
+            normalized = normalized[:-1]
+        if normalized.endswith("은") or normalized.endswith("는"):
+            normalized = normalized[:-1]
+        if normalized in OVERVIEW_IGNORE_TERMS:
+            continue
+        candidates = [normalized]
+        for suffix in HONORIFIC_SUFFIXES:
+            if len(normalized) > len(suffix) + 1 and normalized.endswith(suffix):
+                candidates.append(normalized[: -len(suffix)])
+        for candidate in candidates:
+            if candidate and candidate not in terms:
+                terms.append(candidate)
+    return tuple(terms[:4])
+
+
+def is_generic_overview_query(question: str, focus_terms: tuple[str, ...]) -> bool:
+    if not focus_terms:
+        return False
+    return any(term in question for term in OVERVIEW_TERMS)
 
 
 def build_keyword_question(
     question: str,
-    king_entity: dict[str, Any] | None,
-    extra_terms: tuple[str, ...] = (),
+    focus_terms: tuple[str, ...] = (),
+    extra_terms: tuple[str, ...] = GENERIC_OVERVIEW_CONTEXT_TERMS,
 ) -> str:
-    if not king_entity:
-        terms = [question, *extra_terms]
-        return " ".join(dict.fromkeys(term for term in terms if term))
-    terms = [question, king_entity["display_name"], *king_entity["aliases"]]
-    terms.extend(KING_TOPIC_EXPANSIONS.get(king_entity["entity_id"], ()))
+    terms = [question, *focus_terms]
     terms.extend(extra_terms)
+    if any(term in question for term in ACHIEVEMENT_QUERY_TERMS):
+        terms.extend(ACHIEVEMENT_CONTEXT_TERMS)
     return " ".join(dict.fromkeys(term for term in terms if term))
 
 
@@ -193,11 +158,9 @@ def image_title_tokens(question: str) -> list[str]:
     for token in tokens:
         if token in IMAGE_TITLE_IGNORE_TERMS or len(token) < 2:
             continue
-        candidates = [token, *TITLE_EXPANSIONS.get(token, [])]
-        for candidate in candidates:
-            normalized = normalize_compact(candidate)
-            if normalized and normalized not in result:
-                result.append(normalized)
+        normalized = normalize_compact(token)
+        if normalized and normalized not in result:
+            result.append(normalized)
     return result
 
 
@@ -208,68 +171,23 @@ def compact_text(text: str, max_length: int = 260) -> str:
     return value[: max_length - 1].rstrip() + "..."
 
 
-def rerank_person_overview_rows(
-    rows: list[dict[str, Any]],
-    king_entity: dict[str, Any],
-    focus_terms: tuple[str, ...] = (),
-) -> list[dict[str, Any]]:
-    topic_terms = KING_TOPIC_EXPANSIONS.get(king_entity["entity_id"], ())
-    aliases = king_entity["aliases"]
-    broad_focus_terms = {"세종", "세종대", "조선", "천문", "과학기술"}
-    strong_focus_terms = tuple(term for term in focus_terms if term not in broad_focus_terms)
-
-    def adjusted_score(row: dict[str, Any]) -> float:
-        title = row.get("title") or ""
-        chunk_text = row.get("chunk_text") or ""
-        combined = f"{title} {chunk_text}"
-        score = float(row.get("score") or 0.0) * 0.1
-        topic_hit = any(term in combined for term in topic_terms)
-        alias_hit = any(alias in combined for alias in aliases)
-        title_topic_hit = any(term in title for term in topic_terms)
-        focus_hit = any(term in combined for term in strong_focus_terms)
-        title_focus_hit = any(term in title for term in strong_focus_terms)
-
-        if title_focus_hit:
-            score += 12.0
-        elif focus_hit:
-            score += 8.0
-        elif strong_focus_terms:
-            score -= 4.0
-
-        if title_topic_hit:
-            score += 8.0
-        elif topic_hit and alias_hit:
-            score += 6.0
-        elif topic_hit:
-            score += 3.0
-        elif alias_hit:
-            score += 1.5
-        else:
-            score -= 8.0
-        if alias_hit:
-            score += 0.4
-        if "훈민정음" in combined or "한글" in combined:
-            score += 1.2
-        if "측우기" in combined:
-            score += 0.8
-        if "창제자" in title:
-            score += 1.0
-        if any(term in title for term in LOW_PRIORITY_PERSON_TOPICS):
-            score -= 2.0
-        if any(term in title for term in MEDIUM_PRIORITY_PERSON_TOPICS):
-            score -= 0.8
-        if any(term in title for term in EXCLUDED_PERSON_OVERVIEW_TITLES):
-            score -= 6.0
-        return score
-
-    deduped: dict[str, dict[str, Any]] = {}
-    for row in sorted(rows, key=adjusted_score, reverse=True):
-        document_id = row.get("document_id")
-        if document_id in deduped:
+def diversify_rows(rows: list[dict[str, Any]], limit: int) -> list[dict[str, Any]]:
+    selected: list[dict[str, Any]] = []
+    seen_titles: set[str] = set()
+    for row in rows:
+        title = str(row.get("title") or "")
+        if title in seen_titles:
             continue
-        row["score"] = adjusted_score(row)
-        deduped[document_id] = row
-    return list(deduped.values())
+        selected.append(row)
+        seen_titles.add(title)
+        if len(selected) >= limit:
+            return selected
+    for row in rows:
+        if row not in selected:
+            selected.append(row)
+            if len(selected) >= limit:
+                break
+    return selected
 
 
 class PgVectorHybridRetriever:
@@ -289,21 +207,19 @@ class PgVectorHybridRetriever:
         if not question:
             return []
 
-        embedding = vector_literal(embed_query(question, self.model, self.dimensions))
         image_query = is_image_query(question)
-        king_entity = detect_king_query(question)
-        special_topic_terms = detect_special_topic_terms(question)
-        person_overview_query = is_person_overview_query(question, king_entity)
+        focus_terms = overview_focus_terms(question)
+        generic_overview_query = is_generic_overview_query(question, focus_terms)
         keyword_question = build_keyword_question(
             question,
-            king_entity if person_overview_query else None,
-            special_topic_terms,
+            focus_terms if generic_overview_query else (),
+            GENERIC_OVERVIEW_CONTEXT_TERMS if generic_overview_query else (),
         )
+        embedding_question = keyword_question if generic_overview_query else question
+        embedding = vector_literal(embed_query(embedding_question, self.model, self.dimensions))
         overview_query = any(term in question for term in OVERVIEW_TERMS)
-        joseon_early_politics = wants_joseon_early_politics(question)
         title_tokens = image_title_tokens(question) if image_query else []
-        king_topic_terms = KING_TOPIC_EXPANSIONS.get(king_entity["entity_id"], ()) if person_overview_query else ()
-        final_limit = max(top_k * 5, top_k) if person_overview_query else top_k
+        final_limit = max(top_k * 5, top_k) if generic_overview_query else top_k
 
         where_parts = ["embedding IS NOT NULL"]
         params: list[Any] = []
@@ -315,23 +231,10 @@ class PgVectorHybridRetriever:
                     title_clauses.append("regexp_replace(lower(title), '\\s+', '', 'g') LIKE %s")
                     params.append(f"%{token}%")
                 where_parts.append("(" + " OR ".join(title_clauses) + ")")
-        elif person_overview_query and king_entity:
-            king_clauses = [
-                "metadata::text ILIKE %s",
-                "metadata::text ILIKE %s",
-                "title ILIKE %s",
-                "chunk_text ILIKE %s",
-            ]
-            params.extend(
-                [
-                    f"%{king_entity['entity_id']}%",
-                    f"%{king_entity['display_name']}%",
-                    f"%{king_entity['posthumous_name']}%",
-                    f"%{king_entity['posthumous_name']}%",
-                ]
-            )
-            for term in special_topic_terms:
-                king_clauses.extend(
+        elif generic_overview_query and focus_terms:
+            focus_clauses = []
+            for term in focus_terms:
+                focus_clauses.extend(
                     [
                         "title ILIKE %s",
                         "chunk_text ILIKE %s",
@@ -339,42 +242,18 @@ class PgVectorHybridRetriever:
                     ]
                 )
                 params.extend([f"%{term}%", f"%{term}%", f"%{term}%"])
-            where_parts.append("(" + " OR ".join(king_clauses) + ")")
-        elif special_topic_terms:
-            special_clauses = []
-            for term in special_topic_terms:
-                special_clauses.extend(
-                    [
-                        "title ILIKE %s",
-                        "chunk_text ILIKE %s",
-                        "metadata::text ILIKE %s",
-                    ]
-                )
-                params.extend([f"%{term}%", f"%{term}%", f"%{term}%"])
-            where_parts.append("(" + " OR ".join(special_clauses) + ")")
-        elif joseon_early_politics:
-            where_parts.append(
-                """
-                (
-                    metadata::text ILIKE '%%조선 초기의 정치구조%%'
-                    OR metadata::text ILIKE '%%정치%%'
-                    OR title ILIKE '%%정치%%'
-                    OR title ILIKE '%%통치%%'
-                    OR chunk_text ILIKE '%%의정부%%'
-                    OR chunk_text ILIKE '%%육조%%'
-                    OR chunk_text ILIKE '%%관료%%'
-                    OR chunk_text ILIKE '%%집현전%%'
-                    OR chunk_text ILIKE '%%경국대전%%'
-                )
-                """
-            )
+            where_parts.append("(" + " OR ".join(focus_clauses) + ")")
         where_sql = " AND ".join(where_parts)
-        king_topic_sql = "FALSE"
-        king_topic_params: list[Any] = []
-        if king_topic_terms:
-            king_topic_sql = " OR ".join("(title ILIKE %s OR chunk_text ILIKE %s)" for _ in king_topic_terms)
-            for term in king_topic_terms:
-                king_topic_params.extend([f"%{term}%", f"%{term}%"])
+
+        focus_match_sql = "FALSE"
+        focus_match_params: list[Any] = []
+        if generic_overview_query and focus_terms:
+            focus_match_sql = " OR ".join(
+                "(title ILIKE %s OR chunk_text ILIKE %s OR metadata::text ILIKE %s)" for _ in focus_terms
+            )
+            for term in focus_terms:
+                like_term = f"%{term}%"
+                focus_match_params.extend([like_term, like_term, like_term])
 
         sql = f"""
         WITH base AS (
@@ -441,29 +320,11 @@ class PgVectorHybridRetriever:
                     ELSE 0.0
                   END
                 + CASE
-                    WHEN %s AND metadata::text ILIKE '%%조선 초기의 정치구조%%' THEN 2.0
-                    WHEN %s AND metadata::text ILIKE '%%정치%%' THEN 0.8
-                    ELSE 0.0
-                  END
-                + CASE
-                    WHEN %s AND metadata::text ILIKE %s THEN 2.4
-                    WHEN %s AND metadata::text ILIKE %s THEN 1.4
-                    WHEN %s AND title ILIKE %s THEN 1.2
-                    WHEN %s AND chunk_text ILIKE %s THEN 0.6
-                    ELSE 0.0
-                  END
-                + CASE
-                    WHEN %s AND ({king_topic_sql}) THEN 1.6
+                    WHEN %s AND ({focus_match_sql}) THEN 1.8
                     ELSE 0.0
                   END
                 + CASE
                     WHEN %s AND source_type = 'image_material' THEN -1.0
-                    WHEN %s AND title ILIKE %s THEN -0.8
-                    WHEN %s AND title ILIKE %s THEN -0.7
-                    WHEN %s AND title ILIKE %s THEN -0.4
-                    WHEN %s AND title ILIKE %s THEN -0.5
-                    WHEN %s AND title ILIKE %s THEN -0.4
-                    WHEN %s AND NOT ({king_topic_sql}) THEN -2.0
                     ELSE 0.0
                   END
             ) AS score
@@ -487,31 +348,9 @@ class PgVectorHybridRetriever:
             image_query,
             overview_query,
             overview_query,
-            joseon_early_politics,
-            joseon_early_politics,
-            person_overview_query,
-            f"%{king_entity['entity_id']}%" if king_entity else "",
-            person_overview_query,
-            f"%{king_entity['display_name']}%" if king_entity else "",
-            person_overview_query,
-            f"%{king_entity['posthumous_name']}%" if king_entity else "",
-            person_overview_query,
-            f"%{king_entity['posthumous_name']}%" if king_entity else "",
-            person_overview_query,
-            *king_topic_params,
-            person_overview_query,
-            person_overview_query,
-            f"%{LOW_PRIORITY_PERSON_TOPICS[0]}%",
-            person_overview_query,
-            f"%{LOW_PRIORITY_PERSON_TOPICS[1]}%",
-            person_overview_query,
-            f"%{LOW_PRIORITY_PERSON_TOPICS[2]}%",
-            person_overview_query,
-            f"%{MEDIUM_PRIORITY_PERSON_TOPICS[0]}%",
-            person_overview_query,
-            f"%{MEDIUM_PRIORITY_PERSON_TOPICS[1]}%",
-            person_overview_query,
-            *king_topic_params,
+            generic_overview_query,
+            *focus_match_params,
+            generic_overview_query,
             final_limit,
         ]
 
@@ -520,10 +359,7 @@ class PgVectorHybridRetriever:
                 cur.execute(sql, query_params)
                 rows = cur.fetchall()
 
-        if person_overview_query and king_entity:
-            rows = rerank_person_overview_rows(list(rows), king_entity, special_topic_terms)[:top_k]
-        else:
-            rows = rows[:top_k]
+        rows = diversify_rows(rows, top_k) if generic_overview_query else rows[:top_k]
 
         return [
             PgSearchResult(

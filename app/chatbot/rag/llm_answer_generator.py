@@ -67,10 +67,29 @@ def compact_source(source: dict[str, Any], index: int) -> str:
     return "\n".join(parts)
 
 
-def build_user_prompt(question: str, sources: list[dict[str, Any]], style: str, follow_up: bool) -> str:
+def compact_history(history: list[dict[str, str]] | None) -> str:
+    if not history:
+        return ""
+    lines = []
+    for item in history[-10:]:
+        role = "사용자" if item.get("role") == "user" else "챗봇"
+        content = re.sub(r"\s+", " ", str(item.get("content") or "")).strip()
+        if content:
+            lines.append(f"- {role}: {content[:500]}")
+    return "\n".join(lines)
+
+
+def build_user_prompt(
+    question: str,
+    sources: list[dict[str, Any]],
+    style: str,
+    follow_up: bool,
+    history: list[dict[str, str]] | None = None,
+) -> str:
     context = "\n\n".join(compact_source(source, index) for index, source in enumerate(sources, start=1))
     if not context:
         context = "검색 근거 없음"
+    history_context = compact_history(history) or "이전 대화 없음"
 
     output_instruction = (
         "출력 형식: 교재 요약 노트 Markdown. 큰 제목, 1/2/3번 섹션, 표 또는 bullet, 한능검 포인트, 출처 요약을 포함하세요."
@@ -81,31 +100,45 @@ def build_user_prompt(question: str, sources: list[dict[str, Any]], style: str, 
     return f"""질문:
 {question}
 
+최근 대화:
+{history_context}
+
 검색 근거:
 {context}
 
 요구사항:
 - {output_instruction}
 - 근거에 없는 세부 사실을 새로 만들지 마세요.
+- 최근 대화는 대명사와 후속 질문 해석에만 참고하고, 사실 답변은 검색 근거를 우선하세요.
 - 검색 근거의 문장을 그대로 길게 베끼지 말고 학습용으로 재구성하세요.
 - 출처 요약에는 사용한 title을 1~3개만 적으세요.
 - 답변 본문만 출력하고, 후속 작업 제안이나 대화형 마무리 문장은 쓰지 마세요.
 - Markdown 가로선(---)은 쓰지 마세요."""
 
 
-def build_structured_prompt(question: str, sources: list[dict[str, Any]], follow_up: bool) -> str:
+def build_structured_prompt(
+    question: str,
+    sources: list[dict[str, Any]],
+    follow_up: bool,
+    history: list[dict[str, str]] | None = None,
+) -> str:
     context = "\n\n".join(compact_source(source, index) for index, source in enumerate(sources, start=1))
     if not context:
         context = "검색 근거 없음"
+    history_context = compact_history(history) or "이전 대화 없음"
 
     mode = "follow_up_explanation" if follow_up else "textbook_note"
     return f"""질문:
 {question}
 
+최근 대화:
+{history_context}
+
 검색 근거:
 {context}
 
 아래 JSON 스키마를 정확히 지켜서 JSON 객체 하나만 반환하세요.
+최근 대화는 대명사와 후속 질문 해석에만 참고하고, 사실 답변은 검색 근거를 우선하세요.
 문자열 값 안에서 중요한 키워드는 별도 Markdown 없이 원문 키워드만 쓰세요.
 없는 내용은 만들지 말고 빈 배열 또는 짧은 부족 설명으로 처리하세요.
 
@@ -258,9 +291,16 @@ class LLMAnswerGenerator:
             )
         )
 
-    def generate(self, question: str, sources: list[dict[str, Any]], style: str, follow_up: bool = False) -> str:
+    def generate(
+        self,
+        question: str,
+        sources: list[dict[str, Any]],
+        style: str,
+        follow_up: bool = False,
+        history: list[dict[str, str]] | None = None,
+    ) -> str:
         system_prompt = FOLLOW_UP_SYSTEM_PROMPT if follow_up else SYSTEM_PROMPT
-        user_prompt = build_user_prompt(question, sources, style, follow_up)
+        user_prompt = build_user_prompt(question, sources, style, follow_up, history)
         if self.config.provider == "openai":
             return sanitize_answer(self._generate_openai(system_prompt, user_prompt))
         if self.config.provider == "ollama":
@@ -272,8 +312,9 @@ class LLMAnswerGenerator:
         question: str,
         sources: list[dict[str, Any]],
         follow_up: bool = False,
+        history: list[dict[str, str]] | None = None,
     ) -> dict[str, Any]:
-        user_prompt = build_structured_prompt(question, sources, follow_up)
+        user_prompt = build_structured_prompt(question, sources, follow_up, history)
         if self.config.provider == "openai":
             raw_answer = self._generate_openai(STRUCTURED_SYSTEM_PROMPT, user_prompt)
         elif self.config.provider == "ollama":

@@ -4,11 +4,16 @@ from typing import Any
 
 from .graph_service import build_graph_context
 from .rag.llm_answer_generator import LLMAnswerGenerator
-from .rag.pgvector_retriever import PgVectorHybridRetriever, result_to_payload
+from .rag.pgvector_retriever import PgVectorHybridRetriever, overview_focus_terms, result_to_payload
 
 
 SUPPORTED_INTENTS = {"concept", "question", "image", "chat", "casual"}
 NOT_FOUND_ANSWER = "검색 결과가 없습니다."
+FOLLOW_UP_TERMS = ("그거", "이거", "저거", "그럼", "좀더", "자세히", "왜", "어떻게", "차이", "비교")
+CONTEXT_ONLY_TERMS = ("업적", "정책", "활동", "과학적", "문화적", "정치적", "경제적")
+CONTEXT_ONLY_FOCUS_TERMS = {"과학적", "문화적", "정치적", "경제적"}
+KEYWORD_BLOCK_TERMS = ("업적", "정책", "정리", "요약", "설명", "알려", "누구", "무엇", "뭐")
+PERIOD_ONLY_SUFFIXES = ("시대", "전기", "후기")
 INSUFFICIENT_ANSWER_TERMS = (
     "확인 불가",
     "근거 부족",
@@ -17,6 +22,11 @@ INSUFFICIENT_ANSWER_TERMS = (
     "찾을 수 없",
     "부족합니다",
     "부족하여",
+    "충분히 제시되어 있지",
+    "단정하기 어렵",
+    "확정하기 어렵",
+    "구체적으로 나오지 않",
+    "직접 제시되어 있지",
 )
 
 
@@ -90,12 +100,65 @@ def build_enriched_question(question: str, graph_context: dict[str, Any]) -> str
     keywords = graph_context.get("keywords") or []
     if not keywords:
         return question
-    keyword_text = " ".join(str(keyword) for keyword in keywords[:24] if keyword)
+    selected = []
+    for keyword in keywords:
+        value = str(keyword or "").strip()
+        if len(value) < 2 or any(term in value for term in KEYWORD_BLOCK_TERMS):
+            continue
+        if not all("가" <= char <= "힣" for char in value):
+            continue
+        if value.endswith(PERIOD_ONLY_SUFFIXES):
+            continue
+        if any(value != item and value in item for item in selected):
+            selected = [item for item in selected if value not in item]
+        if any(item != value and item in value for item in selected):
+            continue
+        selected.append(value)
+        if len(selected) >= 4:
+            break
+    keyword_text = " ".join(selected)
     return f"{question} {keyword_text}".strip()
+
+
+def normalize_history(history: list[dict[str, Any]] | None, max_turns: int = 5) -> list[dict[str, str]]:
+    if not history:
+        return []
+    normalized = []
+    for item in history[-max_turns * 2 :]:
+        role = str(item.get("role") or "").strip()
+        content = str(item.get("content") or "").strip()
+        if role not in {"user", "assistant"} or not content:
+            continue
+        normalized.append({"role": role, "content": content[:800]})
+    return normalized
+
+
+def build_search_question(question: str, history: list[dict[str, str]]) -> str:
+    if not history:
+        return question
+    needs_context = any(term in question for term in FOLLOW_UP_TERMS)
+    focus_terms = overview_focus_terms(question)
+    needs_context = needs_context or (
+        any(term in question for term in CONTEXT_ONLY_TERMS)
+        and (not focus_terms or all(term in CONTEXT_ONLY_FOCUS_TERMS for term in focus_terms))
+    )
+    if not needs_context:
+        return question
+    recent_user_text = " ".join(item["content"] for item in history if item["role"] == "user")
+    return f"{recent_user_text} {question}".strip()
 
 
 def is_insufficient_structured_answer(answer: dict[str, Any] | None) -> bool:
     if not answer:
+        return False
+    section_items = [
+        item
+        for section in answer.get("sections") or []
+        if isinstance(section, dict)
+        for item in section.get("items") or []
+        if isinstance(item, dict) and (item.get("term") or item.get("content"))
+    ]
+    if len(section_items) >= 2:
         return False
     title = str(answer.get("title") or "")
     summary = str(answer.get("summary") or "")
@@ -122,8 +185,10 @@ def build_history_rag_answer(
     answer_format: str = "structured",
     follow_up: bool = False,
     top_k: int = 5,
+    history: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     intent = normalize_intent(intent, answer_format)
+    conversation_history = normalize_history(history)
     if intent in {"chat", "casual"}:
         return no_rag_answer(question, intent)
 
@@ -132,8 +197,9 @@ def build_history_rag_answer(
     elif intent == "concept":
         answer_format = "structured"
 
-    graph_context = build_graph_context(question, limit=8)
-    search_question = build_enriched_question(question, graph_context)
+    search_seed = build_search_question(question, conversation_history)
+    graph_context = build_graph_context(search_seed, limit=8)
+    search_question = build_enriched_question(search_seed, graph_context)
 
     retriever = PgVectorHybridRetriever()
     results = retriever.search(search_question, top_k=max(top_k, 8 if graph_context.get("keywords") else top_k))
@@ -148,6 +214,7 @@ def build_history_rag_answer(
             question,
             sources,
             follow_up=follow_up or mode == "question",
+            history=conversation_history,
         )
         if is_insufficient_structured_answer(structured_answer):
             return not_found_answer(question, intent, graph_context)
@@ -159,6 +226,7 @@ def build_history_rag_answer(
             sources,
             style="textbook",
             follow_up=follow_up or mode == "question",
+            history=conversation_history,
         )
         if is_insufficient_text_answer(answer):
             return not_found_answer(question, intent, graph_context)

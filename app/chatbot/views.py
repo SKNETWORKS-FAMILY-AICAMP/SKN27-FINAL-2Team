@@ -40,6 +40,9 @@ def rag_chat_api(request):
     answer_format = payload.get("answer_format") or "structured"
     follow_up = bool(payload.get("follow_up", False))
     top_k = int(payload.get("top_k") or 5)
+    conversation_history = payload.get("conversation_history")
+    if not isinstance(conversation_history, list):
+        conversation_history = []
 
     try:
         result = build_history_rag_answer(
@@ -49,6 +52,7 @@ def rag_chat_api(request):
             answer_format=answer_format,
             follow_up=follow_up,
             top_k=top_k,
+            history=conversation_history,
         )
     except Exception as exc:
         return JsonResponse(

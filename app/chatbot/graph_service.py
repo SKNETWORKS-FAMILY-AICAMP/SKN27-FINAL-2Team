@@ -28,13 +28,11 @@ STOPWORDS = {
     "이랑",
     "그리고",
     "차이",
-}
-QUERY_ALIASES = {
-    "세종대왕": ("세종대왕", "세종", "조선 세종"),
-    "세종": ("세종", "세종대왕", "조선 세종"),
-    "장영실": ("장영실", "앙부일구", "자격루", "측우기", "혼천의", "해시계", "물시계", "천문"),
+    "업적",
+    "정책",
 }
 TOKEN_SUFFIXES = ("이랑", "하고", "와", "과", "에게", "에서", "으로", "부터", "까지", "은", "는", "이", "가", "을", "를", "의", "에")
+HONORIFIC_SUFFIXES = ("대왕",)
 
 
 def load_env() -> None:
@@ -61,19 +59,27 @@ def normalize_token(token: str) -> str:
     value = (token or "").strip()
     for suffix in TOKEN_SUFFIXES:
         if len(value) > len(suffix) + 1 and value.endswith(suffix):
-            return value[: -len(suffix)]
+            value = value[: -len(suffix)]
+            break
     return value
+
+
+def token_variants(token: str) -> list[str]:
+    values = [token]
+    for suffix in HONORIFIC_SUFFIXES:
+        if len(token) > len(suffix) + 1 and token.endswith(suffix):
+            values.append(token[: -len(suffix)])
+    return unique_values(values)
 
 
 def extract_query_tokens(question: str) -> list[str]:
     tokens = [normalize_token(token) for token in TOKEN_RE.findall(question or "") if len(token) >= 2]
-    filtered = [token for token in tokens if token not in STOPWORDS]
-    expanded = list(filtered)
-    compact_question = re.sub(r"\s+", "", question or "")
-    for trigger, aliases in QUERY_ALIASES.items():
-        if trigger in compact_question:
-            expanded.extend(aliases)
-    return unique_values(expanded)[:24]
+    filtered = []
+    for token in tokens:
+        if token in STOPWORDS:
+            continue
+        filtered.extend(token_variants(token))
+    return unique_values(filtered)[:24]
 
 
 def neo4j_config() -> tuple[str, str, str] | None:

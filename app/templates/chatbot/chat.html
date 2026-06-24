@@ -149,6 +149,7 @@
       const question = input.value.trim();
       if (!question) return;
       const intent = classifyChatIntent(question);
+      const conversationHistory = recentConversationHistory();
 
       appendUserMessage(question);
       addMessageToActiveSession({ sender: "user", text: question });
@@ -181,6 +182,7 @@
             intent,
             answer_format: answerFormat,
             top_k: 5,
+            conversation_history: conversationHistory,
           }),
         });
         const data = await response.json();
@@ -255,6 +257,25 @@
         return "좋습니다. 학습 상담은 대화형으로 도와드릴게요. 현재 목표 급수, 시험일까지 남은 기간, 하루 공부 가능 시간을 알려주시면 한국사 공부 순서를 같이 잡아드리겠습니다.";
       }
       return "안녕하세요. 한국사 개념 정리, 문제 해설, 이미지 자료 조회까지 편하게 물어보세요.";
+    }
+
+    function recentConversationHistory() {
+      const session = getActiveSession();
+      return (session.messages || [])
+        .slice(-10)
+        .map((message) => {
+          if (message.sender === "user") {
+            return { role: "user", content: message.text || "" };
+          }
+          const data = message.data || {};
+          const structured = data.structured_answer || {};
+          const botText = data.answer
+            || structured.summary
+            || structured.title
+            || "";
+          return { role: "assistant", content: botText };
+        })
+        .filter((item) => item.content);
     }
 
     async function openProblemPicker() {
@@ -555,7 +576,24 @@
 
     function isInsufficientStructuredAnswer(answer) {
       if (!answer) return false;
-      const terms = ["확인 불가", "근거 부족", "답변 불가", "답변할 수 없", "찾을 수 없", "부족합니다", "부족하여"];
+      const itemCount = (answer.sections || []).reduce((count, section) => {
+        return count + (section.items || []).filter((item) => item?.term || item?.content).length;
+      }, 0);
+      if (itemCount >= 2) return false;
+      const terms = [
+        "확인 불가",
+        "근거 부족",
+        "답변 불가",
+        "답변할 수 없",
+        "찾을 수 없",
+        "부족합니다",
+        "부족하여",
+        "충분히 제시되어 있지",
+        "단정하기 어렵",
+        "확정하기 어렵",
+        "구체적으로 나오지 않",
+        "직접 제시되어 있지",
+      ];
       const sectionText = (answer.sections || []).map((section) => {
         const itemText = (section.items || []).map((item) => `${item.term || ""} ${item.content || ""}`).join(" ");
         return `${section.heading || ""} ${itemText}`;
