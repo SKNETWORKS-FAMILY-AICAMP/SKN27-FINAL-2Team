@@ -39,12 +39,12 @@
         <label class="mode-card selected">
           <input type="radio" name="questionMode" value="basic" checked />
           <span>기본</span>
-          <strong>랜덤 문제 생성</strong>
+          <strong>랜덤 50 문제</strong>
         </label>
         <label class="mode-card">
           <input type="radio" name="questionMode" value="hard" />
           <span>어려움</span>
-          <strong>어려운 문제 생성</strong>
+          <strong>50문제 중 어려운 문제 위주</strong>
         </label>
         <label class="mode-card">
           <input type="radio" name="questionMode" value="detail" />
@@ -82,12 +82,12 @@
           </div>
         </div>
 
-        <div class="condition-row" data-select-type="multiple">
+        <div class="condition-row" data-select-type="single">
           <h2>난이도</h2>
           <div class="option-list compact">
-            <button type="button" data-value="상" class="selected">상</button>
-            <button type="button" data-value="중" class="selected">중</button>
-            <button type="button" data-value="하" class="selected">하</button>
+            <button type="button" data-value="상">상</button>
+            <button type="button" data-value="중">중</button>
+            <button type="button" data-value="하">하</button>
           </div>
         </div>
 
@@ -172,7 +172,7 @@
       const optionList = row.querySelector(".option-list");
       const isSingle = row.dataset.selectType === "single";
       optionList.innerHTML = values.map((value, index) => {
-        const selected = (isSingle && index === 0) || label === "난이도" ? " selected" : "";
+        const selected = isSingle && label === "문제 수" && index === 0 ? " selected" : "";
         return `<button type="button" data-value="${value}" class="${selected.trim()}">${value}</button>`;
       }).join("");
 
@@ -237,9 +237,10 @@
     function presetCondition(mode) {
       if (mode === "hard") {
         return {
+          generationMode: "hard",
           "시대": [],
           "주제": [],
-          "난이도": ["상", "중", "하"],
+          "난이도": null,
           "문제 수": "50",
           "대유형": [],
           "소유형": [],
@@ -248,9 +249,10 @@
       }
 
       return {
+        generationMode: "basic",
         "시대": [],
         "주제": [],
-        "난이도": ["상", "중", "하"],
+        "난이도": null,
         "문제 수": "50",
         "대유형": [],
         "소유형": [],
@@ -273,9 +275,6 @@
         row.querySelectorAll("button").forEach((button) => button.classList.remove("selected"));
       });
 
-      document.querySelector('[data-value="상"]').classList.add("selected");
-      document.querySelector('[data-value="중"]').classList.add("selected");
-      document.querySelector('[data-value="하"]').classList.add("selected");
       document.querySelector('[data-value="10"]').classList.add("selected");
     });
 
@@ -292,6 +291,12 @@
           return;
         }
 
+        if (label === "난이도") {
+          const middleButton = buttons.find((button) => button.dataset.value === "중");
+          (middleButton || buttons[0])?.classList.add("selected");
+          return;
+        }
+
         buttons.forEach((button) => button.classList.add("selected"));
       });
     });
@@ -303,6 +308,19 @@
     createButton.addEventListener("click", () => {
       const mode = selectedMode();
       const condition = mode === "detail" ? collectCondition() : presetCondition(mode);
+
+      if (mode === "detail") {
+        condition.generationMode = "detail";
+        const requiredLabels = ["시대", "주제", "대유형", "소유형", "난이도"];
+        const hasMissingCondition = requiredLabels.some((label) => {
+          const value = condition[label];
+          return Array.isArray(value) ? value.length === 0 : !value;
+        });
+        if (hasMissingCondition) {
+          alert("시대, 주제, 대유형, 소유형, 난이도를 모두 선택해 주세요.");
+          return;
+        }
+      }
 
       sessionStorage.setItem("questionGenerationCondition", JSON.stringify(condition));
       localStorage.removeItem("questionGenerationCondition");
