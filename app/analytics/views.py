@@ -15,7 +15,7 @@ def mypage(request):
 
     return render(
         request,
-        "user/mypage.html",
+        "analytics/mypage.html",
         {
             "user": request.user,
             "analytics": analytics,

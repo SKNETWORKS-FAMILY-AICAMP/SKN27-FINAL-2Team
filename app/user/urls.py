@@ -12,7 +12,6 @@ urlpatterns = [
     path("send-verification-code/", views.send_verification_code, name="send_verification_code"),
     path("verify-verification-code/", views.verify_verification_code, name="verify_verification_code"),
     path("check-nickname/", views.check_nickname, name="check_nickname"),
-    path("mypage/", views.mypage, name="mypage"),
     path("profile/edit/", views.profile_edit, name="profile_edit"),
     path("solved-problems/", views.solved_problems, name="solved_problems"),
     path("wrong-note/", views.wrong_note, name="wrong_note"),

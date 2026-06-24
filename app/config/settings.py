@@ -144,7 +144,7 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 LOGIN_URL = '/user/login/'
-LOGIN_REDIRECT_URL = '/user/mypage/'
+LOGIN_REDIRECT_URL = '/analytics/mypage/'
 LOGOUT_REDIRECT_URL = '/'
 
 EMAIL_BACKEND = os.getenv(

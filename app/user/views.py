@@ -27,7 +27,7 @@ def login_page(request):
         email = (request.POST.get("email") or "").strip().lower()
         password = request.POST.get("password") or ""
         remember = request.POST.get("remember")
-        next_url = request.GET.get("next") or "/user/mypage/"
+        next_url = request.GET.get("next") or "/analytics/mypage/"
 
         user = authenticate(request, email=email, password=password)
         if user is None:
@@ -79,7 +79,7 @@ def register_page(request):
             _consume_verification_code(email, code)
             login(request, user, backend="user.backends.UserAccountsBackend")
             messages.success(request, "회원가입과 이메일 인증이 완료되었습니다.")
-            return redirect("/user/mypage/")
+            return redirect("/analytics/mypage/")
 
     return render(request, "user/register.html")
 
@@ -167,31 +167,6 @@ def logout_page(request):
     messages.success(request, "로그아웃되었습니다.")
     return redirect("/")
 
-
-@login_required
-def mypage(request):
-    profile = _get_or_create_study_profile(request.user)
-    d_day = None
-    if profile.exam_date:
-        d_day = (profile.exam_date - timezone.localdate()).days
-
-    solve_stats = _build_solve_stats(request.user)
-    chat_stats = _build_chat_stats(request.user)
-    type_wrong_stats = _build_mypage_type_wrong_stats(request.user)
-
-    return render(
-        request,
-        "user/mypage.html",
-        {
-            "profile": profile,
-            "d_day": d_day,
-            "solve_stats": solve_stats,
-            "chat_stats": chat_stats,
-            "type_wrong_stats": type_wrong_stats,
-        },
-    )
-
-
 @login_required
 def profile_edit(request):
     profile = _get_or_create_study_profile(request.user)
@@ -228,7 +203,7 @@ def profile_edit(request):
 
                 _update_study_profile(request.user, hours, parsed_exam_date)
                 messages.success(request, "학습 정보가 저장되었습니다.")
-                return redirect("/user/mypage/")
+                return redirect("/analytics/mypage/")
 
     return render(request, "user/profile_edit.html", {"profile": profile})
 
