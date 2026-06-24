@@ -243,7 +243,7 @@ class LLMAnswerGenerator:
         load_llm_env()
         selected_provider = (provider or os.getenv("CHAT_LLM_PROVIDER", "openai")).lower()
         if selected_provider == "openai":
-            selected_model = model or os.getenv("OPENAI_CHAT_MODEL", "gpt-4.1-mini")
+            selected_model = model or os.getenv("OPENAI_CHAT_MODEL", "gpt-5.4-mini")
         elif selected_provider == "ollama":
             selected_model = model or os.getenv("OLLAMA_CHAT_MODEL", "gemma4:2b")
         else:

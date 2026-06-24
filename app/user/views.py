@@ -329,7 +329,7 @@ def solved_problems(request):
                 "question": question,
                 "number": index,
                 "options": options,
-                "time_spent": _format_duration(record.time_spent_sec),
+                "time_spent": _format_duration(record.time_spent_ms),
                 "selected_label": f"{record.selected_no}번" if record.selected_no else "미응답",
                 "answer_label": f"{question.answer_no}번",
             }
@@ -345,7 +345,7 @@ def solved_problems(request):
                 "core_concept": question.core_concept,
                 "selected_no": record.selected_no,
                 "is_correct": record.is_correct,
-                "time_spent": _format_duration(record.time_spent_sec),
+                "time_spent": _format_duration(record.time_spent_ms),
                 "era": record.era,
                 "topic": record.topic,
                 "q_score": record.q_score,
@@ -422,7 +422,7 @@ def _build_solve_stats(user):
     )
     records = SolveRecords.objects.filter(session__user=user)
     record_stats = records.aggregate(
-        avg_question_time=Avg("time_spent_sec"),
+        avg_question_time=Avg("time_spent_ms"),
         solved_count=Count("record_id"),
     )
     session_stats = completed_sessions.aggregate(
