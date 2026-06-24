@@ -299,14 +299,40 @@
       };
     }
 
+    function escapeHtml(value) {
+      return String(value || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+    }
+
+    function assetUrl(path) {
+      if (!path) return "";
+      if (/^(https?:)?\/\//.test(path) || path.startsWith("/")) return path;
+      return `/${path}`;
+    }
+
+    function normalizeChoice(choice) {
+      if (typeof choice === "string") {
+        return { content: choice, imagePath: "" };
+      }
+      return {
+        content: choice.content || "",
+        imagePath: choice.choice_image_path || choice.imagePath || "",
+      };
+    }
+
     function toExamQuestion(question) {
-      const source = question.passage || "";
+      const source = [question.passage, question.image_caption].filter(Boolean).join("\n\n");
       return {
         questionId: question.question_id,
         type: question.question_subtype ? `${question.question_type} · ${question.question_subtype}` : question.question_type,
         title: question.content,
         source: source || `${question.era} · ${question.topic}`,
-        choices: question.choices.map((choice) => choice.content),
+        questionImagePath: question.question_image_path || "",
+        choices: question.choices.map(normalizeChoice),
         choiceIds: question.choices.map((choice) => choice.choice_id),
       };
     }
@@ -526,16 +552,24 @@
       questionBadge.textContent = `문항 번호 ${currentIndex + 1}`;
       questionType.textContent = question.type;
       questionTitle.textContent = question.title;
-      questionSource.textContent = question.source;
+      const sourceHtml = escapeHtml(question.source).replaceAll("\n", "<br>");
+      const questionImageHtml = question.questionImagePath
+        ? `<img class="question-asset-image" src="${escapeHtml(assetUrl(question.questionImagePath))}" alt="문항 자료 이미지">`
+        : "";
+      questionSource.innerHTML = `${sourceHtml}${questionImageHtml}`;
       currentQuestionStartedAt = Date.now();
       progressFill.style.width = `${((currentIndex + 1) / questions.length) * 100}%`;
       progressText.textContent = `${currentIndex + 1} / ${questions.length}`;
       choiceList.innerHTML = question.choices.map((choice, index) => {
         const number = index + 1;
         const selected = answers[currentIndex] === number;
+        const choiceImage = choice.imagePath
+          ? `<img class="choice-image" src="${escapeHtml(assetUrl(choice.imagePath))}" alt="${number}번 선택지 이미지">`
+          : "";
+        const choiceText = choice.content ? `<b>${escapeHtml(choice.content)}</b>` : "";
         return `
           <button type="button" class="choice${selected ? " selected" : ""}" data-choice="${number}" aria-pressed="${selected ? "true" : "false"}">
-            <span>${number}</span><b>${choice}</b>
+            <span>${number}</span><div class="choice-body">${choiceImage}${choiceText}</div>
           </button>
         `;
       }).join("");

@@ -17,7 +17,7 @@ Copy-Item .env.example .env
 Start PostgreSQL:
 
 ```powershell
-docker compose --env-file .env -f storage/postgresql/docker-compose.yml up -d
+docker compose -p storage --env-file .env -f storage/postgresql/docker-compose.yml up -d
 ```
 
 Create initial tables:
@@ -47,6 +47,7 @@ Get-Content storage/postgresql/schema/alter_apply_latest.sql | docker exec -i sk
 ```text
 questions.question_no
 questions.passage
+questions.image_caption
 questions.question_image_path
 questions.question_subtype
 questions.question_type VARCHAR(50)
@@ -64,16 +65,17 @@ drop solve_records.time_spent_sec
 See:
 
 ```text
-test/CJ/test_q/README_78_test_etl.md
+test/CJ/test_q/README.md
 ```
 
 Short command flow:
 
 ```powershell
-python test/CJ/test_q/etl_78_test_questions.py --vision
-python test/CJ/test_q/etl_78_test_questions.py --explanations
-python test/CJ/test_q/etl_78_test_questions.py --classify
-python test/CJ/test_q/etl_78_test_questions.py --import-db
+python test/CJ/test_q/etl_exam_test_questions.py --answers
+python test/CJ/test_q/etl_exam_test_questions.py --vision
+python test/CJ/test_q/etl_exam_test_questions.py --explanations
+python test/CJ/test_q/etl_exam_test_questions.py --classify
+python test/CJ/test_q/etl_exam_test_questions.py --import-db
 ```
 
 Important: `--import-db` truncates `solve_records`, `question_options`, and `questions`.
@@ -96,7 +98,7 @@ If container name conflicts:
 
 ```powershell
 docker rm skn27-postgres
-docker compose --env-file .env -f storage/postgresql/docker-compose.yml up -d
+docker compose -p storage --env-file .env -f storage/postgresql/docker-compose.yml up -d
 ```
 
 Do not use `docker compose down -v` unless you intentionally want to remove DB data.
