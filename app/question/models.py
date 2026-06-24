@@ -18,6 +18,7 @@ class Questions(models.Model):
     question_subtype = models.CharField(max_length=50)
     content = models.TextField()
     passage = models.TextField(blank=True, null=True)
+    image_caption = models.TextField(blank=True, null=True)
     question_image_path = models.TextField(blank=True, null=True)
     answer_no = models.IntegerField()
     answer_explanation = models.TextField()
@@ -33,6 +34,7 @@ class QuestionOptions(models.Model):
     question = models.ForeignKey(Questions, models.DO_NOTHING)
     choice_no = models.IntegerField()
     content = models.TextField()
+    choice_image_path = models.TextField(blank=True, null=True)
     is_answer = models.BooleanField()
     choice_explanation = models.TextField(blank=True, null=True)
 

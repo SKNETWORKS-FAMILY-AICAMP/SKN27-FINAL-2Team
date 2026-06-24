@@ -9,6 +9,9 @@ ALTER TABLE questions
     ADD COLUMN IF NOT EXISTS passage TEXT NULL;
 
 ALTER TABLE questions
+    ADD COLUMN IF NOT EXISTS image_caption TEXT NULL;
+
+ALTER TABLE questions
     ADD COLUMN IF NOT EXISTS question_image_path TEXT NULL;
 
 ALTER TABLE questions
@@ -16,6 +19,10 @@ ALTER TABLE questions
 
 ALTER TABLE questions
     ALTER COLUMN question_type TYPE VARCHAR(50);
+
+-- question_options: store optional image choices for visual multiple-choice questions.
+ALTER TABLE question_options
+    ADD COLUMN IF NOT EXISTS choice_image_path TEXT NULL;
 
 -- questions: remove unused legacy parsing/exam metadata columns.
 DROP INDEX IF EXISTS questions_exam_round_exam_level_question_no_uidx;

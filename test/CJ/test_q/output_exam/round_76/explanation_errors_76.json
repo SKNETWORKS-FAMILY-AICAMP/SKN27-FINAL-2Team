@@ -1,0 +1,3 @@
+{
+  "38": "RateLimitError: Error code: 429 - {'error': {'message': 'Rate limit reached for gpt-4o-mini in organization org-GnTDEik3jHUSQLM1bKRxjL5Z on tokens per min (TPM): Limit 200000, Used 200000, Requested 846. Please try again in 253ms. Visit https://platform.openai.com/account/rate-limits to learn more.', 'type': 'tokens', 'param': None, 'code': 'rate_limit_exceeded'}}"
+}

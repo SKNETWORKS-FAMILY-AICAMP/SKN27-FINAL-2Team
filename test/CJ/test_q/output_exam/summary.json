@@ -1,0 +1,13 @@
+{
+  "rounds": [
+    76,
+    77
+  ],
+  "records": 100,
+  "vision": false,
+  "answers": false,
+  "explanations": false,
+  "classify": false,
+  "import_db": true,
+  "output_dir": "test/CJ/test_q/output_exam"
+}
