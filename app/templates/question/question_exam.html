@@ -33,7 +33,6 @@
     <section class="exam-shell" aria-label="문제 풀이">
       <header class="exam-header">
         <div class="exam-title">
-          <span>문제풀이</span>
           <h1>문제 풀이</h1>
         </div>
         <div class="progress-box" aria-label="문항 진행률">
@@ -45,13 +44,14 @@
 
       <div class="exam-layout">
         <section class="question-panel">
-          <div class="question-meta">
-            <span class="question-badge" id="questionBadge">문항 번호 1</span>
-            <span class="question-type" id="questionType">한국사 기본 개념</span>
-          </div>
-
           <article class="question-card">
-            <p class="question-label">문제</p>
+            <div class="question-card-meta">
+              <span class="question-badge" id="questionBadge">문항 번호 1</span>
+              <span class="question-meta-right">
+                <span class="question-type-chip" id="questionType">한국사 기본 개념</span>
+                <span class="question-score" id="questionScore">2점</span>
+              </span>
+            </div>
             <h2 id="questionTitle">다음 중 흥선 대원군의 정책으로 옳은 것은?</h2>
             <div class="question-source" id="questionSource">
               세도 정치의 폐단을 바로잡고 왕권을 강화하기 위한 개혁 정책을 추진하였다.
@@ -74,17 +74,17 @@
         </section>
 
         <aside class="side-panel" aria-label="문제풀이 상태">
-          <section class="save-card exit-card">
-            <button class="exit-top-button" id="exitButton" type="button">나가기</button>
-          </section>
-
-          {% if request.user.is_authenticated %}
-          <section class="save-card">
-            <button id="saveProgressButton" type="button">문제 저장</button>
+          <section class="save-card action-card">
+            <div class="side-action-buttons">
+              <button class="exit-top-button" id="exitButton" type="button">나가기</button>
+              {% if request.user.is_authenticated %}
+              <button id="saveProgressButton" type="button">문제 저장</button>
+              {% endif %}
+            </div>
+            {% if request.user.is_authenticated %}
             <p id="saveStatus">풀이 중인 문제를 저장할 수 있습니다.</p>
+            {% endif %}
           </section>
-          {% endif %}
-
           <section class="timer-card">
             <span>남은 시간</span>
             <strong id="timerText">20:00</strong>
@@ -250,6 +250,7 @@
     let questionTimeSpent = [];
     let currentQuestionStartedAt = Date.now();
     const questionBadge = document.getElementById("questionBadge");
+    const questionScore = document.getElementById("questionScore");
     const questionType = document.getElementById("questionType");
     const questionTitle = document.getElementById("questionTitle");
     const questionSource = document.getElementById("questionSource");
@@ -295,6 +296,7 @@
         difficulties: condition?.["난이도"] || [],
         question_types: condition?.["대유형"] || [],
         question_subtypes: condition?.["소유형"] || [],
+        score_counts: condition?.scoreCounts || {},
         count: Number(condition?.["문제 수"] || 10),
       };
     }
@@ -325,10 +327,11 @@
     }
 
     function toExamQuestion(question) {
-      const source = [question.passage, question.image_caption].filter(Boolean).join("\n\n");
+      const source = question.passage || question.image_caption || "";
       return {
         questionId: question.question_id,
         type: question.question_subtype ? `${question.question_type} · ${question.question_subtype}` : question.question_type,
+        score: question.q_score,
         title: question.content,
         source: source || `${question.era} · ${question.topic}`,
         questionImagePath: question.question_image_path || "",
@@ -550,6 +553,7 @@
       const question = questions[currentIndex];
       if (!question) return;
       questionBadge.textContent = `문항 번호 ${currentIndex + 1}`;
+      questionScore.textContent = `${question.score || 0}점`;
       questionType.textContent = question.type;
       questionTitle.textContent = question.title;
       const sourceHtml = escapeHtml(question.source).replaceAll("\n", "<br>");
@@ -588,7 +592,8 @@
       document.querySelectorAll(".choice").forEach((button) => {
         button.addEventListener("click", async () => {
           if (isTimeOver) return;
-          answers[currentIndex] = Number(button.dataset.choice);
+          const selectedChoice = Number(button.dataset.choice);
+          answers[currentIndex] = answers[currentIndex] === selectedChoice ? null : selectedChoice;
           try {
             await saveProgress(false);
           } catch (error) {

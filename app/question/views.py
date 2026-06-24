@@ -41,6 +41,21 @@ DIFFICULTY_TO_SCORE = {
     "하": 1,
 }
 PLACEHOLDER_CONTENT = "문항 이미지를 보고 정답을 선택하세요."
+ERA_FILTER_VALUES = [
+    "선사 시대",
+    "고조선",
+    "초기 국가",
+    "삼국 시대",
+    "남북국 시대",
+    "고려",
+    "조선 전기",
+    "조선 후기",
+    "개항기",
+    "일제 강점기",
+    "현대",
+    "통합 주제",
+]
+QUESTION_SUBTYPE_FILTER_VALUES = ["개념", "사료", "연표", "인물", "지역"]
 
 
 # 문제 생성 조건 페이지를 렌더링한다.
@@ -74,6 +89,18 @@ def _distinct_values(qs, field_name):
         .distinct()
         .order_by(field_name)
     )
+
+
+# 기준 목록 순서대로 DB에 존재하는 값만 반환한다.
+# 화면에 불분명한 시대값이 노출되지 않도록 시대 필터에서 사용한다.
+def _ordered_existing_values(qs, field_name, ordered_values):
+    existing_values = set(
+        qs.exclude(**{field_name: ""})
+        .exclude(**{field_name: None})
+        .values_list(field_name, flat=True)
+        .distinct()
+    )
+    return [value for value in ordered_values if value in existing_values]
 
 
 # Questions 모델 목록을 문제 생성 API 응답 JSON으로 변환한다.
@@ -210,20 +237,38 @@ def _score_counts(total_count, selected_scores):
 # 특정 난이도의 문제가 부족하면 부족분은 나머지 후보 문제에서 채운다.
 def _sample_questions_by_score(qs, count, selected_scores):
     score_counts = _score_counts(count, selected_scores)
+    return _sample_questions_by_score_counts(qs, score_counts)
+
+
+# 점수별 목표 개수가 직접 지정된 경우 해당 개수에 맞춰 문제 ID를 추출한다.
+def _sample_questions_by_score_counts(qs, score_counts):
     selected_ids = []
+    shortage_count = 0
 
     for score, score_count in score_counts.items():
+        if score_count <= 0:
+            continue
         score_ids = list(
             qs.filter(q_score=score).values_list("question_id", flat=True)
         )
-        if len(score_ids) < score_count:
+        if len(score_ids) >= score_count:
+            selected_ids.extend(random.sample(score_ids, score_count))
+        else:
+            selected_ids.extend(score_ids)
+            shortage_count += score_count - len(score_ids)
+
+    if shortage_count:
+        fallback_ids = list(
+            qs.exclude(question_id__in=selected_ids)
+            .values_list("question_id", flat=True)
+        )
+        if len(fallback_ids) < shortage_count:
             return None, {
-                "error": "선택한 난이도의 문제가 부족합니다.",
-                "score": score,
-                "available_count": len(score_ids),
-                "requested_count": score_count,
+                "error": "조건에 맞는 문제가 부족합니다.",
+                "available_count": len(selected_ids) + len(fallback_ids),
+                "requested_count": sum(score_counts.values()),
             }
-        selected_ids.extend(random.sample(score_ids, score_count))
+        selected_ids.extend(random.sample(fallback_ids, shortage_count))
 
     random.shuffle(selected_ids)
     return selected_ids, None
@@ -240,11 +285,11 @@ def question_filters(request):
     qs = _base_question_queryset()
 
     q_filters = FilterOptionsResponse({
-        "eras": _distinct_values(qs, "era"),
+        "eras": _ordered_existing_values(qs, "era", ERA_FILTER_VALUES),
         "topics": _distinct_values(qs, "topic"),
         "difficulties": ["상", "중", "하"],
         "question_types": _distinct_values(qs, "question_type"),
-        "question_subtypes": _distinct_values(qs, "question_subtype"),
+        "question_subtypes": QUESTION_SUBTYPE_FILTER_VALUES,
         "counts": [10, 20, 30, 40, 50],
     })
     return Response(q_filters.data, status=status.HTTP_200_OK)
@@ -273,8 +318,20 @@ def question_start(request):
 
     count = data["count"] if user_id is not None else GUEST_DAILY_COUNT
     if user_id is not None:
-        selected_difficulties = data["difficulties"] or ["상", "중", "하"]
-        selected_scores = [DIFFICULTY_TO_SCORE[difficulty] for difficulty in selected_difficulties]
+        requested_score_counts = {}
+        for score, score_count in data["score_counts"].items():
+            try:
+                score = int(score)
+            except (TypeError, ValueError):
+                continue
+            if score in {1, 2, 3} and score_count > 0:
+                requested_score_counts[score] = score_count
+        if requested_score_counts:
+            count = sum(requested_score_counts.values())
+            selected_scores = list(requested_score_counts.keys())
+        else:
+            selected_difficulties = data["difficulties"] or ["상", "중", "하"]
+            selected_scores = [DIFFICULTY_TO_SCORE[difficulty] for difficulty in selected_difficulties]
         qs = qs.filter(q_score__in=selected_scores)
 
     question_ids = list(qs.order_by("question_id").values_list("question_id", flat=True))
@@ -291,7 +348,10 @@ def question_start(request):
     if user_id is None:
         selected_ids = _daily_guest_question_ids(question_ids)
     else:
-        selected_ids, score_error = _sample_questions_by_score(qs, count, selected_scores)
+        if requested_score_counts:
+            selected_ids, score_error = _sample_questions_by_score_counts(qs, requested_score_counts)
+        else:
+            selected_ids, score_error = _sample_questions_by_score(qs, count, selected_scores)
         if score_error:
             return Response(score_error, status=status.HTTP_400_BAD_REQUEST)
     questions = list(Questions.objects.filter(question_id__in=selected_ids))
