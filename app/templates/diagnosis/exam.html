@@ -220,7 +220,7 @@
       const answersPayload = questions.map((q, index) => ({
         question_id: q.question_id,
         choice_id: answers[index] ?? null,
-        time_spent_sec: null,
+        time_spent_ms: null,
       }));
 
       try {
