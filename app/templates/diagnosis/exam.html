@@ -18,7 +18,7 @@
       <a class="active" href="/diagnosis/">진단 평가</a>
       <a href="/question/">문제 풀이</a>
       <a href="/chatbot/">챗봇</a>
-      <a href="/user/mypage/">나의 학습실</a>
+      <a href="/analytics/mypage/">나의 학습실</a>
     </nav>
     <nav class="header-actions" aria-label="계정 메뉴">
       {% if request.user.is_authenticated %}
@@ -220,7 +220,7 @@
       const answersPayload = questions.map((q, index) => ({
         question_id: q.question_id,
         choice_id: answers[index] ?? null,
-        time_spent_sec: null,
+        time_spent_ms: null,
       }));
 
       try {

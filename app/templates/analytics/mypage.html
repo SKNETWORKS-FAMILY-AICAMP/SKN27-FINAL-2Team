@@ -4,8 +4,8 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>himate | 나의 학습실</title>
-  <link rel="stylesheet" href="/static/user/css/mypage.css" />
-  <link rel="stylesheet" href="../../static/user/css/mypage.css" />
+  <link rel="stylesheet" href="/static/analytics/css/mypage.css" />
+  <link rel="stylesheet" href="../../static/analytics/css/mypage.css" />
   <link rel="stylesheet" href="/static/himate.css" />
   <link rel="stylesheet" href="/static/layout.css" />
 </head>
@@ -18,7 +18,7 @@
       <a href="/diagnosis/">진단 평가</a>
       <a href="/question/">문제 풀이</a>
       <a href="/chatbot/">챗봇</a>
-      <a class="active" href="/user/mypage/">나의 학습실</a>
+      <a class="active" href="/analytics/mypage/">나의 학습실</a>
     </nav>
     <nav class="header-actions" aria-label="계정 메뉴">
       <a class="outline-button" href="/user/profile/edit/">정보 수정</a>
@@ -90,7 +90,7 @@
       <article class="panel donut-panel">
         <div class="panel-heading compact">
           <h2>유형별 오답률</h2>
-          <a href="/user/wrong-rate-detail/">상세 보기</a>
+          <a href="/analytics/wrong-rate-detail/">상세 보기</a>
         </div>
         <div class="donut-layout">
           <div class="donut-chart{% if not type_wrong_stats.has_records %} is-empty{% endif %}">

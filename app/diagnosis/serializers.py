@@ -42,7 +42,7 @@ class AnswerItemSerializer(serializers.Serializer):
     choice_id = serializers.IntegerField(
         required=False, allow_null=True, default=None
     )  # 미응답 시 null
-    time_spent_sec = serializers.IntegerField(
+    time_spent_ms = serializers.IntegerField(
         required=False, allow_null=True, default=None
     )
 

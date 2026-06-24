@@ -27,7 +27,7 @@ def login_page(request):
         email = (request.POST.get("email") or "").strip().lower()
         password = request.POST.get("password") or ""
         remember = request.POST.get("remember")
-        next_url = request.GET.get("next") or "/user/mypage/"
+        next_url = request.GET.get("next") or "/analytics/mypage/"
 
         user = authenticate(request, email=email, password=password)
         if user is None:
@@ -79,7 +79,7 @@ def register_page(request):
             _consume_verification_code(email, code)
             login(request, user, backend="user.backends.UserAccountsBackend")
             messages.success(request, "회원가입과 이메일 인증이 완료되었습니다.")
-            return redirect("/user/mypage/")
+            return redirect("/analytics/mypage/")
 
     return render(request, "user/register.html")
 
@@ -167,31 +167,6 @@ def logout_page(request):
     messages.success(request, "로그아웃되었습니다.")
     return redirect("/")
 
-
-@login_required
-def mypage(request):
-    profile = _get_or_create_study_profile(request.user)
-    d_day = None
-    if profile.exam_date:
-        d_day = (profile.exam_date - timezone.localdate()).days
-
-    solve_stats = _build_solve_stats(request.user)
-    chat_stats = _build_chat_stats(request.user)
-    type_wrong_stats = _build_mypage_type_wrong_stats(request.user)
-
-    return render(
-        request,
-        "user/mypage.html",
-        {
-            "profile": profile,
-            "d_day": d_day,
-            "solve_stats": solve_stats,
-            "chat_stats": chat_stats,
-            "type_wrong_stats": type_wrong_stats,
-        },
-    )
-
-
 @login_required
 def profile_edit(request):
     profile = _get_or_create_study_profile(request.user)
@@ -228,7 +203,7 @@ def profile_edit(request):
 
                 _update_study_profile(request.user, hours, parsed_exam_date)
                 messages.success(request, "학습 정보가 저장되었습니다.")
-                return redirect("/user/mypage/")
+                return redirect("/analytics/mypage/")
 
     return render(request, "user/profile_edit.html", {"profile": profile})
 
@@ -238,33 +213,6 @@ def wrong_note(request):
     return render(request, "user/wrong_note.html")
 
 
-@login_required
-def wrong_rate_detail(request):
-    era_stats = _build_wrong_rate_group(
-        request.user,
-        "era",
-        ["선사", "삼국", "고려", "조선", "근대", "현대"],
-    )
-    type_stats = _build_wrong_rate_group(
-        request.user,
-        "q_type",
-        ["연표", "사료", "개념", "인물", "지역"],
-    )
-    topic_stats = _build_wrong_rate_group(
-        request.user,
-        "topic",
-        ["정치", "경제", "사회", "문화", "외교"],
-    )
-
-    return render(
-        request,
-        "user/wrong_rate_detail.html",
-        {
-            "era_stats": era_stats,
-            "type_stats": type_stats,
-            "topic_stats": topic_stats,
-        },
-    )
 
 
 @login_required
@@ -413,157 +361,6 @@ def _format_duration(seconds):
     seconds = max(0, int(round(seconds)))
     minutes, seconds = divmod(seconds, 60)
     return f"{minutes:02d}:{seconds:02d}"
-
-
-def _build_solve_stats(user):
-    completed_sessions = SolveSessions.objects.filter(
-        user=user,
-        status="completed",
-    )
-    records = SolveRecords.objects.filter(session__user=user)
-    record_stats = records.aggregate(
-        avg_question_time=Avg("time_spent_ms"),
-        solved_count=Count("record_id"),
-    )
-    session_stats = completed_sessions.aggregate(
-        avg_session_time=Avg("elapsed_sec"),
-        total_session_time=Sum("elapsed_sec"),
-        session_count=Count("session_id"),
-        avg_answer_rate=Avg("answer_rate"),
-    )
-    avg_answer_rate = session_stats["avg_answer_rate"] or 0
-    answer_rate_percent = round(avg_answer_rate * 100 if avg_answer_rate <= 1 else avg_answer_rate)
-
-    return {
-        "avg_question_time": _format_duration(record_stats["avg_question_time"]),
-        "avg_session_time": _format_duration(session_stats["avg_session_time"]),
-        "total_session_time": _format_duration(session_stats["total_session_time"]),
-        "solved_count": record_stats["solved_count"] or 0,
-        "session_count": session_stats["session_count"] or 0,
-        "answer_rate": max(0, min(100, answer_rate_percent)),
-    }
-
-
-def _build_chat_stats(user):
-    sessions = ChatSessions.objects.filter(user=user)
-    total_count = sessions.count()
-    type_counts = list(
-        sessions.values("chat_type")
-        .annotate(count=Count("session_id"))
-        .order_by("-count", "chat_type")
-    )
-    top_type = type_counts[0]["chat_type"] if type_counts else "없음"
-
-    return {
-        "total_count": total_count,
-        "type_counts": type_counts[:2],
-        "top_type": top_type,
-    }
-
-
-def _build_mypage_type_wrong_stats(user):
-    preferred_order = ["연표", "사료", "개념", "인물", "지역"]
-    rows = (
-        SolveRecords.objects.filter(session__user=user)
-        .values("q_type")
-        .annotate(
-            total=Count("record_id"),
-            wrong=Count("record_id", filter=Q(is_correct=False)),
-        )
-    )
-    row_map = {
-        (row["q_type"] or "미분류"): {
-            "total": row["total"] or 0,
-            "wrong": row["wrong"] or 0,
-        }
-        for row in rows
-    }
-
-    labels = list(preferred_order)
-    for label in row_map:
-        if label not in labels:
-            labels.append(label)
-
-    items = []
-    total_count = 0
-    wrong_count = 0
-    for label in labels:
-        item = row_map.get(label, {"total": 0, "wrong": 0})
-        total = item["total"]
-        wrong = item["wrong"]
-        total_count += total
-        wrong_count += wrong
-        rate = round((wrong / total) * 100) if total else 0
-        items.append(
-            {
-                "label": label,
-                "total": total,
-                "wrong": wrong,
-                "rate": max(0, min(100, rate)),
-            }
-        )
-
-    ranked_items = sorted(items, key=lambda item: (-item["rate"], -item["total"], item["label"]))
-    visible_items = [item for item in ranked_items if item["total"]][:3]
-    if not visible_items:
-        visible_items = items[:3]
-
-    overall_rate = round((wrong_count / total_count) * 100) if total_count else 0
-    return {
-        "overall_rate": max(0, min(100, overall_rate)),
-        "items": visible_items,
-        "has_records": total_count > 0,
-    }
-
-
-def _build_wrong_rate_group(user, field_name, preferred_order):
-    rows = (
-        SolveRecords.objects.filter(session__user=user)
-        .values(field_name)
-        .annotate(
-            total=Count("record_id"),
-            wrong=Count("record_id", filter=Q(is_correct=False)),
-        )
-    )
-    row_map = {
-        (row[field_name] or "미분류"): {
-            "total": row["total"] or 0,
-            "wrong": row["wrong"] or 0,
-        }
-        for row in rows
-    }
-
-    labels = list(preferred_order)
-    for label in row_map:
-        if label not in labels:
-            labels.append(label)
-
-    stats = []
-    for label in labels:
-        item = row_map.get(label, {"total": 0, "wrong": 0})
-        total = item["total"]
-        wrong = item["wrong"]
-        rate = round((wrong / total) * 100) if total else 0
-        if not total:
-            status_label = "데이터 부족"
-            status_class = "empty"
-        elif rate >= 20:
-            status_label = "취약"
-            status_class = "weak"
-        else:
-            status_label = "안정"
-            status_class = "stable"
-        stats.append(
-            {
-                "label": label,
-                "total": total,
-                "wrong": wrong,
-                "rate": max(0, min(100, rate)),
-                "status_label": status_label,
-                "status_class": status_class,
-            }
-        )
-    return stats
 
 
 def _extract_email(request):

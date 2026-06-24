@@ -16,11 +16,11 @@
       <a href="/diagnosis/">진단 평가</a>
       <a href="{% if request.user.is_authenticated %}/question/{% else %}/user/login/{% endif %}">문제 풀이</a>
       <a href="{% if request.user.is_authenticated %}/chatbot/{% else %}/user/login/{% endif %}">챗봇</a>
-      <a href="{% if request.user.is_authenticated %}/user/mypage/{% else %}/user/login/{% endif %}">나의 학습실</a>
+      <a href="{% if request.user.is_authenticated %}/analytics/mypage/{% else %}/user/login/{% endif %}">나의 학습실</a>
     </nav>
     <nav class="header-actions" aria-label="계정 메뉴">
       {% if request.user.is_authenticated %}
-      <a class="pill-button" href="/user/mypage/">나의 학습실</a>
+      <a class="pill-button" href="/analytics/mypage/">나의 학습실</a>
       {% else %}
       <a class="pill-button" href="/user/login/">로그인</a>
       {% endif %}
@@ -82,7 +82,7 @@
         <span class="feature-number">02</span>
         <h2>목표 시험일까지 계획을 세워줘요</h2>
         <p>D-day와 현재 실력을 기준으로 오늘 할 공부, 이번 주 학습량, 복습 타이밍을 추천합니다.</p>
-        <a class="primary-button small" href="{% if request.user.is_authenticated %}/user/mypage/{% else %}/user/login/{% endif %}">학습 계획 보기</a>
+        <a class="primary-button small" href="{% if request.user.is_authenticated %}/analytics/mypage/{% else %}/user/login/{% endif %}">학습 계획 보기</a>
       </div>
     </section>
 
@@ -126,7 +126,7 @@
         <span class="feature-number">05</span>
         <h2>나의 학습실에서 성장 추이를 확인해요</h2>
         <p>D-day, 정답률, 평균 풀이 시간, 푼 문제 수, 연속 학습일을 확인하며 학습 흐름을 이어갑니다.</p>
-        <a class="primary-button small" href="{% if request.user.is_authenticated %}/user/mypage/{% else %}/user/login/{% endif %}">학습실 보기</a>
+        <a class="primary-button small" href="{% if request.user.is_authenticated %}/analytics/mypage/{% else %}/user/login/{% endif %}">학습실 보기</a>
       </div>
       <div class="feature-visual growth-visual reveal reveal-delay-1" aria-hidden="true">
         <div class="metric-grid">

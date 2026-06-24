@@ -167,7 +167,7 @@ def diagnosis_submit(request):
     answers 항목:
       - question_id: int
       - choice_id: int | null  (미응답 시 null)
-      - time_spent_sec: int | null
+      - time_spent_ms: int | null
     """
     req_serializer = DiagnosisSubmitRequestSerializer(data=request.data)
     if not req_serializer.is_valid():
@@ -219,7 +219,7 @@ def diagnosis_submit(request):
     for ans in answers:
         q_id = ans["question_id"]
         choice_id = ans["choice_id"]
-        time_spent = ans.get("time_spent_sec")
+        time_spent_ms = ans.get("time_spent_ms")
 
         q = questions_map.get(q_id)
         if not q:
@@ -243,7 +243,7 @@ def diagnosis_submit(request):
             question=q,
             selected_no=selected_no,
             is_correct=is_correct,
-            time_spent_sec=time_spent,
+            time_spent_ms=time_spent_ms,
             q_type=q.question_type,
             topic=q.topic,
             era=q.era,
@@ -253,11 +253,11 @@ def diagnosis_submit(request):
         # analytics 집계
         era_stats[q.era]["total"] += 1
         era_stats[q.era]["correct"] += int(is_correct)
-        era_stats[q.era]["time_sum"] += time_spent or 0
+        era_stats[q.era]["time_sum"] += time_spent_ms or 0
 
         type_stats[q.question_type]["total"] += 1
         type_stats[q.question_type]["correct"] += int(is_correct)
-        type_stats[q.question_type]["time_sum"] += time_spent or 0
+        type_stats[q.question_type]["time_sum"] += time_spent_ms or 0
 
     # DB 저장
     SolveRecords.objects.bulk_create(records)
@@ -269,7 +269,7 @@ def diagnosis_submit(request):
     for era, stat in era_stats.items():
         total = stat["total"]
         correct = stat["correct"]
-        avg_time = stat["time_sum"] // total if total else None
+        avg_time = (stat["time_sum"] // total) // 1000 if total else None
         analytics_rows.append(Analytics(
             session=session,
             key_concept=era,
@@ -282,7 +282,7 @@ def diagnosis_submit(request):
     for q_type, stat in type_stats.items():
         total = stat["total"]
         correct = stat["correct"]
-        avg_time = stat["time_sum"] // total if total else None
+        avg_time = (stat["time_sum"] // total) // 1000 if total else None
         analytics_rows.append(Analytics(
             session=session,
             key_concept=q_type,
