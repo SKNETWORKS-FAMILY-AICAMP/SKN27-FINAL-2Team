@@ -13,7 +13,6 @@ class QuestionData(serializers.Serializer):
     question_id = serializers.IntegerField()
     content = serializers.CharField()
     passage = serializers.CharField(allow_blank=True, allow_null=True, required=False)
-    visual_note = serializers.CharField(allow_blank=True, allow_null=True, required=False)
     question_image_path = serializers.CharField(allow_blank=True, allow_null=True, required=False)
     q_score = serializers.IntegerField()
     era = serializers.CharField()

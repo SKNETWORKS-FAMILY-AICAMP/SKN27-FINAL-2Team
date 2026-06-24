@@ -296,7 +296,7 @@
     }
 
     function toExamQuestion(question) {
-      const source = [question.passage, question.visual_note].filter(Boolean).join("\n\n");
+      const source = question.passage || "";
       return {
         questionId: question.question_id,
         type: question.question_subtype ? `${question.question_type} · ${question.question_subtype}` : question.question_type,

@@ -1,4 +1,4 @@
-"""
+﻿"""
 Build test data from the 78th Korean History exam PDFs.
 
 This script is intentionally isolated under test/CJ/test_q. It only modifies
@@ -41,12 +41,12 @@ import pypdfium2 as pdfium
 ROOT_DIR = Path(__file__).resolve().parents[3]
 DOCS_DIR = ROOT_DIR / "test" / "CJ" / "test_docs"
 OUT_DIR = ROOT_DIR / "test" / "CJ" / "test_q" / "output_78"
+ALL_COMBINED_JSON = ROOT_DIR / "test" / "CJ" / "test_q" / "all_combined.json"
 
-QUESTION_PDF = DOCS_DIR / "78회+한국사_문제지(심화).pdf"
-ANSWER_PDF = DOCS_DIR / "78회+한국사_답지(심화).pdf"
-EXPLANATION_PDF = DOCS_DIR / "한국사능력검정시험 78회 심화 해설 한Pro.pdf"
-ALTER_SQL = ROOT_DIR / "storage" / "postgresql" / "schema" / "alter_questions_for_exam_assets.sql"
-SUBTYPE_ALTER_SQL = ROOT_DIR / "storage" / "postgresql" / "schema" / "alter_questions_for_question_subtype.sql"
+QUESTION_PDF = DOCS_DIR / "78???쒓뎅??臾몄젣吏(?ы솕).pdf"
+ANSWER_PDF = DOCS_DIR / "78???쒓뎅???듭?(?ы솕).pdf"
+EXPLANATION_PDF = DOCS_DIR / "?쒓뎅?щ뒫?κ??뺤떆??78???ы솕 ?댁꽕 ?쏱ro.pdf"
+SCHEMA_ALTER_SQL = ROOT_DIR / "storage" / "postgresql" / "schema" / "alter_apply_latest.sql"
 
 QUESTION_TYPES = [
     "역사 지식의 이해",
@@ -129,7 +129,7 @@ def parse_answer_sheet() -> dict[int, dict[str, int]]:
     with pdfplumber.open(str(ANSWER_PDF)) as pdf:
         text = pdf.pages[0].extract_text() or ""
 
-    pattern = re.compile(r"(\d+)\s+([①②③④⑤])\s+(\d+)")
+    pattern = re.compile(r"(\d+)\s+([?졻몼?™몿??)\s+(\d+)")
     answers: dict[int, dict[str, int]] = {}
     for q_no, circle, score in pattern.findall(text):
         answers[int(q_no)] = {
@@ -153,9 +153,9 @@ def parse_explanations() -> dict[int, dict[str, str]]:
     text = re.sub(r"\n{3,}", "\n\n", text)
 
     explanations: dict[int, dict[str, str]] = {}
-    # The source usually marks sections like "<1번 오답 해설>".
+    # The source usually marks sections like "<1踰??ㅻ떟 ?댁꽕>".
     section_pattern = re.compile(
-        r"<\s*(\d+)\s*번\s+오답\s+해설\s*>(.*?)(?=<\s*\d+\s*번\s+오답\s+해설\s*>|\Z)",
+        r"<\s*(\d+)\s*踰?s+?ㅻ떟\s+?댁꽕\s*>(.*?)(?=<\s*\d+\s*踰?s+?ㅻ떟\s+?댁꽕\s*>|\Z)",
         re.S,
     )
     for match in section_pattern.finditer(text):
@@ -178,15 +178,15 @@ def infer_core_concept(explanation: str) -> str:
         "고조선",
         "부여",
         "고구려",
-        "백제",
+        "諛깆젣",
         "신라",
         "가야",
-        "발해",
-        "고려",
-        "조선",
-        "대한제국",
+        "諛쒗빐",
+        "怨좊젮",
+        "議곗꽑",
+        "대한 제국",
         "일제 강점기",
-        "광복",
+        "愿묐났",
         "민주화",
         "통일",
     ]
@@ -287,28 +287,28 @@ def extract_with_openai(image_paths: dict[int, str]) -> dict[int, dict[str, Any]
         errors = {int(k): str(v) for k, v in raw_errors.items()}
 
     prompt = """
-한국사능력검정시험 심화 문항 이미지에서 지문, 발문, 선택지를 구조화해줘.
-반드시 JSON 객체만 반환해.
+?쒓뎅?щ뒫?κ??뺤떆???ы솕 臾명빆 ?대?吏?먯꽌 吏臾? 諛쒕Ц, ?좏깮吏瑜?援ъ“?뷀빐以?
+諛섎뱶??JSON 媛앹껜留?諛섑솚??
 
-형식:
+?뺤떇:
 {
-  "passage": "자료/지문/말풍선/표/이미지 설명 전체. 없으면 빈 문자열",
-  "content": "발문만",
+  "passage": "?먮즺/吏臾?留먰뭾?????대?吏 ?ㅻ챸 ?꾩껜. ?놁쑝硫?鍮?臾몄옄??,
+  "content": "諛쒕Ц留?,
   "choices": [
-    {"choice_no": 1, "content": "선택지 내용"},
-    {"choice_no": 2, "content": "선택지 내용"},
-    {"choice_no": 3, "content": "선택지 내용"},
-    {"choice_no": 4, "content": "선택지 내용"},
-    {"choice_no": 5, "content": "선택지 내용"}
+    {"choice_no": 1, "content": "?좏깮吏 ?댁슜"},
+    {"choice_no": 2, "content": "?좏깮吏 ?댁슜"},
+    {"choice_no": 3, "content": "?좏깮吏 ?댁슜"},
+    {"choice_no": 4, "content": "?좏깮吏 ?댁슜"},
+    {"choice_no": 5, "content": "?좏깮吏 ?댁슜"}
   ],
-  "visual_note": "그림/지도/사진/표 설명. 없으면 빈 문자열",
-  "parse_status": "ok 또는 review_needed"
+  "visual_note": "洹몃┝/吏???ъ쭊/???ㅻ챸. ?놁쑝硫?鍮?臾몄옄??,
+  "parse_status": "ok ?먮뒗 review_needed"
 }
 
-주의:
-- 선택지 번호 ①②③④⑤는 choice_no로 변환하고 content에는 넣지 마.
-- 이미지 속 텍스트가 흐리면 추측하지 말고 parse_status를 review_needed로 둬.
-- 그림 문제는 visual_note에 무엇을 보고 풀어야 하는지 설명해.
+二쇱쓽:
+- ?좏깮吏 踰덊샇 ?졻몼?™몿?ㅻ뒗 choice_no濡?蹂?섑븯怨?content?먮뒗 ?ｌ? 留?
+- ?대?吏 ???띿뒪?멸? ?먮━硫?異붿륫?섏? 留먭퀬 parse_status瑜?review_needed濡???
+- 洹몃┝ 臾몄젣??visual_note??臾댁뾿??蹂닿퀬 ??댁빞 ?섎뒗吏 ?ㅻ챸??
 """
 
     for q_no, rel_path in image_paths.items():
@@ -390,25 +390,25 @@ def extract_explanations_with_openai(limit: int | None = None) -> dict[int, dict
 
     client = OpenAI()
     prompt = """
-한국사능력검정시험 해설 PDF 한 페이지 이미지에서 문항별 해설을 추출해줘.
-반드시 JSON 객체만 반환해.
+?쒓뎅?щ뒫?κ??뺤떆???댁꽕 PDF ???섏씠吏 ?대?吏?먯꽌 臾명빆蹂??댁꽕??異붿텧?댁쨾.
+諛섎뱶??JSON 媛앹껜留?諛섑솚??
 
-형식:
+?뺤떇:
 {
   "results": [
     {
       "question_no": 1,
-      "answer_explanation": "정답 근거와 오답 해설을 포함한 해설 전체를 자연스럽게 정리",
-      "core_concept": "핵심 개념 1개"
+      "answer_explanation": "?뺣떟 洹쇨굅? ?ㅻ떟 ?댁꽕???ы븿???댁꽕 ?꾩껜瑜??먯뿰?ㅻ읇寃??뺣━",
+      "core_concept": "?듭떖 媛쒕뀗 1媛?
     }
   ]
 }
 
-주의:
-- 페이지에 보이는 문항 번호만 추출해.
-- 정답표만 있고 해설이 없는 표는 results에 넣지 마.
-- 이미지에 원문 해설이 길면 핵심을 보존해서 5~12문장으로 정리해.
-- 문항 번호가 불확실하면 넣지 마.
+二쇱쓽:
+- ?섏씠吏??蹂댁씠??臾명빆 踰덊샇留?異붿텧??
+- ?뺣떟?쒕쭔 ?덇퀬 ?댁꽕???녿뒗 ?쒕뒗 results???ｌ? 留?
+- ?대?吏???먮Ц ?댁꽕??湲몃㈃ ?듭떖??蹂댁〈?댁꽌 5~12臾몄옣?쇰줈 ?뺣━??
+- 臾명빆 踰덊샇媛 遺덊솗?ㅽ븯硫??ｌ? 留?
 """
 
     pdf = pdfium.PdfDocument(str(EXPLANATION_PDF))
@@ -528,6 +528,144 @@ def load_existing_classification() -> dict[int, dict[str, str]]:
     return {int(k): v for k, v in raw.items()}
 
 
+def load_reference_classification() -> dict[int, dict[str, Any]]:
+    """Load existing hand-reviewed labels from all_combined.json when present."""
+    if not ALL_COMBINED_JSON.exists():
+        return {}
+    raw = json.loads(ALL_COMBINED_JSON.read_text(encoding="utf-8"))
+    result: dict[int, dict[str, Any]] = {}
+    for row in raw:
+        q_no = row.get("臾몄젣踰덊샇")
+        if q_no is None:
+            continue
+        result[int(q_no)] = row
+    return result
+
+
+def normalize_era(value: Any, text: str) -> str:
+    source = f"{value or ''} {text}"
+    era_aliases = [
+        ("선사 시대", ["선사", "구석기", "신석기", "청동기", "철기"]),
+        ("고조선", ["고조선", "위만 조선", "단군"]),
+        ("여러 나라", ["부여", "옥저", "동예", "삼한"]),
+        ("삼국 시대", ["삼국", "고구려", "백제", "신라", "가야"]),
+        ("남북국 시대", ["남북국", "통일 신라", "발해"]),
+        ("고려", ["고려"]),
+        ("조선 전기", ["조선 전기", "태조", "세종", "세조", "성종", "훈구"]),
+        ("조선 후기", ["조선 후기", "영조", "정조", "세도 정치", "흥선 대원군"]),
+        ("개항기", ["개항", "대한 제국", "갑신정변", "동학", "갑오개혁", "광무개혁"]),
+        ("일제 강점기", ["일제", "강점", "독립운동", "3·1", "광복군"]),
+        ("현대", ["현대", "대한민국", "정부 수립", "6·25", "민주화", "통일"]),
+    ]
+    for era, keywords in era_aliases:
+        if any(keyword in source for keyword in keywords):
+            return era
+    return normalize_allowed(value, ERA_VALUES, "통합 주제")
+
+
+def normalize_topic(value: Any, text: str) -> str:
+    source = f"{value or ''} {text}"
+    topic_aliases = [
+        ("정치", ["정치", "왕", "정부", "국왕", "통치", "권력", "선거"]),
+        ("경제", ["경제", "토지", "상업", "무역", "화폐", "수취", "세금"]),
+        ("사회", ["사회", "신분", "풍속", "여성", "향촌", "민중"]),
+        ("문화", ["문화", "불교", "유교", "교육", "예술", "건축", "문학", "유산"]),
+        ("인물", ["인물", "업적", "왕", "장군", "학자"]),
+        ("군사", ["군사", "전쟁", "전투", "침입", "항쟁", "군대"]),
+        ("외교", ["외교", "조약", "강화도", "청", "일본", "미국", "러시아"]),
+        ("사상·종교", ["사상", "종교", "불교", "유학", "천도교", "동학"]),
+        ("제도", ["제도", "관청", "법", "정책", "행정", "교육 제도"]),
+        ("사건", ["사건", "운동", "정변", "개혁", "전쟁", "봉기"]),
+        ("지역", ["지역", "지도", "위치", "읍", "도"]),
+    ]
+    for topic, keywords in topic_aliases:
+        if any(keyword in source for keyword in keywords):
+            return topic
+    return normalize_allowed(value, TOPIC_VALUES, "통합")
+
+
+def infer_question_subtype(record: dict[str, Any], reference: dict[str, Any] | None = None) -> str:
+    """Classify subtype for filtering: concept, person, source, chronology, or region."""
+    parts = [
+        str(record.get("content", "")),
+        str(record.get("passage", "")),
+        str(record.get("answer_explanation", "")),
+        str(record.get("core_concept", "")),
+    ]
+    if reference:
+        parts.extend([
+            str(reference.get("臾몄젣?댁슜", "")),
+            " ".join(str(choice) for choice in reference.get("?좏깮吏", [])),
+            str(reference.get("?댁꽕", "")),
+            str(reference.get("?듭떖媛쒕뀗", "")),
+        ])
+    text = " ".join(parts)
+
+    if any(keyword in text for keyword in ["순서", "나열", "전후", "시기", "연표", "흐름"]):
+        return "연표"
+    if any(keyword in text for keyword in ["지도", "위치", "지역", "읍", "도", "영토", "경계"]):
+        return "지역"
+    if any(keyword in text for keyword in ["왕", "인물", "업적", "장군", "학자", "대통령"]):
+        return "인물"
+    if any(keyword in text for keyword in ["자료", "사료", "밑줄", "그림", "사진", "대화", "기사", "보고서", "(가)", "(나)"]):
+        return "사료"
+    return "개념"
+
+
+def classify_records_locally(records: list[dict[str, Any]]) -> dict[int, dict[str, str]]:
+    """Apply the user's classification criteria without calling external APIs."""
+    references = load_reference_classification()
+    classification: dict[int, dict[str, str]] = {}
+    for record in records:
+        q_no = int(record["question_no"])
+        reference = references.get(q_no, {})
+        reference_text = " ".join(
+            [
+                str(reference.get("臾몄젣?댁슜", "")),
+                " ".join(str(choice) for choice in reference.get("?좏깮吏", [])),
+                str(reference.get("?댁꽕", "")),
+                str(reference.get("?듭떖媛쒕뀗", "")),
+            ]
+        )
+        record_text = " ".join(
+            [
+                str(record.get("content", "")),
+                str(record.get("passage", "")),
+                str(record.get("answer_explanation", "")),
+                str(record.get("core_concept", "")),
+            ]
+        )
+        source_text = f"{reference_text} {record_text}"
+
+        question_type = normalize_allowed(
+            reference.get("question_type") or record.get("question_type"),
+            QUESTION_TYPES,
+            infer_question_type(source_text),
+        )
+        classification[q_no] = {
+            "era": normalize_era(reference.get("?쒕?") or record.get("era"), source_text),
+            "topic": normalize_topic(reference.get("二쇱젣") or record.get("topic"), source_text),
+            "question_type": question_type,
+            "question_subtype": infer_question_subtype(record, reference),
+        }
+    return classification
+
+
+def infer_question_type(text: str) -> str:
+    """Fallback major-type classifier based on the user's six behavior criteria."""
+    if any(keyword in text for keyword in ["순서", "나열", "전후", "연표", "흐름", "시기"]):
+        return "연대기의 파악"
+    if any(keyword in text for keyword in ["자료", "사료", "지도", "사진", "도표", "대화", "기사", "그림"]):
+        return "역사 자료의 분석 및 해석"
+    if any(keyword in text for keyword in ["탐구", "조사", "검색", "보고서", "답사", "전시", "수집"]):
+        return "역사 탐구의 설계 및 수행"
+    if any(keyword in text for keyword in ["의의", "영향", "결과", "공통점", "차이점", "결론"]):
+        return "결론의 도출 및 평가"
+    if any(keyword in text for keyword in ["배경", "원인", "목적", "주장", "입장", "정세", "전개"]):
+        return "역사 상황 및 쟁점의 인식"
+    return "역사 지식의 이해"
+
+
 def apply_classification(records: list[dict[str, Any]], classification: dict[int, dict[str, str]]) -> None:
     for record in records:
         item = classification.get(int(record["question_no"]))
@@ -540,68 +678,76 @@ def apply_classification(records: list[dict[str, Any]], classification: dict[int
 
 
 def classify_records_with_openai(records: list[dict[str, Any]], limit: int | None = None) -> dict[int, dict[str, str]]:
-    try:
-        from openai import OpenAI
-    except ImportError as exc:
-        raise RuntimeError("openai package is required for --classify") from exc
-
-    if not os.getenv("OPENAI_API_KEY"):
-        raise RuntimeError("OPENAI_API_KEY is required for --classify")
-
     output_path = OUT_DIR / "classification_78.json"
     errors_path = OUT_DIR / "classification_errors_78.json"
     classification = load_existing_classification()
+    classification.update(classify_records_locally(records))
     errors: dict[int, str] = {}
     if errors_path.exists():
         raw_errors = json.loads(errors_path.read_text(encoding="utf-8"))
         errors = {int(k): str(v) for k, v in raw_errors.items()}
 
-    client = OpenAI()
     targets = records[:limit] if limit else records
+    missing_targets = [
+        record for record in targets
+        if int(record["question_no"]) not in classification
+    ]
+    if not missing_targets:
+        write_json(output_path, dict(sorted(classification.items())))
+        write_json(errors_path, dict(sorted(errors.items())))
+        return classification
+
+    try:
+        from openai import OpenAI
+    except ImportError as exc:
+        raise RuntimeError("openai package is required for unresolved --classify records") from exc
+
+    if not os.getenv("OPENAI_API_KEY"):
+        raise RuntimeError("OPENAI_API_KEY is required for unresolved --classify records")
+
+    client = OpenAI()
     question_types = "\n".join(f"- {value}" for value in QUESTION_TYPES)
     question_subtypes = "\n".join(f"- {value}" for value in QUESTION_SUBTYPES)
     eras = "\n".join(f"- {value}" for value in ERA_VALUES)
     topics = "\n".join(f"- {value}" for value in TOPIC_VALUES)
 
-    for record in targets:
+    for record in missing_targets:
         q_no = int(record["question_no"])
-        if q_no in classification:
-            continue
 
         choices_text = "\n".join(
             f"{choice['choice_no']}. {choice['content']}"
             for choice in record.get("choices", [])
         )
         prompt = f"""
-다음 한국사능력검정시험 문항을 분류해줘.
-반드시 JSON 객체만 반환해.
+?ㅼ쓬 ?쒓뎅?щ뒫?κ??뺤떆??臾명빆??遺꾨쪟?댁쨾.
+諛섎뱶??JSON 媛앹껜留?諛섑솚??
 
-허용 question_type:
+?덉슜 question_type:
 {question_types}
 
-허용 question_subtype:
+?덉슜 question_subtype:
 {question_subtypes}
 
-허용 era:
+?덉슜 era:
 {eras}
 
-허용 topic:
+?덉슜 topic:
 {topics}
 
-문항:
-- 번호: {q_no}
-- 발문: {record.get("content", "")}
-- 자료/지문: {record.get("passage", "")}
-- 선택지:
+臾명빆:
+- 踰덊샇: {q_no}
+- 諛쒕Ц: {record.get("content", "")}
+- ?먮즺/吏臾? {record.get("passage", "")}
+- ?좏깮吏:
 {choices_text}
-- 정답 해설: {record.get("answer_explanation", "")}
+- ?뺣떟 ?댁꽕: {record.get("answer_explanation", "")}
 
-반환 형식:
+諛섑솚 ?뺤떇:
 {{
-  "era": "허용 era 중 하나",
-  "topic": "허용 topic 중 하나",
-  "question_type": "허용 question_type 중 하나",
-  "question_subtype": "허용 question_subtype 중 하나"
+  "era": "?덉슜 era 以??섎굹",
+  "topic": "?덉슜 topic 以??섎굹",
+  "question_type": "?덉슜 question_type 以??섎굹",
+  "question_subtype": "?덉슜 question_subtype 以??섎굹"
 }}
 """
         try:
@@ -613,17 +759,17 @@ def classify_records_with_openai(records: list[dict[str, Any]], limit: int | Non
             )
             data = json.loads(response.choices[0].message.content or "{}")
             item = {
-                "era": normalize_allowed(data.get("era"), ERA_VALUES, "통합 주제"),
-                "topic": normalize_allowed(data.get("topic"), TOPIC_VALUES, "통합"),
+                "era": normalize_allowed(data.get("era"), ERA_VALUES, "?듯빀 二쇱젣"),
+                "topic": normalize_allowed(data.get("topic"), TOPIC_VALUES, "?듯빀"),
                 "question_type": normalize_allowed(
                     data.get("question_type"),
                     QUESTION_TYPES,
-                    "역사 자료의 분석 및 해석",
+                    "??궗 ?먮즺??遺꾩꽍 諛??댁꽍",
                 ),
                 "question_subtype": normalize_allowed(
                     data.get("question_subtype"),
                     QUESTION_SUBTYPES,
-                    "개념",
+                    "媛쒕뀗",
                 ),
             }
             classification[q_no] = item
@@ -635,6 +781,8 @@ def classify_records_with_openai(records: list[dict[str, Any]], limit: int | Non
         write_json(errors_path, dict(sorted(errors.items())))
         time.sleep(0.2)
 
+    write_json(output_path, dict(sorted(classification.items())))
+    write_json(errors_path, dict(sorted(errors.items())))
     return classification
 
 
@@ -660,17 +808,15 @@ def build_seed_records(
         explanation = explanations.get(q_no, {})
         extracted = (vision_data or {}).get(q_no, {})
         choices = extracted.get("choices") or [
-            {"choice_no": n, "content": f"{n}번 선택지"}
+            {"choice_no": n, "content": f"{n}踰??좏깮吏"}
             for n in range(1, 6)
         ]
-        content = extracted.get("content") or "문항 이미지를 보고 정답을 선택하세요."
+        content = extracted.get("content") or "臾명빆 ?대?吏瑜?蹂닿퀬 ?뺣떟???좏깮?섏꽭??"
         passage = extracted.get("passage") or ""
         if not extracted.get("content"):
-            passage = f"문항 이미지: {image_paths.get(q_no, '')}"
+            passage = f"臾명빆 ?대?吏: {image_paths.get(q_no, '')}"
 
         record = {
-            "exam_round": 78,
-            "exam_level": "심화",
             "question_no": q_no,
             "q_score": answer.get("q_score"),
             "era": "미분류",
@@ -679,12 +825,10 @@ def build_seed_records(
             "question_subtype": "미분류",
             "content": content,
             "passage": passage,
-            "visual_note": extracted.get("visual_note") or "",
             "question_image_path": image_paths.get(q_no, ""),
             "answer_no": answer.get("answer_no"),
             "answer_explanation": explanation.get("answer_explanation", ""),
             "core_concept": explanation.get("core_concept", ""),
-            "parse_status": extracted.get("parse_status") or "image_only",
             "choices": [
                 {
                     "choice_no": int(choice.get("choice_no")),
@@ -716,41 +860,26 @@ def import_records_to_db(records: list[dict[str, Any]]) -> None:
     conn = psycopg2.connect(**config)
     try:
         with conn, conn.cursor() as cur:
-            if ALTER_SQL.exists():
-                cur.execute(ALTER_SQL.read_text(encoding="utf-8"))
-            if SUBTYPE_ALTER_SQL.exists():
-                cur.execute(SUBTYPE_ALTER_SQL.read_text(encoding="utf-8"))
+            if SCHEMA_ALTER_SQL.exists():
+                cur.execute(SCHEMA_ALTER_SQL.read_text(encoding="utf-8"))
+
+            cur.execute("TRUNCATE TABLE solve_records, question_options, questions RESTART IDENTITY CASCADE")
 
             for record in records:
                 cur.execute(
                     """
                     INSERT INTO questions (
-                        exam_round, exam_level, question_no,
+                        question_no,
                         q_score, era, topic, question_type, question_subtype,
-                        content, passage, visual_note, question_image_path, parse_status,
+                        content, passage, question_image_path,
                         answer_no, answer_explanation, core_concept
                     )
                     VALUES (
-                        %(exam_round)s, %(exam_level)s, %(question_no)s,
+                        %(question_no)s,
                         %(q_score)s, %(era)s, %(topic)s, %(question_type)s, %(question_subtype)s,
-                        %(content)s, %(passage)s, %(visual_note)s, %(question_image_path)s, %(parse_status)s,
+                        %(content)s, %(passage)s, %(question_image_path)s,
                         %(answer_no)s, %(answer_explanation)s, %(core_concept)s
                     )
-                    ON CONFLICT (exam_round, exam_level, question_no)
-                    DO UPDATE SET
-                        q_score = EXCLUDED.q_score,
-                        era = EXCLUDED.era,
-                        topic = EXCLUDED.topic,
-                        question_type = EXCLUDED.question_type,
-                        question_subtype = EXCLUDED.question_subtype,
-                        content = EXCLUDED.content,
-                        passage = EXCLUDED.passage,
-                        visual_note = EXCLUDED.visual_note,
-                        question_image_path = EXCLUDED.question_image_path,
-                        parse_status = EXCLUDED.parse_status,
-                        answer_no = EXCLUDED.answer_no,
-                        answer_explanation = EXCLUDED.answer_explanation,
-                        core_concept = EXCLUDED.core_concept
                     RETURNING question_id
                     """,
                     record,
