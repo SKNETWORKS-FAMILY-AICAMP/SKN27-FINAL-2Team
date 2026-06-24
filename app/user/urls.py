@@ -15,5 +15,4 @@ urlpatterns = [
     path("profile/edit/", views.profile_edit, name="profile_edit"),
     path("solved-problems/", views.solved_problems, name="solved_problems"),
     path("wrong-note/", views.wrong_note, name="wrong_note"),
-    path("wrong-rate-detail/", views.wrong_rate_detail, name="wrong_rate_detail"),
 ]
