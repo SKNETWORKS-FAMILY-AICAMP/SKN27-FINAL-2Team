@@ -119,7 +119,25 @@ Markdown파일
 상세요청URL
 ```
 
-주의: 이미지 자료는 현재 국가기관/국립기관 계열 출처만 남긴 상태이며, 기준 건수는 1,696건이다.
+주의: 이미지 자료는 현재 저작권 사용 가능 기준으로 필터링한 상태이며, 기준 건수는 1,417건이다.
+
+유지 기준:
+
+```text
+국사편찬위원회 계열 원 출처
+공공누리 제1유형
+저작권 만료 또는 만료저작물
+퍼블릭 도메인 또는 사용 가능으로 확인된 자료
+```
+
+삭제 기준:
+
+```text
+공공누리 제2유형, 제3유형, 제4유형
+사용금지 또는 사용불가
+라이선스 확인 불가
+데이터 삭제로 판단한 자료
+```
 
 ## 3. 전처리 실행
 
@@ -160,15 +178,15 @@ cd C:\dev\project\SKN27-FINAL-2Team
 신편 한국사 documents:      6,442
 신편 한국사 chunks:         24,864
 
-한국사 이미지 자료 documents: 1,696
-한국사 이미지 자료 chunks:    1,696
+한국사 이미지 자료 documents: 1,417
+한국사 이미지 자료 chunks:    1,417
 ```
 
 전체 기준:
 
 ```text
-documents: 9,284
-chunks:    34,100
+documents: 9,005
+chunks:    33,821
 ```
 
 ## 5. Docker DB 실행
@@ -244,7 +262,42 @@ docker-compose up -d
 .\.venv\Scripts\python.exe etl\preprocessing\history\embedding\embed_chunks_to_pgvector.py --chunk-file image_materials.chunks.jsonl --delete-missing --limit 0
 ```
 
-## 8. 임베딩 생성
+## 8. 이미지 라이선스 필터 DB 동기화
+
+팀원 DB에 기존 이미지 자료 1,696건이 들어가 있고, 최신 CSV/JSONL 기준 1,417건만 남겨야 할 때 사용한다.
+
+반드시 `source_type = 'image_material'` 조건을 유지한다. 이 조건이 있어야 `사료로 본 한국사`, `신편 한국사` 데이터는 삭제되지 않는다.
+
+프로젝트 루트에서 실행:
+
+```powershell
+$csv='C:\dev\project\SKN27-FINAL-2Team\etl\raw_data\한국사 이미지 자료\한국사_이미지_자료.csv'
+$ids = Import-Csv -LiteralPath $csv | ForEach-Object { $_.이미지ID } | Where-Object { $_ }
+$sqlLines = New-Object System.Collections.Generic.List[string]
+$sqlLines.Add('BEGIN;')
+$sqlLines.Add('CREATE TEMP TABLE kept_image_ids(id text PRIMARY KEY);')
+$sqlLines.Add('COPY kept_image_ids(id) FROM STDIN;')
+foreach ($id in $ids) { $sqlLines.Add($id) }
+$sqlLines.Add('\.')
+$sqlLines.Add("SELECT COUNT(*) AS db_before FROM rag.document_chunks WHERE source_type = 'image_material';")
+$sqlLines.Add("DELETE FROM rag.document_chunks dc WHERE dc.source_type = 'image_material' AND NOT EXISTS (SELECT 1 FROM kept_image_ids k WHERE k.id = dc.document_id);")
+$sqlLines.Add("SELECT COUNT(*) AS db_after FROM rag.document_chunks WHERE source_type = 'image_material';")
+$sqlLines.Add('ANALYZE rag.document_chunks;')
+$sqlLines.Add('COMMIT;')
+$sql = ($sqlLines -join "`n") + "`n"
+$sql | docker exec -i skn27-postgres psql -U himate -d history_rag -v ON_ERROR_STOP=1
+```
+
+정상 결과 기준:
+
+```text
+COPY 1417
+db_before: 1696
+DELETE 279
+db_after: 1417
+```
+
+## 9. 임베딩 생성
 
 임베딩이 없는 청크를 새로 임베딩하려면 `--limit`을 충분히 크게 지정한다.
 
@@ -254,7 +307,7 @@ docker-compose up -d
 
 중간에 끊기면 같은 명령을 다시 실행하면 된다. 스크립트는 `embedding IS NULL`이거나 임베딩 모델이 다른 청크부터 이어서 처리한다.
 
-## 9. 적재 결과 확인 SQL
+## 10. 적재 결과 확인 SQL
 
 전체 청크 수:
 
@@ -308,7 +361,7 @@ ORDER BY source_name, title
 LIMIT 20;
 ```
 
-## 10. 벡터 인덱스 확인
+## 11. 벡터 인덱스 확인
 
 ```sql
 SELECT indexname

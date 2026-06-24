@@ -9,14 +9,13 @@ from pathlib import Path
 
 CURRENT_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
-TEST_HS_DIR = PROJECT_ROOT / "test" / "HS"
 DEFAULT_PROCESSED_DIR = PROJECT_ROOT / "etl" / "preprocessing" / "history" / "processed"
-for path in (CURRENT_DIR, TEST_HS_DIR):
+for path in (CURRENT_DIR, PROJECT_ROOT):
     if str(path) not in sys.path:
         sys.path.insert(0, str(path))
 
-from rag_prototype.config import RagPaths
-from rag_prototype.retriever import HybridRagRetriever, SearchResult
+from app.chatbot.rag.rag_prototype.config import RagPaths
+from app.chatbot.rag.rag_prototype.retriever import HybridRagRetriever, SearchResult
 
 
 DEFAULT_GOLDEN_PATH = CURRENT_DIR / "golden_questions.jsonl"
