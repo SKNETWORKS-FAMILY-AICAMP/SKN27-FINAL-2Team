@@ -13,4 +13,5 @@ urlpatterns = [
     path("api/sessions/in-progress/", views.question_in_progress_sessions, name="api_in_progress_sessions"),
     path("api/session/<int:session_id>/", views.question_save_session, name="api_session"),
     path("api/session/<int:session_id>/answer/", views.question_save_answer, name="api_save_answer"),
+    path("api/session/<int:session_id>/wrong-chat-context/", views.question_wrong_chat_context, name="api_wrong_chat_context"),
 ]

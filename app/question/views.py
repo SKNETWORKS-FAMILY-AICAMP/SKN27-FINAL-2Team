@@ -22,6 +22,9 @@ from .serializers import (
 
 PRACTICE_SESSION_TYPE = "practice"
 GUEST_DAILY_COUNT = 10
+IN_PROGRESS_SESSION_STATUS = "in_progress"
+SAVED_SESSION_STATUS = "saved"
+COMPLETED_SESSION_STATUS = "completed"
 GUEST_QUESTION_BASE_DATE = date(2026, 6, 23)
 TIME_LIMIT_SECONDS_BY_COUNT = {
     50: 80 * 60,
@@ -34,6 +37,13 @@ SCORE_RATIO = {
     3: 1,
     2: 3,
     1: 1,
+}
+BASIC_SCORE_COUNTS = {3: 10, 2: 30, 1: 10}
+HARD_SCORE_COUNTS = {3: 20, 2: 10, 1: 20}
+DETAIL_DIFFICULTY_RATIOS = {
+    "상": {3: 2, 2: 1, 1: 2},
+    "중": {3: 1, 2: 3, 1: 1},
+    "하": {3: 0, 2: 2, 1: 3},
 }
 DIFFICULTY_TO_SCORE = {
     "상": 3,
@@ -117,6 +127,7 @@ def _serialize_questions(questions):
                 "choice_no": option.choice_no,
                 "content": option.content,
                 "choice_image_path": option.choice_image_path,
+                "choice_explanation": option.choice_explanation,
             }
             for option in options
         ]
@@ -131,6 +142,9 @@ def _serialize_questions(questions):
             "topic": question.topic,
             "question_type": question.question_type,
             "question_subtype": question.question_subtype,
+            "answer_no": question.answer_no,
+            "answer_explanation": question.answer_explanation,
+            "core_concept": question.core_concept,
             "choices": choices,
         })
     return serialized_questions
@@ -152,6 +166,7 @@ def _serialize_session_questions(records):
                 "choice_no": option.choice_no,
                 "content": option.content,
                 "choice_image_path": option.choice_image_path,
+                "choice_explanation": option.choice_explanation,
             }
             for option in options
         ]
@@ -174,6 +189,9 @@ def _serialize_session_questions(records):
             "topic": question.topic,
             "question_type": question.question_type,
             "question_subtype": question.question_subtype,
+            "answer_no": question.answer_no,
+            "answer_explanation": question.answer_explanation,
+            "core_concept": question.core_concept,
             "choices": choices,
             "selected_choice_id": selected_choice_id,
             "selected_choice_no": record.selected_no,
@@ -233,8 +251,29 @@ def _score_counts(total_count, selected_scores):
     return counts
 
 
+def _score_counts_by_ratio(total_count, score_ratio):
+    scores = [score for score in [3, 2, 1] if score_ratio.get(score, 0) > 0]
+    ratio_sum = sum(score_ratio[score] for score in scores)
+    counts = {
+        score: (total_count * score_ratio[score]) // ratio_sum
+        for score in scores
+    }
+
+    assigned_count = sum(counts.values())
+    remainders = sorted(
+        scores,
+        key=lambda score: (
+            (total_count * score_ratio[score]) % ratio_sum,
+            score_ratio[score],
+        ),
+        reverse=True,
+    )
+    for score in remainders[:total_count - assigned_count]:
+        counts[score] += 1
+    return counts
+
+
 # 난이도별 목표 개수에 맞춰 문제 ID를 추출한다.
-# 특정 난이도의 문제가 부족하면 부족분은 나머지 후보 문제에서 채운다.
 def _sample_questions_by_score(qs, count, selected_scores):
     score_counts = _score_counts(count, selected_scores)
     return _sample_questions_by_score_counts(qs, score_counts)
@@ -243,7 +282,6 @@ def _sample_questions_by_score(qs, count, selected_scores):
 # 점수별 목표 개수가 직접 지정된 경우 해당 개수에 맞춰 문제 ID를 추출한다.
 def _sample_questions_by_score_counts(qs, score_counts):
     selected_ids = []
-    shortage_count = 0
 
     for score, score_count in score_counts.items():
         if score_count <= 0:
@@ -251,34 +289,51 @@ def _sample_questions_by_score_counts(qs, score_counts):
         score_ids = list(
             qs.filter(q_score=score).values_list("question_id", flat=True)
         )
-        if len(score_ids) >= score_count:
-            selected_ids.extend(random.sample(score_ids, score_count))
-        else:
-            selected_ids.extend(score_ids)
-            shortage_count += score_count - len(score_ids)
-
-    if shortage_count:
-        fallback_ids = list(
-            qs.exclude(question_id__in=selected_ids)
-            .values_list("question_id", flat=True)
-        )
-        if len(fallback_ids) < shortage_count:
+        if len(score_ids) < score_count:
             return None, {
-                "error": "조건에 맞는 문제가 부족합니다.",
-                "available_count": len(selected_ids) + len(fallback_ids),
-                "requested_count": sum(score_counts.values()),
+                "error": "선택한 난이도 구성에 맞는 문제가 부족합니다.",
+                "score": score,
+                "available_count": len(score_ids),
+                "requested_count": score_count,
             }
-        selected_ids.extend(random.sample(fallback_ids, shortage_count))
+        selected_ids.extend(random.sample(score_ids, score_count))
 
     random.shuffle(selected_ids)
     return selected_ids, None
 
 
+def _score_counts_for_generation_mode(data):
+    generation_mode = data["generation_mode"]
+
+    if generation_mode == "basic":
+        return BASIC_SCORE_COUNTS.copy(), None
+    if generation_mode == "hard":
+        return HARD_SCORE_COUNTS.copy(), None
+
+    missing_fields = []
+    if not data["eras"]:
+        missing_fields.append("시대")
+    if not data["topics"]:
+        missing_fields.append("주제")
+    if not data["question_types"]:
+        missing_fields.append("대유형")
+    if not data["question_subtypes"]:
+        missing_fields.append("소유형")
+    if len(data["difficulties"]) != 1:
+        missing_fields.append("난이도")
+    if missing_fields:
+        return None, {
+            "error": "문제 생성 조건을 모두 선택해 주세요.",
+            "missing_fields": missing_fields,
+        }
+
+    difficulty = data["difficulties"][0]
+    return _score_counts_by_ratio(data["count"], DETAIL_DIFFICULTY_RATIOS[difficulty]), None
+
+
 # 1. 문제 생성 조건 API
-# - GET /question/api/filters/: DB에 있는 문제의 시대/주제/배점/유형/문항 수 조건을 제공한다.
-# - POST /question/api/start/: 선택 조건에 맞는 문제를 뽑는다.
-#   로그인 사용자는 solve_sessions/solve_records에 저장되어 이어 풀기가 가능하고,
-#   비로그인 사용자는 날짜 기준으로 하루 동안 고정된 10문항을 받아 바로 풀이한다.
+# - GET은 문제 생성 화면의 선택 조건 목록을 제공한다.
+# - POST는 생성 모드와 조건에 맞는 문제를 뽑아 풀이 세션을 만든다.
 @api_view(["GET"])
 # 문제 생성 화면에서 사용할 필터 조건 목록을 제공한다.
 def question_filters(request):
@@ -306,6 +361,12 @@ def question_start(request):
     data = req_question_start.validated_data
     user_id = _get_login_user_id(request)
     qs = _base_question_queryset()
+    score_counts = {}
+    score_counts_error = None
+    if user_id is not None:
+        score_counts, score_counts_error = _score_counts_for_generation_mode(data)
+        if score_counts_error:
+            return Response(score_counts_error, status=status.HTTP_400_BAD_REQUEST)
 
     if user_id is not None and data["eras"]:
         qs = qs.filter(era__in=data["eras"])
@@ -316,22 +377,9 @@ def question_start(request):
     if user_id is not None and data["question_subtypes"]:
         qs = qs.filter(question_subtype__in=data["question_subtypes"])
 
-    count = data["count"] if user_id is not None else GUEST_DAILY_COUNT
+    count = sum(score_counts.values()) if user_id is not None else GUEST_DAILY_COUNT
     if user_id is not None:
-        requested_score_counts = {}
-        for score, score_count in data["score_counts"].items():
-            try:
-                score = int(score)
-            except (TypeError, ValueError):
-                continue
-            if score in {1, 2, 3} and score_count > 0:
-                requested_score_counts[score] = score_count
-        if requested_score_counts:
-            count = sum(requested_score_counts.values())
-            selected_scores = list(requested_score_counts.keys())
-        else:
-            selected_difficulties = data["difficulties"] or ["상", "중", "하"]
-            selected_scores = [DIFFICULTY_TO_SCORE[difficulty] for difficulty in selected_difficulties]
+        selected_scores = list(score_counts.keys())
         qs = qs.filter(q_score__in=selected_scores)
 
     question_ids = list(qs.order_by("question_id").values_list("question_id", flat=True))
@@ -348,10 +396,7 @@ def question_start(request):
     if user_id is None:
         selected_ids = _daily_guest_question_ids(question_ids)
     else:
-        if requested_score_counts:
-            selected_ids, score_error = _sample_questions_by_score_counts(qs, requested_score_counts)
-        else:
-            selected_ids, score_error = _sample_questions_by_score(qs, count, selected_scores)
+        selected_ids, score_error = _sample_questions_by_score_counts(qs, score_counts)
         if score_error:
             return Response(score_error, status=status.HTTP_400_BAD_REQUEST)
     questions = list(Questions.objects.filter(question_id__in=selected_ids))
@@ -364,7 +409,7 @@ def question_start(request):
             session_type=PRACTICE_SESSION_TYPE,
             total_count=count,
             elapsed_sec=0,
-            status="in_progress",
+            status=IN_PROGRESS_SESSION_STATUS,
             recorded_date=date.today(),
         )
         SolveRecords.objects.bulk_create([
@@ -391,12 +436,8 @@ def question_start(request):
 
 
 # 2. 문제 풀이 API
-# - solve_sessions는 문제풀이 한 판을 저장한다. 사용자가 중간에 나가도 같은 세션으로 이어 풀 수 있다.
-# - solve_records는 해당 세션에 포함된 문제를 1문항씩 저장하고, 선택 답안/풀이 시간/정오 여부를 기록한다.
-# - 비로그인 사용자는 문제 생성/풀이만 가능하며, 저장/불러오기 API는 사용할 수 없다.
-# - GET /question/api/sessions/in-progress/: 이어 풀 수 있는 practice 세션 목록을 조회한다.
-# - GET /question/api/session/<session_id>/: practice 세션의 문제와 임시 저장 답안을 조회한다.
-# - PATCH /question/api/session/<session_id>/answer/: 특정 문항의 선택 답안을 solve_records에 임시 저장한다.
+# - 저장 버튼을 누른 practice 세션만 불러오기 목록에 노출한다.
+# - 세션 상세/답안 저장 API는 선택 답안, 남은 시간, 문항별 풀이 시간을 관리한다.
 @api_view(["GET"])
 # 로그인 사용자의 진행 중인 practice 풀이 세션 목록을 반환한다.
 # 문제 생성 화면의 "문제 불러오기" 기능에서 사용한다.
@@ -412,7 +453,7 @@ def question_in_progress_sessions(request):
         SolveSessions.objects.filter(
             user_id=user_id,
             session_type=PRACTICE_SESSION_TYPE,
-            status="in_progress",
+            status=SAVED_SESSION_STATUS,
         ).order_by("-recorded_date", "-session_id")
     )
     session_ids = [session.session_id for session in sessions]
@@ -555,9 +596,19 @@ def question_save_answer(request, session_id):
     record.time_spent_ms = data["time_spent_ms"]
     record.save(update_fields=["selected_no", "is_correct", "time_spent_ms"])
 
+    update_session_fields = []
     if data["elapsed_sec"] is not None:
         session.elapsed_sec = data["elapsed_sec"]
-        session.save(update_fields=["elapsed_sec"])
+        update_session_fields.append("elapsed_sec")
+    if data["mark_saved"]:
+        session.status = SAVED_SESSION_STATUS
+        update_session_fields.append("status")
+    if data["mark_completed"]:
+        session.status = COMPLETED_SESSION_STATUS
+        if "status" not in update_session_fields:
+            update_session_fields.append("status")
+    if update_session_fields:
+        session.save(update_fields=update_session_fields)
 
     serializer = SaveAnswerResponse({
         "session_id": session.session_id,
@@ -569,3 +620,83 @@ def question_save_answer(request, session_id):
         "is_answered": selected_choice_no is not None,
     })
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+def question_wrong_chat_context(request, session_id):
+    user_id = _get_login_user_id(request)
+    if user_id is None:
+        return Response(
+            {"error": "로그인이 필요한 기능입니다."},
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
+
+    try:
+        session = SolveSessions.objects.get(
+            session_id=session_id,
+            user_id=user_id,
+            session_type=PRACTICE_SESSION_TYPE,
+        )
+    except SolveSessions.DoesNotExist:
+        return Response(
+            {"error": "풀이 세션을 찾을 수 없습니다."},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+
+    records = list(
+        SolveRecords.objects.filter(session=session)
+        .select_related("question")
+        .order_by("record_id")
+    )
+    question_ids = [record.question_id for record in records]
+    option_map = {}
+    for option in QuestionOptions.objects.filter(question_id__in=question_ids).order_by(
+        "question_id",
+        "choice_no",
+    ):
+        option_map.setdefault(option.question_id, []).append(option)
+
+    wrong_questions = []
+    for number, record in enumerate(records, start=1):
+        if record.is_correct:
+            continue
+        question = record.question
+        options = option_map.get(question.question_id, [])
+        wrong_questions.append({
+            "record_id": record.record_id,
+            "session_id": session.session_id,
+            "number": number,
+            "question_id": question.question_id,
+            "content": question.content,
+            "passage": question.passage,
+            "image_caption": question.image_caption,
+            "selected_no": record.selected_no,
+            "answer_no": question.answer_no,
+            "is_correct": record.is_correct,
+            "time_spent_ms": record.time_spent_ms,
+            "era": record.era,
+            "topic": record.topic,
+            "question_type": record.q_type,
+            "question_subtype": question.question_subtype,
+            "q_score": record.q_score,
+            "keyword": question.core_concept,
+            "answer_explanation": question.answer_explanation,
+            "options": [
+                {
+                    "choice_no": option.choice_no,
+                    "content": option.content,
+                    "is_answer": option.is_answer,
+                    "choice_explanation": option.choice_explanation,
+                }
+                for option in options
+            ],
+        })
+
+    return Response(
+        {
+            "session_id": session.session_id,
+            "wrong_count": len(wrong_questions),
+            "wrong_questions": wrong_questions,
+        },
+        status=status.HTTP_200_OK,
+    )
