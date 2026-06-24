@@ -58,6 +58,57 @@ button {
   line-height: 1.4;
 }
 
+.mode-panel {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.mode-card {
+  display: grid;
+  gap: 8px;
+  min-height: 118px;
+  padding: 22px;
+  border: 2px solid var(--line);
+  border-radius: 16px;
+  background: var(--white);
+  cursor: pointer;
+  transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
+
+.mode-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--green);
+}
+
+.mode-card.selected {
+  border-color: var(--green);
+  background: var(--soft);
+}
+
+.mode-card input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.mode-card span {
+  color: var(--ink);
+  font-size: 24px;
+  font-weight: 950;
+}
+
+.mode-card strong {
+  color: var(--muted);
+  font-size: 15px;
+  font-weight: 900;
+  line-height: 1.45;
+}
+
+.is-hidden {
+  display: none !important;
+}
+
 .condition-panel {
   display: grid;
   gap: 0;
@@ -149,6 +200,10 @@ button {
     grid-template-columns: 1fr;
     gap: 12px;
     padding: 20px;
+  }
+
+  .mode-panel {
+    grid-template-columns: 1fr;
   }
 
   .create-actions {

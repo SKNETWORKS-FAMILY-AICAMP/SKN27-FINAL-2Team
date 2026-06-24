@@ -53,6 +53,11 @@ class StartQuestionsRequest(serializers.Serializer):
     )
     question_types = serializers.ListField(child=serializers.CharField(), required=False, default=list)
     question_subtypes = serializers.ListField(child=serializers.CharField(), required=False, default=list)
+    score_counts = serializers.DictField(
+        child=serializers.IntegerField(min_value=0),
+        required=False,
+        default=dict,
+    )
     count = serializers.IntegerField(min_value=1, default=20)
 
 

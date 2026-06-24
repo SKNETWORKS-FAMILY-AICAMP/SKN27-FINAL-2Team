@@ -5,53 +5,64 @@ CREATE EXTENSION IF NOT EXISTS unaccent;
 CREATE SCHEMA IF NOT EXISTS rag;
 
 -- =============================================
--- 전체 테이블 생성 (public 스키마)
--- FK 의존성 순서: user_accounts, questions 먼저
+-- 초기 PostgreSQL 스키마 생성 파일
+-- 새 DB를 처음 만들 때 실행되는 기준 스키마입니다.
+--
+-- 이미 만들어진 기존 DB에 변경된 컬럼만 반영할 때는
+-- 이 파일이 아니라 storage/postgresql/schema/alter_apply_latest.sql 을 실행하세요.
+--
+-- 외래키 참조 순서 때문에 user_accounts, questions 계열 테이블을 먼저 생성합니다.
 -- =============================================
 
 -- 1. 사용자 계정
 CREATE TABLE IF NOT EXISTS user_accounts (
-    user_id         BIGSERIAL       PRIMARY KEY,
-    email           VARCHAR(255)    NOT NULL UNIQUE,
-    password_hash   VARCHAR(255)    NOT NULL,
-    nickname        VARCHAR(30)     NOT NULL,
-    login_fail_count INT            NOT NULL DEFAULT 0,
-    is_locked       BOOLEAN         NOT NULL DEFAULT FALSE,
-    locked_at       TIMESTAMP       NULL,
-    status          VARCHAR(20)     NOT NULL DEFAULT 'active',
-    created_at      TIMESTAMP       NOT NULL DEFAULT NOW(),
-    updated_at      TIMESTAMP       NOT NULL DEFAULT NOW(),
-    deleted_at      TIMESTAMP       NULL,
-    last_login      TIMESTAMP       NULL
+    user_id          BIGSERIAL       PRIMARY KEY,
+    email            VARCHAR(255)    NOT NULL UNIQUE,
+    password_hash    VARCHAR(255)    NOT NULL,
+    nickname         VARCHAR(30)     NOT NULL,
+    login_fail_count INT             NOT NULL DEFAULT 0,
+    is_locked        BOOLEAN         NOT NULL DEFAULT FALSE,
+    locked_at        TIMESTAMP       NULL,
+    status           VARCHAR(20)     NOT NULL DEFAULT 'active',
+    created_at       TIMESTAMP       NOT NULL DEFAULT NOW(),
+    updated_at       TIMESTAMP       NOT NULL DEFAULT NOW(),
+    deleted_at       TIMESTAMP       NULL,
+    last_login       TIMESTAMP       NULL
 );
 
--- 2. 문제
+-- 2. 문제 본문
+-- 문제 생성/풀이 화면에서 사용하는 문항 단위 데이터입니다.
+-- 현재 테스트 데이터는 이미지 파일을 직접 보여주지 않고,
+-- 이미지 지문과 이미지 선택지를 텍스트 캡션으로 바꿔 저장합니다.
 CREATE TABLE IF NOT EXISTS questions (
     question_id         BIGSERIAL       PRIMARY KEY,
-    question_no         INT             NULL,
-    q_score             INT             NOT NULL,
-    era                 VARCHAR(50)     NOT NULL,
-    topic               VARCHAR(50)     NOT NULL,
-    question_type       VARCHAR(50)     NOT NULL,
-    question_subtype    VARCHAR(50)     NOT NULL DEFAULT U&'\BBF8\BD84\B958',
-    content             TEXT            NOT NULL,
-    passage             TEXT            NULL,
-    image_caption       TEXT            NULL,
-    question_image_path TEXT            NULL,
-    answer_no           INT             NOT NULL,
-    answer_explanation  TEXT            NOT NULL,
-    core_concept        VARCHAR(255)    NOT NULL
+    question_no         INT             NULL,       -- 원본 시험지 문항 번호 또는 표시용 번호
+    q_score             INT             NOT NULL,   -- 배점: 하 1점, 중 2점, 상 3점
+    era                 VARCHAR(50)     NOT NULL,   -- 시대: 고려, 조선 전기, 일제 강점기 등
+    topic               VARCHAR(50)     NOT NULL,   -- 주제: 정치, 경제, 문화, 인물 등
+    question_type       VARCHAR(50)     NOT NULL,   -- 대유형
+    question_subtype    VARCHAR(50)     NOT NULL DEFAULT U&'\BBF8\BD84\B958', -- 소유형 기본값: 미분류
+    content             TEXT            NOT NULL,   -- 문제 발문
+    passage             TEXT            NULL,       -- 텍스트 지문 또는 이미지 지문을 캡션으로 변환한 내용
+    image_caption       TEXT            NULL,       -- 이미지 핵심 단서, 키워드, 시대 추론에 필요한 시각 정보
+    question_image_path TEXT            NULL,       -- 실제 지문 이미지를 사용할 때의 경로. 현재 테스트 데이터는 비워 둠
+    answer_no           INT             NOT NULL,   -- 정답 선택지 번호
+    answer_explanation  TEXT            NOT NULL,   -- 정답 및 오답 해설
+    core_concept        VARCHAR(255)    NOT NULL    -- 핵심 개념
 );
 
 -- 3. 문제 선택지
+-- 한 문제의 1~5번 선택지를 저장합니다.
+-- 이미지 선택지도 현재 테스트 데이터에서는 content에 텍스트 설명으로 저장하고,
+-- choice_image_path는 나중에 실제 이미지 선택지를 쓸 경우를 위해 남겨 둡니다.
 CREATE TABLE IF NOT EXISTS question_options (
     choice_id           BIGSERIAL       PRIMARY KEY,
     question_id         BIGINT          NOT NULL REFERENCES questions(question_id) ON DELETE CASCADE,
-    choice_no           INT             NOT NULL,           -- 보기 번호 (1~5)
-    content             TEXT            NOT NULL,           -- 보기 내용
-    choice_image_path   TEXT            NULL,               -- 이미지 보기 경로
-    is_answer           BOOLEAN         NOT NULL DEFAULT FALSE,  -- 정답 여부
-    choice_explanation  TEXT            NULL                -- 선지별 오답 해설
+    choice_no           INT             NOT NULL,               -- 선택지 번호 (1~5)
+    content             TEXT            NOT NULL,               -- 선택지 내용 또는 이미지 선택지의 텍스트 설명
+    choice_image_path   TEXT            NULL,                   -- 선택지 이미지 경로. 현재 테스트 데이터는 비워 둠
+    is_answer           BOOLEAN         NOT NULL DEFAULT FALSE, -- 정답 여부
+    choice_explanation  TEXT            NULL                    -- 선택지별 해설 또는 오답 해설
 );
 
 -- 4. 챗봇 세션
@@ -74,42 +85,46 @@ CREATE TABLE IF NOT EXISTS chat_messages (
     created_at  TIMESTAMP       NOT NULL DEFAULT NOW()
 );
 
--- 6. 풀이 세션 (시험 전체 단위)
+-- 6. 풀이 세션
+-- 사용자가 한 번 생성한 시험/문제풀이 묶음입니다.
+-- solve_records가 이 세션 아래에서 문항별 풀이 기록으로 연결됩니다.
 CREATE TABLE IF NOT EXISTS solve_sessions (
     session_id      BIGSERIAL       PRIMARY KEY,
     user_id         BIGINT          NOT NULL REFERENCES user_accounts(user_id) ON DELETE CASCADE,
-    session_type    VARCHAR(20)     NOT NULL,               -- 'diagnostic' | 'practice' | 'today'
-    total_count     INT             NOT NULL,               -- 총 문제 수
-    elapsed_sec     INT             NULL,                   -- 총 소요 시간(초)
-    status          VARCHAR(20)     NOT NULL DEFAULT 'in_progress',  -- 'in_progress' | 'completed'
-    answer_rate     FLOAT           NULL,                   -- 정답률
-    total_score     INT             NULL,                   -- 총 점수
-    recorded_date   DATE            NOT NULL DEFAULT CURRENT_DATE  -- 기록 일시
+    session_type    VARCHAR(20)     NOT NULL,              -- 'diagnostic' | 'practice' | 'today'
+    total_count     INT             NOT NULL,              -- 세션 전체 문항 수
+    elapsed_sec     INT             NULL,                  -- 세션 전체 경과 시간(초)
+    status          VARCHAR(20)     NOT NULL DEFAULT 'in_progress', -- 'in_progress' | 'completed'
+    answer_rate     FLOAT           NULL,                  -- 정답률
+    total_score     INT             NULL,                  -- 총점
+    recorded_date   DATE            NOT NULL DEFAULT CURRENT_DATE -- 저장/풀이 기록 날짜
 );
 
--- 7. 문제별 풀이 기록
+-- 7. 문항별 풀이 기록
+-- solve_sessions에 포함된 각 문제의 선택 답안과 풀이 시간을 저장합니다.
+-- 이어 풀기, 오답노트, 마이페이지 통계에서 사용할 수 있습니다.
 CREATE TABLE IF NOT EXISTS solve_records (
     record_id       BIGSERIAL       PRIMARY KEY,
     session_id      BIGINT          NOT NULL REFERENCES solve_sessions(session_id) ON DELETE CASCADE,
     question_id     BIGINT          NOT NULL REFERENCES questions(question_id),
-    selected_no     INT             NULL,                   -- 사용자 선택 번호 (미응답 시 NULL)
+    selected_no     INT             NULL,                  -- 사용자가 선택한 번호. 미응답이면 NULL
     is_correct      BOOLEAN         NOT NULL DEFAULT FALSE, -- 정답 여부
-    time_spent_ms   INT             NULL,                   -- 해당 문제 소요 시간(ms)
-    q_type          VARCHAR(20)     NOT NULL,               -- 문제 유형 (통계용 복사)
-    topic           VARCHAR(50)     NOT NULL,               -- 주제 (통계용 복사)
-    era             VARCHAR(20)     NOT NULL,               -- 시대 (통계용 복사)
-    q_score         INT             NOT NULL                -- 배점 (통계용 복사)
+    time_spent_ms   INT             NULL,                  -- 해당 문제 풀이 시간(ms)
+    q_type          VARCHAR(20)     NOT NULL,              -- 문제 대유형 스냅샷
+    topic           VARCHAR(50)     NOT NULL,              -- 주제 스냅샷
+    era             VARCHAR(20)     NOT NULL,              -- 시대 스냅샷
+    q_score         INT             NOT NULL               -- 배점 스냅샷
 );
 
--- 8. 통계
+-- 8. 풀이 통계
 CREATE TABLE IF NOT EXISTS analytics (
     analytics_id        BIGSERIAL       PRIMARY KEY,
     session_id          BIGINT          NOT NULL REFERENCES solve_sessions(session_id) ON DELETE CASCADE,
-    key_concept         VARCHAR(50)     NOT NULL,           -- 예: '조선', '정치', '문화'
-    classification      VARCHAR(20)     NOT NULL,           -- '시대' | '주제' | '유형'
-    avg_time_sec        INT             NULL,               -- 분류별 평균 풀이 시간(초)
-    topic_rate          FLOAT           NOT NULL,           -- 해당 분류 정답률
-    date                TIMESTAMP       NOT NULL DEFAULT NOW()  -- 집계 일시
+    key_concept         VARCHAR(50)     NOT NULL,          -- 예: 조선, 정치, 문화
+    classification      VARCHAR(20)     NOT NULL,          -- 시대 | 주제 | 유형
+    avg_time_sec        INT             NULL,              -- 분류별 평균 풀이 시간(초)
+    topic_rate          FLOAT           NOT NULL,          -- 해당 분류 정답률
+    date                TIMESTAMP       NOT NULL DEFAULT NOW()
 );
 
 -- 9. 오답노트
@@ -123,22 +138,22 @@ CREATE TABLE IF NOT EXISTS note_mypage (
     topic               VARCHAR(50)     NULL,
     difficulty          VARCHAR(50)     NULL,
     question_type       VARCHAR(20)     NULL,
-    content             TEXT            NOT NULL,           -- 문제 내용
-    answer_no           INT             NULL,               -- 정답 번호
-    answer_explanation  TEXT            NULL                -- 정답 해설
+    content             TEXT            NOT NULL,          -- 문제 내용
+    answer_no           INT             NULL,              -- 정답 번호
+    answer_explanation  TEXT            NULL               -- 정답 해설
 );
 
 -- 10. 학습 계획
 CREATE TABLE IF NOT EXISTS study_plan_mypage (
     studyplan_id        BIGSERIAL       PRIMARY KEY,
     user_id             BIGINT          NOT NULL REFERENCES user_accounts(user_id) ON DELETE CASCADE,
-    study_plans         TEXT            NULL,               -- 학습/습관 목표
-    study_plan_items    TEXT            NULL,               -- 날짜별 학습 목록 (JSON 형태 권장)
+    study_plans         TEXT            NULL,              -- 학습/통계 목표
+    study_plan_items    TEXT            NULL,              -- 날짜별 학습 목록. JSON 형태 권장
     created_at          TIMESTAMP       NOT NULL DEFAULT NOW(),
     modified_at         TIMESTAMP       NOT NULL DEFAULT NOW()
 );
 
--- 11. 이메일 인증 코드 테이블
+-- 11. 이메일 인증 코드
 CREATE TABLE IF NOT EXISTS email_verification_codes (
     id          BIGSERIAL       PRIMARY KEY,
     email       VARCHAR(255)    NOT NULL,
@@ -150,7 +165,7 @@ CREATE TABLE IF NOT EXISTS email_verification_codes (
     used_at     TIMESTAMP       NULL
 );
 
--- 12. 사용자 학습 프로필 테이블
+-- 12. 사용자 학습 프로필
 CREATE TABLE IF NOT EXISTS user_study_profiles (
     user_id                 BIGINT          PRIMARY KEY REFERENCES user_accounts(user_id) ON DELETE CASCADE,
     daily_available_hours   DECIMAL(3,1)    NOT NULL DEFAULT 1.0,

@@ -24,6 +24,7 @@ from pathlib import Path
 from typing import Any
 
 import pypdfium2 as pdfium
+import pdfplumber
 
 
 ROOT_DIR = Path(__file__).resolve().parents[3]
@@ -48,7 +49,7 @@ QUESTION_SUBTYPES = ["개념", "인물", "사료", "연표", "지역"]
 ERA_VALUES = [
     "선사 시대",
     "고조선",
-    "여러 나라",
+    "초기 국가",
     "삼국 시대",
     "남북국 시대",
     "고려",
@@ -132,6 +133,52 @@ def page_question_numbers(page_no: int) -> dict[str, list[int]]:
     return layout[page_no]
 
 
+def detect_question_markers(pdf_path: Path) -> dict[int, list[dict[str, float | int | str]]]:
+    markers_by_page: dict[int, list[dict[str, float | int | str]]] = {}
+    with pdfplumber.open(pdf_path) as pdf:
+        for page_index, page in enumerate(pdf.pages):
+            page_no = page_index + 1
+            page_markers: list[dict[str, float | int | str]] = []
+            for word in page.extract_words(
+                x_tolerance=1,
+                y_tolerance=1,
+                keep_blank_chars=False,
+                use_text_flow=False,
+            ):
+                text = str(word.get("text", "")).strip()
+                if not re.match(r"^\d{1,2}\.$", text):
+                    continue
+                question_no = int(text[:-1])
+                if question_no < 1 or question_no > QUESTION_COUNT:
+                    continue
+                x0 = float(word["x0"])
+                top = float(word["top"])
+                # 문항 시작 번호는 양쪽 컬럼의 왼쪽 가장자리에만 나타난다.
+                if not (
+                    abs(x0 - (page.width * 0.058)) < 22
+                    or abs(x0 - (page.width * 0.514)) < 22
+                ):
+                    continue
+                side = "left" if x0 < page.width / 2 else "right"
+                page_markers.append({
+                    "question_no": question_no,
+                    "side": side,
+                    "x0": x0,
+                    "top": top,
+                    "page_width": float(page.width),
+                    "page_height": float(page.height),
+                })
+
+            unique_markers: dict[int, dict[str, float | int | str]] = {}
+            for marker in sorted(page_markers, key=lambda row: (float(row["top"]), float(row["x0"]))):
+                unique_markers.setdefault(int(marker["question_no"]), marker)
+            markers_by_page[page_no] = sorted(
+                unique_markers.values(),
+                key=lambda row: (str(row["side"]), float(row["top"])),
+            )
+    return markers_by_page
+
+
 def render_pdf_page(pdf_path: Path, page_index: int, scale: float = 2.0) -> bytes:
     pdf = pdfium.PdfDocument(str(pdf_path))
     page = pdf[page_index]
@@ -147,6 +194,7 @@ def crop_question_images(round_no: int, scale: float = 2.0) -> dict[int, str]:
     image_dir.mkdir(parents=True, exist_ok=True)
 
     pdf = pdfium.PdfDocument(str(question_pdf))
+    markers_by_page = detect_question_markers(question_pdf)
     results: dict[int, str] = {}
 
     for page_index in range(len(pdf)):
@@ -155,26 +203,43 @@ def crop_question_images(round_no: int, scale: float = 2.0) -> dict[int, str]:
         image = page.render(scale=scale).to_pil().convert("RGB")
         width, height = image.size
 
-        top = int(height * (0.135 if page_no == 1 else 0.075))
-        bottom = int(height * 0.94)
-        gutter_left = int(width * 0.495)
-        gutter_right = int(width * 0.505)
-        margin_x = int(width * 0.055)
-        left_box = (margin_x, top, gutter_left, bottom)
-        right_box = (gutter_right, top, int(width * 0.945), bottom)
+        page_markers = markers_by_page.get(page_no, [])
+        if not page_markers:
+            continue
 
-        for side, numbers in page_question_numbers(page_no).items():
-            box = left_box if side == "left" else right_box
-            column = image.crop(box)
-            col_width, col_height = column.size
-            block_height = col_height // len(numbers)
+        page_width = float(page_markers[0]["page_width"])
+        page_height = float(page_markers[0]["page_height"])
+        scale_x = width / page_width
+        scale_y = height / page_height
 
-            for idx, q_no in enumerate(numbers):
+        for side in ["left", "right"]:
+            side_markers = sorted(
+                [marker for marker in page_markers if marker["side"] == side],
+                key=lambda row: float(row["top"]),
+            )
+            if not side_markers:
+                continue
+
+            x1_pdf = page_width * (0.052 if side == "left" else 0.505)
+            x2_pdf = page_width * (0.495 if side == "left" else 0.945)
+            for idx, marker in enumerate(side_markers):
+                q_no = int(marker["question_no"])
+                next_marker = side_markers[idx + 1] if idx + 1 < len(side_markers) else None
+                y1_pdf = max(0, float(marker["top"]) - 12)
+                y2_pdf = (
+                    max(y1_pdf + 40, float(next_marker["top"]) - 10)
+                    if next_marker
+                    else page_height * 0.955
+                )
+
+                crop_box = (
+                    max(0, int(x1_pdf * scale_x)),
+                    max(0, int(y1_pdf * scale_y)),
+                    min(width, int(x2_pdf * scale_x)),
+                    min(height, int(y2_pdf * scale_y)),
+                )
                 path = image_dir / f"q_{q_no:03d}.png"
-                if not path.exists():
-                    y1 = max(0, idx * block_height - int(col_height * 0.015))
-                    y2 = col_height if idx == len(numbers) - 1 else (idx + 1) * block_height + int(col_height * 0.035)
-                    column.crop((0, y1, col_width, y2)).save(path)
+                image.crop(crop_box).save(path)
                 results[q_no] = str(path.relative_to(ROOT_DIR)).replace("\\", "/")
 
     write_json(round_output_dir(round_no) / f"question_images_{round_no}.json", results)
@@ -242,37 +307,39 @@ def normalize_question_item(item: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def extract_questions_with_vision(round_no: int, image_paths: dict[int, str], limit: int | None = None) -> dict[int, dict[str, Any]]:
+def extract_questions_with_vision(round_no: int, image_paths: dict[int, str], limit: int | None = None, force: bool = False) -> dict[int, dict[str, Any]]:
     output_path = round_output_dir(round_no) / f"vision_questions_{round_no}.json"
     errors_path = round_output_dir(round_no) / f"vision_question_errors_{round_no}.json"
-    extracted = {int(k): v for k, v in read_json(output_path, {}).items()}
-    errors = {int(k): str(v) for k, v in read_json(errors_path, {}).items()}
+    extracted = {} if force else {int(k): v for k, v in read_json(output_path, {}).items()}
+    errors = {} if force else {int(k): str(v) for k, v in read_json(errors_path, {}).items()}
 
     prompt = """
 한국사능력검정시험 심화 문항 이미지에서 문제 정보를 JSON으로 추출하세요.
-이미지는 실제 경로로 저장하지 않고, 지문과 선택지를 모두 텍스트 캡션으로 대체합니다.
+이미지는 실제 경로로 저장하지 않고, 보이는 지문과 선택지를 텍스트로 저장합니다.
 반드시 JSON 객체만 반환하세요.
 
 형식:
 {
   "content": "문제 발문",
-  "passage": "문제에 포함된 지문, 사료, 그림, 사진, 지도, 도표, 대화문을 자연어로 설명한 내용. 이미지 자료도 여기에서 글로 설명",
-  "image_caption": "이미지를 보고 문제 풀이에 필요한 핵심 시각 단서, 시대/주제/키워드 요약",
+  "passage": "문제 이미지 안에 실제로 적힌 지문, 사료, 말풍선, 대화문, 표, 지도 범례의 텍스트를 가능한 한 원문 그대로 옮긴 내용",
+  "image_caption": "실제 텍스트로 옮길 수 없는 그림, 사진, 지도, 유물, 도표의 핵심 시각 단서만 간단히 설명",
   "choices": [
-    {"choice_no": 1, "content": "선택지 텍스트 또는 선택지 이미지의 자연어 설명"},
-    {"choice_no": 2, "content": "선택지 텍스트 또는 선택지 이미지의 자연어 설명"},
-    {"choice_no": 3, "content": "선택지 텍스트 또는 선택지 이미지의 자연어 설명"},
-    {"choice_no": 4, "content": "선택지 텍스트 또는 선택지 이미지의 자연어 설명"},
-    {"choice_no": 5, "content": "선택지 텍스트 또는 선택지 이미지의 자연어 설명"}
+    {"choice_no": 1, "content": "선택지에 실제로 적힌 텍스트. 이미지 선택지라면 보이는 대상의 짧은 설명"},
+    {"choice_no": 2, "content": "선택지에 실제로 적힌 텍스트. 이미지 선택지라면 보이는 대상의 짧은 설명"},
+    {"choice_no": 3, "content": "선택지에 실제로 적힌 텍스트. 이미지 선택지라면 보이는 대상의 짧은 설명"},
+    {"choice_no": 4, "content": "선택지에 실제로 적힌 텍스트. 이미지 선택지라면 보이는 대상의 짧은 설명"},
+    {"choice_no": 5, "content": "선택지에 실제로 적힌 텍스트. 이미지 선택지라면 보이는 대상의 짧은 설명"}
   ]
 }
 
 주의:
+- 지문, 말풍선, 대화문에 실제 글자가 있으면 요약하거나 해석하지 말고 passage에 그대로 옮기세요.
+- "문제에는 두 인물이 등장하며", "자료는 ...을 보여준다"처럼 풀이자가 볼 수 없는 해설식 문장은 passage에 넣지 마세요.
+- image_caption은 passage에 실제 텍스트가 없거나 그림/사진/지도 자체의 시각 정보가 필요할 때만 보조로 작성하세요.
 - 선택지 번호 기호는 content에 넣지 말고 choice_no로 분리하세요.
-- 이미지 지문은 passage에 글로 풀어 쓰세요.
-- 이미지 선택지는 choices.content에 유물명, 자료명, 특징을 글로 설명하세요.
+- 이미지 선택지는 choices.content에 유물명, 자료명, 특징을 짧게 설명하세요.
 - 좌표, 이미지 경로, image_path, bbox, crop 정보는 절대 반환하지 마세요.
-- image_caption은 정답을 직접 말하지 말고 문제 풀이에 필요한 시각 단서만 설명하세요.
+- 정답 번호나 정답을 직접 유추하게 하는 해설을 쓰지 마세요.
 """
 
     processed = 0
@@ -399,7 +466,7 @@ def normalize_era(value: Any, text: str) -> str:
     aliases = [
         ("선사 시대", ["선사", "구석기", "신석기", "청동기", "철기"]),
         ("고조선", ["고조선", "위만 조선", "단군", "8조법"]),
-        ("여러 나라", ["부여", "옥저", "동예", "삼한"]),
+        ("초기 국가", ["여러 나라", "부여", "옥저", "동예", "삼한"]),
         ("삼국 시대", ["삼국", "고구려", "백제", "신라", "가야"]),
         ("남북국 시대", ["남북국", "통일 신라", "발해"]),
         ("고려", ["고려"]),
@@ -469,7 +536,7 @@ def classify_record(record: dict[str, Any]) -> None:
     record["era"] = normalize_era(record.get("era"), text)
     record["topic"] = normalize_topic(record.get("topic"), text)
     record["question_type"] = normalize_allowed(record.get("question_type"), QUESTION_TYPES, infer_question_type(text))
-    record["question_subtype"] = normalize_allowed(record.get("question_subtype"), QUESTION_SUBTYPES, infer_question_subtype(text))
+    record["question_subtype"] = infer_question_subtype(text)
 
 
 def build_seed_records(round_no: int, image_paths: dict[int, str], questions: dict[int, dict[str, Any]], answers: dict[int, dict[str, int]], explanations: dict[int, dict[str, str]]) -> list[dict[str, Any]]:
@@ -583,7 +650,7 @@ def process_round(round_no: int, args: argparse.Namespace) -> list[dict[str, Any
 
     questions = {int(k): v for k, v in read_json(round_output_dir(round_no) / f"vision_questions_{round_no}.json", {}).items()}
     if args.vision:
-        questions = extract_questions_with_vision(round_no, image_paths, limit=args.limit)
+        questions = extract_questions_with_vision(round_no, image_paths, limit=args.limit, force=args.force_vision)
 
     explanations = {int(k): v for k, v in read_json(round_output_dir(round_no) / f"explanations_{round_no}.json", {}).items()}
     if args.explanations:
@@ -598,6 +665,7 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--rounds", nargs="+", type=int, default=DEFAULT_ROUNDS)
     parser.add_argument("--vision", action="store_true", help="extract question text and image captions")
+    parser.add_argument("--force-vision", action="store_true", help="rebuild existing vision question JSON instead of skipping extracted items")
     parser.add_argument("--answers", action="store_true", help="extract answer key from answer PDFs")
     parser.add_argument("--explanations", action="store_true", help="extract explanations from explanation PDFs")
     parser.add_argument("--classify", action="store_true", help="rebuild db_seed files with local classification")
