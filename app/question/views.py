@@ -89,6 +89,7 @@ def _serialize_questions(questions):
                 "choice_id": option.choice_id,
                 "choice_no": option.choice_no,
                 "content": option.content,
+                "choice_image_path": option.choice_image_path,
             }
             for option in options
         ]
@@ -96,6 +97,7 @@ def _serialize_questions(questions):
             "question_id": question.question_id,
             "content": question.content,
             "passage": question.passage,
+            "image_caption": question.image_caption,
             "question_image_path": question.question_image_path,
             "q_score": question.q_score,
             "era": question.era,
@@ -122,6 +124,7 @@ def _serialize_session_questions(records):
                 "choice_id": option.choice_id,
                 "choice_no": option.choice_no,
                 "content": option.content,
+                "choice_image_path": option.choice_image_path,
             }
             for option in options
         ]
@@ -137,6 +140,7 @@ def _serialize_session_questions(records):
             "question_id": question.question_id,
             "content": question.content,
             "passage": question.passage,
+            "image_caption": question.image_caption,
             "question_image_path": question.question_image_path,
             "q_score": question.q_score,
             "era": question.era,

@@ -107,6 +107,31 @@ body {
   color: #c2410c;
 }
 
+.question-asset-image {
+  display: block;
+  width: min(100%, 680px);
+  max-height: 360px;
+  object-fit: contain;
+  margin-top: 12px;
+  border-radius: 6px;
+}
+
+.choice-body {
+  display: grid;
+  gap: 8px;
+  align-items: center;
+  justify-items: start;
+  min-width: 0;
+}
+
+.choice-image {
+  display: block;
+  width: min(180px, 100%);
+  max-height: 180px;
+  object-fit: contain;
+  border-radius: 6px;
+}
+
 @media (min-width: 901px) {
   .exam-page {
     display: block !important;

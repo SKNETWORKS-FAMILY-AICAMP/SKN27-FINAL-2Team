@@ -6,6 +6,7 @@ class ChoiceData(serializers.Serializer):
     choice_id = serializers.IntegerField()
     choice_no = serializers.IntegerField()
     content = serializers.CharField()
+    choice_image_path = serializers.CharField(allow_blank=True, allow_null=True, required=False)
 
 
 # 문제 1개의 기본 응답 형식
@@ -13,6 +14,7 @@ class QuestionData(serializers.Serializer):
     question_id = serializers.IntegerField()
     content = serializers.CharField()
     passage = serializers.CharField(allow_blank=True, allow_null=True, required=False)
+    image_caption = serializers.CharField(allow_blank=True, allow_null=True, required=False)
     question_image_path = serializers.CharField(allow_blank=True, allow_null=True, required=False)
     q_score = serializers.IntegerField()
     era = serializers.CharField()
