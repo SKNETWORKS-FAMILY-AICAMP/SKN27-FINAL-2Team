@@ -30,6 +30,10 @@ a {
 }
 
 .page-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
   margin-bottom: 20px;
   padding: 28px 32px;
   border: 1px solid var(--line);
@@ -52,6 +56,32 @@ a {
   line-height: 1.2;
   font-weight: 900;
   letter-spacing: 0;
+}
+
+.d-day-box {
+  min-width: 148px;
+  min-height: 78px;
+  display: grid;
+  align-content: center;
+  gap: 5px;
+  padding: 14px 18px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #f4f8ef;
+  text-align: right;
+}
+
+.d-day-box span {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.d-day-box strong {
+  color: var(--accent);
+  font-size: 28px;
+  line-height: 1;
+  font-weight: 950;
 }
 
 .summary-strip {
@@ -99,6 +129,57 @@ a {
   margin-bottom: 18px;
 }
 
+.improvement-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.improvement-card {
+  min-height: 104px;
+  display: grid;
+  align-content: center;
+  gap: 6px;
+  padding: 18px 22px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: var(--shadow);
+}
+
+.improvement-card span {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.improvement-card strong {
+  color: var(--accent);
+  font-size: 28px;
+  line-height: 1;
+  font-weight: 950;
+}
+
+.improvement-card p {
+  margin: 0;
+  color: #4d3524;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.improvement-card.good strong {
+  color: var(--green);
+}
+
+.improvement-card.warn strong {
+  color: #f05f68;
+}
+
+.improvement-card.empty {
+  grid-column: 1 / -1;
+}
+
 .quick-actions a {
   height: 48px;
   display: inline-flex;
@@ -114,7 +195,7 @@ a {
 
 .analytics-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 18px;
   margin-bottom: 18px;
 }
@@ -129,7 +210,6 @@ a {
 .metric-panel,
 .weakness-panel,
 .donut-panel,
-.chatbot-panel,
 .plan-panel,
 .calendar-panel {
   padding: 24px;
@@ -213,13 +293,6 @@ a {
   line-height: 1;
   font-weight: 900;
   text-align: right;
-}
-
-.chatbot-panel p {
-  margin: 0;
-  color: var(--muted);
-  font-size: 13px;
-  word-break: keep-all;
 }
 
 .mini-progress {
@@ -349,37 +422,6 @@ a {
 .donut-layout .danger { background: #f05f68; }
 .donut-layout .warn { background: #ffcb72; }
 .donut-layout .good { background: #65c996; }
-
-.chatbot-stats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  margin-top: 8px;
-  margin-bottom: 14px;
-}
-
-.chatbot-stats div {
-  min-height: 82px;
-  display: grid;
-  align-content: center;
-  gap: 4px;
-  padding: 10px;
-  border-radius: 8px;
-  background: #fffaf4;
-  text-align: center;
-}
-
-.chatbot-stats strong {
-  color: #2f241b;
-  font-size: 21px;
-  font-weight: 900;
-}
-
-.chatbot-stats span {
-  color: var(--muted);
-  font-size: 11px;
-  font-weight: 900;
-}
 
 .plan-list {
   display: grid;
@@ -830,6 +872,10 @@ body.modal-open {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .improvement-grid {
+    grid-template-columns: 1fr;
+  }
+
   .bottom-grid {
     grid-template-columns: 1fr;
   }
@@ -843,8 +889,19 @@ body.modal-open {
     align-self: center;
   }
 
+  .page-title {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .d-day-box {
+    width: 100%;
+    text-align: left;
+  }
+
   .summary-strip,
   .quick-actions,
+  .improvement-grid,
   .analytics-grid {
     grid-template-columns: 1fr;
   }
@@ -863,7 +920,6 @@ body.modal-open {
   .metric-panel,
   .weakness-panel,
   .donut-panel,
-  .chatbot-panel,
   .plan-panel,
   .calendar-panel,
   .planner-panel {
@@ -929,7 +985,6 @@ body.modal-open {
 .panel-heading h2,
 .time-metric strong,
 .metric strong,
-.chatbot-stats strong,
 .donut-chart strong {
   color: var(--ink);
   font-weight: 950;
@@ -944,9 +999,7 @@ body.modal-open {
 .summary-strip span,
 .panel-heading a,
 .time-metric span,
-.chatbot-panel p,
 .weak-list em,
-.chatbot-stats span,
 .plan-item span,
 .calendar-week.labels span {
   color: var(--muted);
@@ -954,7 +1007,6 @@ body.modal-open {
 
 .quick-actions a,
 .time-metric,
-.chatbot-stats div,
 .plan-item,
 .calendar,
 .calendar-week .planned {
@@ -1005,6 +1057,10 @@ body.modal-open {
     padding: 16px 24px;
   }
 
+  .d-day-box {
+    min-height: 58px;
+  }
+
   .page-title h1 {
     font-size: clamp(34px, 4vw, 48px);
     line-height: 1;
@@ -1012,6 +1068,7 @@ body.modal-open {
 
   .summary-strip,
   .quick-actions,
+  .improvement-grid,
   .analytics-grid {
     margin: 0;
   }
@@ -1042,7 +1099,6 @@ body.modal-open {
   .metric-panel,
   .weakness-panel,
   .donut-panel,
-  .chatbot-panel,
   .plan-panel,
   .calendar-panel,
   .planner-panel {
@@ -1094,21 +1150,6 @@ body.modal-open {
     inset: 15px;
   }
 
-  .chatbot-stats {
-    gap: 6px;
-    margin-top: 10px;
-    margin-bottom: 8px;
-  }
-
-  .chatbot-stats div {
-    min-height: 58px;
-    padding: 8px;
-  }
-
-  .chatbot-stats strong {
-    font-size: 17px;
-  }
-
   .bottom-grid {
     min-height: 0;
   }
@@ -1151,6 +1192,7 @@ body.modal-open {
 
   .summary-strip,
   .quick-actions,
+  .improvement-grid,
   .analytics-grid {
     margin-bottom: 18px;
   }
@@ -1163,7 +1205,6 @@ body.modal-open {
   .metric-panel,
   .weakness-panel,
   .donut-panel,
-  .chatbot-panel,
   .plan-panel,
   .calendar-panel,
   .planner-panel {
@@ -1387,13 +1428,8 @@ body.modal-open {
   font-weight: 900;
 }
 
-/* Final alignment for the compact dashboard cards. */
-.mypage .donut-panel .donut-layout,
-.mypage .chatbot-panel .chatbot-stats {
-  margin-top: 18px;
-}
-
 .mypage .donut-panel .donut-layout {
+  margin-top: 18px;
   align-items: center;
 }
 

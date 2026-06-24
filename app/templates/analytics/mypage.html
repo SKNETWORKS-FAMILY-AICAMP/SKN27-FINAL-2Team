@@ -1,133 +1,119 @@
 ﻿<!doctype html>
+{% load static %}
 <html lang="ko">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>himate | 나의 학습실</title>
-  <link rel="stylesheet" href="/static/analytics/css/mypage.css" />
-  <link rel="stylesheet" href="../../static/analytics/css/mypage.css" />
-  <link rel="stylesheet" href="/static/himate.css" />
-  <link rel="stylesheet" href="/static/layout.css" />
+  <link rel="stylesheet" href="{% static 'analytics/css/mypage.css' %}" />
+  <link rel="stylesheet" href="{% static 'himate.css' %}" />
+  <link rel="stylesheet" href="{% static 'layout.css' %}" />
 </head>
 <body>
   <header class="site-header" aria-label="마이페이지 메뉴">
-    <a class="brand" href="/" aria-label="himate 홈">
-      <img src="/static/chatbot/assets/logo.png" alt="himate" data-fallback-src="../../static/chatbot/assets/logo.png" />
+    <a class="brand" href="{% url 'pages:index' %}" aria-label="himate 홈">
+      <img src="{% static 'chatbot/assets/logo.png' %}" alt="himate" />
     </a>
     <nav class="main-nav" aria-label="학습 메뉴">
-      <a href="/diagnosis/">진단 평가</a>
-      <a href="/question/">문제 풀이</a>
-      <a href="/chatbot/">챗봇</a>
-      <a class="active" href="/analytics/mypage/">나의 학습실</a>
+      <a href="{% url 'diagnosis:intro' %}">진단 평가</a>
+      <a href="{% url 'question:create' %}">문제 풀이</a>
+      <a href="{% url 'chatbot:chat_page' %}">챗봇</a>
+      <a class="active" href="{% url 'analytics:mypage' %}">나의 학습실</a>
     </nav>
     <nav class="header-actions" aria-label="계정 메뉴">
-      <a class="outline-button" href="/user/profile/edit/">정보 수정</a>
-      <a class="ghost-button" href="/user/logout/">로그아웃</a>
+      <a class="outline-button" href="{% url 'user:profile_edit' %}">정보 수정</a>
+      <a class="ghost-button" href="{% url 'user:logout' %}">로그아웃</a>
     </nav>
   </header>
 
   <main class="mypage">
     <section class="page-title">
-      <p>{{ request.user.nickname }}님의 마이페이지</p>
-      <h1>나의 학습실</h1>
+      <div>
+        <p>{{ request.user.nickname }}님의 마이페이지</p>
+        <h1>나의 학습실</h1>
+      </div>
+      <aside class="d-day-box" aria-label="시험까지 남은 기간">
+        <span>D-day</span>
+        <strong>{{ d_day_label }}</strong>
+      </aside>
     </section>
 
     <section class="summary-strip" aria-label="학습 요약">
-      <article>
-        <span>D-day</span>
-        <strong>
-          {% if d_day != None %}
-            {% if d_day > 0 %}D - {{ d_day }}{% elif d_day == 0 %}D-day{% else %}D + {{ d_day|cut:"-" }}{% endif %}
-          {% else %}
-            미설정
-          {% endif %}
-        </strong>
-      </article>
-      <article><span>정답률</span><strong>{{ solve_stats.answer_rate }}%</strong></article>
-      <article><span>내가 푼 문제 수</span><strong>{{ solve_stats.solved_count }}문제</strong></article>
-      <article><span>연속 학습일수</span><strong>12일</strong></article>
+      <article><span>이번 주 정답률</span><strong>{{ learning_summary.answer_rate }}%</strong></article>
+      <article><span>이번 주 풀이 수</span><strong>{{ learning_summary.solved_count }}문제</strong></article>
+      <article><span>이번 주 문제당 평균 풀이시간</span><strong>{{ learning_summary.avg_question_time }}</strong></article>
+      <article><span>연속 학습일수</span><strong>{{ learning_summary.study_streak_days }}일</strong></article>
+    </section>
+
+    <section class="improvement-grid" aria-label="첫 진단평가 대비 개선">
+      {% if diagnosis_comparison.has_records %}
+        <article class="improvement-card {{ diagnosis_comparison.answer.tone }}">
+          <span>첫 진단평가 대비 정답률</span>
+          <strong>{{ diagnosis_comparison.answer.change_label }}</strong>
+          <p>진단평가 {{ diagnosis_comparison.answer.diagnosis_rate }}% → 이번 주 {{ diagnosis_comparison.answer.current_rate }}%</p>
+        </article>
+        <article class="improvement-card {{ diagnosis_comparison.time.tone }}">
+          <span>첫 진단평가 대비 문제당 평균 풀이시간</span>
+          <strong>{{ diagnosis_comparison.time.change_label }}</strong>
+          <p>진단평가 문제당 {{ diagnosis_comparison.time.diagnosis_time }} → 이번 주 문제당 {{ diagnosis_comparison.time.current_time }}</p>
+        </article>
+      {% endif %}
+      {% if not diagnosis_comparison.has_records %}
+        <article class="improvement-card empty">
+          <span>첫 진단평가 대비 개선</span>
+          <strong>기록 준비 중</strong>
+          <p>첫 진단평가와 이번 주 문제풀이 기록이 쌓이면 개선 추이가 표시됩니다.</p>
+        </article>
+      {% endif %}
     </section>
 
     <nav class="quick-actions" aria-label="학습 바로가기">
-      <a href="/question/exam/">오늘의 문제</a>
-      <a href="/user/wrong-note/">오답노트</a>
-      <a href="/user/solved-problems/">내가 푼 문제</a>
+      <a href="{% url 'question:exam' %}">오늘의 문제</a>
+      <a href="{% url 'user:wrong_note' %}">오답노트</a>
+      <a href="{% url 'user:solved_problems' %}">내가 푼 문제</a>
     </nav>
 
     <section class="analytics-grid" aria-label="학습 대시보드">
-      <article class="panel metric-panel">
-        <div class="panel-heading compact">
-          <h2>평균 풀이시간</h2>
-
-        </div>
-        <div class="time-metric">
-          <article>
-            <span>문제당 평균</span>
-            <strong>{{ solve_stats.avg_question_time }}</strong>
-          </article>
-          <article>
-            <span>문제 전체 평균</span>
-            <strong>{{ solve_stats.avg_session_time }}</strong>
-          </article>
-        </div>
-        <div class="mini-progress"><span style="width: {{ solve_stats.answer_rate }}%"></span></div>
-      </article>
-
       <article class="panel weakness-panel">
         <div class="panel-heading compact">
           <h2>취약점 분석</h2>
 
         </div>
         <div class="weak-list">
-          <div><span>1</span><strong>해방 직후 정세</strong><em>28%</em></div>
-          <div><span>2</span><strong>통일신라 문화</strong><em>34%</em></div>
-          <div><span>3</span><strong>삼국 항쟁 흐름</strong><em>38%</em></div>
-          <div><span>4</span><strong>실학과 조선 후기</strong><em>42%</em></div>
-          <div><span>5</span><strong>현대 정치 제도</strong><em>46%</em></div>
+          {% for item in weakness_summary.items %}
+            <div><span>{{ forloop.counter }}</span><strong>{{ item.label }}</strong><em>{{ item.rate }}%</em></div>
+          {% empty %}
+            <div><span>-</span><strong>풀이 기록 없음</strong><em>0%</em></div>
+          {% endfor %}
         </div>
       </article>
 
       <article class="panel donut-panel">
         <div class="panel-heading compact">
           <h2>유형별 오답률</h2>
-          <a href="/analytics/wrong-rate-detail/">상세 보기</a>
+          <a href="{% url 'analytics:wrong_rate_detail' %}">상세 보기</a>
         </div>
         <div class="donut-layout">
-          <div class="donut-chart{% if not type_wrong_stats.has_records %} is-empty{% endif %}">
-            <strong>{{ type_wrong_stats.overall_rate }}%</strong>
-            <span>{% if type_wrong_stats.has_records %}오답 비율{% else %}기록 없음{% endif %}</span>
+          <div class="donut-chart{% if not wrong_type_summary.has_records %} is-empty{% endif %}">
+            <strong>{{ wrong_type_summary.overall_rate }}%</strong>
+            <span>{{ wrong_type_summary.status_label }}</span>
           </div>
           <ul>
-            {% if type_wrong_stats.has_records %}
-              {% for item in type_wrong_stats.items %}
+            {% if wrong_type_summary.has_records %}
+              {% for item in wrong_type_summary.items %}
                 <li>
-                  <i class="{% if forloop.counter == 1 %}danger{% elif forloop.counter == 2 %}warn{% else %}good{% endif %}"></i>
+                  <i class="{{ item.tone_class }}"></i>
                   {{ item.label }} {{ item.rate }}%
                 </li>
               {% endfor %}
-            {% else %}
+            {% endif %}
+            {% if not wrong_type_summary.has_records %}
               <li class="empty-state">풀이 기록 없음</li>
             {% endif %}
           </ul>
         </div>
       </article>
 
-      <article class="panel chatbot-panel">
-        <div class="panel-heading compact">
-          <h2>챗봇통계</h2>
-          <a href="/chatbot/">챗봇 열기</a>
-        </div>
-        <div class="chatbot-stats">
-          <div><strong>{{ chat_stats.total_count }}회</strong><span>전체 세션</span></div>
-          {% for type_stat in chat_stats.type_counts %}
-            <div><strong>{{ type_stat.count }}회</strong><span>{{ type_stat.chat_type }}</span></div>
-          {% empty %}
-            <div><strong>0회</strong><span>기록 없음</span></div>
-            <div><strong>0회</strong><span>기록 없음</span></div>
-          {% endfor %}
-        </div>
-        <p>가장 많이 사용한 챗봇 유형은 {{ chat_stats.top_type }}입니다.</p>
-      </article>
     </section>
 
     <section class="bottom-grid">
@@ -144,7 +130,7 @@
           <section class="planner-calendar" aria-label="월간 학습 달력">
             <div class="planner-month">
               <button id="prevPlannerMonth" type="button" aria-label="이전 달">‹</button>
-              <strong id="plannerMonthLabel">2026년 06월</strong>
+              <strong id="plannerMonthLabel">{{ planner_summary.month_label }}</strong>
               <button id="nextPlannerMonth" type="button" aria-label="다음 달">›</button>
             </div>
             <div class="calendar-week labels"><span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span></div>
@@ -155,7 +141,7 @@
             <div class="planner-day-top">
               <div>
                 <span id="plannerDayKicker">오늘의 계획</span>
-                <strong id="plannerDayLabel">06월 16일</strong>
+                <strong id="plannerDayLabel">{{ planner_summary.day_label }}</strong>
               </div>
               <div class="planner-tabs" aria-label="보기 방식">
                 <button class="active" type="button">일별</button>
@@ -181,13 +167,16 @@
           <article>
             <span>STEP 1</span>
             <strong>변경할 학습을 선택해 주세요</strong>
-            <label><input type="checkbox" checked /> 취약 개념 복습</label>
-            <label><input type="checkbox" /> 오답노트 정리</label>
+            {% for item in planner_summary.today_items %}
+              <label><input type="checkbox" /> {{ item.title }}</label>
+            {% empty %}
+              <p>변경할 학습이 없습니다.</p>
+            {% endfor %}
           </article>
           <article>
             <span>STEP 2</span>
             <strong>변경할 날짜를 선택해 주세요</strong>
-            <input type="date" value="2026-06-17" />
+            <input type="date" value="{{ planner_summary.next_date_key }}" />
           </article>
         </div>
         <footer>
@@ -198,15 +187,8 @@
     </div>
   </main>
 
+  {{ planner_data|json_script:"planner-data" }}
   <script>
-    document.querySelectorAll("img[data-fallback-src]").forEach((image) => {
-      image.addEventListener("error", () => {
-        if (image.dataset.fallbackTried) return;
-        image.dataset.fallbackTried = "1";
-        image.src = image.dataset.fallbackSrc;
-      });
-    });
-
     const plannerModal = document.getElementById("plannerModal");
     const openPlanModal = document.getElementById("openPlanModal");
     const closePlanModal = document.getElementById("closePlanModal");
@@ -218,31 +200,14 @@
     const plannerDayKicker = document.getElementById("plannerDayKicker");
     const plannerDayLabel = document.getElementById("plannerDayLabel");
     const plannerLessons = document.getElementById("plannerLessons");
-    let plannerDate = new Date(2026, 5, 1);
-    const todayKey = "2026-06-16";
-    let selectedPlannerKey = todayKey;
-    const plannerPlans = {
-      "2026-06-09": [
-        { title: "고려 정치 제도 복습", meta: "완료 · 개념 정리 · 15분", done: true },
-      ],
-      "2026-06-11": [
-        { title: "통일신라 문화 10문제", meta: "완료 · 문제 풀이 · 20분", done: true },
-      ],
-      "2026-06-16": [
-        { title: "광복 전후 정치 변화 10문제", meta: "완료 · 문제 풀이 · 20분", done: true },
-        { title: "취약 개념 복습", meta: "오늘 추천 · 고려 후기 제도 · 15분", done: false },
-        { title: "오답노트 정리", meta: "오답 기반 · 사료형 문제 · 10분", done: false },
-      ],
-      "2026-06-17": [
-        { title: "조선 후기 경제 흐름", meta: "예정 · 개념 정리 · 20분", done: false },
-        { title: "사료형 문제 10문항", meta: "예정 · 문제 풀이 · 15분", done: false },
-      ],
-      "2026-06-19": [
-        { title: "현대 정치 제도 복습", meta: "예정 · 취약 보완 · 15분", done: false },
-      ],
-    };
-    const completedKeys = new Set(["2026-06-09", "2026-06-11"]);
-    const plannedKeys = new Set(["2026-06-17", "2026-06-19"]);
+    const plannerData = JSON.parse(document.getElementById("planner-data").textContent);
+    const todayKey = "{{ planner_summary.today_key }}";
+    let selectedPlannerKey = "{{ planner_summary.selected_key }}";
+    const [initialYear, initialMonth] = todayKey.split("-").map(Number);
+    let plannerDate = new Date(initialYear, initialMonth - 1, 1);
+    const plannerPlans = plannerData.plansByDate || {};
+    const completedKeys = new Set(plannerData.completedKeys || []);
+    const plannedKeys = new Set(plannerData.plannedKeys || []);
 
     const formatDateKey = (date) => {
       const year = date.getFullYear();

@@ -152,9 +152,11 @@ button {
 }
 
 .bar-meta span {
+  min-width: 0;
   color: #60704f;
   font-size: 14px;
   font-weight: 850;
+  line-height: 1.35;
 }
 
 .bar-meta strong {
