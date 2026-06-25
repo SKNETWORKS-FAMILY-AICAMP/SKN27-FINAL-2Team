@@ -12,6 +12,7 @@ class ChoiceSerializer(serializers.Serializer):
     choice_id = serializers.IntegerField()
     choice_no = serializers.IntegerField()   # 셔플 후 표시 번호
     content = serializers.CharField()
+    choice_explanation = serializers.CharField(allow_blank=True, allow_null=True, required=False)
 
 
 class DiagnosisQuestionSerializer(serializers.Serializer):
@@ -76,7 +77,7 @@ class DiagnosisResultResponseSerializer(serializers.Serializer):
     total_score = serializers.IntegerField()
     max_score = serializers.IntegerField()
     score_rate = serializers.FloatField()     # 취득점 / 최대점
-    expected_grade = serializers.CharField()  # '1급' | '2급' | '3급' | '과락'
+    expected_grade = serializers.CharField()  # '1급' | '2급' | '3급' | '탈락'
     era_analytics = AnalyticsItemSerializer(many=True)
     type_analytics = AnalyticsItemSerializer(many=True)
     question_ids = serializers.ListField(
@@ -97,6 +98,8 @@ class DiagnosisExplanationResponseSerializer(serializers.Serializer):
     question_type = serializers.CharField(allow_null=True)
     correct_choice_no = serializers.IntegerField()
     answer_explanation = serializers.CharField(allow_null=True)
+    core_concept = serializers.CharField(allow_blank=True, allow_null=True, required=False)
+    time_spent_ms = serializers.IntegerField(allow_null=True, required=False)
     choices = ChoiceSerializer(many=True)          # 원래 순서 (choice_no 기준)
     user_choice_no = serializers.IntegerField(allow_null=True)
     is_correct = serializers.BooleanField()

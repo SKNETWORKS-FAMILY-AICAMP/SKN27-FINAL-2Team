@@ -126,15 +126,20 @@ a {
 .question-panel {
   min-height: 0;
   display: grid;
-  grid-template-rows: auto 1fr auto;
+  grid-template-rows: 1fr auto;
   gap: 14px;
 }
 
+.question-card-top,
 .question-meta {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+}
+
+.question-meta {
+  justify-content: flex-end;
 }
 
 .question-badge,
@@ -181,8 +186,8 @@ a {
 .question-card h2 {
   margin: 0;
   color: #2f241b;
-  font-size: 24px;
-  line-height: 1.4;
+  font-size: 22px;
+  line-height: 1.32;
   font-weight: 900;
   letter-spacing: 0;
   word-break: keep-all;
@@ -225,7 +230,7 @@ a {
 }
 
 .choice {
-  min-height: 48px;
+  min-height: 44px;
   display: grid;
   grid-template-columns: 32px minmax(0, 1fr);
   align-items: center;
@@ -240,6 +245,8 @@ a {
 
 .choice b {
   min-width: 0;
+  font-size: 14px;
+  line-height: 1.35;
   font-weight: 800;
   word-break: keep-all;
 }
@@ -430,10 +437,6 @@ a {
   }
 }
 
-.brand,
-.site-brand,
-.brand img,
-.site-brand img,
 .exam-page {
   min-height: calc(100svh - 64px);
   background:
@@ -530,9 +533,9 @@ a {
 }
 
 @media (min-width: 901px) {.exam-page {
-    min-height: calc(100svh - 56px);
-    height: calc(100svh - 56px);
-    padding: 12px clamp(18px, 4vw, 42px);
+    min-height: calc(100svh - 72px);
+    height: calc(100svh - 72px);
+    padding: 8px clamp(18px, 4vw, 42px);
     overflow: hidden;
   }
 
@@ -558,6 +561,7 @@ a {
 
   .exam-layout {
     gap: 12px;
+    min-height: 0;
   }
 
   .question-panel {
@@ -566,23 +570,24 @@ a {
 
   .question-badge,
   .question-type {
-    height: 30px;
-    font-size: 12px;
+    height: 26px;
+    padding: 0 10px;
+    font-size: 11px;
   }
 
   .question-card {
-    gap: 10px;
-    padding: 16px;
+    gap: 8px;
+    padding: 14px;
   }
 
   .question-card h2 {
-    font-size: 21px;
-    line-height: 1.28;
+    font-size: 18px;
+    line-height: 1.25;
   }
 
   .question-source {
-    padding: 12px 14px;
-    font-size: 14px;
+    padding: 9px 12px;
+    font-size: 12px;
   }
 
   .question-passage,
@@ -593,11 +598,15 @@ a {
   }
 
   .choice-list {
-    gap: 7px;
+    gap: 6px;
   }
 
   .choice {
-    min-height: 40px;
+    min-height: 34px;
+  }
+
+  .choice b {
+    font-size: 12px;
   }
 
   .question-actions {
@@ -610,6 +619,7 @@ a {
   }
 
   .side-panel {
+    min-height: 0;
     gap: 10px;
     padding-left: 12px;
   }
@@ -623,7 +633,11 @@ a {
   }
 
   .number-card {
+    min-height: 0;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
     padding: 14px;
+    overflow: hidden;
   }
 
   .number-card h2 {
@@ -632,6 +646,9 @@ a {
   }
 
   .number-grid {
+    align-content: start;
     gap: 7px;
+    overflow-y: auto;
+    padding-right: 4px;
   }
 }
