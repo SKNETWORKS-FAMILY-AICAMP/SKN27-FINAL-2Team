@@ -24,7 +24,6 @@ from .serializers import (
 PRACTICE_SESSION_TYPE = "practice"
 GUEST_DAILY_COUNT = 10
 IN_PROGRESS_SESSION_STATUS = "in_progress"
-SAVED_SESSION_STATUS = "saved"
 COMPLETED_SESSION_STATUS = "completed"
 GUEST_QUESTION_BASE_DATE = date(2026, 6, 23)
 TIME_LIMIT_SECONDS_BY_COUNT = {
@@ -90,21 +89,23 @@ def _base_question_queryset():
     return Questions.objects.all()
 
 
-def _delete_other_saved_sessions(user_id, current_session_id):
-    old_saved_session_ids = list(
-        SolveSessions.objects.filter(
-            user_id=user_id,
-            session_type=PRACTICE_SESSION_TYPE,
-            status=SAVED_SESSION_STATUS,
-        )
-        .exclude(session_id=current_session_id)
-        .values_list("session_id", flat=True)
+def _delete_other_in_progress_sessions(user_id, current_session_id=None):
+    old_session_queryset = SolveSessions.objects.filter(
+        user_id=user_id,
+        session_type=PRACTICE_SESSION_TYPE,
+        status=IN_PROGRESS_SESSION_STATUS,
     )
-    if not old_saved_session_ids:
+    if current_session_id is not None:
+        old_session_queryset = old_session_queryset.exclude(session_id=current_session_id)
+
+    old_session_ids = list(
+        old_session_queryset.values_list("session_id", flat=True)
+    )
+    if not old_session_ids:
         return
 
-    SolveRecords.objects.filter(session_id__in=old_saved_session_ids).delete()
-    SolveSessions.objects.filter(session_id__in=old_saved_session_ids).delete()
+    SolveRecords.objects.filter(session_id__in=old_session_ids).delete()
+    SolveSessions.objects.filter(session_id__in=old_session_ids).delete()
 
 
 # 특정 컬럼의 고유 값을 목록으로 반환한다.
@@ -422,27 +423,29 @@ def question_start(request):
 
     session = None
     if user_id is not None:
-        session = SolveSessions.objects.create(
-            user_id=user_id,
-            session_type=PRACTICE_SESSION_TYPE,
-            total_count=count,
-            elapsed_sec=0,
-            status=IN_PROGRESS_SESSION_STATUS,
-            recorded_date=date.today(),
-        )
-        SolveRecords.objects.bulk_create([
-            SolveRecords(
-                session=session,
-                question=question,
-                selected_no=None,
-                is_correct=False,
-                q_type=question.question_type,
-                topic=question.topic,
-                era=question.era,
-                q_score=question.q_score,
+        with transaction.atomic():
+            _delete_other_in_progress_sessions(user_id)
+            session = SolveSessions.objects.create(
+                user_id=user_id,
+                session_type=PRACTICE_SESSION_TYPE,
+                total_count=count,
+                elapsed_sec=0,
+                status=IN_PROGRESS_SESSION_STATUS,
+                recorded_date=date.today(),
             )
-            for question in questions
-        ])
+            SolveRecords.objects.bulk_create([
+                SolveRecords(
+                    session=session,
+                    question=question,
+                    selected_no=None,
+                    is_correct=False,
+                    q_type=question.question_type,
+                    topic=question.topic,
+                    era=question.era,
+                    q_score=question.q_score,
+                )
+                for question in questions
+            ])
 
     start_question_response = StartQuestionsResponse({
         "session_id": session.session_id if session else None,
@@ -471,7 +474,7 @@ def question_in_progress_sessions(request):
         SolveSessions.objects.filter(
             user_id=user_id,
             session_type=PRACTICE_SESSION_TYPE,
-            status=SAVED_SESSION_STATUS,
+            status=IN_PROGRESS_SESSION_STATUS,
         ).order_by("-recorded_date", "-session_id")
     )
     session_ids = [session.session_id for session in sessions]
@@ -618,20 +621,12 @@ def question_save_answer(request, session_id):
     if data["elapsed_sec"] is not None:
         session.elapsed_sec = data["elapsed_sec"]
         update_session_fields.append("elapsed_sec")
-    if data["mark_saved"]:
-        session.status = SAVED_SESSION_STATUS
-        update_session_fields.append("status")
     if data["mark_completed"]:
         session.status = COMPLETED_SESSION_STATUS
         if "status" not in update_session_fields:
             update_session_fields.append("status")
     if update_session_fields:
-        if data["mark_saved"]:
-            with transaction.atomic():
-                _delete_other_saved_sessions(user_id, session.session_id)
-                session.save(update_fields=update_session_fields)
-        else:
-            session.save(update_fields=update_session_fields)
+        session.save(update_fields=update_session_fields)
 
     serializer = SaveAnswerResponse({
         "session_id": session.session_id,

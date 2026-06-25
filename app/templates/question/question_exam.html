@@ -73,11 +73,11 @@
             <div class="side-action-buttons">
               <button class="exit-top-button" id="exitButton" type="button">나가기</button>
               {% if request.user.is_authenticated %}
-              <button id="saveProgressButton" type="button">문제 저장</button>
+              <button id="saveProgressButton" type="button">진행 저장</button>
               {% endif %}
             </div>
             {% if request.user.is_authenticated %}
-            <p id="saveStatus">풀이 중인 문제를 저장할 수 있습니다.</p>
+            <p id="saveStatus">답안 선택, 이동, 나가기 시 진행 상황이 자동 저장됩니다.</p>
             {% endif %}
           </section>
           <section class="timer-card">
@@ -141,6 +141,7 @@
     let remainingSeconds = shouldResume && Number.isInteger(savedProgress?.remainingSeconds) ? savedProgress.remainingSeconds : 0;
     let totalExamSeconds = 0;
     let isTimeOver = false;
+    let isSubmittingExam = false;
 
     function secondsByQuestionCount(count) {
       const minutesByCount = {
@@ -365,7 +366,7 @@
       return questionTimeSpent[currentIndex];
     }
 
-    async function saveProgress(showMessage = true, markSaved = false, markCompleted = false) {
+    async function saveProgress(showMessage = true, markCompleted = false) {
       if (!sessionId) {
         if (showMessage && saveStatus) {
           saveStatus.textContent = "저장할 풀이 세션이 없습니다.";
@@ -407,7 +408,6 @@
           choice_id: choiceId,
           time_spent_ms: timeSpentMs,
           elapsed_sec: elapsedSeconds(),
-          mark_saved: markSaved,
           mark_completed: markCompleted,
         }),
       });
@@ -429,7 +429,35 @@
       }
     }
 
+    function saveProgressBeforeLeave() {
+      if (isSubmittingExam) return;
+      if (!sessionId || !questions[currentIndex]?.questionId) return;
+      const question = questions[currentIndex];
+      const selectedNo = answers[currentIndex];
+      const choiceId = selectedNo ? question.choiceIds[selectedNo - 1] : null;
+      const timeSpentMs = commitCurrentQuestionTime();
+      localStorage.setItem("questionInProgress", JSON.stringify(currentSession()));
+
+      fetch(`/question/api/session/${sessionId}/answer/`, {
+        method: "PATCH",
+        keepalive: true,
+        credentials: "same-origin",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCookie("csrftoken") || "{{ csrf_token }}",
+        },
+        body: JSON.stringify({
+          question_id: question.questionId,
+          choice_id: choiceId,
+          time_spent_ms: timeSpentMs,
+          elapsed_sec: elapsedSeconds(),
+          mark_completed: false,
+        }),
+      }).catch(() => {});
+    }
+
     function finishExam() {
+      isSubmittingExam = true;
       commitCurrentQuestionTime();
       localStorage.setItem("questionResult", JSON.stringify({
         questions,
@@ -525,7 +553,7 @@
       answers[currentIndex] = answers[currentIndex] ?? null;
       numberButtons[currentIndex].classList.add("answered");
       try {
-        await saveProgress(false, false, true);
+        await saveProgress(false, true);
       } catch (error) {
         console.error(error);
       }
@@ -534,7 +562,7 @@
     if (saveProgressButton) {
       saveProgressButton.addEventListener("click", async () => {
         try {
-          await saveProgress(true, true);
+          await saveProgress(true);
         } catch (error) {
           if (saveStatus) {
             saveStatus.textContent = "문제 저장에 실패했습니다.";
@@ -545,6 +573,14 @@
         }
       });
     }
+
+    window.addEventListener("beforeunload", saveProgressBeforeLeave);
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "hidden") {
+        saveProgressBeforeLeave();
+      }
+    });
+
     function renderTimer() {
       const minutes = String(Math.floor(remainingSeconds / 60)).padStart(2, "0");
       const seconds = String(remainingSeconds % 60).padStart(2, "0");

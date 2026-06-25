@@ -305,7 +305,22 @@
       input.addEventListener("change", updateModeView);
     });
 
-    createButton.addEventListener("click", () => {
+    async function hasInProgressSession() {
+      if (!loadButton) return false;
+      try {
+        const response = await fetch("/question/api/sessions/in-progress/", {
+          credentials: "same-origin",
+        });
+        if (!response.ok) return false;
+        const payload = await response.json();
+        return !!payload.sessions?.length;
+      } catch (error) {
+        console.error(error);
+        return false;
+      }
+    }
+
+    createButton.addEventListener("click", async () => {
       const mode = selectedMode();
       const condition = mode === "detail" ? collectCondition() : presetCondition(mode);
 
@@ -320,6 +335,12 @@
           alert("시대, 주제, 대유형, 소유형, 난이도를 모두 선택해 주세요.");
           return;
         }
+      }
+
+      const hasInProgress = await hasInProgressSession();
+      if (hasInProgress) {
+        const shouldCreateNew = confirm("풀다 만 문제가 있습니다. 새 문제를 생성하면 기존 진행 기록은 삭제됩니다. 계속하시겠습니까?");
+        if (!shouldCreateNew) return;
       }
 
       sessionStorage.setItem("questionGenerationCondition", JSON.stringify(condition));
