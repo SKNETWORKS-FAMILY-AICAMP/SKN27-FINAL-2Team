@@ -110,7 +110,6 @@ class SaveAnswerRequest(serializers.Serializer):
     choice_id = serializers.IntegerField(allow_null=True, required=False, default=None)
     time_spent_ms = serializers.IntegerField(allow_null=True, required=False, default=None)
     elapsed_sec = serializers.IntegerField(allow_null=True, required=False, default=None)
-    mark_saved = serializers.BooleanField(required=False, default=False)
     mark_completed = serializers.BooleanField(required=False, default=False)
 
 
