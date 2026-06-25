@@ -1,33 +1,58 @@
 import json
 from datetime import timedelta
 
+from django.db import transaction
 from django.utils import timezone
 
 from analytics.models import StudyPlanMypage
-from analytics.serializers import serialize_study_plan, serialize_study_plans
+from analytics.serializers import parse_study_plan_items, serialize_study_plan, serialize_study_plans
 from analytics.service.analytics import get_weak_targets
 from analytics.service.prediction import get_predicted_targets
 from user.models import UserStudyProfile
 
 
 def get_user_study_info(user_id):
+    """
+    사용자의 학습 설정 프로필을 조회한다.
+
+    하루 학습 가능 시간과 시험일 정보를 가져오는 기본 조회 함수이며,
+    프로필이 없으면 None을 반환한다.
+    """
     return UserStudyProfile.objects.filter(user_id=user_id).first()
 
 
-def get_daily_available_minutes(user_id):
-    profile = get_user_study_info(user_id)
-    if profile and profile.daily_available_hours is not None:
-        return int(float(profile.daily_available_hours) * 60)
+def get_daily_available_minutes(user_id, profile=None):
+    """
+    사용자의 하루 학습 가능 시간을 분 단위로 변환한다.
+
+    UserStudyProfile.daily_available_hours 값을 읽어 60을 곱하고,
+    설정값이 없으면 0분으로 반환한다. 이미 조회한 프로필을 받으면
+    같은 사용자의 프로필을 다시 조회하지 않고 그 값을 사용한다.
+    """
+    study_profile = profile
+    if study_profile is None:
+        study_profile = get_user_study_info(user_id)
+    if study_profile and study_profile.daily_available_hours is not None:
+        return int(float(study_profile.daily_available_hours) * 60)
 
     return 0
 
 
-def get_remaining_days(user_id, today=None):
+def get_remaining_days(user_id, today=None, profile=None):
+    """
+    시험일까지 남은 일수를 계산한다.
+
+    시험일이 미래면 실제 남은 일수를 반환하고,
+    시험일이 오늘이거나 지난 경우에는 당일 압축 계획 일수를 반환한다.
+    이미 조회한 프로필을 받으면 같은 사용자의 프로필을 다시 조회하지 않는다.
+    """
     config = get_study_plan_config()
     base_date = today or timezone.localdate()
-    profile = get_user_study_info(user_id)
-    if profile and profile.exam_date:
-        remaining_days = (profile.exam_date - base_date).days
+    study_profile = profile
+    if study_profile is None:
+        study_profile = get_user_study_info(user_id)
+    if study_profile and study_profile.exam_date:
+        remaining_days = (study_profile.exam_date - base_date).days
         if remaining_days > 0:
             return remaining_days
         elif remaining_days <= 0:
@@ -37,6 +62,12 @@ def get_remaining_days(user_id, today=None):
 
 
 def format_plan_items(study_plan_items):
+    """
+    DB에 저장할 학습계획 상세 항목을 JSON 문자열로 정규화한다.
+
+    None은 빈 리스트 문자열로, 이미 문자열인 값은 그대로,
+    리스트/딕셔너리 형태는 한글이 깨지지 않도록 JSON으로 변환한다.
+    """
     if study_plan_items is None:
         return "[]"
     elif isinstance(study_plan_items, str):
@@ -46,6 +77,12 @@ def format_plan_items(study_plan_items):
 
 
 def get_study_plan_info(user_id):
+    """
+    사용자의 저장된 학습계획 목록을 최신순으로 조회한다.
+
+    DB 모델을 그대로 넘기지 않고 serializer를 통해
+    화면/API에서 쓰는 응답 형태로 변환한다.
+    """
     daily_available_minutes = get_daily_available_minutes(user_id)
     study_plans = StudyPlanMypage.objects.filter(user_id=user_id).order_by(
         "-modified_at",
@@ -54,6 +91,15 @@ def get_study_plan_info(user_id):
 
 
 def create_study_plan(user_id, study_plans="", study_plan_items=None, predicted_targets=None):
+    """
+    사용자의 학습계획을 생성하고 저장한다.
+
+    상세 계획이 전달되지 않으면 취약점/출제예상 기반으로 자동 생성하고,
+    생성된 요약과 날짜별 계획을 study_plan_mypage 테이블에 저장한다.
+    마이페이지에서 반복 생성 버튼을 누를 때 같은 사용자의 row가 계속
+    늘어나지 않도록 자동 생성 요청은 최신 계획 row를 갱신한다.
+    """
+    should_update_latest_plan = study_plan_items is None
     if study_plan_items is None:
         generated_plan = build_user_study_plan(user_id, predicted_targets)
         study_plan_items = generated_plan["plans"]
@@ -61,6 +107,23 @@ def create_study_plan(user_id, study_plans="", study_plan_items=None, predicted_
             study_plans = generated_plan["summary"]
 
     now = timezone.now()
+    latest_plan = None
+    if should_update_latest_plan:
+        latest_plan = (
+            StudyPlanMypage.objects.filter(user_id=user_id)
+            .order_by("-modified_at", "-studyplan_id")
+            .first()
+        )
+    if latest_plan is not None:
+        latest_plan.study_plans = study_plans
+        latest_plan.study_plan_items = format_plan_items(study_plan_items)
+        latest_plan.modified_at = now
+        latest_plan.save(
+            update_fields=["study_plans", "study_plan_items", "modified_at"],
+        )
+        daily_available_minutes = get_daily_available_minutes(user_id)
+        return serialize_study_plan(latest_plan, daily_available_minutes)
+
     study_plan = StudyPlanMypage.objects.create(
         user_id=user_id,
         study_plans=study_plans,
@@ -73,6 +136,12 @@ def create_study_plan(user_id, study_plans="", study_plan_items=None, predicted_
 
 
 def update_study_plan(user_id, study_plan_id, study_plans, study_plan_items):
+    """
+    기존 학습계획의 요약과 날짜별 상세 항목을 수정한다.
+
+    사용자 소유의 특정 studyplan_id만 수정하며,
+    modified_at을 현재 시각으로 갱신한 뒤 직렬화된 결과를 반환한다.
+    """
     study_plan = StudyPlanMypage.objects.get(
         user_id=user_id,
         studyplan_id=study_plan_id,
@@ -88,6 +157,12 @@ def update_study_plan(user_id, study_plan_id, study_plans, study_plan_items):
 
 
 def delete_study_plan(user_id, study_plan_id):
+    """
+    학습계획을 삭제하고 삭제 전 데이터를 반환한다.
+
+    삭제 결과를 화면/API에서 확인할 수 있도록,
+    먼저 serializer 형태로 변환한 뒤 DB row를 삭제한다.
+    """
     study_plan = StudyPlanMypage.objects.get(
         user_id=user_id,
         studyplan_id=study_plan_id,
@@ -98,11 +173,116 @@ def delete_study_plan(user_id, study_plan_id):
     return deleted_study_plan
 
 
+def delete_study_plan_block(user_id, study_plan_id, day_index, block_index):
+    """
+    학습계획 안의 특정 날짜/블록 하나를 삭제한다.
+
+    마이페이지 달력에서 개별 학습 항목의 삭제 버튼을 눌렀을 때 사용하며,
+    study_plan_items JSON을 다시 저장한 뒤 최신 직렬화 결과를 반환한다.
+    """
+    study_plan = StudyPlanMypage.objects.filter(
+        user_id=user_id,
+        studyplan_id=study_plan_id,
+    ).first()
+    if study_plan is None:
+        return None
+
+    plan_items = parse_study_plan_items(study_plan.study_plan_items)
+    if 0 <= day_index < len(plan_items):
+        day_plan = plan_items[day_index]
+        blocks = day_plan.get("blocks", [])
+        if 0 <= block_index < len(blocks):
+            blocks.pop(block_index)
+            plan_items = [plan for plan in plan_items if plan.get("blocks")]
+            return update_study_plan(
+                user_id,
+                study_plan_id,
+                study_plan.study_plans,
+                plan_items,
+            )
+
+    return None
+
+
+def move_study_plan_blocks(user_id, move_items, target_date):
+    """
+    선택한 학습 블록들을 지정 날짜로 이동한다.
+
+    학습일 변경 모달에서 체크한 항목 목록을 받아 같은 study_plan_mypage
+    row 안의 기존 날짜 blocks에서 제거하고 target_date 날짜 blocks로 옮긴다.
+    """
+    if not move_items:
+        return []
+
+    target_date_key = target_date[:10]
+    study_plan_ids = sorted({item["studyPlanId"] for item in move_items})
+    updated_plans = []
+
+    with transaction.atomic():
+        for study_plan_id in study_plan_ids:
+            study_plan = (
+                StudyPlanMypage.objects.select_for_update()
+                .filter(user_id=user_id, studyplan_id=study_plan_id)
+                .first()
+            )
+            if study_plan is not None:
+                plan_items = parse_study_plan_items(study_plan.study_plan_items)
+                selected_indexes_by_day = {}
+                for item in move_items:
+                    if item["studyPlanId"] == study_plan_id:
+                        selected_indexes_by_day.setdefault(item["dayIndex"], set()).add(
+                            item["blockIndex"],
+                        )
+
+                blocks_to_move = []
+                for day_index in sorted(selected_indexes_by_day):
+                    if 0 <= day_index < len(plan_items):
+                        blocks = plan_items[day_index].get("blocks", [])
+                        for block_index in sorted(selected_indexes_by_day[day_index], reverse=True):
+                            if 0 <= block_index < len(blocks):
+                                blocks_to_move.insert(0, blocks.pop(block_index))
+
+                if blocks_to_move:
+                    target_day_plan = None
+                    for day_plan in plan_items:
+                        raw_date = str(day_plan.get("date", ""))[:10]
+                        if raw_date == target_date_key:
+                            target_day_plan = day_plan
+
+                    if target_day_plan is None:
+                        target_day_plan = {
+                            "date": target_date_key,
+                            "blocks": [],
+                        }
+                        plan_items.append(target_day_plan)
+
+                    target_day_plan.setdefault("blocks", []).extend(blocks_to_move)
+                    plan_items = [plan for plan in plan_items if plan.get("blocks")]
+                    plan_items = sorted(plan_items, key=lambda plan: str(plan.get("date", ""))[:10])
+                    updated_plans.append(
+                        update_study_plan(
+                            user_id,
+                            study_plan_id,
+                            study_plan.study_plans,
+                            plan_items,
+                        )
+                    )
+
+    return updated_plans
+
+
 def build_user_study_plan(user_id, predicted_targets=None, today=None):
+    """
+    취약점과 출제 예상 데이터를 기반으로 사용자 맞춤 학습계획을 생성한다.
+
+    남은 기간, 하루 가용시간, 취약 항목, 출제 예상 항목을 합쳐
+    우선순위를 만들고 날짜별 학습 블록 목록을 반환한다.
+    """
     config = get_study_plan_config()
     base_date = today or timezone.localdate()
-    remaining_days = get_remaining_days(user_id, base_date)
-    daily_available_minutes = get_daily_available_minutes(user_id)
+    profile = get_user_study_info(user_id)
+    remaining_days = get_remaining_days(user_id, base_date, profile)
+    daily_available_minutes = get_daily_available_minutes(user_id, profile)
     if daily_available_minutes <= 0:
         daily_available_minutes = config["fallback_daily_available_minutes"]
 
@@ -134,6 +314,12 @@ def build_user_study_plan(user_id, predicted_targets=None, today=None):
 
 
 def build_priority_targets(weak_targets, predicted_targets, remaining_days, config):
+    """
+    취약 항목과 출제 예상 항목을 병합해 우선순위 점수를 계산한다.
+
+    동일한 classification/label 항목을 하나로 합치고,
+    남은 기간 전략에 따른 가중치로 priorityScore를 산출한다.
+    """
     target_map = {}
     for weak_target in weak_targets:
         classification = weak_target.get("classification")
@@ -216,6 +402,12 @@ def build_priority_targets(weak_targets, predicted_targets, remaining_days, conf
 
 
 def build_daily_plan_items(priority_targets, daily_available_minutes, remaining_days, today, config):
+    """
+    우선순위 대상들을 날짜별 학습 블록으로 배치한다.
+
+    하루 가용시간에 따라 블록 수와 블록별 시간을 나누고,
+    복습 간격에 맞춰 review 블록도 함께 삽입한다.
+    """
     if not priority_targets:
         return []
 
@@ -248,21 +440,22 @@ def build_daily_plan_items(priority_targets, daily_available_minutes, remaining_
             target = priority_targets[target_index % len(priority_targets)]
             target_index += 1
             target_key = (target["classification"], target["label"])
-            if target_key in used_target_keys:
-                if len(used_target_keys) >= len(priority_targets):
-                    break
-                continue
-
             block_type = get_target_block_type(target)
+            if target_key in used_target_keys:
+                if len(used_target_keys) < len(priority_targets):
+                    continue
+                block_type = "review"
+
             block_minutes = get_block_minutes(remaining_minutes, blocks_per_day, len(blocks), config)
             blocks.append(build_study_block(target, block_type, block_minutes, config))
-            used_target_keys.add(target_key)
-            scheduled_targets.append(
-                {
-                    "target": target,
-                    "dayOffset": day_offset,
-                }
-            )
+            if target_key not in used_target_keys:
+                used_target_keys.add(target_key)
+                scheduled_targets.append(
+                    {
+                        "target": target,
+                        "dayOffset": day_offset,
+                    }
+                )
             remaining_minutes -= block_minutes
 
         if blocks:
@@ -277,6 +470,12 @@ def build_daily_plan_items(priority_targets, daily_available_minutes, remaining_
 
 
 def build_study_block(target, block_type, estimated_minutes, config):
+    """
+    단일 학습 대상과 배정 시간을 실제 학습 블록 데이터로 변환한다.
+
+    평균 풀이시간과 해설/오답 정리 시간을 기준으로 문제 수를 계산하고,
+    블록 유형에 맞는 활동 문구를 만든다.
+    """
     average_time_sec = target["averageTimeSec"] or config["default_average_time_sec"]
     unit_time_sec = average_time_sec + config["review_time_sec"]
     question_count = int((estimated_minutes * 60) // unit_time_sec)
@@ -304,6 +503,12 @@ def build_study_block(target, block_type, estimated_minutes, config):
 
 
 def build_priority_reason(target):
+    """
+    우선순위 점수에 사용된 근거를 사용자 표시 문장으로 만든다.
+
+    오답률, 출제 예상도, 평균 풀이시간, 예측 사유를 조합해
+    학습계획 블록의 reason 필드로 사용할 문자열을 반환한다.
+    """
     reasons = []
     if target["wrongRate"]:
         wrong_rate = round(target["wrongRate"] * 100)
@@ -322,6 +527,12 @@ def build_priority_reason(target):
 
 
 def build_plan_summary(priority_targets, remaining_days, daily_available_minutes):
+    """
+    생성된 학습계획의 한 줄 요약 문장을 만든다.
+
+    우선순위 대상이 없으면 생성 불가 안내를 반환하고,
+    있으면 최상위 취약 항목과 기간/시간 기준을 포함해 요약한다.
+    """
     if not priority_targets:
         return "취약점과 출제 예상 데이터가 부족해 학습 계획을 생성하지 못했습니다."
 
@@ -333,6 +544,12 @@ def build_plan_summary(priority_targets, remaining_days, daily_available_minutes
 
 
 def find_review_target(scheduled_targets, day_offset, review_offsets):
+    """
+    이전에 배치된 학습 대상 중 현재 날짜에 복습해야 할 대상을 찾는다.
+
+    현재 day_offset과 과거 배치일의 차이가 설정된 복습 간격에 포함되면
+    해당 대상을 review 블록 후보로 반환한다.
+    """
     for scheduled_target in scheduled_targets:
         if day_offset - scheduled_target["dayOffset"] in review_offsets:
             return scheduled_target["target"]
@@ -341,6 +558,12 @@ def find_review_target(scheduled_targets, day_offset, review_offsets):
 
 
 def get_block_minutes(remaining_minutes, blocks_per_day, current_block_count, config):
+    """
+    현재 블록에 배정할 학습 시간을 계산한다.
+
+    남은 시간을 남은 블록 수로 나누되,
+    최소 블록 시간과 남은 시간 범위를 벗어나지 않도록 보정한다.
+    """
     remaining_blocks = blocks_per_day - current_block_count
     block_minutes = remaining_minutes
     if remaining_blocks > 0:
@@ -354,6 +577,12 @@ def get_block_minutes(remaining_minutes, blocks_per_day, current_block_count, co
 
 
 def get_blocks_per_day(daily_available_minutes, config):
+    """
+    하루 학습 가능 시간에 따라 하루에 배치할 블록 수를 결정한다.
+
+    짧은 학습 시간은 1개 블록, 중간 시간은 2개 블록,
+    충분한 시간은 3개 블록으로 나눠 과밀한 계획을 피한다.
+    """
     blocks_per_day = config["large_daily_block_count"]
     if daily_available_minutes < config["small_daily_available_minutes"]:
         blocks_per_day = config["small_daily_block_count"]
@@ -364,6 +593,12 @@ def get_blocks_per_day(daily_available_minutes, config):
 
 
 def get_review_offsets(remaining_days, config):
+    """
+    남은 기간에 맞는 복습 간격 목록을 반환한다.
+
+    단기 계획은 짧은 복습 간격만 사용하고,
+    중기/장기 계획은 1일, 3일, 7일 복습 구조를 점진적으로 적용한다.
+    """
     review_offsets = config["long_term_review_offsets"]
     if remaining_days <= config["short_term_days"]:
         review_offsets = config["short_term_review_offsets"]
@@ -374,6 +609,12 @@ def get_review_offsets(remaining_days, config):
 
 
 def get_target_block_type(target):
+    """
+    학습 대상의 블록 유형을 결정한다.
+
+    출제 예상도가 오답률보다 높으면 predictionFocus,
+    그 외에는 새 취약점 보완 블록인 newWeakness로 분류한다.
+    """
     block_type = "newWeakness"
     if target["predictionScore"] > target["wrongRate"]:
         block_type = "predictionFocus"
@@ -382,6 +623,12 @@ def get_target_block_type(target):
 
 
 def get_study_strategy(remaining_days, config):
+    """
+    남은 기간에 따라 단기, 중기, 장기 학습 전략을 선택한다.
+
+    전략 이름은 priorityScore 계산 시 취약도/출제예상도/시간부담
+    가중치를 선택하는 키로 사용된다.
+    """
     strategy = "long"
     if remaining_days <= config["short_term_days"]:
         strategy = "short"
@@ -392,6 +639,12 @@ def get_study_strategy(remaining_days, config):
 
 
 def get_study_plan_config():
+    """
+    학습계획 생성에 사용하는 설정값과 전략별 가중치를 반환한다.
+
+    하루 블록 수, 문제 수 제한, 복습 간격, 기간별 우선순위 가중치 등
+    계획 생성 로직에서 반복적으로 쓰는 값을 한곳에서 관리한다.
+    """
     return {
         "default_remaining_days": 14,
         "same_day_plan_days": 1,

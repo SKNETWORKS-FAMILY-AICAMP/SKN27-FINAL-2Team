@@ -1,6 +1,11 @@
+import json
+from datetime import date
+
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render
+from django.http import JsonResponse
+from django.shortcuts import redirect, render
 from django.utils import timezone
+from django.views.decorators.http import require_POST
 
 from analytics.service.analytics import analytics_summary, get_wrong_rate_group_stats
 from analytics.service.display import build_planner_summary, build_wrong_rate_display
@@ -11,7 +16,12 @@ from analytics.service.mypage import (
     build_weakness_summary,
     build_wrong_type_summary,
 )
-from analytics.service.studyplan import get_study_plan_info
+from analytics.service.studyplan import (
+    create_study_plan,
+    delete_study_plan_block,
+    get_study_plan_info,
+    move_study_plan_blocks,
+)
 
 
 @login_required
@@ -56,3 +66,76 @@ def wrong_rate_detail(request):
         "analytics/wrong_rate_detail.html",
         context,
     )
+
+
+@login_required
+@require_POST
+def create_study_plan_view(request):
+    create_study_plan(request.user.user_id)
+    return redirect("analytics:mypage")
+
+
+@login_required
+@require_POST
+def delete_study_plan_block_view(request):
+    data = get_json_request_data(request)
+    try:
+        study_plan_id = int(data.get("studyPlanId"))
+        day_index = int(data.get("dayIndex"))
+        block_index = int(data.get("blockIndex"))
+    except (TypeError, ValueError):
+        return JsonResponse({"ok": False}, status=400)
+
+    deleted_plan = delete_study_plan_block(
+        request.user.user_id,
+        study_plan_id,
+        day_index,
+        block_index,
+    )
+    if deleted_plan is None:
+        return JsonResponse({"ok": False}, status=404)
+
+    return JsonResponse({"ok": True})
+
+
+@login_required
+@require_POST
+def move_study_plan_blocks_view(request):
+    data = get_json_request_data(request)
+    move_items = data.get("items") or []
+    target_date = data.get("targetDate")
+    if not move_items or not target_date:
+        return JsonResponse({"ok": False}, status=400)
+
+    try:
+        target_date_key = date.fromisoformat(target_date[:10]).isoformat()
+        normalized_items = [
+            {
+                "studyPlanId": int(item["studyPlanId"]),
+                "dayIndex": int(item["dayIndex"]),
+                "blockIndex": int(item["blockIndex"]),
+            }
+            for item in move_items
+        ]
+    except (KeyError, TypeError, ValueError):
+        return JsonResponse({"ok": False}, status=400)
+
+    updated_plans = move_study_plan_blocks(
+        request.user.user_id,
+        normalized_items,
+        target_date_key,
+    )
+    if not updated_plans:
+        return JsonResponse({"ok": False}, status=404)
+
+    return JsonResponse({"ok": True})
+
+
+def get_json_request_data(request):
+    if not request.body:
+        return {}
+
+    try:
+        return json.loads(request.body.decode("utf-8"))
+    except json.JSONDecodeError:
+        return {}

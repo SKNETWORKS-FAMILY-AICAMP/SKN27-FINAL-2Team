@@ -246,11 +246,24 @@ a {
   font-size: 18px;
 }
 
-.panel-heading a {
+.panel-heading a,
+.inline-plan-form button {
   color: var(--green);
   font-size: 13px;
   font-weight: 900;
   white-space: nowrap;
+}
+
+.inline-plan-form {
+  margin: 0;
+}
+
+.inline-plan-form button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font-family: inherit;
 }
 
 .section-mark {

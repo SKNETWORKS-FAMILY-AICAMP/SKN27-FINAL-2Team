@@ -6,8 +6,13 @@ from analytics.models import Analytics
 from question.models import SolveRecords, SolveSessions
 
 
-
 def get_user_analytics(user_id):
+    """
+    사용자의 모든 풀이 세션에 연결된 기존 analytics 테이블 데이터를 조회한다.
+
+    세션별로 저장된 시대/유형/주제 분석 row를 가져올 때 사용한다.
+    현재 메인 요약 화면은 주로 SolveRecords 실시간 집계를 사용한다.
+    """
     session_ids = SolveSessions.objects.filter(user_id=user_id).values_list(
         "session_id",
         flat=True,
@@ -15,11 +20,13 @@ def get_user_analytics(user_id):
     return Analytics.objects.filter(session_id__in=session_ids)
 
 
-def get_analytics_info(user_id):
-    return analytics_summary(user_id)
-
-
 def analytics_summary(user_id):
+    """
+    마이페이지와 분석 화면에 필요한 전체 분석 응답 묶음을 생성한다.
+
+    전체 요약, 시대/유형/주제별 통계, 점수 추이,
+    취약 항목, 추천 학습 대상을 한 번에 구성한다.
+    """
     completed_sessions = get_completed_sessions(user_id)
     completed_records = get_completed_records(user_id)
 
@@ -42,11 +49,23 @@ def analytics_summary(user_id):
 
 
 def get_weak_targets(user_id):
+    """
+    학습계획에서 사용할 시대/유형/주제별 취약 항목을 생성한다.
+
+    완료된 풀이 기록을 기준으로 분류별 오답률과 평균 풀이시간을 계산하고,
+    오답률이 높고 오래 걸린 항목이 먼저 오도록 정렬한다.
+    """
     completed_records = get_completed_records(user_id)
     return build_weak_targets(completed_records)
 
 
 def get_weekly_practice_summary(user_id, today=None):
+    """
+    이번 주 practice 세션의 학습 요약을 계산한다.
+
+    주간 범위는 월요일부터 일요일까지로 잡고,
+    정답률, 풀이 수, 문제당 평균 풀이시간, 세션 평균 소요시간을 반환한다.
+    """
     completed_status = "completed"
     practice_type = "practice"
     base_date = today or timezone.localdate()
@@ -86,6 +105,12 @@ def get_weekly_practice_summary(user_id, today=None):
 
 
 def get_first_diagnosis_summary(user_id):
+    """
+    사용자의 첫 completed 진단평가 결과를 요약한다.
+
+    가장 오래된 diagnostic 세션을 기준으로 정답률, 풀이 수,
+    평균 문제 풀이시간과 진단 일자를 반환한다.
+    """
     completed_status = "completed"
     diagnostic_type = "diagnostic"
     session = (
@@ -125,6 +150,12 @@ def get_first_diagnosis_summary(user_id):
 
 
 def get_diagnosis_improvement_summary(user_id, today=None):
+    """
+    첫 진단평가와 이번 주 practice 결과의 개선 정도를 계산한다.
+
+    두 기록이 모두 있을 때 정답률 차이와 평균 풀이시간 차이를 계산하고,
+    비교가 불가능하면 변화값을 None으로 반환한다.
+    """
     diagnosis_summary = get_first_diagnosis_summary(user_id)
     weekly_summary = get_weekly_practice_summary(user_id, today)
     has_comparison = diagnosis_summary["hasRecords"] and weekly_summary["hasRecords"]
@@ -151,6 +182,11 @@ def get_diagnosis_improvement_summary(user_id, today=None):
 
 
 def get_completed_sessions(user_id):
+    """
+    사용자의 완료된 풀이 세션 QuerySet을 반환한다.
+
+    여러 분석 함수에서 공통으로 사용하는 기본 세션 필터다.
+    """
     return SolveSessions.objects.filter(
         user_id=user_id,
         status="completed",
@@ -158,6 +194,11 @@ def get_completed_sessions(user_id):
 
 
 def get_completed_records(user_id):
+    """
+    사용자의 완료된 세션에 속한 풀이 기록 QuerySet을 반환한다.
+
+    분석 기준이 되는 원본 풀이 기록을 가져오는 공통 필터다.
+    """
     return SolveRecords.objects.filter(
         session__user_id=user_id,
         session__status="completed",
@@ -165,6 +206,12 @@ def get_completed_records(user_id):
 
 
 def build_analytics_summary(sessions, records):
+    """
+    전체 풀이 요약 통계를 만든다.
+
+    세션에서는 평균 점수와 평균 정답률을 계산하고,
+    풀이 기록에서는 총 풀이 수와 평균 문제 풀이시간을 계산한다.
+    """
     session_stats = sessions.aggregate(
         average_score=Avg("total_score"),
         average_answer_rate=Avg("answer_rate"),
@@ -183,6 +230,12 @@ def build_analytics_summary(sessions, records):
 
 
 def build_group_stats(records, field_name, response_key):
+    """
+    지정한 SolveRecords 컬럼 기준으로 분류별 통계를 집계한다.
+
+    시대, 유형, 주제처럼 하나의 컬럼으로 묶을 수 있는 분석에 사용하며,
+    화면 응답 키는 response_key로 맞춰서 반환한다.
+    """
     rows = (
         records.values(field_name)
         .annotate(
@@ -212,6 +265,12 @@ def build_group_stats(records, field_name, response_key):
 
 
 def build_score_trend(sessions):
+    """
+    날짜별 평균 점수와 평균 정답률 추이를 만든다.
+
+    completed 세션을 recorded_date 기준으로 묶어
+    학습 성과가 날짜별로 어떻게 변했는지 표시하는 데 사용한다.
+    """
     rows = (
         sessions.values("recorded_date")
         .annotate(
@@ -232,6 +291,12 @@ def build_score_trend(sessions):
 
 
 def build_weak_targets(records):
+    """
+    시대, 유형, 주제별 통계를 하나의 취약 항목 목록으로 합친다.
+
+    오답률을 1순위, 평균 풀이시간을 2순위로 두고 정렬해
+    학습계획에서 우선 보완할 대상을 선택할 수 있게 한다.
+    """
     weak_targets = []
     for classification, field_name in get_classification_fields():
         stats = build_group_stats(records, field_name, "label")
@@ -257,6 +322,12 @@ def build_weak_targets(records):
 
 
 def build_recommended_study_targets(records):
+    """
+    시대+주제 조합에서 오답이 발생한 항목을 추천 학습 대상으로 만든다.
+
+    오답 수가 있는 조합만 남기고,
+    오답 수와 전체 풀이 수가 많은 항목을 우선순위 상위에 둔다.
+    """
     rows = (
         records.values("era", "topic")
         .annotate(
@@ -283,6 +354,12 @@ def build_recommended_study_targets(records):
 
 
 def get_wrong_rate_group_stats(user, field_name):
+    """
+    오답률 상세 페이지에서 사용할 단일 분류 기준 통계를 조회한다.
+
+    field_name으로 전달된 era/q_type/topic 기준으로 전체 수,
+    오답 수, 오답률, 평균 풀이시간을 계산한다.
+    """
     rows = (
         SolveRecords.objects.filter(
             session__user=user,
@@ -315,6 +392,12 @@ def get_wrong_rate_group_stats(user, field_name):
 
 
 def make_recommendation_reason(row):
+    """
+    추천 학습 대상에 표시할 사유 문장을 만든다.
+
+    시대와 주제 라벨, 오답 수를 조합해
+    사용자가 왜 추천되었는지 이해할 수 있는 문장을 반환한다.
+    """
     era = row["era"] or get_unclassified_label()
     topic = row["topic"] or get_unclassified_label()
     wrong_count = row["wrong_count"] or 0
@@ -322,6 +405,11 @@ def make_recommendation_reason(row):
 
 
 def get_classification_fields():
+    """
+    취약점 분석에 사용할 분류명과 SolveRecords 컬럼 매핑을 반환한다.
+
+    시대, 유형, 주제 분석에서 같은 집계 함수를 재사용하기 위한 기준 목록이다.
+    """
     return [
         ("시대", "era"),
         ("유형", "q_type"),
@@ -330,10 +418,20 @@ def get_classification_fields():
 
 
 def get_unclassified_label():
+    """
+    분류값이 비어 있을 때 사용할 기본 라벨을 반환한다.
+
+    era, q_type, topic 값이 없을 때 화면에 빈 문자열이 노출되지 않게 한다.
+    """
     return "미분류"
 
 
 def calculate_rate(count, total):
+    """
+    count / total 비율을 0~1 사이 소수 4자리로 계산한다.
+
+    total이 0이면 ZeroDivisionError를 피하기 위해 0.0을 반환한다.
+    """
     if total:
         return round(count / total, 4)
 
@@ -341,6 +439,11 @@ def calculate_rate(count, total):
 
 
 def calculate_percent_rate(count, total):
+    """
+    count / total 비율을 화면 표시용 0~100 정수 퍼센트로 계산한다.
+
+    반올림 후에도 안전하게 0 이상 100 이하 값으로 제한한다.
+    """
     if not total:
         return 0
 
@@ -349,6 +452,11 @@ def calculate_percent_rate(count, total):
 
 
 def round_float(value):
+    """
+    None 값을 0.0으로 처리하고 실수를 소수 4자리로 반올림한다.
+
+    DB aggregate 결과가 None일 수 있는 평균 점수/정답률 처리에 사용한다.
+    """
     if value is None:
         return 0.0
 
@@ -356,20 +464,24 @@ def round_float(value):
 
 
 def ms_to_sec(value):
+    """
+    밀리초 단위 풀이 시간을 초 단위 정수로 변환한다.
+
+    값이 없으면 None을 유지해 화면에서 기록 없음 상태를 구분할 수 있게 한다.
+    """
     if value is None:
         return None
 
     return int(round(value / 1000))
 
 
-def cant_create_analytics(user_id):
-    if get_completed_records(user_id).exists():
-        return False
-
-    return True
-
-
 def create_analytics(user_id):
+    """
+    완료된 세션별 시대/유형/주제 정답률을 analytics 테이블에 재생성한다.
+
+    기존 해당 사용자 세션의 analytics row를 삭제한 뒤,
+    각 completed 세션 내부 기록을 분류별로 집계해 다시 bulk_create한다.
+    """
     sessions = get_completed_sessions(user_id)
     Analytics.objects.filter(session__in=sessions).delete()
 

@@ -13,6 +13,12 @@ from analytics.service.studyplan import get_user_study_info
 
 
 def build_learning_summary(user):
+    """
+    마이페이지 상단 학습 요약 카드에 필요한 데이터를 만든다.
+
+    이번 주 practice 기준 정답률과 풀이 수를 가져오고,
+    완료 세션 날짜를 이용해 현재 연속 학습일을 계산한다.
+    """
     completed_sessions = get_completed_sessions(user.user_id)
     weekly_summary = get_weekly_practice_summary(user.user_id)
 
@@ -41,6 +47,12 @@ def build_learning_summary(user):
 
 
 def build_diagnosis_comparison_summary(user):
+    """
+    첫 진단평가와 이번 주 연습 결과를 비교한 개선 요약을 만든다.
+
+    정답률 변화와 문제당 평균 풀이시간 변화를 계산하고,
+    화면에서 사용할 good/warn/neutral 톤 정보를 함께 반환한다.
+    """
     comparison = get_diagnosis_improvement_summary(user.user_id)
     answer_change = comparison["answerRateChange"]
     time_change = comparison["averageQuestionTimeChangeSec"]
@@ -86,6 +98,12 @@ def build_diagnosis_comparison_summary(user):
 
 
 def build_wrong_type_summary(user):
+    """
+    유형별 오답률 요약 카드에 필요한 데이터를 만든다.
+
+    완료된 풀이 기록을 q_type 기준으로 묶어 오답률을 계산하고,
+    오답률이 높은 상위 항목에 강조용 CSS 클래스를 부여한다.
+    """
     unclassified_label = "미분류"
     rows = (
         get_completed_records(user.user_id)
@@ -138,6 +156,12 @@ def build_wrong_type_summary(user):
 
 
 def build_weakness_summary(user):
+    """
+    시대와 주제 조합 기준의 취약점 목록을 만든다.
+
+    오답이 1건 이상 발생한 era/topic 조합만 추려서
+    오답률과 오답 수 기준으로 정렬한다.
+    """
     unclassified_label = "미분류"
     rows = (
         get_completed_records(user.user_id)
@@ -179,6 +203,12 @@ def build_weakness_summary(user):
 
 
 def build_d_day_label(user, today):
+    """
+    사용자 학습 프로필의 시험일을 기준으로 D-day 라벨을 만든다.
+
+    시험일이 없으면 미설정, 오늘이면 D-day,
+    미래/과거 날짜는 각각 D - n, D + n 형태로 반환한다.
+    """
     profile = get_user_study_info(user.user_id)
     if not profile or not profile.exam_date:
         return "미설정"
@@ -195,6 +225,12 @@ def build_d_day_label(user, today):
 
 
 def _format_seconds(seconds):
+    """
+    초 단위 시간을 MM:SS 문자열로 변환한다.
+
+    값이 없거나 음수로 들어올 수 있는 경우를 방어해
+    화면에는 항상 00:00 이상의 형식으로 표시되게 한다.
+    """
     if seconds is None:
         return "00:00"
 

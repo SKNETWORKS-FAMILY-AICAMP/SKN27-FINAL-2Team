@@ -4,8 +4,19 @@ from question.models import Questions
 
 
 def get_predicted_targets(user_id=None):
+    """
+    문제은행의 시대, 유형, 주제별 문항 수를 기준으로 출제 예상 대상을 만든다.
+
+    각 분류 안에서 가장 많이 출제된 항목을 1.0으로 두고,
+    나머지 항목은 상대 비율을 predictionScore로 계산한다.
+    """
+    prediction_fields = [
+        ("시대", "era"),
+        ("유형", "question_type"),
+        ("주제", "topic"),
+    ]
     predicted_targets = []
-    for classification, field_name in get_prediction_fields():
+    for classification, field_name in prediction_fields:
         rows = list(
             Questions.objects.values(field_name)
             .annotate(question_count=Count("question_id"))
@@ -28,11 +39,3 @@ def get_predicted_targets(user_id=None):
                     )
 
     return predicted_targets
-
-
-def get_prediction_fields():
-    return [
-        ("시대", "era"),
-        ("유형", "question_type"),
-        ("주제", "topic"),
-    ]

@@ -2,6 +2,12 @@ from datetime import date, datetime, timedelta
 
 
 def build_planner_summary(study_plans, today):
+    """
+    저장된 학습계획 목록을 마이페이지 달력 표시용 데이터로 변환한다.
+
+    날짜별 계획 목록, 완료/예정 날짜 키, 오늘 표시 데이터,
+    모달에서 사용할 오늘 학습 항목을 함께 구성한다.
+    """
     completed_label = "완료"
     default_title = "학습 계획"
     planned_label = "예정"
@@ -9,7 +15,8 @@ def build_planner_summary(study_plans, today):
     plans_by_date = {}
 
     for study_plan in study_plans:
-        for day_plan in study_plan.get("plans", []):
+        study_plan_id = study_plan.get("studyPlanId")
+        for day_index, day_plan in enumerate(study_plan.get("plans", [])):
             raw_date = day_plan.get("date")
             date_key = ""
             plan_date = None
@@ -29,7 +36,7 @@ def build_planner_summary(study_plans, today):
 
             if date_key and plan_date:
                 plans_by_date.setdefault(date_key, [])
-                for block in day_plan.get("blocks", []):
+                for block_index, block in enumerate(day_plan.get("blocks", [])):
                     status_label = planned_label
                     if plan_date < today:
                         status_label = completed_label
@@ -59,6 +66,9 @@ def build_planner_summary(study_plans, today):
 
                     plans_by_date[date_key].append(
                         {
+                            "studyPlanId": study_plan_id,
+                            "dayIndex": day_index,
+                            "blockIndex": block_index,
                             "title": title,
                             "meta": " · ".join(meta_parts),
                             "done": plan_date < today,
@@ -91,6 +101,12 @@ def build_planner_summary(study_plans, today):
 
 
 def build_wrong_rate_display(stats):
+    """
+    오답률 통계를 상세 화면의 막대 그래프 카드 데이터로 변환한다.
+
+    평균 풀이시간은 MM:SS 문자열로 바꾸고, 오답률 기준으로
+    취약/안정/데이터 부족 상태 라벨과 CSS 클래스를 부여한다.
+    """
     weak_rate_threshold = 20
     display_items = []
     for stat in stats:

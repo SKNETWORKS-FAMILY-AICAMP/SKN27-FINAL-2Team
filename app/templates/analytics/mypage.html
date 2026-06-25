@@ -77,7 +77,7 @@
       <article class="panel weakness-panel">
         <div class="panel-heading compact">
           <h2>취약점 분석</h2>
-
+          <a href="{% url 'analytics:wrong_rate_detail' %}">상세 보기</a>
         </div>
         <div class="weak-list">
           {% for item in weakness_summary.items %}
@@ -111,6 +111,35 @@
               <li class="empty-state">풀이 기록 없음</li>
             {% endif %}
           </ul>
+        </div>
+      </article>
+
+      <article class="panel plan-panel">
+        <div class="panel-heading compact">
+          <h2>학습계획</h2>
+          <form class="inline-plan-form" action="{% url 'analytics:study_plan_create' %}" method="post">
+            {% csrf_token %}
+            <button type="submit">새 계획</button>
+          </form>
+        </div>
+        <div class="plan-list">
+          {% for item in study_plan|slice:":2" %}
+            <article class="plan-item">
+              <i></i>
+              <div>
+                <strong>{{ item.summary }}</strong>
+                <span>{{ item.totalDays }}일 · 하루 {{ item.dailyAvailableMinutes }}분</span>
+              </div>
+            </article>
+          {% empty %}
+            <article class="plan-item empty">
+              <i></i>
+              <div>
+                <strong>생성된 학습 계획이 없습니다</strong>
+                <span>오늘 표시할 일정 없음</span>
+              </div>
+            </article>
+          {% endfor %}
         </div>
       </article>
 
@@ -168,7 +197,16 @@
             <span>STEP 1</span>
             <strong>변경할 학습을 선택해 주세요</strong>
             {% for item in planner_summary.today_items %}
-              <label><input type="checkbox" /> {{ item.title }}</label>
+              <label>
+                <input
+                  class="planner-move-item"
+                  type="checkbox"
+                  data-study-plan-id="{{ item.studyPlanId }}"
+                  data-day-index="{{ item.dayIndex }}"
+                  data-block-index="{{ item.blockIndex }}"
+                />
+                {{ item.title }}
+              </label>
             {% empty %}
               <p>변경할 학습이 없습니다.</p>
             {% endfor %}
@@ -176,12 +214,12 @@
           <article>
             <span>STEP 2</span>
             <strong>변경할 날짜를 선택해 주세요</strong>
-            <input type="date" value="{{ planner_summary.next_date_key }}" />
+            <input id="planTargetDate" type="date" value="{{ planner_summary.next_date_key }}" />
           </article>
         </div>
         <footer>
           <button class="outline-button" id="cancelPlanModal" type="button">취소</button>
-          <button class="primary-button" type="button">저장</button>
+          <button class="primary-button" id="savePlanModal" type="button">저장</button>
         </footer>
       </section>
     </div>
@@ -193,6 +231,8 @@
     const openPlanModal = document.getElementById("openPlanModal");
     const closePlanModal = document.getElementById("closePlanModal");
     const cancelPlanModal = document.getElementById("cancelPlanModal");
+    const savePlanModal = document.getElementById("savePlanModal");
+    const planTargetDate = document.getElementById("planTargetDate");
     const plannerCalendarGrid = document.getElementById("plannerCalendarGrid");
     const plannerMonthLabel = document.getElementById("plannerMonthLabel");
     const prevPlannerMonth = document.getElementById("prevPlannerMonth");
@@ -208,6 +248,32 @@
     const plannerPlans = plannerData.plansByDate || {};
     const completedKeys = new Set(plannerData.completedKeys || []);
     const plannedKeys = new Set(plannerData.plannedKeys || []);
+
+    const getCookie = (name) => {
+      const cookies = document.cookie ? document.cookie.split("; ") : [];
+      for (const cookie of cookies) {
+        const [key, ...values] = cookie.split("=");
+        if (key === name) {
+          return decodeURIComponent(values.join("="));
+        }
+      }
+      return "";
+    };
+
+    const postPlannerJson = async (url, payload) => {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCookie("csrftoken") || "{{ csrf_token }}",
+        },
+        body: JSON.stringify(payload),
+      });
+      if (!response.ok) {
+        throw new Error("planner request failed");
+      }
+      return response.json();
+    };
 
     const formatDateKey = (date) => {
       const year = date.getFullYear();
@@ -264,11 +330,11 @@
       const plans = plannerPlans[selectedPlannerKey] || [];
       if (!plans.length) {
         plannerLessons.innerHTML = `
-          <article class="plan-item empty">
-            <i></i>
-            <div><strong>등록된 학습 계획이 없습니다</strong><span>학습일 변경에서 새 일정을 연결해 주세요.</span></div>
-          </article>
-        `;
+        <article class="plan-item empty">
+          <i></i>
+          <div><strong>등록된 학습 계획이 없습니다</strong><span>오늘 표시할 일정 없음</span></div>
+        </article>
+      `;
         return;
       }
 
@@ -281,11 +347,22 @@
       `).join("");
 
       plannerLessons.querySelectorAll(".plan-item button").forEach((button) => {
-        button.addEventListener("click", () => {
+        button.addEventListener("click", async () => {
           const item = button.closest(".plan-item");
           const index = Number(item.dataset.planIndex);
-          plannerPlans[selectedPlannerKey].splice(index, 1);
-          renderPlannerLessons();
+          const plan = plannerPlans[selectedPlannerKey][index];
+          if (!plan) {
+            return;
+          }
+          await postPlannerJson(
+            "{% url 'analytics:study_plan_block_delete' %}",
+            {
+              studyPlanId: plan.studyPlanId,
+              dayIndex: plan.dayIndex,
+              blockIndex: plan.blockIndex,
+            },
+          );
+          window.location.reload();
         });
       });
     };
@@ -305,6 +382,24 @@
     openPlanModal.addEventListener("click", () => setPlannerModal(true));
     closePlanModal.addEventListener("click", () => setPlannerModal(false));
     cancelPlanModal.addEventListener("click", () => setPlannerModal(false));
+    savePlanModal.addEventListener("click", async () => {
+      const items = Array.from(document.querySelectorAll(".planner-move-item:checked")).map((item) => ({
+        studyPlanId: item.dataset.studyPlanId,
+        dayIndex: item.dataset.dayIndex,
+        blockIndex: item.dataset.blockIndex,
+      }));
+      if (!items.length || !planTargetDate.value) {
+        return;
+      }
+      await postPlannerJson(
+        "{% url 'analytics:study_plan_block_move' %}",
+        {
+          items,
+          targetDate: planTargetDate.value,
+        },
+      );
+      window.location.reload();
+    });
     plannerModal.addEventListener("click", (event) => {
       if (event.target === plannerModal) setPlannerModal(false);
     });
