@@ -16,8 +16,9 @@ from django.shortcuts import redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
+from analytics.models import Analytics
 from chatbot.models import ChatSessions
-from question.models import Analytics, QuestionOptions, SolveRecords, SolveSessions
+from question.models import QuestionOptions, SolveRecords, SolveSessions
 
 from .models import EmailVerificationCode, UserAccounts, UserStudyProfile
 
@@ -210,7 +211,112 @@ def profile_edit(request):
 
 @login_required
 def wrong_note(request):
-    return render(request, "user/wrong_note.html")
+    sessions = list(
+        SolveSessions.objects.filter(user=request.user)
+        .order_by("-session_id")
+    )
+    session_ids = [session.session_id for session in sessions]
+    session_map = {session.session_id: session for session in sessions}
+
+    records = list(
+        SolveRecords.objects.filter(
+            session_id__in=session_ids,
+        )
+        .select_related("question", "session")
+        .order_by("-session_id", "record_id")
+    )
+    question_ids = [record.question_id for record in records]
+    option_map = {}
+    for option in QuestionOptions.objects.filter(question_id__in=question_ids).order_by(
+        "question_id",
+        "choice_no",
+    ):
+        option_map.setdefault(option.question_id, []).append(option)
+
+    session_summaries = []
+    records_by_session = {}
+    for record in records:
+        records_by_session.setdefault(record.session_id, []).append(record)
+
+    for session in sessions:
+        session_records = records_by_session.get(session.session_id, [])
+        answered_records = [record for record in session_records if record.selected_no is not None]
+        correct_count = sum(1 for record in answered_records if record.is_correct)
+        wrong_count = sum(1 for record in answered_records if not record.is_correct)
+        saved_count = sum(1 for record in session_records if record.is_saved)
+        total_time_ms = sum(record.time_spent_ms or 0 for record in session_records)
+        session_summaries.append({
+            "sessionId": session.session_id,
+            "label": f"Session #{session.session_id}",
+            "status": session.status,
+            "recordedDate": session.recorded_date.isoformat() if session.recorded_date else "",
+            "totalCount": session.total_count,
+            "answeredCount": len(answered_records),
+            "correctCount": correct_count,
+            "wrongCount": wrong_count,
+            "savedCount": saved_count,
+            "timeSpent": _format_ms_duration(total_time_ms),
+        })
+
+    session_number_map = {}
+    for session_id, session_records in records_by_session.items():
+        for number, record in enumerate(sorted(session_records, key=lambda item: item.record_id), start=1):
+            session_number_map[record.record_id] = number
+
+    note_records = []
+    for record in records:
+        question = record.question
+        options = option_map.get(question.question_id, [])
+        selected_option = next(
+            (option for option in options if option.choice_no == record.selected_no),
+            None,
+        )
+        wrong_explanations = [
+            option.choice_explanation
+            for option in options
+            if option.choice_no != question.answer_no and option.choice_explanation
+        ]
+        note_records.append({
+            "id": record.record_id,
+            "sessionId": record.session_id,
+            "sessionLabel": session_map[record.session_id].recorded_date.isoformat()
+            if session_map[record.session_id].recorded_date
+            else f"Session #{record.session_id}",
+            "number": session_number_map.get(record.record_id, 0),
+            "questionId": question.question_id,
+            "era": record.era,
+            "topic": record.topic,
+            "type": record.q_type,
+            "subtype": question.question_subtype,
+            "score": record.q_score,
+            "isCorrect": record.is_correct,
+            "isSaved": record.is_saved,
+            "savedAt": record.saved_at.isoformat() if record.saved_at else "",
+            "title": question.content,
+            "source": question.passage or question.image_caption or "",
+            "choices": [
+                {
+                    "number": option.choice_no,
+                    "content": option.content,
+                    "isAnswer": option.is_answer,
+                    "explanation": option.choice_explanation or "",
+                }
+                for option in options
+            ],
+            "answer": question.answer_no,
+            "userAnswer": record.selected_no,
+            "selectedExplanation": selected_option.choice_explanation if selected_option else "",
+            "solution": question.answer_explanation,
+            "wrongs": wrong_explanations,
+            "concept": question.core_concept,
+            "timeSpent": _format_ms_duration(record.time_spent_ms),
+        })
+
+    note_payload = {
+        "sessions": session_summaries,
+        "records": note_records,
+    }
+    return render(request, "user/wrong_note.html", {"note_payload": note_payload})
 
 
 
@@ -277,7 +383,7 @@ def solved_problems(request):
                 "question": question,
                 "number": index,
                 "options": options,
-                "time_spent": _format_duration(record.time_spent_ms),
+                "time_spent": _format_ms_duration(record.time_spent_ms),
                 "selected_label": f"{record.selected_no}번" if record.selected_no else "미응답",
                 "answer_label": f"{question.answer_no}번",
             }
@@ -293,7 +399,7 @@ def solved_problems(request):
                 "core_concept": question.core_concept,
                 "selected_no": record.selected_no,
                 "is_correct": record.is_correct,
-                "time_spent": _format_duration(record.time_spent_ms),
+                "time_spent": _format_ms_duration(record.time_spent_ms),
                 "era": record.era,
                 "topic": record.topic,
                 "q_score": record.q_score,
@@ -359,6 +465,14 @@ def _format_duration(seconds):
     if seconds is None:
         return "00:00"
     seconds = max(0, int(round(seconds)))
+    minutes, seconds = divmod(seconds, 60)
+    return f"{minutes:02d}:{seconds:02d}"
+
+
+def _format_ms_duration(milliseconds):
+    if milliseconds is None:
+        return "00:00"
+    seconds = max(0, int(round(milliseconds / 1000)))
     minutes, seconds = divmod(seconds, 60)
     return f"{minutes:02d}:{seconds:02d}"
 

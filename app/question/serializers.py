@@ -123,3 +123,9 @@ class SaveAnswerResponse(serializers.Serializer):
     time_spent_ms = serializers.IntegerField(allow_null=True)
     elapsed_sec = serializers.IntegerField(allow_null=True)
     is_answered = serializers.BooleanField()
+
+
+# 노트 저장/저장 해제 요청 형식
+class SaveNoteRequest(serializers.Serializer):
+    question_id = serializers.IntegerField()
+    is_saved = serializers.BooleanField(required=False, default=True)

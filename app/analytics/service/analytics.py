@@ -2,8 +2,9 @@ from datetime import timedelta
 
 from django.db.models import Avg, Count, Q
 from django.utils import timezone
+from analytics.models import Analytics
+from question.models import SolveRecords, SolveSessions
 
-from question.models import Analytics, SolveRecords, SolveSessions
 
 
 def get_user_analytics(user_id):

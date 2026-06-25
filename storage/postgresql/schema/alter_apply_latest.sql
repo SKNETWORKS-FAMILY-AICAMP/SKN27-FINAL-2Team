@@ -41,6 +41,13 @@ ALTER TABLE solve_sessions
 ALTER TABLE solve_records
     ADD COLUMN IF NOT EXISTS time_spent_ms INT NULL;
 
+-- solve_records: mark questions that the user saved into the note.
+ALTER TABLE solve_records
+    ADD COLUMN IF NOT EXISTS is_saved BOOLEAN NOT NULL DEFAULT FALSE;
+
+ALTER TABLE solve_records
+    ADD COLUMN IF NOT EXISTS saved_at TIMESTAMP NULL;
+
 DO $$
 BEGIN
     IF EXISTS (

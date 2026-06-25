@@ -14,6 +14,7 @@ from .serializers import (
     InProgressSessionsResponse,
     SaveAnswerRequest,
     SaveAnswerResponse,
+    SaveNoteRequest,
     SavedSessionResponse,
     StartQuestionsRequest,
     StartQuestionsResponse,
@@ -642,6 +643,62 @@ def question_save_answer(request, session_id):
         "is_answered": selected_choice_no is not None,
     })
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(["POST"])
+# 3. 노트 저장 API
+# - 결과 화면에서 사용자가 특정 문항을 노트에 저장하거나 저장 해제할 때 사용한다.
+# - 세션 소유자만 자신의 solve_records.is_saved 값을 변경할 수 있다.
+def question_save_note(request, session_id):
+    user_id = _get_login_user_id(request)
+    if user_id is None:
+        return Response(
+            {"error": "로그인이 필요한 기능입니다."},
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
+
+    req_serializer = SaveNoteRequest(data=request.data)
+    if not req_serializer.is_valid():
+        return Response(req_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    data = req_serializer.validated_data
+    try:
+        session = SolveSessions.objects.get(
+            session_id=session_id,
+            user_id=user_id,
+            session_type=PRACTICE_SESSION_TYPE,
+        )
+    except SolveSessions.DoesNotExist:
+        return Response(
+            {"error": "저장할 세션을 찾을 수 없습니다."},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+
+    try:
+        record = SolveRecords.objects.get(
+            session=session,
+            question_id=data["question_id"],
+        )
+    except SolveRecords.DoesNotExist:
+        return Response(
+            {"error": "세션에 포함된 문제가 아닙니다."},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+
+    record.is_saved = data["is_saved"]
+    record.saved_at = timezone.now() if data["is_saved"] else None
+    record.save(update_fields=["is_saved", "saved_at"])
+
+    return Response(
+        {
+            "record_id": record.record_id,
+            "session_id": session.session_id,
+            "question_id": record.question_id,
+            "is_saved": record.is_saved,
+            "saved_at": record.saved_at,
+        },
+        status=status.HTTP_200_OK,
+    )
 
 
 @api_view(["GET"])

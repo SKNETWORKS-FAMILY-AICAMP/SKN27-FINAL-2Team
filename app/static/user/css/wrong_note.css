@@ -29,13 +29,14 @@ select {
 }
 
 .wrong-note-page {
-  min-height: calc(100vh - 72px);
+  height: calc(100vh - 72px);
   width: min(1480px, 100%);
   margin: 0 auto;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
   gap: 12px;
   padding: 18px 3vw 24px;
+  overflow: hidden;
 }
 
 .note-title {
@@ -43,6 +44,7 @@ select {
   align-items: end;
   justify-content: space-between;
   gap: 24px;
+  flex-wrap: wrap;
 }
 
 .note-title p {
@@ -61,6 +63,38 @@ select {
   letter-spacing: 0;
 }
 
+.note-tabs,
+.view-toggle {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.note-tabs button,
+.view-toggle button {
+  min-height: 40px;
+  padding: 0 18px;
+  border: 2px solid var(--line);
+  border-radius: 999px;
+  background: var(--white);
+  color: var(--ink);
+  font-weight: 950;
+  cursor: pointer;
+}
+
+.view-toggle button:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+}
+
+.note-tabs button.active,
+.view-toggle button.active {
+  border-color: var(--green);
+  background: var(--green);
+  color: var(--lime);
+}
+
 .note-workspace {
   min-height: 0;
   display: grid;
@@ -71,6 +105,7 @@ select {
   border-radius: 22px;
   background: rgba(255, 255, 255, 0.82);
   box-shadow: var(--shadow);
+  overflow: hidden;
 }
 
 .note-toolbar {
@@ -78,6 +113,7 @@ select {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  flex-wrap: wrap;
 }
 
 .toolbar-actions {
@@ -117,6 +153,11 @@ select {
   color: var(--red);
 }
 
+.delete-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 .filter-menu {
   position: relative;
 }
@@ -134,7 +175,7 @@ select {
   right: 0;
   top: 52px;
   z-index: 4;
-  width: 230px;
+  width: 260px;
   display: grid;
   gap: 12px;
   padding: 16px;
@@ -164,9 +205,11 @@ select {
 
 .note-layout {
   min-height: 0;
+  height: 100%;
   display: grid;
-  grid-template-columns: minmax(460px, 1.08fr) minmax(520px, 1.24fr) 260px;
+  grid-template-columns: minmax(220px, 1fr) minmax(460px, 3fr) minmax(340px, 2fr);
   gap: 12px;
+  overflow: hidden;
 }
 
 .question-note,
@@ -204,10 +247,7 @@ select {
   padding: 0 14px;
 }
 
-.note-heading span {
-  font-size: 14px;
-}
-
+.note-heading span,
 .note-heading strong {
   min-height: 26px;
   display: inline-flex;
@@ -219,12 +259,29 @@ select {
   font-size: 13px;
 }
 
+.note-heading strong {
+  background: var(--green);
+  color: var(--lime);
+  font-size: 15px;
+}
+
 .question-card {
   display: grid;
   gap: 8px;
   padding: 12px;
   border-radius: 12px;
   background: var(--soft);
+}
+
+.question-meta {
+  width: fit-content;
+  max-width: 100%;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: var(--white);
+  color: var(--green);
+  font-size: 12px;
+  font-weight: 950;
 }
 
 .question-card h2 {
@@ -310,7 +367,7 @@ select {
 
 .explain-note {
   display: grid;
-  grid-template-rows: auto auto minmax(0, 1fr);
+  grid-template-rows: auto auto auto minmax(0, 1fr);
 }
 
 .answer-ribbon {
@@ -319,15 +376,67 @@ select {
   padding: 0 14px;
 }
 
-.answer-ribbon strong {
-  width: 26px;
-  height: 26px;
+.answer-ribbon strong,
+.result-state {
+  min-height: 28px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
+  padding: 0 12px;
+  border-radius: 999px;
   background: var(--lime);
   color: var(--green);
+  font-size: 13px;
+  font-weight: 950;
+}
+
+.time-pill {
+  min-height: 26px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: rgba(155, 234, 111, 0.18);
+  color: var(--green);
+  font-size: 12px;
+  font-weight: 950;
+}
+
+.result-state.wrong {
+  background: rgba(242, 48, 66, 0.12);
+  color: var(--red);
+}
+
+.result-state.correct {
+  background: rgba(155, 234, 111, 0.25);
+  color: var(--green);
+}
+
+.answer-detail {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  padding: 10px 12px 0;
+}
+
+.answer-detail span {
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--soft);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 950;
+}
+
+.answer-detail b {
+  color: var(--ink);
+  font-size: 13px;
 }
 
 .explain-tabs {
@@ -406,6 +515,8 @@ select {
 }
 
 .note-list-panel {
+  min-height: 0;
+  max-height: 100%;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
   padding: 12px;
@@ -419,7 +530,10 @@ select {
 
 .note-list {
   min-height: 0;
+  height: 100%;
+  max-height: 100%;
   overflow: auto;
+  overscroll-behavior: contain;
   display: grid;
   align-content: start;
   gap: 8px;
@@ -458,6 +572,13 @@ select {
   font-size: 13px;
   line-height: 1.3;
   font-weight: 950;
+}
+
+.note-list em {
+  color: var(--muted);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 850;
 }
 
 .empty-list {

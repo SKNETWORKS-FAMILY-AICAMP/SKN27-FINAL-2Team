@@ -7,6 +7,8 @@
 # Feel free to rename the models, but don't rename db_table values or field names.
 from django.db import models
 
+from question.models import SolveSessions
+
 
 class StudyPlanMypage(models.Model):
     studyplan_id = models.BigAutoField(primary_key=True)
@@ -38,3 +40,17 @@ class NoteMypage(models.Model):
     class Meta:
         managed = False
         db_table = 'note_mypage'
+
+
+class Analytics(models.Model):
+    analytics_id = models.BigAutoField(primary_key=True)
+    session = models.ForeignKey(SolveSessions, models.DO_NOTHING)
+    key_concept = models.CharField(max_length=50)
+    classification = models.CharField(max_length=20)
+    avg_time_sec = models.IntegerField(blank=True, null=True)
+    topic_rate = models.FloatField()
+    date = models.DateTimeField()
+
+    class Meta:
+        managed = False
+        db_table = 'analytics'

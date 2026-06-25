@@ -63,25 +63,25 @@
       <section class="question-box" aria-label="문제 내용">
         <div class="box-heading">
           <span>문제</span>
-          <strong id="questionType">한국사 기본 개념</strong>
+          <strong id="questionType">유형</strong>
         </div>
-        <h2 id="questionTitle">다음 중 흥선 대원군의 정책으로 옳은 것은?</h2>
-        <p id="questionSource">세도 정치의 폐단을 바로잡고 왕권을 강화하기 위한 개혁 정책을 추진하였다.</p>
+        <h2 id="questionTitle">풀이 결과를 불러오는 중입니다.</h2>
+        <p id="questionSource">잠시만 기다려 주세요.</p>
         <ol class="choice-review" id="choiceReview"></ol>
       </section>
 
       <section class="explain-grid" aria-label="해설 상세">
         <article>
           <h2>해설</h2>
-          <p id="explanation">흥선 대원군은 왕권 강화를 위해 서원을 정리하고 비변사를 축소했습니다.</p>
+          <p id="explanation">등록된 해설이 이곳에 표시됩니다.</p>
         </article>
         <article>
           <h2>오답설명</h2>
-          <p id="wrongExplanation">비변사 기능 강화, 통리기무아문 설치 등은 시대와 주체가 다릅니다.</p>
+          <p id="wrongExplanation">선택지 해설이 이곳에 표시됩니다.</p>
         </article>
         <article>
           <h2>핵심개념</h2>
-          <p id="coreConcept">흥선 대원군의 개혁: 서원 철폐, 비변사 축소, 경복궁 중건, 호포제.</p>
+          <p id="coreConcept">핵심 개념이 이곳에 표시됩니다.</p>
         </article>
       </section>
 
@@ -89,7 +89,8 @@
         <button class="outline-button" id="prevQuestion" type="button">이전 문제</button>
         <button class="outline-button" id="nextQuestion" type="button">다음 문제</button>
         <button class="primary-button" id="askChatbot" type="button">챗봇에게 질문</button>
-        <button class="primary-button" id="pdfSave" type="button">오답노트 저장</button>
+        <button class="primary-button" id="pdfSave" type="button">노트에 저장</button>
+        <span class="note-save-status" id="noteSaveStatus" aria-live="polite"></span>
       </nav>
     </section>
 
@@ -119,34 +120,16 @@
   </main>
 
   <script>
-    const fallbackQuestions = [
-      {
-        type: "한국사 기본 개념",
-        title: "다음 중 흥선 대원군의 정책으로 옳은 것은?",
-        source: "세도 정치의 폐단을 바로잡고 왕권을 강화하기 위한 개혁 정책을 추진하였다.",
-        choices: ["비변사의 기능을 강화하였다.", "서원을 대폭 정리하였다.", "당백전 발행을 중단하였다.", "통리기무아문을 설치하였다.", "대한제국 수립을 선포하였다."],
-      },
-      {
-        type: "고대 국가",
-        title: "삼국 시대 백제의 문화유산으로 옳은 것은?",
-        source: "백제는 일본 고대 문화 형성에도 영향을 주었고, 세련된 불교 문화를 발전시켰다.",
-        choices: ["첨성대", "무령왕릉", "팔만대장경", "불국사 삼층석탑", "경천사지 십층석탑"],
-      },
-    ];
-
-    const answerKey = [2, 2, 3, 1, 1, 2, 1, 2, 2, 1, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1];
-    const conceptMap = {
-      "한국사 기본 개념": "흥선 대원군의 개혁: 비변사 축소, 서원 철폐, 호포제, 경복궁 중건.",
-      "고대 국가": "백제 문화: 무령왕릉, 금동대향로, 일본 문화 전파.",
-      "고려 정치": "무신 집권기 권력 기구와 최씨 정권의 통치 체제를 구분합니다.",
-      "조선 제도": "조선 지방 행정은 8도, 관찰사, 수령, 향리, 유향소를 함께 봅니다.",
-      "근대 개혁": "갑오개혁은 신분제 폐지, 과거제 폐지, 근대 제도 개편이 핵심입니다.",
-    };
-
     const saved = JSON.parse(localStorage.getItem("questionResult") || "null");
-    const questions = saved?.questions?.length ? saved.questions : fallbackQuestions;
+    if (!saved?.questions?.length) {
+      alert("풀이 결과가 없습니다. 문제를 먼저 생성해 주세요.");
+      window.location.href = "/question/";
+      throw new Error("questionResult is missing");
+    }
+    const questions = saved?.questions || [];
     const answers = saved?.answers?.length ? saved.answers : Array(questions.length).fill(null);
     const questionTimeSpent = saved?.questionTimeSpent?.length === questions.length ? saved.questionTimeSpent : Array(questions.length).fill(null);
+    const savedQuestionIds = new Set(saved?.savedQuestionIds || []);
     let currentIndex = 0;
 
     const questionNumber = document.getElementById("questionNumber");
@@ -167,6 +150,8 @@
     const levelText = document.getElementById("levelText");
     const levelDescription = document.getElementById("levelDescription");
     const weakTopics = document.getElementById("weakTopics");
+    const saveButton = document.getElementById("pdfSave");
+    const noteSaveStatus = document.getElementById("noteSaveStatus");
 
     function escapeHtml(value) {
       return String(value || "")
@@ -175,6 +160,14 @@
         .replaceAll(">", "&gt;")
         .replaceAll('"', "&quot;")
         .replaceAll("'", "&#39;");
+    }
+
+    function getCookie(name) {
+      return document.cookie
+        .split(";")
+        .map((item) => item.trim())
+        .find((item) => item.startsWith(`${name}=`))
+        ?.split("=")[1] || "";
     }
 
     function choiceText(choice) {
@@ -186,7 +179,11 @@
     }
 
     function correctOf(index) {
-      return questions[index]?.answerNo || questions[index]?.answer_no || answerKey[index % answerKey.length] || 1;
+      return questions[index]?.answerNo || questions[index]?.answer_no || null;
+    }
+
+    function questionIdOf(index) {
+      return questions[index]?.questionId || questions[index]?.question_id || null;
     }
 
     function formatDuration(milliseconds) {
@@ -198,7 +195,8 @@
     }
 
     function isCorrect(index) {
-      return answers[index] === correctOf(index);
+      const correct = correctOf(index);
+      return correct !== null && answers[index] === correct;
     }
 
     function answerLabel(value) {
@@ -268,13 +266,22 @@
       }).join("");
 
       const selectedChoice = selected ? question.choices[selected - 1] : null;
-      explanation.textContent = question.answerExplanation || question.answer_explanation || `${answerLabel(correct)}이 정답입니다. 문제의 핵심 단서는 "${question.source}"에 있습니다.`;
+      explanation.textContent = question.answerExplanation || question.answer_explanation || "등록된 해설이 없습니다.";
       wrongExplanation.textContent = selected && selected !== correct
-        ? choiceExplanation(selectedChoice) || `${answerLabel(selected)}은(는) 정답 선지와 핵심 개념이 다릅니다. 정답 선지와 해설을 함께 확인하세요.`
-        : "선택한 답안이 정답입니다. 같은 유형에서는 시대, 주제, 핵심 키워드를 함께 확인하세요.";
-      coreConcept.textContent = question.coreConcept || question.core_concept || conceptMap[question.type] || "문제 키워드, 시대, 제도명을 연결해 개념을 정리하세요.";
+        ? choiceExplanation(selectedChoice) || "등록된 선택지 해설이 없습니다."
+        : "정답 처리된 문항입니다.";
+      coreConcept.textContent = question.coreConcept || question.core_concept || "등록된 핵심 개념이 없습니다.";
+      renderNoteSaveState();
       renderJump();
       renderSummary();
+    }
+
+    function renderNoteSaveState(message = "") {
+      const questionId = questionIdOf(currentIndex);
+      const isSaved = questionId !== null && savedQuestionIds.has(questionId);
+      saveButton.textContent = isSaved ? "저장됨" : "노트에 저장";
+      saveButton.disabled = isSaved;
+      noteSaveStatus.textContent = message || (isSaved ? "이 문항은 노트에 저장되어 있습니다." : "");
     }
 
     function renderSummary() {
@@ -315,7 +322,45 @@
       sessionStorage.setItem("chatbotQuestionContext", buildChatContext(currentIndex));
       window.location.href = "/chatbot/?from=question-result";
     });
-    document.getElementById("pdfSave").addEventListener("click", () => window.print());
+    document.getElementById("pdfSave").addEventListener("click", async () => {
+      const sessionId = saved?.sessionId || saved?.session_id;
+      const questionId = questionIdOf(currentIndex);
+      if (!sessionId || !questionId) {
+        alert("로그인 후 풀이한 문제만 노트에 저장할 수 있습니다.");
+        return;
+      }
+
+      saveButton.disabled = true;
+      noteSaveStatus.textContent = "노트에 저장하는 중입니다.";
+      try {
+        const response = await fetch(`/question/api/session/${sessionId}/note/`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": decodeURIComponent(getCookie("csrftoken")),
+          },
+          body: JSON.stringify({
+            question_id: questionId,
+            is_saved: true,
+          }),
+        });
+        if (!response.ok) {
+          const result = await response.json().catch(() => ({}));
+          throw new Error(result.error || "노트 저장에 실패했습니다.");
+        }
+        savedQuestionIds.add(questionId);
+        localStorage.setItem("questionResult", JSON.stringify({
+          ...saved,
+          savedQuestionIds: [...savedQuestionIds],
+        }));
+        renderNoteSaveState("노트에 저장되었습니다.");
+      } catch (error) {
+        noteSaveStatus.textContent = error.message || "노트 저장에 실패했습니다.";
+        saveButton.disabled = false;
+      } finally {
+        renderNoteSaveState(noteSaveStatus.textContent);
+      }
+    });
 
     renderQuestion();
   </script>
