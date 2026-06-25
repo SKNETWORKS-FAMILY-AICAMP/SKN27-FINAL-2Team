@@ -1,4 +1,5 @@
 import random
+import uuid
 from collections import defaultdict
 from datetime import datetime, timezone
 
@@ -273,31 +274,58 @@ def diagnosis_submit(request):
     # analytics 저장
     analytics_rows = []
     now = datetime.now(tz=timezone.utc)
+    analysis_run_id = str(uuid.uuid4())
 
     for era, stat in era_stats.items():
         total = stat["total"]
         correct = stat["correct"]
+        wrong = total - correct
+        answer_rate = round(correct / total, 4) if total else 0.0
         avg_time = (stat["time_sum"] // total) // 1000 if total else None
         analytics_rows.append(Analytics(
             session=session,
+            user_id=session.user_id,
+            analysis_scope="session",
+            analysis_run_id=analysis_run_id,
+            analysis_unit="era",
             key_concept=era,
             classification="시대",
             avg_time_sec=avg_time,
-            topic_rate=round(correct / total, 4) if total else 0.0,
-            date=now,
+            topic_rate=answer_rate,
+            total_count=total,
+            correct_count=correct,
+            wrong_count=wrong,
+            answer_rate=answer_rate,
+            wrong_rate=round(wrong / total, 4) if total else 0.0,
+            period_start=session.recorded_date,
+            period_end=session.recorded_date,
+            created_at=now,
         ))
 
     for q_type, stat in type_stats.items():
         total = stat["total"]
         correct = stat["correct"]
+        wrong = total - correct
+        answer_rate = round(correct / total, 4) if total else 0.0
         avg_time = (stat["time_sum"] // total) // 1000 if total else None
         analytics_rows.append(Analytics(
             session=session,
+            user_id=session.user_id,
+            analysis_scope="session",
+            analysis_run_id=analysis_run_id,
+            analysis_unit="type",
             key_concept=q_type,
             classification="유형",
             avg_time_sec=avg_time,
-            topic_rate=round(correct / total, 4) if total else 0.0,
-            date=now,
+            topic_rate=answer_rate,
+            total_count=total,
+            correct_count=correct,
+            wrong_count=wrong,
+            answer_rate=answer_rate,
+            wrong_rate=round(wrong / total, 4) if total else 0.0,
+            period_start=session.recorded_date,
+            period_end=session.recorded_date,
+            created_at=now,
         ))
 
     Analytics.objects.bulk_create(analytics_rows)
