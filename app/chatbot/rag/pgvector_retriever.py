@@ -63,7 +63,7 @@ HONORIFIC_SUFFIXES = ("대왕",)
 
 
 def overview_focus_terms(question: str) -> tuple[str, ...]:
-    tokens = expand_query_tokens(question, tokenize(question))
+    tokens = tokenize(question)
     terms: list[str] = []
     for token in tokens:
         normalized = token.strip()

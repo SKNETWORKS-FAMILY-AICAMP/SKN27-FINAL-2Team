@@ -4,8 +4,8 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>himate | 진단평가</title>
-  <link rel="stylesheet" href="/static/diagnosis/css/exam.css" />
-  <link rel="stylesheet" href="../../static/diagnosis/css/exam.css" />
+  <link rel="stylesheet" href="/static/question/css/exam.css" />
+  <link rel="stylesheet" href="../../static/question/css/exam.css" />
   <link rel="stylesheet" href="/static/himate.css" />
   <link rel="stylesheet" href="/static/layout.css" />
 </head>
@@ -33,29 +33,27 @@
     <section class="exam-shell" aria-label="진단평가 문제 풀이">
       <header class="exam-header">
         <div class="exam-title">
-          <span>진단평가</span>
           <h1>문제 풀이</h1>
         </div>
         <div class="progress-box" aria-label="문항 진행률">
           <strong>문항 수</strong>
           <div class="progress-track"><span id="progressFill" style="width: 5%"></span></div>
-          <em id="progressText">1 / 20</em>
+          <em id="progressText">1 / 50</em>
         </div>
       </header>
 
       <div class="exam-layout">
         <section class="question-panel">
-          <div class="question-meta">
-            <span class="question-badge" id="questionBadge">문항 번호 1</span>
-            <span class="question-type" id="questionType"></span>
-          </div>
-
           <article class="question-card">
-            <p class="question-label">문제</p>
+            <div class="question-card-meta">
+              <span class="question-badge" id="questionBadge">문항 번호 1</span>
+              <span class="question-meta-right">
+                <span class="question-type-chip" id="questionType">유형</span>
+                <span class="question-score" id="questionScore">0점</span>
+              </span>
+            </div>
             <h2 id="questionTitle"></h2>
             <div class="question-source" id="questionSource"></div>
-            <div class="question-passage" id="questionPassage" hidden></div>
-            <div class="question-visual-note" id="questionVisualNote" hidden></div>
             <div class="choice-list" id="choiceList" role="radiogroup" aria-label="선택지"></div>
           </article>
 
@@ -69,7 +67,7 @@
         <aside class="side-panel" aria-label="진단평가 상태">
           <section class="timer-card">
             <span>남은 시간</span>
-            <strong id="timerText">20:00</strong>
+            <strong id="timerText">80:00</strong>
           </section>
 
           <section class="number-card">
@@ -106,7 +104,7 @@
     }
 
     const SESSION_ID = sessionData.session_id;
-    const TIME_LIMIT = sessionData.time_limit_sec || 1200;
+    const TIME_LIMIT = sessionData.time_limit_sec || 4800;
     const startedAt = sessionData.startedAt || Date.now();
 
     // API questions → 내부 포맷으로 변환
@@ -114,10 +112,7 @@
       question_id: q.question_id,
       type: q.question_type,
       title: q.content,
-      passage: q.passage || "",
-      visualNote: q.visual_note || "",
-      imagePath: q.question_image_path || "",
-      source: [q.era, q.topic].filter(Boolean).join(" · "),
+      source: q.passage || [q.era, q.topic].filter(Boolean).join(" · "),
       q_score: q.q_score,
       choices: q.choices, // [{choice_id, choice_no, content}]
     }));
@@ -127,11 +122,10 @@
     const answers = Array(questions.length).fill(null);
 
     const questionBadge = document.getElementById("questionBadge");
+    const questionScore = document.getElementById("questionScore");
     const questionType = document.getElementById("questionType");
     const questionTitle = document.getElementById("questionTitle");
     const questionSource = document.getElementById("questionSource");
-    const questionPassage = document.getElementById("questionPassage");
-    const questionVisualNote = document.getElementById("questionVisualNote");
     const choiceList = document.getElementById("choiceList");
     const progressFill = document.getElementById("progressFill");
     const progressText = document.getElementById("progressText");
@@ -150,16 +144,22 @@
     let remainingSeconds = TIME_LIMIT;
     let isTimeOver = false;
 
+    function escapeHtml(value) {
+      return String(value || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+    }
+
     function renderQuestion() {
       const question = questions[currentIndex];
       questionBadge.textContent = `문항 번호 ${currentIndex + 1}`;
+      questionScore.textContent = `${question.q_score || 0}점`;
       questionType.textContent = question.type || "";
       questionTitle.textContent = question.title;
-      questionSource.textContent = question.source;
-      questionPassage.textContent = question.passage;
-      questionPassage.hidden = !question.passage;
-      questionVisualNote.textContent = question.visualNote;
-      questionVisualNote.hidden = !question.visualNote;
+      questionSource.innerHTML = escapeHtml(question.source).replaceAll("\n", "<br>");
       progressFill.style.width = `${((currentIndex + 1) / questions.length) * 100}%`;
       progressText.textContent = `${currentIndex + 1} / ${questions.length}`;
 
@@ -169,7 +169,7 @@
           <button type="button" class="choice${selected ? " selected" : ""}"
                   data-choice-id="${choice.choice_id}"
                   aria-pressed="${selected}">
-            <span>${choice.choice_no}</span><b>${choice.content}</b>
+            <span>${choice.choice_no}</span><div class="choice-body"><b>${escapeHtml(choice.content)}</b></div>
           </button>
         `;
       }).join("");
