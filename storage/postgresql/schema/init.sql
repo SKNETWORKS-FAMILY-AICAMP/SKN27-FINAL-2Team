@@ -110,6 +110,8 @@ CREATE TABLE IF NOT EXISTS solve_records (
     selected_no     INT             NULL,                  -- 사용자가 선택한 번호. 미응답이면 NULL
     is_correct      BOOLEAN         NOT NULL DEFAULT FALSE, -- 정답 여부
     time_spent_ms   INT             NULL,                  -- 해당 문제 풀이 시간(ms)
+    is_saved        BOOLEAN         NOT NULL DEFAULT FALSE, -- 사용자가 노트에 별도로 저장한 문제인지 여부
+    saved_at        TIMESTAMP       NULL,                  -- 노트 저장 시각. 저장하지 않은 문제는 NULL
     q_type          VARCHAR(20)     NOT NULL,              -- 문제 대유형 스냅샷
     topic           VARCHAR(50)     NOT NULL,              -- 주제 스냅샷
     era             VARCHAR(20)     NOT NULL,              -- 시대 스냅샷

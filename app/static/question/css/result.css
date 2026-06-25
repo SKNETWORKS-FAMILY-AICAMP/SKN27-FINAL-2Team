@@ -1,1 +1,15 @@
 @import url("/static/diagnosis/css/result.css");
+
+.note-save-status {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  color: var(--green);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+#pdfSave:disabled {
+  opacity: 0.72;
+  cursor: not-allowed;
+}

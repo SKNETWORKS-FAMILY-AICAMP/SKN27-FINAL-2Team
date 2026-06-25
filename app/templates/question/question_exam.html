@@ -48,21 +48,16 @@
             <div class="question-card-meta">
               <span class="question-badge" id="questionBadge">문항 번호 1</span>
               <span class="question-meta-right">
-                <span class="question-type-chip" id="questionType">한국사 기본 개념</span>
-                <span class="question-score" id="questionScore">2점</span>
+                <span class="question-type-chip" id="questionType">유형</span>
+                <span class="question-score" id="questionScore">0점</span>
               </span>
             </div>
-            <h2 id="questionTitle">다음 중 흥선 대원군의 정책으로 옳은 것은?</h2>
+            <h2 id="questionTitle">문제를 불러오는 중입니다.</h2>
             <div class="question-source" id="questionSource">
-              세도 정치의 폐단을 바로잡고 왕권을 강화하기 위한 개혁 정책을 추진하였다.
+              잠시만 기다려 주세요.
             </div>
 
             <div class="choice-list" id="choiceList" role="radiogroup" aria-label="선택지">
-              <button type="button" class="choice" data-choice="1" aria-pressed="false"><span>1</span><b>비변사의 기능을 강화하였다.</b></button>
-              <button type="button" class="choice" data-choice="2" aria-pressed="false"><span>2</span><b>서원을 대폭 정리하였다.</b></button>
-              <button type="button" class="choice" data-choice="3" aria-pressed="false"><span>3</span><b>당백전 발행을 중단하였다.</b></button>
-              <button type="button" class="choice" data-choice="4" aria-pressed="false"><span>4</span><b>통리기무아문을 설치하였다.</b></button>
-              <button type="button" class="choice" data-choice="5" aria-pressed="false"><span>5</span><b>대한제국 수립을 선포하였다.</b></button>
             </div>
           </article>
 
@@ -107,129 +102,6 @@
         image.src = image.dataset.fallbackSrc;
       });
     });
-
-    const defaultQuestions = [
-      {
-        type: "한국사 기본 개념",
-        title: "다음 중 흥선 대원군의 정책으로 옳은 것은?",
-        source: "세도 정치의 폐단을 바로잡고 왕권을 강화하기 위한 개혁 정책을 추진하였다.",
-        choices: ["비변사의 기능을 강화하였다.", "서원을 대폭 정리하였다.", "당백전 발행을 중단하였다.", "통리기무아문을 설치하였다.", "대한제국 수립을 선포하였다."],
-      },
-      {
-        type: "고대 국가",
-        title: "삼국 시대 백제의 문화유산으로 옳은 것은?",
-        source: "백제는 일본 고대 문화 형성에도 영향을 주었고, 세련된 불교 문화를 발전시켰다.",
-        choices: ["첨성대", "무령왕릉", "팔만대장경", "불국사 삼층석탑", "경천사지 십층석탑"],
-      },
-      {
-        type: "고려 정치",
-        title: "고려 시대 최충헌 집권 이후 설치된 권력 기구는?",
-        source: "무신 집권기에는 최고 권력자의 사적 권력 기구가 정치 운영에 큰 영향력을 행사하였다.",
-        choices: ["정방", "도병마사", "교정도감", "식목도감", "삼사"],
-      },
-      {
-        type: "조선 제도",
-        title: "조선 시대 지방 행정 조직에 대한 설명으로 옳은 것은?",
-        source: "조선은 전국을 8도로 나누고 각 지역에 지방관을 파견하였다.",
-        choices: ["향리는 수령을 보좌하였다.", "관찰사는 군현마다 파견되었다.", "유향소는 중앙 관청이었다.", "수령은 과거를 주관하였다.", "사간원은 지방 사법 기관이었다."],
-      },
-      {
-        type: "근대 개혁",
-        title: "갑오개혁의 내용으로 옳은 것은?",
-        source: "갑오개혁은 근대적 제도 개혁을 추진하며 신분제와 과거제 등에 변화를 가져왔다.",
-        choices: ["과거제를 폐지하였다.", "훈련도감을 설치하였다.", "영정법을 시행하였다.", "대동법을 전국에 확대하였다.", "비변사를 설치하였다."],
-      },
-      {
-        type: "일제 강점기",
-        title: "3·1 운동 이후 일제가 실시한 통치 방식은?",
-        source: "전국적 독립 만세 운동 이후 일제는 통치 방식을 일부 바꾸었다.",
-        choices: ["무단 통치", "문화 통치", "민족 말살 통치", "간접 통치", "헌병 경찰 통치"],
-      },
-      {
-        type: "현대사",
-        title: "대한민국 정부 수립과 관련된 사건으로 옳은 것은?",
-        source: "1948년 남한에서는 총선거를 통해 제헌 국회가 구성되었다.",
-        choices: ["5·10 총선거", "6·10 만세 운동", "7·4 남북 공동 성명", "6월 민주 항쟁", "한일 기본 조약"],
-      },
-      {
-        type: "문화사",
-        title: "훈민정음 창제와 관련된 왕은?",
-        source: "백성을 가르치는 바른 소리라는 뜻의 새 문자 체계가 만들어졌다.",
-        choices: ["태조", "세종", "성종", "영조", "정조"],
-      },
-      {
-        type: "경제사",
-        title: "조선 후기 상품 화폐 경제 발달과 관련된 모습은?",
-        source: "장시가 확대되고 민영 수공업과 상업 활동이 활발해졌다.",
-        choices: ["벽란도 번성", "덕대의 광산 경영", "녹읍 부활", "관료전 지급", "전시과 시행"],
-      },
-      {
-        type: "사상사",
-        title: "조선 후기 실학자 정약용의 저술은?",
-        source: "지방 행정 개혁과 수령의 자세를 다룬 대표적 저술이 있다.",
-        choices: ["목민심서", "동국통감", "삼국유사", "성학십도", "해동고승전"],
-      },
-      {
-        type: "고대 사회",
-        title: "고구려의 제가 회의에 해당하는 정치 회의는?",
-        source: "고구려에서는 귀족들이 국가 중대사를 논의하는 회의체가 있었다.",
-        choices: ["화백 회의", "정사암 회의", "제가 회의", "도병마사", "만장일치제"],
-      },
-      {
-        type: "통일 신라",
-        title: "통일 신라의 지방 행정 제도는?",
-        source: "신문왕 시기 왕권 강화와 함께 지방 제도가 정비되었다.",
-        choices: ["9주 5소경", "5도 양계", "8도", "23부", "13도"],
-      },
-      {
-        type: "고려 문화",
-        title: "고려 불교 문화와 관련된 유산으로 옳은 것은?",
-        source: "몽골 침입 시기 부처의 힘으로 외적을 물리치려는 염원을 담았다.",
-        choices: ["팔만대장경", "직지심체요절", "상감 청자", "무령왕릉", "분황사 모전석탑"],
-      },
-      {
-        type: "조선 정치",
-        title: "사림의 향촌 자치와 관련된 기구는?",
-        source: "조선 시대 사림은 향촌 사회에서 여론 형성과 자치 활동을 전개하였다.",
-        choices: ["유향소", "중추원", "삼별초", "교정도감", "도평의사사"],
-      },
-      {
-        type: "조선 후기",
-        title: "영조가 붕당 간 대립을 완화하기 위해 시행한 정책은?",
-        source: "왕권 안정과 정치 균형을 위해 여러 당파를 고르게 등용하려 하였다.",
-        choices: ["탕평책", "북벌론", "척화비 건립", "균역법 폐지", "사창제"],
-      },
-      {
-        type: "개항기",
-        title: "강화도 조약의 성격으로 옳은 것은?",
-        source: "1876년 조선이 일본과 맺은 근대적 조약이지만 불평등한 조항을 포함하였다.",
-        choices: ["최초의 근대적 불평등 조약", "청과 맺은 조공 조약", "대한제국 헌법", "을사늑약 폐기 조약", "국권 회복 선언"],
-      },
-      {
-        type: "독립운동",
-        title: "대한민국 임시정부가 수립된 도시는?",
-        source: "3·1 운동 이후 독립운동을 통합적으로 이끌기 위한 정부가 세워졌다.",
-        choices: ["상하이", "베이징", "도쿄", "블라디보스토크", "경성"],
-      },
-      {
-        type: "민주화",
-        title: "1987년 대통령 직선제 개헌의 계기가 된 사건은?",
-        source: "국민적 민주화 요구가 확산되며 6·29 선언과 헌법 개정으로 이어졌다.",
-        choices: ["6월 민주 항쟁", "4·19 혁명", "부마 민주 항쟁", "5·18 민주화 운동", "3·1 운동"],
-      },
-      {
-        type: "통일 정책",
-        title: "1972년에 발표된 남북 간 합의는?",
-        source: "자주, 평화, 민족 대단결의 통일 원칙을 담은 공동 성명이 발표되었다.",
-        choices: ["7·4 남북 공동 성명", "6·15 남북 공동 선언", "10·4 선언", "남북 기본 합의서", "한반도 비핵화 공동 선언"],
-      },
-      {
-        type: "종합",
-        title: "다음 중 시대 순서가 바르게 나열된 것은?",
-        source: "한국사의 주요 사건을 시간 순서대로 파악하는 문제이다.",
-        choices: ["강화도 조약 - 갑오개혁 - 3·1 운동", "3·1 운동 - 갑오개혁 - 강화도 조약", "갑오개혁 - 강화도 조약 - 3·1 운동", "강화도 조약 - 3·1 운동 - 갑오개혁", "3·1 운동 - 강화도 조약 - 갑오개혁"],
-      },
-    ];
 
     const savedProgress = JSON.parse(localStorage.getItem("questionInProgress") || "null");
     const searchParams = new URLSearchParams(window.location.search);
