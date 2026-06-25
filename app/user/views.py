@@ -212,7 +212,7 @@ def profile_edit(request):
 @login_required
 def wrong_note(request):
     sessions = list(
-        SolveSessions.objects.filter(user=request.user)
+        SolveSessions.objects.filter(user=request.user, status="completed")
         .order_by("-session_id")
     )
     session_ids = [session.session_id for session in sessions]
