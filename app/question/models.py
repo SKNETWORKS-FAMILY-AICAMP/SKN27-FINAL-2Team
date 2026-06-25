@@ -66,6 +66,8 @@ class SolveRecords(models.Model):
     selected_no = models.IntegerField(blank=True, null=True)
     is_correct = models.BooleanField()
     time_spent_ms = models.IntegerField(blank=True, null=True)
+    is_saved = models.BooleanField(default=False)
+    saved_at = models.DateTimeField(blank=True, null=True)
     q_type = models.CharField(max_length=20)
     topic = models.CharField(max_length=50)
     era = models.CharField(max_length=20)
@@ -75,16 +77,3 @@ class SolveRecords(models.Model):
         managed = False
         db_table = 'solve_records'
 
-
-class Analytics(models.Model):
-    analytics_id = models.BigAutoField(primary_key=True)
-    session = models.ForeignKey(SolveSessions, models.DO_NOTHING)
-    key_concept = models.CharField(max_length=50)
-    classification = models.CharField(max_length=20)
-    avg_time_sec = models.IntegerField(blank=True, null=True)
-    topic_rate = models.FloatField()
-    date = models.DateTimeField()
-
-    class Meta:
-        managed = False
-        db_table = 'analytics'
