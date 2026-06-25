@@ -239,6 +239,7 @@ def wrong_note(request):
         records_by_session.setdefault(record.session_id, []).append(record)
 
     for session in sessions:
+        session_type_label = "진단평가" if session.session_type == "diagnostic" else "문제풀이"
         session_records = records_by_session.get(session.session_id, [])
         answered_records = [record for record in session_records if record.selected_no is not None]
         correct_count = sum(1 for record in answered_records if record.is_correct)
@@ -247,6 +248,8 @@ def wrong_note(request):
         total_time_ms = sum(record.time_spent_ms or 0 for record in session_records)
         session_summaries.append({
             "sessionId": session.session_id,
+            "sessionType": session.session_type,
+            "sessionTypeLabel": session_type_label,
             "label": f"Session #{session.session_id}",
             "status": session.status,
             "recordedDate": session.recorded_date.isoformat() if session.recorded_date else "",
@@ -266,6 +269,8 @@ def wrong_note(request):
     note_records = []
     for record in records:
         question = record.question
+        session = session_map[record.session_id]
+        session_type_label = "진단평가" if session.session_type == "diagnostic" else "문제풀이"
         options = option_map.get(question.question_id, [])
         selected_option = next(
             (option for option in options if option.choice_no == record.selected_no),
@@ -279,8 +284,10 @@ def wrong_note(request):
         note_records.append({
             "id": record.record_id,
             "sessionId": record.session_id,
-            "sessionLabel": session_map[record.session_id].recorded_date.isoformat()
-            if session_map[record.session_id].recorded_date
+            "sessionType": session.session_type,
+            "sessionTypeLabel": session_type_label,
+            "sessionLabel": session.recorded_date.isoformat()
+            if session.recorded_date
             else f"Session #{record.session_id}",
             "number": session_number_map.get(record.record_id, 0),
             "questionId": question.question_id,
