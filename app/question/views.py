@@ -1,7 +1,7 @@
 import random
 from datetime import date
 
-from django.db import models
+from django.db import models, transaction
 from django.shortcuts import render
 from django.utils import timezone
 from rest_framework import status
@@ -87,6 +87,23 @@ def question_result(request):
 # 현재 테스트 데이터는 이미지 기반 문항도 포함하므로 questions 테이블의 전체 문항을 풀이 대상으로 사용한다.
 def _base_question_queryset():
     return Questions.objects.all()
+
+
+def _delete_other_saved_sessions(user_id, current_session_id):
+    old_saved_session_ids = list(
+        SolveSessions.objects.filter(
+            user_id=user_id,
+            session_type=PRACTICE_SESSION_TYPE,
+            status=SAVED_SESSION_STATUS,
+        )
+        .exclude(session_id=current_session_id)
+        .values_list("session_id", flat=True)
+    )
+    if not old_saved_session_ids:
+        return
+
+    SolveRecords.objects.filter(session_id__in=old_saved_session_ids).delete()
+    SolveSessions.objects.filter(session_id__in=old_saved_session_ids).delete()
 
 
 # 특정 컬럼의 고유 값을 목록으로 반환한다.
@@ -608,7 +625,12 @@ def question_save_answer(request, session_id):
         if "status" not in update_session_fields:
             update_session_fields.append("status")
     if update_session_fields:
-        session.save(update_fields=update_session_fields)
+        if data["mark_saved"]:
+            with transaction.atomic():
+                _delete_other_saved_sessions(user_id, session.session_id)
+                session.save(update_fields=update_session_fields)
+        else:
+            session.save(update_fields=update_session_fields)
 
     serializer = SaveAnswerResponse({
         "session_id": session.session_id,
