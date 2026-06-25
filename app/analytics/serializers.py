@@ -4,6 +4,7 @@ from rest_framework import serializers
 
 
 class StudyPlanBlockData(serializers.Serializer):
+    blockId = serializers.CharField(required=False)
     blockType = serializers.CharField()
     classification = serializers.CharField()
     label = serializers.CharField()
@@ -12,6 +13,8 @@ class StudyPlanBlockData(serializers.Serializer):
     estimatedMinutes = serializers.IntegerField()
     priorityScore = serializers.FloatField()
     reason = serializers.CharField()
+    isCompleted = serializers.BooleanField(required=False)
+    completedAt = serializers.CharField(required=False, allow_null=True)
 
 
 class StudyPlanDayData(serializers.Serializer):
@@ -21,12 +24,19 @@ class StudyPlanDayData(serializers.Serializer):
 
 class StudyPlanSerializer(serializers.Serializer):
     studyPlanId = serializers.IntegerField(source="studyplan_id")
+    status = serializers.CharField()
+    planVersion = serializers.IntegerField(source="plan_version")
     summary = serializers.SerializerMethodField()
     totalDays = serializers.SerializerMethodField()
     dailyAvailableMinutes = serializers.SerializerMethodField()
+    completionRate = serializers.FloatField(source="completion_rate")
+    startDate = serializers.DateField(source="start_date", allow_null=True)
+    endDate = serializers.DateField(source="end_date", allow_null=True)
     plans = serializers.SerializerMethodField()
     createdAt = serializers.DateTimeField(source="created_at")
     updatedAt = serializers.DateTimeField(source="modified_at")
+    archivedAt = serializers.DateTimeField(source="archived_at", allow_null=True)
+    deletedAt = serializers.DateTimeField(source="deleted_at", allow_null=True)
 
     def get_summary(self, study_plan):
         return study_plan.study_plans or ""

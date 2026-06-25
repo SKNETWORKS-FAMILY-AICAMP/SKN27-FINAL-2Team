@@ -64,24 +64,27 @@ def build_planner_summary(study_plans, today):
                     if estimated_minutes:
                         meta_parts.append(f"{estimated_minutes}분")
 
+                    is_completed = bool(block.get("isCompleted"))
                     plans_by_date[date_key].append(
                         {
                             "studyPlanId": study_plan_id,
                             "dayIndex": day_index,
                             "blockIndex": block_index,
+                            "blockId": block.get("blockId"),
                             "title": title,
                             "meta": " · ".join(meta_parts),
-                            "done": plan_date < today,
+                            "done": is_completed,
                         }
                     )
 
     completed_keys = []
     planned_keys = []
-    for date_key in plans_by_date:
+    for date_key, plan_items in plans_by_date.items():
         plan_date = date.fromisoformat(date_key)
-        if plan_date < today:
+        is_completed_date = bool(plan_items) and all(item["done"] for item in plan_items)
+        if is_completed_date:
             completed_keys.append(date_key)
-        elif plan_date > today:
+        elif plan_date >= today:
             planned_keys.append(date_key)
 
     today_key = today.isoformat()

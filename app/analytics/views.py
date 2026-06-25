@@ -17,6 +17,7 @@ from analytics.service.mypage import (
     build_wrong_type_summary,
 )
 from analytics.service.studyplan import (
+    complete_study_plan_block,
     create_study_plan,
     delete_study_plan_block,
     get_study_plan_info,
@@ -93,6 +94,31 @@ def delete_study_plan_block_view(request):
         block_index,
     )
     if deleted_plan is None:
+        return JsonResponse({"ok": False}, status=404)
+
+    return JsonResponse({"ok": True})
+
+
+@login_required
+@require_POST
+def complete_study_plan_block_view(request):
+    data = get_json_request_data(request)
+    try:
+        study_plan_id = int(data.get("studyPlanId"))
+        day_index = int(data.get("dayIndex"))
+        block_index = int(data.get("blockIndex"))
+        is_completed = bool(data.get("isCompleted", True))
+    except (TypeError, ValueError):
+        return JsonResponse({"ok": False}, status=400)
+
+    completed_plan = complete_study_plan_block(
+        request.user.user_id,
+        study_plan_id,
+        day_index,
+        block_index,
+        is_completed,
+    )
+    if completed_plan is None:
         return JsonResponse({"ok": False}, status=404)
 
     return JsonResponse({"ok": True})

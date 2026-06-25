@@ -1,5 +1,4 @@
 from datetime import timedelta
-import uuid
 
 from django.db.models import Avg, Count, Q
 from django.utils import timezone
@@ -7,25 +6,14 @@ from analytics.models import Analytics
 from question.models import SolveRecords, SolveSessions
 
 
-ANALYSIS_UNIT_BY_FIELD = {
-    "era": "era",
-    "q_type": "type",
-    "topic": "topic",
-}
-
-
 def get_user_analytics(user_id):
     """
-    사용자의 모든 풀이 세션에 연결된 기존 analytics 테이블 데이터를 조회한다.
+    사용자의 analytics 테이블 저장 분석 결과를 조회한다.
 
-    세션별로 저장된 시대/유형/주제 분석 row를 가져올 때 사용한다.
-    현재 메인 요약 화면은 주로 SolveRecords 실시간 집계를 사용한다.
+    확장된 analytics 구조에서는 session_id가 없는 주간/월간/전체/학습계획
+    분석도 저장되므로 user_id 기준으로 직접 조회한다.
     """
-    session_ids = SolveSessions.objects.filter(user_id=user_id).values_list(
-        "session_id",
-        flat=True,
-    )
-    return Analytics.objects.filter(session_id__in=session_ids)
+    return Analytics.objects.filter(user_id=user_id)
 
 
 def analytics_summary(user_id):
@@ -86,7 +74,10 @@ def get_weekly_practice_summary(user_id, today=None):
         recorded_date__gte=week_start,
         recorded_date__lt=next_week_start,
     )
-    weekly_records = SolveRecords.objects.filter(session__in=weekly_sessions)
+    weekly_records = SolveRecords.objects.filter(
+        session__in=weekly_sessions,
+        selected_no__isnull=False,
+    )
     record_stats = weekly_records.aggregate(
         total_count=Count("record_id"),
         correct_count=Count("record_id", filter=Q(is_correct=True)),
@@ -139,7 +130,10 @@ def get_first_diagnosis_summary(user_id):
             "recordedDate": None,
         }
 
-    records = SolveRecords.objects.filter(session=session)
+    records = SolveRecords.objects.filter(
+        session=session,
+        selected_no__isnull=False,
+    )
     record_stats = records.aggregate(
         total_count=Count("record_id"),
         correct_count=Count("record_id", filter=Q(is_correct=True)),
@@ -203,13 +197,15 @@ def get_completed_sessions(user_id):
 
 def get_completed_records(user_id):
     """
-    사용자의 완료된 세션에 속한 풀이 기록 QuerySet을 반환한다.
+    사용자의 완료된 세션에 속한 실제 풀이 기록 QuerySet을 반환한다.
 
-    분석 기준이 되는 원본 풀이 기록을 가져오는 공통 필터다.
+    solve_records는 문제 생성 시 전체 문항 row가 먼저 만들어지므로,
+    selected_no가 있는 row만 사용해야 풀이 수와 오답률이 왜곡되지 않는다.
     """
     return SolveRecords.objects.filter(
         session__user_id=user_id,
         session__status="completed",
+        selected_no__isnull=False,
     )
 
 
@@ -372,6 +368,7 @@ def get_wrong_rate_group_stats(user, field_name):
         SolveRecords.objects.filter(
             session__user=user,
             session__status="completed",
+            selected_no__isnull=False,
         )
         .values(field_name)
         .annotate(
@@ -485,56 +482,16 @@ def ms_to_sec(value):
 
 def create_analytics(user_id):
     """
-    완료된 세션별 시대/유형/주제 정답률을 analytics 테이블에 재생성한다.
+    완료된 세션별 분석 결과를 analytics 테이블에 재생성한다.
 
-    기존 해당 사용자 세션의 analytics row를 삭제한 뒤,
-    각 completed 세션 내부 기록을 분류별로 집계해 다시 bulk_create한다.
+    제출 직후 세션 단위 분석 저장과 같은 create_session_snapshot 경로를 사용해
+    overall/시대/유형/주제 row 형식을 일관되게 유지한다.
     """
+    from analytics.service.analysis_snapshot import create_session_snapshot
+
     sessions = get_completed_sessions(user_id)
-    Analytics.objects.filter(session__in=sessions).delete()
-
-    analytics_rows = []
-    now = timezone.now()
-    analysis_run_id = str(uuid.uuid4())
+    created_rows = []
     for session in sessions:
-        records = SolveRecords.objects.filter(session=session)
-        for classification, field_name in get_classification_fields():
-            rows = records.values(field_name).annotate(
-                total_count=Count("record_id"),
-                correct_count=Count("record_id", filter=Q(is_correct=True)),
-                average_time_ms=Avg("time_spent_ms"),
-            )
-            for row in rows:
-                total_count = row["total_count"] or 0
-                if not total_count:
-                    continue
+        created_rows.extend(create_session_snapshot(session.session_id))
 
-                correct_count = row["correct_count"] or 0
-                wrong_count = total_count - correct_count
-                answer_rate = calculate_rate(correct_count, total_count)
-                analytics_rows.append(
-                    Analytics(
-                        session=session,
-                        user_id=user_id,
-                        analysis_scope="session",
-                        analysis_run_id=analysis_run_id,
-                        analysis_unit=ANALYSIS_UNIT_BY_FIELD.get(field_name, "overall"),
-                        key_concept=row[field_name] or get_unclassified_label(),
-                        classification=classification,
-                        avg_time_sec=ms_to_sec(row["average_time_ms"]),
-                        topic_rate=answer_rate,
-                        total_count=total_count,
-                        correct_count=correct_count,
-                        wrong_count=wrong_count,
-                        answer_rate=answer_rate,
-                        wrong_rate=calculate_rate(wrong_count, total_count),
-                        period_start=session.recorded_date,
-                        period_end=session.recorded_date,
-                        created_at=now,
-                    )
-                )
-
-    if analytics_rows:
-        Analytics.objects.bulk_create(analytics_rows)
-
-    return True
+    return created_rows

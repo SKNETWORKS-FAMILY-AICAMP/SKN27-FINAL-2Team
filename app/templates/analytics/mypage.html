@@ -342,7 +342,8 @@
         <article class="plan-item${plan.done ? " done" : ""}" data-plan-index="${index}">
           <i></i>
           <div><strong>${plan.title}</strong><span>${plan.meta}</span></div>
-          <button type="button">삭제</button>
+          ${plan.done ? "" : `<button type="button" data-action="complete">완료</button>`}
+          <button type="button" data-action="delete">삭제</button>
         </article>
       `).join("");
 
@@ -354,14 +355,29 @@
           if (!plan) {
             return;
           }
-          await postPlannerJson(
-            "{% url 'analytics:study_plan_block_delete' %}",
-            {
-              studyPlanId: plan.studyPlanId,
-              dayIndex: plan.dayIndex,
-              blockIndex: plan.blockIndex,
-            },
-          );
+          if (button.dataset.action === "complete") {
+            await postPlannerJson(
+              "{% url 'analytics:study_plan_block_complete' %}",
+              {
+                studyPlanId: plan.studyPlanId,
+                dayIndex: plan.dayIndex,
+                blockIndex: plan.blockIndex,
+                isCompleted: true,
+              },
+            );
+            window.location.reload();
+            return;
+          }
+          if (button.dataset.action === "delete") {
+            await postPlannerJson(
+              "{% url 'analytics:study_plan_block_delete' %}",
+              {
+                studyPlanId: plan.studyPlanId,
+                dayIndex: plan.dayIndex,
+                blockIndex: plan.blockIndex,
+              },
+            );
+          }
           window.location.reload();
         });
       });

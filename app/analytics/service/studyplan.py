@@ -1,11 +1,17 @@
 import json
-from datetime import timedelta
+from datetime import date, timedelta
+from uuid import uuid4
 
 from django.db import transaction
+from django.db.models import Max
 from django.utils import timezone
 
 from analytics.models import StudyPlanMypage
 from analytics.serializers import parse_study_plan_items, serialize_study_plan, serialize_study_plans
+from analytics.service.analysis_snapshot import (
+    create_study_plan_base_snapshot,
+    create_study_plan_result_snapshot,
+)
 from analytics.service.analytics import get_weak_targets
 from analytics.service.prediction import get_predicted_targets
 from user.models import UserStudyProfile
@@ -84,8 +90,10 @@ def get_study_plan_info(user_id):
     화면/API에서 쓰는 응답 형태로 변환한다.
     """
     daily_available_minutes = get_daily_available_minutes(user_id)
-    study_plans = StudyPlanMypage.objects.filter(user_id=user_id).order_by(
-        "-modified_at",
+    study_plans = (
+        StudyPlanMypage.objects.filter(user_id=user_id)
+        .exclude(status="deleted")
+        .order_by("status", "-plan_version", "-modified_at")
     )
     return serialize_study_plans(study_plans, daily_available_minutes)
 
@@ -95,42 +103,39 @@ def create_study_plan(user_id, study_plans="", study_plan_items=None, predicted_
     사용자의 학습계획을 생성하고 저장한다.
 
     상세 계획이 전달되지 않으면 취약점/출제예상 기반으로 자동 생성하고,
-    생성된 요약과 날짜별 계획을 study_plan_mypage 테이블에 저장한다.
-    마이페이지에서 반복 생성 버튼을 누를 때 같은 사용자의 row가 계속
-    늘어나지 않도록 자동 생성 요청은 최신 계획 row를 갱신한다.
+    기존 active 계획은 archived 처리한 뒤 새 active 계획 row를 생성한다.
+    생성 직후에는 study_plan_base 분석 결과를 analytics 테이블에 저장한다.
     """
-    should_update_latest_plan = study_plan_items is None
     if study_plan_items is None:
         generated_plan = build_user_study_plan(user_id, predicted_targets)
         study_plan_items = generated_plan["plans"]
         if not study_plans:
             study_plans = generated_plan["summary"]
 
+    study_plan_items = prepare_study_plan_items(study_plan_items)
+    start_date, end_date = get_plan_date_range(study_plan_items)
+    completion_stats = calculate_plan_completion(study_plan_items)
     now = timezone.now()
-    latest_plan = None
-    if should_update_latest_plan:
-        latest_plan = (
-            StudyPlanMypage.objects.filter(user_id=user_id)
-            .order_by("-modified_at", "-studyplan_id")
-            .first()
-        )
-    if latest_plan is not None:
-        latest_plan.study_plans = study_plans
-        latest_plan.study_plan_items = format_plan_items(study_plan_items)
-        latest_plan.modified_at = now
-        latest_plan.save(
-            update_fields=["study_plans", "study_plan_items", "modified_at"],
-        )
-        daily_available_minutes = get_daily_available_minutes(user_id)
-        return serialize_study_plan(latest_plan, daily_available_minutes)
 
-    study_plan = StudyPlanMypage.objects.create(
-        user_id=user_id,
-        study_plans=study_plans,
-        study_plan_items=format_plan_items(study_plan_items),
-        created_at=now,
-        modified_at=now,
-    )
+    with transaction.atomic():
+        active_plan = get_active_study_plan(user_id, lock=True)
+        if active_plan is not None:
+            archive_study_plan(user_id, active_plan, now)
+
+        study_plan = StudyPlanMypage.objects.create(
+            user_id=user_id,
+            study_plans=study_plans,
+            study_plan_items=format_plan_items(study_plan_items),
+            created_at=now,
+            modified_at=now,
+            status="active",
+            plan_version=get_next_plan_version(user_id),
+            start_date=start_date,
+            end_date=end_date,
+            completion_rate=completion_stats["completion_rate"],
+        )
+
+    create_study_plan_base_snapshot(user_id, study_plan.studyplan_id)
     daily_available_minutes = get_daily_available_minutes(user_id)
     return serialize_study_plan(study_plan, daily_available_minutes)
 
@@ -146,11 +151,24 @@ def update_study_plan(user_id, study_plan_id, study_plans, study_plan_items):
         user_id=user_id,
         studyplan_id=study_plan_id,
     )
+    study_plan_items = prepare_study_plan_items(study_plan_items)
+    start_date, end_date = get_plan_date_range(study_plan_items)
+    completion_stats = calculate_plan_completion(study_plan_items)
     study_plan.study_plans = study_plans
     study_plan.study_plan_items = format_plan_items(study_plan_items)
+    study_plan.start_date = start_date
+    study_plan.end_date = end_date
+    study_plan.completion_rate = completion_stats["completion_rate"]
     study_plan.modified_at = timezone.now()
     study_plan.save(
-        update_fields=["study_plans", "study_plan_items", "modified_at"],
+        update_fields=[
+            "study_plans",
+            "study_plan_items",
+            "start_date",
+            "end_date",
+            "completion_rate",
+            "modified_at",
+        ],
     )
     daily_available_minutes = get_daily_available_minutes(user_id)
     return serialize_study_plan(study_plan, daily_available_minutes)
@@ -158,10 +176,9 @@ def update_study_plan(user_id, study_plan_id, study_plans, study_plan_items):
 
 def delete_study_plan(user_id, study_plan_id):
     """
-    학습계획을 삭제하고 삭제 전 데이터를 반환한다.
+    학습계획을 소프트 삭제하고 삭제 전 데이터를 반환한다.
 
-    삭제 결과를 화면/API에서 확인할 수 있도록,
-    먼저 serializer 형태로 변환한 뒤 DB row를 삭제한다.
+    과거 이력 보존을 위해 row를 실제 삭제하지 않고 status/deleted_at을 갱신한다.
     """
     study_plan = StudyPlanMypage.objects.get(
         user_id=user_id,
@@ -169,7 +186,11 @@ def delete_study_plan(user_id, study_plan_id):
     )
     daily_available_minutes = get_daily_available_minutes(user_id)
     deleted_study_plan = serialize_study_plan(study_plan, daily_available_minutes)
-    study_plan.delete()
+    now = timezone.now()
+    study_plan.status = "deleted"
+    study_plan.deleted_at = now
+    study_plan.modified_at = now
+    study_plan.save(update_fields=["status", "deleted_at", "modified_at"])
     return deleted_study_plan
 
 
@@ -194,6 +215,38 @@ def delete_study_plan_block(user_id, study_plan_id, day_index, block_index):
         if 0 <= block_index < len(blocks):
             blocks.pop(block_index)
             plan_items = [plan for plan in plan_items if plan.get("blocks")]
+            return update_study_plan(
+                user_id,
+                study_plan_id,
+                study_plan.study_plans,
+                plan_items,
+            )
+
+    return None
+
+
+def complete_study_plan_block(user_id, study_plan_id, day_index, block_index, is_completed=True):
+    """
+    학습계획 안의 특정 블록 완료 상태를 변경한다.
+
+    block의 isCompleted/completedAt 값을 갱신하고, 전체 completion_rate를 다시 계산한다.
+    """
+    study_plan = StudyPlanMypage.objects.filter(
+        user_id=user_id,
+        studyplan_id=study_plan_id,
+    ).first()
+    if study_plan is None:
+        return None
+
+    plan_items = parse_study_plan_items(study_plan.study_plan_items)
+    if 0 <= day_index < len(plan_items):
+        day_plan = plan_items[day_index]
+        blocks = day_plan.get("blocks", [])
+        if 0 <= block_index < len(blocks):
+            blocks[block_index]["isCompleted"] = bool(is_completed)
+            blocks[block_index]["completedAt"] = None
+            if is_completed:
+                blocks[block_index]["completedAt"] = timezone.now().isoformat()
             return update_study_plan(
                 user_id,
                 study_plan_id,
@@ -269,6 +322,129 @@ def move_study_plan_blocks(user_id, move_items, target_date):
                     )
 
     return updated_plans
+
+
+def get_active_study_plan(user_id, lock=False):
+    """
+    사용자의 현재 active 학습계획을 조회한다.
+
+    새 계획 생성 중 기존 active 계획을 archived 처리할 때는 lock=True로
+    select_for_update를 적용해 동시에 두 active 계획이 생기는 상황을 줄인다.
+    """
+    queryset = StudyPlanMypage.objects.filter(user_id=user_id, status="active")
+    if lock:
+        queryset = queryset.select_for_update()
+
+    return queryset.order_by("-plan_version", "-modified_at").first()
+
+
+def archive_study_plan(user_id, study_plan, archived_at):
+    """
+    기존 active 학습계획을 archived 상태로 전환한다.
+
+    archived 처리 직전에 계획 기간 기준 study_plan_result 분석을 analytics에 저장하고,
+    현재 study_plan_items 기준 완료율도 다시 계산해 보존한다.
+    """
+    plan_items = parse_study_plan_items(study_plan.study_plan_items)
+    completion_stats = calculate_plan_completion(plan_items)
+    create_study_plan_result_snapshot(
+        user_id=user_id,
+        study_plan_id=study_plan.studyplan_id,
+        period_start=study_plan.start_date,
+        period_end=study_plan.end_date,
+    )
+    study_plan.status = "archived"
+    study_plan.archived_at = archived_at
+    study_plan.modified_at = archived_at
+    study_plan.completion_rate = completion_stats["completion_rate"]
+    study_plan.save(
+        update_fields=[
+            "status",
+            "archived_at",
+            "modified_at",
+            "completion_rate",
+        ],
+    )
+
+
+def get_next_plan_version(user_id):
+    """
+    사용자의 다음 학습계획 버전 번호를 계산한다.
+
+    기존 계획이 없으면 1부터 시작하고, 있으면 최대 plan_version에 1을 더한다.
+    """
+    max_version = StudyPlanMypage.objects.filter(user_id=user_id).aggregate(
+        max_version=Max("plan_version"),
+    )["max_version"]
+    if max_version is None:
+        return 1
+
+    return max_version + 1
+
+
+def prepare_study_plan_items(study_plan_items):
+    """
+    날짜별 학습계획 JSON에 블록 추적 필드를 보강한다.
+
+    완료율 계산과 블록 단위 완료 처리에 필요한 blockId, isCompleted,
+    completedAt 값이 없으면 기본값을 추가한다.
+    """
+    prepared_items = parse_study_plan_items(study_plan_items)
+    for day_plan in prepared_items:
+        for block in day_plan.get("blocks", []):
+            if not block.get("blockId"):
+                block["blockId"] = str(uuid4())
+            if "isCompleted" not in block:
+                block["isCompleted"] = False
+            if "completedAt" not in block:
+                block["completedAt"] = None
+
+    return prepared_items
+
+
+def get_plan_date_range(study_plan_items):
+    """
+    학습계획 JSON의 날짜 목록에서 시작일과 종료일을 계산한다.
+
+    날짜가 없거나 파싱할 수 없는 항목만 있으면 둘 다 None을 반환한다.
+    """
+    plan_dates = []
+    for day_plan in study_plan_items:
+        raw_date = str(day_plan.get("date", ""))[:10]
+        try:
+            plan_dates.append(date.fromisoformat(raw_date))
+        except ValueError:
+            continue
+
+    if not plan_dates:
+        return None, None
+
+    return min(plan_dates), max(plan_dates)
+
+
+def calculate_plan_completion(study_plan_items):
+    """
+    학습계획 JSON의 block 완료 상태를 기준으로 완료율을 계산한다.
+
+    completion_rate는 answer_rate와 같은 방식으로 0~1 사이 소수로 저장한다.
+    """
+    total_block_count = 0
+    completed_block_count = 0
+    for day_plan in study_plan_items:
+        for block in day_plan.get("blocks", []):
+            total_block_count += 1
+            if block.get("isCompleted"):
+                completed_block_count += 1
+
+    completion_rate = 0.0
+    if total_block_count:
+        completion_rate = round(completed_block_count / total_block_count, 4)
+
+    return {
+        "total_block_count": total_block_count,
+        "completed_block_count": completed_block_count,
+        "completion_rate": completion_rate,
+    }
 
 
 def build_user_study_plan(user_id, predicted_targets=None, today=None):
@@ -491,6 +667,7 @@ def build_study_block(target, block_type, estimated_minutes, config):
         activity = f"{target['label']} 오답 복습"
 
     return {
+        "blockId": str(uuid4()),
         "blockType": block_type,
         "classification": target["classification"],
         "label": target["label"],
@@ -499,6 +676,8 @@ def build_study_block(target, block_type, estimated_minutes, config):
         "estimatedMinutes": estimated_minutes,
         "priorityScore": target["priorityScore"],
         "reason": target["reason"],
+        "isCompleted": False,
+        "completedAt": None,
     }
 
 
