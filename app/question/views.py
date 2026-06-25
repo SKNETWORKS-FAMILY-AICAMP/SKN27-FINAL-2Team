@@ -75,12 +75,12 @@ def question_create(request):
 
 # 문제 풀이 페이지를 렌더링한다.
 def question_exam(request):
-    return render(request, "question/question_exam.html")
+    return render(request, "question/question_exam.html", {"exam_mode": "practice"})
 
 
 # 문제 풀이 결과 페이지를 렌더링한다.
 def question_result(request):
-    return render(request, "question/question_result.html")
+    return render(request, "study/result.html", {"result_mode": "practice"})
 
 
 # 문제 생성/풀이에 사용할 기본 문제 목록을 조회한다.
@@ -546,6 +546,115 @@ def question_save_session(request, session_id):
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+@api_view(["GET"])
+# 문제풀이 결과 페이지에서 사용할 completed practice 세션 결과를 반환한다.
+# solve_sessions/solve_records 기준으로 점수, 선택 답안, 해설을 다시 조회한다.
+# 진단평가 결과는 diagnosis 앱 API를 그대로 사용하므로 이 API는 문제풀이 세션만 담당한다.
+def question_session_result(request, session_id):
+    user_id = _get_login_user_id(request)
+    if user_id is None:
+        return Response(
+            {"error": "로그인이 필요한 기능입니다."},
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
+
+    try:
+        session = SolveSessions.objects.get(
+            session_id=session_id,
+            user_id=user_id,
+            session_type=PRACTICE_SESSION_TYPE,
+        )
+    except SolveSessions.DoesNotExist:
+        return Response(
+            {"error": "결과 세션을 찾을 수 없습니다."},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+
+    if session.status != COMPLETED_SESSION_STATUS:
+        return Response(
+            {"error": "아직 제출되지 않은 세션입니다."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    records = list(
+        SolveRecords.objects.filter(session=session)
+        .select_related("question")
+        .order_by("record_id")
+    )
+    question_ids = [record.question_id for record in records]
+    option_map = {}
+    for option in QuestionOptions.objects.filter(question_id__in=question_ids).order_by(
+        "question_id",
+        "choice_no",
+    ):
+        option_map.setdefault(option.question_id, []).append(option)
+
+    questions = []
+    correct_count = 0
+    total_score = 0
+    max_score = 0
+    for number, record in enumerate(records, start=1):
+        question = record.question
+        options = option_map.get(question.question_id, [])
+        selected_option = next(
+            (option for option in options if option.choice_no == record.selected_no),
+            None,
+        )
+        earned_score = record.q_score if record.is_correct else 0
+        correct_count += 1 if record.is_correct else 0
+        total_score += earned_score
+        max_score += record.q_score or 0
+        questions.append({
+            "record_id": record.record_id,
+            "question_id": question.question_id,
+            "number": number,
+            "content": question.content,
+            "passage": question.passage,
+            "image_caption": question.image_caption,
+            "question_image_path": question.question_image_path,
+            "q_score": record.q_score,
+            "earned_score": earned_score,
+            "era": record.era,
+            "topic": record.topic,
+            "question_type": record.q_type,
+            "question_subtype": question.question_subtype,
+            "selected_choice_no": record.selected_no,
+            "selected_choice_id": selected_option.choice_id if selected_option else None,
+            "answer_no": question.answer_no,
+            "is_correct": record.is_correct,
+            "is_saved": record.is_saved,
+            "time_spent_ms": record.time_spent_ms,
+            "answer_explanation": question.answer_explanation,
+            "core_concept": question.core_concept,
+            "choices": [
+                {
+                    "choice_id": option.choice_id,
+                    "choice_no": option.choice_no,
+                    "content": option.content,
+                    "choice_image_path": option.choice_image_path,
+                    "choice_explanation": option.choice_explanation,
+                    "is_answer": option.is_answer,
+                }
+                for option in options
+            ],
+        })
+
+    return Response(
+        {
+            "mode": "practice",
+            "session_id": session.session_id,
+            "session_type": session.session_type,
+            "total_count": session.total_count,
+            "correct_count": correct_count,
+            "total_score": total_score,
+            "max_score": max_score,
+            "elapsed_sec": session.elapsed_sec,
+            "questions": questions,
+        },
+        status=status.HTTP_200_OK,
+    )
+
+
 @api_view(["PATCH"])
 # 특정 practice 세션의 한 문항 답안을 임시 저장한다.
 # 선택 해제 시 choice_id를 null로 보내면 selected_no도 비워진다.
@@ -661,7 +770,7 @@ def question_save_note(request, session_id):
         session = SolveSessions.objects.get(
             session_id=session_id,
             user_id=user_id,
-            session_type=PRACTICE_SESSION_TYPE,
+            session_type__in=[PRACTICE_SESSION_TYPE, "diagnostic"],
         )
     except SolveSessions.DoesNotExist:
         return Response(

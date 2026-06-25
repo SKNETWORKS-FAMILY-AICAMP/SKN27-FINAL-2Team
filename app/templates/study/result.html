@@ -1,0 +1,562 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>himate | 결과</title>
+  <link rel="stylesheet" href="/static/question/css/result.css" />
+  <link rel="stylesheet" href="../../static/question/css/result.css" />
+  <link rel="stylesheet" href="/static/himate.css" />
+  <link rel="stylesheet" href="/static/layout.css" />
+</head>
+<body>
+  <header class="site-header" aria-label="결과 메뉴">
+    <a class="brand" href="/" aria-label="himate 홈">himate</a>
+    <nav class="main-nav" aria-label="학습 메뉴">
+      <a class="{% if result_mode == 'diagnostic' %}active{% endif %}" href="/diagnosis/">진단 평가</a>
+      <a class="{% if result_mode == 'practice' %}active{% endif %}" href="/question/">문제 풀이</a>
+      <a href="/chatbot/">챗봇</a>
+      <a href="/analytics/mypage/">나의 학습실</a>
+    </nav>
+    <nav class="header-actions" aria-label="계정 메뉴">
+      {% if request.user.is_authenticated %}
+        <a class="ghost-button" href="/user/logout/">로그아웃</a>
+      {% else %}
+        <a class="pill-button" href="/user/login/">로그인</a>
+      {% endif %}
+    </nav>
+  </header>
+
+  <main class="result-page">
+    <div id="loadingMsg" style="text-align:center;padding:4rem;">결과를 불러오는 중입니다.</div>
+
+    <section class="review-shell" id="reviewShell" aria-label="문제별 해설" style="display:none;">
+      <header class="review-top">
+        <div>
+          <span class="page-kicker" id="resultKicker">문제별 해설</span>
+          <h1>문제별 결과 확인</h1>
+        </div>
+        <div class="question-jump" id="questionJump" aria-label="문제 번호 이동"></div>
+      </header>
+
+      <section class="answer-summary" aria-label="답안 요약">
+        <article>
+          <span>문제 번호</span>
+          <strong id="questionNumber">1번</strong>
+        </article>
+        <article>
+          <span>결과</span>
+          <strong id="resultState">정답</strong>
+        </article>
+        <article>
+          <span>사용자 답안</span>
+          <strong id="userAnswer">-</strong>
+        </article>
+        <article>
+          <span>정답</span>
+          <strong id="correctAnswer">-</strong>
+        </article>
+        <article>
+          <span>풀이 시간</span>
+          <strong id="timeSpent">00:00</strong>
+        </article>
+      </section>
+
+      <section class="question-box" aria-label="문제 내용">
+        <div class="box-heading">
+          <span>문제</span>
+          <strong id="questionType">유형</strong>
+        </div>
+        <h2 id="questionTitle">풀이 결과를 불러오는 중입니다.</h2>
+        <p id="questionSource">잠시만 기다려 주세요.</p>
+        <ol class="choice-review" id="choiceReview"></ol>
+      </section>
+
+      <section class="explain-grid" aria-label="해설 상세">
+        <article>
+          <h2>해설</h2>
+          <p id="explanation">등록된 해설이 이곳에 표시됩니다.</p>
+        </article>
+        <article>
+          <h2>오답설명</h2>
+          <p id="wrongExplanation">선택지 해설이 이곳에 표시됩니다.</p>
+        </article>
+        <article>
+          <h2>핵심개념</h2>
+          <p id="coreConcept">핵심 개념이 이곳에 표시됩니다.</p>
+        </article>
+      </section>
+
+      <nav class="review-actions" aria-label="해설 이동">
+        <button class="outline-button" id="prevQuestion" type="button">이전 문제</button>
+        <button class="outline-button" id="nextQuestion" type="button">다음 문제</button>
+        <button class="primary-button" id="askChatbot" type="button">챗봇에게 질문</button>
+        <button class="primary-button" id="noteSaveButton" type="button">노트에 저장</button>
+        <a class="outline-button" href="/user/wrong-note/">저장 문제 보기</a>
+        <span class="note-save-status" id="noteSaveStatus" aria-live="polite"></span>
+      </nav>
+    </section>
+
+    <section class="diagnosis-summary" id="summarySection" aria-label="전체 결과" style="display:none;">
+      <div class="summary-copy">
+        <span class="page-kicker" id="summaryKicker">결과 요약</span>
+        <p id="summaryDescription">풀이 결과를 요약합니다.</p>
+      </div>
+      <div class="summary-grid">
+        <article>
+          <span id="levelLabel">현재 수준</span>
+          <strong id="levelText" style="color: red;">-</strong>
+          <p id="levelDescription">-</p>
+        </article>
+        <article>
+          <span>총점 / 정답률</span>
+          <strong id="scoreText" style="color: red;">0점</strong>
+          <p id="accuracyCount">0 / 0</p>
+        </article>
+        <article>
+          <span id="weakLabel">취약 TOP 3</span>
+          <ul id="weakTopics"></ul>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const RESULT_MODE = "{{ result_mode|default:'practice' }}";
+    const SESSION_TYPE = RESULT_MODE === "diagnostic" ? "diagnostic" : "practice";
+    let resultPayload = null;
+    let questions = [];
+    let savedQuestionIds = new Set();
+    let currentIndex = 0;
+
+    const loadingMsg = document.getElementById("loadingMsg");
+    const reviewShell = document.getElementById("reviewShell");
+    const summarySection = document.getElementById("summarySection");
+    const questionNumber = document.getElementById("questionNumber");
+    const resultState = document.getElementById("resultState");
+    const userAnswer = document.getElementById("userAnswer");
+    const correctAnswer = document.getElementById("correctAnswer");
+    const timeSpent = document.getElementById("timeSpent");
+    const questionType = document.getElementById("questionType");
+    const questionTitle = document.getElementById("questionTitle");
+    const questionSource = document.getElementById("questionSource");
+    const choiceReview = document.getElementById("choiceReview");
+    const explanation = document.getElementById("explanation");
+    const wrongExplanation = document.getElementById("wrongExplanation");
+    const coreConcept = document.getElementById("coreConcept");
+    const questionJump = document.getElementById("questionJump");
+    const noteSaveButton = document.getElementById("noteSaveButton");
+    const noteSaveStatus = document.getElementById("noteSaveStatus");
+
+    function escapeHtml(value) {
+      return String(value || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+    }
+
+    function getCookie(name) {
+      return document.cookie
+        .split(";")
+        .map((item) => item.trim())
+        .find((item) => item.startsWith(`${name}=`))
+        ?.split("=")[1] || "";
+    }
+
+    function answerLabel(value) {
+      return value ? `${value}번` : "미응답";
+    }
+
+    function formatDuration(milliseconds) {
+      if (milliseconds === null || milliseconds === undefined) return "00:00";
+      const safeSeconds = Math.max(0, Math.round((Number(milliseconds) || 0) / 1000));
+      const minutes = String(Math.floor(safeSeconds / 60)).padStart(2, "0");
+      const seconds = String(safeSeconds % 60).padStart(2, "0");
+      return `${minutes}:${seconds}`;
+    }
+
+    function choiceText(choice) {
+      return choice?.content || "";
+    }
+
+    function choiceExplanation(choice) {
+      return choice?.explanation || choice?.choice_explanation || "";
+    }
+
+    function questionIdOf(index) {
+      return questions[index]?.questionId || null;
+    }
+
+    function isCorrect(index) {
+      return !!questions[index]?.isCorrect;
+    }
+
+    function normalizePracticeQuestion(question, index, saved) {
+      const selectedChoiceNo = saved.answers?.[index] || null;
+      const answerNo = question.answerNo || question.answer_no || null;
+      const choices = (question.choices || []).map((choice, choiceIndex) => ({
+        choiceId: question.choiceIds?.[choiceIndex] || choice.choice_id || null,
+        choiceNo: choice.choiceNo || choice.choice_no || choiceIndex + 1,
+        content: typeof choice === "string" ? choice : choice.content || "",
+        explanation: typeof choice === "string" ? "" : choice.explanation || choice.choice_explanation || "",
+      }));
+      return {
+        questionId: question.questionId || question.question_id,
+        number: index + 1,
+        title: question.title || question.content,
+        source: question.source || question.passage || question.image_caption || "",
+        score: question.score || question.q_score || 0,
+        earnedScore: selectedChoiceNo === answerNo ? question.score || question.q_score || 0 : 0,
+        type: question.type || [question.questionType, question.questionSubtype].filter(Boolean).join(" · "),
+        era: question.era || "",
+        topic: question.topic || "",
+        questionType: question.questionType || question.question_type || "",
+        questionSubtype: question.questionSubtype || question.question_subtype || "",
+        choices,
+        selectedChoiceNo,
+        answerNo,
+        isCorrect: answerNo !== null && selectedChoiceNo === answerNo,
+        timeSpentMs: saved.questionTimeSpent?.[index] ?? null,
+        answerExplanation: question.answerExplanation || question.answer_explanation || "",
+        coreConcept: question.coreConcept || question.core_concept || "",
+      };
+    }
+
+    function normalizePracticeApiQuestion(question) {
+      const choices = (question.choices || []).map((choice) => ({
+        choiceId: choice.choice_id,
+        choiceNo: choice.choice_no,
+        content: choice.content || "",
+        explanation: choice.choice_explanation || "",
+      }));
+      return {
+        questionId: question.question_id,
+        number: question.number,
+        title: question.content,
+        source: question.passage || question.image_caption || "",
+        score: question.q_score || 0,
+        earnedScore: question.earned_score || 0,
+        type: question.question_subtype
+          ? `${question.question_type} · ${question.question_subtype}`
+          : question.question_type || "",
+        era: question.era || "",
+        topic: question.topic || "",
+        questionType: question.question_type || "",
+        questionSubtype: question.question_subtype || "",
+        choices,
+        selectedChoiceNo: question.selected_choice_no,
+        answerNo: question.answer_no,
+        isCorrect: question.is_correct,
+        isSaved: question.is_saved,
+        timeSpentMs: question.time_spent_ms,
+        answerExplanation: question.answer_explanation || "",
+        coreConcept: question.core_concept || "",
+      };
+    }
+
+    function normalizeDiagnosticQuestion(exp, index) {
+      const choices = (exp.choices || []).map((choice) => ({
+        choiceId: choice.choice_id,
+        choiceNo: choice.choice_no,
+        content: choice.content || "",
+        explanation: choice.choice_explanation || "",
+      }));
+      return {
+        questionId: exp.question_id,
+        number: index + 1,
+        title: exp.content,
+        source: exp.passage || exp.visual_note || [exp.era, exp.topic].filter(Boolean).join(" · "),
+        score: exp.q_score || 0,
+        earnedScore: exp.is_correct ? exp.q_score || 0 : 0,
+        type: exp.question_subtype ? `${exp.question_type} · ${exp.question_subtype}` : exp.question_type || "",
+        era: exp.era || "",
+        topic: exp.topic || "",
+        questionType: exp.question_type || "",
+        questionSubtype: exp.question_subtype || "",
+        choices,
+        selectedChoiceNo: exp.user_choice_no,
+        answerNo: exp.correct_choice_no,
+        isCorrect: exp.is_correct,
+        timeSpentMs: exp.time_spent_ms,
+        answerExplanation: exp.answer_explanation || "",
+        coreConcept: exp.core_concept || "",
+      };
+    }
+
+    async function loadPracticeResultFromStorage(saved) {
+      savedQuestionIds = new Set(saved.savedQuestionIds || []);
+      questions = saved.questions.map((question, index) => normalizePracticeQuestion(question, index, saved));
+      const totalScore = questions.reduce((sum, question) => sum + question.earnedScore, 0);
+      const maxScore = questions.reduce((sum, question) => sum + question.score, 0);
+      resultPayload = {
+        mode: "practice",
+        sessionId: saved.sessionId || saved.session_id || null,
+        totalScore,
+        maxScore,
+        totalCount: questions.length,
+        correctCount: questions.filter((question) => question.isCorrect).length,
+      };
+    }
+
+    async function loadPracticeResult() {
+      const saved = JSON.parse(localStorage.getItem("questionResult") || "null");
+      const sessionId = saved?.sessionId || saved?.session_id || null;
+
+      if (sessionId) {
+        try {
+          const response = await fetch(`/question/api/session/${sessionId}/result/`);
+          if (response.ok) {
+            const payload = await response.json();
+            questions = (payload.questions || []).map(normalizePracticeApiQuestion);
+            savedQuestionIds = new Set(
+              (payload.questions || [])
+                .filter((question) => question.is_saved)
+                .map((question) => question.question_id)
+            );
+            resultPayload = {
+              mode: "practice",
+              sessionId: payload.session_id,
+              totalScore: payload.total_score,
+              maxScore: payload.max_score,
+              totalCount: payload.total_count,
+              correctCount: payload.correct_count,
+            };
+            return;
+          }
+        } catch (error) {
+          console.warn("practice result api fallback", error);
+        }
+      }
+
+      if (!saved?.questions?.length) {
+        alert("풀이 결과가 없습니다. 문제를 먼저 생성해 주세요.");
+        window.location.href = "/question/";
+        throw new Error("questionResult is missing");
+      }
+      await loadPracticeResultFromStorage(saved);
+    }
+
+    async function loadDiagnosticResult() {
+      const params = new URLSearchParams(window.location.search);
+      const sessionId = params.get("session_id");
+      if (!sessionId) {
+        alert("세션 정보가 없습니다. 진단평가를 다시 시작해 주세요.");
+        window.location.href = "/diagnosis/";
+        throw new Error("no session_id");
+      }
+
+      const resultResponse = await fetch(`/diagnosis/api/result/${sessionId}/`);
+      if (!resultResponse.ok) throw new Error("진단 결과를 불러오지 못했습니다.");
+      const summary = await resultResponse.json();
+      const explanations = await Promise.all(
+        summary.question_ids.map((questionId) =>
+          fetch(`/diagnosis/api/result/${sessionId}/explanation/${questionId}/`)
+            .then((response) => {
+              if (!response.ok) throw new Error("문항 해설을 불러오지 못했습니다.");
+              return response.json();
+            })
+        )
+      );
+
+      questions = explanations.map(normalizeDiagnosticQuestion);
+      resultPayload = {
+        mode: "diagnostic",
+        sessionId: summary.session_id,
+        totalScore: summary.total_score,
+        maxScore: summary.max_score,
+        totalCount: summary.total_count,
+        correctCount: summary.correct_count,
+        expectedGrade: summary.expected_grade,
+        eraAnalytics: summary.era_analytics || [],
+        typeAnalytics: summary.type_analytics || [],
+      };
+    }
+
+    function renderJump() {
+      questionJump.innerHTML = questions.map((question, index) => `
+        <button class="${index === currentIndex ? "active" : ""} ${question.isCorrect ? "correct" : "wrong"}" type="button" data-index="${index}">
+          ${index + 1}
+        </button>
+      `).join("");
+      questionJump.querySelectorAll("button").forEach((button) => {
+        button.addEventListener("click", () => {
+          currentIndex = Number(button.dataset.index);
+          renderQuestion();
+        });
+      });
+    }
+
+    function renderQuestion() {
+      const question = questions[currentIndex];
+      const selectedChoice = question.selectedChoiceNo
+        ? question.choices.find((choice) => choice.choiceNo === question.selectedChoiceNo)
+        : null;
+
+      questionNumber.textContent = `${currentIndex + 1}번`;
+      resultState.textContent = question.isCorrect ? "정답" : "오답";
+      resultState.className = question.isCorrect ? "is-correct" : "is-wrong";
+      userAnswer.textContent = answerLabel(question.selectedChoiceNo);
+      correctAnswer.textContent = answerLabel(question.answerNo);
+      timeSpent.textContent = formatDuration(question.timeSpentMs);
+      questionType.textContent = question.type || "-";
+      questionTitle.textContent = question.title || "";
+      questionSource.textContent = question.source || "별도 지문이 없는 문제입니다.";
+      choiceReview.innerHTML = question.choices.map((choice) => {
+        const classes = [
+          choice.choiceNo === question.answerNo ? "correct" : "",
+          choice.choiceNo === question.selectedChoiceNo ? "selected" : "",
+        ].filter(Boolean).join(" ");
+        return `<li class="${classes}"><span>${choice.choiceNo}</span><b>${escapeHtml(choiceText(choice))}</b></li>`;
+      }).join("");
+
+      explanation.textContent = question.answerExplanation || "등록된 해설이 없습니다.";
+      wrongExplanation.textContent = question.selectedChoiceNo && question.selectedChoiceNo !== question.answerNo
+        ? choiceExplanation(selectedChoice) || "등록된 선택지 해설이 없습니다."
+        : "정답 처리된 문항입니다.";
+      coreConcept.textContent = question.coreConcept || "등록된 핵심 개념이 없습니다.";
+      renderNoteSaveState();
+      renderJump();
+    }
+
+    function renderNoteSaveState(message = "") {
+      const questionId = questionIdOf(currentIndex);
+      const isSaved = questionId !== null && savedQuestionIds.has(questionId);
+      noteSaveButton.textContent = isSaved ? "저장됨" : "노트에 저장";
+      noteSaveButton.disabled = isSaved;
+      noteSaveStatus.textContent = message || (isSaved ? "이 문항은 노트에 저장되어 있습니다." : "");
+    }
+
+    function renderSummary() {
+      const accuracy = resultPayload.totalCount
+        ? Math.round((resultPayload.correctCount / resultPayload.totalCount) * 100)
+        : 0;
+      document.getElementById("scoreText").textContent = `${resultPayload.totalScore || 0} / ${resultPayload.maxScore || 0}점`;
+      document.getElementById("accuracyCount").textContent = `${resultPayload.correctCount} / ${resultPayload.totalCount} · ${accuracy}%`;
+
+      if (RESULT_MODE === "diagnostic") {
+        document.getElementById("resultKicker").textContent = "진단평가 해설";
+        document.getElementById("summaryKicker").textContent = "진단 결과";
+        document.getElementById("summaryDescription").textContent = "진단평가 점수와 예상 급수, 취약 영역을 요약합니다.";
+        document.getElementById("levelLabel").textContent = "예상 급수";
+        document.getElementById("levelText").textContent = resultPayload.expectedGrade || "-";
+        document.getElementById("levelDescription").textContent = `총점 ${resultPayload.totalScore || 0}점 기준 진단 결과입니다.`;
+        const weakTop3 = [...(resultPayload.eraAnalytics || []), ...(resultPayload.typeAnalytics || [])]
+          .sort((a, b) => b.wrong_rate - a.wrong_rate)
+          .slice(0, 3)
+          .map((item) => item.label);
+        document.getElementById("weakTopics").innerHTML = (weakTop3.length ? weakTop3 : ["데이터 없음"])
+          .map((topic) => `<li>${escapeHtml(topic)}</li>`)
+          .join("");
+        return;
+      }
+
+      document.getElementById("resultKicker").textContent = "문제풀이 해설";
+      document.getElementById("summaryKicker").textContent = "문제풀이 결과";
+      document.getElementById("summaryDescription").textContent = "풀이 결과를 기반으로 정답률과 취약 유형을 요약합니다.";
+      document.getElementById("levelLabel").textContent = "현재 수준";
+      document.getElementById("levelText").textContent = accuracy >= 80 ? "상위권" : accuracy >= 60 ? "보완 필요" : "기초 보강";
+      document.getElementById("levelDescription").textContent = "향상 그래프는 이후 마이페이지 학습 기록과 연결해 확장할 수 있습니다.";
+      const weakTypes = questions
+        .filter((question) => !question.isCorrect)
+        .map((question) => question.type || question.topic || "미분류")
+        .slice(0, 3);
+      document.getElementById("weakTopics").innerHTML = (weakTypes.length ? weakTypes : ["오답 없음"])
+        .map((topic) => `<li>${escapeHtml(topic)}</li>`)
+        .join("");
+    }
+
+    function buildChatContext(question) {
+      const choices = question.choices
+        .map((choice) => `${choice.choiceNo}. ${choice.content}`)
+        .join("\n");
+      return [
+        "이 문제를 바탕으로 왜 틀렸는지 설명해줘.",
+        "",
+        `[문제] ${question.title || ""}`,
+        question.source ? `[지문]\n${question.source}` : "",
+        choices ? `[보기]\n${choices}` : "",
+        `[내 답] ${answerLabel(question.selectedChoiceNo)}`,
+        `[정답] ${answerLabel(question.answerNo)}`,
+        `[정답 결과] ${question.isCorrect ? "정답" : "오답"}`,
+        `[풀이 시간] ${formatDuration(question.timeSpentMs)}`,
+        `[분류] ${question.era || "-"} / ${question.topic || "-"} / ${question.questionType || "-"} / ${question.questionSubtype || "-"}`,
+        `[키워드] ${question.coreConcept || "-"}`,
+        `[해설] ${question.answerExplanation || ""}`,
+      ].filter(Boolean).join("\n");
+    }
+
+    function move(delta) {
+      const nextIndex = Math.min(Math.max(currentIndex + delta, 0), questions.length - 1);
+      currentIndex = nextIndex;
+      renderQuestion();
+    }
+
+    document.getElementById("prevQuestion").addEventListener("click", () => move(-1));
+    document.getElementById("nextQuestion").addEventListener("click", () => move(1));
+    document.getElementById("askChatbot").addEventListener("click", () => {
+      sessionStorage.setItem("chatbotQuestionContext", buildChatContext(questions[currentIndex]));
+      window.location.href = `/chatbot/?from=${RESULT_MODE}-result`;
+    });
+    noteSaveButton.addEventListener("click", async () => {
+      const sessionId = resultPayload?.sessionId;
+      const questionId = questionIdOf(currentIndex);
+      if (!sessionId || !questionId) {
+        alert("로그인 후 풀이한 문제만 노트에 저장할 수 있습니다.");
+        return;
+      }
+      noteSaveButton.disabled = true;
+      noteSaveStatus.textContent = "노트에 저장하는 중입니다.";
+      try {
+        const response = await fetch(`/question/api/session/${sessionId}/note/`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": decodeURIComponent(getCookie("csrftoken")),
+          },
+          body: JSON.stringify({
+            question_id: questionId,
+            is_saved: true,
+          }),
+        });
+        if (!response.ok) {
+          const result = await response.json().catch(() => ({}));
+          throw new Error(result.error || "노트 저장에 실패했습니다.");
+        }
+        savedQuestionIds.add(questionId);
+        if (RESULT_MODE === "practice") {
+          const saved = JSON.parse(localStorage.getItem("questionResult") || "{}");
+          localStorage.setItem("questionResult", JSON.stringify({
+            ...saved,
+            savedQuestionIds: [...savedQuestionIds],
+          }));
+        }
+        renderNoteSaveState("노트에 저장되었습니다.");
+      } catch (error) {
+        noteSaveStatus.textContent = error.message || "노트 저장에 실패했습니다.";
+        noteSaveButton.disabled = false;
+      } finally {
+        renderNoteSaveState(noteSaveStatus.textContent);
+      }
+    });
+
+    async function init() {
+      if (RESULT_MODE === "diagnostic") {
+        await loadDiagnosticResult();
+      } else {
+        await loadPracticeResult();
+      }
+      loadingMsg.style.display = "none";
+      reviewShell.style.display = "";
+      summarySection.style.display = "";
+      renderSummary();
+      renderQuestion();
+    }
+
+    init().catch((error) => {
+      loadingMsg.textContent = `오류: ${error.message}`;
+    });
+  </script>
+</body>
+</html>

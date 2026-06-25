@@ -3,20 +3,20 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>himate | 문제풀이</title>
+  <title>himate | {% if exam_mode == 'diagnostic' %}진단평가{% else %}문제풀이{% endif %}</title>
   <link rel="stylesheet" href="/static/question/css/exam.css" />
   <link rel="stylesheet" href="../../static/question/css/exam.css" />
   <link rel="stylesheet" href="/static/himate.css" />
   <link rel="stylesheet" href="/static/layout.css" />
 </head>
 <body>
-  <header class="site-header" aria-label="문제풀이 메뉴">
+  <header class="site-header" aria-label="{% if exam_mode == 'diagnostic' %}진단평가{% else %}문제풀이{% endif %} 메뉴">
     <a class="brand site-brand" href="/" aria-label="himate 홈">
       <img src="/static/chatbot/assets/logo.png" alt="himate" data-fallback-src="../../static/chatbot/assets/logo.png" />
     </a>
     <nav class="main-nav" aria-label="학습 메뉴">
-      <a href="/diagnosis/">진단 평가</a>
-      <a class="active" href="/question/">문제 풀이</a>
+      <a class="{% if exam_mode == 'diagnostic' %}active{% endif %}" href="/diagnosis/">진단 평가</a>
+      <a class="{% if exam_mode != 'diagnostic' %}active{% endif %}" href="/question/">문제 풀이</a>
       <a href="/chatbot/">챗봇</a>
       <a href="/analytics/mypage/">나의 학습실</a>
     </nav>
@@ -30,10 +30,10 @@
   </header>
 
   <main class="exam-page">
-    <section class="exam-shell" aria-label="문제 풀이">
+    <section class="exam-shell" aria-label="{% if exam_mode == 'diagnostic' %}진단평가{% else %}문제 풀이{% endif %}">
       <header class="exam-header">
         <div class="exam-title">
-          <h1>문제 풀이</h1>
+          <h1>{% if exam_mode == 'diagnostic' %}진단 평가{% else %}문제 풀이{% endif %}</h1>
         </div>
         <div class="progress-box" aria-label="문항 진행률">
           <strong>문항 수</strong>
@@ -72,11 +72,11 @@
           <section class="save-card action-card">
             <div class="side-action-buttons">
               <button class="exit-top-button" id="exitButton" type="button">나가기</button>
-              {% if request.user.is_authenticated %}
+              {% if exam_mode != 'diagnostic' and request.user.is_authenticated %}
               <button id="saveProgressButton" type="button">진행 저장</button>
               {% endif %}
             </div>
-            {% if request.user.is_authenticated %}
+            {% if exam_mode != 'diagnostic' and request.user.is_authenticated %}
             <p id="saveStatus">답안 선택, 이동, 나가기 시 진행 상황이 자동 저장됩니다.</p>
             {% endif %}
           </section>
@@ -95,6 +95,9 @@
   </main>
 
   <script>
+    const EXAM_MODE = "{{ exam_mode|default:'practice' }}";
+    const IS_DIAGNOSTIC = EXAM_MODE === "diagnostic";
+
     document.querySelectorAll("img[data-fallback-src]").forEach((image) => {
       image.addEventListener("error", () => {
         if (image.dataset.fallbackTried) return;
@@ -103,9 +106,9 @@
       });
     });
 
-    const savedProgress = JSON.parse(localStorage.getItem("questionInProgress") || "null");
+    const savedProgress = IS_DIAGNOSTIC ? null : JSON.parse(localStorage.getItem("questionInProgress") || "null");
     const searchParams = new URLSearchParams(window.location.search);
-    const shouldStartNew = searchParams.get("new") === "1";
+    const shouldStartNew = !IS_DIAGNOSTIC && searchParams.get("new") === "1";
     const shouldResume = searchParams.get("resume") === "1" || (!shouldStartNew && !!savedProgress?.questions?.length);
     const resumeSessionId = Number(searchParams.get("session_id") || 0);
     if (shouldStartNew) {
@@ -227,6 +230,23 @@
       };
     }
 
+    function loadDiagnosisQuestions() {
+      const sessionData = JSON.parse(sessionStorage.getItem("diagnosisSession") || "null");
+      if (!sessionData?.questions?.length) {
+        alert("세션 정보가 없습니다. 진단평가를 다시 시작해 주세요.");
+        window.location.href = "/diagnosis/";
+        return false;
+      }
+
+      sessionId = sessionData.session_id;
+      questions = sessionData.questions.map(toExamQuestion);
+      answers = Array(questions.length).fill(null);
+      questionTimeSpent = Array(questions.length).fill(0);
+      totalExamSeconds = sessionData.time_limit_sec || secondsByQuestionCount(questions.length);
+      remainingSeconds = totalExamSeconds;
+      return true;
+    }
+
     async function loadSavedSession(savedSessionId) {
       const response = await fetch(`/question/api/session/${savedSessionId}/`, {
         credentials: "same-origin",
@@ -251,6 +271,11 @@
     }
 
     async function loadQuestions() {
+      if (IS_DIAGNOSTIC) {
+        loadDiagnosisQuestions();
+        return;
+      }
+
       if (shouldResume && resumeSessionId) {
         try {
           await loadSavedSession(resumeSessionId);
@@ -367,6 +392,11 @@
     }
 
     async function saveProgress(showMessage = true, markCompleted = false) {
+      if (IS_DIAGNOSTIC) {
+        commitCurrentQuestionTime();
+        return;
+      }
+
       if (!sessionId) {
         if (showMessage && saveStatus) {
           saveStatus.textContent = "저장할 풀이 세션이 없습니다.";
@@ -430,6 +460,7 @@
     }
 
     function saveProgressBeforeLeave() {
+      if (IS_DIAGNOSTIC) return;
       if (isSubmittingExam) return;
       if (!sessionId || !questions[currentIndex]?.questionId) return;
       const question = questions[currentIndex];
@@ -469,6 +500,70 @@
       }));
       localStorage.removeItem("questionInProgress");
       window.location.href = "/question/result/";
+    }
+
+    async function submitDiagnosisExam() {
+      if (!sessionId) {
+        alert("진단평가 세션 정보가 없습니다.");
+        window.location.href = "/diagnosis/";
+        return;
+      }
+
+      isSubmittingExam = true;
+      commitCurrentQuestionTime();
+      submitButton.disabled = true;
+      submitButton.textContent = "제출 중...";
+
+      const answersPayload = questions.map((question, index) => {
+        const selectedNo = answers[index];
+        return {
+          question_id: question.questionId,
+          choice_id: selectedNo ? question.choiceIds[selectedNo - 1] : null,
+          time_spent_ms: questionTimeSpent[index] ?? null,
+        };
+      });
+
+      try {
+        const response = await fetch("/diagnosis/api/submit/", {
+          method: "POST",
+          credentials: "same-origin",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": getCookie("csrftoken") || "{{ csrf_token }}",
+          },
+          body: JSON.stringify({
+            session_id: sessionId,
+            elapsed_sec: elapsedSeconds(),
+            answers: answersPayload,
+          }),
+        });
+        if (!response.ok) {
+          const payload = await response.json().catch(() => ({}));
+          throw new Error(payload.error || "진단평가 제출에 실패했습니다.");
+        }
+
+        sessionStorage.removeItem("diagnosisSession");
+        window.location.href = `/diagnosis/result/?session_id=${sessionId}`;
+      } catch (error) {
+        isSubmittingExam = false;
+        submitButton.disabled = false;
+        submitButton.textContent = "제출";
+        alert(error.message);
+      }
+    }
+
+    async function submitExam() {
+      if (IS_DIAGNOSTIC) {
+        await submitDiagnosisExam();
+        return;
+      }
+
+      try {
+        await saveProgress(false, true);
+      } catch (error) {
+        console.error(error);
+      }
+      finishExam();
     }
 
     function renderQuestion() {
@@ -541,23 +636,20 @@
     prevButton.addEventListener("click", () => moveQuestion(currentIndex - 1));
     nextButton.addEventListener("click", () => moveQuestion(currentIndex + 1));
     exitButton.addEventListener("click", async () => {
-      try {
-        await saveProgress(false);
-      } catch (error) {
-        console.error(error);
+      if (!IS_DIAGNOSTIC) {
+        try {
+          await saveProgress(false);
+        } catch (error) {
+          console.error(error);
+        }
       }
-      window.location.href = "/question/";
+      window.location.href = IS_DIAGNOSTIC ? "/diagnosis/" : "/question/";
     });
     submitButton.addEventListener("click", async () => {
       if (isTimeOver) return;
       answers[currentIndex] = answers[currentIndex] ?? null;
       numberButtons[currentIndex].classList.add("answered");
-      try {
-        await saveProgress(false, true);
-      } catch (error) {
-        console.error(error);
-      }
-      finishExam();
+      await submitExam();
     });
     if (saveProgressButton) {
       saveProgressButton.addEventListener("click", async () => {
@@ -597,7 +689,7 @@
         button.disabled = true;
       });
       submitButton.textContent = "시간 종료";
-      finishExam();
+      submitExam();
     }
 
     async function initExam() {

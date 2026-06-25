@@ -53,12 +53,12 @@ def diagnosis_intro(request):
 
 # @login_required  # TODO: 인증 연동 후 활성화
 def diagnosis_exam(request):
-    return render(request, "diagnosis/exam.html")
+    return render(request, "question/question_exam.html", {"exam_mode": "diagnostic"})
 
 
 # @login_required  # TODO: 인증 연동 후 활성화
 def diagnosis_result(request):
-    return render(request, "diagnosis/result.html")
+    return render(request, "study/result.html", {"result_mode": "diagnostic"})
 
 
 # ── API: 안내 정보 ──────────────────────────────────────────────────────────────
@@ -94,7 +94,12 @@ def diagnosis_start(request):
     TODO: 인증 연동 필요 - request.user.user_id 로 교체
     """
     # TODO: 인증 연동 필요 - 아래 user_id를 request.user.user_id 로 교체
-    user_id = 1
+    if not request.user.is_authenticated:
+        return Response(
+            {"error": "로그인이 필요한 기능입니다."},
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
+    user_id = request.user.user_id
 
     # 1) 전체 문제에서 50문항 / 총점 100점 조합을 랜덤 선택
     selected_ids = _pick_diagnosis_question_ids()
@@ -131,18 +136,22 @@ def diagnosis_start(request):
                 "choice_id": opt.choice_id,
                 "choice_no": idx,
                 "content": opt.content,
+                "choice_image_path": getattr(opt, "choice_image_path", ""),
+                "choice_explanation": getattr(opt, "choice_explanation", ""),
             })
 
         serialized_questions.append({
             "question_id": q.question_id,
             "content": q.content,
             "passage": getattr(q, "passage", ""),
+            "image_caption": getattr(q, "image_caption", ""),
             "visual_note": getattr(q, "visual_note", ""),
             "question_image_path": getattr(q, "question_image_path", ""),
             "q_score": q.q_score,
             "era": q.era,
             "topic": q.topic,
             "question_type": q.question_type,
+            "question_subtype": getattr(q, "question_subtype", ""),
             "choices": choices,
         })
 
@@ -480,9 +489,11 @@ def diagnosis_explanation(request, session_id, question_id):
         "passage": getattr(question, "passage", ""),
         "visual_note": getattr(question, "visual_note", ""),
         "question_image_path": getattr(question, "question_image_path", ""),
+        "q_score": question.q_score,
         "era": question.era,
         "topic": question.topic,
         "question_type": question.question_type,
+        "question_subtype": getattr(question, "question_subtype", ""),
         "correct_choice_no": correct_choice_no,
         "answer_explanation": question.answer_explanation,
         "core_concept": question.core_concept,
