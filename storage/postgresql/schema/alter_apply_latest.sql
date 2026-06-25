@@ -65,3 +65,85 @@ BEGIN
             DROP COLUMN time_spent_sec;
     END IF;
 END $$;
+
+-- analytics: add analysis metadata columns used by mypage/session/study-plan analytics.
+ALTER TABLE analytics
+    ALTER COLUMN session_id DROP NOT NULL;
+
+ALTER TABLE analytics
+    ADD COLUMN IF NOT EXISTS user_id BIGINT NULL;
+
+UPDATE analytics a
+SET user_id = s.user_id
+FROM solve_sessions s
+WHERE a.session_id = s.session_id
+  AND a.user_id IS NULL;
+
+DO $$
+BEGIN
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name = 'analytics'
+          AND column_name = 'date'
+    ) AND NOT EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name = 'analytics'
+          AND column_name = 'created_at'
+    ) THEN
+        ALTER TABLE analytics
+            RENAME COLUMN date TO created_at;
+    END IF;
+END $$;
+
+ALTER TABLE analytics
+    ADD COLUMN IF NOT EXISTS analysis_scope VARCHAR(30) NOT NULL DEFAULT 'session',
+    ADD COLUMN IF NOT EXISTS analysis_run_id VARCHAR(36) NOT NULL DEFAULT 'legacy',
+    ADD COLUMN IF NOT EXISTS analysis_unit VARCHAR(30) NOT NULL DEFAULT 'overall',
+    ADD COLUMN IF NOT EXISTS studyplan_id BIGINT NULL,
+    ADD COLUMN IF NOT EXISTS total_count INT NOT NULL DEFAULT 0,
+    ADD COLUMN IF NOT EXISTS correct_count INT NOT NULL DEFAULT 0,
+    ADD COLUMN IF NOT EXISTS wrong_count INT NOT NULL DEFAULT 0,
+    ADD COLUMN IF NOT EXISTS answer_rate DOUBLE PRECISION NOT NULL DEFAULT 0,
+    ADD COLUMN IF NOT EXISTS wrong_rate DOUBLE PRECISION NOT NULL DEFAULT 0,
+    ADD COLUMN IF NOT EXISTS period_start DATE NULL,
+    ADD COLUMN IF NOT EXISTS period_end DATE NULL,
+    ADD COLUMN IF NOT EXISTS created_at TIMESTAMP NOT NULL DEFAULT NOW();
+
+UPDATE analytics
+SET analysis_unit = CASE classification
+    WHEN '시대' THEN 'era'
+    WHEN '유형' THEN 'type'
+    WHEN '주제' THEN 'topic'
+    ELSE analysis_unit
+END
+WHERE analysis_unit = 'overall';
+
+UPDATE analytics
+SET answer_rate = topic_rate
+WHERE answer_rate = 0
+  AND topic_rate IS NOT NULL;
+
+UPDATE analytics
+SET wrong_rate = 1 - answer_rate
+WHERE wrong_rate = 0
+  AND answer_rate IS NOT NULL;
+
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM analytics WHERE user_id IS NULL
+    ) THEN
+        ALTER TABLE analytics
+            ALTER COLUMN user_id SET NOT NULL;
+    END IF;
+END $$;
+
+-- study_plan_mypage: 학습계획 상태, 버전, 기간, 완료율, 보관/삭제 시각을 추가한다.
+ALTER TABLE study_plan_mypage
+    ADD COLUMN IF NOT EXISTS status VARCHAR(20) NOT NULL DEFAULT 'active',
+    ADD COLUMN IF NOT EXISTS plan_version INT NOT NULL DEFAULT 1,
+    ADD COLUMN IF NOT EXISTS start_date DATE NULL,
+    ADD COLUMN IF NOT EXISTS end_date DATE NULL,
+    ADD COLUMN IF NOT EXISTS completion_rate DOUBLE PRECISION NOT NULL DEFAULT 0,
+    ADD COLUMN IF NOT EXISTS archived_at TIMESTAMPTZ NULL,
+    ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ NULL;
