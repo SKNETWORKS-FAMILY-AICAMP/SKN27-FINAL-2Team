@@ -7,6 +7,7 @@ class ChoiceData(serializers.Serializer):
     choice_no = serializers.IntegerField()
     content = serializers.CharField()
     choice_image_path = serializers.CharField(allow_blank=True, allow_null=True, required=False)
+    choice_explanation = serializers.CharField(allow_blank=True, allow_null=True, required=False)
 
 
 # 문제 1개의 기본 응답 형식
@@ -21,6 +22,9 @@ class QuestionData(serializers.Serializer):
     topic = serializers.CharField()
     question_type = serializers.CharField()
     question_subtype = serializers.CharField()
+    answer_no = serializers.IntegerField()
+    answer_explanation = serializers.CharField(allow_blank=True, allow_null=True, required=False)
+    core_concept = serializers.CharField(allow_blank=True, allow_null=True, required=False)
     choices = ChoiceData(many=True)
 
 
@@ -44,6 +48,11 @@ class FilterOptionsResponse(serializers.Serializer):
 
 # 문제 생성 요청 형식
 class StartQuestionsRequest(serializers.Serializer):
+    generation_mode = serializers.ChoiceField(
+        choices=["basic", "hard", "detail"],
+        required=False,
+        default="detail",
+    )
     eras = serializers.ListField(child=serializers.CharField(), required=False, default=list)
     topics = serializers.ListField(child=serializers.CharField(), required=False, default=list)
     difficulties = serializers.ListField(
@@ -53,6 +62,11 @@ class StartQuestionsRequest(serializers.Serializer):
     )
     question_types = serializers.ListField(child=serializers.CharField(), required=False, default=list)
     question_subtypes = serializers.ListField(child=serializers.CharField(), required=False, default=list)
+    score_counts = serializers.DictField(
+        child=serializers.IntegerField(min_value=0),
+        required=False,
+        default=dict,
+    )
     count = serializers.IntegerField(min_value=1, default=20)
 
 
@@ -96,6 +110,8 @@ class SaveAnswerRequest(serializers.Serializer):
     choice_id = serializers.IntegerField(allow_null=True, required=False, default=None)
     time_spent_ms = serializers.IntegerField(allow_null=True, required=False, default=None)
     elapsed_sec = serializers.IntegerField(allow_null=True, required=False, default=None)
+    mark_saved = serializers.BooleanField(required=False, default=False)
+    mark_completed = serializers.BooleanField(required=False, default=False)
 
 
 # 답안 임시 저장 결과 응답 형식

@@ -35,15 +35,38 @@
         <p>원하는 시대, 주제, 난이도, 문제 수와 유형을 선택하면 맞춤 문제 풀이로 이동합니다.</p>
       </header>
 
-      <section class="condition-panel">
+      <section class="mode-panel" aria-label="문제 생성 방식">
+        <label class="mode-card selected">
+          <input type="radio" name="questionMode" value="basic" checked />
+          <span>기본</span>
+          <strong>랜덤 50 문제</strong>
+        </label>
+        <label class="mode-card">
+          <input type="radio" name="questionMode" value="hard" />
+          <span>어려움</span>
+          <strong>50문제 중 어려운 문제 위주</strong>
+        </label>
+        <label class="mode-card">
+          <input type="radio" name="questionMode" value="detail" />
+          <span>상세 설정</span>
+          <strong>시대, 주제, 유형을 직접 선택</strong>
+        </label>
+      </section>
+
+      <section class="condition-panel is-hidden" id="detailConditionPanel">
         <div class="condition-row" data-select-type="multiple">
           <h2>시대</h2>
           <div class="option-list">
-            <button type="button" data-value="선사">선사</button>
-            <button type="button" data-value="삼국">삼국</button>
+            <button type="button" data-value="선사 시대">선사 시대</button>
+            <button type="button" data-value="고조선">고조선</button>
+            <button type="button" data-value="초기 국가">초기 국가</button>
+            <button type="button" data-value="삼국 시대">삼국 시대</button>
+            <button type="button" data-value="남북국 시대">남북국 시대</button>
             <button type="button" data-value="고려">고려</button>
-            <button type="button" data-value="조선">조선</button>
-            <button type="button" data-value="근대">근대</button>
+            <button type="button" data-value="조선 전기">조선 전기</button>
+            <button type="button" data-value="조선 후기">조선 후기</button>
+            <button type="button" data-value="개항기">개항기</button>
+            <button type="button" data-value="일제 강점기">일제 강점기</button>
             <button type="button" data-value="현대">현대</button>
           </div>
         </div>
@@ -59,12 +82,12 @@
           </div>
         </div>
 
-        <div class="condition-row" data-select-type="multiple">
+        <div class="condition-row" data-select-type="single">
           <h2>난이도</h2>
           <div class="option-list compact">
-            <button type="button" data-value="상" class="selected">상</button>
-            <button type="button" data-value="중" class="selected">중</button>
-            <button type="button" data-value="하" class="selected">하</button>
+            <button type="button" data-value="상">상</button>
+            <button type="button" data-value="중">중</button>
+            <button type="button" data-value="하">하</button>
           </div>
         </div>
 
@@ -104,13 +127,12 @@
       </section>
 
       <footer class="create-actions">
-        <div class="left-actions">
+        <div class="left-actions is-hidden" id="detailActionButtons">
           <button class="secondary-button" id="resetButton" type="button">초기화</button>
           <button class="secondary-button" id="selectAllButton" type="button">전체 선택</button>
         </div>
         <div>
-          <button class="primary-button" id="createButton" type="button" style="color": yellow;
-          >문제지 생성</button>
+          <button class="primary-button" id="createButton" type="button">문제지 생성</button>
           {% if request.user.is_authenticated %}
           <button class="outline-button" id="loadButton" type="button">문제 불러오기</button>
           {% endif %}
@@ -125,6 +147,10 @@
     const selectAllButton = document.getElementById("selectAllButton");
     const createButton = document.getElementById("createButton");
     const loadButton = document.getElementById("loadButton");
+    const detailConditionPanel = document.getElementById("detailConditionPanel");
+    const detailActionButtons = document.getElementById("detailActionButtons");
+    const modeCards = document.querySelectorAll(".mode-card");
+    const modeInputs = document.querySelectorAll('input[name="questionMode"]');
 
     const filterMap = {
       "시대": "eras",
@@ -146,7 +172,7 @@
       const optionList = row.querySelector(".option-list");
       const isSingle = row.dataset.selectType === "single";
       optionList.innerHTML = values.map((value, index) => {
-        const selected = (isSingle && index === 0) || label === "난이도" ? " selected" : "";
+        const selected = isSingle && label === "문제 수" && index === 0 ? " selected" : "";
         return `<button type="button" data-value="${value}" class="${selected.trim()}">${value}</button>`;
       }).join("");
 
@@ -204,14 +230,51 @@
       return condition;
     }
 
+    function selectedMode() {
+      return document.querySelector('input[name="questionMode"]:checked')?.value || "basic";
+    }
+
+    function presetCondition(mode) {
+      if (mode === "hard") {
+        return {
+          generationMode: "hard",
+          "시대": [],
+          "주제": [],
+          "난이도": null,
+          "문제 수": "50",
+          "대유형": [],
+          "소유형": [],
+          scoreCounts: { "3": 20, "2": 10, "1": 20 },
+        };
+      }
+
+      return {
+        generationMode: "basic",
+        "시대": [],
+        "주제": [],
+        "난이도": null,
+        "문제 수": "50",
+        "대유형": [],
+        "소유형": [],
+        scoreCounts: { "3": 10, "2": 30, "1": 10 },
+      };
+    }
+
+    function updateModeView() {
+      const mode = selectedMode();
+      modeCards.forEach((card) => {
+        card.classList.toggle("selected", card.querySelector("input").checked);
+      });
+      const showDetail = mode === "detail";
+      detailConditionPanel.classList.toggle("is-hidden", !showDetail);
+      detailActionButtons.classList.toggle("is-hidden", !showDetail);
+    }
+
     resetButton.addEventListener("click", () => {
       rows.forEach((row) => {
         row.querySelectorAll("button").forEach((button) => button.classList.remove("selected"));
       });
 
-      document.querySelector('[data-value="상"]').classList.add("selected");
-      document.querySelector('[data-value="중"]').classList.add("selected");
-      document.querySelector('[data-value="하"]').classList.add("selected");
       document.querySelector('[data-value="10"]').classList.add("selected");
     });
 
@@ -228,12 +291,36 @@
           return;
         }
 
+        if (label === "난이도") {
+          const middleButton = buttons.find((button) => button.dataset.value === "중");
+          (middleButton || buttons[0])?.classList.add("selected");
+          return;
+        }
+
         buttons.forEach((button) => button.classList.add("selected"));
       });
     });
 
+    modeInputs.forEach((input) => {
+      input.addEventListener("change", updateModeView);
+    });
+
     createButton.addEventListener("click", () => {
-      const condition = collectCondition();
+      const mode = selectedMode();
+      const condition = mode === "detail" ? collectCondition() : presetCondition(mode);
+
+      if (mode === "detail") {
+        condition.generationMode = "detail";
+        const requiredLabels = ["시대", "주제", "대유형", "소유형", "난이도"];
+        const hasMissingCondition = requiredLabels.some((label) => {
+          const value = condition[label];
+          return Array.isArray(value) ? value.length === 0 : !value;
+        });
+        if (hasMissingCondition) {
+          alert("시대, 주제, 대유형, 소유형, 난이도를 모두 선택해 주세요.");
+          return;
+        }
+      }
 
       sessionStorage.setItem("questionGenerationCondition", JSON.stringify(condition));
       localStorage.removeItem("questionGenerationCondition");
@@ -268,6 +355,7 @@
     }
 
     loadFilterOptions();
+    updateModeView();
   </script>
 </body>
 </html>
