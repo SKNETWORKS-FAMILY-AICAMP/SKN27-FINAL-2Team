@@ -4,8 +4,8 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>himate | 진단평가 결과</title>
-  <link rel="stylesheet" href="/static/diagnosis/css/result.css" />
-  <link rel="stylesheet" href="../../static/diagnosis/css/result.css" />
+  <link rel="stylesheet" href="/static/question/css/result.css" />
+  <link rel="stylesheet" href="../../static/question/css/result.css" />
   <link rel="stylesheet" href="/static/himate.css" />
   <link rel="stylesheet" href="/static/layout.css" />
 </head>
@@ -56,6 +56,10 @@
           <span>정답</span>
           <strong id="correctAnswer">-</strong>
         </article>
+        <article>
+          <span>풀이 시간</span>
+          <strong id="timeSpent">00:00</strong>
+        </article>
       </section>
 
       <section class="question-box" aria-label="문제 내용">
@@ -76,16 +80,21 @@
           <p id="explanation"></p>
         </article>
         <article>
-          <h2>챗봇</h2>
-          <p id="chatbotLink"></p>
+          <h2>오답설명</h2>
+          <p id="wrongExplanation"></p>
+        </article>
+        <article>
+          <h2>핵심개념</h2>
+          <p id="coreConcept"></p>
         </article>
       </section>
 
       <nav class="review-actions" aria-label="해설 이동">
         <button class="outline-button" id="prevQuestion" type="button">이전 문제</button>
         <button class="outline-button" id="nextQuestion" type="button">다음 문제</button>
-        <button class="dark-button" id="wrongOnly" type="button">틀린 문제 보기</button>
-        <button class="primary-button" id="pdfSave" type="button">오답노트 저장</button>
+        <button class="primary-button" id="askChatbot" type="button">챗봇에게 질문</button>
+        <button class="primary-button" id="pdfSave" type="button">노트에 저장</button>
+        <span class="note-save-status" id="noteSaveStatus" aria-live="polite"></span>
       </nav>
     </section>
 
@@ -127,7 +136,6 @@
     let resultData = null;      // GET /api/result/<id>/
     let explanations = [];      // GET /api/result/<id>/explanation/<qid>/ × N
     let currentIndex = 0;
-    let wrongMode = false;
 
     // ── 데이터 로드 ──────────────────────────────────────────────────────────────
     async function loadAll() {
@@ -140,7 +148,10 @@
       explanations = await Promise.all(
         resultData.question_ids.map((qid) =>
           fetch(`/diagnosis/api/result/${SESSION_ID}/explanation/${qid}/`)
-            .then((r) => r.json())
+            .then((r) => {
+              if (!r.ok) throw new Error("문항 해설을 불러올 수 없습니다.");
+              return r.json();
+            })
         )
       );
 
@@ -163,7 +174,7 @@
       const { correct_count, total_count, total_score, expected_grade, era_analytics, type_analytics } = resultData;
       const accuracy = total_count ? Math.round((correct_count / total_count) * 100) : 0;
 
-      document.getElementById("levelText").textContent = expected_grade;
+      document.getElementById("levelText").textContent = `${total_score}점`;
       document.getElementById("accuracyText").textContent = `${accuracy}%`;
       document.getElementById("accuracyCount").textContent = `${correct_count} / ${total_count}`;
 
@@ -171,9 +182,9 @@
         "1급": "상위권 수준입니다. 고난도 사료와 시대 통합 문제를 보완하세요.",
         "2급": "기본 개념은 안정적입니다. 오답 문제의 시대 구분과 제도명을 보완하세요.",
         "3급": "핵심 흐름은 잡혀 있습니다. 취약 시대를 중심으로 복습하세요.",
-        "과락": "핵심 개념부터 다시 정리하는 것이 좋습니다.",
+        "탈락": "60점 미만입니다. 핵심 개념부터 다시 정리하는 것이 좋습니다.",
       };
-      document.getElementById("levelDescription").textContent = gradeDesc[expected_grade] || "";
+      document.getElementById("levelDescription").textContent = `${expected_grade} · ${gradeDesc[expected_grade] || ""}`;
 
       // 취약 TOP3: wrong_rate 높은 순
       const allAnalytics = [...(era_analytics || []), ...(type_analytics || [])];
@@ -204,8 +215,44 @@
     }
 
     // ── 문제 렌더링 ──────────────────────────────────────────────────────────────
+    function escapeHtml(value) {
+      return String(value || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+    }
+
     function answerLabel(value) {
       return value != null ? `${value}번` : "미응답";
+    }
+
+    function formatDuration(milliseconds) {
+      if (milliseconds === null || milliseconds === undefined) return "00:00";
+      const safeSeconds = Math.max(0, Math.round((Number(milliseconds) || 0) / 1000));
+      const minutes = String(Math.floor(safeSeconds / 60)).padStart(2, "0");
+      const rest = String(safeSeconds % 60).padStart(2, "0");
+      return `${minutes}:${rest}`;
+    }
+
+    function buildChatContext(exp) {
+      const choices = (exp.choices || [])
+        .map((choice) => `${choice.choice_no}. ${choice.content}`)
+        .join("\n");
+      return [
+        "이 문제를 바탕으로 왜 틀렸는지 설명해줘.",
+        "",
+        `[문제] ${exp.content || ""}`,
+        [exp.era, exp.topic].filter(Boolean).length ? `[분류] ${[exp.era, exp.topic, exp.question_type].filter(Boolean).join(" / ")}` : "",
+        choices ? `[보기]\n${choices}` : "",
+        `[내 답] ${answerLabel(exp.user_choice_no)}`,
+        `[정답] ${answerLabel(exp.correct_choice_no)}`,
+        `[정답 결과] ${exp.is_correct ? "정답" : "오답"}`,
+        `[풀이 시간] ${formatDuration(exp.time_spent_ms)}`,
+        `[키워드] ${exp.core_concept || "-"}`,
+        `[해설] ${exp.answer_explanation || ""}`,
+      ].filter(Boolean).join("\n");
     }
 
     function renderQuestion() {
@@ -216,6 +263,7 @@
       document.getElementById("resultState").className = exp.is_correct ? "is-correct" : "is-wrong";
       document.getElementById("userAnswer").textContent = answerLabel(exp.user_choice_no);
       document.getElementById("correctAnswer").textContent = answerLabel(exp.correct_choice_no);
+      document.getElementById("timeSpent").textContent = formatDuration(exp.time_spent_ms);
 
       document.getElementById("questionType").textContent = exp.question_type || "";
       document.getElementById("questionTitle").textContent = exp.content;
@@ -232,23 +280,25 @@
           choice.choice_no === exp.correct_choice_no ? "correct" : "",
           choice.choice_no === exp.user_choice_no ? "selected" : "",
         ].filter(Boolean).join(" ");
-        return `<li class="${classes}"><span>${choice.choice_no}</span><b>${choice.content}</b></li>`;
+        return `<li class="${classes}"><span>${choice.choice_no}</span><b>${escapeHtml(choice.content)}</b></li>`;
       }).join("");
 
       document.getElementById("explanation").textContent =
         exp.answer_explanation || `${answerLabel(exp.correct_choice_no)}이 정답입니다.`;
-
-      const chatbotLink = document.getElementById("chatbotLink");
-      chatbotLink.innerHTML = `<a href="${exp.chatbot_url}">이 문제 챗봇에게 질문하기 →</a>`;
+      const selectedChoice = exp.user_choice_no
+        ? exp.choices.find((choice) => choice.choice_no === exp.user_choice_no)
+        : null;
+      document.getElementById("wrongExplanation").textContent = exp.user_choice_no && exp.user_choice_no !== exp.correct_choice_no
+        ? selectedChoice?.choice_explanation || "등록된 선택지 해설이 없습니다."
+        : "정답 처리된 문항입니다.";
+      document.getElementById("coreConcept").textContent = exp.core_concept || "등록된 핵심 개념이 없습니다.";
 
       renderJump();
     }
 
     // ── 이전/다음/틀린문제 ────────────────────────────────────────────────────────
     function move(delta) {
-      const targets = wrongMode
-        ? explanations.map((_, i) => i).filter((i) => !explanations[i].is_correct)
-        : explanations.map((_, i) => i);
+      const targets = explanations.map((_, i) => i);
       const pos = Math.max(0, targets.indexOf(currentIndex));
       const nextPos = Math.min(Math.max(pos + delta, 0), targets.length - 1);
       currentIndex = targets[nextPos] ?? currentIndex;
@@ -257,14 +307,9 @@
 
     document.getElementById("prevQuestion").addEventListener("click", () => move(-1));
     document.getElementById("nextQuestion").addEventListener("click", () => move(1));
-    document.getElementById("wrongOnly").addEventListener("click", (event) => {
-      wrongMode = !wrongMode;
-      event.currentTarget.classList.toggle("active", wrongMode);
-      if (wrongMode) {
-        const firstWrong = explanations.findIndex((e) => !e.is_correct);
-        if (firstWrong >= 0) currentIndex = firstWrong;
-      }
-      renderQuestion();
+    document.getElementById("askChatbot").addEventListener("click", () => {
+      sessionStorage.setItem("chatbotQuestionContext", buildChatContext(explanations[currentIndex]));
+      window.location.href = "/chatbot/?from=diagnosis-result";
     });
     document.getElementById("pdfSave").addEventListener("click", () => window.print());
 

@@ -24,8 +24,9 @@ from .serializers import (
 )
 
 # ── 상수 ───────────────────────────────────────────────────────────────────────
-DIAGNOSIS_QUESTION_COUNT = 20
-DIAGNOSIS_TIME_LIMIT_SEC = 1200  # 20분
+DIAGNOSIS_QUESTION_COUNT = 50
+DIAGNOSIS_TARGET_SCORE = 100
+DIAGNOSIS_TIME_LIMIT_SEC = 4800  # 80분
 
 # 예상 수준 기준 (취득점 / 최대점 × 100)
 GRADE_THRESHOLDS = [
@@ -40,7 +41,7 @@ def _get_expected_grade(score_rate_pct: float) -> str:
     for threshold, grade in GRADE_THRESHOLDS:
         if score_rate_pct >= threshold:
             return grade
-    return "과락"
+    return "탈락"
 
 
 # ── 페이지 뷰 (템플릿) ──────────────────────────────────────────────────────────
@@ -52,12 +53,12 @@ def diagnosis_intro(request):
 
 # @login_required  # TODO: 인증 연동 후 활성화
 def diagnosis_exam(request):
-    return render(request, "diagnosis/exam.html")
+    return render(request, "question/question_exam.html", {"exam_mode": "diagnostic"})
 
 
 # @login_required  # TODO: 인증 연동 후 활성화
 def diagnosis_result(request):
-    return render(request, "diagnosis/result.html")
+    return render(request, "study/result.html", {"result_mode": "diagnostic"})
 
 
 # ── API: 안내 정보 ──────────────────────────────────────────────────────────────
@@ -93,19 +94,21 @@ def diagnosis_start(request):
     TODO: 인증 연동 필요 - request.user.user_id 로 교체
     """
     # TODO: 인증 연동 필요 - 아래 user_id를 request.user.user_id 로 교체
-    user_id = 1
-
-    # 1) 전체 문제에서 랜덤으로 DIAGNOSIS_QUESTION_COUNT개 선택
-    all_question_ids = list(
-        Questions.objects.values_list("question_id", flat=True)
-    )
-    if len(all_question_ids) < DIAGNOSIS_QUESTION_COUNT:
+    if not request.user.is_authenticated:
         return Response(
-            {"error": "문제 수가 부족합니다."},
+            {"error": "로그인이 필요한 기능입니다."},
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
+    user_id = request.user.user_id
+
+    # 1) 전체 문제에서 50문항 / 총점 100점 조합을 랜덤 선택
+    selected_ids = _pick_diagnosis_question_ids()
+    if not selected_ids:
+        return Response(
+            {"error": "50문항 총점 100점 조합을 만들 수 없습니다."},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
 
-    selected_ids = random.sample(all_question_ids, DIAGNOSIS_QUESTION_COUNT)
     questions_qs = Questions.objects.filter(question_id__in=selected_ids)
 
     # 2) 세션 생성
@@ -114,6 +117,7 @@ def diagnosis_start(request):
         session_type="diagnostic",
         total_count=DIAGNOSIS_QUESTION_COUNT,
         status="in_progress",
+        recorded_date=datetime.now(tz=timezone.utc).date(),
     )
 
     # 3) 문제 목록 구성 (문제 순서 랜덤 + 선택지 셔플)
@@ -132,18 +136,22 @@ def diagnosis_start(request):
                 "choice_id": opt.choice_id,
                 "choice_no": idx,
                 "content": opt.content,
+                "choice_image_path": getattr(opt, "choice_image_path", ""),
+                "choice_explanation": getattr(opt, "choice_explanation", ""),
             })
 
         serialized_questions.append({
             "question_id": q.question_id,
             "content": q.content,
-            "passage": q.passage,
-            "visual_note": q.visual_note,
-            "question_image_path": q.question_image_path,
+            "passage": getattr(q, "passage", ""),
+            "image_caption": getattr(q, "image_caption", ""),
+            "visual_note": getattr(q, "visual_note", ""),
+            "question_image_path": getattr(q, "question_image_path", ""),
             "q_score": q.q_score,
             "era": q.era,
             "topic": q.topic,
             "question_type": q.question_type,
+            "question_subtype": getattr(q, "question_subtype", ""),
             "choices": choices,
         })
 
@@ -389,6 +397,34 @@ def _get_total_from_records(records, analytics_obj):
     return 0
 
 
+def _pick_diagnosis_question_ids():
+    rows = list(Questions.objects.values("question_id", "q_score", "era", "question_type"))
+    random.shuffle(rows)
+    return _pick_exact_score_question_ids(
+        rows,
+        DIAGNOSIS_QUESTION_COUNT,
+        DIAGNOSIS_TARGET_SCORE,
+    )
+
+
+def _pick_exact_score_question_ids(rows, count, target_score):
+    dp = {(0, 0): []}
+    for row in rows:
+        qid = row["question_id"]
+        score = row["q_score"] or 0
+        for (used_count, used_score), ids in list(dp.items()):
+            next_count = used_count + 1
+            next_score = used_score + score
+            if next_count > count or next_score > target_score:
+                continue
+            state = (next_count, next_score)
+            if state not in dp:
+                dp[state] = ids + [qid]
+                if state == (count, target_score):
+                    return dp[state]
+    return []
+
+
 # ── API: 문항 해설 ──────────────────────────────────────────────────────────────
 
 @api_view(["GET"])
@@ -435,6 +471,7 @@ def diagnosis_explanation(request, session_id, question_id):
             "choice_id": opt.choice_id,
             "choice_no": opt.choice_no,
             "content": opt.content,
+            "choice_explanation": opt.choice_explanation,
         }
         for opt in options
     ]
@@ -449,14 +486,18 @@ def diagnosis_explanation(request, session_id, question_id):
     resp_serializer = DiagnosisExplanationResponseSerializer({
         "question_id": question.question_id,
         "content": question.content,
-        "passage": question.passage,
-        "visual_note": question.visual_note,
-        "question_image_path": question.question_image_path,
+        "passage": getattr(question, "passage", ""),
+        "visual_note": getattr(question, "visual_note", ""),
+        "question_image_path": getattr(question, "question_image_path", ""),
+        "q_score": question.q_score,
         "era": question.era,
         "topic": question.topic,
         "question_type": question.question_type,
+        "question_subtype": getattr(question, "question_subtype", ""),
         "correct_choice_no": correct_choice_no,
         "answer_explanation": question.answer_explanation,
+        "core_concept": question.core_concept,
+        "time_spent_ms": record.time_spent_ms,
         "choices": choices,
         "user_choice_no": record.selected_no,
         "is_correct": record.is_correct,

@@ -55,6 +55,14 @@
                 </select>
               </label>
               <label>
+                세션 유형
+                <select id="sessionTypeFilter">
+                  <option value="all">전체</option>
+                  <option value="diagnostic">진단평가</option>
+                  <option value="practice">문제풀이</option>
+                </select>
+              </label>
+              <label>
                 시대
                 <select id="eraFilter">
                   <option value="all">전체</option>
@@ -148,6 +156,7 @@
     const listTitle = document.getElementById("listTitle");
     const deleteButton = document.getElementById("deleteButton");
     const sessionFilter = document.getElementById("sessionFilter");
+    const sessionTypeFilter = document.getElementById("sessionTypeFilter");
     const eraFilter = document.getElementById("eraFilter");
     const topicFilter = document.getElementById("topicFilter");
     const typeFilter = document.getElementById("typeFilter");
@@ -201,10 +210,11 @@
 
     function matchesFilters(record, includeSession = true) {
       const sessionMatched = !includeSession || sessionFilter.value === "all" || String(record.sessionId) === sessionFilter.value;
+      const sessionTypeMatched = sessionTypeFilter.value === "all" || record.sessionType === sessionTypeFilter.value;
       const eraMatched = eraFilter.value === "all" || record.era === eraFilter.value;
       const topicMatched = topicFilter.value === "all" || record.topic === topicFilter.value;
       const typeMatched = typeFilter.value === "all" || record.type === typeFilter.value;
-      return sessionMatched && eraMatched && topicMatched && typeMatched;
+      return sessionMatched && sessionTypeMatched && eraMatched && topicMatched && typeMatched;
     }
 
     function filteredRecords() {
@@ -222,10 +232,11 @@
     function filteredSessions() {
       return sessions.filter((session) => {
         const sessionMatched = sessionFilter.value === "all" || String(session.sessionId) === sessionFilter.value;
+        const sessionTypeMatched = sessionTypeFilter.value === "all" || session.sessionType === sessionTypeFilter.value;
         const hasMatchedRecord = recordsForTab().some((record) => (
           String(record.sessionId) === String(session.sessionId) && matchesFilters(record, false)
         ));
-        return sessionMatched && hasMatchedRecord;
+        return sessionMatched && sessionTypeMatched && hasMatchedRecord;
       });
     }
 
@@ -251,7 +262,7 @@
       listTitle.textContent = "세션 목록";
       noteList.innerHTML = list.length ? list.map((session) => `
         <button class="session-card" type="button" data-session-id="${session.sessionId}">
-          <span>${escapeHtml(session.recordedDate || session.label)} · ${escapeHtml(session.status)}</span>
+          <span>${escapeHtml(session.sessionTypeLabel || session.sessionType)} · ${escapeHtml(session.recordedDate || session.label)} · ${escapeHtml(session.status)}</span>
           <strong>${session.totalCount}문항 · 오답 ${session.wrongCount}개 · 저장 ${session.savedCount}개</strong>
           <em>풀이 ${session.timeSpent} · 정답 ${session.correctCount}/${session.answeredCount}</em>
         </button>
@@ -283,7 +294,7 @@
             : "선택 세션 문항";
       noteList.innerHTML = list.length ? list.map((record) => `
         <button class="${record.id === activeId ? "active" : ""}" type="button" data-id="${record.id}">
-          <span>${escapeHtml(record.era)} · ${escapeHtml(record.topic)} · ${escapeHtml(record.type)}</span>
+          <span>${escapeHtml(record.sessionTypeLabel || record.sessionType)} · ${escapeHtml(record.era)} · ${escapeHtml(record.topic)} · ${escapeHtml(record.type)}</span>
           <strong>${record.number}번. ${escapeHtml(record.title)}</strong>
           <em>${record.isCorrect ? "정답" : "오답"} · ${record.isSaved ? "저장됨" : "미저장"} · ${record.timeSpent}</em>
         </button>
@@ -430,7 +441,7 @@
       });
     });
 
-    [sessionFilter, eraFilter, topicFilter, typeFilter].forEach((select) => {
+    [sessionFilter, sessionTypeFilter, eraFilter, topicFilter, typeFilter].forEach((select) => {
       select.addEventListener("change", () => {
         activeSessionId = null;
         activeId = filteredRecords()[0]?.id || null;
