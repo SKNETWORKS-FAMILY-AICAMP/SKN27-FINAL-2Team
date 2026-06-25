@@ -17,6 +17,13 @@ class StudyPlanMypage(models.Model):
     study_plan_items = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField()
     modified_at = models.DateTimeField()
+    status = models.CharField(max_length=20, default='active')
+    plan_version = models.IntegerField(default=1)
+    start_date = models.DateField(blank=True, null=True)
+    end_date = models.DateField(blank=True, null=True)
+    completion_rate = models.FloatField(default=0)
+    archived_at = models.DateTimeField(blank=True, null=True)
+    deleted_at = models.DateTimeField(blank=True, null=True)
 
     class Meta:
         managed = False
@@ -44,12 +51,29 @@ class NoteMypage(models.Model):
 
 class Analytics(models.Model):
     analytics_id = models.BigAutoField(primary_key=True)
-    session = models.ForeignKey(SolveSessions, models.DO_NOTHING)
+    session = models.ForeignKey(SolveSessions, models.DO_NOTHING, blank=True, null=True)
+    user = models.ForeignKey('user.UserAccounts', models.DO_NOTHING)
+    analysis_scope = models.CharField(max_length=30, default='session')
+    analysis_run_id = models.CharField(max_length=36)
+    analysis_unit = models.CharField(max_length=30)
+    studyplan = models.ForeignKey(
+        StudyPlanMypage,
+        models.DO_NOTHING,
+        blank=True,
+        null=True,
+    )
     key_concept = models.CharField(max_length=50)
     classification = models.CharField(max_length=20)
     avg_time_sec = models.IntegerField(blank=True, null=True)
     topic_rate = models.FloatField()
-    date = models.DateTimeField()
+    total_count = models.IntegerField(default=0)
+    correct_count = models.IntegerField(default=0)
+    wrong_count = models.IntegerField(default=0)
+    answer_rate = models.FloatField(default=0)
+    wrong_rate = models.FloatField(default=0)
+    period_start = models.DateField(blank=True, null=True)
+    period_end = models.DateField(blank=True, null=True)
+    created_at = models.DateTimeField()
 
     class Meta:
         managed = False

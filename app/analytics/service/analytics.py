@@ -1,9 +1,17 @@
 from datetime import timedelta
+import uuid
 
 from django.db.models import Avg, Count, Q
 from django.utils import timezone
 from analytics.models import Analytics
 from question.models import SolveRecords, SolveSessions
+
+
+ANALYSIS_UNIT_BY_FIELD = {
+    "era": "era",
+    "q_type": "type",
+    "topic": "topic",
+}
 
 
 def get_user_analytics(user_id):
@@ -487,6 +495,7 @@ def create_analytics(user_id):
 
     analytics_rows = []
     now = timezone.now()
+    analysis_run_id = str(uuid.uuid4())
     for session in sessions:
         records = SolveRecords.objects.filter(session=session)
         for classification, field_name in get_classification_fields():
@@ -497,18 +506,33 @@ def create_analytics(user_id):
             )
             for row in rows:
                 total_count = row["total_count"] or 0
-                if total_count:
-                    correct_count = row["correct_count"] or 0
-                    analytics_rows.append(
-                        Analytics(
-                            session=session,
-                            key_concept=row[field_name] or get_unclassified_label(),
-                            classification=classification,
-                            avg_time_sec=ms_to_sec(row["average_time_ms"]),
-                            topic_rate=calculate_rate(correct_count, total_count),
-                            date=now,
-                        )
+                if not total_count:
+                    continue
+
+                correct_count = row["correct_count"] or 0
+                wrong_count = total_count - correct_count
+                answer_rate = calculate_rate(correct_count, total_count)
+                analytics_rows.append(
+                    Analytics(
+                        session=session,
+                        user_id=user_id,
+                        analysis_scope="session",
+                        analysis_run_id=analysis_run_id,
+                        analysis_unit=ANALYSIS_UNIT_BY_FIELD.get(field_name, "overall"),
+                        key_concept=row[field_name] or get_unclassified_label(),
+                        classification=classification,
+                        avg_time_sec=ms_to_sec(row["average_time_ms"]),
+                        topic_rate=answer_rate,
+                        total_count=total_count,
+                        correct_count=correct_count,
+                        wrong_count=wrong_count,
+                        answer_rate=answer_rate,
+                        wrong_rate=calculate_rate(wrong_count, total_count),
+                        period_start=session.recorded_date,
+                        period_end=session.recorded_date,
+                        created_at=now,
                     )
+                )
 
     if analytics_rows:
         Analytics.objects.bulk_create(analytics_rows)

@@ -121,12 +121,24 @@ CREATE TABLE IF NOT EXISTS solve_records (
 -- 8. 풀이 통계
 CREATE TABLE IF NOT EXISTS analytics (
     analytics_id        BIGSERIAL       PRIMARY KEY,
-    session_id          BIGINT          NOT NULL REFERENCES solve_sessions(session_id) ON DELETE CASCADE,
+    session_id          BIGINT          NULL REFERENCES solve_sessions(session_id) ON DELETE CASCADE,
+    user_id             BIGINT          NOT NULL REFERENCES user_accounts(user_id) ON DELETE CASCADE,
+    analysis_scope      VARCHAR(30)     NOT NULL,          -- session | study_plan_base | study_plan_result
+    analysis_run_id     VARCHAR(36)     NOT NULL,          -- 같은 분석 실행 묶음
+    analysis_unit       VARCHAR(30)     NOT NULL,          -- overall | era | type | topic
+    studyplan_id        BIGINT          NULL,
     key_concept         VARCHAR(50)     NOT NULL,          -- 예: 조선, 정치, 문화
     classification      VARCHAR(20)     NOT NULL,          -- 시대 | 주제 | 유형
     avg_time_sec        INT             NULL,              -- 분류별 평균 풀이 시간(초)
     topic_rate          FLOAT           NOT NULL,          -- 해당 분류 정답률
-    date                TIMESTAMP       NOT NULL DEFAULT NOW()
+    total_count         INT             NOT NULL DEFAULT 0,
+    correct_count       INT             NOT NULL DEFAULT 0,
+    wrong_count         INT             NOT NULL DEFAULT 0,
+    answer_rate         DOUBLE PRECISION NOT NULL DEFAULT 0,
+    wrong_rate          DOUBLE PRECISION NOT NULL DEFAULT 0,
+    period_start        DATE            NULL,
+    period_end          DATE            NULL,
+    created_at          TIMESTAMP       NOT NULL DEFAULT NOW()
 );
 
 -- 9. 오답노트
@@ -152,7 +164,14 @@ CREATE TABLE IF NOT EXISTS study_plan_mypage (
     study_plans         TEXT            NULL,              -- 학습/통계 목표
     study_plan_items    TEXT            NULL,              -- 날짜별 학습 목록. JSON 형태 권장
     created_at          TIMESTAMP       NOT NULL DEFAULT NOW(),
-    modified_at         TIMESTAMP       NOT NULL DEFAULT NOW()
+    modified_at         TIMESTAMP       NOT NULL DEFAULT NOW(),
+    status              VARCHAR(20)     NOT NULL DEFAULT 'active', -- 계획 상태: active | archived | deleted
+    plan_version        INT             NOT NULL DEFAULT 1,        -- 사용자별 계획 버전
+    start_date          DATE            NULL,                      -- 계획 시작일
+    end_date            DATE            NULL,                      -- 계획 종료일
+    completion_rate     DOUBLE PRECISION NOT NULL DEFAULT 0,       -- 완료율
+    archived_at         TIMESTAMPTZ     NULL,                      -- 과거 계획 처리 시각
+    deleted_at          TIMESTAMPTZ     NULL                       -- 삭제 처리 시각
 );
 
 -- 11. 이메일 인증 코드
