@@ -8,6 +8,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
+from analytics.service.analysis_snapshot import create_session_snapshot
 from .models import QuestionOptions, Questions, SolveRecords, SolveSessions
 from .serializers import (
     FilterOptionsResponse,
@@ -1060,6 +1061,7 @@ def question_submit_session(request, session_id):
             session.answer_rate = answer_rate
             session.total_score = total_score
             session.save(update_fields=["status", "elapsed_sec", "answer_rate", "total_score"])
+            create_session_snapshot(session.session_id)
     except SolveSessions.DoesNotExist:
         return Response(
             {"error": "저장 세션을 찾을 수 없습니다."},
