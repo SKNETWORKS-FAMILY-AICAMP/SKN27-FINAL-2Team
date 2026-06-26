@@ -217,6 +217,43 @@ body {
   border-radius: 6px;
 }
 
+.analysis-loading {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  background: #101b20;
+}
+
+.analysis-loading[hidden] {
+  display: none;
+}
+
+.analysis-loading-card {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  color: #f5fff1;
+  text-align: center;
+}
+
+.analysis-loading-card img {
+  width: min(110px, 28vw);
+  height: auto;
+}
+
+.analysis-loading-card strong {
+  font-size: 18px;
+  font-weight: 950;
+}
+
+.analysis-loading-card span {
+  color: #b8c7bc;
+  font-size: 13px;
+  font-weight: 850;
+}
+
 @media (min-width: 901px) {
   .exam-page {
     display: block !important;

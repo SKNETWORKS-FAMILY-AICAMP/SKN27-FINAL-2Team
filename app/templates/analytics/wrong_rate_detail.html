@@ -1,35 +1,92 @@
 <!doctype html>
+{% load static %}
 <html lang="ko">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>himate | 오답률 상세</title>
-  <link rel="stylesheet" href="/static/analytics/css/wrong_rate_detail.css" />
-  <link rel="stylesheet" href="../../static/analytics/css/wrong_rate_detail.css" />
-  <link rel="stylesheet" href="/static/himate.css" />
-  <link rel="stylesheet" href="/static/layout.css" />
+  <title>himate | 취약점 분석 상세</title>
+  <link rel="stylesheet" href="{% static 'analytics/css/wrong_rate_detail.css' %}" />
+  <link rel="stylesheet" href="{% static 'himate.css' %}" />
+  <link rel="stylesheet" href="{% static 'layout.css' %}" />
 </head>
 <body>
-  <header class="site-header" aria-label="오답률 상세 메뉴">
-    <a class="brand" href="/" aria-label="himate 홈">
-      <img src="/static/chatbot/assets/logo.png" alt="himate" data-fallback-src="../../static/chatbot/assets/logo.png" />
+  <header class="site-header" aria-label="취약점 분석 상세 메뉴">
+    <a class="brand" href="{% url 'pages:index' %}" aria-label="himate 홈">
+      <img src="{% static 'chatbot/assets/logo.png' %}" alt="himate" />
     </a>
     <nav class="main-nav" aria-label="학습 메뉴">
-      <a href="/diagnosis/">진단 평가</a>
-      <a href="/question/">문제 풀이</a>
-      <a href="/chatbot/">챗봇</a>
-      <a class="active" href="/analytics/mypage/">나의 학습실</a>
+      <a href="{% url 'diagnosis:intro' %}">진단 평가</a>
+      <a href="{% url 'question:create' %}">문제 풀이</a>
+      <a href="{% url 'chatbot:chat_page' %}">챗봇</a>
+      <a class="active" href="{% url 'analytics:mypage' %}">나의 학습실</a>
     </nav>
     <nav class="header-actions" aria-label="계정 메뉴">
-      <a class="outline-button" href="/analytics/mypage/">마이페이지</a>
-      <a class="ghost-button" href="/user/logout/">로그아웃</a>
+      <a class="outline-button" href="{% url 'analytics:mypage' %}">마이페이지</a>
+      <a class="ghost-button" href="{% url 'user:logout' %}">로그아웃</a>
     </nav>
   </header>
 
   <main class="wrong-rate-page">
     <section class="wrong-rate-title">
       <p>{{ request.user.nickname }}님의 취약점 분석</p>
-      <h1>유형별 오답률 상세</h1>
+      <h1>취약점 분석 상세</h1>
+    </section>
+
+    <section class="scope-chart-stack" aria-label="분석 단위별 오답률 그래프">
+      <div class="scope-stack-heading">
+        <div>
+          <p>완료 풀이 기록 기준</p>
+          <h2>오답률 흐름</h2>
+        </div>
+        <span>미응답 포함</span>
+      </div>
+      {% for group in analysis_scope_chart_data %}
+        <article class="scope-chart-panel scope-chart-block" aria-label="{{ group.label }} 오답률 그래프">
+          <div class="scope-chart-heading">
+            <div>
+              <p>{{ group.description }}</p>
+              <h2>{{ group.title }}</h2>
+            </div>
+            <div class="scope-chart-meta">
+              <span class="scope-chart-caption">{{ group.label }}</span>
+              <span>{{ group.bars|length }}개 구간</span>
+            </div>
+          </div>
+          <div class="scope-chart">
+            <div class="scope-y-axis" aria-hidden="true">
+              <span>100%</span>
+              <span>50%</span>
+              <span>0%</span>
+            </div>
+            <div class="scope-plot">
+              <i class="scope-gridline top" aria-hidden="true"></i>
+              <i class="scope-gridline middle" aria-hidden="true"></i>
+              <i class="scope-gridline bottom" aria-hidden="true"></i>
+              {% if group.hasRecords %}
+                <div class="scope-bars">
+                  {% for bar in group.bars %}
+                    <article class="scope-bar-item {{ bar.statusClass }}">
+                      <span class="scope-bar-value">{{ bar.wrongRateLabel }}</span>
+                      <div class="scope-bar-track" aria-label="{{ bar.label }} 오답률 {{ bar.wrongRateLabel }}">
+                        <i style="height: {{ bar.wrongRate }}%"></i>
+                      </div>
+                      <strong>{{ bar.label }}</strong>
+                      <p>{{ bar.description }}</p>
+                      <small>{{ bar.totalCount }}문제 · 문제당 {{ bar.averageTimeLabel }}<br />{{ bar.periodLabel }} · {{ bar.createdLabel }}</small>
+                    </article>
+                  {% endfor %}
+                </div>
+              {% endif %}
+              {% if not group.hasRecords %}
+                <article class="scope-empty">
+                  <strong>기록 없음</strong>
+                  <span>표시할 분석 데이터가 없습니다.</span>
+                </article>
+              {% endif %}
+            </div>
+          </div>
+        </article>
+      {% endfor %}
     </section>
 
     <section class="rate-section" aria-labelledby="eraTitle">
@@ -44,7 +101,7 @@
             </div>
             <div class="bar-body">
               <div class="bar-meta">
-                <span>{{ item.total }}문제</span>
+                <span>{{ item.total }}문제 · 문제당 {{ item.average_time_label }}</span>
                 <strong>{{ item.rate }}%</strong>
               </div>
               <div class="bar-track"><i style="width: {{ item.rate }}%"></i></div>
@@ -69,7 +126,7 @@
             </div>
             <div class="bar-body">
               <div class="bar-meta">
-                <span>{{ item.total }}문제</span>
+                <span>{{ item.total }}문제 · 문제당 {{ item.average_time_label }}</span>
                 <strong>{{ item.rate }}%</strong>
               </div>
               <div class="bar-track"><i style="width: {{ item.rate }}%"></i></div>
@@ -94,7 +151,7 @@
             </div>
             <div class="bar-body">
               <div class="bar-meta">
-                <span>{{ item.total }}문제</span>
+                <span>{{ item.total }}문제 · 문제당 {{ item.average_time_label }}</span>
                 <strong>{{ item.rate }}%</strong>
               </div>
               <div class="bar-track"><i style="width: {{ item.rate }}%"></i></div>
@@ -108,14 +165,5 @@
     </section>
   </main>
 
-  <script>
-    document.querySelectorAll("img[data-fallback-src]").forEach((image) => {
-      image.addEventListener("error", () => {
-        if (image.dataset.fallbackTried) return;
-        image.dataset.fallbackTried = "1";
-        image.src = image.dataset.fallbackSrc;
-      });
-    });
-  </script>
 </body>
 </html>

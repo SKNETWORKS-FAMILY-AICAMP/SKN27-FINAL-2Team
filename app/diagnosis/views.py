@@ -127,8 +127,7 @@ def diagnosis_start(request):
 
     serialized_questions = []
     for q in questions_list:
-        options = list(QuestionOptions.objects.filter(question_id=q.question_id))
-        random.shuffle(options)
+        options = list(QuestionOptions.objects.filter(question_id=q.question_id).order_by("choice_no"))
 
         # 셔플 후 표시 번호 재부여
         choices = []
@@ -228,6 +227,7 @@ def diagnosis_submit(request):
     for ans in answers:
         q_id = ans["question_id"]
         choice_id = ans["choice_id"]
+        displayed_no = ans.get("selected_no")
         time_spent_ms = ans.get("time_spent_ms")
 
         q = questions_map.get(q_id)
@@ -240,7 +240,7 @@ def diagnosis_submit(request):
         if choice_id is not None:
             opt = options_map.get(choice_id)
             if opt:
-                selected_no = opt.choice_no
+                selected_no = displayed_no or opt.choice_no
                 is_correct = opt.is_answer
 
         if is_correct:

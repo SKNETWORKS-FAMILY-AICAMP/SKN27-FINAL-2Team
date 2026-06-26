@@ -363,7 +363,7 @@ def solved_problems(request):
         row["session_id"]: row["first_date"]
         for row in Analytics.objects.filter(session__in=sessions)
         .values("session_id")
-        .annotate(first_date=Min("date"))
+        .annotate(first_date=Min("created_at")) 
     }
     for session in sessions:
         answer_rate = session.answer_rate or 0

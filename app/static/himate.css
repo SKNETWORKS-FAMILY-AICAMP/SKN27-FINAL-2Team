@@ -102,6 +102,17 @@ a {
   line-height: 1 !important;
 }
 
+.site-header .brand::before,
+.chat-header .brand::before,
+.site-brand::before {
+  content: "";
+  width: 32px;
+  height: 32px;
+  margin-right: 8px;
+  flex: 0 0 auto;
+  background: url("/static/images/favicon.png") center / contain no-repeat;
+}
+
 .main-nav {
   display: flex !important;
   align-items: center !important;

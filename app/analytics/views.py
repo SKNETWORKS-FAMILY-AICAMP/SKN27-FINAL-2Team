@@ -1,110 +1,174 @@
+import json
+from datetime import date
+
 from django.contrib.auth.decorators import login_required
-from django.db.models import Count, Q
-from django.shortcuts import render
+from django.http import JsonResponse
+from django.shortcuts import redirect, render
+from django.utils import timezone
+from django.views.decorators.http import require_POST
 
-from analytics.service.analytics import analytics_summary
-from analytics.service.studyplan import get_study_plan_info
-from question.models import SolveRecords
-
+from analytics.service.analytics import (
+    analytics_summary,
+    get_analysis_scope_chart_data,
+    get_wrong_rate_group_stats,
+)
+from analytics.service.display import build_planner_summary, build_wrong_rate_display
+from analytics.service.mypage import (
+    build_d_day_label,
+    build_diagnosis_comparison_summary,
+    build_learning_summary,
+    build_weakness_summary,
+    build_wrong_type_summary,
+)
+from analytics.service.studyplan import (
+    complete_study_plan_block,
+    create_study_plan,
+    delete_study_plan_block,
+    get_previous_study_plan_info,
+    get_study_plan_info,
+    move_study_plan_blocks,
+)
 
 
 @login_required
 def mypage(request):
     user_id = request.user.user_id
-
-    analytics = analytics_summary(user_id)
+    today = timezone.localdate()
     study_plan = get_study_plan_info(user_id)
+    planner_summary = build_planner_summary(study_plan, today)
+    context = {
+        "user": request.user,
+        "analytics": analytics_summary(user_id),
+        "study_plan": study_plan,
+        "previous_study_plans": get_previous_study_plan_info(user_id),
+        "learning_summary": build_learning_summary(request.user),
+        "diagnosis_comparison": build_diagnosis_comparison_summary(request.user),
+        "wrong_type_summary": build_wrong_type_summary(request.user),
+        "weakness_summary": build_weakness_summary(request.user),
+        "d_day_label": build_d_day_label(request.user, today),
+        "planner_summary": planner_summary,
+        "planner_data": planner_summary["data"],
+    }
 
     return render(
         request,
         "analytics/mypage.html",
-        {
-            "user": request.user,
-            "analytics": analytics,
-            "study_plan": study_plan,
-        },
+        context,
     )
+
 
 @login_required
 def wrong_rate_detail(request):
-    era_stats = _build_wrong_rate_group(
-        request.user,
-        "era",
-        ["선사", "삼국", "고려", "조선", "근대", "현대"],
-    )
-    type_stats = _build_wrong_rate_group(
-        request.user,
-        "q_type",
-        ["연표", "사료", "개념", "인물", "지역"],
-    )
-    topic_stats = _build_wrong_rate_group(
-        request.user,
-        "topic",
-        ["정치", "경제", "사회", "문화", "외교"],
-    )
+    era_stats = get_wrong_rate_group_stats(request.user, "era")
+    type_stats = get_wrong_rate_group_stats(request.user, "q_type")
+    topic_stats = get_wrong_rate_group_stats(request.user, "topic")
+    context = {
+        "analysis_scope_chart_data": get_analysis_scope_chart_data(request.user.user_id),
+        "era_stats": build_wrong_rate_display(era_stats),
+        "type_stats": build_wrong_rate_display(type_stats),
+        "topic_stats": build_wrong_rate_display(topic_stats),
+    }
 
     return render(
         request,
         "analytics/wrong_rate_detail.html",
-        {
-            "era_stats": era_stats,
-            "type_stats": type_stats,
-            "topic_stats": topic_stats,
-        },
+        context,
     )
 
-def _build_wrong_rate_group(user, field, labels):
-    unclassified_label = "미분류"
-    weak_rate_threshold = 20
-    rows = (
-        SolveRecords.objects.filter(session__user=user)
-        .values(field)
-        .annotate(
-            total=Count("record_id"),
-            wrong=Count("record_id", filter=Q(is_correct=False)),
-        )
+
+@login_required
+@require_POST
+def create_study_plan_view(request):
+    create_study_plan(request.user.user_id)
+    return redirect("analytics:mypage")
+
+
+@login_required
+@require_POST
+def delete_study_plan_block_view(request):
+    data = get_json_request_data(request)
+    try:
+        study_plan_id = int(data.get("studyPlanId"))
+        day_index = int(data.get("dayIndex"))
+        block_index = int(data.get("blockIndex"))
+    except (TypeError, ValueError):
+        return JsonResponse({"ok": False}, status=400)
+
+    deleted_plan = delete_study_plan_block(
+        request.user.user_id,
+        study_plan_id,
+        day_index,
+        block_index,
     )
-    row_map = {
-        (row[field] or unclassified_label): {
-            "total": row["total"] or 0,
-            "wrong": row["wrong"] or 0,
-        }
-        for row in rows
-    }
+    if deleted_plan is None:
+        return JsonResponse({"ok": False}, status=404)
 
-    stat_labels = list(labels)
-    for label in row_map:
-        if label not in stat_labels:
-            stat_labels.append(label)
+    return JsonResponse({"ok": True})
 
-    stats = []
-    for label in stat_labels:
-        item = row_map.get(label, {"total": 0, "wrong": 0})
-        total = item["total"]
-        wrong = item["wrong"]
-        rate = 0
-        if total:
-            rate = round((wrong / total) * 100)
 
-        if not total:
-            status_label = "데이터 부족"
-            status_class = "empty"
-        elif rate >= weak_rate_threshold:
-            status_label = "취약"
-            status_class = "weak"
-        elif rate < weak_rate_threshold:
-            status_label = "안정"
-            status_class = "stable"
+@login_required
+@require_POST
+def complete_study_plan_block_view(request):
+    data = get_json_request_data(request)
+    try:
+        study_plan_id = int(data.get("studyPlanId"))
+        day_index = int(data.get("dayIndex"))
+        block_index = int(data.get("blockIndex"))
+        is_completed = bool(data.get("isCompleted", True))
+    except (TypeError, ValueError):
+        return JsonResponse({"ok": False}, status=400)
 
-        stats.append(
+    completed_plan = complete_study_plan_block(
+        request.user.user_id,
+        study_plan_id,
+        day_index,
+        block_index,
+        is_completed,
+    )
+    if completed_plan is None:
+        return JsonResponse({"ok": False}, status=404)
+
+    return JsonResponse({"ok": True})
+
+
+@login_required
+@require_POST
+def move_study_plan_blocks_view(request):
+    data = get_json_request_data(request)
+    move_items = data.get("items") or []
+    target_date = data.get("targetDate")
+    if not move_items or not target_date:
+        return JsonResponse({"ok": False}, status=400)
+
+    try:
+        target_date_key = date.fromisoformat(target_date[:10]).isoformat()
+        normalized_items = [
             {
-                "label": label,
-                "total": total,
-                "wrong": wrong,
-                "rate": max(0, min(100, rate)),
-                "status_label": status_label,
-                "status_class": status_class,
+                "studyPlanId": int(item["studyPlanId"]),
+                "dayIndex": int(item["dayIndex"]),
+                "blockIndex": int(item["blockIndex"]),
             }
-        )
+            for item in move_items
+        ]
+    except (KeyError, TypeError, ValueError):
+        return JsonResponse({"ok": False}, status=400)
 
-    return stats
+    updated_plans = move_study_plan_blocks(
+        request.user.user_id,
+        normalized_items,
+        target_date_key,
+    )
+    if not updated_plans:
+        return JsonResponse({"ok": False}, status=404)
+
+    return JsonResponse({"ok": True})
+
+
+def get_json_request_data(request):
+    if not request.body:
+        return {}
+
+    try:
+        return json.loads(request.body.decode("utf-8"))
+    except json.JSONDecodeError:
+        return {}
