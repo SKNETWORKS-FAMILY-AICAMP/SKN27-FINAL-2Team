@@ -4,8 +4,8 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>himate | 회원가입</title>
-  <link rel="stylesheet" href="/static/user/css/register.css" />
-  <link rel="stylesheet" href="../../static/user/css/register.css" />
+  <link rel="stylesheet" href="/static/user/css/register.css?v=welcome-character-2" />
+  <link rel="stylesheet" href="../../static/user/css/register.css?v=welcome-character-2" />
   <link rel="stylesheet" href="/static/himate.css" />
   <link rel="stylesheet" href="/static/layout.css" />
 </head>
@@ -24,6 +24,10 @@
   </header>
   <main class="auth-page">
     <section class="auth-shell" aria-label="회원가입">
+      <aside class="auth-visual" aria-label="환영 메시지">
+        <h1><span>HIMATE</span>에 오신 걸 환영합니다</h1>
+        <img src="/static/images/register_character.png" alt="" />
+      </aside>
       <div class="auth-card">
         <a class="brand" href="/" aria-label="himate 홈">
           <img src="/static/chatbot/assets/logo.png" alt="himate" data-fallback-src="../../static/chatbot/assets/logo.png" />
@@ -35,11 +39,11 @@
         </div>
 
         {% if messages %}
-          <div class="auth-messages" role="status" aria-live="polite">
-            {% for message in messages %}
+          {% for message in messages %}
+            {% if message.message != "로그인되었습니다." and message.message != "로그아웃되었습니다." %}
               <p class="auth-message {{ message.tags }}">{{ message }}</p>
-            {% endfor %}
-          </div>
+            {% endif %}
+          {% endfor %}
         {% endif %}
 
         <form class="register-form" action="#" method="post">
