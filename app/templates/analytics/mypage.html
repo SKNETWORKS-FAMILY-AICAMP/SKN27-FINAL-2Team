@@ -68,15 +68,9 @@
     </section>
 
     <nav class="quick-actions" aria-label="학습 바로가기">
-<<<<<<< HEAD
-      <a href="/question/exam/">오늘의 문제</a>
-      <a href="/user/wrong-note/">노트</a>
-      <a href="/user/solved-problems/">내가 푼 문제</a>
-=======
       <a href="{% url 'question:exam' %}">오늘의 문제</a>
-      <a href="{% url 'user:wrong_note' %}">오답노트</a>
+      <a href="{% url 'user:wrong_note' %}">노트</a>
       <a href="{% url 'user:solved_problems' %}">내가 푼 문제</a>
->>>>>>> origin/dev
     </nav>
 
     <section class="analytics-grid" aria-label="학습 대시보드">
@@ -214,10 +208,6 @@
           <article>
             <span>STEP 1</span>
             <strong>변경할 학습을 선택해 주세요</strong>
-<<<<<<< HEAD
-            <label><input type="checkbox" checked /> 취약 개념 복습</label>
-            <label><input type="checkbox" /> 노트 정리</label>
-=======
             {% for item in planner_summary.today_items %}
               <label>
                 <input
@@ -232,7 +222,6 @@
             {% empty %}
               <p>변경할 학습이 없습니다.</p>
             {% endfor %}
->>>>>>> origin/dev
           </article>
           <article>
             <span>STEP 2</span>
@@ -263,7 +252,6 @@
     const plannerDayKicker = document.getElementById("plannerDayKicker");
     const plannerDayLabel = document.getElementById("plannerDayLabel");
     const plannerLessons = document.getElementById("plannerLessons");
-
     const plannerData = JSON.parse(document.getElementById("planner-data").textContent);
     const todayKey = "{{ planner_summary.today_key }}";
     let selectedPlannerKey = "{{ planner_summary.selected_key }}";
@@ -272,7 +260,6 @@
     const plannerPlans = plannerData.plansByDate || {};
     const completedKeys = new Set(plannerData.completedKeys || []);
     const plannedKeys = new Set(plannerData.plannedKeys || []);
-
     const getCookie = (name) => {
       const cookies = document.cookie ? document.cookie.split("; ") : [];
       for (const cookie of cookies) {
