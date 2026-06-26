@@ -317,20 +317,21 @@ button {
 
 .summary-grid {
   display: grid;
-  grid-template-columns: 0.9fr 0.75fr 1fr;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
 }
 
 .summary-grid article {
   min-height: 150px;
   display: grid;
-  grid-template-rows: 22px auto auto;
-  align-content: start;
+  grid-template-rows: 24px minmax(42px, auto) minmax(34px, auto);
+  align-content: center;
   justify-items: stretch;
-  gap: 8px;
+  gap: 10px;
   border-radius: 8px;
-  padding: 20px;
+  padding: 18px 14px;
   background: var(--soft);
+  overflow: hidden;
 }
 
 .summary-grid article > span {
@@ -352,17 +353,25 @@ button {
 
 .summary-grid strong {
   color: var(--ink);
-  font-size: 36px;
-  line-height: 1;
+  max-width: 100%;
+  font-size: clamp(24px, 2.4vw, 34px);
+  line-height: 0.95;
   font-weight: 950;
+  white-space: nowrap;
+}
+
+#accuracyText {
+  font-size: clamp(22px, 2.2vw, 32px);
 }
 
 .summary-grid p {
   margin: 0;
-  max-width: 220px;
+  max-width: 100%;
   color: var(--muted);
-  font-size: 13px;
-  font-weight: 750;
+  font-size: 12px;
+  line-height: 1.35;
+  font-weight: 850;
+  word-break: keep-all;
 }
 
 .summary-grid ul {
