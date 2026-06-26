@@ -518,6 +518,7 @@
         const selectedNo = answers[index];
         return {
           question_id: question.questionId,
+          selected_no: selectedNo,
           choice_id: selectedNo ? question.choiceIds[selectedNo - 1] : null,
           time_spent_ms: questionTimeSpent[index] ?? null,
         };
