@@ -18,6 +18,8 @@ from .serializers import (
     SavedSessionResponse,
     StartQuestionsRequest,
     StartQuestionsResponse,
+    SubmitAnswersRequest,
+    SubmitAnswersResponse,
 )
 
 
@@ -32,6 +34,11 @@ TIME_LIMIT_SECONDS_BY_COUNT = {
     30: 50 * 60,
     20: 35 * 60,
     10: 20 * 60,
+}
+STUDY_PLAN_BLOCK_FIELDS = {
+    "시대": "era",
+    "유형": "question_type",
+    "주제": "topic",
 }
 SCORE_RATIO = {
     3: 1,
@@ -246,6 +253,45 @@ def _get_login_user_id(request):
     return None
 
 
+def _find_study_plan_block(user_id, studyplan_id, block_id):
+    if not studyplan_id and not block_id:
+        return None, None
+    if not studyplan_id or not block_id:
+        return None, {
+            "error": "학습계획 문제를 시작하려면 studyplan_id와 study_plan_block_id가 모두 필요합니다.",
+        }
+
+    from analytics.models import StudyPlanMypage
+    from analytics.serializers import parse_study_plan_items
+
+    study_plan = StudyPlanMypage.objects.filter(
+        user_id=user_id,
+        studyplan_id=studyplan_id,
+        status="active",
+    ).first()
+    if study_plan is None:
+        return None, {"error": "활성 학습계획을 찾을 수 없습니다."}
+
+    for day_plan in parse_study_plan_items(study_plan.study_plan_items):
+        for block in day_plan.get("blocks", []):
+            if str(block.get("blockId")) == str(block_id):
+                return block, None
+
+    return None, {"error": "학습계획 블록을 찾을 수 없습니다."}
+
+
+def _apply_study_plan_block_filter(qs, block):
+    if block is None:
+        return qs
+
+    field_name = STUDY_PLAN_BLOCK_FIELDS.get(block.get("classification"))
+    label = block.get("label")
+    if not field_name or not label:
+        return qs
+
+    return qs.filter(**{field_name: label})
+
+
 # 비로그인 사용자에게 제공할 오늘의 10문항을 결정한다.
 # 같은 날짜에서 항상 같은 문제 세트가 나오고, 날짜가 바뀌면 다른 세트가 나온다.
 def _daily_guest_question_ids(question_ids):
@@ -397,11 +443,26 @@ def question_start(request):
 
     data = req_question_start.validated_data
     user_id = _get_login_user_id(request)
+    study_plan_block = None
+    if user_id is not None:
+        study_plan_block, study_plan_error = _find_study_plan_block(
+            user_id,
+            data.get("studyplan_id"),
+            data.get("study_plan_block_id"),
+        )
+        if study_plan_error:
+            return Response(study_plan_error, status=status.HTTP_400_BAD_REQUEST)
+
     qs = _base_question_queryset()
+    qs = _apply_study_plan_block_filter(qs, study_plan_block)
     score_counts = {}
     score_counts_error = None
     if user_id is not None:
-        score_counts, score_counts_error = _score_counts_for_generation_mode(data)
+        if study_plan_block is not None:
+            data["count"] = int(study_plan_block.get("questionCount") or data["count"])
+            score_counts = _score_counts(data["count"], [3, 2, 1])
+        else:
+            score_counts, score_counts_error = _score_counts_for_generation_mode(data)
         if score_counts_error:
             return Response(score_counts_error, status=status.HTTP_400_BAD_REQUEST)
 
@@ -457,6 +518,8 @@ def question_start(request):
                     question=question,
                     selected_no=None,
                     is_correct=False,
+                    studyplan_id=data.get("studyplan_id") if study_plan_block else None,
+                    study_plan_block_id=data.get("study_plan_block_id") if study_plan_block else None,
                     q_type=question.question_type,
                     topic=question.topic,
                     era=question.era,
@@ -735,10 +798,6 @@ def question_save_answer(request, session_id):
     if data["elapsed_sec"] is not None:
         session.elapsed_sec = data["elapsed_sec"]
         update_session_fields.append("elapsed_sec")
-    if data["mark_completed"]:
-        session.status = COMPLETED_SESSION_STATUS
-        if "status" not in update_session_fields:
-            update_session_fields.append("status")
     if update_session_fields:
         session.save(update_fields=update_session_fields)
 
@@ -894,3 +953,126 @@ def question_wrong_chat_context(request, session_id):
         },
         status=status.HTTP_200_OK,
     )
+
+
+@api_view(["POST"])
+# practice 세션 제출 API
+# 제출 시 전체 문항 답안 목록을 한 번에 저장하고 세션을 completed로 확정한다.
+def question_submit_session(request, session_id):
+    user_id = _get_login_user_id(request)
+    if user_id is None:
+        return Response(
+            {"error": "로그인이 필요한 기능입니다."},
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
+
+    req_serializer = SubmitAnswersRequest(data=request.data)
+    if not req_serializer.is_valid():
+        return Response(req_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    data = req_serializer.validated_data
+    answers = data["answers"]
+    answer_question_ids = [answer["question_id"] for answer in answers]
+    if len(answer_question_ids) != len(set(answer_question_ids)):
+        return Response(
+            {"error": "중복된 문항 답안이 포함되어 있습니다."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    try:
+        with transaction.atomic():
+            session = SolveSessions.objects.select_for_update().get(
+                session_id=session_id,
+                user_id=user_id,
+                session_type=PRACTICE_SESSION_TYPE,
+            )
+            if session.status == COMPLETED_SESSION_STATUS:
+                return Response(
+                    {"error": "이미 제출된 세션입니다."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            records = list(
+                SolveRecords.objects.select_for_update()
+                .select_related("question")
+                .filter(session=session)
+                .order_by("record_id")
+            )
+            record_map = {record.question_id: record for record in records}
+            record_question_ids = set(record_map.keys())
+            submitted_question_ids = set(answer_question_ids)
+
+            if submitted_question_ids != record_question_ids:
+                return Response(
+                    {
+                        "error": "제출 답안 목록이 세션 문항과 일치하지 않습니다.",
+                        "expected_count": len(record_question_ids),
+                        "submitted_count": len(submitted_question_ids),
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            choice_ids = [
+                answer["choice_id"]
+                for answer in answers
+                if answer.get("choice_id") is not None
+            ]
+            option_map = {
+                option.choice_id: option
+                for option in QuestionOptions.objects.filter(
+                    question_id__in=record_question_ids,
+                    choice_id__in=choice_ids,
+                )
+            }
+
+            for answer in answers:
+                record = record_map[answer["question_id"]]
+                choice_id = answer.get("choice_id")
+                selected_no = None
+                is_correct = False
+
+                if choice_id is not None:
+                    option = option_map.get(choice_id)
+                    if option is None or option.question_id != record.question_id:
+                        return Response(
+                            {"error": "선택지가 세션 문항에 속하지 않습니다."},
+                            status=status.HTTP_400_BAD_REQUEST,
+                        )
+                    selected_no = option.choice_no
+                    is_correct = option.is_answer
+
+                record.selected_no = selected_no
+                record.is_correct = is_correct
+                record.time_spent_ms = answer.get("time_spent_ms")
+
+            SolveRecords.objects.bulk_update(
+                records,
+                ["selected_no", "is_correct", "time_spent_ms"],
+            )
+
+            answered_count = sum(1 for record in records if record.selected_no is not None)
+            correct_count = sum(1 for record in records if record.is_correct)
+            total_score = sum(record.q_score or 0 for record in records if record.is_correct)
+            answer_rate = round((correct_count / session.total_count) * 100, 2) if session.total_count else 0
+
+            session.status = COMPLETED_SESSION_STATUS
+            session.elapsed_sec = data["elapsed_sec"]
+            session.answer_rate = answer_rate
+            session.total_score = total_score
+            session.save(update_fields=["status", "elapsed_sec", "answer_rate", "total_score"])
+    except SolveSessions.DoesNotExist:
+        return Response(
+            {"error": "저장 세션을 찾을 수 없습니다."},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+
+    response_serializer = SubmitAnswersResponse({
+        "session_id": session.session_id,
+        "status": session.status,
+        "total_count": session.total_count,
+        "answered_count": answered_count,
+        "correct_count": correct_count,
+        "answer_rate": answer_rate,
+        "total_score": total_score,
+    })
+    return Response(response_serializer.data, status=status.HTTP_200_OK)

@@ -15,6 +15,12 @@ class UserAccounts(models.Model):
     created_at = models.DateTimeField(blank=True, null=True)
     updated_at = models.DateTimeField(blank=True, null=True)
     deleted_at = models.DateTimeField(blank=True, null=True)
+    daily_available_hours = models.DecimalField(
+        max_digits=3,
+        decimal_places=1,
+        default=1.0,
+    )
+    exam_date = models.DateField(blank=True, null=True)
 
     class Meta:
         managed = False
@@ -68,19 +74,3 @@ class EmailVerificationCode(models.Model):
         self.save(update_fields=['is_used', 'used_at'])
 
 
-class UserStudyProfile(models.Model):
-    user = models.OneToOneField(
-        UserAccounts,
-        on_delete=models.CASCADE,
-        related_name='study_profile',
-        db_column='user_id',
-        primary_key=True,
-    )
-    daily_available_hours = models.DecimalField(
-        max_digits=4, decimal_places=1, blank=True, default=1.0
-    )
-    exam_date = models.DateField(blank=True, null=True)
-
-    class Meta:
-        managed = False
-        db_table = 'user_study_profiles'

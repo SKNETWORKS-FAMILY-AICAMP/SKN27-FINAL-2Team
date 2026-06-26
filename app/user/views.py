@@ -9,7 +9,6 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import make_password
 from django.core.mail import send_mail
-from django.db import connection
 from django.db.models import Avg, Count, Min, Q, Sum
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
@@ -20,7 +19,7 @@ from analytics.models import Analytics
 from chatbot.models import ChatSessions
 from question.models import QuestionOptions, SolveRecords, SolveSessions
 
-from .models import EmailVerificationCode, UserAccounts, UserStudyProfile
+from .models import EmailVerificationCode, UserAccounts
 
 
 def login_page(request):
@@ -170,7 +169,7 @@ def logout_page(request):
 
 @login_required
 def profile_edit(request):
-    profile = _get_or_create_study_profile(request.user)
+    profile = request.user
 
     if request.method == "POST":
         nickname = (request.POST.get("nickname") or "").strip()
@@ -199,10 +198,17 @@ def profile_edit(request):
                         return render(request, "user/profile_edit.html", {"profile": profile})
 
                 request.user.nickname = nickname
+                request.user.daily_available_hours = hours
+                request.user.exam_date = parsed_exam_date
                 request.user.updated_at = timezone.now()
-                request.user.save(update_fields=["nickname", "updated_at"])
-
-                _update_study_profile(request.user, hours, parsed_exam_date)
+                request.user.save(
+                    update_fields=[
+                        "nickname",
+                        "daily_available_hours",
+                        "exam_date",
+                        "updated_at",
+                    ]
+                )
                 messages.success(request, "학습 정보가 저장되었습니다.")
                 return redirect("/analytics/mypage/")
 
@@ -432,40 +438,6 @@ def solved_problems(request):
             "record_payload": record_payload,
         },
     )
-
-
-def _get_or_create_study_profile(user):
-    now = timezone.now()
-    with connection.cursor() as cursor:
-        cursor.execute(
-            """
-            INSERT INTO user_study_profiles (
-                user_id,
-                daily_available_hours,
-                exam_date,
-                created_at,
-                updated_at
-            )
-            VALUES (%s, %s, NULL, %s, %s)
-            ON CONFLICT (user_id) DO NOTHING
-            """,
-            [user.user_id, 1.0, now, now],
-        )
-    return UserStudyProfile.objects.get(user=user)
-
-
-def _update_study_profile(user, daily_available_hours, exam_date):
-    with connection.cursor() as cursor:
-        cursor.execute(
-            """
-            UPDATE user_study_profiles
-            SET daily_available_hours = %s,
-                exam_date = %s,
-                updated_at = %s
-            WHERE user_id = %s
-            """,
-            [daily_available_hours, exam_date, timezone.now(), user.user_id],
-        )
 
 
 def _format_duration(seconds):

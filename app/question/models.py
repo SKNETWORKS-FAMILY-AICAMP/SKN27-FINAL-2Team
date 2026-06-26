@@ -68,6 +68,8 @@ class SolveRecords(models.Model):
     time_spent_ms = models.IntegerField(blank=True, null=True)
     is_saved = models.BooleanField(default=False)
     saved_at = models.DateTimeField(blank=True, null=True)
+    studyplan_id = models.BigIntegerField(blank=True, null=True)
+    study_plan_block_id = models.CharField(max_length=36, blank=True, null=True)
     q_type = models.CharField(max_length=20)
     topic = models.CharField(max_length=50)
     era = models.CharField(max_length=20)

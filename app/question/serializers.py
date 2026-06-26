@@ -67,6 +67,13 @@ class StartQuestionsRequest(serializers.Serializer):
         required=False,
         default=dict,
     )
+    studyplan_id = serializers.IntegerField(allow_null=True, required=False, default=None)
+    study_plan_block_id = serializers.CharField(
+        allow_blank=True,
+        allow_null=True,
+        required=False,
+        default=None,
+    )
     count = serializers.IntegerField(min_value=1, default=20)
 
 
@@ -122,6 +129,31 @@ class SaveAnswerResponse(serializers.Serializer):
     time_spent_ms = serializers.IntegerField(allow_null=True)
     elapsed_sec = serializers.IntegerField(allow_null=True)
     is_answered = serializers.BooleanField()
+
+
+# 노트 저장/저장 해제 요청 형식
+# 문제풀이 제출 시 전체 답안 1개 항목 형식
+class SubmitAnswerItem(serializers.Serializer):
+    question_id = serializers.IntegerField()
+    choice_id = serializers.IntegerField(allow_null=True, required=False, default=None)
+    time_spent_ms = serializers.IntegerField(allow_null=True, required=False, default=None)
+
+
+# 문제풀이 제출 요청 형식
+class SubmitAnswersRequest(serializers.Serializer):
+    elapsed_sec = serializers.IntegerField(allow_null=True, required=False, default=None)
+    answers = SubmitAnswerItem(many=True)
+
+
+# 문제풀이 제출 결과 응답 형식
+class SubmitAnswersResponse(serializers.Serializer):
+    session_id = serializers.IntegerField()
+    status = serializers.CharField()
+    total_count = serializers.IntegerField()
+    answered_count = serializers.IntegerField()
+    correct_count = serializers.IntegerField()
+    answer_rate = serializers.FloatField()
+    total_score = serializers.IntegerField()
 
 
 # 노트 저장/저장 해제 요청 형식
