@@ -210,7 +210,7 @@ def _build_rate_change_display(change):
     label = "기록 부족"
     tone = "neutral"
     if change is not None:
-        label = f"{change:+d}%p"
+        label = f"{change:+d}%"
         if change > 0:
             tone = "good"
         elif change < 0:

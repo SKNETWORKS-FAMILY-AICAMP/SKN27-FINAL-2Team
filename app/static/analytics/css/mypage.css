@@ -889,9 +889,31 @@ a {
   background: #f4f8ef;
 }
 
+.planner-lessons .plan-item.review {
+  background: #fff7ed;
+}
+
 .plan-progress-line {
   height: 7px;
   margin-top: 9px;
+}
+
+.plan-review-state {
+  display: inline-flex;
+  width: fit-content;
+  margin-top: 9px;
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: #f5e3cf;
+  color: #8a5a2b;
+  font-size: 12px;
+  line-height: 1;
+  font-weight: 950;
+}
+
+.plan-review-state.done {
+  background: #e5f4df;
+  color: #2f8f65;
 }
 
 .plan-progress-count {
@@ -901,6 +923,10 @@ a {
   font-style: normal;
   font-weight: 950;
   white-space: nowrap;
+}
+
+.plan-progress-count.review {
+  color: #2f8f65;
 }
 
 .planner-lessons .plan-item button {
@@ -913,6 +939,11 @@ a {
   font-size: 12px;
   font-weight: 950;
   cursor: pointer;
+}
+
+.planner-lessons .plan-item button:disabled {
+  cursor: progress;
+  opacity: 0.6;
 }
 
 .planner-modal[hidden] {

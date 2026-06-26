@@ -10,9 +10,15 @@ from django.views.decorators.http import require_POST
 from analytics.service.analytics import (
     analytics_summary,
     get_analysis_scope_chart_data,
+    get_wrong_rate_item_session_details,
+    get_wrong_rate_session_analysis_detail,
     get_wrong_rate_group_stats,
 )
-from analytics.service.display import build_planner_summary, build_wrong_rate_display
+from analytics.service.display import (
+    build_planner_summary,
+    build_wrong_rate_display,
+    build_wrong_rate_donut_summary,
+)
 from analytics.service.mypage import (
     build_d_day_label,
     build_diagnosis_comparison_summary,
@@ -62,11 +68,17 @@ def wrong_rate_detail(request):
     era_stats = get_wrong_rate_group_stats(request.user, "era")
     type_stats = get_wrong_rate_group_stats(request.user, "q_type")
     topic_stats = get_wrong_rate_group_stats(request.user, "topic")
+    era_display = build_wrong_rate_display(era_stats)
+    type_display = build_wrong_rate_display(type_stats)
+    topic_display = build_wrong_rate_display(topic_stats)
     context = {
         "analysis_scope_chart_data": get_analysis_scope_chart_data(request.user.user_id),
-        "era_stats": build_wrong_rate_display(era_stats),
-        "type_stats": build_wrong_rate_display(type_stats),
-        "topic_stats": build_wrong_rate_display(topic_stats),
+        "era_stats": era_display,
+        "type_stats": type_display,
+        "topic_stats": topic_display,
+        "era_donut": build_wrong_rate_donut_summary(era_display),
+        "type_donut": build_wrong_rate_donut_summary(type_display),
+        "topic_donut": build_wrong_rate_donut_summary(topic_display),
     }
 
     return render(
@@ -74,6 +86,27 @@ def wrong_rate_detail(request):
         "analytics/wrong_rate_detail.html",
         context,
     )
+
+
+@login_required
+def wrong_rate_item_sessions(request):
+    category = request.GET.get("category", "")
+    label = request.GET.get("label", "")
+    detail_data = get_wrong_rate_item_session_details(request.user, category, label)
+    if detail_data is None:
+        return JsonResponse({"ok": False}, status=400)
+
+    return JsonResponse({"ok": True, "detail": detail_data})
+
+
+@login_required
+def wrong_rate_session_detail(request):
+    session_id = request.GET.get("sessionId")
+    detail_data = get_wrong_rate_session_analysis_detail(request.user, session_id)
+    if detail_data is None:
+        return JsonResponse({"ok": False}, status=404)
+
+    return JsonResponse({"ok": True, "detail": detail_data})
 
 
 @login_required

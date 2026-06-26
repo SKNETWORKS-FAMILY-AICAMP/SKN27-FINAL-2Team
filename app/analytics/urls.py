@@ -6,6 +6,16 @@ app_name = "analytics"
 urlpatterns = [
     path("mypage/", views.mypage, name="mypage"),
     path("wrong-rate-detail/", views.wrong_rate_detail, name="wrong_rate_detail"),
+    path(
+        "wrong-rate-detail/item-sessions/",
+        views.wrong_rate_item_sessions,
+        name="wrong_rate_item_sessions",
+    ),
+    path(
+        "wrong-rate-detail/session/",
+        views.wrong_rate_session_detail,
+        name="wrong_rate_session_detail",
+    ),
     path("study-plan/create/", views.create_study_plan_view, name="study_plan_create"),
     path(
         "study-plan/block/delete/",

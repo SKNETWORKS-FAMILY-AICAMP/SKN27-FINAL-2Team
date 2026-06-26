@@ -64,9 +64,13 @@ def build_planner_summary(study_plans, today):
                     achieved_count = block.get("achievedCount") or 0
                     remaining_count = block.get("remainingCount") or 0
                     progress_percent = block.get("progressPercent") or 0
+                    progress_mode = block.get("progressMode") or "question"
+                    status_label = block.get("statusLabel") or ""
                     if classification:
                         meta_parts.append(classification)
-                    if question_count:
+                    if progress_mode == "review" and status_label:
+                        meta_parts.append(status_label)
+                    elif question_count:
                         meta_parts.append(f"{achieved_count}/{question_count}문항")
                     if remaining_count:
                         meta_parts.append(f"앞으로 {remaining_count}문항")
@@ -86,6 +90,9 @@ def build_planner_summary(study_plans, today):
                             "achievedCount": achieved_count,
                             "remainingCount": remaining_count,
                             "progressPercent": progress_percent,
+                            "progressMode": progress_mode,
+                            "statusLabel": status_label,
+                            "canConfirm": progress_mode == "review" and not is_achieved,
                         }
                     )
 
@@ -180,3 +187,116 @@ def build_wrong_rate_display(stats):
         display_items,
         key=lambda item: (-item["rate"], -item["total"], item["label"]),
     )
+
+
+def build_wrong_rate_donut_summary(items):
+    """
+    분류별 오답 수 비중을 도넛 차트 표시 데이터로 변환한다.
+    """
+    chart_config = get_wrong_rate_donut_config()
+    total_wrong = sum(item["wrong"] or 0 for item in items)
+    if not total_wrong:
+        return {
+            "hasRecords": False,
+            "totalWrong": 0,
+            "gradient": chart_config["empty_gradient"],
+            "items": [],
+        }
+
+    sorted_items = sorted(
+        items,
+        key=lambda item: (-(item["wrong"] or 0), -item["rate"], item["label"]),
+    )
+    segments = build_wrong_rate_donut_segments(
+        sorted_items,
+        total_wrong,
+        chart_config,
+    )
+    return {
+        "hasRecords": True,
+        "totalWrong": total_wrong,
+        "gradient": build_wrong_rate_donut_gradient(segments),
+        "items": segments,
+    }
+
+
+def build_wrong_rate_donut_segments(items, total_wrong, chart_config):
+    """
+    도넛 차트 범례와 conic-gradient 구간 데이터를 만든다.
+    """
+    display_limit = chart_config["display_limit"]
+    colors = chart_config["colors"]
+    primary_items = items[:display_limit]
+    remaining_wrong = sum(item["wrong"] or 0 for item in items[display_limit:])
+    segments = []
+    for index, item in enumerate(primary_items):
+        wrong_count = item["wrong"] or 0
+        segments.append(
+            build_wrong_rate_donut_segment(
+                item["label"],
+                wrong_count,
+                total_wrong,
+                colors[index % len(colors)],
+            )
+        )
+
+    if remaining_wrong:
+        segments.append(
+            build_wrong_rate_donut_segment(
+                chart_config["remaining_label"],
+                remaining_wrong,
+                total_wrong,
+                colors[len(segments) % len(colors)],
+            )
+        )
+
+    return segments
+
+
+def build_wrong_rate_donut_segment(label, wrong_count, total_wrong, color):
+    """
+    도넛 차트의 단일 구간을 만든다.
+    """
+    share_value = round((wrong_count / total_wrong) * 100, 2)
+    return {
+        "label": label,
+        "wrong": wrong_count,
+        "share": round(share_value),
+        "shareValue": share_value,
+        "color": color,
+    }
+
+
+def build_wrong_rate_donut_gradient(segments):
+    """
+    도넛 차트 CSS conic-gradient 문자열을 만든다.
+    """
+    gradient_parts = []
+    start = 0
+    for index, segment in enumerate(segments):
+        end = start + segment["shareValue"]
+        if index == len(segments) - 1:
+            end = 100
+        gradient_parts.append(f"{segment['color']} {start}% {end}%")
+        start = end
+
+    return f"conic-gradient({', '.join(gradient_parts)})"
+
+
+def get_wrong_rate_donut_config():
+    """
+    취약점 상세 도넛 차트의 표시 기준을 반환한다.
+    """
+    return {
+        "display_limit": 5,
+        "remaining_label": "기타",
+        "empty_gradient": "conic-gradient(#dfe8d7 0% 100%)",
+        "colors": [
+            "#ef8a75",
+            "#58c3b6",
+            "#74a9ff",
+            "#f2b65f",
+            "#8fcf7a",
+            "#a08ce8",
+        ],
+    }

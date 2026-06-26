@@ -122,12 +122,59 @@ def serialize_study_plans_with_progress(user_id, study_plans, daily_available_mi
     for index, study_plan in enumerate(study_plans):
         progress_data = calculate_record_based_plan_progress(user_id, study_plan)
         serialized_plans[index]["progress"] = progress_data["summary"]
+        serialized_plans[index]["historyDisplay"] = build_plan_history_display(study_plan)
         apply_block_progress(
             serialized_plans[index]["plans"],
             progress_data["block_progress"],
         )
 
     return serialized_plans
+
+
+def build_plan_history_display(study_plan):
+    """
+    이전 학습계획 카드에서 식별 가능한 제목과 보조 정보를 만든다.
+    """
+    title = "학습계획"
+    start_label = format_plan_history_date(study_plan.start_date)
+    end_label = format_plan_history_date(study_plan.end_date)
+    created_label = format_plan_history_datetime(study_plan.created_at)
+
+    if start_label and end_label and start_label == end_label:
+        title = f"{start_label} 학습계획"
+    elif start_label and end_label:
+        title = f"{start_label} - {end_label} 학습계획"
+    elif start_label:
+        title = f"{start_label} 시작 학습계획"
+    elif created_label:
+        title = f"{created_label} 생성 학습계획"
+
+    return {
+        "title": title,
+        "meta": f"계획 #{study_plan.plan_version}",
+    }
+
+
+def format_plan_history_date(value):
+    """
+    계획 날짜를 이전 학습계획 카드용 MM.DD 문자열로 변환한다.
+    """
+    if value:
+        return value.strftime("%m.%d")
+
+    return ""
+
+
+def format_plan_history_datetime(value):
+    """
+    계획 생성 시각을 현재 시간대 기준 MM.DD 문자열로 변환한다.
+    """
+    if value:
+        if timezone.is_naive(value):
+            value = timezone.make_aware(value, timezone.get_current_timezone())
+        return timezone.localtime(value).strftime("%m.%d")
+
+    return ""
 
 
 def apply_block_progress(plan_items, block_progress):
@@ -155,6 +202,10 @@ def calculate_record_based_plan_progress(user_id, study_plan):
 
     for day_index, day_plan in enumerate(plan_items):
         for block_index, block in enumerate(day_plan.get("blocks", [])):
+            if is_review_plan_block(block):
+                block_progress[(day_index, block_index)] = build_review_block_progress(block)
+                continue
+
             target_count = int(block.get("questionCount") or 0)
             target_total += target_count
             achieved_count = count_block_matched_records(
@@ -172,6 +223,8 @@ def calculate_record_based_plan_progress(user_id, study_plan):
                 "progressRate": progress_rate,
                 "progressPercent": round(progress_rate * 100),
                 "isAchieved": target_count > 0 and remaining_count == 0,
+                "progressMode": "question",
+                "statusLabel": "",
             }
 
     remaining_total = max(target_total - achieved_total, 0)
@@ -186,6 +239,37 @@ def calculate_record_based_plan_progress(user_id, study_plan):
             "periodLabel": format_plan_progress_period(study_plan),
         },
         "block_progress": block_progress,
+    }
+
+
+def is_review_plan_block(block):
+    """
+    오답 복습 블록은 일반 문제풀이 달성률과 별도 상태로 관리한다.
+    """
+    return block.get("blockType") == "review"
+
+
+def build_review_block_progress(block):
+    """
+    오답 복습 블록은 solve_records 추정 매칭을 하지 않고 확인 상태만 반영한다.
+    """
+    is_confirmed = bool(block.get("isCompleted"))
+    progress_rate = 0.0
+    progress_percent = 0
+    status_label = "복습 확인 전"
+    if is_confirmed:
+        progress_rate = 1.0
+        progress_percent = 100
+        status_label = "복습 확인 완료"
+
+    return {
+        "achievedCount": 0,
+        "remainingCount": 0,
+        "progressRate": progress_rate,
+        "progressPercent": progress_percent,
+        "isAchieved": is_confirmed,
+        "progressMode": "review",
+        "statusLabel": status_label,
     }
 
 

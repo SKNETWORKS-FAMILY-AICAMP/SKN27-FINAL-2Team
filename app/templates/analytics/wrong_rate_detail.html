@@ -32,6 +32,90 @@
       <h1>취약점 분석 상세</h1>
     </section>
 
+    <section class="top-donut-summary" aria-label="오답 비중 요약">
+      <article class="top-donut-card">
+        <header>
+          <span>오답 비중</span>
+          <h2>시대별</h2>
+        </header>
+        <div class="rate-donut-overview">
+          <div class="rate-donut-chart{% if not era_donut.hasRecords %} empty{% endif %}" style="background: {{ era_donut.gradient }};">
+            <strong>{{ era_donut.totalWrong }}</strong>
+            <span>오답</span>
+          </div>
+          <div class="rate-donut-list">
+            {% for item in era_donut.items %}
+              <article>
+                <i style="background: {{ item.color }}"></i>
+                <strong>{{ item.label }}</strong>
+                <span>{{ item.share }}% · {{ item.wrong }}개</span>
+              </article>
+            {% empty %}
+              <article>
+                <i></i>
+                <strong>기록 없음</strong>
+                <span>오답 비중 없음</span>
+              </article>
+            {% endfor %}
+          </div>
+        </div>
+      </article>
+      <article class="top-donut-card">
+        <header>
+          <span>오답 비중</span>
+          <h2>유형별</h2>
+        </header>
+        <div class="rate-donut-overview">
+          <div class="rate-donut-chart{% if not type_donut.hasRecords %} empty{% endif %}" style="background: {{ type_donut.gradient }};">
+            <strong>{{ type_donut.totalWrong }}</strong>
+            <span>오답</span>
+          </div>
+          <div class="rate-donut-list">
+            {% for item in type_donut.items %}
+              <article>
+                <i style="background: {{ item.color }}"></i>
+                <strong>{{ item.label }}</strong>
+                <span>{{ item.share }}% · {{ item.wrong }}개</span>
+              </article>
+            {% empty %}
+              <article>
+                <i></i>
+                <strong>기록 없음</strong>
+                <span>오답 비중 없음</span>
+              </article>
+            {% endfor %}
+          </div>
+        </div>
+      </article>
+      <article class="top-donut-card">
+        <header>
+          <span>오답 비중</span>
+          <h2>주제별</h2>
+        </header>
+        <div class="rate-donut-overview">
+          <div class="rate-donut-chart{% if not topic_donut.hasRecords %} empty{% endif %}" style="background: {{ topic_donut.gradient }};">
+            <strong>{{ topic_donut.totalWrong }}</strong>
+            <span>오답</span>
+          </div>
+          <div class="rate-donut-list">
+            {% for item in topic_donut.items %}
+              <article>
+                <i style="background: {{ item.color }}"></i>
+                <strong>{{ item.label }}</strong>
+                <span>{{ item.share }}% · {{ item.wrong }}개</span>
+              </article>
+            {% empty %}
+              <article>
+                <i></i>
+                <strong>기록 없음</strong>
+                <span>오답 비중 없음</span>
+              </article>
+            {% endfor %}
+          </div>
+        </div>
+      </article>
+    </section>
+
     <section class="scope-chart-stack" aria-label="분석 단위별 오답률 그래프">
       <div class="scope-stack-heading">
         <div>
@@ -40,8 +124,25 @@
         </div>
         <span>미응답 포함</span>
       </div>
+      <div class="scope-tabs" aria-label="오답률 그래프 기준 선택">
+        {% for group in analysis_scope_chart_data %}
+          <button
+            class="{% if forloop.first %}active{% endif %}"
+            type="button"
+            data-scope-tab="{{ group.scope }}"
+            aria-pressed="{{ forloop.first|yesno:'true,false' }}"
+          >
+            {{ group.label }}
+          </button>
+        {% endfor %}
+      </div>
       {% for group in analysis_scope_chart_data %}
-        <article class="scope-chart-panel scope-chart-block" aria-label="{{ group.label }} 오답률 그래프">
+        <article
+          class="scope-chart-panel scope-chart-block{% if forloop.first %} active{% endif %}"
+          data-scope-panel="{{ group.scope }}"
+          aria-label="{{ group.label }} 오답률 그래프"
+          {% if not forloop.first %}hidden{% endif %}
+        >
           <div class="scope-chart-heading">
             <div>
               <p>{{ group.description }}</p>
@@ -65,7 +166,14 @@
               {% if group.hasRecords %}
                 <div class="scope-bars">
                   {% for bar in group.bars %}
-                    <article class="scope-bar-item {{ bar.statusClass }}">
+                    <article
+                      class="scope-bar-item {{ bar.statusClass }}{% if bar.sessionId %} clickable{% endif %}"
+                      {% if bar.sessionId %}
+                        role="button"
+                        tabindex="0"
+                        data-session-id="{{ bar.sessionId }}"
+                      {% endif %}
+                    >
                       <span class="scope-bar-value">{{ bar.wrongRateLabel }}</span>
                       <div class="scope-bar-track" aria-label="{{ bar.label }} 오답률 {{ bar.wrongRateLabel }}">
                         <i style="height: {{ bar.wrongRate }}%"></i>
@@ -95,7 +203,13 @@
       </div>
       <div class="rate-bars">
         {% for item in era_stats %}
-          <article class="rate-bar-card {{ item.status_class }}" id="era-{{ forloop.counter }}">
+          <button
+            class="rate-bar-card {{ item.status_class }}"
+            id="era-{{ forloop.counter }}"
+            type="button"
+            data-detail-category="era"
+            data-detail-label="{{ item.label }}"
+          >
             <div class="bar-label">
               <strong>{{ item.label }}</strong>
             </div>
@@ -109,7 +223,7 @@
             <div class="bar-status">
               <span class="status-badge {{ item.status_class }}">{{ item.status_label }}</span>
             </div>
-          </article>
+          </button>
         {% endfor %}
       </div>
     </section>
@@ -120,7 +234,13 @@
       </div>
       <div class="rate-bars">
         {% for item in type_stats %}
-          <article class="rate-bar-card {{ item.status_class }}" id="type-{{ forloop.counter }}">
+          <button
+            class="rate-bar-card {{ item.status_class }}"
+            id="type-{{ forloop.counter }}"
+            type="button"
+            data-detail-category="type"
+            data-detail-label="{{ item.label }}"
+          >
             <div class="bar-label">
               <strong>{{ item.label }}</strong>
             </div>
@@ -134,7 +254,7 @@
             <div class="bar-status">
               <span class="status-badge {{ item.status_class }}">{{ item.status_label }}</span>
             </div>
-          </article>
+          </button>
         {% endfor %}
       </div>
     </section>
@@ -145,7 +265,13 @@
       </div>
       <div class="rate-bars">
         {% for item in topic_stats %}
-          <article class="rate-bar-card {{ item.status_class }}" id="topic-{{ forloop.counter }}">
+          <button
+            class="rate-bar-card {{ item.status_class }}"
+            id="topic-{{ forloop.counter }}"
+            type="button"
+            data-detail-category="topic"
+            data-detail-label="{{ item.label }}"
+          >
             <div class="bar-label">
               <strong>{{ item.label }}</strong>
             </div>
@@ -159,11 +285,320 @@
             <div class="bar-status">
               <span class="status-badge {{ item.status_class }}">{{ item.status_label }}</span>
             </div>
-          </article>
+          </button>
         {% endfor %}
       </div>
     </section>
   </main>
 
+  <div class="detail-modal" id="wrongRateDetailModal" hidden>
+    <section class="detail-dialog" role="dialog" aria-modal="true" aria-labelledby="wrongRateDetailTitle">
+      <button class="detail-close" id="closeWrongRateDetail" type="button" aria-label="닫기">×</button>
+      <header>
+        <span id="wrongRateDetailCategory">세션별 기록</span>
+        <h2 id="wrongRateDetailTitle">상세 분석</h2>
+      </header>
+      <div class="detail-session-list" id="wrongRateDetailBody">
+        <article class="detail-empty">
+          <strong>항목을 선택해 주세요</strong>
+          <span>시대별, 유형별, 주제별 분석 항목을 선택하면 세션별 기록이 표시됩니다.</span>
+        </article>
+      </div>
+    </section>
+  </div>
+
+  {{ analysis_scope_chart_data|json_script:"scope-chart-data" }}
+  <script>
+    (() => {
+      const scopeButtons = document.querySelectorAll("[data-scope-tab]");
+      const scopePanels = document.querySelectorAll("[data-scope-panel]");
+      const detailButtons = document.querySelectorAll("[data-detail-category]");
+      const scopeChartData = JSON.parse(document.getElementById("scope-chart-data").textContent);
+      const detailModal = document.getElementById("wrongRateDetailModal");
+      const detailClose = document.getElementById("closeWrongRateDetail");
+      const detailCategory = document.getElementById("wrongRateDetailCategory");
+      const detailTitle = document.getElementById("wrongRateDetailTitle");
+      const detailBody = document.getElementById("wrongRateDetailBody");
+      const detailUrl = "{% url 'analytics:wrong_rate_item_sessions' %}";
+      const sessionDetailUrl = "{% url 'analytics:wrong_rate_session_detail' %}";
+
+      const escapeHtml = (value) => String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+
+      const setActiveScope = (scope) => {
+        scopeButtons.forEach((button) => {
+          const isActive = button.dataset.scopeTab === scope;
+          button.classList.toggle("active", isActive);
+          button.setAttribute("aria-pressed", isActive ? "true" : "false");
+        });
+        scopePanels.forEach((panel) => {
+          const isActive = panel.dataset.scopePanel === scope;
+          panel.hidden = !isActive;
+          panel.classList.toggle("active", isActive);
+        });
+      };
+
+      const setDetailModal = (isOpen) => {
+        detailModal.hidden = !isOpen;
+        document.body.classList.toggle("modal-open", isOpen);
+      };
+
+      const renderDetailLoading = (categoryText, titleText, descriptionText) => {
+        detailCategory.textContent = categoryText;
+        detailTitle.textContent = titleText;
+        detailBody.innerHTML = `
+          <article class="detail-empty">
+            <strong>불러오는 중</strong>
+            <span>${escapeHtml(descriptionText)}</span>
+          </article>
+        `;
+      };
+
+      const renderDetailError = () => {
+        detailBody.innerHTML = `
+          <article class="detail-empty">
+            <strong>불러오지 못했습니다</strong>
+            <span>잠시 후 다시 선택해 주세요.</span>
+          </article>
+        `;
+      };
+
+      const renderDetailSessions = (sessions) => {
+        if (!sessions.length) {
+          return `
+            <article class="detail-empty">
+              <strong>기록 없음</strong>
+              <span>선택한 항목의 완료 세션 기록이 없습니다.</span>
+            </article>
+          `;
+        }
+        return sessions.map((session) => `
+          <button class="detail-session-card" type="button" data-session-id="${escapeHtml(session.sessionId)}">
+            <header>
+              <div>
+                <strong>${escapeHtml(session.title)}</strong>
+                <span>${escapeHtml(session.recordedDate)} · 세션 #${escapeHtml(session.sessionId)}</span>
+              </div>
+              <b>${escapeHtml(session.wrongRate)}%</b>
+            </header>
+            <div class="detail-session-meter" aria-label="${escapeHtml(session.title)} 오답률 ${escapeHtml(session.wrongRate)}%">
+              <i style="width: ${Number(session.wrongRate) || 0}%"></i>
+            </div>
+            <p>
+              ${escapeHtml(session.totalCount)}문제 · 오답 ${escapeHtml(session.wrongCount)}개 · 정답률 ${escapeHtml(session.answerRate)}% · 문제당 ${escapeHtml(session.averageTimeLabel)}
+            </p>
+          </button>
+        `).join("");
+      };
+
+      const renderSessionGroupItem = (item) => `
+        <article class="session-group-item ${escapeHtml(item.statusClass)}">
+          <div>
+            <strong>${escapeHtml(item.label)}</strong>
+            <span>${escapeHtml(item.classification)} · ${escapeHtml(item.totalCount)}문제 · 문제당 ${escapeHtml(item.averageTimeLabel)}</span>
+          </div>
+          <b>${escapeHtml(item.wrongRate)}%</b>
+        </article>
+      `;
+
+      const renderStackSegment = (stackItem, className) => `
+        <i
+          class="${className}"
+          style="width: ${Number(stackItem?.percent) || 0}%"
+          title="${escapeHtml(stackItem?.label)} ${escapeHtml(stackItem?.count)}개"
+        ></i>
+      `;
+
+      const renderStackLegend = (stack) => `
+        <div class="session-stack-legend">
+          <span><i class="correct"></i>정답 ${escapeHtml(stack.correct?.count || 0)}개</span>
+          <span><i class="wrong"></i>오답 ${escapeHtml(stack.wrong?.count || 0)}개</span>
+          <span><i class="unanswered"></i>미응답 ${escapeHtml(stack.unanswered?.count || 0)}개</span>
+        </div>
+      `;
+
+      const renderSessionStack = (stack) => `
+        <div class="session-stack-meter" aria-label="정답 오답 미응답 구성">
+          ${renderStackSegment(stack.correct, "correct")}
+          ${renderStackSegment(stack.wrong, "wrong")}
+          ${renderStackSegment(stack.unanswered, "unanswered")}
+        </div>
+        ${renderStackLegend(stack)}
+      `;
+
+      const renderTopWeakness = (items) => {
+        if (!items.length) {
+          return `
+            <section class="session-top-weak">
+              <h3>TOP 취약 항목</h3>
+              <article class="detail-empty compact">
+                <strong>오답 항목 없음</strong>
+                <span>이 세션에서 집계된 오답 항목이 없습니다.</span>
+              </article>
+            </section>
+          `;
+        }
+        return `
+          <section class="session-top-weak">
+            <h3>TOP 취약 항목</h3>
+            <div class="session-top-list">
+              ${items.map((item, index) => `
+                <article>
+                  <span>${index + 1}</span>
+                  <div>
+                    <strong>${escapeHtml(item.label)}</strong>
+                    <small>${escapeHtml(item.classification)} · ${escapeHtml(item.totalCount)}문제 · 오답 ${escapeHtml(item.wrongCount)}개</small>
+                  </div>
+                  <b>${escapeHtml(item.wrongRate)}%</b>
+                </article>
+              `).join("")}
+            </div>
+          </section>
+        `;
+      };
+
+      const renderSessionGroup = (group) => {
+        const items = group.items || [];
+        if (!items.length) {
+          return `
+            <section class="session-analysis-section">
+              <h3>${escapeHtml(group.title)}</h3>
+              <article class="detail-empty compact">
+                <strong>기록 없음</strong>
+                <span>표시할 항목이 없습니다.</span>
+              </article>
+            </section>
+          `;
+        }
+        return `
+          <section class="session-analysis-section">
+            <h3>${escapeHtml(group.title)}</h3>
+            <div class="session-group-list">
+              ${items.map((item) => renderSessionGroupItem(item)).join("")}
+            </div>
+          </section>
+        `;
+      };
+
+      const renderSessionAnalysis = (detail) => {
+        const overview = detail.overview || {};
+        const groups = detail.groups || [];
+        detailCategory.textContent = detail.categoryLabel || "세션 상세 분석";
+        detailTitle.textContent = detail.title || "세션 분석";
+        detailBody.innerHTML = `
+          <article class="session-overview-card">
+            <div>
+              <span>${escapeHtml(overview.recordedDate)} · ${escapeHtml(overview.sessionTypeLabel)}</span>
+              <strong>오답률 ${escapeHtml(overview.wrongRate)}%</strong>
+            </div>
+            <div class="session-overview-meter" aria-label="세션 오답률 ${escapeHtml(overview.wrongRate)}%">
+              <i style="width: ${Number(overview.wrongRate) || 0}%"></i>
+            </div>
+            <p>
+              ${escapeHtml(overview.totalCount)}문제 · 오답 ${escapeHtml(overview.wrongCount)}개 · 정답률 ${escapeHtml(overview.answerRate)}% · 문제당 ${escapeHtml(overview.averageTimeLabel)}
+            </p>
+            ${renderSessionStack(overview.stack || {})}
+          </article>
+          ${renderTopWeakness(detail.topWeakItems || [])}
+          <div class="session-analysis-grid">
+            ${groups.map((group) => renderSessionGroup(group)).join("")}
+          </div>
+        `;
+      };
+
+      const openDetail = async (button) => {
+        renderDetailLoading(
+          "세션별 기록",
+          "상세 분석",
+          "선택한 항목의 세션별 기록을 확인하고 있습니다.",
+        );
+        setDetailModal(true);
+        button.disabled = true;
+        try {
+          const url = new URL(detailUrl, window.location.origin);
+          url.searchParams.set("category", button.dataset.detailCategory);
+          url.searchParams.set("label", button.dataset.detailLabel);
+          const response = await fetch(url, {
+            headers: {
+              "X-Requested-With": "XMLHttpRequest",
+            },
+          });
+          if (!response.ok) {
+            throw new Error("detail request failed");
+          }
+          const payload = await response.json();
+          detailCategory.textContent = payload.detail.categoryLabel;
+          detailTitle.textContent = payload.detail.itemLabel;
+          detailBody.innerHTML = renderDetailSessions(payload.detail.sessions || []);
+        } catch (error) {
+          renderDetailError();
+        } finally {
+          button.disabled = false;
+        }
+      };
+
+      const openSessionDetail = async (sessionId) => {
+        renderDetailLoading(
+          "세션 상세 분석",
+          `세션 #${sessionId}`,
+          "선택한 세션의 취약점과 오답률을 함께 확인하고 있습니다.",
+        );
+        setDetailModal(true);
+        try {
+          const url = new URL(sessionDetailUrl, window.location.origin);
+          url.searchParams.set("sessionId", sessionId);
+          const response = await fetch(url, {
+            headers: {
+              "X-Requested-With": "XMLHttpRequest",
+            },
+          });
+          if (!response.ok) {
+            throw new Error("session detail request failed");
+          }
+          const payload = await response.json();
+          renderSessionAnalysis(payload.detail);
+        } catch (error) {
+          renderDetailError();
+        }
+      };
+
+      scopeButtons.forEach((button) => {
+        button.addEventListener("click", () => setActiveScope(button.dataset.scopeTab));
+      });
+      detailButtons.forEach((button) => {
+        button.addEventListener("click", () => openDetail(button));
+      });
+      document.addEventListener("click", (event) => {
+        const sessionElement = event.target.closest("[data-session-id]");
+        if (!sessionElement) {
+          return;
+        }
+        openSessionDetail(sessionElement.dataset.sessionId);
+      });
+      document.addEventListener("keydown", (event) => {
+        const sessionElement = event.target.closest("[data-session-id]");
+        if (!sessionElement) {
+          return;
+        }
+        if (sessionElement.tagName === "BUTTON") {
+          return;
+        }
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          openSessionDetail(sessionElement.dataset.sessionId);
+        }
+      });
+      detailClose.addEventListener("click", () => setDetailModal(false));
+      detailModal.addEventListener("click", (event) => {
+        if (event.target === detailModal) {
+          setDetailModal(false);
+        }
+      });
+    })();
+  </script>
 </body>
 </html>

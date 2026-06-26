@@ -126,14 +126,14 @@
           {% for item in previous_study_plans %}
             <article class="plan-history-item">
               <header>
-                <strong>계획 {{ item.planVersion }}</strong>
+                <strong>{{ item.historyDisplay.title }}</strong>
                 <span>{{ item.progress.completionPercent }}%</span>
               </header>
-              <div class="plan-history-bar" aria-label="계획 {{ item.planVersion }} 달성률 {{ item.progress.completionPercent }}%">
+              <div class="plan-history-bar" aria-label="{{ item.historyDisplay.title }} 달성률 {{ item.progress.completionPercent }}%">
                 <i style="width: {{ item.progress.completionPercent }}%"></i>
               </div>
-              <p>{{ item.progress.achievedCount }}/{{ item.progress.targetCount }}문항 달성 · 앞으로 {{ item.progress.remainingCount }}문항</p>
-              <small>{{ item.progress.periodLabel }} · {{ item.totalDays }}일 계획</small>
+              <p>{{ item.progress.achievedCount }}/{{ item.progress.targetCount }}문항 달성</p>
+              <small>{{ item.historyDisplay.meta }} · {{ item.totalDays }}일 계획</small>
             </article>
           {% empty %}
             <article class="plan-history-item empty">
@@ -163,7 +163,7 @@
 
         <section class="planner-progress-summary" aria-label="학습계획 달성률">
           <div>
-            <span>계획 달성률</span>
+            <span>문제풀이 달성률</span>
             <strong>{{ planner_summary.progress.completionPercent }}%</strong>
           </div>
           <div class="planner-progress-meter" aria-label="현재 계획 달성률 {{ planner_summary.progress.completionPercent }}%">
@@ -309,19 +309,66 @@
       planIndex: index,
     }));
 
+    const renderPlanProgress = (plan) => {
+      if (plan.progressMode === "review") {
+        return `<span class="plan-review-state${plan.done ? " done" : ""}">${escapeHtml(plan.statusLabel || "복습 확인 전")}</span>`;
+      }
+      return `
+        <div class="plan-progress-line" aria-label="${escapeHtml(plan.title)} 달성률 ${plan.progressPercent || 0}%">
+          <b style="width: ${plan.progressPercent || 0}%"></b>
+        </div>
+      `;
+    };
+
+    const renderPlanAction = (plan) => {
+      if (plan.canConfirm) {
+        return `
+          <button
+            class="review-confirm-button"
+            type="button"
+            data-study-plan-id="${plan.studyPlanId}"
+            data-day-index="${plan.dayIndex}"
+            data-block-index="${plan.blockIndex}"
+          >
+            확인
+          </button>
+        `;
+      }
+      if (plan.progressMode === "review") {
+        return `<em class="plan-progress-count review">확인 완료</em>`;
+      }
+      return `<em class="plan-progress-count">${plan.achievedCount || 0}/${plan.questionCount || 0}</em>`;
+    };
+
     const renderPlanItem = (plan) => `
-      <article class="plan-item${plan.done ? " done" : ""}" data-date-key="${plan.dateKey}" data-plan-index="${plan.planIndex}">
+      <article class="plan-item${plan.done ? " done" : ""}${plan.progressMode === "review" ? " review" : ""}" data-date-key="${plan.dateKey}" data-plan-index="${plan.planIndex}">
         <i></i>
         <div>
           <strong>${escapeHtml(plan.title)}</strong>
           <span>${escapeHtml(plan.meta)}</span>
-          <div class="plan-progress-line" aria-label="${escapeHtml(plan.title)} 달성률 ${plan.progressPercent || 0}%">
-            <b style="width: ${plan.progressPercent || 0}%"></b>
-          </div>
+          ${renderPlanProgress(plan)}
         </div>
-        <em class="plan-progress-count">${plan.achievedCount || 0}/${plan.questionCount || 0}</em>
+        ${renderPlanAction(plan)}
       </article>
     `;
+
+    const bindReviewConfirmButtons = () => {
+      plannerLessons.querySelectorAll(".review-confirm-button").forEach((button) => {
+        button.addEventListener("click", async () => {
+          button.disabled = true;
+          await postPlannerJson(
+            "{% url 'analytics:study_plan_block_complete' %}",
+            {
+              studyPlanId: button.dataset.studyPlanId,
+              dayIndex: button.dataset.dayIndex,
+              blockIndex: button.dataset.blockIndex,
+              isCompleted: true,
+            },
+          );
+          window.location.reload();
+        });
+      });
+    };
 
     const renderPlannerEmptyState = (title, description) => {
       plannerLessons.innerHTML = `
@@ -338,6 +385,7 @@
         return;
       }
       plannerLessons.innerHTML = plans.map((plan) => renderPlanItem(plan)).join("");
+      bindReviewConfirmButtons();
     };
 
     const renderPlannerCalendar = () => {

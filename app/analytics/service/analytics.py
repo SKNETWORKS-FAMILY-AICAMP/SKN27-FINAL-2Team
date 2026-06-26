@@ -58,24 +58,38 @@ def get_analysis_scope_chart_data(user_id, today=None):
         ),
         build_analysis_scope_chart_group(
             "weekly",
-            "Weekly",
+            "주별",
             "주별 오답률",
             "이번 주부터 이전 주까지의 오답률을 비교합니다.",
             get_weekly_scope_chart_bars(user_id, base_date),
         ),
         build_analysis_scope_chart_group(
             "monthly",
-            "Monthly",
+            "월별",
             "월별 오답률",
             "이번 달부터 이전 달까지의 오답률을 비교합니다.",
             get_monthly_scope_chart_bars(user_id, base_date),
         ),
         build_analysis_scope_chart_group(
             "total",
-            "Total",
+            "누적",
             "전체 누적 오답률",
             "완료된 전체 풀이 기록을 누적으로 표시합니다.",
             get_total_scope_chart_bars(user_id),
+        ),
+        build_analysis_scope_chart_group(
+            "study_plan_base",
+            "계획 기준",
+            "계획 기준 오답률",
+            "학습계획 생성 시점의 저장 분석을 비교합니다.",
+            get_analysis_run_scope_chart_bars(user_id, "study_plan_base"),
+        ),
+        build_analysis_scope_chart_group(
+            "study_plan_result",
+            "계획 결과",
+            "계획 결과 오답률",
+            "학습계획 종료 또는 갱신 시점의 저장 분석을 비교합니다.",
+            get_analysis_run_scope_chart_bars(user_id, "study_plan_result"),
         ),
     ]
 
@@ -129,6 +143,7 @@ def get_session_scope_chart_bars(user_id):
                 row["wrong_count"],
                 ms_to_sec(row["average_time_ms"]),
                 period_label,
+                extra_data={"sessionId": row["session_id"]},
             )
         )
 
@@ -342,6 +357,7 @@ def build_record_chart_bar(
     average_time_sec,
     period_label,
     created_label="-",
+    extra_data=None,
 ):
     """
     그래프 막대 하나에 필요한 표시 데이터를 만든다.
@@ -349,7 +365,7 @@ def build_record_chart_bar(
     total_count = total_count or 0
     wrong_count = wrong_count or 0
     wrong_rate = calculate_percent_rate(wrong_count, total_count)
-    return {
+    chart_bar = {
         "label": label,
         "description": description,
         "totalCount": total_count,
@@ -361,13 +377,17 @@ def build_record_chart_bar(
         "createdLabel": created_label,
         "statusClass": get_scope_status_class(total_count, wrong_rate),
     }
+    if extra_data:
+        chart_bar.update(extra_data)
+
+    return chart_bar
 
 
 def format_session_type_label(session_type):
     """
     세션 유형 코드를 화면 표시용 라벨로 바꾼다.
     """
-    if session_type == "diagnosis":
+    if session_type in ["diagnosis", "diagnostic"]:
         return "진단평가"
     elif session_type == "practice":
         return "문제풀이"
@@ -1038,6 +1058,302 @@ def get_wrong_rate_group_stats(user, field_name):
         )
 
     return stats
+
+
+def get_wrong_rate_item_session_details(user, category, label):
+    """
+    시대/유형/주제 항목 하나를 완료 세션별 오답률로 다시 집계한다.
+    """
+    category_config = get_wrong_rate_detail_category_config(category)
+    if category_config is None:
+        return None
+
+    field_name = category_config["field"]
+    display_label = label or get_unclassified_label()
+    rows = get_wrong_rate_session_rows(user, field_name, display_label)
+    return {
+        "categoryLabel": category_config["label"],
+        "itemLabel": display_label,
+        "title": f"{category_config['label']} · {display_label}",
+        "hasRecords": bool(rows),
+        "sessions": [
+            build_wrong_rate_session_detail(row)
+            for row in rows
+        ],
+    }
+
+
+def get_wrong_rate_session_analysis_detail(user, session_id):
+    """
+    한 세션의 전체 오답률과 시대/유형/주제별 취약 항목을 함께 반환한다.
+    """
+    try:
+        normalized_session_id = int(session_id)
+        session = SolveSessions.objects.filter(
+            session_id=normalized_session_id,
+            user=user,
+            status="completed",
+        ).first()
+    except (TypeError, ValueError, DatabaseError):
+        return None
+
+    if session is None:
+        return None
+
+    records = SolveRecords.objects.filter(session=session)
+    session_type_label = format_session_type_label(session.session_type)
+    groups = [
+        {
+            "title": "시대별 오답률",
+            "items": build_session_group_analysis(records, "era", "시대"),
+        },
+        {
+            "title": "유형별 오답률",
+            "items": build_session_group_analysis(records, "q_type", "유형"),
+        },
+        {
+            "title": "주제별 오답률",
+            "items": build_session_group_analysis(records, "topic", "주제"),
+        },
+    ]
+    return {
+        "categoryLabel": "세션 상세 분석",
+        "title": format_session_analysis_title(session, session_type_label),
+        "overview": build_session_analysis_overview(session, records, session_type_label),
+        "topWeakItems": build_session_top_weak_items(groups),
+        "groups": groups,
+    }
+
+
+def build_session_analysis_overview(session, records, session_type_label):
+    """
+    세션 전체 기준 정답률, 오답률, 풀이시간 요약을 만든다.
+    """
+    stats = records.aggregate(
+        total_count=Count("record_id"),
+        solved_count=Count("record_id", filter=Q(selected_no__isnull=False)),
+        correct_count=Count("record_id", filter=Q(is_correct=True)),
+        wrong_count=Count("record_id", filter=Q(is_correct=False)),
+        average_time_ms=Avg("time_spent_ms"),
+    )
+    total_count = stats["total_count"] or 0
+    solved_count = stats["solved_count"] or 0
+    correct_count = stats["correct_count"] or 0
+    wrong_count = stats["wrong_count"] or 0
+    unanswered_count = max(total_count - solved_count, 0)
+    answered_wrong_count = max(wrong_count - unanswered_count, 0)
+    return {
+        "sessionId": session.session_id,
+        "sessionTypeLabel": session_type_label,
+        "recordedDate": format_wrong_rate_session_date(session.recorded_date),
+        "totalCount": total_count,
+        "solvedCount": solved_count,
+        "correctCount": correct_count,
+        "wrongCount": wrong_count,
+        "answeredWrongCount": answered_wrong_count,
+        "unansweredCount": unanswered_count,
+        "answerRate": calculate_percent_rate(correct_count, total_count),
+        "wrongRate": calculate_percent_rate(wrong_count, total_count),
+        "averageTimeLabel": format_seconds(ms_to_sec(stats["average_time_ms"])),
+        "stack": build_session_answer_stack(
+            correct_count,
+            answered_wrong_count,
+            unanswered_count,
+            total_count,
+        ),
+    }
+
+
+def build_session_group_analysis(records, field_name, classification_label):
+    """
+    한 세션 안에서 지정 분류별 오답률과 평균 풀이시간을 계산한다.
+    """
+    rows = (
+        records.values(field_name)
+        .annotate(
+            total_count=Count("record_id"),
+            correct_count=Count("record_id", filter=Q(is_correct=True)),
+            wrong_count=Count("record_id", filter=Q(is_correct=False)),
+            average_time_ms=Avg("time_spent_ms"),
+        )
+        .order_by(field_name)
+    )
+    items = [
+        build_session_group_analysis_item(row, field_name, classification_label)
+        for row in rows
+    ]
+    return sorted(
+        items,
+        key=lambda item: (
+            -item["wrongRate"],
+            -item["totalCount"],
+            item["label"],
+        ),
+    )
+
+
+def build_session_group_analysis_item(row, field_name, classification_label):
+    """
+    세션별 분류 집계 row를 모달 표시용 dict로 변환한다.
+    """
+    total_count = row["total_count"] or 0
+    correct_count = row["correct_count"] or 0
+    wrong_count = row["wrong_count"] or 0
+    wrong_rate = calculate_percent_rate(wrong_count, total_count)
+    return {
+        "classification": classification_label,
+        "label": row[field_name] or get_unclassified_label(),
+        "totalCount": total_count,
+        "correctCount": correct_count,
+        "wrongCount": wrong_count,
+        "answerRate": calculate_percent_rate(correct_count, total_count),
+        "wrongRate": wrong_rate,
+        "averageTimeLabel": format_seconds(ms_to_sec(row["average_time_ms"])),
+        "statusClass": get_scope_status_class(total_count, wrong_rate),
+    }
+
+
+def build_session_answer_stack(correct_count, wrong_count, unanswered_count, total_count):
+    """
+    세션 전체의 정답/오답/미응답 구성 비율을 만든다.
+    """
+    return {
+        "correct": {
+            "label": "정답",
+            "count": correct_count,
+            "percent": calculate_percent_rate(correct_count, total_count),
+        },
+        "wrong": {
+            "label": "오답",
+            "count": wrong_count,
+            "percent": calculate_percent_rate(wrong_count, total_count),
+        },
+        "unanswered": {
+            "label": "미응답",
+            "count": unanswered_count,
+            "percent": calculate_percent_rate(unanswered_count, total_count),
+        },
+    }
+
+
+def build_session_top_weak_items(groups):
+    """
+    세션 안의 시대/유형/주제 취약 항목을 한 목록으로 합쳐 상위 항목만 반환한다.
+    """
+    display_limit = 5
+    weak_items = []
+    for group in groups:
+        for item in group["items"]:
+            if item["wrongCount"] > 0:
+                weak_items.append(item)
+
+    return sorted(
+        weak_items,
+        key=lambda item: (
+            -item["wrongRate"],
+            -item["wrongCount"],
+            -item["totalCount"],
+            item["classification"],
+            item["label"],
+        ),
+    )[:display_limit]
+
+
+def format_session_analysis_title(session, session_type_label):
+    """
+    세션 상세 모달 제목을 세션 번호와 유형으로 만든다.
+    """
+    return f"세션 #{session.session_id} · {session_type_label}"
+
+
+def get_wrong_rate_detail_category_config(category):
+    """
+    화면의 분석 구분값을 SolveRecords 필드명으로 변환한다.
+    """
+    configs = {
+        "era": {"field": "era", "label": "시대별 분석"},
+        "type": {"field": "q_type", "label": "유형별 분석"},
+        "q_type": {"field": "q_type", "label": "유형별 분석"},
+        "topic": {"field": "topic", "label": "주제별 분석"},
+    }
+    return configs.get(category)
+
+
+def get_wrong_rate_session_rows(user, field_name, label):
+    """
+    선택한 분석 항목을 세션별 통계 row로 조회한다.
+    """
+    queryset = SolveRecords.objects.filter(
+        session__user=user,
+        session__status="completed",
+    )
+    if label == get_unclassified_label():
+        queryset = queryset.filter(
+            Q(**{f"{field_name}__isnull": True})
+            | Q(**{field_name: ""})
+        )
+    elif label != get_unclassified_label():
+        queryset = queryset.filter(**{field_name: label})
+
+    return list(
+        queryset.values(
+            "session_id",
+            "session__recorded_date",
+            "session__session_type",
+        )
+        .annotate(
+            total_count=Count("record_id"),
+            correct_count=Count("record_id", filter=Q(is_correct=True)),
+            wrong_count=Count("record_id", filter=Q(is_correct=False)),
+            solved_count=Count("record_id", filter=Q(selected_no__isnull=False)),
+            average_time_ms=Avg("time_spent_ms"),
+        )
+        .order_by("-session__recorded_date", "-session_id")
+    )
+
+
+def build_wrong_rate_session_detail(row):
+    """
+    세션별 통계 row를 팝업 표시용 dict로 변환한다.
+    """
+    total_count = row["total_count"] or 0
+    correct_count = row["correct_count"] or 0
+    wrong_count = row["wrong_count"] or 0
+    recorded_date = row["session__recorded_date"]
+    session_type_label = format_session_type_label(row["session__session_type"])
+    return {
+        "sessionId": row["session_id"],
+        "title": format_wrong_rate_session_title(recorded_date, session_type_label),
+        "sessionTypeLabel": session_type_label,
+        "recordedDate": format_wrong_rate_session_date(recorded_date),
+        "totalCount": total_count,
+        "solvedCount": row["solved_count"] or 0,
+        "correctCount": correct_count,
+        "wrongCount": wrong_count,
+        "answerRate": calculate_percent_rate(correct_count, total_count),
+        "wrongRate": calculate_percent_rate(wrong_count, total_count),
+        "averageTimeLabel": format_seconds(ms_to_sec(row["average_time_ms"])),
+    }
+
+
+def format_wrong_rate_session_title(recorded_date, session_type_label):
+    """
+    팝업 목록의 세션 제목을 날짜와 세션 유형으로 만든다.
+    """
+    if recorded_date:
+        return f"{recorded_date.strftime('%m.%d')} {session_type_label}"
+
+    return session_type_label
+
+
+def format_wrong_rate_session_date(recorded_date):
+    """
+    세션 날짜를 YYYY.MM.DD 형식으로 반환한다.
+    """
+    if recorded_date:
+        return recorded_date.strftime("%Y.%m.%d")
+
+    return "-"
 
 
 def make_recommendation_reason(row):
