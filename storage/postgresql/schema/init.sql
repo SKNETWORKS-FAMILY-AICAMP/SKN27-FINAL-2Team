@@ -27,7 +27,9 @@ CREATE TABLE IF NOT EXISTS user_accounts (
     created_at       TIMESTAMP       NOT NULL DEFAULT NOW(),
     updated_at       TIMESTAMP       NOT NULL DEFAULT NOW(),
     deleted_at       TIMESTAMP       NULL,
-    last_login       TIMESTAMP       NULL
+    last_login       TIMESTAMP       NULL,
+    daily_available_hours   DECIMAL(3,1)    NOT NULL DEFAULT 1.0,
+    exam_date               DATE            NULL
 );
 
 -- 2. 문제 본문
@@ -112,6 +114,8 @@ CREATE TABLE IF NOT EXISTS solve_records (
     time_spent_ms   INT             NULL,                  -- 해당 문제 풀이 시간(ms)
     is_saved        BOOLEAN         NOT NULL DEFAULT FALSE, -- 사용자가 노트에 별도로 저장한 문제인지 여부
     saved_at        TIMESTAMP       NULL,                  -- 노트 저장 시각. 저장하지 않은 문제는 NULL
+    studyplan_id    BIGINT          NULL,                  -- 학습계획에서 시작한 풀이일 때 연결되는 study_plan_mypage ID
+    study_plan_block_id VARCHAR(36) NULL,                  -- 학습계획 JSON 블록(blockId)과 연결되는 값
     q_type          VARCHAR(20)     NOT NULL,              -- 문제 대유형 스냅샷
     topic           VARCHAR(50)     NOT NULL,              -- 주제 스냅샷
     era             VARCHAR(20)     NOT NULL,              -- 시대 스냅샷
@@ -186,11 +190,3 @@ CREATE TABLE IF NOT EXISTS email_verification_codes (
     used_at     TIMESTAMP       NULL
 );
 
--- 12. 사용자 학습 프로필
-CREATE TABLE IF NOT EXISTS user_study_profiles (
-    user_id                 BIGINT          PRIMARY KEY REFERENCES user_accounts(user_id) ON DELETE CASCADE,
-    daily_available_hours   DECIMAL(3,1)    NOT NULL DEFAULT 1.0,
-    exam_date               DATE            NULL,
-    created_at              TIMESTAMP       NOT NULL DEFAULT NOW(),
-    updated_at              TIMESTAMP       NOT NULL DEFAULT NOW()
-);

@@ -320,6 +320,15 @@
           </div>
         </div>
         <em class="plan-progress-count">${plan.achievedCount || 0}/${plan.questionCount || 0}</em>
+        <button
+          class="plan-start-button"
+          type="button"
+          data-study-plan-id="${plan.studyPlanId || ""}"
+          data-block-id="${escapeHtml(plan.blockId || "")}"
+          data-classification="${escapeHtml(plan.classification || "")}"
+          data-label="${escapeHtml(plan.label || "")}"
+          data-question-count="${plan.questionCount || 10}"
+        >문제 풀기</button>
       </article>
     `;
 
@@ -387,6 +396,32 @@
       renderPlannerPlanItems(getPlansByDateKey(selectedPlannerKey), "오늘 표시할 일정 없음");
     };
 
+    const startStudyPlanBlock = (button) => {
+      const classification = button.dataset.classification || "";
+      const label = button.dataset.label || "";
+      const condition = {
+        generationMode: "detail",
+        "시대": [],
+        "주제": [],
+        "난이도": "중",
+        "문제 수": String(button.dataset.questionCount || 10),
+        "대유형": [],
+        "소유형": [],
+        scoreCounts: {},
+        studyPlanId: Number(button.dataset.studyPlanId || 0),
+        studyPlanBlockId: button.dataset.blockId || "",
+      };
+
+      if (classification === "시대") condition["시대"] = [label];
+      if (classification === "주제") condition["주제"] = [label];
+      if (classification === "유형") condition["대유형"] = [label];
+
+      sessionStorage.setItem("questionGenerationCondition", JSON.stringify(condition));
+      localStorage.removeItem("questionGenerationCondition");
+      localStorage.removeItem("questionInProgress");
+      window.location.href = "/question/exam/?new=1";
+    };
+
     const setPlannerModal = (isOpen) => {
       plannerModal.hidden = !isOpen;
       document.body.classList.toggle("modal-open", isOpen);
@@ -424,6 +459,11 @@
     });
     plannerModal.addEventListener("click", (event) => {
       if (event.target === plannerModal) setPlannerModal(false);
+    });
+    plannerLessons.addEventListener("click", (event) => {
+      const button = event.target.closest(".plan-start-button");
+      if (!button) return;
+      startStudyPlanBlock(button);
     });
     renderPlannerCalendar();
     renderPlannerLessons();

@@ -187,6 +187,8 @@
         question_types: asList(condition?.["대유형"]),
         question_subtypes: asList(condition?.["소유형"]),
         score_counts: condition?.scoreCounts || {},
+        studyplan_id: condition?.studyPlanId || null,
+        study_plan_block_id: condition?.studyPlanBlockId || null,
         count: Number(condition?.["문제 수"] || 10),
       };
     }
@@ -566,18 +568,75 @@
       }
     }
 
+    async function submitPracticeExam() {
+      if (!sessionId) {
+        alert("문제풀이 세션 정보가 없습니다.");
+        window.location.href = "/question/";
+        return;
+      }
+
+      isSubmittingExam = true;
+      commitCurrentQuestionTime();
+      analysisLoading.hidden = false;
+      submitButton.disabled = true;
+      submitButton.textContent = "제출 중...";
+
+      const answersPayload = questions.map((question, index) => {
+        const selectedNo = answers[index];
+        return {
+          question_id: question.questionId,
+          choice_id: selectedNo ? question.choiceIds[selectedNo - 1] : null,
+          time_spent_ms: questionTimeSpent[index] ?? null,
+        };
+      });
+
+      try {
+        const response = await fetch(`/question/api/session/${sessionId}/submit/`, {
+          method: "POST",
+          credentials: "same-origin",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": getCookie("csrftoken") || "{{ csrf_token }}",
+          },
+          body: JSON.stringify({
+            elapsed_sec: elapsedSeconds(),
+            answers: answersPayload,
+          }),
+        });
+
+        if (!response.ok) {
+          const payload = await response.json().catch(() => ({}));
+          throw new Error(payload.error || "문제풀이 제출에 실패했습니다.");
+        }
+
+        localStorage.setItem("questionResult", JSON.stringify({
+          questions,
+          answers,
+          questionTimeSpent,
+          sessionId,
+          submittedAt: new Date().toISOString(),
+          condition: savedCondition,
+        }));
+        localStorage.removeItem("questionInProgress");
+        setTimeout(() => {
+          window.location.href = "/question/result/";
+        }, 1200);
+      } catch (error) {
+        analysisLoading.hidden = true;
+        isSubmittingExam = false;
+        submitButton.disabled = false;
+        submitButton.textContent = "제출";
+        alert(error.message);
+      }
+    }
+
     async function submitExam() {
       if (IS_DIAGNOSTIC) {
         await submitDiagnosisExam();
         return;
       }
 
-      try {
-        await saveProgress(false, true);
-      } catch (error) {
-        console.error(error);
-      }
-      finishExam();
+      await submitPracticeExam();
     }
 
     function renderQuestion() {
