@@ -4,8 +4,8 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>himate | {% if exam_mode == 'diagnostic' %}진단평가{% else %}문제풀이{% endif %}</title>
-  <link rel="stylesheet" href="/static/question/css/exam.css" />
-  <link rel="stylesheet" href="../../static/question/css/exam.css" />
+  <link rel="stylesheet" href="/static/question/css/exam.css?v=analysis-loading-2" />
+  <link rel="stylesheet" href="../../static/question/css/exam.css?v=analysis-loading-2" />
   <link rel="stylesheet" href="/static/himate.css" />
   <link rel="stylesheet" href="/static/layout.css" />
 </head>
@@ -93,6 +93,13 @@
       </div>
     </section>
   </main>
+  <section class="analysis-loading" id="analysisLoading" aria-live="polite" hidden>
+    <div class="analysis-loading-card">
+      <img src="/static/images/loading.gif" alt="" />
+      <strong>분석 결과를 생성하고 있습니다</strong>
+      <span>잠시만 기다려 주세요.</span>
+    </div>
+  </section>
 
   <script>
     const EXAM_MODE = "{{ exam_mode|default:'practice' }}";
@@ -141,6 +148,7 @@
     const timerText = document.getElementById("timerText");
     const saveProgressButton = document.getElementById("saveProgressButton");
     const saveStatus = document.getElementById("saveStatus");
+    const analysisLoading = document.getElementById("analysisLoading");
     let remainingSeconds = shouldResume && Number.isInteger(savedProgress?.remainingSeconds) ? savedProgress.remainingSeconds : 0;
     let totalExamSeconds = 0;
     let isTimeOver = false;
@@ -490,6 +498,7 @@
     function finishExam() {
       isSubmittingExam = true;
       commitCurrentQuestionTime();
+      analysisLoading.hidden = false;
       localStorage.setItem("questionResult", JSON.stringify({
         questions,
         answers,
@@ -499,7 +508,9 @@
         condition: savedCondition,
       }));
       localStorage.removeItem("questionInProgress");
-      window.location.href = "/question/result/";
+      setTimeout(() => {
+        window.location.href = "/question/result/";
+      }, 1200);
     }
 
     async function submitDiagnosisExam() {
@@ -511,6 +522,7 @@
 
       isSubmittingExam = true;
       commitCurrentQuestionTime();
+      analysisLoading.hidden = false;
       submitButton.disabled = true;
       submitButton.textContent = "제출 중...";
 
@@ -546,6 +558,7 @@
         sessionStorage.removeItem("diagnosisSession");
         window.location.href = `/diagnosis/result/?session_id=${sessionId}`;
       } catch (error) {
+        analysisLoading.hidden = true;
         isSubmittingExam = false;
         submitButton.disabled = false;
         submitButton.textContent = "제출";

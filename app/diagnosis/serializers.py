@@ -43,6 +43,9 @@ class DiagnosisStartResponseSerializer(serializers.Serializer):
 class AnswerItemSerializer(serializers.Serializer):
     """단일 답안"""
     question_id = serializers.IntegerField()
+    selected_no = serializers.IntegerField(
+        required=False, allow_null=True, default=None
+    )
     choice_id = serializers.IntegerField(
         required=False, allow_null=True, default=None
     )  # 미응답 시 null

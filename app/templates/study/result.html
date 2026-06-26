@@ -4,10 +4,13 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>himate | 결과</title>
-  <link rel="stylesheet" href="/static/question/css/result.css" />
-  <link rel="stylesheet" href="../../static/question/css/result.css" />
+  <link rel="stylesheet" href="/static/question/css/result.css?v=study-result-loading-5" />
+  <link rel="stylesheet" href="../../static/question/css/result.css?v=study-result-loading-5" />
   <link rel="stylesheet" href="/static/himate.css" />
   <link rel="stylesheet" href="/static/layout.css" />
+  <style>
+    body { background: var(--hm-lime) !important; }
+  </style>
 </head>
 <body>
   <header class="site-header" aria-label="결과 메뉴">
@@ -28,7 +31,11 @@
   </header>
 
   <main class="result-page">
-    <div id="loadingMsg" style="text-align:center;padding:4rem;">결과를 불러오는 중입니다.</div>
+    <div class="result-loading" id="loadingMsg">
+      <img src="/static/images/loading.gif" alt="" />
+      <strong>분석 결과를 생성하고 있습니다</strong>
+      <span>잠시만 기다려 주세요.</span>
+    </div>
 
     <section class="review-shell" id="reviewShell" aria-label="문제별 해설" style="display:none;">
       <header class="review-top">
