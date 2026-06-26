@@ -53,7 +53,6 @@ def create_session_snapshot(session_id):
 
     records = SolveRecords.objects.filter(
         session=session,
-        selected_no__isnull=False,
     )
     return create_analysis_from_records(
         user_id=session.user_id,
@@ -75,7 +74,7 @@ def create_study_plan_base_snapshot(user_id, study_plan_id):
     """
     config = get_analysis_store_config()
     sessions = get_completed_sessions(user_id)
-    records = get_answered_records(sessions)
+    records = get_analysis_records(sessions)
     return create_analysis_from_records(
         user_id=user_id,
         analysis_scope=config["scope_study_plan_base"],
@@ -99,7 +98,10 @@ def create_study_plan_result_snapshot(user_id, study_plan_id, period_start=None,
     if period_end is not None:
         sessions = sessions.filter(recorded_date__lte=period_end)
 
-    records = get_answered_records(sessions)
+    records = get_analysis_records(sessions)
+    if not records.exists():
+        return []
+
     return create_analysis_from_records(
         user_id=user_id,
         analysis_scope=config["scope_study_plan_result"],
@@ -126,7 +128,7 @@ def create_weekly_snapshot(user_id, today=None, force=False):
         recorded_date__gte=period_start,
         recorded_date__lte=period_end,
     )
-    records = get_answered_records(sessions)
+    records = get_analysis_records(sessions)
     return create_analysis_from_records(
         user_id=user_id,
         analysis_scope=config["scope_weekly"],
@@ -152,7 +154,7 @@ def create_monthly_snapshot(user_id, today=None, force=False):
         recorded_date__gte=period_start,
         recorded_date__lte=period_end,
     )
-    records = get_answered_records(sessions)
+    records = get_analysis_records(sessions)
     return create_analysis_from_records(
         user_id=user_id,
         analysis_scope=config["scope_monthly"],
@@ -174,7 +176,7 @@ def create_total_snapshot(user_id, force=False):
         return get_latest_analysis_run(user_id, config["scope_total"])
 
     sessions = get_completed_sessions(user_id)
-    records = get_answered_records(sessions)
+    records = get_analysis_records(sessions)
     return create_analysis_from_records(
         user_id=user_id,
         analysis_scope=config["scope_total"],
@@ -531,16 +533,15 @@ def get_completed_sessions(user_id):
     )
 
 
-def get_answered_records(sessions):
+def get_analysis_records(sessions):
     """
-    전달된 세션 목록에 속한 실제 풀이 기록 QuerySet을 반환한다.
+    전달된 세션 목록에 속한 분석 대상 풀이 기록 QuerySet을 반환한다.
 
-    selected_no가 없는 row는 출제만 되고 답을 고르지 않은 문제이므로
-    분석 저장의 전체 수, 정답 수, 오답 수에서 제외한다.
+    미응답 문제도 채점 기준상 오답에 포함해야 하므로 selected_no 여부로
+    제외하지 않는다.
     """
     return SolveRecords.objects.filter(
         session__in=sessions,
-        selected_no__isnull=False,
     )
 
 

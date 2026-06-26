@@ -7,7 +7,11 @@ from django.shortcuts import redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
-from analytics.service.analytics import analytics_summary, get_wrong_rate_group_stats
+from analytics.service.analytics import (
+    analytics_summary,
+    get_analysis_scope_chart_data,
+    get_wrong_rate_group_stats,
+)
 from analytics.service.display import build_planner_summary, build_wrong_rate_display
 from analytics.service.mypage import (
     build_d_day_label,
@@ -20,6 +24,7 @@ from analytics.service.studyplan import (
     complete_study_plan_block,
     create_study_plan,
     delete_study_plan_block,
+    get_previous_study_plan_info,
     get_study_plan_info,
     move_study_plan_blocks,
 )
@@ -35,6 +40,7 @@ def mypage(request):
         "user": request.user,
         "analytics": analytics_summary(user_id),
         "study_plan": study_plan,
+        "previous_study_plans": get_previous_study_plan_info(user_id),
         "learning_summary": build_learning_summary(request.user),
         "diagnosis_comparison": build_diagnosis_comparison_summary(request.user),
         "wrong_type_summary": build_wrong_type_summary(request.user),
@@ -57,6 +63,7 @@ def wrong_rate_detail(request):
     type_stats = get_wrong_rate_group_stats(request.user, "q_type")
     topic_stats = get_wrong_rate_group_stats(request.user, "topic")
     context = {
+        "analysis_scope_chart_data": get_analysis_scope_chart_data(request.user.user_id),
         "era_stats": build_wrong_rate_display(era_stats),
         "type_stats": build_wrong_rate_display(type_stats),
         "topic_stats": build_wrong_rate_display(topic_stats),

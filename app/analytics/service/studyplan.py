@@ -12,8 +12,9 @@ from analytics.service.analysis_snapshot import (
     create_study_plan_base_snapshot,
     create_study_plan_result_snapshot,
 )
-from analytics.service.analytics import get_weak_targets
+from analytics.service.analytics import get_classification_fields, get_weak_targets
 from analytics.service.prediction import get_predicted_targets
+from question.models import SolveRecords
 from user.models import UserStudyProfile
 
 
@@ -84,18 +85,218 @@ def format_plan_items(study_plan_items):
 
 def get_study_plan_info(user_id):
     """
-    사용자의 저장된 학습계획 목록을 최신순으로 조회한다.
+    사용자의 현재 active 학습계획을 최신순으로 조회한다.
 
     DB 모델을 그대로 넘기지 않고 serializer를 통해
     화면/API에서 쓰는 응답 형태로 변환한다.
     """
     daily_available_minutes = get_daily_available_minutes(user_id)
-    study_plans = (
+    display_plan_count = 1
+    study_plans = list(
         StudyPlanMypage.objects.filter(user_id=user_id)
-        .exclude(status="deleted")
-        .order_by("status", "-plan_version", "-modified_at")
+        .filter(status="active")
+        .order_by("-plan_version", "-modified_at")[:display_plan_count]
     )
-    return serialize_study_plans(study_plans, daily_available_minutes)
+    return serialize_study_plans_with_progress(user_id, study_plans, daily_available_minutes)
+
+
+def get_previous_study_plan_info(user_id):
+    """
+    이전에 보관된 학습계획을 최신순으로 조회하고 풀이 기록 기반 달성률을 붙인다.
+    """
+    daily_available_minutes = get_daily_available_minutes(user_id)
+    config = get_study_plan_config()
+    display_plan_count = config["history_display_limit"]
+    study_plans = list(
+        StudyPlanMypage.objects.filter(user_id=user_id, status="archived")
+        .order_by("-plan_version", "-modified_at")[:display_plan_count]
+    )
+    return serialize_study_plans_with_progress(user_id, study_plans, daily_available_minutes)
+
+
+def serialize_study_plans_with_progress(user_id, study_plans, daily_available_minutes):
+    """
+    학습계획 직렬화 결과에 실제 풀이 기록 기반 달성률을 추가한다.
+    """
+    serialized_plans = serialize_study_plans(study_plans, daily_available_minutes)
+    for index, study_plan in enumerate(study_plans):
+        progress_data = calculate_record_based_plan_progress(user_id, study_plan)
+        serialized_plans[index]["progress"] = progress_data["summary"]
+        apply_block_progress(
+            serialized_plans[index]["plans"],
+            progress_data["block_progress"],
+        )
+
+    return serialized_plans
+
+
+def apply_block_progress(plan_items, block_progress):
+    """
+    날짜별 계획 블록에 달성 문항 수와 남은 문항 수를 주입한다.
+    """
+    for day_index, day_plan in enumerate(plan_items):
+        for block_index, block in enumerate(day_plan.get("blocks", [])):
+            progress = block_progress.get((day_index, block_index))
+            if progress is None:
+                continue
+            block.update(progress)
+
+
+def calculate_record_based_plan_progress(user_id, study_plan):
+    """
+    수동 완료 여부 대신 실제 완료 풀이 기록으로 계획 달성률을 계산한다.
+    """
+    plan_items = parse_study_plan_items(study_plan.study_plan_items)
+    records = get_plan_progress_records(user_id, study_plan)
+    used_record_ids = set()
+    block_progress = {}
+    target_total = 0
+    achieved_total = 0
+
+    for day_index, day_plan in enumerate(plan_items):
+        for block_index, block in enumerate(day_plan.get("blocks", [])):
+            target_count = int(block.get("questionCount") or 0)
+            target_total += target_count
+            achieved_count = count_block_matched_records(
+                records,
+                used_record_ids,
+                block,
+                target_count,
+            )
+            achieved_total += achieved_count
+            remaining_count = max(target_count - achieved_count, 0)
+            progress_rate = calculate_progress_rate(achieved_count, target_count)
+            block_progress[(day_index, block_index)] = {
+                "achievedCount": achieved_count,
+                "remainingCount": remaining_count,
+                "progressRate": progress_rate,
+                "progressPercent": round(progress_rate * 100),
+                "isAchieved": target_count > 0 and remaining_count == 0,
+            }
+
+    remaining_total = max(target_total - achieved_total, 0)
+    completion_rate = calculate_progress_rate(achieved_total, target_total)
+    return {
+        "summary": {
+            "targetCount": target_total,
+            "achievedCount": achieved_total,
+            "remainingCount": remaining_total,
+            "completionRate": completion_rate,
+            "completionPercent": round(completion_rate * 100),
+            "periodLabel": format_plan_progress_period(study_plan),
+        },
+        "block_progress": block_progress,
+    }
+
+
+def get_plan_progress_records(user_id, study_plan):
+    """
+    계획 달성률 계산에 사용할 완료 풀이 기록을 조회한다.
+    """
+    period_start = get_study_plan_result_period_start(study_plan)
+    period_end = get_plan_progress_period_end(study_plan)
+    queryset = SolveRecords.objects.filter(
+        session__user_id=user_id,
+        session__status="completed",
+        selected_no__isnull=False,
+    )
+    if period_start is not None:
+        queryset = queryset.filter(session__recorded_date__gte=period_start)
+    if period_end is not None:
+        queryset = queryset.filter(session__recorded_date__lte=period_end)
+
+    return list(
+        queryset.values(
+            "record_id",
+            "era",
+            "q_type",
+            "topic",
+        ).order_by("session__recorded_date", "record_id")
+    )
+
+
+def get_plan_progress_period_end(study_plan):
+    """
+    active 계획은 오늘까지, archived 계획은 보관 시점까지의 기록만 본다.
+    """
+    period_end = study_plan.end_date
+    if study_plan.archived_at is not None:
+        archived_at = study_plan.archived_at
+        if timezone.is_naive(archived_at):
+            archived_at = timezone.make_aware(archived_at, timezone.get_current_timezone())
+        archived_date = timezone.localtime(archived_at).date()
+        if period_end is None or archived_date < period_end:
+            period_end = archived_date
+    elif study_plan.status == "active":
+        today = timezone.localdate()
+        if period_end is None or today < period_end:
+            period_end = today
+
+    return period_end
+
+
+def count_block_matched_records(records, used_record_ids, block, target_count):
+    """
+    하나의 계획 블록과 매칭되는 풀이 기록 수를 계산한다.
+    """
+    if target_count <= 0:
+        return 0
+
+    field_name = get_block_record_field(block)
+    label = block.get("label")
+    if not field_name or not label:
+        return 0
+
+    matched_record_ids = []
+    for record in records:
+        record_id = record["record_id"]
+        if record_id in used_record_ids:
+            continue
+        if record.get(field_name) == label:
+            matched_record_ids.append(record_id)
+        if len(matched_record_ids) >= target_count:
+            break
+
+    used_record_ids.update(matched_record_ids)
+    return len(matched_record_ids)
+
+
+def get_block_record_field(block):
+    """
+    계획 블록의 분류명을 SolveRecords 컬럼명으로 변환한다.
+    """
+    classification = block.get("classification")
+    for classification_label, field_name in get_classification_fields():
+        if classification == classification_label:
+            return field_name
+
+    return None
+
+
+def calculate_progress_rate(count, total):
+    """
+    달성률을 0~1 사이 소수로 계산한다.
+    """
+    if total:
+        return round(count / total, 4)
+
+    return 0.0
+
+
+def format_plan_progress_period(study_plan):
+    """
+    계획 달성률 기준 기간을 화면 표시용 문자열로 만든다.
+    """
+    period_start = get_study_plan_result_period_start(study_plan)
+    period_end = get_plan_progress_period_end(study_plan)
+    if period_start and period_end:
+        return f"{period_start.strftime('%m.%d')} - {period_end.strftime('%m.%d')}"
+    if period_start:
+        return f"{period_start.strftime('%m.%d')} 시작"
+    if period_end:
+        return f"{period_end.strftime('%m.%d')}까지"
+
+    return "기간 미정"
 
 
 def create_study_plan(user_id, study_plans="", study_plan_items=None, predicted_targets=None):
@@ -118,8 +319,8 @@ def create_study_plan(user_id, study_plans="", study_plan_items=None, predicted_
     now = timezone.now()
 
     with transaction.atomic():
-        active_plan = get_active_study_plan(user_id, lock=True)
-        if active_plan is not None:
+        active_plans = get_active_study_plans(user_id, lock=True)
+        for active_plan in active_plans:
             archive_study_plan(user_id, active_plan, now)
 
         study_plan = StudyPlanMypage.objects.create(
@@ -324,9 +525,9 @@ def move_study_plan_blocks(user_id, move_items, target_date):
     return updated_plans
 
 
-def get_active_study_plan(user_id, lock=False):
+def get_active_study_plans(user_id, lock=False):
     """
-    사용자의 현재 active 학습계획을 조회한다.
+    사용자의 현재 active 학습계획 목록을 조회한다.
 
     새 계획 생성 중 기존 active 계획을 archived 처리할 때는 lock=True로
     select_for_update를 적용해 동시에 두 active 계획이 생기는 상황을 줄인다.
@@ -335,7 +536,7 @@ def get_active_study_plan(user_id, lock=False):
     if lock:
         queryset = queryset.select_for_update()
 
-    return queryset.order_by("-plan_version", "-modified_at").first()
+    return queryset.order_by("-plan_version", "-modified_at")
 
 
 def archive_study_plan(user_id, study_plan, archived_at):
@@ -347,10 +548,11 @@ def archive_study_plan(user_id, study_plan, archived_at):
     """
     plan_items = parse_study_plan_items(study_plan.study_plan_items)
     completion_stats = calculate_plan_completion(plan_items)
+    result_period_start = get_study_plan_result_period_start(study_plan)
     create_study_plan_result_snapshot(
         user_id=user_id,
         study_plan_id=study_plan.studyplan_id,
-        period_start=study_plan.start_date,
+        period_start=result_period_start,
         period_end=study_plan.end_date,
     )
     study_plan.status = "archived"
@@ -365,6 +567,22 @@ def archive_study_plan(user_id, study_plan, archived_at):
             "completion_rate",
         ],
     )
+
+
+def get_study_plan_result_period_start(study_plan):
+    """
+    계획 결과 분석 시작일을 계획 생성일보다 앞서지 않게 보정한다.
+    """
+    period_start = study_plan.start_date
+    created_at = study_plan.created_at
+    if created_at is not None:
+        if timezone.is_naive(created_at):
+            created_at = timezone.make_aware(created_at, timezone.get_current_timezone())
+        created_date = timezone.localtime(created_at).date()
+        if period_start is None or created_date > period_start:
+            period_start = created_date
+
+    return period_start
 
 
 def get_next_plan_version(user_id):
@@ -827,6 +1045,7 @@ def get_study_plan_config():
     return {
         "default_remaining_days": 14,
         "same_day_plan_days": 1,
+        "history_display_limit": 3,
         "fallback_daily_available_minutes": 60,
         "small_daily_available_minutes": 45,
         "medium_daily_available_minutes": 90,

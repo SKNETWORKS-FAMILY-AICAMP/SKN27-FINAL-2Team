@@ -48,41 +48,24 @@ def build_learning_summary(user):
 
 def build_diagnosis_comparison_summary(user):
     """
-    첫 진단평가와 이번 주 연습 결과를 비교한 개선 요약을 만든다.
+    첫 진단평가 기준의 비교 요약을 만든다.
 
-    정답률 변화와 문제당 평균 풀이시간 변화를 계산하고,
-    화면에서 사용할 good/warn/neutral 톤 정보를 함께 반환한다.
+    진단 이후 이번 주 연습과의 비교를 화면 표시용 데이터로 변환한다.
     """
     comparison = get_diagnosis_improvement_summary(user.user_id)
-    answer_change = comparison["answerRateChange"]
-    time_change = comparison["averageQuestionTimeChangeSec"]
-    answer_tone = "neutral"
-    answer_change_label = "기록 부족"
-    if answer_change is not None:
-        answer_change_label = f"{answer_change:+d}%p"
-        if answer_change > 0:
-            answer_tone = "good"
-        elif answer_change < 0:
-            answer_tone = "warn"
-
-    time_tone = "neutral"
-    time_change_label = "기록 부족"
-    if time_change is not None:
-        time_change_label = "변화 없음"
-        if time_change < 0:
-            time_change_label = f"{abs(time_change)}초 단축"
-            time_tone = "good"
-        elif time_change > 0:
-            time_change_label = f"{time_change}초 증가"
-            time_tone = "warn"
+    answer_display = _build_rate_change_display(comparison["answerRateChange"])
+    time_display = _build_time_change_display(
+        comparison["averageQuestionTimeChangeSec"],
+    )
+    has_post_records = comparison["hasComparison"]
 
     return {
-        "has_records": comparison["hasComparison"],
+        "has_records": has_post_records,
         "answer": {
             "diagnosis_rate": comparison["diagnosis"]["answerRate"],
             "current_rate": comparison["current"]["answerRate"],
-            "change_label": answer_change_label,
-            "tone": answer_tone,
+            "change_label": answer_display["label"],
+            "tone": answer_display["tone"],
         },
         "time": {
             "diagnosis_time": _format_seconds(
@@ -91,8 +74,8 @@ def build_diagnosis_comparison_summary(user):
             "current_time": _format_seconds(
                 comparison["current"]["averageQuestionTimeSec"],
             ),
-            "change_label": time_change_label,
-            "tone": time_tone,
+            "change_label": time_display["label"],
+            "tone": time_display["tone"],
         },
     }
 
@@ -136,12 +119,6 @@ def build_wrong_type_summary(user):
         items,
         key=lambda item: (-item["rate"], -item["total"], item["label"]),
     )
-    for index, item in enumerate(sorted_items, start=1):
-        item["tone_class"] = "good"
-        if index == 1:
-            item["tone_class"] = "danger"
-        elif index == 2:
-            item["tone_class"] = "warn"
 
     status_label = "기록 없음"
     if total_count > 0:
@@ -193,11 +170,13 @@ def build_weakness_summary(user):
             }
         )
 
+    display_limit = 10
+    sorted_items = sorted(
+        items,
+        key=lambda item: (-item["rate"], -item["wrong"], item["label"]),
+    )
     return {
-        "items": sorted(
-            items,
-            key=lambda item: (-item["rate"], -item["wrong"], item["label"]),
-        ),
+        "items": sorted_items[:display_limit],
         "has_records": bool(items),
     }
 
@@ -222,6 +201,46 @@ def build_d_day_label(user, today):
         return f"D + {abs(d_day)}"
 
     return "미설정"
+
+
+def _build_rate_change_display(change):
+    """
+    정답률 변화값을 화면 표시용 라벨과 톤으로 변환한다.
+    """
+    label = "기록 부족"
+    tone = "neutral"
+    if change is not None:
+        label = f"{change:+d}%p"
+        if change > 0:
+            tone = "good"
+        elif change < 0:
+            tone = "warn"
+
+    return {
+        "label": label,
+        "tone": tone,
+    }
+
+
+def _build_time_change_display(change):
+    """
+    문제당 평균 풀이시간 변화값을 화면 표시용 라벨과 톤으로 변환한다.
+    """
+    label = "기록 부족"
+    tone = "neutral"
+    if change is not None:
+        label = "변화 없음"
+        if change < 0:
+            label = f"{abs(change)}초 단축"
+            tone = "good"
+        elif change > 0:
+            label = f"{change}초 증가"
+            tone = "warn"
+
+    return {
+        "label": label,
+        "tone": tone,
+    }
 
 
 def _format_seconds(seconds):

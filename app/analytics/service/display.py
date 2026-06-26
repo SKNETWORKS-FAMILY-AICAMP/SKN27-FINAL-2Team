@@ -8,8 +8,9 @@ def build_planner_summary(study_plans, today):
     날짜별 계획 목록, 완료/예정 날짜 키, 오늘 표시 데이터,
     모달에서 사용할 오늘 학습 항목을 함께 구성한다.
     """
-    completed_label = "완료"
+    achieved_label = "달성"
     default_title = "학습 계획"
+    missed_label = "미달성"
     planned_label = "예정"
     today_label = "오늘"
     plans_by_date = {}
@@ -37,9 +38,12 @@ def build_planner_summary(study_plans, today):
             if date_key and plan_date:
                 plans_by_date.setdefault(date_key, [])
                 for block_index, block in enumerate(day_plan.get("blocks", [])):
+                    is_achieved = bool(block.get("isAchieved"))
                     status_label = planned_label
-                    if plan_date < today:
-                        status_label = completed_label
+                    if is_achieved:
+                        status_label = achieved_label
+                    elif plan_date < today:
+                        status_label = missed_label
                     elif plan_date == today:
                         status_label = today_label
 
@@ -57,14 +61,18 @@ def build_planner_summary(study_plans, today):
                     classification = block.get("classification")
                     question_count = block.get("questionCount")
                     estimated_minutes = block.get("estimatedMinutes")
+                    achieved_count = block.get("achievedCount") or 0
+                    remaining_count = block.get("remainingCount") or 0
+                    progress_percent = block.get("progressPercent") or 0
                     if classification:
                         meta_parts.append(classification)
                     if question_count:
-                        meta_parts.append(f"{question_count}문항")
+                        meta_parts.append(f"{achieved_count}/{question_count}문항")
+                    if remaining_count:
+                        meta_parts.append(f"앞으로 {remaining_count}문항")
                     if estimated_minutes:
                         meta_parts.append(f"{estimated_minutes}분")
 
-                    is_completed = bool(block.get("isCompleted"))
                     plans_by_date[date_key].append(
                         {
                             "studyPlanId": study_plan_id,
@@ -73,7 +81,11 @@ def build_planner_summary(study_plans, today):
                             "blockId": block.get("blockId"),
                             "title": title,
                             "meta": " · ".join(meta_parts),
-                            "done": is_completed,
+                            "done": is_achieved,
+                            "questionCount": question_count or 0,
+                            "achievedCount": achieved_count,
+                            "remainingCount": remaining_count,
+                            "progressPercent": progress_percent,
                         }
                     )
 
@@ -81,8 +93,8 @@ def build_planner_summary(study_plans, today):
     planned_keys = []
     for date_key, plan_items in plans_by_date.items():
         plan_date = date.fromisoformat(date_key)
-        is_completed_date = bool(plan_items) and all(item["done"] for item in plan_items)
-        if is_completed_date:
+        is_achieved_date = bool(plan_items) and all(item["done"] for item in plan_items)
+        if is_achieved_date:
             completed_keys.append(date_key)
         elif plan_date >= today:
             planned_keys.append(date_key)
@@ -91,6 +103,7 @@ def build_planner_summary(study_plans, today):
     return {
         "month_label": f"{today.year}년 {today.month:02d}월",
         "day_label": f"{today.month:02d}월 {today.day:02d}일",
+        "progress": build_planner_progress_summary(study_plans),
         "today_key": today_key,
         "selected_key": today_key,
         "next_date_key": (today + timedelta(days=1)).isoformat(),
@@ -100,6 +113,25 @@ def build_planner_summary(study_plans, today):
             "completedKeys": sorted(completed_keys),
             "plannedKeys": sorted(planned_keys),
         },
+    }
+
+
+def build_planner_progress_summary(study_plans):
+    """
+    현재 플래너 상단에 표시할 active 계획의 달성률 요약을 반환한다.
+    """
+    if study_plans:
+        progress = study_plans[0].get("progress")
+        if progress:
+            return progress
+
+    return {
+        "targetCount": 0,
+        "achievedCount": 0,
+        "remainingCount": 0,
+        "completionRate": 0,
+        "completionPercent": 0,
+        "periodLabel": "기간 미정",
     }
 
 
