@@ -209,6 +209,8 @@
         content: typeof choice === "string" ? choice : choice.content || "",
         explanation: typeof choice === "string" ? "" : choice.explanation || choice.choice_explanation || "",
       }));
+      const selectedChoiceId = selectedChoiceNo ? choices[selectedChoiceNo - 1]?.choiceId || null : null;
+      const correctChoiceId = answerNo ? choices[answerNo - 1]?.choiceId || null : null;
       return {
         questionId: question.questionId || question.question_id,
         number: index + 1,
@@ -222,7 +224,9 @@
         questionType: question.questionType || question.question_type || "",
         questionSubtype: question.questionSubtype || question.question_subtype || "",
         choices,
+        selectedChoiceId,
         selectedChoiceNo,
+        correctChoiceId,
         answerNo,
         isCorrect: answerNo !== null && selectedChoiceNo === answerNo,
         timeSpentMs: saved.questionTimeSpent?.[index] ?? null,
@@ -237,7 +241,9 @@
         choiceNo: choice.choice_no,
         content: choice.content || "",
         explanation: choice.choice_explanation || "",
+        isAnswer: choice.is_answer || false,
       }));
+      const correctChoice = choices.find((choice) => choice.choiceNo === question.answer_no || choice.isAnswer);
       return {
         questionId: question.question_id,
         number: question.number,
@@ -253,7 +259,9 @@
         questionType: question.question_type || "",
         questionSubtype: question.question_subtype || "",
         choices,
+        selectedChoiceId: question.selected_choice_id || null,
         selectedChoiceNo: question.selected_choice_no,
+        correctChoiceId: question.correct_choice_id || correctChoice?.choiceId || null,
         answerNo: question.answer_no,
         isCorrect: question.is_correct,
         isSaved: question.is_saved,
@@ -283,7 +291,9 @@
         questionType: exp.question_type || "",
         questionSubtype: exp.question_subtype || "",
         choices,
+        selectedChoiceId: exp.user_choice_id || null,
         selectedChoiceNo: exp.user_choice_no,
+        correctChoiceId: exp.correct_choice_id || null,
         answerNo: exp.correct_choice_no,
         isCorrect: exp.is_correct,
         timeSpentMs: exp.time_spent_ms,
@@ -397,9 +407,16 @@
 
     function renderQuestion() {
       const question = questions[currentIndex];
-      const selectedChoice = question.selectedChoiceNo
-        ? question.choices.find((choice) => choice.choiceNo === question.selectedChoiceNo)
-        : null;
+      const selectedChoice = question.selectedChoiceId
+        ? question.choices.find((choice) => choice.choiceId === question.selectedChoiceId)
+        : question.selectedChoiceNo
+          ? question.choices.find((choice) => choice.choiceNo === question.selectedChoiceNo)
+          : null;
+      const correctChoice = question.correctChoiceId
+        ? question.choices.find((choice) => choice.choiceId === question.correctChoiceId)
+        : question.answerNo
+          ? question.choices.find((choice) => choice.choiceNo === question.answerNo)
+          : null;
 
       questionNumber.textContent = `${currentIndex + 1}번`;
       resultState.textContent = question.isCorrect ? "정답" : "오답";
@@ -412,17 +429,21 @@
       questionSource.textContent = question.source || "별도 지문이 없는 문제입니다.";
       choiceReview.innerHTML = question.choices.map((choice) => {
         const classes = [
-          choice.choiceNo === question.answerNo ? "correct" : "",
-          choice.choiceNo === question.selectedChoiceNo ? "selected" : "",
+          correctChoice && choice.choiceId === correctChoice.choiceId ? "correct" : "",
+          selectedChoice && choice.choiceId === selectedChoice.choiceId ? "selected" : "",
         ].filter(Boolean).join(" ");
         return `<li class="${classes}"><span>${choice.choiceNo}</span><b>${escapeHtml(choiceText(choice))}</b></li>`;
       }).join("");
 
       explanation.textContent = question.answerExplanation || "등록된 해설이 없습니다.";
-      wrongExplanation.textContent = question.selectedChoiceNo && question.selectedChoiceNo !== question.answerNo
-        ? choiceExplanation(selectedChoice) || "등록된 선택지 해설이 없습니다."
-        : "정답 처리된 문항입니다.";
       coreConcept.textContent = question.coreConcept || "등록된 핵심 개념이 없습니다.";
+      if (!selectedChoice) {
+        wrongExplanation.textContent = "미응답 문항입니다.";
+      } else if (!question.isCorrect) {
+        wrongExplanation.textContent = choiceExplanation(selectedChoice) || "등록된 선택지 해설이 없습니다.";
+      } else {
+        wrongExplanation.textContent = "정답 처리된 문항입니다.";
+      }
       renderNoteSaveState();
       renderJump();
     }

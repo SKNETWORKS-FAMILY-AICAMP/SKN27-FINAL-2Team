@@ -436,6 +436,9 @@ def diagnosis_explanation(request, session_id, question_id):
     # 정답 choice_no
     correct_opt = next((opt for opt in options if opt.is_answer), None)
     correct_choice_no = correct_opt.choice_no if correct_opt else None
+    correct_choice_id = correct_opt.choice_id if correct_opt else None
+    user_opt = next((opt for opt in options if opt.choice_no == record.selected_no), None)
+    user_choice_id = user_opt.choice_id if user_opt else None
 
     # 챗봇 URL (챗봇 앱 연결)
     chatbot_url = "/chatbot/?question_id={}".format(question_id)
@@ -452,11 +455,13 @@ def diagnosis_explanation(request, session_id, question_id):
         "question_type": question.question_type,
         "question_subtype": getattr(question, "question_subtype", ""),
         "correct_choice_no": correct_choice_no,
+        "correct_choice_id": correct_choice_id,
         "answer_explanation": question.answer_explanation,
         "core_concept": question.core_concept,
         "time_spent_ms": record.time_spent_ms,
         "choices": choices,
         "user_choice_no": record.selected_no,
+        "user_choice_id": user_choice_id,
         "is_correct": record.is_correct,
         "chatbot_url": chatbot_url,
     })
