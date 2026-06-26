@@ -134,22 +134,50 @@ def _ordered_existing_values(qs, field_name, ordered_values):
 
 # Questions 모델 목록을 문제 생성 API 응답 JSON으로 변환한다.
 # 아직 풀이 전이므로 사용자 선택 답안 정보는 포함하지 않는다.
-def _serialize_questions(questions):
+def _shuffled_choices_for_question(question, seed_key):
+    options = list(
+        QuestionOptions.objects.filter(question_id=question.question_id)
+        .order_by("choice_no")
+    )
+    shuffled_options = options[:]
+    random.Random(f"{seed_key}:{question.question_id}").shuffle(shuffled_options)
+
+    choices = [
+        {
+            "choice_id": option.choice_id,
+            "choice_no": display_no,
+            "content": option.content,
+            "choice_image_path": option.choice_image_path,
+            "choice_explanation": option.choice_explanation,
+            "is_answer": option.is_answer,
+        }
+        for display_no, option in enumerate(shuffled_options, start=1)
+    ]
+    answer_no = next(
+        (
+            display_no
+            for display_no, option in enumerate(shuffled_options, start=1)
+            if option.is_answer
+        ),
+        question.answer_no,
+    )
+    return choices, answer_no, options
+
+
+def _display_choice_no(choices, choice_id):
+    if choice_id is None:
+        return None
+    matched_choice = next(
+        (choice for choice in choices if choice["choice_id"] == choice_id),
+        None,
+    )
+    return matched_choice["choice_no"] if matched_choice else None
+
+
+def _serialize_questions(questions, seed_key):
     serialized_questions = []
     for question in questions:
-        options = QuestionOptions.objects.filter(
-            question_id=question.question_id
-        ).order_by("choice_no")
-        choices = [
-            {
-                "choice_id": option.choice_id,
-                "choice_no": option.choice_no,
-                "content": option.content,
-                "choice_image_path": option.choice_image_path,
-                "choice_explanation": option.choice_explanation,
-            }
-            for option in options
-        ]
+        choices, answer_no, _options = _shuffled_choices_for_question(question, seed_key)
         serialized_questions.append({
             "question_id": question.question_id,
             "content": question.content,
@@ -161,7 +189,7 @@ def _serialize_questions(questions):
             "topic": question.topic,
             "question_type": question.question_type,
             "question_subtype": question.question_subtype,
-            "answer_no": question.answer_no,
+            "answer_no": answer_no,
             "answer_explanation": question.answer_explanation,
             "core_concept": question.core_concept,
             "choices": choices,
@@ -175,20 +203,10 @@ def _serialize_session_questions(records):
     serialized_questions = []
     for record in records:
         question = record.question
-        options = list(
-            QuestionOptions.objects.filter(question_id=question.question_id)
-            .order_by("choice_no")
+        choices, answer_no, options = _shuffled_choices_for_question(
+            question,
+            record.session_id,
         )
-        choices = [
-            {
-                "choice_id": option.choice_id,
-                "choice_no": option.choice_no,
-                "content": option.content,
-                "choice_image_path": option.choice_image_path,
-                "choice_explanation": option.choice_explanation,
-            }
-            for option in options
-        ]
         selected_choice_id = None
         if record.selected_no is not None:
             selected = next(
@@ -208,12 +226,12 @@ def _serialize_session_questions(records):
             "topic": question.topic,
             "question_type": question.question_type,
             "question_subtype": question.question_subtype,
-            "answer_no": question.answer_no,
+            "answer_no": answer_no,
             "answer_explanation": question.answer_explanation,
             "core_concept": question.core_concept,
             "choices": choices,
             "selected_choice_id": selected_choice_id,
-            "selected_choice_no": record.selected_no,
+            "selected_choice_no": _display_choice_no(choices, selected_choice_id),
             "time_spent_ms": record.time_spent_ms,
             "is_answered": record.selected_no is not None,
         })
@@ -447,11 +465,12 @@ def question_start(request):
                 for question in questions
             ])
 
+    choice_seed_key = session.session_id if session else f"guest:{timezone.localdate().isoformat()}"
     start_question_response = StartQuestionsResponse({
         "session_id": session.session_id if session else None,
         "total_count": count,
         "is_saved": session is not None,
-        "questions": _serialize_questions(questions),
+        "questions": _serialize_questions(questions, choice_seed_key),
     })
     return Response(start_question_response.data, status=status.HTTP_201_CREATED)
 
@@ -581,25 +600,21 @@ def question_session_result(request, session_id):
         .select_related("question")
         .order_by("record_id")
     )
-    question_ids = [record.question_id for record in records]
-    option_map = {}
-    for option in QuestionOptions.objects.filter(question_id__in=question_ids).order_by(
-        "question_id",
-        "choice_no",
-    ):
-        option_map.setdefault(option.question_id, []).append(option)
-
     questions = []
     correct_count = 0
     total_score = 0
     max_score = 0
     for number, record in enumerate(records, start=1):
         question = record.question
-        options = option_map.get(question.question_id, [])
+        choices, answer_no, options = _shuffled_choices_for_question(
+            question,
+            session.session_id,
+        )
         selected_option = next(
             (option for option in options if option.choice_no == record.selected_no),
             None,
         )
+        selected_choice_id = selected_option.choice_id if selected_option else None
         earned_score = record.q_score if record.is_correct else 0
         correct_count += 1 if record.is_correct else 0
         total_score += earned_score
@@ -618,25 +633,15 @@ def question_session_result(request, session_id):
             "topic": record.topic,
             "question_type": record.q_type,
             "question_subtype": question.question_subtype,
-            "selected_choice_no": record.selected_no,
-            "selected_choice_id": selected_option.choice_id if selected_option else None,
-            "answer_no": question.answer_no,
+            "selected_choice_no": _display_choice_no(choices, selected_choice_id),
+            "selected_choice_id": selected_choice_id,
+            "answer_no": answer_no,
             "is_correct": record.is_correct,
             "is_saved": record.is_saved,
             "time_spent_ms": record.time_spent_ms,
             "answer_explanation": question.answer_explanation,
             "core_concept": question.core_concept,
-            "choices": [
-                {
-                    "choice_id": option.choice_id,
-                    "choice_no": option.choice_no,
-                    "content": option.content,
-                    "choice_image_path": option.choice_image_path,
-                    "choice_explanation": option.choice_explanation,
-                    "is_answer": option.is_answer,
-                }
-                for option in options
-            ],
+            "choices": choices,
         })
 
     return Response(
@@ -719,7 +724,7 @@ def question_save_answer(request, session_id):
             )
         selected_choice_id = option.choice_id
         selected_choice_no = option.choice_no
-        is_correct = selected_choice_no == record.question.answer_no
+        is_correct = option.is_answer
 
     record.selected_no = selected_choice_no
     record.is_correct = is_correct
@@ -737,14 +742,20 @@ def question_save_answer(request, session_id):
     if update_session_fields:
         session.save(update_fields=update_session_fields)
 
+    choices, _answer_no, _options = _shuffled_choices_for_question(
+        record.question,
+        session.session_id,
+    )
+    selected_display_no = _display_choice_no(choices, selected_choice_id)
+
     serializer = SaveAnswerResponse({
         "session_id": session.session_id,
         "question_id": question_id,
         "selected_choice_id": selected_choice_id,
-        "selected_choice_no": selected_choice_no,
+        "selected_choice_no": selected_display_no,
         "time_spent_ms": record.time_spent_ms,
         "elapsed_sec": session.elapsed_sec,
-        "is_answered": selected_choice_no is not None,
+        "is_answered": selected_display_no is not None,
     })
     return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -831,20 +842,20 @@ def question_wrong_chat_context(request, session_id):
         .select_related("question")
         .order_by("record_id")
     )
-    question_ids = [record.question_id for record in records]
-    option_map = {}
-    for option in QuestionOptions.objects.filter(question_id__in=question_ids).order_by(
-        "question_id",
-        "choice_no",
-    ):
-        option_map.setdefault(option.question_id, []).append(option)
-
     wrong_questions = []
     for number, record in enumerate(records, start=1):
         if record.is_correct:
             continue
         question = record.question
-        options = option_map.get(question.question_id, [])
+        choices, answer_no, options = _shuffled_choices_for_question(
+            question,
+            session.session_id,
+        )
+        selected_option = next(
+            (option for option in options if option.choice_no == record.selected_no),
+            None,
+        )
+        selected_choice_id = selected_option.choice_id if selected_option else None
         wrong_questions.append({
             "record_id": record.record_id,
             "session_id": session.session_id,
@@ -853,8 +864,8 @@ def question_wrong_chat_context(request, session_id):
             "content": question.content,
             "passage": question.passage,
             "image_caption": question.image_caption,
-            "selected_no": record.selected_no,
-            "answer_no": question.answer_no,
+            "selected_no": _display_choice_no(choices, selected_choice_id),
+            "answer_no": answer_no,
             "is_correct": record.is_correct,
             "time_spent_ms": record.time_spent_ms,
             "era": record.era,
@@ -866,12 +877,12 @@ def question_wrong_chat_context(request, session_id):
             "answer_explanation": question.answer_explanation,
             "options": [
                 {
-                    "choice_no": option.choice_no,
-                    "content": option.content,
-                    "is_answer": option.is_answer,
-                    "choice_explanation": option.choice_explanation,
+                    "choice_no": choice["choice_no"],
+                    "content": choice["content"],
+                    "is_answer": choice["is_answer"],
+                    "choice_explanation": choice["choice_explanation"],
                 }
-                for option in options
+                for choice in choices
             ],
         })
 

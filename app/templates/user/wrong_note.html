@@ -30,19 +30,14 @@
         <h1>노트</h1>
       </div>
       <div class="note-tabs" aria-label="노트 보기">
-        <button class="active" type="button" data-note-tab="all">전체 보기</button>
-        <button type="button" data-note-tab="wrong">오답 보기</button>
-        <button type="button" data-note-tab="saved">저장 문제 보기</button>
+        <button class="active" type="button" data-note-tab="wrong">오답 노트</button>
+        <button type="button" data-note-tab="saved">저장 노트</button>
       </div>
     </section>
 
     <section class="note-workspace" aria-label="노트 상세">
       <div class="note-toolbar">
         <button class="back-button" id="backButton" type="button" aria-label="마이페이지로 돌아가기">‹</button>
-        <div class="view-toggle" id="viewToggle" aria-label="전체 보기 방식">
-          <button class="active" type="button" data-view-mode="sessions">세션 보기</button>
-          <button type="button" data-view-mode="problems">문제 보기</button>
-        </div>
         <div class="toolbar-actions">
           <button class="delete-button" id="deleteButton" type="button">저장 해제</button>
           <details class="filter-menu">
@@ -134,11 +129,9 @@
     const payload = JSON.parse(document.getElementById("notePayload").textContent);
     let records = payload.records || [];
     const sessions = payload.sessions || [];
-    let activeTab = "all";
-    let viewMode = "sessions";
+    let activeTab = "wrong";
     let activeExplainTab = "solution";
     let activeId = records[0]?.id || null;
-    let activeSessionId = null;
 
     const noteList = document.getElementById("noteList");
     const choiceList = document.getElementById("choiceList");
@@ -218,80 +211,29 @@
     }
 
     function filteredRecords() {
-      return recordsForTab().filter((record) => {
-        const selectedSessionMatched = (
-          activeTab !== "all" ||
-          viewMode !== "problems" ||
-          activeSessionId === null ||
-          String(record.sessionId) === String(activeSessionId)
-        );
-        return selectedSessionMatched && matchesFilters(record);
-      });
-    }
-
-    function filteredSessions() {
-      return sessions.filter((session) => {
-        const sessionMatched = sessionFilter.value === "all" || String(session.sessionId) === sessionFilter.value;
-        const sessionTypeMatched = sessionTypeFilter.value === "all" || session.sessionType === sessionTypeFilter.value;
-        const hasMatchedRecord = recordsForTab().some((record) => (
-          String(record.sessionId) === String(session.sessionId) && matchesFilters(record, false)
-        ));
-        return sessionMatched && sessionTypeMatched && hasMatchedRecord;
-      });
+      return recordsForTab().filter((record) => matchesFilters(record));
     }
 
     function currentRecord() {
-      return records.find((record) => record.id === activeId) || filteredRecords()[0] || null;
+      return filteredRecords().find((record) => record.id === activeId) || filteredRecords()[0] || null;
     }
 
     function renderTabs() {
       document.querySelectorAll("[data-note-tab]").forEach((button) => {
         button.classList.toggle("active", button.dataset.noteTab === activeTab);
       });
-      document.querySelectorAll("[data-view-mode]").forEach((button) => {
-        button.disabled = activeTab !== "all";
-        button.classList.toggle("active", activeTab === "all" && button.dataset.viewMode === viewMode);
-      });
       document.querySelectorAll(".explain-tabs button").forEach((button) => {
         button.classList.toggle("active", button.dataset.tab === activeExplainTab);
       });
     }
 
-    function renderSessions() {
-      const list = filteredSessions();
-      listTitle.textContent = "세션 목록";
-      noteList.innerHTML = list.length ? list.map((session) => `
-        <button class="session-card" type="button" data-session-id="${session.sessionId}">
-          <span>${escapeHtml(session.sessionTypeLabel || session.sessionType)} · ${escapeHtml(session.recordedDate || session.label)} · ${escapeHtml(session.status)}</span>
-          <strong>${session.totalCount}문항 · 오답 ${session.wrongCount}개 · 저장 ${session.savedCount}개</strong>
-          <em>풀이 ${session.timeSpent} · 정답 ${session.correctCount}/${session.answeredCount}</em>
-        </button>
-      `).join("") : `<p class="empty-list">조건에 맞는 세션이 없습니다.</p>`;
-
-      noteList.querySelectorAll("button").forEach((button) => {
-        button.addEventListener("click", () => {
-          activeSessionId = button.dataset.sessionId;
-          viewMode = "problems";
-          activeId = filteredRecords()[0]?.id || null;
-          render();
-        });
-      });
-    }
-
     function renderList() {
-      if (activeTab === "all" && viewMode === "sessions") {
-        renderSessions();
-        return;
-      }
-
       const list = filteredRecords();
       listTitle.textContent = activeTab === "wrong"
-        ? "오답 목록"
+        ? "오답 노트"
         : activeTab === "saved"
-          ? "저장 문제 목록"
-          : activeSessionId === null
-            ? "문항 목록"
-            : "선택 세션 문항";
+          ? "저장 노트"
+          : "문항 목록";
       noteList.innerHTML = list.length ? list.map((record) => `
         <button class="${record.id === activeId ? "active" : ""}" type="button" data-id="${record.id}">
           <span>${escapeHtml(record.sessionTypeLabel || record.sessionType)} · ${escapeHtml(record.era)} · ${escapeHtml(record.topic)} · ${escapeHtml(record.type)}</span>
@@ -368,7 +310,6 @@
     }
 
     function render() {
-      if (activeTab !== "all") viewMode = "problems";
       if (!filteredRecords().some((record) => record.id === activeId)) {
         activeId = filteredRecords()[0]?.id || null;
       }
@@ -417,18 +358,6 @@
     document.querySelectorAll("[data-note-tab]").forEach((button) => {
       button.addEventListener("click", () => {
         activeTab = button.dataset.noteTab;
-        viewMode = activeTab === "all" ? viewMode : "problems";
-        activeSessionId = null;
-        activeId = filteredRecords()[0]?.id || null;
-        render();
-      });
-    });
-
-    document.querySelectorAll("[data-view-mode]").forEach((button) => {
-      button.addEventListener("click", () => {
-        if (activeTab !== "all") return;
-        viewMode = button.dataset.viewMode;
-        activeSessionId = null;
         activeId = filteredRecords()[0]?.id || null;
         render();
       });
@@ -443,7 +372,6 @@
 
     [sessionFilter, sessionTypeFilter, eraFilter, topicFilter, typeFilter].forEach((select) => {
       select.addEventListener("change", () => {
-        activeSessionId = null;
         activeId = filteredRecords()[0]?.id || null;
         render();
       });
