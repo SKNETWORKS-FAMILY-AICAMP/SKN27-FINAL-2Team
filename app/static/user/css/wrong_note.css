@@ -119,7 +119,9 @@ select {
 .toolbar-actions {
   display: flex;
   align-items: flex-start;
+  justify-content: flex-end;
   gap: 10px;
+  flex-wrap: wrap;
 }
 
 .back-button,
@@ -163,6 +165,8 @@ select {
 }
 
 .filter-menu summary {
+  position: relative;
+  z-index: 31;
   list-style: none;
 }
 
@@ -171,18 +175,35 @@ select {
 }
 
 .filter-panel {
-  position: absolute;
-  right: 0;
-  top: 52px;
-  z-index: 4;
-  width: 260px;
-  display: grid;
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  z-index: 31;
+  width: min(520px, calc(100vw - 48px));
+  max-height: calc(100vh - 120px);
+  display: none;
+  grid-template-columns: 1fr;
   gap: 12px;
+  transform: translate(-50%, -50%);
   padding: 16px;
   border: 2px solid var(--green);
   border-radius: 18px;
   background: var(--white);
-  box-shadow: var(--shadow);
+  box-shadow: 0 28px 70px rgba(0, 0, 0, 0.34);
+  overflow: auto;
+}
+
+.filter-menu[open]::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  background: rgba(12, 24, 10, 0.64);
+  backdrop-filter: blur(3px);
+}
+
+.filter-menu[open] .filter-panel {
+  display: grid;
 }
 
 .filter-panel label {
@@ -593,6 +614,10 @@ select {
 
 @media (max-width: 980px) {.wrong-note-page {
     padding: 24px;
+  }
+
+  .toolbar-actions {
+    justify-content: flex-start;
   }
 
   .note-layout {

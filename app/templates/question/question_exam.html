@@ -72,11 +72,11 @@
           <section class="save-card action-card">
             <div class="side-action-buttons">
               <button class="exit-top-button" id="exitButton" type="button">나가기</button>
-              {% if exam_mode != 'diagnostic' and request.user.is_authenticated %}
+              {% if request.user.is_authenticated %}
               <button id="saveProgressButton" type="button">진행 저장</button>
               {% endif %}
             </div>
-            {% if exam_mode != 'diagnostic' and request.user.is_authenticated %}
+            {% if request.user.is_authenticated %}
             <p id="saveStatus">답안 선택, 이동, 나가기 시 진행 상황이 자동 저장됩니다.</p>
             {% endif %}
           </section>
@@ -113,13 +113,18 @@
       });
     });
 
-    const savedProgress = IS_DIAGNOSTIC ? null : JSON.parse(localStorage.getItem("questionInProgress") || "null");
+    const progressStorageKey = IS_DIAGNOSTIC ? "diagnosisInProgress" : "questionInProgress";
+    const savedProgress = JSON.parse(localStorage.getItem(progressStorageKey) || "null");
     const searchParams = new URLSearchParams(window.location.search);
-    const shouldStartNew = !IS_DIAGNOSTIC && searchParams.get("new") === "1";
-    const shouldResume = searchParams.get("resume") === "1" || (!shouldStartNew && !!savedProgress?.questions?.length);
+    const explicitResume = searchParams.get("resume") === "1";
+    const freshDiagnosisSession = IS_DIAGNOSTIC && !explicitResume
+      ? JSON.parse(sessionStorage.getItem("diagnosisSession") || "null")
+      : null;
+    const shouldStartNew = (!IS_DIAGNOSTIC && searchParams.get("new") === "1") || !!freshDiagnosisSession?.questions?.length;
+    const shouldResume = explicitResume || (!shouldStartNew && !!savedProgress?.questions?.length);
     const resumeSessionId = Number(searchParams.get("session_id") || 0);
     if (shouldStartNew) {
-      localStorage.removeItem("questionInProgress");
+      localStorage.removeItem(progressStorageKey);
       localStorage.removeItem("questionGenerationCondition");
     }
     const savedCondition = shouldResume
@@ -173,6 +178,7 @@
         ?.split("=")[1] || "";
     }
 
+    // 문제 생성 화면/학습 플래너에서 저장한 조건을 문제 생성 API 요청 형식으로 변환한다.
     function conditionToRequest(condition) {
       const asList = (value) => {
         if (Array.isArray(value)) return value;
@@ -187,8 +193,8 @@
         question_types: asList(condition?.["대유형"]),
         question_subtypes: asList(condition?.["소유형"]),
         score_counts: condition?.scoreCounts || {},
-        studyplan_id: condition?.studyPlanId || null,
-        study_plan_block_id: condition?.studyPlanBlockId || null,
+        studyplan_id: condition?.studyPlanId || condition?.studyplan_id || null,
+        study_plan_block_id: condition?.studyPlanBlockId || condition?.study_plan_block_id || null,
         count: Number(condition?.["문제 수"] || 10),
       };
     }
@@ -206,6 +212,10 @@
       if (!path) return "";
       if (/^(https?:)?\/\//.test(path) || path.startsWith("/")) return path;
       return `/${path}`;
+    }
+
+    function difficultyLabel(score) {
+      return ({ 3: "상", 2: "중", 1: "하" })[Number(score)] || "-";
     }
 
     function normalizeChoice(choice) {
@@ -241,7 +251,7 @@
     }
 
     function loadDiagnosisQuestions() {
-      const sessionData = JSON.parse(sessionStorage.getItem("diagnosisSession") || "null");
+      const sessionData = freshDiagnosisSession || JSON.parse(sessionStorage.getItem("diagnosisSession") || "null");
       if (!sessionData?.questions?.length) {
         alert("세션 정보가 없습니다. 진단평가를 다시 시작해 주세요.");
         window.location.href = "/diagnosis/";
@@ -254,6 +264,9 @@
       questionTimeSpent = Array(questions.length).fill(0);
       totalExamSeconds = sessionData.time_limit_sec || secondsByQuestionCount(questions.length);
       remainingSeconds = totalExamSeconds;
+      if (sessionId) {
+        localStorage.setItem(progressStorageKey, JSON.stringify(currentSession()));
+      }
       return true;
     }
 
@@ -277,11 +290,72 @@
       remainingSeconds = Number.isInteger(payload.remaining_sec)
         ? payload.remaining_sec
         : Math.max(totalExamSeconds - (payload.elapsed_sec || 0), 0);
-      localStorage.setItem("questionInProgress", JSON.stringify(currentSession()));
+      localStorage.setItem(progressStorageKey, JSON.stringify(currentSession()));
+    }
+
+    async function loadSavedDiagnosisSession(savedSessionId) {
+      const response = await fetch(`/diagnosis/api/session/${savedSessionId}/`, {
+        credentials: "same-origin",
+      });
+      const payload = await response.json();
+
+      if (!response.ok) {
+        throw new Error(payload.error || "저장된 진단평가를 불러오지 못했습니다.");
+      }
+
+      sessionId = payload.session_id;
+      questions = payload.questions.map(toExamQuestion);
+      answers = payload.questions.map((question) => question.selected_choice_no || null);
+      questionTimeSpent = payload.questions.map((question) => question.time_spent_ms || 0);
+      currentIndex = answers.findIndex((answer) => answer === null);
+      if (currentIndex < 0) currentIndex = 0;
+      totalExamSeconds = payload.time_limit_sec || secondsByQuestionCount(payload.total_count || questions.length);
+      remainingSeconds = Number.isInteger(payload.remaining_sec)
+        ? payload.remaining_sec
+        : Math.max(totalExamSeconds - (payload.elapsed_sec || 0), 0);
+      localStorage.setItem(progressStorageKey, JSON.stringify(currentSession()));
     }
 
     async function loadQuestions() {
       if (IS_DIAGNOSTIC) {
+        if (shouldResume && resumeSessionId) {
+          try {
+            await loadSavedDiagnosisSession(resumeSessionId);
+            return;
+          } catch (error) {
+            alert(error.message);
+            window.location.href = "/diagnosis/";
+            return;
+          }
+        }
+
+        if (shouldResume && savedProgress?.sessionId) {
+          try {
+            await loadSavedDiagnosisSession(savedProgress.sessionId);
+            return;
+          } catch (error) {
+            localStorage.removeItem(progressStorageKey);
+            alert(error.message);
+            window.location.href = "/diagnosis/";
+            return;
+          }
+        }
+
+        if (shouldResume && savedProgress?.questions?.length) {
+          sessionId = savedProgress.sessionId || null;
+          questions = savedProgress.questions;
+          currentIndex = Number.isInteger(savedProgress.currentIndex) ? savedProgress.currentIndex : 0;
+          answers = savedProgress.answers?.length ? savedProgress.answers : Array(questions.length).fill(null);
+          questionTimeSpent = savedProgress.questionTimeSpent?.length
+            ? savedProgress.questionTimeSpent
+            : Array(questions.length).fill(0);
+          totalExamSeconds = savedProgress.totalExamSeconds || secondsByQuestionCount(questions.length);
+          remainingSeconds = Number.isInteger(savedProgress.remainingSeconds)
+            ? savedProgress.remainingSeconds
+            : totalExamSeconds;
+          return;
+        }
+
         loadDiagnosisQuestions();
         return;
       }
@@ -306,9 +380,9 @@
           ? savedProgress.questionTimeSpent
           : Array(questions.length).fill(0);
         totalExamSeconds = secondsByQuestionCount(questions.length);
-        if (!remainingSeconds) {
-          remainingSeconds = totalExamSeconds;
-        }
+        remainingSeconds = Number.isInteger(savedProgress.remainingSeconds)
+          ? savedProgress.remainingSeconds
+          : totalExamSeconds;
         return;
       }
 
@@ -345,7 +419,7 @@
         totalExamSeconds = secondsByQuestionCount(questions.length);
         remainingSeconds = totalExamSeconds;
         if (sessionId) {
-          localStorage.setItem("questionInProgress", JSON.stringify(currentSession()));
+          localStorage.setItem(progressStorageKey, JSON.stringify(currentSession()));
         }
         if (shouldStartNew) {
           window.history.replaceState({}, "", "/question/exam/");
@@ -353,7 +427,7 @@
       } catch (error) {
         sessionStorage.removeItem("questionGenerationCondition");
         localStorage.removeItem("questionGenerationCondition");
-        localStorage.removeItem("questionInProgress");
+        localStorage.removeItem(progressStorageKey);
         alert(error.message);
         window.location.href = "/question/";
         return;
@@ -379,6 +453,7 @@
         questionTimeSpent,
         currentIndex,
         remainingSeconds,
+        totalExamSeconds,
         status,
         savedAt: new Date().toISOString(),
       };
@@ -402,11 +477,6 @@
     }
 
     async function saveProgress(showMessage = true, markCompleted = false) {
-      if (IS_DIAGNOSTIC) {
-        commitCurrentQuestionTime();
-        return;
-      }
-
       if (!sessionId) {
         if (showMessage && saveStatus) {
           saveStatus.textContent = "저장할 풀이 세션이 없습니다.";
@@ -429,14 +499,17 @@
       const selectedNo = answers[currentIndex];
       const choiceId = selectedNo ? question.choiceIds[selectedNo - 1] : null;
       const timeSpentMs = commitCurrentQuestionTime();
-      localStorage.setItem("questionInProgress", JSON.stringify(currentSession()));
+      localStorage.setItem(progressStorageKey, JSON.stringify(currentSession()));
 
       if (showMessage && saveStatus) {
         saveStatus.textContent = "문제 저장 중입니다.";
         saveStatus.classList.remove("is-saved", "is-error");
       }
 
-      const response = await fetch(`/question/api/session/${sessionId}/answer/`, {
+      const answerSaveUrl = IS_DIAGNOSTIC
+        ? `/diagnosis/api/session/${sessionId}/answer/`
+        : `/question/api/session/${sessionId}/answer/`;
+      const response = await fetch(answerSaveUrl, {
         method: "PATCH",
         credentials: "same-origin",
         headers: {
@@ -470,16 +543,18 @@
     }
 
     function saveProgressBeforeLeave() {
-      if (IS_DIAGNOSTIC) return;
       if (isSubmittingExam) return;
       if (!sessionId || !questions[currentIndex]?.questionId) return;
       const question = questions[currentIndex];
       const selectedNo = answers[currentIndex];
       const choiceId = selectedNo ? question.choiceIds[selectedNo - 1] : null;
       const timeSpentMs = commitCurrentQuestionTime();
-      localStorage.setItem("questionInProgress", JSON.stringify(currentSession()));
+      localStorage.setItem(progressStorageKey, JSON.stringify(currentSession()));
 
-      fetch(`/question/api/session/${sessionId}/answer/`, {
+      const answerSaveUrl = IS_DIAGNOSTIC
+        ? `/diagnosis/api/session/${sessionId}/answer/`
+        : `/question/api/session/${sessionId}/answer/`;
+      fetch(answerSaveUrl, {
         method: "PATCH",
         keepalive: true,
         credentials: "same-origin",
@@ -509,7 +584,7 @@
         submittedAt: new Date().toISOString(),
         condition: savedCondition,
       }));
-      localStorage.removeItem("questionInProgress");
+      localStorage.removeItem(progressStorageKey);
       setTimeout(() => {
         window.location.href = "/question/result/";
       }, 1200);
@@ -558,6 +633,7 @@
         }
 
         sessionStorage.removeItem("diagnosisSession");
+        localStorage.removeItem(progressStorageKey);
         window.location.href = `/diagnosis/result/?session_id=${sessionId}`;
       } catch (error) {
         analysisLoading.hidden = true;
@@ -617,7 +693,7 @@
           submittedAt: new Date().toISOString(),
           condition: savedCondition,
         }));
-        localStorage.removeItem("questionInProgress");
+        localStorage.removeItem(progressStorageKey);
         setTimeout(() => {
           window.location.href = "/question/result/";
         }, 1200);
@@ -643,7 +719,7 @@
       const question = questions[currentIndex];
       if (!question) return;
       questionBadge.textContent = `문항 번호 ${currentIndex + 1}`;
-      questionScore.textContent = `${question.score || 0}점`;
+      questionScore.textContent = IS_DIAGNOSTIC ? `${question.score || 0}점` : difficultyLabel(question.score);
       questionType.textContent = question.type;
       questionTitle.textContent = question.title;
       const sourceHtml = escapeHtml(question.source).replaceAll("\n", "<br>");
@@ -709,12 +785,10 @@
     prevButton.addEventListener("click", () => moveQuestion(currentIndex - 1));
     nextButton.addEventListener("click", () => moveQuestion(currentIndex + 1));
     exitButton.addEventListener("click", async () => {
-      if (!IS_DIAGNOSTIC) {
-        try {
-          await saveProgress(false);
-        } catch (error) {
-          console.error(error);
-        }
+      try {
+        await saveProgress(false);
+      } catch (error) {
+        console.error(error);
       }
       window.location.href = IS_DIAGNOSTIC ? "/diagnosis/" : "/question/";
     });

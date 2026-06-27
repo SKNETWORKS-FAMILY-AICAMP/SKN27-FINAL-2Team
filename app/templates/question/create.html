@@ -36,18 +36,13 @@
       </header>
 
       <section class="mode-panel" aria-label="문제 생성 방식">
+        <label class="mode-card">
+          <input type="radio" name="questionMode" value="study_plan" />
+          <span>학습 계획 문제 풀기</span>
+          <strong>나의 학습실 학습 플래너에서 전달한 조건으로 문제를 생성합니다.</strong>
+        </label>
         <label class="mode-card selected">
-          <input type="radio" name="questionMode" value="basic" checked />
-          <span>기본</span>
-          <strong>랜덤 50 문제</strong>
-        </label>
-        <label class="mode-card">
-          <input type="radio" name="questionMode" value="hard" />
-          <span>어려움</span>
-          <strong>50문제 중 어려운 문제 위주</strong>
-        </label>
-        <label class="mode-card">
-          <input type="radio" name="questionMode" value="detail" />
+          <input type="radio" name="questionMode" value="detail" checked />
           <span>상세 설정</span>
           <strong>시대, 주제, 유형을 직접 선택</strong>
         </label>
@@ -139,6 +134,32 @@
         </div>
       </footer>
     </section>
+
+    <div class="saved-session-modal is-hidden" id="savedSessionModal" role="dialog" aria-modal="true" aria-labelledby="savedSessionTitle">
+      <section class="saved-session-dialog">
+        <header>
+          <div>
+            <span>Saved Exams</span>
+            <h2 id="savedSessionTitle">저장된 문제지 선택</h2>
+          </div>
+          <button type="button" id="closeSavedSessionModal" aria-label="닫기">×</button>
+        </header>
+        <div class="saved-session-groups">
+          <section>
+            <h3>진단 평가</h3>
+            <div class="saved-session-list" data-session-list="diagnostic"></div>
+          </section>
+          <section>
+            <h3>문제 풀이</h3>
+            <div class="saved-session-list" data-session-list="practice"></div>
+          </section>
+          <section>
+            <h3>학습 계획 문제 풀이</h3>
+            <div class="saved-session-list" data-session-list="study_plan"></div>
+          </section>
+        </div>
+      </section>
+    </div>
   </main>
 
   <script>
@@ -151,6 +172,8 @@
     const detailActionButtons = document.getElementById("detailActionButtons");
     const modeCards = document.querySelectorAll(".mode-card");
     const modeInputs = document.querySelectorAll('input[name="questionMode"]');
+    const savedSessionModal = document.getElementById("savedSessionModal");
+    const closeSavedSessionModal = document.getElementById("closeSavedSessionModal");
 
     const filterMap = {
       "시대": "eras",
@@ -231,33 +254,31 @@
     }
 
     function selectedMode() {
-      return document.querySelector('input[name="questionMode"]:checked')?.value || "basic";
+      return document.querySelector('input[name="questionMode"]:checked')?.value || "detail";
     }
 
-    function presetCondition(mode) {
-      if (mode === "hard") {
-        return {
-          generationMode: "hard",
-          "시대": [],
-          "주제": [],
-          "난이도": null,
-          "문제 수": "50",
-          "대유형": [],
-          "소유형": [],
-          scoreCounts: { "3": 20, "2": 10, "1": 20 },
-        };
-      }
+    // 학습 플래너가 넘긴 문제 생성 조건을 읽어 학습 계획 문제 풀이 API 요청으로 변환한다.
+    function readStudyPlanCondition() {
+      const rawCondition = sessionStorage.getItem("studyPlanQuestionCondition")
+        || sessionStorage.getItem("questionGenerationCondition")
+        || localStorage.getItem("studyPlanQuestionCondition");
+      if (!rawCondition) return null;
 
-      return {
-        generationMode: "basic",
-        "시대": [],
-        "주제": [],
-        "난이도": null,
-        "문제 수": "50",
-        "대유형": [],
-        "소유형": [],
-        scoreCounts: { "3": 10, "2": 30, "1": 10 },
-      };
+      try {
+        const condition = JSON.parse(rawCondition);
+        const studyPlanId = condition.studyPlanId || condition.studyplan_id;
+        const studyPlanBlockId = condition.studyPlanBlockId || condition.study_plan_block_id;
+        if (!studyPlanId || !studyPlanBlockId) return null;
+        return {
+          ...condition,
+          generationMode: "study_plan",
+          studyPlanId,
+          studyPlanBlockId,
+        };
+      } catch (error) {
+        console.error(error);
+        return null;
+      }
     }
 
     function updateModeView() {
@@ -322,7 +343,12 @@
 
     createButton.addEventListener("click", async () => {
       const mode = selectedMode();
-      const condition = mode === "detail" ? collectCondition() : presetCondition(mode);
+      const condition = mode === "study_plan" ? readStudyPlanCondition() : collectCondition();
+
+      if (mode === "study_plan" && !condition) {
+        alert("학습 계획 문제 풀기는 나의 학습실 학습 플래너에서 연결된 문제 생성 조건이 필요합니다.");
+        return;
+      }
 
       if (mode === "detail") {
         condition.generationMode = "detail";
@@ -349,31 +375,76 @@
       window.location.href = "/question/exam/?new=1";
     });
 
-    if (loadButton) {
-      loadButton.addEventListener("click", async () => {
-        try {
-          const response = await fetch("/question/api/sessions/in-progress/", {
-            credentials: "same-origin",
-          });
-          const payload = await response.json();
+    function closeSavedSessions() {
+      savedSessionModal?.classList.add("is-hidden");
+    }
 
-          if (!response.ok) {
-            throw new Error(payload.error || "저장된 문제를 불러오지 못했습니다.");
-          }
+    function renderSavedSessionList(type, sessions) {
+      const list = savedSessionModal?.querySelector(`[data-session-list="${type}"]`);
+      if (!list) return;
+      if (!sessions.length) {
+        list.innerHTML = '<p class="saved-session-empty">저장된 문제지가 없습니다.</p>';
+        return;
+      }
 
-          const session = payload.sessions?.[0];
-          if (!session) {
-            alert("불러올 풀이 중 문제가 없습니다.");
-            return;
-          }
+      list.innerHTML = sessions.map((session) => `
+        <button class="saved-session-item" type="button" data-session-type="${type}" data-session-id="${session.session_id}">
+          <span>${session.total_count}문항 · ${session.answered_count || 0}문항 풀이</span>
+          <small>${session.recorded_date || ""}</small>
+        </button>
+      `).join("");
 
-          window.location.href = `/question/exam/?resume=1&session_id=${session.session_id}`;
-        } catch (error) {
-          alert(error.message);
-          return;
-        }
+      list.querySelectorAll(".saved-session-item").forEach((button) => {
+        button.addEventListener("click", () => {
+          const sessionType = button.dataset.sessionType;
+          const sessionId = button.dataset.sessionId;
+          const baseUrl = sessionType === "diagnostic" ? "/diagnosis/exam/" : "/question/exam/";
+          window.location.href = `${baseUrl}?resume=1&session_id=${sessionId}`;
+        });
       });
     }
+
+    async function fetchJson(url) {
+      const response = await fetch(url, { credentials: "same-origin" });
+      const payload = await response.json();
+      if (!response.ok) {
+        throw new Error(payload.error || "저장된 문제지를 불러오지 못했습니다.");
+      }
+      return payload;
+    }
+
+    // 진단평가, 일반 문제풀이, 학습계획 문제풀이의 진행 중 세션을 모달에 나눠 표시한다.
+    async function openSavedSessionModal() {
+      try {
+        const [diagnosisPayload, questionPayload] = await Promise.all([
+          fetchJson("/diagnosis/api/sessions/in-progress/"),
+          fetchJson("/question/api/sessions/in-progress/"),
+        ]);
+        const questionSessions = questionPayload.sessions || [];
+        renderSavedSessionList("diagnostic", diagnosisPayload.sessions || []);
+        renderSavedSessionList(
+          "practice",
+          questionSessions.filter((session) => session.session_source !== "study_plan")
+        );
+        renderSavedSessionList(
+          "study_plan",
+          questionSessions.filter((session) => session.session_source === "study_plan")
+        );
+        savedSessionModal?.classList.remove("is-hidden");
+      } catch (error) {
+        alert(error.message);
+      }
+    }
+
+    if (loadButton) {
+      loadButton.addEventListener("click", openSavedSessionModal);
+    }
+    closeSavedSessionModal?.addEventListener("click", closeSavedSessions);
+    savedSessionModal?.addEventListener("click", (event) => {
+      if (event.target === savedSessionModal) {
+        closeSavedSessions();
+      }
+    });
 
     loadFilterOptions();
     updateModeView();

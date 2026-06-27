@@ -49,7 +49,7 @@ class FilterOptionsResponse(serializers.Serializer):
 # 문제 생성 요청 형식
 class StartQuestionsRequest(serializers.Serializer):
     generation_mode = serializers.ChoiceField(
-        choices=["basic", "hard", "detail"],
+        choices=["basic", "hard", "detail", "study_plan"],
         required=False,
         default="detail",
     )
@@ -100,6 +100,9 @@ class SavedSessionResponse(serializers.Serializer):
 # 이어 풀 수 있는 세션 1개의 응답 형식
 class InProgressSessionData(serializers.Serializer):
     session_id = serializers.IntegerField()
+    session_source = serializers.CharField(required=False, default="practice")
+    studyplan_id = serializers.IntegerField(allow_null=True, required=False)
+    study_plan_block_id = serializers.CharField(allow_blank=True, allow_null=True, required=False)
     total_count = serializers.IntegerField()
     answered_count = serializers.IntegerField()
     recorded_date = serializers.DateField()

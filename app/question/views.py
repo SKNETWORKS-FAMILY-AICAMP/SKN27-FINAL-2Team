@@ -394,6 +394,11 @@ def _score_counts_for_generation_mode(data):
     if generation_mode == "hard":
         return HARD_SCORE_COUNTS.copy(), None
 
+    if generation_mode == "study_plan":
+        return None, {
+            "error": "학습 계획 문제를 시작하려면 studyplan_id와 study_plan_block_id가 필요합니다.",
+        }
+
     missing_fields = []
     if not data["eras"]:
         missing_fields.append("시대")
@@ -444,6 +449,13 @@ def question_start(request):
 
     data = req_question_start.validated_data
     user_id = _get_login_user_id(request)
+    # 학습 계획 문제 풀기는 학습 플래너가 전달한 사용자별 계획 블록을 기준으로 문제를 생성한다.
+    if data["generation_mode"] == "study_plan" and user_id is None:
+        return Response(
+            {"error": "학습 계획 문제 풀기는 로그인이 필요합니다."},
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
+
     study_plan_block = None
     if user_id is not None:
         study_plan_block, study_plan_error = _find_study_plan_block(
@@ -572,11 +584,24 @@ def question_in_progress_sessions(request):
             .annotate(answered_count=models.Count("record_id"))
         )
     }
+    study_plan_sessions = {}
+    for row in (
+        SolveRecords.objects.filter(
+            session_id__in=session_ids,
+            studyplan_id__isnull=False,
+        )
+        .values("session_id", "studyplan_id", "study_plan_block_id")
+        .distinct()
+    ):
+        study_plan_sessions[row["session_id"]] = row
 
     inprogress_question_sessions = InProgressSessionsResponse({
         "sessions": [
             {
                 "session_id": session.session_id,
+                "session_source": "study_plan" if session.session_id in study_plan_sessions else "practice",
+                "studyplan_id": study_plan_sessions.get(session.session_id, {}).get("studyplan_id"),
+                "study_plan_block_id": study_plan_sessions.get(session.session_id, {}).get("study_plan_block_id"),
                 "total_count": session.total_count,
                 "answered_count": answered_counts.get(session.session_id, 0),
                 "recorded_date": session.recorded_date,
