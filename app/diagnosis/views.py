@@ -2,6 +2,7 @@ import random
 from datetime import datetime, timezone
 
 # from django.contrib.auth.decorators import login_required  # TODO: 인증 연동 후 활성화
+from django.db import models, transaction
 from django.shortcuts import render
 from rest_framework import status
 from rest_framework.decorators import api_view
@@ -110,6 +111,12 @@ def diagnosis_start(request):
         )
 
     questions_qs = Questions.objects.filter(question_id__in=selected_ids)
+    # 새 진단평가를 시작하면 이전 진행 중 세션을 정리해 저장 진단지는 1개만 유지한다.
+    SolveSessions.objects.filter(
+        user_id=user_id,
+        session_type="diagnostic",
+        status="in_progress",
+    ).delete()
 
     # 2) 세션 생성
     session = SolveSessions.objects.create(
@@ -123,6 +130,21 @@ def diagnosis_start(request):
     # 3) 문제 목록 구성 (문제 순서 랜덤 + 선택지 셔플)
     questions_list = list(questions_qs)
     random.shuffle(questions_list)
+    # 진단평가도 중간 저장/이어풀기를 지원하기 위해 시작 시 빈 풀이 기록을 만든다.
+    SolveRecords.objects.bulk_create([
+        SolveRecords(
+            session=session,
+            question=question,
+            selected_no=None,
+            is_correct=False,
+            time_spent_ms=None,
+            q_type=question.question_type,
+            topic=question.topic,
+            era=question.era,
+            q_score=question.q_score,
+        )
+        for question in questions_list
+    ])
 
     serialized_questions = []
     for q in questions_list:
@@ -215,7 +237,12 @@ def diagnosis_submit(request):
     }
 
     # solve_records 생성 + 점수 계산
-    records = []
+    existing_records = {
+        record.question_id: record
+        for record in SolveRecords.objects.filter(session=session, question_id__in=question_ids)
+    }
+    records_to_update = []
+    records_to_create = []
     total_score = 0
     correct_count = 0
 
@@ -242,22 +269,39 @@ def diagnosis_submit(request):
             total_score += q.q_score
             correct_count += 1
 
-        records.append(SolveRecords(
-            session=session,
-            question=q,
-            selected_no=selected_no,
-            is_correct=is_correct,
-            time_spent_ms=time_spent_ms,
-            q_type=q.question_type,
-            topic=q.topic,
-            era=q.era,
-            q_score=q.q_score,
-        ))
+        record = existing_records.get(q_id)
+        if record is None:
+            records_to_create.append(SolveRecords(
+                session=session,
+                question=q,
+                selected_no=selected_no,
+                is_correct=is_correct,
+                time_spent_ms=time_spent_ms,
+                q_type=q.question_type,
+                topic=q.topic,
+                era=q.era,
+                q_score=q.q_score,
+            ))
+            continue
 
-    # DB 저장
-    SolveRecords.objects.bulk_create(records)
+        record.selected_no = selected_no
+        record.is_correct = is_correct
+        record.time_spent_ms = time_spent_ms
+        record.q_type = q.question_type
+        record.topic = q.topic
+        record.era = q.era
+        record.q_score = q.q_score
+        records_to_update.append(record)
 
-    # 세션 완료 업데이트
+    # 진단 시작 시 만들어 둔 빈 records는 업데이트하고, 예외적으로 누락된 문항은 새로 생성한다.
+    if records_to_create:
+        SolveRecords.objects.bulk_create(records_to_create)
+    if records_to_update:
+        SolveRecords.objects.bulk_update(
+            records_to_update,
+            ["selected_no", "is_correct", "time_spent_ms", "q_type", "topic", "era", "q_score"],
+        )
+
     answer_rate = round(correct_count / len(answers), 4) if answers else 0.0
 
     session.status = "completed"
@@ -276,6 +320,192 @@ def diagnosis_submit(request):
 
 
 # ── API: 진단 결과 ──────────────────────────────────────────────────────────────
+
+def _serialize_diagnosis_session_questions(records):
+    """진단평가 이어풀기 화면에서 사용할 문항과 저장된 답안 상태를 반환한다."""
+    serialized_questions = []
+    for record in records:
+        question = record.question
+        options = list(
+            QuestionOptions.objects.filter(question_id=question.question_id)
+            .order_by("choice_no")
+        )
+        choices = [
+            {
+                "choice_id": option.choice_id,
+                "choice_no": option.choice_no,
+                "content": option.content,
+                "choice_image_path": getattr(option, "choice_image_path", ""),
+                "choice_explanation": option.choice_explanation,
+            }
+            for option in options
+        ]
+        selected_choice_id = None
+        if record.selected_no is not None:
+            selected = next(
+                (option for option in options if option.choice_no == record.selected_no),
+                None,
+            )
+            selected_choice_id = selected.choice_id if selected else None
+
+        serialized_questions.append({
+            "question_id": question.question_id,
+            "content": question.content,
+            "passage": getattr(question, "passage", ""),
+            "image_caption": getattr(question, "image_caption", ""),
+            "visual_note": getattr(question, "visual_note", ""),
+            "question_image_path": getattr(question, "question_image_path", ""),
+            "q_score": question.q_score,
+            "era": question.era,
+            "topic": question.topic,
+            "question_type": question.question_type,
+            "question_subtype": getattr(question, "question_subtype", ""),
+            "choices": choices,
+            "selected_choice_id": selected_choice_id,
+            "selected_choice_no": record.selected_no,
+            "time_spent_ms": record.time_spent_ms,
+            "is_answered": record.selected_no is not None,
+        })
+    return serialized_questions
+
+
+@api_view(["GET"])
+def diagnosis_in_progress_sessions(request):
+    """로그인 사용자의 진행 중인 진단평가 세션 목록을 반환한다."""
+    if not request.user.is_authenticated:
+        return Response({"error": "로그인이 필요한 기능입니다."}, status=status.HTTP_401_UNAUTHORIZED)
+
+    sessions = list(
+        SolveSessions.objects.filter(
+            user_id=request.user.user_id,
+            session_type="diagnostic",
+            status="in_progress",
+        ).order_by("-recorded_date", "-session_id")
+    )
+    # 진단평가는 저장 세션을 1개만 보여주는 정책이므로 과거 진행 중 세션은 정리한다.
+    old_session_ids = [session.session_id for session in sessions[1:]]
+    if old_session_ids:
+        SolveSessions.objects.filter(session_id__in=old_session_ids).delete()
+        sessions = sessions[:1]
+    session_ids = [session.session_id for session in sessions]
+    answered_counts = {
+        row["session_id"]: row["answered_count"]
+        for row in (
+            SolveRecords.objects.filter(session_id__in=session_ids, selected_no__isnull=False)
+            .values("session_id")
+            .annotate(answered_count=models.Count("record_id"))
+        )
+    }
+    return Response(
+        {
+            "sessions": [
+                {
+                    "session_id": session.session_id,
+                    "session_type": session.session_type,
+                    "total_count": session.total_count,
+                    "answered_count": answered_counts.get(session.session_id, 0),
+                    "recorded_date": session.recorded_date,
+                    "status": session.status,
+                }
+                for session in sessions
+            ]
+        },
+        status=status.HTTP_200_OK,
+    )
+
+
+@api_view(["GET"])
+def diagnosis_session(request, session_id):
+    """진행 중인 진단평가 세션의 문항과 저장된 답안을 이어풀기용으로 반환한다."""
+    if not request.user.is_authenticated:
+        return Response({"error": "로그인이 필요한 기능입니다."}, status=status.HTTP_401_UNAUTHORIZED)
+
+    try:
+        session = SolveSessions.objects.get(
+            session_id=session_id,
+            user_id=request.user.user_id,
+            session_type="diagnostic",
+            status="in_progress",
+        )
+    except SolveSessions.DoesNotExist:
+        return Response({"error": "이어 풀 진단평가 세션을 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+
+    records = SolveRecords.objects.filter(session=session).select_related("question").order_by("record_id")
+    elapsed_sec = session.elapsed_sec or 0
+    return Response(
+        {
+            "session_id": session.session_id,
+            "session_type": session.session_type,
+            "total_count": session.total_count,
+            "elapsed_sec": elapsed_sec,
+            "remaining_sec": max(DIAGNOSIS_TIME_LIMIT_SEC - elapsed_sec, 0),
+            "status": session.status,
+            "answered_count": records.filter(selected_no__isnull=False).count(),
+            "time_limit_sec": DIAGNOSIS_TIME_LIMIT_SEC,
+            "questions": _serialize_diagnosis_session_questions(records),
+        },
+        status=status.HTTP_200_OK,
+    )
+
+
+@api_view(["PATCH"])
+def diagnosis_save_answer(request, session_id):
+    """진단평가 풀이 중 선택 답안과 문항별 풀이 시간을 임시 저장한다."""
+    if not request.user.is_authenticated:
+        return Response({"error": "로그인이 필요한 기능입니다."}, status=status.HTTP_401_UNAUTHORIZED)
+
+    question_id = request.data.get("question_id")
+    choice_id = request.data.get("choice_id")
+    time_spent_ms = request.data.get("time_spent_ms")
+    elapsed_sec = request.data.get("elapsed_sec")
+    if not question_id:
+        return Response({"error": "question_id가 필요합니다."}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        with transaction.atomic():
+            session = SolveSessions.objects.select_for_update().get(
+                session_id=session_id,
+                user_id=request.user.user_id,
+                session_type="diagnostic",
+                status="in_progress",
+            )
+            record = SolveRecords.objects.select_for_update().get(session=session, question_id=question_id)
+
+            selected_no = None
+            selected_choice_id = None
+            is_correct = False
+            if choice_id is not None:
+                option = QuestionOptions.objects.get(choice_id=choice_id, question_id=question_id)
+                selected_no = option.choice_no
+                selected_choice_id = option.choice_id
+                is_correct = option.is_answer
+
+            record.selected_no = selected_no
+            record.is_correct = is_correct
+            record.time_spent_ms = time_spent_ms
+            record.save(update_fields=["selected_no", "is_correct", "time_spent_ms"])
+
+            if elapsed_sec is not None:
+                session.elapsed_sec = elapsed_sec
+                session.save(update_fields=["elapsed_sec"])
+    except SolveSessions.DoesNotExist:
+        return Response({"error": "진단평가 세션을 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+    except (SolveRecords.DoesNotExist, QuestionOptions.DoesNotExist):
+        return Response({"error": "세션에 포함된 문항 또는 선택지가 아닙니다."}, status=status.HTTP_400_BAD_REQUEST)
+
+    return Response(
+        {
+            "session_id": session.session_id,
+            "question_id": int(question_id),
+            "selected_choice_id": selected_choice_id,
+            "selected_choice_no": selected_no,
+            "time_spent_ms": time_spent_ms,
+            "elapsed_sec": elapsed_sec,
+            "is_answered": selected_no is not None,
+        },
+        status=status.HTTP_200_OK,
+    )
+
 
 @api_view(["GET"])
 def diagnosis_result_api(request, session_id):
@@ -436,6 +666,9 @@ def diagnosis_explanation(request, session_id, question_id):
     # 정답 choice_no
     correct_opt = next((opt for opt in options if opt.is_answer), None)
     correct_choice_no = correct_opt.choice_no if correct_opt else None
+    correct_choice_id = correct_opt.choice_id if correct_opt else None
+    user_opt = next((opt for opt in options if opt.choice_no == record.selected_no), None)
+    user_choice_id = user_opt.choice_id if user_opt else None
 
     # 챗봇 URL (챗봇 앱 연결)
     chatbot_url = "/chatbot/?question_id={}".format(question_id)
@@ -452,11 +685,13 @@ def diagnosis_explanation(request, session_id, question_id):
         "question_type": question.question_type,
         "question_subtype": getattr(question, "question_subtype", ""),
         "correct_choice_no": correct_choice_no,
+        "correct_choice_id": correct_choice_id,
         "answer_explanation": question.answer_explanation,
         "core_concept": question.core_concept,
         "time_spent_ms": record.time_spent_ms,
         "choices": choices,
         "user_choice_no": record.selected_no,
+        "user_choice_id": user_choice_id,
         "is_correct": record.is_correct,
         "chatbot_url": chatbot_url,
     })

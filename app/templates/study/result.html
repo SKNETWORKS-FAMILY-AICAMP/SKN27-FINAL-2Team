@@ -116,7 +116,7 @@
           <p id="levelDescription">-</p>
         </article>
         <article>
-          <span>총점 / 정답률</span>
+          <span id="scoreLabel">총점 / 정답률</span>
           <strong id="scoreText" style="color: red;">0점</strong>
           <p id="accuracyCount">0 / 0</p>
         </article>
@@ -209,6 +209,8 @@
         content: typeof choice === "string" ? choice : choice.content || "",
         explanation: typeof choice === "string" ? "" : choice.explanation || choice.choice_explanation || "",
       }));
+      const selectedChoiceId = selectedChoiceNo ? choices[selectedChoiceNo - 1]?.choiceId || null : null;
+      const correctChoiceId = answerNo ? choices[answerNo - 1]?.choiceId || null : null;
       return {
         questionId: question.questionId || question.question_id,
         number: index + 1,
@@ -222,7 +224,9 @@
         questionType: question.questionType || question.question_type || "",
         questionSubtype: question.questionSubtype || question.question_subtype || "",
         choices,
+        selectedChoiceId,
         selectedChoiceNo,
+        correctChoiceId,
         answerNo,
         isCorrect: answerNo !== null && selectedChoiceNo === answerNo,
         timeSpentMs: saved.questionTimeSpent?.[index] ?? null,
@@ -237,7 +241,9 @@
         choiceNo: choice.choice_no,
         content: choice.content || "",
         explanation: choice.choice_explanation || "",
+        isAnswer: choice.is_answer || false,
       }));
+      const correctChoice = choices.find((choice) => choice.choiceNo === question.answer_no || choice.isAnswer);
       return {
         questionId: question.question_id,
         number: question.number,
@@ -253,7 +259,9 @@
         questionType: question.question_type || "",
         questionSubtype: question.question_subtype || "",
         choices,
+        selectedChoiceId: question.selected_choice_id || null,
         selectedChoiceNo: question.selected_choice_no,
+        correctChoiceId: question.correct_choice_id || correctChoice?.choiceId || null,
         answerNo: question.answer_no,
         isCorrect: question.is_correct,
         isSaved: question.is_saved,
@@ -283,7 +291,9 @@
         questionType: exp.question_type || "",
         questionSubtype: exp.question_subtype || "",
         choices,
+        selectedChoiceId: exp.user_choice_id || null,
         selectedChoiceNo: exp.user_choice_no,
+        correctChoiceId: exp.correct_choice_id || null,
         answerNo: exp.correct_choice_no,
         isCorrect: exp.is_correct,
         timeSpentMs: exp.time_spent_ms,
@@ -397,9 +407,16 @@
 
     function renderQuestion() {
       const question = questions[currentIndex];
-      const selectedChoice = question.selectedChoiceNo
-        ? question.choices.find((choice) => choice.choiceNo === question.selectedChoiceNo)
-        : null;
+      const selectedChoice = question.selectedChoiceId
+        ? question.choices.find((choice) => choice.choiceId === question.selectedChoiceId)
+        : question.selectedChoiceNo
+          ? question.choices.find((choice) => choice.choiceNo === question.selectedChoiceNo)
+          : null;
+      const correctChoice = question.correctChoiceId
+        ? question.choices.find((choice) => choice.choiceId === question.correctChoiceId)
+        : question.answerNo
+          ? question.choices.find((choice) => choice.choiceNo === question.answerNo)
+          : null;
 
       questionNumber.textContent = `${currentIndex + 1}번`;
       resultState.textContent = question.isCorrect ? "정답" : "오답";
@@ -412,17 +429,21 @@
       questionSource.textContent = question.source || "별도 지문이 없는 문제입니다.";
       choiceReview.innerHTML = question.choices.map((choice) => {
         const classes = [
-          choice.choiceNo === question.answerNo ? "correct" : "",
-          choice.choiceNo === question.selectedChoiceNo ? "selected" : "",
+          correctChoice && choice.choiceId === correctChoice.choiceId ? "correct" : "",
+          selectedChoice && choice.choiceId === selectedChoice.choiceId ? "selected" : "",
         ].filter(Boolean).join(" ");
         return `<li class="${classes}"><span>${choice.choiceNo}</span><b>${escapeHtml(choiceText(choice))}</b></li>`;
       }).join("");
 
       explanation.textContent = question.answerExplanation || "등록된 해설이 없습니다.";
-      wrongExplanation.textContent = question.selectedChoiceNo && question.selectedChoiceNo !== question.answerNo
-        ? choiceExplanation(selectedChoice) || "등록된 선택지 해설이 없습니다."
-        : "정답 처리된 문항입니다.";
       coreConcept.textContent = question.coreConcept || "등록된 핵심 개념이 없습니다.";
+      if (!selectedChoice) {
+        wrongExplanation.textContent = "미응답 문항입니다.";
+      } else if (!question.isCorrect) {
+        wrongExplanation.textContent = choiceExplanation(selectedChoice) || "등록된 선택지 해설이 없습니다.";
+      } else {
+        wrongExplanation.textContent = "정답 처리된 문항입니다.";
+      }
       renderNoteSaveState();
       renderJump();
     }
@@ -439,6 +460,7 @@
       const accuracy = resultPayload.totalCount
         ? Math.round((resultPayload.correctCount / resultPayload.totalCount) * 100)
         : 0;
+      const scoreLabel = document.getElementById("scoreLabel");
       document.getElementById("scoreText").textContent = `${resultPayload.totalScore || 0} / ${resultPayload.maxScore || 0}점`;
       document.getElementById("accuracyCount").textContent = `${resultPayload.correctCount} / ${resultPayload.totalCount} · ${accuracy}%`;
 
@@ -446,6 +468,7 @@
         document.getElementById("resultKicker").textContent = "진단평가 해설";
         document.getElementById("summaryKicker").textContent = "진단 결과";
         document.getElementById("summaryDescription").textContent = "진단평가 점수와 예상 급수, 취약 영역을 요약합니다.";
+        scoreLabel.textContent = "총점 / 정답률";
         document.getElementById("levelLabel").textContent = "예상 급수";
         document.getElementById("levelText").textContent = resultPayload.expectedGrade || "-";
         document.getElementById("levelDescription").textContent = `총점 ${resultPayload.totalScore || 0}점 기준 진단 결과입니다.`;
@@ -462,9 +485,12 @@
       document.getElementById("resultKicker").textContent = "문제풀이 해설";
       document.getElementById("summaryKicker").textContent = "문제풀이 결과";
       document.getElementById("summaryDescription").textContent = "풀이 결과를 기반으로 정답률과 취약 유형을 요약합니다.";
-      document.getElementById("levelLabel").textContent = "현재 수준";
-      document.getElementById("levelText").textContent = accuracy >= 80 ? "상위권" : accuracy >= 60 ? "보완 필요" : "기초 보강";
-      document.getElementById("levelDescription").textContent = "향상 그래프는 이후 마이페이지 학습 기록과 연결해 확장할 수 있습니다.";
+      scoreLabel.textContent = "정답률";
+      document.getElementById("scoreText").textContent = `${accuracy}%`;
+      document.getElementById("accuracyCount").textContent = "";
+      document.getElementById("levelLabel").textContent = "맞은 개수";
+      document.getElementById("levelText").textContent = `${resultPayload.correctCount} / ${resultPayload.totalCount}`;
+      document.getElementById("levelDescription").textContent = `총 ${resultPayload.totalCount}문항 중 ${resultPayload.correctCount}문항을 맞혔습니다.`;
       const weakTypes = questions
         .filter((question) => !question.isCorrect)
         .map((question) => question.type || question.topic || "미분류")
