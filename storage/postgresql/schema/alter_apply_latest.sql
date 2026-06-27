@@ -48,6 +48,11 @@ ALTER TABLE solve_records
 ALTER TABLE solve_records
     ADD COLUMN IF NOT EXISTS saved_at TIMESTAMP NULL;
 
+-- solve_records: 학습계획 블록에서 시작한 풀이 기록을 계획/블록에 직접 연결한다.
+ALTER TABLE solve_records
+    ADD COLUMN IF NOT EXISTS studyplan_id BIGINT NULL,
+    ADD COLUMN IF NOT EXISTS study_plan_block_id VARCHAR(36) NULL;
+
 DO $$
 BEGIN
     IF EXISTS (
@@ -147,3 +152,30 @@ ALTER TABLE study_plan_mypage
     ADD COLUMN IF NOT EXISTS completion_rate DOUBLE PRECISION NOT NULL DEFAULT 0,
     ADD COLUMN IF NOT EXISTS archived_at TIMESTAMPTZ NULL,
     ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ NULL;
+
+-- user_accounts: 학습 가능 시간과 시험일을 사용자 계정 테이블에 직접 저장한다.
+ALTER TABLE user_accounts
+    ADD COLUMN IF NOT EXISTS exam_date DATE NULL,
+    ADD COLUMN IF NOT EXISTS daily_available_hours DECIMAL(3,1) NOT NULL DEFAULT 1.0;
+
+ALTER TABLE user_accounts
+    ALTER COLUMN daily_available_hours TYPE DECIMAL(3,1)
+    USING daily_available_hours::DECIMAL(3,1),
+    ALTER COLUMN daily_available_hours SET DEFAULT 1.0;
+
+DO $$
+BEGIN
+    IF EXISTS (
+        SELECT 1
+        FROM information_schema.tables
+        WHERE table_name = 'user_study_profiles'
+    ) THEN
+        UPDATE user_accounts u
+        SET daily_available_hours = COALESCE(p.daily_available_hours, u.daily_available_hours),
+            exam_date = COALESCE(p.exam_date, u.exam_date)
+        FROM user_study_profiles p
+        WHERE u.user_id = p.user_id;
+
+        DROP TABLE user_study_profiles;
+    END IF;
+END $$;

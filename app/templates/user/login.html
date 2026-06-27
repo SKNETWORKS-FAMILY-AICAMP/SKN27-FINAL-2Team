@@ -35,11 +35,11 @@
         </div>
 
         {% if messages %}
-          <div class="auth-messages" role="status" aria-live="polite">
-            {% for message in messages %}
+          {% for message in messages %}
+            {% if message.message != "로그인되었습니다." and message.message != "로그아웃되었습니다." %}
               <p class="auth-message {{ message.tags }}">{{ message }}</p>
-            {% endfor %}
-          </div>
+            {% endif %}
+          {% endfor %}
         {% endif %}
 
         <form class="login-form" action="#" method="post">

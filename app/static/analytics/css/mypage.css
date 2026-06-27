@@ -885,7 +885,7 @@ a {
 }
 
 .planner-lessons .plan-item {
-  grid-template-columns: 22px minmax(0, 1fr) auto;
+  grid-template-columns: 22px minmax(0, 1fr) auto auto;
   background: #f4f8ef;
 }
 

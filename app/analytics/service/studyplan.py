@@ -15,7 +15,7 @@ from analytics.service.analysis_snapshot import (
 from analytics.service.analytics import get_classification_fields, get_weak_targets
 from analytics.service.prediction import get_predicted_targets
 from question.models import SolveRecords
-from user.models import UserStudyProfile
+from user.models import UserAccounts
 
 
 def get_user_study_info(user_id):
@@ -25,14 +25,14 @@ def get_user_study_info(user_id):
     하루 학습 가능 시간과 시험일 정보를 가져오는 기본 조회 함수이며,
     프로필이 없으면 None을 반환한다.
     """
-    return UserStudyProfile.objects.filter(user_id=user_id).first()
+    return UserAccounts.objects.filter(user_id=user_id).first()
 
 
 def get_daily_available_minutes(user_id, profile=None):
     """
     사용자의 하루 학습 가능 시간을 분 단위로 변환한다.
 
-    UserStudyProfile.daily_available_hours 값을 읽어 60을 곱하고,
+    UserAccounts.daily_available_hours 값을 읽어 60을 곱하고,
     설정값이 없으면 0분으로 반환한다. 이미 조회한 프로필을 받으면
     같은 사용자의 프로필을 다시 조회하지 않고 그 값을 사용한다.
     """
@@ -277,24 +277,18 @@ def get_plan_progress_records(user_id, study_plan):
     """
     계획 달성률 계산에 사용할 완료 풀이 기록을 조회한다.
     """
-    period_start = get_study_plan_result_period_start(study_plan)
-    period_end = get_plan_progress_period_end(study_plan)
     queryset = SolveRecords.objects.filter(
         session__user_id=user_id,
         session__status="completed",
+        studyplan_id=study_plan.studyplan_id,
+        study_plan_block_id__isnull=False,
         selected_no__isnull=False,
     )
-    if period_start is not None:
-        queryset = queryset.filter(session__recorded_date__gte=period_start)
-    if period_end is not None:
-        queryset = queryset.filter(session__recorded_date__lte=period_end)
 
     return list(
         queryset.values(
             "record_id",
-            "era",
-            "q_type",
-            "topic",
+            "study_plan_block_id",
         ).order_by("session__recorded_date", "record_id")
     )
 
@@ -326,9 +320,8 @@ def count_block_matched_records(records, used_record_ids, block, target_count):
     if target_count <= 0:
         return 0
 
-    field_name = get_block_record_field(block)
-    label = block.get("label")
-    if not field_name or not label:
+    block_id = block.get("blockId")
+    if not block_id:
         return 0
 
     matched_record_ids = []
@@ -336,7 +329,7 @@ def count_block_matched_records(records, used_record_ids, block, target_count):
         record_id = record["record_id"]
         if record_id in used_record_ids:
             continue
-        if record.get(field_name) == label:
+        if str(record.get("study_plan_block_id")) == str(block_id):
             matched_record_ids.append(record_id)
         if len(matched_record_ids) >= target_count:
             break

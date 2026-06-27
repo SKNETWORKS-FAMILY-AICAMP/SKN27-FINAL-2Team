@@ -83,6 +83,8 @@ def build_planner_summary(study_plans, today):
                             "dayIndex": day_index,
                             "blockIndex": block_index,
                             "blockId": block.get("blockId"),
+                            "classification": classification or "",
+                            "label": label or "",
                             "title": title,
                             "meta": " · ".join(meta_parts),
                             "done": is_achieved,

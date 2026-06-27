@@ -1446,6 +1446,7 @@ body {
 .bot .bubble {
   background: rgba(255, 255, 255, 0.94);
   overflow: hidden;
+  position: relative;
 }
 
 .user .bubble {
@@ -1476,6 +1477,47 @@ body {
   height: 10px;
   background: #9bea6f;
   box-shadow: 0 0 0 5px rgba(155, 234, 111, 0.25);
+}
+
+.bot-label-image {
+  width: 44px;
+  height: 44px;
+  display: block;
+  object-fit: contain;
+}
+
+.bot-image-label {
+  position: absolute;
+  top: -18px;
+  left: -18px;
+  z-index: 2;
+  width: 58px !important;
+  min-height: 58px;
+  padding: 6px !important;
+  border: 2px solid rgba(18, 59, 6, 0.12) !important;
+  border-radius: 50%;
+  background: #ffffff !important;
+  box-shadow: 0 10px 24px rgba(18, 59, 6, 0.16);
+}
+
+.bot-bubble:has(.bot-image-label) {
+  margin-top: 18px;
+  overflow: visible !important;
+}
+
+.message.bot .bot-image-label,
+.chat-stream > .message.bot > .bot-bubble > .bot-image-label {
+  position: absolute !important;
+  top: -22px !important;
+  left: -22px !important;
+  width: 58px !important;
+  max-width: 58px !important;
+  min-width: 58px !important;
+  min-height: 58px !important;
+  padding: 6px !important;
+  overflow: visible !important;
+  border-radius: 50% !important;
+  white-space: normal !important;
 }
 
 .markdown-answer,
@@ -1591,7 +1633,7 @@ body {
   z-index: 40;
   display: grid;
   place-items: center;
-  padding: 28px;
+  padding: 12px;
 }
 
 .problem-picker-backdrop {
@@ -1606,14 +1648,14 @@ body {
 .problem-picker-dialog {
   position: relative;
   z-index: 1;
-  width: min(920px, 100%);
-  max-height: min(760px, calc(100svh - 56px));
+  width: min(920px, calc(100vw - 24px));
+  max-height: calc(100svh - 24px);
   display: grid;
   grid-template-rows: auto auto auto minmax(0, 1fr);
-  gap: 16px;
-  padding: 24px;
+  gap: 10px;
+  padding: 18px;
   border: 1px solid rgba(18, 59, 6, 0.18);
-  border-radius: 28px;
+  border-radius: 22px;
   background:
     linear-gradient(rgba(18, 59, 6, 0.04) 1px, transparent 1px),
     linear-gradient(90deg, rgba(18, 59, 6, 0.04) 1px, transparent 1px),
@@ -1640,15 +1682,15 @@ body {
 .problem-picker-head h2 {
   margin: 0;
   color: #0e120f;
-  font-size: clamp(28px, 4vw, 42px);
+  font-size: clamp(26px, 3vw, 36px);
   line-height: 1.08;
   font-weight: 950;
   letter-spacing: 0;
 }
 
 .problem-picker-close {
-  width: 44px;
-  height: 44px;
+  width: 38px;
+  height: 38px;
   border: 0;
   border-radius: 50%;
   background: #123b06;
@@ -1661,7 +1703,7 @@ body {
 
 .problem-picker-search {
   display: grid;
-  gap: 8px;
+  gap: 5px;
 }
 
 .problem-picker-search span {
@@ -1672,7 +1714,7 @@ body {
 
 .problem-picker-search input {
   width: 100%;
-  height: 50px;
+  height: 42px;
   padding: 0 18px;
   border: 1px solid rgba(18, 59, 6, 0.18);
   border-radius: 999px;
@@ -1698,7 +1740,7 @@ body {
   min-height: 0;
   display: grid;
   align-content: start;
-  gap: 10px;
+  gap: 8px;
   overflow-y: auto;
   padding-right: 6px;
   scrollbar-width: thin;
@@ -1708,8 +1750,8 @@ body {
 .problem-picker-item button {
   width: 100%;
   display: grid;
-  gap: 8px;
-  padding: 16px 18px;
+  gap: 6px;
+  padding: 12px 16px;
   border: 1px solid rgba(18, 59, 6, 0.14);
   border-radius: 18px;
   background: rgba(244, 248, 240, 0.94);
@@ -1729,8 +1771,8 @@ body {
   overflow: hidden;
   display: -webkit-box;
   color: #0e120f;
-  font-size: 16px;
-  line-height: 1.5;
+  font-size: 15px;
+  line-height: 1.4;
   font-weight: 950;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
@@ -1935,9 +1977,19 @@ body {
 }
 
 .chat-stream > .message.bot > .avatar {
-  width: 38px !important;
-  min-width: 38px !important;
-  flex: 0 0 38px !important;
+  width: 43px !important;
+  height: 43px !important;
+  min-width: 43px !important;
+  min-height: 43px !important;
+  flex: 0 0 43px !important;
+  display: block !important;
+  margin-top: 0 !important;
+  overflow: hidden !important;
+  border: 0 !important;
+}
+
+.chat-stream > .message.bot > .avatar img {
+  object-fit: contain !important;
 }
 
 .chat-stream > .message.bot > .bot-bubble {

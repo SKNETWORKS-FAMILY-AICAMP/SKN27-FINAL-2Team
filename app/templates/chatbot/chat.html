@@ -1,4 +1,4 @@
-﻿{% load static %}
+{% load static %}
 <!doctype html>
 <html lang="ko">
 <head>
@@ -7,7 +7,7 @@
   <title>himate 한국사 챗봇</title>
   <link rel="stylesheet" href="/static/himate.css" />
   <link rel="stylesheet" href="/static/layout.css" />
-  <link rel="stylesheet" href="{% static 'chatbot/css/chat.css' %}?v=chat-new-session-1" />
+  <link rel="stylesheet" href="{% static 'chatbot/css/chat.css' %}?v=chatbot-avatar-label-4" />
 </head>
 <body>
   <main class="chat-page">
@@ -46,9 +46,8 @@
         <section class="chat-panel" aria-label="챗봇 대화">
           <div class="chat-stream" id="chatStream">
             <div class="message bot">
-              <div class="avatar"><img src="{% static 'chatbot/assets/main_image.png' %}" alt="" /></div>
+              <div class="avatar"><img src="/static/images/chatbot_label.png" alt="himate" /></div>
               <div class="bubble bot-bubble">
-                <div class="bot-label"><span class="bot-dot"></span><span>himate</span></div>
                 <div class="markdown-answer">안녕하세요. 한국사 개념이나 한능검 문제를 질문해 주세요.</div>
               </div>
             </div>
@@ -390,9 +389,8 @@
       const wrapper = document.createElement("div");
       wrapper.className = "message bot";
       wrapper.innerHTML = `
-        <div class="avatar"><img src="{% static 'chatbot/assets/main_image.png' %}" alt="" /></div>
+        <div class="avatar"><img src="/static/images/chatbot_label.png" alt="himate" /></div>
         <div class="bubble bot-bubble">
-          <div class="bot-label"><span class="bot-dot"></span><span>himate</span></div>
           <div class="markdown-answer">한국사 개념 질문, 문제 질문, 가벼운 학습 대화까지 편하게 물어보세요.</div>
         </div>
       `;
@@ -403,7 +401,7 @@
       const wrapper = document.createElement("div");
       wrapper.className = "message bot";
       wrapper.innerHTML = `
-        <div class="avatar"><img src="{% static 'chatbot/assets/main_image.png' %}" alt="" /></div>
+        <div class="avatar"><img src="/static/images/chatbot_label.png" alt="himate" /></div>
         <div class="bubble bot-bubble typing-bubble" aria-label="답변 생성 중">
           <span></span><span></span><span></span>
         </div>
@@ -417,7 +415,7 @@
       const wrapper = document.createElement("div");
       wrapper.className = "message bot";
       wrapper.innerHTML = `
-        <div class="avatar"><img src="{% static 'chatbot/assets/main_image.png' %}" alt="" /></div>
+        <div class="avatar"><img src="/static/images/chatbot_label.png" alt="himate" /></div>
         <div class="bubble bot-bubble">
           <div class="bot-label"><span class="bot-dot"></span><span>오류</span></div>
           <div class="error">${escapeHtml(message)}${detail ? `<br>${escapeHtml(detail)}` : ""}</div>
@@ -433,7 +431,7 @@
       const intent = data.intent || "concept";
       if (data.not_found || isInsufficientStructuredAnswer(data.structured_answer)) {
         wrapper.innerHTML = `
-          <div class="avatar"><img src="{% static 'chatbot/assets/main_image.png' %}" alt="" /></div>
+          <div class="avatar"><img src="/static/images/chatbot_label.png" alt="himate" /></div>
           <div class="bubble bot-bubble no-result-bubble">
             ${renderConversationalAnswer(data.answer || "검색 결과가 없습니다.")}
           </div>
@@ -453,15 +451,21 @@
         : intent === "question" ? "문제 해설"
         : "himate";
       wrapper.innerHTML = `
-        <div class="avatar"><img src="{% static 'chatbot/assets/main_image.png' %}" alt="" /></div>
+        <div class="avatar"><img src="/static/images/chatbot_label.png" alt="himate" /></div>
         <div class="bubble bot-bubble">
-          <div class="bot-label"><span class="bot-dot"></span><span>${escapeHtml(label)}</span></div>
+          ${renderBotLabel(label)}
           ${imageGallery}
           ${content}
         </div>
       `;
       chatStream.appendChild(wrapper);
       scrollToBottom();
+    }
+
+    function renderBotLabel(label) {
+      return label === "himate"
+        ? ""
+        : `<div class="bot-label"><span class="bot-dot"></span><span>${escapeHtml(label)}</span></div>`;
     }
 
     function loadSessions() {

@@ -1,6 +1,4 @@
 import random
-import uuid
-from collections import defaultdict
 from datetime import datetime, timezone
 
 # from django.contrib.auth.decorators import login_required  # TODO: 인증 연동 후 활성화
@@ -10,6 +8,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 from analytics.models import Analytics
+from analytics.service.analysis_snapshot import create_session_snapshot
 from question.models import (
     QuestionOptions,
     Questions,
@@ -220,10 +219,6 @@ def diagnosis_submit(request):
     total_score = 0
     correct_count = 0
 
-    # analytics 집계용
-    era_stats = defaultdict(lambda: {"total": 0, "correct": 0, "time_sum": 0})
-    type_stats = defaultdict(lambda: {"total": 0, "correct": 0, "time_sum": 0})
-
     for ans in answers:
         q_id = ans["question_id"]
         choice_id = ans["choice_id"]
@@ -259,76 +254,8 @@ def diagnosis_submit(request):
             q_score=q.q_score,
         ))
 
-        # analytics 집계
-        era_stats[q.era]["total"] += 1
-        era_stats[q.era]["correct"] += int(is_correct)
-        era_stats[q.era]["time_sum"] += time_spent_ms or 0
-
-        type_stats[q.question_type]["total"] += 1
-        type_stats[q.question_type]["correct"] += int(is_correct)
-        type_stats[q.question_type]["time_sum"] += time_spent_ms or 0
-
     # DB 저장
     SolveRecords.objects.bulk_create(records)
-
-    # analytics 저장
-    analytics_rows = []
-    now = datetime.now(tz=timezone.utc)
-    analysis_run_id = str(uuid.uuid4())
-
-    for era, stat in era_stats.items():
-        total = stat["total"]
-        correct = stat["correct"]
-        wrong = total - correct
-        answer_rate = round(correct / total, 4) if total else 0.0
-        avg_time = (stat["time_sum"] // total) // 1000 if total else None
-        analytics_rows.append(Analytics(
-            session=session,
-            user_id=session.user_id,
-            analysis_scope="session",
-            analysis_run_id=analysis_run_id,
-            analysis_unit="era",
-            key_concept=era,
-            classification="시대",
-            avg_time_sec=avg_time,
-            topic_rate=answer_rate,
-            total_count=total,
-            correct_count=correct,
-            wrong_count=wrong,
-            answer_rate=answer_rate,
-            wrong_rate=round(wrong / total, 4) if total else 0.0,
-            period_start=session.recorded_date,
-            period_end=session.recorded_date,
-            created_at=now,
-        ))
-
-    for q_type, stat in type_stats.items():
-        total = stat["total"]
-        correct = stat["correct"]
-        wrong = total - correct
-        answer_rate = round(correct / total, 4) if total else 0.0
-        avg_time = (stat["time_sum"] // total) // 1000 if total else None
-        analytics_rows.append(Analytics(
-            session=session,
-            user_id=session.user_id,
-            analysis_scope="session",
-            analysis_run_id=analysis_run_id,
-            analysis_unit="type",
-            key_concept=q_type,
-            classification="유형",
-            avg_time_sec=avg_time,
-            topic_rate=answer_rate,
-            total_count=total,
-            correct_count=correct,
-            wrong_count=wrong,
-            answer_rate=answer_rate,
-            wrong_rate=round(wrong / total, 4) if total else 0.0,
-            period_start=session.recorded_date,
-            period_end=session.recorded_date,
-            created_at=now,
-        ))
-
-    Analytics.objects.bulk_create(analytics_rows)
 
     # 세션 완료 업데이트
     answer_rate = round(correct_count / len(answers), 4) if answers else 0.0
@@ -338,6 +265,8 @@ def diagnosis_submit(request):
     session.total_score = total_score
     session.answer_rate = answer_rate
     session.save()
+    # 완료된 세션 기록을 기준으로 overall/era/type/topic 분석 스냅샷을 저장한다.
+    create_session_snapshot(session.session_id)
 
     resp_serializer = DiagnosisSubmitResponseSerializer({
         "session_id": session.session_id,
