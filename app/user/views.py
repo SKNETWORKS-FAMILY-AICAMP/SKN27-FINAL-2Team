@@ -22,6 +22,33 @@ from question.models import QuestionOptions, SolveRecords, SolveSessions
 from .models import EmailVerificationCode, UserAccounts
 
 
+def _note_choice_display_data(session, question, options, selected_no):
+    display_options = options[:]
+    if session.session_type != "diagnostic":
+        random.Random(f"{session.session_id}:{question.question_id}").shuffle(display_options)
+
+    choices = []
+    answer_no = question.answer_no
+    selected_answer = None
+    wrong_explanations = []
+
+    for display_no, option in enumerate(display_options, start=1):
+        if option.is_answer:
+            answer_no = display_no
+        if selected_no is not None and option.choice_no == selected_no:
+            selected_answer = display_no
+        if not option.is_answer and option.choice_explanation:
+            wrong_explanations.append(f"{display_no}번. {option.choice_explanation}")
+        choices.append({
+            "number": display_no,
+            "content": option.content,
+            "isAnswer": option.is_answer,
+            "explanation": option.choice_explanation or "",
+        })
+
+    return choices, answer_no, selected_answer, wrong_explanations
+
+
 def login_page(request):
     if request.method == "POST":
         email = (request.POST.get("email") or "").strip().lower()
@@ -278,15 +305,16 @@ def wrong_note(request):
         session = session_map[record.session_id]
         session_type_label = "진단평가" if session.session_type == "diagnostic" else "문제풀이"
         options = option_map.get(question.question_id, [])
-        selected_option = next(
-            (option for option in options if option.choice_no == record.selected_no),
+        choices, answer_no, user_answer, wrong_explanations = _note_choice_display_data(
+            session,
+            question,
+            options,
+            record.selected_no,
+        )
+        selected_choice = next(
+            (choice for choice in choices if choice["number"] == user_answer),
             None,
         )
-        wrong_explanations = [
-            option.choice_explanation
-            for option in options
-            if option.choice_no != question.answer_no and option.choice_explanation
-        ]
         note_records.append({
             "id": record.record_id,
             "sessionId": record.session_id,
@@ -307,18 +335,10 @@ def wrong_note(request):
             "savedAt": record.saved_at.isoformat() if record.saved_at else "",
             "title": question.content,
             "source": question.passage or question.image_caption or "",
-            "choices": [
-                {
-                    "number": option.choice_no,
-                    "content": option.content,
-                    "isAnswer": option.is_answer,
-                    "explanation": option.choice_explanation or "",
-                }
-                for option in options
-            ],
-            "answer": question.answer_no,
-            "userAnswer": record.selected_no,
-            "selectedExplanation": selected_option.choice_explanation if selected_option else "",
+            "choices": choices,
+            "answer": answer_no,
+            "userAnswer": user_answer,
+            "selectedExplanation": selected_choice["explanation"] if selected_choice else "",
             "solution": question.answer_explanation,
             "wrongs": wrong_explanations,
             "concept": question.core_concept,

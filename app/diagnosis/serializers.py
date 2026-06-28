@@ -105,10 +105,12 @@ class DiagnosisExplanationResponseSerializer(serializers.Serializer):
     question_type = serializers.CharField(allow_null=True)
     question_subtype = serializers.CharField(allow_blank=True, allow_null=True, required=False)
     correct_choice_no = serializers.IntegerField()
+    correct_choice_id = serializers.IntegerField(allow_null=True, required=False)
     answer_explanation = serializers.CharField(allow_null=True)
     core_concept = serializers.CharField(allow_blank=True, allow_null=True, required=False)
     time_spent_ms = serializers.IntegerField(allow_null=True, required=False)
     choices = ChoiceSerializer(many=True)          # 원래 순서 (choice_no 기준)
     user_choice_no = serializers.IntegerField(allow_null=True)
+    user_choice_id = serializers.IntegerField(allow_null=True, required=False)
     is_correct = serializers.BooleanField()
     chatbot_url = serializers.CharField()          # 챗봇 연결 URL

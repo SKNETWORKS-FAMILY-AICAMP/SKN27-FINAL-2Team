@@ -188,7 +188,9 @@
     function initFilters() {
       fillSelect(sessionFilter, sessions.map((session) => String(session.sessionId)), (value) => {
         const session = sessions.find((item) => String(item.sessionId) === value);
-        return session ? `${session.recordedDate || session.label} (${session.totalCount}문항)` : value;
+        return session
+          ? `${session.recordedDate || session.label} · ${session.sessionTypeLabel || session.sessionType} (${session.totalCount}문항)`
+          : value;
       });
       fillSelect(eraFilter, uniqueValues("era"));
       fillSelect(topicFilter, uniqueValues("topic"));
@@ -375,6 +377,15 @@
         activeId = filteredRecords()[0]?.id || null;
         render();
       });
+    });
+
+    document.addEventListener("click", (event) => {
+      const filterMenu = document.querySelector(".filter-menu");
+      if (!filterMenu?.open) return;
+      const filterPanel = filterMenu.querySelector(".filter-panel");
+      const filterButton = filterMenu.querySelector("summary");
+      if (filterPanel?.contains(event.target) || filterButton?.contains(event.target)) return;
+      filterMenu.removeAttribute("open");
     });
 
     initFilters();

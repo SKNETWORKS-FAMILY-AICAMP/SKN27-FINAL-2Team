@@ -60,7 +60,7 @@ button {
 
 .mode-panel {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
 }
 
@@ -190,6 +190,114 @@ button {
   gap: 12px;
 }
 
+.saved-session-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(12, 24, 10, 0.68);
+  backdrop-filter: blur(3px);
+}
+
+.saved-session-dialog {
+  width: min(920px, 100%);
+  max-height: min(760px, 90vh);
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  overflow: hidden;
+  padding: 24px;
+  border: 2px solid var(--ink);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 28px 70px rgba(0, 0, 0, 0.34);
+}
+
+.saved-session-dialog header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.saved-session-dialog header span {
+  color: var(--green);
+  font-weight: 900;
+}
+
+.saved-session-dialog h2,
+.saved-session-dialog h3 {
+  margin: 0;
+  font-weight: 950;
+}
+
+.saved-session-dialog header button {
+  width: 42px;
+  height: 42px;
+  border: 2px solid var(--line);
+  border-radius: 50%;
+  background: var(--soft);
+  color: var(--ink);
+  font-size: 28px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.saved-session-groups {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  overflow: hidden;
+}
+
+.saved-session-groups section {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 12px;
+  min-height: 180px;
+  max-height: 360px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--soft);
+  overflow: hidden;
+}
+
+.saved-session-list {
+  min-height: 0;
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  overflow: auto;
+  padding-right: 4px;
+}
+
+.saved-session-item {
+  display: grid;
+  gap: 6px;
+  width: 100%;
+  padding: 12px;
+  border: 2px solid var(--line);
+  border-radius: 12px;
+  background: var(--white);
+  color: var(--ink);
+  text-align: left;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.saved-session-item:hover {
+  border-color: var(--green);
+}
+
+.saved-session-empty {
+  color: var(--muted);
+  font-weight: 800;
+}
+
 @media (max-width: 860px) {.create-page {
     min-height: calc(100vh - 122px);
     align-items: start;
@@ -203,6 +311,10 @@ button {
   }
 
   .mode-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .saved-session-groups {
     grid-template-columns: 1fr;
   }
 
