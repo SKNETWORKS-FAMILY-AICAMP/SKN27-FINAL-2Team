@@ -4,7 +4,12 @@ from typing import Any
 
 from .graph_service import build_graph_context
 from .rag.llm_answer_generator import LLMAnswerGenerator
-from .rag.pgvector_retriever import PgVectorHybridRetriever, overview_focus_terms, result_to_payload
+from .rag.pgvector_retriever import (
+    PgVectorHybridRetriever,
+    overview_focus_terms,
+    result_to_payload,
+    search_timeline_sources,
+)
 
 
 SUPPORTED_INTENTS = {"concept", "question", "image", "chat", "casual"}
@@ -60,9 +65,12 @@ def no_rag_answer(question: str, intent: str) -> dict[str, Any]:
     }
 
 
-def has_enough_evidence(results: list[Any], intent: str) -> bool:
+def has_enough_evidence(results: list[Any], intent: str, extra_sources: list[dict[str, Any]] | None = None) -> bool:
     if not results:
-        return False
+        return bool(extra_sources and intent != "image")
+
+    if extra_sources and intent != "image":
+        return True
 
     best = results[0]
     if intent == "image":
@@ -204,8 +212,10 @@ def build_history_rag_answer(
     retriever = PgVectorHybridRetriever()
     results = retriever.search(search_question, top_k=max(top_k, 8 if graph_context.get("keywords") else top_k))
     sources = [result_to_payload(result) for result in results]
+    timeline_sources = search_timeline_sources(search_question)
+    sources.extend(timeline_sources)
 
-    if not has_enough_evidence(results, intent):
+    if not has_enough_evidence(results, intent, timeline_sources):
         return not_found_answer(question, intent, graph_context)
 
     generator = LLMAnswerGenerator.from_env()
@@ -227,6 +237,7 @@ def build_history_rag_answer(
             style="textbook",
             follow_up=follow_up or mode == "question",
             history=conversation_history,
+            include_source_summary=intent != "question",
         )
         if is_insufficient_text_answer(answer):
             return not_found_answer(question, intent, graph_context)
