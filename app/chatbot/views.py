@@ -95,6 +95,7 @@ def solved_problem_options_api(request):
                 "session_id": session_id,
                 "number": session_numbers[session_id],
                 "content": question.content,
+                "passage": getattr(question, "passage", ""),
                 "question_type": question.question_type,
                 "era": record.era,
                 "topic": record.topic,

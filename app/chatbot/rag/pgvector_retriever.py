@@ -15,6 +15,9 @@ from .rag_prototype.retriever import expand_query_tokens, tokenize
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
+TIMELINE_TERMS = ("연표", "연대", "순서", "흐름", "언제", "시기", "전개")
+TIMELINE_ERAS = ("고대", "고려", "조선", "근대", "현대")
+TIMELINE_FIELDS = ("인물", "사건", "조직·단체", "조직", "단체", "유물·유적", "유물", "유적")
 IMAGE_QUERY_TERMS = ("이미지", "사진", "그림", "유물", "유적", "자료", "찾아줘", "보여줘", "조회")
 IMAGE_TITLE_IGNORE_TERMS = set(IMAGE_QUERY_TERMS) | {"시대", "대표", "관련", "설명"}
 OVERVIEW_TERMS = ("정리", "요약", "흐름", "개념", "설명", "알려", "누구", "업적", "정책")
@@ -169,6 +172,83 @@ def compact_text(text: str, max_length: int = 260) -> str:
     if len(value) <= max_length:
         return value
     return value[: max_length - 1].rstrip() + "..."
+
+
+def normalize_timeline_field(field: str) -> str:
+    if field in {"조직", "단체"}:
+        return "조직·단체"
+    if field in {"유물", "유적"}:
+        return "유물·유적"
+    return field
+
+
+def timeline_filters(question: str) -> tuple[str, str]:
+    era = next((value for value in TIMELINE_ERAS if value in question), "")
+    field = next((value for value in TIMELINE_FIELDS if value in question), "")
+    return era, normalize_timeline_field(field)
+
+
+def should_search_timeline(question: str) -> bool:
+    era, field = timeline_filters(question)
+    return bool((era and field) or any(term in question for term in TIMELINE_TERMS))
+
+
+def search_timeline_sources(question: str, limit: int = 12) -> list[dict[str, Any]]:
+    if not should_search_timeline(question):
+        return []
+
+    era, field = timeline_filters(question)
+    if not era and not field:
+        return []
+
+    where_parts = []
+    params: list[Any] = []
+    if era:
+        where_parts.append("(era = %s OR age = %s)")
+        params.extend([era, era])
+    if field:
+        where_parts.append("field = %s")
+        params.append(field)
+    where_sql = " AND ".join(where_parts) if where_parts else "TRUE"
+
+    try:
+        with connect_db() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                cur.execute(
+                    f"""
+                    SELECT year, title, period, era, field
+                    FROM rag.history_timeline
+                    WHERE {where_sql}
+                    ORDER BY year, title
+                    LIMIT %s
+                    """,
+                    [*params, limit],
+                )
+                rows = cur.fetchall()
+    except psycopg2.Error:
+        return []
+
+    if not rows:
+        return []
+
+    title_bits = [value for value in (era, field, "연표") if value]
+    snippet = " / ".join(f"{row['year']}년 {row['title']}" for row in rows)
+    return [
+        {
+            "chunk_id": "history_timeline",
+            "document_id": "history_timeline",
+            "source_type": "history_timeline",
+            "source_name": "한국사 연대기 연표",
+            "title": " ".join(title_bits),
+            "score": 1.0,
+            "vector_score": 0.0,
+            "keyword_score": 1.0,
+            "source_url": None,
+            "thumbnail_url": None,
+            "original_image_url": None,
+            "snippet": compact_text(snippet, 900),
+        }
+    ]
 
 
 def diversify_rows(rows: list[dict[str, Any]], limit: int) -> list[dict[str, Any]]:

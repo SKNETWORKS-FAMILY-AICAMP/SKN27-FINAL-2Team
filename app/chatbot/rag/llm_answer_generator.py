@@ -15,7 +15,7 @@ from openai import OpenAI
 SYSTEM_PROMPT = """당신은 한국사능력검정시험을 준비하는 학습자를 돕는 한국사 튜터입니다.
 반드시 제공된 검색 근거 안에서만 답변하세요.
 근거가 부족하면 부족하다고 말하고, 확실한 내용과 추정되는 내용을 구분하세요.
-첫 개념 질문은 교재 요약 노트처럼 제목, 번호 섹션, 표 또는 bullet, 시험 포인트를 포함해 작성하세요.
+첫 개념 질문은 교재 요약 노트처럼 제목, 번호 섹션, 표 또는 bullet로 작성하세요.
 중요 키워드라도 별도 Markdown 기호로 감싸지 말고 일반 텍스트로 쓰세요.
 한자나 한문 원문은 그대로 쓰지 말고, 현대 한국어 한글 표현으로 풀어 쓰세요.
 문장은 과하게 길게 쓰지 말고, 암기하기 쉬운 구조로 정리하세요.
@@ -37,8 +37,7 @@ STRUCTURED_SYSTEM_PROMPT = """당신은 한국사능력검정시험을 준비하
 출력은 JSON 객체 하나만 반환하세요. Markdown 코드블록, 설명 문장, 주석은 쓰지 마세요.
 근거가 부족하면 summary에 부족하다고 적고, 확실한 내용만 sections에 넣으세요.
 한자나 한문 원문은 그대로 쓰지 말고, 현대 한국어 한글 표현으로 풀어 쓰세요.
-exam_points에는 한국사능력검정시험에서 직접 암기하거나 출제 포인트로 볼 만한 시대, 사건, 제도, 인물 업적, 비교 포인트만 넣으세요.
-단순한 근거 요약, 불확실성, 가족관계 단정 주의, 출처 문장 반복은 exam_points에 넣지 말고 빈 배열로 두세요."""
+exam_points는 항상 빈 배열로 두세요."""
 
 
 @dataclass(frozen=True)
@@ -88,6 +87,7 @@ def build_user_prompt(
     style: str,
     follow_up: bool,
     history: list[dict[str, str]] | None = None,
+    include_source_summary: bool = True,
 ) -> str:
     context = "\n\n".join(compact_source(source, index) for index, source in enumerate(sources, start=1))
     if not context:
@@ -95,10 +95,11 @@ def build_user_prompt(
     history_context = compact_history(history) or "이전 대화 없음"
 
     output_instruction = (
-        "출력 형식: 교재 요약 노트 Markdown. 큰 제목, 1/2/3번 섹션, 표 또는 bullet, 한능검 포인트, 출처 요약을 포함하세요."
+        f"출력 형식: 교재 요약 노트 Markdown. 큰 제목, 1/2/3번 섹션, 표 또는 bullet{', 출처 요약' if include_source_summary else ''}을 포함하세요."
         if style == "textbook" and not follow_up
-        else "출력 형식: 설명형 Markdown. 핵심 답변, 이유/배경, 시험 포인트, 출처 요약을 포함하세요."
+        else f"출력 형식: 설명형 Markdown. 핵심 답변, 이유/배경{', 출처 요약' if include_source_summary else ''}을 포함하세요."
     )
+    source_rule = "- 출처 요약에는 사용한 title을 1~3개만 적으세요." if include_source_summary else "- 출처 요약은 쓰지 마세요."
 
     return f"""질문:
 {question}
@@ -115,7 +116,7 @@ def build_user_prompt(
 - 최근 대화는 대명사와 후속 질문 해석에만 참고하고, 사실 답변은 검색 근거를 우선하세요.
 - 검색 근거의 문장을 그대로 길게 베끼지 말고 학습용으로 재구성하세요.
 - 한자나 한문 원문은 그대로 쓰지 말고, 현대 한국어 한글 표현으로 풀어 쓰세요.
-- 출처 요약에는 사용한 title을 1~3개만 적으세요.
+{source_rule}
 - 답변 본문만 출력하고, 후속 작업 제안이나 대화형 마무리 문장은 쓰지 마세요.
 - Markdown 가로선(---)은 쓰지 마세요."""
 
@@ -159,7 +160,7 @@ def build_structured_prompt(
       ]
     }}
   ],
-  "exam_points": ["실제 한능검 출제/암기 포인트만 작성. 없으면 빈 배열"],
+  "exam_points": [],
   "highlights": ["강조할 핵심 키워드"],
   "source_titles": ["사용한 출처 title"]
 }}"""
@@ -303,9 +304,10 @@ class LLMAnswerGenerator:
         style: str,
         follow_up: bool = False,
         history: list[dict[str, str]] | None = None,
+        include_source_summary: bool = True,
     ) -> str:
         system_prompt = FOLLOW_UP_SYSTEM_PROMPT if follow_up else SYSTEM_PROMPT
-        user_prompt = build_user_prompt(question, sources, style, follow_up, history)
+        user_prompt = build_user_prompt(question, sources, style, follow_up, history, include_source_summary)
         if self.config.provider == "openai":
             return sanitize_answer(self._generate_openai(system_prompt, user_prompt))
         if self.config.provider == "ollama":

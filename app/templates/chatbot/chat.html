@@ -151,11 +151,15 @@
       event.preventDefault();
       const question = input.value.trim();
       if (!question) return;
-      const intent = classifyChatIntent(question);
+      submitChatQuestion(question);
+    });
+
+    async function submitChatQuestion(question, displayQuestion = question, options = {}) {
+      const intent = options.intent || classifyChatIntent(displayQuestion);
       const conversationHistory = recentConversationHistory();
 
-      appendUserMessage(question);
-      addMessageToActiveSession({ sender: "user", text: question });
+      appendUserMessage(displayQuestion);
+      addMessageToActiveSession({ sender: "user", text: displayQuestion, context: options.historyContext || displayQuestion });
       input.value = "";
       input.style.height = "auto";
 
@@ -206,7 +210,7 @@
         sendButton.disabled = false;
         input.focus();
       }
-    });
+    }
 
     function escapeHtml(value) {
       return String(value ?? "")
@@ -268,11 +272,12 @@
         .slice(-10)
         .map((message) => {
           if (message.sender === "user") {
-            return { role: "user", content: message.text || "" };
+            return { role: "user", content: message.context || message.text || "" };
           }
           const data = message.data || {};
           const structured = data.structured_answer || {};
-          const botText = data.answer
+          const botText = data.context
+            || data.answer
             || structured.summary
             || structured.title
             || "";
@@ -366,23 +371,153 @@
     }
 
     function selectProblemForChat(problem) {
+      closeProblemPicker();
+      appendProblemActionMessage(problem);
+      addMessageToActiveSession({
+        sender: "bot",
+        data: {
+          answer: `${problem.number}번 문제가 선택되었습니다. 무엇을 도와드릴까요?`,
+          context: buildProblemContext(problem, "선택한 문제입니다."),
+          intent: "chat",
+        },
+        intent: "chat",
+      });
+    }
+
+    function buildProblemContext(problem, prompt) {
       const options = (problem.options || [])
         .map((option) => `${option.choice_no}. ${option.content}`)
         .join("\n");
-      const context = [
-        "선택한 문제를 바탕으로 설명해줘.",
+      return [
+        prompt,
         "",
+        problem.passage ? `[지문]\n${problem.passage}` : "",
         `[문제] ${problem.content || ""}`,
         options ? `[보기]\n${options}` : "",
         `[내 답] ${answerLabel(problem.selected_no)}`,
         `[정답] ${answerLabel(problem.answer_no)}`,
         `[분류] ${problem.era || "-"} / ${problem.topic || "-"} / ${problem.question_type || "-"}`,
       ].filter(Boolean).join("\n");
+    }
 
-      input.value = context;
-      input.style.height = "auto";
-      input.style.height = Math.min(input.scrollHeight, 120) + "px";
-      closeProblemPicker();
+    function buildProblemCustomQuestion(problem, customQuestion) {
+      return buildProblemContext(problem, [
+        "아래 문제 정보는 참고만 해.",
+        "사용자가 묻는 질문에 대해서만 답해.",
+        "문제 전체 풀이, 정답 이유, 선지별 해설 표를 반복하지 마.",
+        "질문이 특정 선지나 개념을 묻는 경우 그 부분만 짧게 설명해.",
+        "",
+        `[사용자 질문] ${customQuestion}`,
+      ].join("\n"));
+    }
+
+    function appendProblemActionMessage(problem) {
+      const wrapper = document.createElement("div");
+      wrapper.className = "message bot";
+      const options = (problem.options || []).map((option) => {
+        const selected = Number(option.choice_no) === Number(problem.selected_no);
+        const correct = Number(option.choice_no) === Number(problem.answer_no);
+        return `
+          <li class="${selected ? "selected" : ""} ${correct ? "correct" : ""}">
+            <span>${escapeHtml(option.choice_no)}. ${escapeHtml(option.content)}</span>
+            <em>${selected ? "내 답" : ""}${selected && correct ? " · " : ""}${correct ? "정답" : ""}</em>
+          </li>
+        `;
+      }).join("");
+      wrapper.innerHTML = `
+        <div class="avatar"><img src="/static/images/chatbot_label.png" alt="himate" /></div>
+        <div class="bubble bot-bubble problem-action-bubble">
+          <section class="selected-problem-card">
+            <div class="selected-problem-meta">
+              ${escapeHtml(problem.number)}번 · ${escapeHtml(problem.era || "-")} · ${escapeHtml(problem.topic || "-")}
+            </div>
+            ${problem.passage ? `<p class="selected-problem-passage">${escapeHtml(problem.passage)}</p>` : ""}
+            <strong class="selected-problem-title">${escapeHtml(problem.content || "문제 내용 없음")}</strong>
+            ${options ? `<ol class="selected-problem-options">${options}</ol>` : ""}
+            <div class="selected-problem-answer">
+              <span>내 답 ${escapeHtml(answerLabel(problem.selected_no))}</span>
+              <span>정답 ${escapeHtml(answerLabel(problem.answer_no))}</span>
+            </div>
+          </section>
+          <div class="problem-action-row">
+            <button type="button" data-problem-action="solve">문제 풀이보기</button>
+            <button type="button" data-problem-action="custom">다른 질문하기</button>
+          </div>
+        </div>
+      `;
+      const actionRow = wrapper.querySelector(".problem-action-row");
+      wrapper.querySelectorAll("[data-problem-action]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const action = button.dataset.problemAction;
+          if (action === "custom") {
+            let inlineForm = wrapper.querySelector(".problem-inline-form");
+            if (!inlineForm) {
+              inlineForm = document.createElement("div");
+              inlineForm.className = "problem-inline-form";
+              inlineForm.innerHTML = `
+                <input class="problem-inline-input" type="text" placeholder="이 문제에 대해 질문해 주세요." />
+                <button type="button" class="problem-inline-send" aria-label="전송">↑</button>
+              `;
+              actionRow.after(inlineForm);
+            }
+            const inlineInput = inlineForm.querySelector(".problem-inline-input");
+            const inlineSend = inlineForm.querySelector(".problem-inline-send");
+            const sendCustomQuestion = () => {
+              const customQuestion = inlineInput.value.trim();
+              if (!customQuestion) return;
+              submitChatQuestion(
+                buildProblemCustomQuestion(problem, customQuestion),
+                customQuestion,
+                { intent: "question", historyContext: customQuestion },
+              );
+              inlineInput.value = "";
+            };
+            if (!inlineForm.dataset.bound) {
+              inlineSend.addEventListener("click", sendCustomQuestion);
+              inlineInput.addEventListener("keydown", (event) => {
+                if (event.key !== "Enter") return;
+                event.preventDefault();
+                sendCustomQuestion();
+              });
+              inlineForm.dataset.bound = "1";
+            }
+            inlineInput.focus();
+            return;
+          }
+          submitChatQuestion(
+            buildProblemContext(problem, fixedProblemSolvePrompt()),
+            "문제 풀이보기",
+            { intent: "question", historyContext: "문제 풀이보기" },
+          );
+        });
+      });
+      chatStream.appendChild(wrapper);
+      scrollToBottom();
+    }
+
+    function fixedProblemSolvePrompt() {
+      return [
+        "RAG 근거를 사용해서 문제를 풀이해줘.",
+        "반드시 아래 형식만 사용해. 선지별 해설은 마크다운 표로만 써.",
+        "",
+        "## 정답",
+        "- 정답: n번",
+        "- 이유: 한 문장",
+        "",
+        "## 핵심 풀이",
+        "- 근거 1",
+        "- 근거 2",
+        "- 근거 3",
+        "",
+        "## 선지별 해설",
+        "| 선지 | 판단 | 이유 |",
+        "|---|---|---|",
+        "| 1번 | 맞음/틀림 | 이유 |",
+        "| 2번 | 맞음/틀림 | 이유 |",
+        "| 3번 | 맞음/틀림 | 이유 |",
+        "| 4번 | 맞음/틀림 | 이유 |",
+        "| 5번 | 맞음/틀림 | 이유 |",
+      ].join("\n");
     }
 
     function appendWelcomeMessage() {
@@ -443,9 +578,12 @@
       const shouldShowImages = intent === "image";
       const shouldShowStructured = intent === "concept" && data.structured_answer;
       const imageGallery = shouldShowImages ? renderImageGallery(data.sources || [], data.structured_answer) : "";
+      const answerText = intent === "question"
+        ? stripSourceSummary(data.answer || data.structured_answer?.summary || "답변을 생성하지 못했습니다.")
+        : data.answer || data.structured_answer?.summary || "답변을 생성하지 못했습니다.";
       const content = shouldShowStructured
         ? renderStructuredAnswer(data.structured_answer, data.sources || [])
-        : renderConversationalAnswer(data.answer || data.structured_answer?.summary || "답변을 생성하지 못했습니다.");
+        : renderConversationalAnswer(answerText);
       const label = intent === "concept" ? "개념 정리"
         : intent === "image" ? "이미지 자료"
         : intent === "question" ? "문제 해설"
@@ -466,6 +604,10 @@
       return label === "himate"
         ? ""
         : `<div class="bot-label"><span class="bot-dot"></span><span>${escapeHtml(label)}</span></div>`;
+    }
+
+    function stripSourceSummary(answer) {
+      return String(answer || "").split(/\n\s*#{1,3}\s*출처|(?:\n|^)출처\s*요약|(?:\n|^)출처\s*$/)[0].trim();
     }
 
     function loadSessions() {
@@ -611,10 +753,57 @@
     }
 
     function renderConversationalAnswer(answer) {
-      const html = escapeHtml(answer)
-        .replace(/\n{2,}/g, "</p><p>")
-        .replace(/\n/g, "<br>");
-      return `<div class="markdown-answer conversational-answer"><p>${html}</p></div>`;
+      const lines = String(answer || "").split(/\r?\n/);
+      const html = [];
+      let list = [];
+
+      const flushList = () => {
+        if (!list.length) return;
+        html.push(`<ul>${list.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`);
+        list = [];
+      };
+
+      for (let i = 0; i < lines.length; i += 1) {
+        const line = lines[i].trim();
+        if (!line) {
+          flushList();
+          continue;
+        }
+        if (/^\|.+\|$/.test(line) && /^\|[\s:-]+\|/.test(lines[i + 1]?.trim() || "")) {
+          flushList();
+          const headers = line.split("|").slice(1, -1).map((cell) => cell.trim());
+          const rows = [];
+          i += 2;
+          while (/^\|.+\|$/.test(lines[i]?.trim() || "")) {
+            rows.push(lines[i].trim().split("|").slice(1, -1).map((cell) => cell.trim()));
+            i += 1;
+          }
+          i -= 1;
+          html.push(`
+            <table class="simple-markdown-table">
+              <thead><tr>${headers.map((cell) => `<th>${escapeHtml(cell)}</th>`).join("")}</tr></thead>
+              <tbody>${rows.map((row) => `<tr>${row.map((cell) => `<td>${escapeHtml(cell)}</td>`).join("")}</tr>`).join("")}</tbody>
+            </table>
+          `);
+          continue;
+        }
+        const heading = line.match(/^(#{1,3})\s+(.+)$/);
+        if (heading) {
+          flushList();
+          const level = Math.min(heading[1].length + 1, 4);
+          html.push(`<h${level}>${escapeHtml(heading[2])}</h${level}>`);
+          continue;
+        }
+        const bullet = line.match(/^[-*]\s+(.+)$/);
+        if (bullet) {
+          list.push(bullet[1]);
+          continue;
+        }
+        flushList();
+        html.push(`<p>${escapeHtml(line)}</p>`);
+      }
+      flushList();
+      return `<div class="markdown-answer conversational-answer">${html.join("")}</div>`;
     }
 
     function renderStructuredAnswer(answer, sources) {
@@ -644,22 +833,11 @@
       const sourceItems = sourceTitles.length
         ? sourceTitles.map((title) => `<li>${escapeHtml(title)}</li>`).join("")
         : sources.slice(0, 3).map((source) => `<li>${escapeHtml(source.title)}</li>`).join("");
-      const examPoints = (answer.exam_points || []).filter((point) => String(point || "").trim());
-      const examSection = examPoints.length
-        ? `
-          <section class="exam">
-            <h2>한능검 포인트</h2>
-            <ul>${examPoints.map((point) => `<li>${escapeHtml(point)}</li>`).join("")}</ul>
-          </section>
-        `
-        : "";
-
       return `
         <article class="note">
           <h1 class="title">${escapeHtml(answer.title)}</h1>
           <p class="summary">${escapeHtml(answer.summary)}</p>
           ${sections}
-          ${examSection}
           <section class="sources">
             <h2>출처</h2>
             <ul>${sourceItems}</ul>
