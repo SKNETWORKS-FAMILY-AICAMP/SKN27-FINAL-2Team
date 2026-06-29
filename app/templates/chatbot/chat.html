@@ -163,15 +163,6 @@
       input.value = "";
       input.style.height = "auto";
 
-      if (intent === "casual" || intent === "chat") {
-        const localAnswer = buildLocalChatAnswer(question);
-        const localData = { answer: localAnswer, intent, sources: [] };
-        appendBotMessage(localData);
-        addMessageToActiveSession({ sender: "bot", data: localData, intent });
-        input.focus();
-        return;
-      }
-
       sendButton.disabled = true;
       const loading = appendLoadingMessage();
 
@@ -185,6 +176,8 @@
           },
           body: JSON.stringify({
             question,
+            display_question: displayQuestion,
+            session_id: activeSessionId,
             mode,
             intent,
             answer_format: answerFormat,
@@ -247,23 +240,6 @@
         return "chat";
       }
       return "concept";
-    }
-
-    function buildLocalChatAnswer(question) {
-      const text = String(question || "");
-      if (/고마워|감사|ㄱㅅ/.test(text)) {
-        return "천만에요. 필요하시면 한국사 개념 정리나 문제 해설도 바로 도와드리겠습니다.";
-      }
-      if (/날씨|기온|비\s*와|비와|눈\s*와|눈와|미세먼지/.test(text)) {
-        return "지금 챗봇에는 실시간 날씨 조회 기능은 연결되어 있지 않습니다. 대신 한국사 개념 정리, 문제 해설, 이미지 자료 조회는 바로 도와드릴 수 있습니다.";
-      }
-      if (/시간|날짜|요일/.test(text)) {
-        return "현재 시간이나 날짜 같은 실시간 정보 조회는 아직 챗봇 기능에 연결되어 있지 않습니다. 한국사 학습 질문을 주시면 자료를 바탕으로 답변드리겠습니다.";
-      }
-      if (/공부법|계획|동기부여|힘들/.test(text)) {
-        return "좋습니다. 학습 상담은 대화형으로 도와드릴게요. 현재 목표 급수, 시험일까지 남은 기간, 하루 공부 가능 시간을 알려주시면 한국사 공부 순서를 같이 잡아드리겠습니다.";
-      }
-      return "안녕하세요. 한국사 개념 정리, 문제 해설, 이미지 자료 조회까지 편하게 물어보세요.";
     }
 
     function recentConversationHistory() {
