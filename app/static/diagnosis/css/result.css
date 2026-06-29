@@ -326,15 +326,13 @@ button {
 
 .diagnosis-summary {
   display: grid;
-  grid-template-columns: minmax(280px, 0.72fr) minmax(420px, 1.28fr);
-  gap: clamp(24px, 5vw, 58px);
-  align-items: center;
+  grid-template-columns: 1fr;
+  gap: 18px;
   margin-top: 22px;
   padding: clamp(22px, 3vw, 30px);
 }
 
 .summary-copy p {
-  max-width: 420px;
   margin: 12px 0 0;
   color: var(--muted);
   font-weight: 750;
@@ -348,15 +346,15 @@ button {
 }
 
 .summary-grid article {
-  min-height: 150px;
+  min-height: 122px;
   display: grid;
-  grid-template-rows: 24px minmax(42px, auto) minmax(34px, auto);
+  grid-template-rows: 24px 50px 42px;
   align-content: center;
   justify-items: stretch;
   gap: 10px;
   border-radius: 8px;
   padding: 18px 14px;
-  background: var(--soft);
+  background: transparent;
   overflow: hidden;
 }
 
@@ -380,7 +378,7 @@ button {
 .summary-grid strong {
   color: var(--ink);
   max-width: 100%;
-  font-size: clamp(24px, 2.4vw, 34px);
+  font-size: clamp(26px, 3.2vw, 42px);
   line-height: 0.95;
   font-weight: 950;
   white-space: nowrap;
@@ -393,6 +391,9 @@ button {
 .summary-grid p {
   margin: 0;
   max-width: 100%;
+  min-height: 42px;
+  display: grid;
+  place-items: center;
   color: var(--muted);
   font-size: 12px;
   line-height: 1.35;
@@ -409,6 +410,7 @@ button {
   padding: 0;
   list-style: none;
   width: 100%;
+  min-height: 42px;
 }
 
 .summary-grid li {
