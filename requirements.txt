@@ -9,6 +9,8 @@ neo4j==6.2.0
 langgraph==1.2.5
 langchain-community==0.4.2
 langchain-openai==1.3.2
+langsmith
+ragas
 
 jupyter==1.1.1
 pandas==3.0.3

@@ -4,11 +4,19 @@ from typing import Any
 
 from .graph_service import build_graph_context
 from .rag.llm_answer_generator import LLMAnswerGenerator
-from .rag.pgvector_retriever import PgVectorHybridRetriever, overview_focus_terms, result_to_payload
+from .rag.pgvector_retriever import (
+    PgVectorHybridRetriever,
+    overview_focus_terms,
+    result_to_payload,
+    search_timeline_sources,
+)
 
 
 SUPPORTED_INTENTS = {"concept", "question", "image", "chat", "casual"}
 NOT_FOUND_ANSWER = "검색 결과가 없습니다."
+MIN_KEYWORD_SCORE = 0.12
+MIN_COMBINED_SCORE = 0.70
+FOLLOW_UP_MIN_COMBINED_SCORE = 0.50
 FOLLOW_UP_TERMS = ("그거", "이거", "저거", "그럼", "좀더", "자세히", "왜", "어떻게", "차이", "비교")
 CONTEXT_ONLY_TERMS = ("업적", "정책", "활동", "과학적", "문화적", "정치적", "경제적")
 CONTEXT_ONLY_FOCUS_TERMS = {"과학적", "문화적", "정치적", "경제적"}
@@ -60,9 +68,17 @@ def no_rag_answer(question: str, intent: str) -> dict[str, Any]:
     }
 
 
-def has_enough_evidence(results: list[Any], intent: str) -> bool:
+def has_enough_evidence(
+    results: list[Any],
+    intent: str,
+    extra_sources: list[dict[str, Any]] | None = None,
+    follow_up: bool = False,
+) -> bool:
     if not results:
-        return False
+        return bool(extra_sources and intent != "image")
+
+    if extra_sources and intent != "image":
+        return True
 
     best = results[0]
     if intent == "image":
@@ -74,9 +90,8 @@ def has_enough_evidence(results: list[Any], intent: str) -> bool:
 
     best_keyword = max(float(result.keyword_score or 0.0) for result in results)
     best_score = float(best.score or 0.0)
-    if best_keyword >= 0.12:
-        return True
-    if best_keyword >= 0.05 and best_score >= 0.35:
+    min_score = FOLLOW_UP_MIN_COMBINED_SCORE if follow_up else MIN_COMBINED_SCORE
+    if best_keyword >= MIN_KEYWORD_SCORE and best_score >= min_score:
         return True
     return False
 
@@ -198,14 +213,18 @@ def build_history_rag_answer(
         answer_format = "structured"
 
     search_seed = build_search_question(question, conversation_history)
+    is_contextual_follow_up = search_seed != question
     graph_context = build_graph_context(search_seed, limit=8)
     search_question = build_enriched_question(search_seed, graph_context)
+    generation_history = conversation_history if is_contextual_follow_up else []
 
     retriever = PgVectorHybridRetriever()
     results = retriever.search(search_question, top_k=max(top_k, 8 if graph_context.get("keywords") else top_k))
     sources = [result_to_payload(result) for result in results]
+    timeline_sources = search_timeline_sources(search_question)
+    sources.extend(timeline_sources)
 
-    if not has_enough_evidence(results, intent):
+    if not has_enough_evidence(results, intent, timeline_sources, is_contextual_follow_up):
         return not_found_answer(question, intent, graph_context)
 
     generator = LLMAnswerGenerator.from_env()
@@ -214,7 +233,7 @@ def build_history_rag_answer(
             question,
             sources,
             follow_up=follow_up or mode == "question",
-            history=conversation_history,
+            history=generation_history,
         )
         if is_insufficient_structured_answer(structured_answer):
             return not_found_answer(question, intent, graph_context)
@@ -226,7 +245,8 @@ def build_history_rag_answer(
             sources,
             style="textbook",
             follow_up=follow_up or mode == "question",
-            history=conversation_history,
+            history=generation_history,
+            include_source_summary=intent != "question",
         )
         if is_insufficient_text_answer(answer):
             return not_found_answer(question, intent, graph_context)
