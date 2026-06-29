@@ -195,7 +195,7 @@ a {
 
 .analytics-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 18px;
   margin-bottom: 18px;
 }
@@ -244,6 +244,22 @@ a {
 
 .panel-heading.compact h2 {
   font-size: 18px;
+}
+
+.panel-heading h2 span {
+  display: inline-flex;
+  min-height: 24px;
+  margin-left: 8px;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0 9px;
+  background: #eef6e7;
+  color: #60704f;
+  font-size: 12px;
+  line-height: 1;
+  font-weight: 950;
+  vertical-align: middle;
+  white-space: nowrap;
 }
 
 .panel-heading a,

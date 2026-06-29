@@ -7,6 +7,7 @@ from analytics.service.analytics import (
     get_diagnosis_improvement_summary,
     get_completed_records,
     get_completed_sessions,
+    get_recent_wrong_rate_period,
     get_weekly_practice_summary,
 )
 from analytics.service.studyplan import get_user_study_info
@@ -80,7 +81,7 @@ def build_diagnosis_comparison_summary(user):
     }
 
 
-def build_wrong_type_summary(user):
+def build_wrong_type_summary(user, today=None):
     """
     유형별 오답률 요약 카드에 필요한 데이터를 만든다.
 
@@ -88,8 +89,13 @@ def build_wrong_type_summary(user):
     오답률이 높은 상위 항목에 강조용 CSS 클래스를 부여한다.
     """
     unclassified_label = "미분류"
+    period = get_recent_wrong_rate_period(today)
     rows = (
         get_completed_records(user.user_id)
+        .filter(
+            session__recorded_date__gte=period["startDate"],
+            session__recorded_date__lte=period["endDate"],
+        )
         .values("q_type")
         .annotate(
             total=Count("record_id"),
@@ -129,10 +135,11 @@ def build_wrong_type_summary(user):
         "items": sorted_items,
         "has_records": total_count > 0,
         "status_label": status_label,
+        "period_label": period["label"],
     }
 
 
-def build_weakness_summary(user):
+def build_weakness_summary(user, today=None):
     """
     시대와 주제 조합 기준의 취약점 목록을 만든다.
 
@@ -140,8 +147,13 @@ def build_weakness_summary(user):
     오답률과 오답 수 기준으로 정렬한다.
     """
     unclassified_label = "미분류"
+    period = get_recent_wrong_rate_period(today)
     rows = (
         get_completed_records(user.user_id)
+        .filter(
+            session__recorded_date__gte=period["startDate"],
+            session__recorded_date__lte=period["endDate"],
+        )
         .values("era", "topic")
         .annotate(
             total=Count("record_id"),
@@ -178,6 +190,53 @@ def build_weakness_summary(user):
     return {
         "items": sorted_items[:display_limit],
         "has_records": bool(items),
+        "period_label": period["label"],
+    }
+
+
+def build_mypage_summary_validation(
+    user,
+    today=None,
+    weakness_summary=None,
+    wrong_type_summary=None,
+):
+    """
+    임시 진단용 검증이다.
+
+    사용자 입력 검증이 아니라, 최근 풀이 기록이 있는데 마이페이지 카드가
+    비어 보이는 불일치를 확인하기 위한 안전망이다. 원인 확인 후 테스트로
+    대체하고 제거할 수 있다.
+    """
+    period = get_recent_wrong_rate_period(today)
+    records = get_completed_records(user.user_id).filter(
+        session__recorded_date__gte=period["startDate"],
+        session__recorded_date__lte=period["endDate"],
+    )
+    stats = records.aggregate(
+        total=Count("record_id"),
+        wrong=Count("record_id", filter=Q(is_correct=False)),
+    )
+    total_count = stats["total"] or 0
+    wrong_count = stats["wrong"] or 0
+    wrong_type_has_records = bool((wrong_type_summary or {}).get("has_records"))
+    weakness_has_records = bool((weakness_summary or {}).get("has_records"))
+    issues = []
+
+    if total_count > 0 and not wrong_type_has_records:
+        issues.append("recent_records_exist_but_wrong_type_empty")
+    if wrong_count > 0 and not weakness_has_records:
+        issues.append("recent_wrong_records_exist_but_weakness_empty")
+
+    return {
+        "userId": user.user_id,
+        "periodStart": period["startDate"],
+        "periodEnd": period["endDate"],
+        "recentRecordCount": total_count,
+        "recentWrongRecordCount": wrong_count,
+        "wrongTypeHasRecords": wrong_type_has_records,
+        "weaknessHasRecords": weakness_has_records,
+        "issues": issues,
+        "isValid": not issues,
     }
 
 

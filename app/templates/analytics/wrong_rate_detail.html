@@ -33,16 +33,20 @@
     </section>
 
     <section class="top-donut-summary" aria-label="오답 비중 요약">
+      <div class="top-donut-heading">
+        <div>
+          <p>최근 {{ donut_period.dayCount }}일 기준</p>
+          <h2>오답 비중</h2>
+        </div>
+        <span>{{ donut_period.label }} · 오답 {{ donut_total_wrong }}개</span>
+      </div>
       <article class="top-donut-card">
         <header>
-          <span>오답 비중</span>
+          <span>분류별 비중</span>
           <h2>시대별</h2>
         </header>
         <div class="rate-donut-overview">
-          <div class="rate-donut-chart{% if not era_donut.hasRecords %} empty{% endif %}" style="background: {{ era_donut.gradient }};">
-            <strong>{{ era_donut.totalWrong }}</strong>
-            <span>오답</span>
-          </div>
+          <div class="rate-donut-chart{% if not era_donut.hasRecords %} empty{% endif %}" style="background: {{ era_donut.gradient }};" aria-label="시대별 오답 비중"></div>
           <div class="rate-donut-list">
             {% for item in era_donut.items %}
               <article>
@@ -62,14 +66,11 @@
       </article>
       <article class="top-donut-card">
         <header>
-          <span>오답 비중</span>
+          <span>분류별 비중</span>
           <h2>유형별</h2>
         </header>
         <div class="rate-donut-overview">
-          <div class="rate-donut-chart{% if not type_donut.hasRecords %} empty{% endif %}" style="background: {{ type_donut.gradient }};">
-            <strong>{{ type_donut.totalWrong }}</strong>
-            <span>오답</span>
-          </div>
+          <div class="rate-donut-chart{% if not type_donut.hasRecords %} empty{% endif %}" style="background: {{ type_donut.gradient }};" aria-label="유형별 오답 비중"></div>
           <div class="rate-donut-list">
             {% for item in type_donut.items %}
               <article>
@@ -89,14 +90,11 @@
       </article>
       <article class="top-donut-card">
         <header>
-          <span>오답 비중</span>
+          <span>분류별 비중</span>
           <h2>주제별</h2>
         </header>
         <div class="rate-donut-overview">
-          <div class="rate-donut-chart{% if not topic_donut.hasRecords %} empty{% endif %}" style="background: {{ topic_donut.gradient }};">
-            <strong>{{ topic_donut.totalWrong }}</strong>
-            <span>오답</span>
-          </div>
+          <div class="rate-donut-chart{% if not topic_donut.hasRecords %} empty{% endif %}" style="background: {{ topic_donut.gradient }};" aria-label="주제별 오답 비중"></div>
           <div class="rate-donut-list">
             {% for item in topic_donut.items %}
               <article>
@@ -116,32 +114,12 @@
       </article>
     </section>
 
-    <section class="scope-chart-stack" aria-label="분석 단위별 오답률 그래프">
-      <div class="scope-stack-heading">
-        <div>
-          <p>완료 풀이 기록 기준</p>
-          <h2>오답률 흐름</h2>
-        </div>
-        <span>미응답 포함</span>
-      </div>
-      <div class="scope-tabs" aria-label="오답률 그래프 기준 선택">
-        {% for group in analysis_scope_chart_data %}
-          <button
-            class="{% if forloop.first %}active{% endif %}"
-            type="button"
-            data-scope-tab="{{ group.scope }}"
-            aria-pressed="{{ forloop.first|yesno:'true,false' }}"
-          >
-            {{ group.label }}
-          </button>
-        {% endfor %}
-      </div>
+    <section class="scope-chart-stack" aria-label="세션별 및 기간별 분석">
       {% for group in analysis_scope_chart_data %}
         <article
-          class="scope-chart-panel scope-chart-block{% if forloop.first %} active{% endif %}"
+          class="scope-chart-panel scope-chart-block"
           data-scope-panel="{{ group.scope }}"
-          aria-label="{{ group.label }} 오답률 그래프"
-          {% if not forloop.first %}hidden{% endif %}
+          aria-label="{{ group.label }} {{ group.metricLabel }} 그래프"
         >
           <div class="scope-chart-heading">
             <div>
@@ -150,9 +128,28 @@
             </div>
             <div class="scope-chart-meta">
               <span class="scope-chart-caption">{{ group.label }}</span>
-              <span>{{ group.bars|length }}개 구간</span>
+              <span
+                {% if group.scope == "period" %}
+                  data-period-count
+                  data-count-unit="{{ group.countUnit }}"
+                {% endif %}
+              >
+                {{ group.bars|length }}개 {{ group.countUnit }}
+              </span>
             </div>
           </div>
+          {% if group.scope == "period" %}
+            <div class="period-filter" aria-label="기간별 오답률 조회 기간 선택">
+              <label>
+                시작일
+                <input type="date" data-period-start />
+              </label>
+              <label>
+                종료일
+                <input type="date" data-period-end />
+              </label>
+            </div>
+          {% endif %}
           <div class="scope-chart">
             <div class="scope-y-axis" aria-hidden="true">
               <span>100%</span>
@@ -164,26 +161,56 @@
               <i class="scope-gridline middle" aria-hidden="true"></i>
               <i class="scope-gridline bottom" aria-hidden="true"></i>
               {% if group.hasRecords %}
-                <div class="scope-bars">
+                <div class="scope-line-chart" data-line-chart="{{ group.scope }}">
+                  <svg class="scope-line-svg" data-line-svg aria-hidden="true">
+                    <polyline class="scope-line-path" data-line-path points="" vector-effect="non-scaling-stroke"></polyline>
+                  </svg>
+                  <div class="scope-line-points" data-scope-points="{{ group.scope }}">
                   {% for bar in group.bars %}
                     <article
-                      class="scope-bar-item {{ bar.statusClass }}{% if bar.sessionId %} clickable{% endif %}"
+                      class="scope-line-point {{ bar.statusClass }}{% if bar.sessionId or bar.dateKey %} clickable{% endif %}"
+                      data-line-point
+                      data-rate="{{ bar.chartValue }}"
+                      {% if bar.dateKey %}
+                        data-date-key="{{ bar.dateKey }}"
+                        data-period-point
+                        role="button"
+                        tabindex="0"
+                      {% endif %}
+                      {% if bar.planScope %}
+                        data-plan-scope="{{ bar.planScope }}"
+                      {% endif %}
+                      aria-label="{{ bar.label }} {{ bar.metricLabel }} {{ bar.chartValueLabel }}"
+                      title="{{ bar.label }} · {{ bar.metricLabel }} {{ bar.chartValueLabel }}{% if bar.detailLine %} · {{ bar.detailLine }}{% endif %}"
                       {% if bar.sessionId %}
                         role="button"
                         tabindex="0"
-                        data-session-id="{{ bar.sessionId }}"
+                        data-inline-session-id="{{ bar.sessionId }}"
                       {% endif %}
                     >
-                      <span class="scope-bar-value">{{ bar.wrongRateLabel }}</span>
-                      <div class="scope-bar-track" aria-label="{{ bar.label }} 오답률 {{ bar.wrongRateLabel }}">
-                        <i style="height: {{ bar.wrongRate }}%"></i>
-                      </div>
+                      <span class="scope-point-value">{{ bar.chartValueLabel }}</span>
+                      <span class="scope-point-dot" aria-hidden="true"></span>
                       <strong>{{ bar.label }}</strong>
-                      <p>{{ bar.description }}</p>
-                      <small>{{ bar.totalCount }}문제 · 문제당 {{ bar.averageTimeLabel }}<br />{{ bar.periodLabel }} · {{ bar.createdLabel }}</small>
+                      {% if bar.description %}
+                        <p>{{ bar.description }}</p>
+                      {% endif %}
+                      {% if bar.detailLine or bar.subDetailLine %}
+                        <small>
+                          {% if bar.detailLine %}{{ bar.detailLine }}{% endif %}
+                          {% if bar.detailLine and bar.subDetailLine %}<br />{% endif %}
+                          {% if bar.subDetailLine %}{{ bar.subDetailLine }}{% endif %}
+                        </small>
+                      {% endif %}
                     </article>
                   {% endfor %}
+                  </div>
                 </div>
+              {% endif %}
+              {% if group.scope == "period" and group.hasRecords %}
+                <article class="scope-empty period-empty" data-period-empty hidden>
+                  <strong>기록 없음</strong>
+                  <span>선택한 기간에 표시할 풀이 기록이 없습니다.</span>
+                </article>
               {% endif %}
               {% if not group.hasRecords %}
                 <article class="scope-empty">
@@ -197,98 +224,88 @@
       {% endfor %}
     </section>
 
-    <section class="rate-section" aria-labelledby="eraTitle">
-      <div class="section-heading">
-        <h2 id="eraTitle">시대별 분석</h2>
+    <section class="scope-breakdown" data-session-breakdown aria-label="선택한 세션의 상세 분석" hidden>
+      <div class="scope-breakdown-heading">
+        <div>
+          <p data-breakdown-kicker>세션 선택</p>
+          <h2 data-breakdown-title>세션 상세 분석</h2>
+        </div>
+        <span data-breakdown-description>선택한 세션의 시대별, 유형별, 주제별 오답률을 확인합니다.</span>
       </div>
-      <div class="rate-bars">
-        {% for item in era_stats %}
-          <button
-            class="rate-bar-card {{ item.status_class }}"
-            id="era-{{ forloop.counter }}"
-            type="button"
-            data-detail-category="era"
-            data-detail-label="{{ item.label }}"
-          >
-            <div class="bar-label">
-              <strong>{{ item.label }}</strong>
-            </div>
-            <div class="bar-body">
-              <div class="bar-meta">
-                <span>{{ item.total }}문제 · 문제당 {{ item.average_time_label }}</span>
-                <strong>{{ item.rate }}%</strong>
-              </div>
-              <div class="bar-track"><i style="width: {{ item.rate }}%"></i></div>
-            </div>
-            <div class="bar-status">
-              <span class="status-badge {{ item.status_class }}">{{ item.status_label }}</span>
-            </div>
-          </button>
-        {% endfor %}
-      </div>
+      <div class="session-inline-body" data-session-breakdown-body></div>
     </section>
 
-    <section class="rate-section" aria-labelledby="typeTitle">
-      <div class="section-heading">
-        <h2 id="typeTitle">유형별 분석</h2>
-      </div>
-      <div class="rate-bars">
-        {% for item in type_stats %}
-          <button
-            class="rate-bar-card {{ item.status_class }}"
-            id="type-{{ forloop.counter }}"
-            type="button"
-            data-detail-category="type"
-            data-detail-label="{{ item.label }}"
-          >
-            <div class="bar-label">
-              <strong>{{ item.label }}</strong>
-            </div>
-            <div class="bar-body">
-              <div class="bar-meta">
-                <span>{{ item.total }}문제 · 문제당 {{ item.average_time_label }}</span>
-                <strong>{{ item.rate }}%</strong>
+    {% with group=plan_completion_chart_data %}
+      <section
+        class="plan-progress-section scope-chart-panel scope-chart-block"
+        data-plan-chart-panel
+        aria-label="{{ group.label }} {{ group.metricLabel }} 그래프"
+      >
+        <div class="scope-chart-heading">
+          <div>
+            <p>{{ group.description }}</p>
+            <h2>{{ group.title }}</h2>
+          </div>
+          <div class="scope-chart-meta">
+            <span class="scope-chart-caption">{{ group.label }}</span>
+            <span>{{ group.bars|length }}개 {{ group.countUnit }}</span>
+          </div>
+        </div>
+        <div class="scope-chart">
+          <div class="scope-y-axis" aria-hidden="true">
+            <span>100%</span>
+            <span>50%</span>
+            <span>0%</span>
+          </div>
+          <div class="scope-plot">
+            <i class="scope-gridline top" aria-hidden="true"></i>
+            <i class="scope-gridline middle" aria-hidden="true"></i>
+            <i class="scope-gridline bottom" aria-hidden="true"></i>
+            {% if group.hasRecords %}
+              <div class="scope-line-chart" data-line-chart="{{ group.scope }}">
+                <svg class="scope-line-svg" data-line-svg aria-hidden="true">
+                  <polyline class="scope-line-path" data-line-path points="" vector-effect="non-scaling-stroke"></polyline>
+                </svg>
+                <div class="scope-line-points" data-scope-points="{{ group.scope }}">
+                  {% for bar in group.bars %}
+                    <article
+                      class="scope-line-point {{ bar.statusClass }}"
+                      data-line-point
+                      data-rate="{{ bar.chartValue }}"
+                      {% if bar.planScope %}
+                        data-plan-scope="{{ bar.planScope }}"
+                      {% endif %}
+                      aria-label="{{ bar.label }} {{ bar.metricLabel }} {{ bar.chartValueLabel }}"
+                      title="{{ bar.label }} · {{ bar.metricLabel }} {{ bar.chartValueLabel }}{% if bar.detailLine %} · {{ bar.detailLine }}{% endif %}"
+                    >
+                      <span class="scope-point-value">{{ bar.chartValueLabel }}</span>
+                      <span class="scope-point-dot" aria-hidden="true"></span>
+                      <strong>{{ bar.label }}</strong>
+                      {% if bar.description %}
+                        <p>{{ bar.description }}</p>
+                      {% endif %}
+                      {% if bar.detailLine or bar.subDetailLine %}
+                        <small>
+                          {% if bar.detailLine %}{{ bar.detailLine }}{% endif %}
+                          {% if bar.detailLine and bar.subDetailLine %}<br />{% endif %}
+                          {% if bar.subDetailLine %}{{ bar.subDetailLine }}{% endif %}
+                        </small>
+                      {% endif %}
+                    </article>
+                  {% endfor %}
+                </div>
               </div>
-              <div class="bar-track"><i style="width: {{ item.rate }}%"></i></div>
-            </div>
-            <div class="bar-status">
-              <span class="status-badge {{ item.status_class }}">{{ item.status_label }}</span>
-            </div>
-          </button>
-        {% endfor %}
-      </div>
-    </section>
-
-    <section class="rate-section" aria-labelledby="topicTitle">
-      <div class="section-heading">
-        <h2 id="topicTitle">주제별 분석</h2>
-      </div>
-      <div class="rate-bars">
-        {% for item in topic_stats %}
-          <button
-            class="rate-bar-card {{ item.status_class }}"
-            id="topic-{{ forloop.counter }}"
-            type="button"
-            data-detail-category="topic"
-            data-detail-label="{{ item.label }}"
-          >
-            <div class="bar-label">
-              <strong>{{ item.label }}</strong>
-            </div>
-            <div class="bar-body">
-              <div class="bar-meta">
-                <span>{{ item.total }}문제 · 문제당 {{ item.average_time_label }}</span>
-                <strong>{{ item.rate }}%</strong>
-              </div>
-              <div class="bar-track"><i style="width: {{ item.rate }}%"></i></div>
-            </div>
-            <div class="bar-status">
-              <span class="status-badge {{ item.status_class }}">{{ item.status_label }}</span>
-            </div>
-          </button>
-        {% endfor %}
-      </div>
-    </section>
+            {% endif %}
+            {% if not group.hasRecords %}
+              <article class="scope-empty">
+                <strong>기록 없음</strong>
+                <span>표시할 학습계획 달성 기록이 없습니다.</span>
+              </article>
+            {% endif %}
+          </div>
+        </div>
+      </section>
+    {% endwith %}
   </main>
 
   <div class="detail-modal" id="wrongRateDetailModal" hidden>
@@ -307,13 +324,14 @@
     </section>
   </div>
 
-  {{ analysis_scope_chart_data|json_script:"scope-chart-data" }}
   <script>
     (() => {
-      const scopeButtons = document.querySelectorAll("[data-scope-tab]");
-      const scopePanels = document.querySelectorAll("[data-scope-panel]");
       const detailButtons = document.querySelectorAll("[data-detail-category]");
-      const scopeChartData = JSON.parse(document.getElementById("scope-chart-data").textContent);
+      const sessionBreakdown = document.querySelector("[data-session-breakdown]");
+      const sessionBreakdownBody = document.querySelector("[data-session-breakdown-body]");
+      const breakdownKicker = document.querySelector("[data-breakdown-kicker]");
+      const breakdownTitle = document.querySelector("[data-breakdown-title]");
+      const breakdownDescription = document.querySelector("[data-breakdown-description]");
       const detailModal = document.getElementById("wrongRateDetailModal");
       const detailClose = document.getElementById("closeWrongRateDetail");
       const detailCategory = document.getElementById("wrongRateDetailCategory");
@@ -321,6 +339,9 @@
       const detailBody = document.getElementById("wrongRateDetailBody");
       const detailUrl = "{% url 'analytics:wrong_rate_item_sessions' %}";
       const sessionDetailUrl = "{% url 'analytics:wrong_rate_session_detail' %}";
+      const sessionItemQuestionsUrl = "{% url 'analytics:wrong_rate_session_item_questions' %}";
+      const periodDetailUrl = "{% url 'analytics:wrong_rate_period_detail' %}";
+      const periodItemQuestionsUrl = "{% url 'analytics:wrong_rate_period_item_questions' %}";
 
       const escapeHtml = (value) => String(value ?? "")
         .replaceAll("&", "&amp;")
@@ -329,17 +350,151 @@
         .replaceAll('"', "&quot;")
         .replaceAll("'", "&#39;");
 
-      const setActiveScope = (scope) => {
-        scopeButtons.forEach((button) => {
-          const isActive = button.dataset.scopeTab === scope;
-          button.classList.toggle("active", isActive);
-          button.setAttribute("aria-pressed", isActive ? "true" : "false");
+      const statusLabels = {
+        weak: "취약",
+        stable: "안정",
+        empty: "기록 없음",
+      };
+
+      const getStatusLabel = (statusClass) => statusLabels[statusClass] || "";
+
+      const hideSessionBreakdown = () => {
+        if (sessionBreakdown) {
+          sessionBreakdown.hidden = true;
+        }
+      };
+
+      const lineChartLayout = {
+        chartHeight: 226,
+        edgeInset: 34,
+        minWidth: 560,
+        pointGap: 68,
+        topY: 31,
+        bottomY: 191,
+      };
+
+      const getVisibleLinePoints = (chart) => Array
+        .from(chart.querySelectorAll("[data-line-point]"))
+        .filter((point) => !point.hidden);
+
+      const drawLineChart = (chart) => {
+        const svg = chart.querySelector("[data-line-svg]");
+        const linePath = chart.querySelector("[data-line-path]");
+        const points = getVisibleLinePoints(chart);
+        if (!svg || !linePath) {
+          return;
+        }
+
+        const contentWidth = lineChartLayout.edgeInset * 2
+          + Math.max(points.length - 1, 0) * lineChartLayout.pointGap;
+        const plotWidth = chart.parentElement
+          ? chart.parentElement.clientWidth
+          : lineChartLayout.minWidth;
+        const chartWidth = Math.max(lineChartLayout.minWidth, plotWidth, contentWidth);
+        const chartRange = lineChartLayout.bottomY - lineChartLayout.topY;
+        const linePoints = points.map((point, index) => {
+          const rate = Math.min(Math.max(Number(point.dataset.rate) || 0, 0), 100);
+          const x = points.length === 1
+            ? chartWidth / 2
+            : lineChartLayout.edgeInset + index * lineChartLayout.pointGap;
+          const y = lineChartLayout.topY + ((100 - rate) / 100) * chartRange;
+
+          point.style.setProperty("--point-x", `${x}px`);
+          point.style.setProperty("--point-y", `${y}px`);
+          return `${x},${y}`;
         });
-        scopePanels.forEach((panel) => {
-          const isActive = panel.dataset.scopePanel === scope;
-          panel.hidden = !isActive;
-          panel.classList.toggle("active", isActive);
+
+        chart.style.setProperty("--line-chart-width", `${chartWidth}px`);
+        if (chart.parentElement) {
+          chart.parentElement.style.setProperty("--line-chart-width", `${chartWidth}px`);
+        }
+        svg.setAttribute("viewBox", `0 0 ${chartWidth} ${lineChartLayout.chartHeight}`);
+        linePath.setAttribute("points", linePoints.join(" "));
+      };
+
+      const drawLineCharts = () => {
+        document.querySelectorAll("[data-line-chart]").forEach((chart) => {
+          drawLineChart(chart);
         });
+      };
+
+      const setupPeriodFilter = () => {
+        const periodPanel = document.querySelector('[data-scope-panel="period"]');
+        if (!periodPanel) {
+          return;
+        }
+        const startInput = periodPanel.querySelector("[data-period-start]");
+        const endInput = periodPanel.querySelector("[data-period-end]");
+        const countLabel = periodPanel.querySelector("[data-period-count]");
+        const emptyState = periodPanel.querySelector("[data-period-empty]");
+        const periodChart = periodPanel.querySelector("[data-line-chart]");
+        const points = Array.from(periodPanel.querySelectorAll("[data-date-key]"));
+        if (!startInput || !endInput || !points.length) {
+          return;
+        }
+        const countUnit = countLabel?.dataset.countUnit || "구간";
+
+        const dateKeys = points
+          .map((point) => point.dataset.dateKey)
+          .filter(Boolean)
+          .sort();
+        const minDate = dateKeys[0];
+        const maxDate = dateKeys[dateKeys.length - 1];
+
+        startInput.min = minDate;
+        startInput.max = maxDate;
+        startInput.value = minDate;
+        endInput.min = minDate;
+        endInput.max = maxDate;
+        endInput.value = maxDate;
+
+        const applyPeriodFilter = () => {
+          if (startInput.value && endInput.value && startInput.value > endInput.value) {
+            endInput.value = startInput.value;
+          }
+          const startDate = startInput.value || minDate;
+          const endDate = endInput.value || maxDate;
+          let visibleCount = 0;
+
+          points.forEach((point) => {
+            const dateKey = point.dataset.dateKey;
+            const isVisible = dateKey >= startDate && dateKey <= endDate;
+            point.hidden = !isVisible;
+            if (isVisible) {
+              visibleCount += 1;
+            }
+          });
+
+          if (countLabel) {
+            countLabel.textContent = `${visibleCount}개 ${countUnit}`;
+          }
+          if (emptyState) {
+            emptyState.hidden = visibleCount > 0;
+          }
+          if (periodChart) {
+            drawLineChart(periodChart);
+          }
+        };
+
+        startInput.addEventListener("change", applyPeriodFilter);
+        endInput.addEventListener("change", applyPeriodFilter);
+        applyPeriodFilter();
+      };
+
+      const getSelectedPeriodRange = () => {
+        const periodPanel = document.querySelector('[data-scope-panel="period"]');
+        if (!periodPanel) {
+          return null;
+        }
+        const startInput = periodPanel.querySelector("[data-period-start]");
+        const endInput = periodPanel.querySelector("[data-period-end]");
+        if (!startInput || !endInput || !startInput.value || !endInput.value) {
+          return null;
+        }
+        return {
+          startDate: startInput.value,
+          endDate: endInput.value,
+        };
       };
 
       const setDetailModal = (isOpen) => {
@@ -399,7 +554,7 @@
         <article class="session-group-item ${escapeHtml(item.statusClass)}">
           <div>
             <strong>${escapeHtml(item.label)}</strong>
-            <span>${escapeHtml(item.classification)} · ${escapeHtml(item.totalCount)}문제 · 문제당 ${escapeHtml(item.averageTimeLabel)}</span>
+            <span>${escapeHtml(item.classification)} · 전체 ${escapeHtml(item.totalCount)}문제 · 오답 ${escapeHtml(item.wrongCount)}개 · 문제당 ${escapeHtml(item.averageTimeLabel)}</span>
           </div>
           <b>${escapeHtml(item.wrongRate)}%</b>
         </article>
@@ -510,6 +665,516 @@
         `;
       };
 
+      const renderInlineAnalysisCard = (item, sessionId) => `
+        <button
+          class="rate-bar-card ${escapeHtml(item.statusClass)}"
+          type="button"
+          data-session-item-question
+          data-session-id="${escapeHtml(sessionId)}"
+          data-category="${escapeHtml(item.category)}"
+          data-label="${escapeHtml(item.label)}"
+        >
+          <div class="bar-label">
+            <strong>${escapeHtml(item.label)}</strong>
+          </div>
+          <div class="bar-body">
+            <div class="bar-meta">
+              <span>전체 ${escapeHtml(item.totalCount)}문제 · 오답 ${escapeHtml(item.wrongCount)}개 · 문제당 ${escapeHtml(item.averageTimeLabel)}</span>
+              <strong>${escapeHtml(item.wrongRate)}%</strong>
+            </div>
+            <div class="bar-track"><i style="width: ${Number(item.wrongRate) || 0}%"></i></div>
+          </div>
+          <div class="bar-status">
+            <span class="status-badge ${escapeHtml(item.statusClass)}">${escapeHtml(getStatusLabel(item.statusClass))}</span>
+          </div>
+        </button>
+      `;
+
+      const renderInlineAnalysisGroup = (group, sessionId) => {
+        const items = group.items || [];
+        const body = items.length
+          ? `<div class="rate-bars">${items.map((item) => renderInlineAnalysisCard(item, sessionId)).join("")}</div>`
+          : `
+            <div class="rate-bars">
+              <article class="detail-empty compact">
+                <strong>기록 없음</strong>
+                <span>표시할 항목이 없습니다.</span>
+              </article>
+            </div>
+          `;
+
+        return `
+          <section class="rate-section">
+            <div class="section-heading">
+              <h2>${escapeHtml(group.title)}</h2>
+            </div>
+            ${body}
+          </section>
+        `;
+      };
+
+      const renderInlineSessionDetail = (detail) => {
+        const overview = detail.overview || {};
+        const groups = detail.groups || [];
+        if (!sessionBreakdown || !sessionBreakdownBody) {
+          return;
+        }
+
+        if (breakdownKicker) {
+          breakdownKicker.textContent = `${overview.recordedDate || "세션"} 선택`;
+        }
+        if (breakdownTitle) {
+          breakdownTitle.textContent = detail.title || "세션 상세 분석";
+        }
+        if (breakdownDescription) {
+          breakdownDescription.textContent = "선택한 세션의 시대별, 유형별, 주제별 오답률입니다.";
+        }
+
+        sessionBreakdownBody.innerHTML = `
+          <article class="session-overview-card">
+            <div>
+              <span>${escapeHtml(overview.recordedDate)} · ${escapeHtml(overview.sessionTypeLabel)}</span>
+              <strong>오답률 ${escapeHtml(overview.wrongRate)}%</strong>
+            </div>
+            <div class="session-overview-meter" aria-label="세션 오답률 ${escapeHtml(overview.wrongRate)}%">
+              <i style="width: ${Number(overview.wrongRate) || 0}%"></i>
+            </div>
+            <p>
+              ${escapeHtml(overview.totalCount)}문제 · 오답 ${escapeHtml(overview.wrongCount)}개 · 정답률 ${escapeHtml(overview.answerRate)}% · 문제당 ${escapeHtml(overview.averageTimeLabel)}
+            </p>
+          </article>
+          ${groups.map((group) => renderInlineAnalysisGroup(group, overview.sessionId)).join("")}
+        `;
+        sessionBreakdown.hidden = false;
+        sessionBreakdown.scrollIntoView({ behavior: "smooth", block: "start" });
+      };
+
+      const renderInlineSessionLoading = (sessionId) => {
+        if (!sessionBreakdown || !sessionBreakdownBody) {
+          return;
+        }
+        if (breakdownKicker) {
+          breakdownKicker.textContent = `세션 #${sessionId}`;
+        }
+        if (breakdownTitle) {
+          breakdownTitle.textContent = "세션 상세 분석";
+        }
+        if (breakdownDescription) {
+          breakdownDescription.textContent = "선택한 세션의 분류별 분석을 불러오고 있습니다.";
+        }
+        sessionBreakdownBody.innerHTML = `
+          <article class="detail-empty">
+            <strong>불러오는 중</strong>
+            <span>세션별 시대, 유형, 주제 분석을 확인하고 있습니다.</span>
+          </article>
+        `;
+        sessionBreakdown.hidden = false;
+      };
+
+      const renderInlineSessionError = () => {
+        if (!sessionBreakdownBody) {
+          return;
+        }
+        sessionBreakdownBody.innerHTML = `
+          <article class="detail-empty">
+            <strong>불러오지 못했습니다</strong>
+            <span>잠시 후 세션을 다시 선택해 주세요.</span>
+          </article>
+        `;
+      };
+
+      const openInlineSessionDetail = async (sessionId) => {
+        renderInlineSessionLoading(sessionId);
+        try {
+          const url = new URL(sessionDetailUrl, window.location.origin);
+          url.searchParams.set("sessionId", sessionId);
+          const response = await fetch(url, {
+            headers: {
+              "X-Requested-With": "XMLHttpRequest",
+            },
+          });
+          if (!response.ok) {
+            throw new Error("inline session detail request failed");
+          }
+          const payload = await response.json();
+          renderInlineSessionDetail(payload.detail);
+        } catch (error) {
+          renderInlineSessionError();
+        }
+      };
+
+      const renderQuestionTextBlock = (label, content) => {
+        if (!content) {
+          return "";
+        }
+        return `
+          <div class="question-text-block">
+            <span>${escapeHtml(label)}</span>
+            <p>${escapeHtml(content)}</p>
+          </div>
+        `;
+      };
+
+      const renderQuestionAnswer = (label, answerLabel, answerContent) => `
+        <div class="question-answer-row">
+          <span>${escapeHtml(label)}</span>
+          <strong>${escapeHtml(answerLabel)}</strong>
+          ${answerContent ? `<p>${escapeHtml(answerContent)}</p>` : ""}
+        </div>
+      `;
+
+      const isQuestionUnanswered = (question) => (
+        question.selectedNo === null
+        || question.selectedNo === undefined
+        || question.statusClass === "empty"
+      );
+
+      const renderQuestionCard = (question) => `
+        <article
+          class="question-detail-card ${escapeHtml(question.statusClass)}"
+          data-question-card
+          data-unanswered="${isQuestionUnanswered(question) ? "true" : "false"}"
+        >
+          <header>
+            <div>
+              <strong>문제 ${escapeHtml(question.questionNo)}</strong>
+              <span>
+                ${escapeHtml(question.era)} · ${escapeHtml(question.topic)} · ${escapeHtml(question.questionType)}
+              </span>
+            </div>
+            <b>${escapeHtml(question.resultLabel)}</b>
+          </header>
+          ${renderQuestionTextBlock("지문", question.passage)}
+          ${renderQuestionTextBlock("문제", question.content)}
+          <div class="question-answer-grid">
+            ${renderQuestionAnswer("선택", question.selectedLabel, question.selectedContent)}
+            ${renderQuestionAnswer("정답", question.answerLabel, question.answerContent)}
+          </div>
+          <p class="question-meta">
+            ${escapeHtml(question.score)}점 · 풀이시간 ${escapeHtml(question.timeLabel)}
+          </p>
+          ${question.coreConcept ? `<p class="question-concept">핵심 개념 · ${escapeHtml(question.coreConcept)}</p>` : ""}
+          ${question.answerExplanation ? `
+            <details class="question-explanation">
+              <summary>해설 보기</summary>
+              <p>${escapeHtml(question.answerExplanation)}</p>
+            </details>
+          ` : ""}
+        </article>
+      `;
+
+      const renderQuestionList = (detail) => {
+        const questions = detail.questions || [];
+        if (!questions.length) {
+          return `
+            <article class="detail-empty">
+              <strong>문제 없음</strong>
+              <span>선택한 세션 항목에 해당하는 문제가 없습니다.</span>
+            </article>
+          `;
+        }
+        const unansweredCount = questions
+          .filter((question) => isQuestionUnanswered(question))
+          .length;
+        const answeredCount = questions.length - unansweredCount;
+
+        return `
+          <section class="question-filter-panel" data-question-filter-root>
+            <div class="question-filter-bar">
+              <div>
+                <strong>문제 ${escapeHtml(questions.length)}개</strong>
+                <span>응답 ${escapeHtml(answeredCount)}개 · 미응답 ${escapeHtml(unansweredCount)}개</span>
+              </div>
+              <div class="question-filter-actions" role="group" aria-label="미응답 표시 기준">
+                <button
+                  class="active"
+                  type="button"
+                  data-question-filter="all"
+                  aria-pressed="true"
+                >
+                  미응답 포함
+                </button>
+                <button
+                  type="button"
+                  data-question-filter="answered"
+                  aria-pressed="false"
+                >
+                  미응답 제외
+                </button>
+              </div>
+            </div>
+            <article class="question-filter-empty" data-question-filter-empty hidden>
+              <strong>표시할 문제가 없습니다</strong>
+              <span>미응답을 제외하면 남는 오답 문제가 없습니다.</span>
+            </article>
+            <div class="question-filter-list">
+              ${questions.map((question) => renderQuestionCard(question)).join("")}
+            </div>
+          </section>
+        `;
+      };
+
+      const applyQuestionFilter = (filterRoot, filterMode) => {
+        const cards = Array.from(filterRoot.querySelectorAll("[data-question-card]"));
+        const buttons = filterRoot.querySelectorAll("[data-question-filter]");
+        const emptyState = filterRoot.querySelector("[data-question-filter-empty]");
+        let visibleCount = 0;
+
+        cards.forEach((card) => {
+          const shouldHide = filterMode === "answered" && card.dataset.unanswered === "true";
+          card.hidden = shouldHide;
+          if (!shouldHide) {
+            visibleCount += 1;
+          }
+        });
+
+        buttons.forEach((button) => {
+          const isActive = button.dataset.questionFilter === filterMode;
+          button.classList.toggle("active", isActive);
+          button.setAttribute("aria-pressed", isActive ? "true" : "false");
+        });
+
+        if (emptyState) {
+          emptyState.hidden = visibleCount > 0;
+        }
+      };
+
+      const openSessionItemQuestions = async (button) => {
+        const itemLabel = button.dataset.label || "항목";
+        renderDetailLoading(
+          "세션 항목 문제",
+          itemLabel,
+          "선택한 세션 항목에 해당하는 문제를 불러오고 있습니다.",
+        );
+        setDetailModal(true);
+        button.disabled = true;
+        try {
+          const url = new URL(sessionItemQuestionsUrl, window.location.origin);
+          url.searchParams.set("sessionId", button.dataset.sessionId);
+          url.searchParams.set("category", button.dataset.category);
+          url.searchParams.set("label", itemLabel);
+          const response = await fetch(url, {
+            headers: {
+              "X-Requested-With": "XMLHttpRequest",
+            },
+          });
+          if (!response.ok) {
+            throw new Error("session item questions request failed");
+          }
+          const payload = await response.json();
+          detailCategory.textContent = `${payload.detail.sessionLabel} · ${payload.detail.categoryLabel}`;
+          detailTitle.textContent = payload.detail.itemLabel;
+          detailBody.innerHTML = renderQuestionList(payload.detail);
+        } catch (error) {
+          renderDetailError();
+        } finally {
+          button.disabled = false;
+        }
+      };
+
+      const renderPeriodChangeMetric = (metric) => `
+        <article class="period-change-card ${escapeHtml(metric.tone)}">
+          <span>${escapeHtml(metric.label)}</span>
+          <strong>${escapeHtml(metric.changeLabel)}</strong>
+          <p>${escapeHtml(metric.startValue)} → ${escapeHtml(metric.endValue)}</p>
+        </article>
+      `;
+
+      const renderPeriodChange = (change) => {
+        if (!change?.hasComparison) {
+          return `
+            <section class="period-change-section">
+              <h3>기간 변화</h3>
+              <article class="detail-empty compact">
+                <strong>비교 기록 부족</strong>
+                <span>${escapeHtml(change?.message || "비교할 날짜가 부족합니다.")}</span>
+              </article>
+            </section>
+          `;
+        }
+        return `
+          <section class="period-change-section">
+            <div class="period-section-heading">
+              <h3>기간 변화</h3>
+              <span>${escapeHtml(change.startLabel)} → ${escapeHtml(change.endLabel)}</span>
+            </div>
+            <div class="period-change-grid">
+              ${(change.metrics || []).map((metric) => renderPeriodChangeMetric(metric)).join("")}
+            </div>
+          </section>
+        `;
+      };
+
+      const renderPeriodAnalysisCard = (item, period) => `
+        <button
+          class="rate-bar-card ${escapeHtml(item.statusClass)}"
+          type="button"
+          data-period-item-question
+          data-start-date="${escapeHtml(period.startDate)}"
+          data-end-date="${escapeHtml(period.endDate)}"
+          data-category="${escapeHtml(item.category)}"
+          data-label="${escapeHtml(item.label)}"
+        >
+          <div class="bar-label">
+            <strong>${escapeHtml(item.label)}</strong>
+          </div>
+          <div class="bar-body">
+            <div class="bar-meta">
+              <span>전체 ${escapeHtml(item.totalCount)}문제 · 오답 ${escapeHtml(item.wrongCount)}개 · 문제당 ${escapeHtml(item.averageTimeLabel)}</span>
+              <strong>${escapeHtml(item.wrongRate)}%</strong>
+            </div>
+            <div class="bar-track"><i style="width: ${Number(item.wrongRate) || 0}%"></i></div>
+          </div>
+          <div class="bar-status">
+            <span class="status-badge ${escapeHtml(item.statusClass)}">${escapeHtml(getStatusLabel(item.statusClass))}</span>
+          </div>
+        </button>
+      `;
+
+      const renderPeriodAnalysisGroup = (group, period) => {
+        const items = group.items || [];
+        const body = items.length
+          ? `<div class="rate-bars">${items.map((item) => renderPeriodAnalysisCard(item, period)).join("")}</div>`
+          : `
+            <div class="rate-bars">
+              <article class="detail-empty compact">
+                <strong>기록 없음</strong>
+                <span>표시할 항목이 없습니다.</span>
+              </article>
+            </div>
+          `;
+
+        return `
+          <section class="rate-section">
+            <div class="section-heading">
+              <h2>${escapeHtml(group.title)}</h2>
+            </div>
+            ${body}
+          </section>
+        `;
+      };
+
+      const renderInlinePeriodDetail = (detail) => {
+        const overview = detail.overview || {};
+        const groups = detail.groups || [];
+        const period = detail.period || {};
+        if (!sessionBreakdown || !sessionBreakdownBody) {
+          return;
+        }
+
+        if (breakdownKicker) {
+          breakdownKicker.textContent = `${period.label || "기간"} 선택`;
+        }
+        if (breakdownTitle) {
+          breakdownTitle.textContent = detail.title || "기간 상세 분석";
+        }
+        if (breakdownDescription) {
+          breakdownDescription.textContent = "선택한 기간의 전체 흐름과 분류별 오답률입니다.";
+        }
+
+        sessionBreakdownBody.innerHTML = `
+          <article class="session-overview-card">
+            <div>
+              <span>${escapeHtml(overview.periodLabel)} · ${escapeHtml(overview.sessionCount)}개 세션</span>
+              <strong>오답률 ${escapeHtml(overview.wrongRate)}%</strong>
+            </div>
+            <div class="session-overview-meter" aria-label="기간 오답률 ${escapeHtml(overview.wrongRate)}%">
+              <i style="width: ${Number(overview.wrongRate) || 0}%"></i>
+            </div>
+            <p>
+              ${escapeHtml(overview.totalCount)}문제 · 오답 ${escapeHtml(overview.wrongCount)}개 · 정답률 ${escapeHtml(overview.answerRate)}% · 문제당 ${escapeHtml(overview.averageTimeLabel)}
+            </p>
+            ${renderSessionStack(overview.stack || {})}
+          </article>
+          ${renderPeriodChange(detail.change || {})}
+          ${renderTopWeakness(detail.topWeakItems || [])}
+          ${groups.map((group) => renderPeriodAnalysisGroup(group, period)).join("")}
+        `;
+        sessionBreakdown.hidden = false;
+        sessionBreakdown.scrollIntoView({ behavior: "smooth", block: "start" });
+      };
+
+      const renderInlinePeriodLoading = (periodRange) => {
+        if (!sessionBreakdown || !sessionBreakdownBody) {
+          return;
+        }
+        if (breakdownKicker) {
+          breakdownKicker.textContent = "기간 선택";
+        }
+        if (breakdownTitle) {
+          breakdownTitle.textContent = `${periodRange.startDate} - ${periodRange.endDate}`;
+        }
+        if (breakdownDescription) {
+          breakdownDescription.textContent = "선택한 기간의 상세 분석을 불러오고 있습니다.";
+        }
+        sessionBreakdownBody.innerHTML = `
+          <article class="detail-empty">
+            <strong>불러오는 중</strong>
+            <span>기간 요약과 분류별 오답률을 확인하고 있습니다.</span>
+          </article>
+        `;
+        sessionBreakdown.hidden = false;
+      };
+
+      const openInlinePeriodDetail = async () => {
+        const periodRange = getSelectedPeriodRange();
+        if (!periodRange) {
+          return;
+        }
+        renderInlinePeriodLoading(periodRange);
+        try {
+          const url = new URL(periodDetailUrl, window.location.origin);
+          url.searchParams.set("startDate", periodRange.startDate);
+          url.searchParams.set("endDate", periodRange.endDate);
+          const response = await fetch(url, {
+            headers: {
+              "X-Requested-With": "XMLHttpRequest",
+            },
+          });
+          if (!response.ok) {
+            throw new Error("period detail request failed");
+          }
+          const payload = await response.json();
+          renderInlinePeriodDetail(payload.detail);
+        } catch (error) {
+          renderInlineSessionError();
+        }
+      };
+
+      const openPeriodItemQuestions = async (button) => {
+        const itemLabel = button.dataset.label || "항목";
+        renderDetailLoading(
+          "기간 항목 문제",
+          itemLabel,
+          "선택한 기간 항목에 해당하는 오답 문제를 불러오고 있습니다.",
+        );
+        setDetailModal(true);
+        button.disabled = true;
+        try {
+          const url = new URL(periodItemQuestionsUrl, window.location.origin);
+          url.searchParams.set("startDate", button.dataset.startDate);
+          url.searchParams.set("endDate", button.dataset.endDate);
+          url.searchParams.set("category", button.dataset.category);
+          url.searchParams.set("label", itemLabel);
+          const response = await fetch(url, {
+            headers: {
+              "X-Requested-With": "XMLHttpRequest",
+            },
+          });
+          if (!response.ok) {
+            throw new Error("period item questions request failed");
+          }
+          const payload = await response.json();
+          detailCategory.textContent = `${payload.detail.periodLabel} · ${payload.detail.categoryLabel}`;
+          detailTitle.textContent = payload.detail.itemLabel;
+          detailBody.innerHTML = renderQuestionList(payload.detail);
+        } catch (error) {
+          renderDetailError();
+        } finally {
+          button.disabled = false;
+        }
+      };
+
       const openDetail = async (button) => {
         renderDetailLoading(
           "세션별 기록",
@@ -566,11 +1231,47 @@
         }
       };
 
-      scopeButtons.forEach((button) => {
-        button.addEventListener("click", () => setActiveScope(button.dataset.scopeTab));
-      });
       detailButtons.forEach((button) => {
         button.addEventListener("click", () => openDetail(button));
+      });
+      detailBody.addEventListener("click", (event) => {
+        const filterButton = event.target.closest("[data-question-filter]");
+        if (!filterButton) {
+          return;
+        }
+        const filterRoot = filterButton.closest("[data-question-filter-root]");
+        if (!filterRoot) {
+          return;
+        }
+        applyQuestionFilter(filterRoot, filterButton.dataset.questionFilter);
+      });
+      document.addEventListener("click", (event) => {
+        const periodQuestionButton = event.target.closest("[data-period-item-question]");
+        if (!periodQuestionButton) {
+          return;
+        }
+        openPeriodItemQuestions(periodQuestionButton);
+      });
+      document.addEventListener("click", (event) => {
+        const questionButton = event.target.closest("[data-session-item-question]");
+        if (!questionButton) {
+          return;
+        }
+        openSessionItemQuestions(questionButton);
+      });
+      document.addEventListener("click", (event) => {
+        const periodElement = event.target.closest("[data-period-point]");
+        if (!periodElement) {
+          return;
+        }
+        openInlinePeriodDetail();
+      });
+      document.addEventListener("click", (event) => {
+        const sessionElement = event.target.closest("[data-inline-session-id]");
+        if (!sessionElement) {
+          return;
+        }
+        openInlineSessionDetail(sessionElement.dataset.inlineSessionId);
       });
       document.addEventListener("click", (event) => {
         const sessionElement = event.target.closest("[data-session-id]");
@@ -580,6 +1281,20 @@
         openSessionDetail(sessionElement.dataset.sessionId);
       });
       document.addEventListener("keydown", (event) => {
+        const periodElement = event.target.closest("[data-period-point]");
+        if (periodElement && (event.key === "Enter" || event.key === " ")) {
+          event.preventDefault();
+          openInlinePeriodDetail();
+          return;
+        }
+
+        const inlineSessionElement = event.target.closest("[data-inline-session-id]");
+        if (inlineSessionElement && (event.key === "Enter" || event.key === " ")) {
+          event.preventDefault();
+          openInlineSessionDetail(inlineSessionElement.dataset.inlineSessionId);
+          return;
+        }
+
         const sessionElement = event.target.closest("[data-session-id]");
         if (!sessionElement) {
           return;
@@ -593,11 +1308,15 @@
         }
       });
       detailClose.addEventListener("click", () => setDetailModal(false));
+      window.addEventListener("resize", drawLineCharts);
       detailModal.addEventListener("click", (event) => {
         if (event.target === detailModal) {
           setDetailModal(false);
         }
       });
+      setupPeriodFilter();
+      hideSessionBreakdown();
+      drawLineCharts();
     })();
   </script>
 </body>

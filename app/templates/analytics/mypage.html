@@ -76,7 +76,7 @@
     <section class="analytics-grid" aria-label="학습 대시보드">
       <article class="panel weakness-panel">
         <div class="panel-heading compact">
-          <h2>취약점 분석</h2>
+          <h2>취약점 분석 <span>{{ weakness_summary.period_label }}</span></h2>
           <a href="{% url 'analytics:wrong_rate_detail' %}">상세 보기</a>
         </div>
         <div class="weak-list">
@@ -90,7 +90,7 @@
 
       <article class="panel donut-panel">
         <div class="panel-heading compact">
-          <h2>유형별 오답률</h2>
+          <h2>유형별 오답률 <span>{{ wrong_type_summary.period_label }}</span></h2>
         </div>
         <div class="donut-layout" style="--overall-rate: {{ wrong_type_summary.overall_rate }}%;">
           <div class="donut-chart{% if not wrong_type_summary.has_records %} is-empty{% endif %}">
@@ -111,41 +111,6 @@
               <li class="empty-state">풀이 기록 없음</li>
             {% endif %}
           </ul>
-        </div>
-      </article>
-
-      <article class="panel plan-panel">
-        <div class="panel-heading compact">
-          <h2>이전 학습계획</h2>
-          <form class="inline-plan-form" action="{% url 'analytics:study_plan_create' %}" method="post">
-            {% csrf_token %}
-            <button type="submit">새 계획</button>
-          </form>
-        </div>
-        <div class="plan-history-list">
-          {% for item in previous_study_plans %}
-            <article class="plan-history-item">
-              <header>
-                <strong>{{ item.historyDisplay.title }}</strong>
-                <span>{{ item.progress.completionPercent }}%</span>
-              </header>
-              <div class="plan-history-bar" aria-label="{{ item.historyDisplay.title }} 달성률 {{ item.progress.completionPercent }}%">
-                <i style="width: {{ item.progress.completionPercent }}%"></i>
-              </div>
-              <p>{{ item.progress.achievedCount }}/{{ item.progress.targetCount }}문항 달성</p>
-              <small>{{ item.historyDisplay.meta }} · {{ item.totalDays }}일 계획</small>
-            </article>
-          {% empty %}
-            <article class="plan-history-item empty">
-              <header>
-                <strong>이전 학습계획이 없습니다</strong>
-                <span>0%</span>
-              </header>
-              <div class="plan-history-bar"><i style="width: 0%"></i></div>
-              <p>새 계획을 만들면 기존 active 계획은 이력으로 보관됩니다.</p>
-              <small>풀이 기록 기반 달성률 표시</small>
-            </article>
-          {% endfor %}
         </div>
       </article>
 
@@ -310,9 +275,6 @@
     }));
 
     const renderPlanProgress = (plan) => {
-      if (plan.progressMode === "review") {
-        return `<span class="plan-review-state${plan.done ? " done" : ""}">${escapeHtml(plan.statusLabel || "복습 확인 전")}</span>`;
-      }
       return `
         <div class="plan-progress-line" aria-label="${escapeHtml(plan.title)} 달성률 ${plan.progressPercent || 0}%">
           <b style="width: ${plan.progressPercent || 0}%"></b>
@@ -320,28 +282,8 @@
       `;
     };
 
-    const renderPlanAction = (plan) => {
-      if (plan.canConfirm) {
-        return `
-          <button
-            class="review-confirm-button"
-            type="button"
-            data-study-plan-id="${plan.studyPlanId}"
-            data-day-index="${plan.dayIndex}"
-            data-block-index="${plan.blockIndex}"
-          >
-            확인
-          </button>
-        `;
-      }
-      if (plan.progressMode === "review") {
-        return `<em class="plan-progress-count review">확인 완료</em>`;
-      }
-      return `<em class="plan-progress-count">${plan.achievedCount || 0}/${plan.questionCount || 0}</em>`;
-    };
-
     const renderPlanItem = (plan) => `
-      <article class="plan-item${plan.done ? " done" : ""}${plan.progressMode === "review" ? " review" : ""}" data-date-key="${plan.dateKey}" data-plan-index="${plan.planIndex}">
+      <article class="plan-item${plan.done ? " done" : ""}" data-date-key="${plan.dateKey}" data-plan-index="${plan.planIndex}">
         <i></i>
         <div>
           <strong>${escapeHtml(plan.title)}</strong>
@@ -356,28 +298,13 @@
           data-block-id="${escapeHtml(plan.blockId || "")}"
           data-classification="${escapeHtml(plan.classification || "")}"
           data-label="${escapeHtml(plan.label || "")}"
+          data-era="${escapeHtml(plan.era || "")}"
+          data-topic="${escapeHtml(plan.topic || "")}"
+          data-q-type="${escapeHtml(plan.qType || "")}"
           data-question-count="${plan.questionCount || 10}"
         >문제 풀기</button>
       </article>
     `;
-
-    const bindReviewConfirmButtons = () => {
-      plannerLessons.querySelectorAll(".review-confirm-button").forEach((button) => {
-        button.addEventListener("click", async () => {
-          button.disabled = true;
-          await postPlannerJson(
-            "{% url 'analytics:study_plan_block_complete' %}",
-            {
-              studyPlanId: button.dataset.studyPlanId,
-              dayIndex: button.dataset.dayIndex,
-              blockIndex: button.dataset.blockIndex,
-              isCompleted: true,
-            },
-          );
-          window.location.reload();
-        });
-      });
-    };
 
     const renderPlannerEmptyState = (title, description) => {
       plannerLessons.innerHTML = `
@@ -394,7 +321,6 @@
         return;
       }
       plannerLessons.innerHTML = plans.map((plan) => renderPlanItem(plan)).join("");
-      bindReviewConfirmButtons();
     };
 
     const renderPlannerCalendar = () => {
@@ -447,6 +373,9 @@
     const startStudyPlanBlock = (button) => {
       const classification = button.dataset.classification || "";
       const label = button.dataset.label || "";
+      const era = button.dataset.era || "";
+      const topic = button.dataset.topic || "";
+      const qType = button.dataset.qType || "";
       const condition = {
         generationMode: "detail",
         "시대": [],
@@ -460,9 +389,12 @@
         studyPlanBlockId: button.dataset.blockId || "",
       };
 
-      if (classification === "시대") condition["시대"] = [label];
-      if (classification === "주제") condition["주제"] = [label];
-      if (classification === "유형") condition["대유형"] = [label];
+      if (era) condition["시대"] = [era];
+      if (topic) condition["주제"] = [topic];
+      if (qType) condition["대유형"] = [qType];
+      if (!era && !topic && !qType && classification === "시대") condition["시대"] = [label];
+      if (!era && !topic && !qType && classification === "주제") condition["주제"] = [label];
+      if (!era && !topic && !qType && classification === "유형") condition["대유형"] = [label];
 
       sessionStorage.setItem("questionGenerationCondition", JSON.stringify(condition));
       localStorage.removeItem("questionGenerationCondition");

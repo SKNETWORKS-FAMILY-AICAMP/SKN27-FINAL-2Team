@@ -12,7 +12,7 @@ from analytics.service.analysis_snapshot import (
     create_study_plan_base_snapshot,
     create_study_plan_result_snapshot,
 )
-from analytics.service.analytics import get_classification_fields, get_weak_targets
+from analytics.service.analytics import get_classification_fields, get_composite_weak_targets
 from analytics.service.prediction import get_predicted_targets
 from question.models import SolveRecords
 from user.models import UserAccounts
@@ -135,24 +135,39 @@ def build_plan_history_display(study_plan):
     """
     이전 학습계획 카드에서 식별 가능한 제목과 보조 정보를 만든다.
     """
-    title = "학습계획"
+    title = "기간 미정"
     start_label = format_plan_history_date(study_plan.start_date)
     end_label = format_plan_history_date(study_plan.end_date)
     created_label = format_plan_history_datetime(study_plan.created_at)
 
     if start_label and end_label and start_label == end_label:
-        title = f"{start_label} 학습계획"
+        title = start_label
     elif start_label and end_label:
-        title = f"{start_label} - {end_label} 학습계획"
+        title = f"{start_label} - {end_label}"
     elif start_label:
-        title = f"{start_label} 시작 학습계획"
+        title = f"{start_label} 시작"
     elif created_label:
-        title = f"{created_label} 생성 학습계획"
+        title = f"{created_label} 생성"
 
     return {
         "title": title,
         "meta": f"계획 #{study_plan.plan_version}",
+        "statusLabel": format_plan_history_status(study_plan.status),
     }
+
+
+def format_plan_history_status(status):
+    """
+    이전 학습계획 카드에서 사용할 상태 라벨을 만든다.
+    """
+    if status == "active":
+        return "진행 중"
+    elif status == "archived":
+        return "종료"
+    elif status == "deleted":
+        return "삭제"
+
+    return status or "계획"
 
 
 def format_plan_history_date(value):
@@ -757,7 +772,7 @@ def build_user_study_plan(user_id, predicted_targets=None, today=None):
     if daily_available_minutes <= 0:
         daily_available_minutes = config["fallback_daily_available_minutes"]
 
-    weak_targets = get_weak_targets(user_id)
+    weak_targets = get_composite_weak_targets(user_id)
     prediction_targets = predicted_targets
     if prediction_targets is None:
         prediction_targets = get_predicted_targets(user_id)
@@ -784,6 +799,62 @@ def build_user_study_plan(user_id, predicted_targets=None, today=None):
     }
 
 
+def build_study_plan_target_label(era, topic, q_type):
+    return " · ".join([era, topic, q_type])
+
+
+def get_priority_target_identity(target):
+    era = target.get("era") or ""
+    topic = target.get("topic") or ""
+    q_type = target.get("qType") or target.get("q_type") or target.get("questionType") or ""
+    if era and topic and q_type:
+        label = target.get("label") or build_study_plan_target_label(era, topic, q_type)
+        return (era, topic, q_type), {
+            "classification": target.get("classification") or "복합",
+            "label": label,
+            "era": era,
+            "topic": topic,
+            "qType": q_type,
+        }
+
+    classification = target.get("classification")
+    label = target.get("label")
+    if classification and label:
+        return (classification, label), {
+            "classification": classification,
+            "label": label,
+            "era": "",
+            "topic": "",
+            "qType": "",
+        }
+
+    return None, None
+
+
+def build_priority_target_seed(identity):
+    return {
+        "classification": identity["classification"],
+        "label": identity["label"],
+        "era": identity["era"],
+        "topic": identity["topic"],
+        "qType": identity["qType"],
+        "wrongRate": 0.0,
+        "predictionScore": 0.0,
+        "averageTimeSec": 0,
+        "predictionReason": "",
+    }
+
+
+def get_priority_target_key(target):
+    era = target.get("era") or ""
+    topic = target.get("topic") or ""
+    q_type = target.get("qType") or ""
+    if era and topic and q_type:
+        return (era, topic, q_type)
+
+    return (target["classification"], target["label"])
+
+
 def build_priority_targets(weak_targets, predicted_targets, remaining_days, config):
     """
     취약 항목과 출제 예상 항목을 병합해 우선순위 점수를 계산한다.
@@ -793,20 +864,11 @@ def build_priority_targets(weak_targets, predicted_targets, remaining_days, conf
     """
     target_map = {}
     for weak_target in weak_targets:
-        classification = weak_target.get("classification")
-        label = weak_target.get("label")
-        if classification and label:
-            key = (classification, label)
+        key, identity = get_priority_target_identity(weak_target)
+        if key and identity:
             target = target_map.setdefault(
                 key,
-                {
-                    "classification": classification,
-                    "label": label,
-                    "wrongRate": 0.0,
-                    "predictionScore": 0.0,
-                    "averageTimeSec": 0,
-                    "predictionReason": "",
-                },
+                build_priority_target_seed(identity),
             )
             wrong_rate = weak_target.get("wrongRate")
             if wrong_rate is None:
@@ -818,20 +880,11 @@ def build_priority_targets(weak_targets, predicted_targets, remaining_days, conf
             target["averageTimeSec"] = average_time_sec or 0
 
     for predicted_target in predicted_targets:
-        classification = predicted_target.get("classification")
-        label = predicted_target.get("label")
-        if classification and label:
-            key = (classification, label)
+        key, identity = get_priority_target_identity(predicted_target)
+        if key and identity:
             target = target_map.setdefault(
                 key,
-                {
-                    "classification": classification,
-                    "label": label,
-                    "wrongRate": 0.0,
-                    "predictionScore": 0.0,
-                    "averageTimeSec": 0,
-                    "predictionReason": "",
-                },
+                build_priority_target_seed(identity),
             )
             prediction_score = predicted_target.get("predictionScore")
             if prediction_score is None:
@@ -868,6 +921,9 @@ def build_priority_targets(weak_targets, predicted_targets, remaining_days, conf
             -item["predictionScore"],
             item["classification"],
             item["label"],
+            item["era"],
+            item["topic"],
+            item["qType"],
         ),
     )
 
@@ -876,8 +932,7 @@ def build_daily_plan_items(priority_targets, daily_available_minutes, remaining_
     """
     우선순위 대상들을 날짜별 학습 블록으로 배치한다.
 
-    하루 가용시간에 따라 블록 수와 블록별 시간을 나누고,
-    복습 간격에 맞춰 review 블록도 함께 삽입한다.
+    하루 가용시간에 따라 블록 수와 블록별 시간을 나눈다.
     """
     if not priority_targets:
         return []
@@ -889,9 +944,7 @@ def build_daily_plan_items(priority_targets, daily_available_minutes, remaining_
         plan_days = config["max_plan_days"]
 
     blocks_per_day = get_blocks_per_day(daily_available_minutes, config)
-    review_offsets = get_review_offsets(remaining_days, config)
     target_index = 0
-    scheduled_targets = []
     plans = []
 
     for day_offset in range(plan_days):
@@ -900,33 +953,19 @@ def build_daily_plan_items(priority_targets, daily_available_minutes, remaining_
         used_target_keys = set()
         blocks = []
 
-        review_target = find_review_target(scheduled_targets, day_offset, review_offsets)
-        if review_target and blocks_per_day > 1:
-            review_minutes = get_block_minutes(remaining_minutes, blocks_per_day, len(blocks), config)
-            blocks.append(build_study_block(review_target, "review", review_minutes, config))
-            remaining_minutes -= review_minutes
-            used_target_keys.add((review_target["classification"], review_target["label"]))
-
         while len(blocks) < blocks_per_day and remaining_minutes >= config["min_block_minutes"]:
             target = priority_targets[target_index % len(priority_targets)]
             target_index += 1
-            target_key = (target["classification"], target["label"])
+            target_key = get_priority_target_key(target)
             block_type = get_target_block_type(target)
             if target_key in used_target_keys:
                 if len(used_target_keys) < len(priority_targets):
                     continue
-                block_type = "review"
 
             block_minutes = get_block_minutes(remaining_minutes, blocks_per_day, len(blocks), config)
             blocks.append(build_study_block(target, block_type, block_minutes, config))
             if target_key not in used_target_keys:
                 used_target_keys.add(target_key)
-                scheduled_targets.append(
-                    {
-                        "target": target,
-                        "dayOffset": day_offset,
-                    }
-                )
             remaining_minutes -= block_minutes
 
         if blocks:
@@ -958,14 +997,15 @@ def build_study_block(target, block_type, estimated_minutes, config):
     activity = f"{target['label']} 취약 문제 풀이 및 해설 정리"
     if block_type == "predictionFocus":
         activity = f"{target['label']} 출제 예상 문제 풀이"
-    elif block_type == "review":
-        activity = f"{target['label']} 오답 복습"
 
     return {
         "blockId": str(uuid4()),
         "blockType": block_type,
         "classification": target["classification"],
         "label": target["label"],
+        "era": target.get("era", ""),
+        "topic": target.get("topic", ""),
+        "qType": target.get("qType", ""),
         "activity": activity,
         "questionCount": question_count,
         "estimatedMinutes": estimated_minutes,

@@ -38,6 +38,9 @@ def build_planner_summary(study_plans, today):
             if date_key and plan_date:
                 plans_by_date.setdefault(date_key, [])
                 for block_index, block in enumerate(day_plan.get("blocks", [])):
+                    if block.get("blockType") == "review":
+                        continue
+
                     is_achieved = bool(block.get("isAchieved"))
                     status_label = planned_label
                     if is_achieved:
@@ -47,18 +50,16 @@ def build_planner_summary(study_plans, today):
                     elif plan_date == today:
                         status_label = today_label
 
-                    label = block.get("label")
-                    activity = block.get("activity")
-                    title = default_title
-                    if label and activity:
-                        title = f"{label} {activity}"
-                    elif label:
-                        title = label
-                    elif activity:
-                        title = activity
-
                     meta_parts = [status_label]
                     classification = block.get("classification")
+                    label = block.get("label")
+                    era = block.get("era") or ""
+                    topic = block.get("topic") or ""
+                    q_type = block.get("qType") or block.get("q_type") or block.get("questionType") or ""
+                    composite_title = " · ".join(
+                        value for value in [era, topic, q_type] if value
+                    )
+                    title = label or composite_title or classification or default_title
                     question_count = block.get("questionCount")
                     estimated_minutes = block.get("estimatedMinutes")
                     achieved_count = block.get("achievedCount") or 0
@@ -66,8 +67,11 @@ def build_planner_summary(study_plans, today):
                     progress_percent = block.get("progressPercent") or 0
                     progress_mode = block.get("progressMode") or "question"
                     status_label = block.get("statusLabel") or ""
+                    classification_label = classification or ""
+                    if classification == "복합":
+                        classification_label = "복합 취약점"
                     if classification:
-                        meta_parts.append(classification)
+                        meta_parts.append(classification_label)
                     if progress_mode == "review" and status_label:
                         meta_parts.append(status_label)
                     elif question_count:
@@ -85,6 +89,9 @@ def build_planner_summary(study_plans, today):
                             "blockId": block.get("blockId"),
                             "classification": classification or "",
                             "label": label or "",
+                            "era": era,
+                            "topic": topic,
+                            "qType": q_type,
                             "title": title,
                             "meta": " · ".join(meta_parts),
                             "done": is_achieved,
