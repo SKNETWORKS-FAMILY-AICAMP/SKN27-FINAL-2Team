@@ -1,0 +1,18 @@
+services:
+  neo4j_history:
+    image: neo4j:5
+    container_name: neo4j_history
+    ports:
+      - "7475:7474"
+      - "7688:7687"
+    environment:
+      NEO4J_AUTH: neo4j/${NEO4J_PASSWORD:?NEO4J_PASSWORD is required}
+      NEO4J_PLUGINS: '["apoc","n10s"]'
+      NEO4J_server_memory_heap_initial__size: ${NEO4J_HEAP_INITIAL:-512m}
+      NEO4J_server_memory_heap_max__size: ${NEO4J_HEAP_MAX:-1G}
+    volumes:
+      - neo4j_history_data:/data
+      - ./import/history:/import
+
+volumes:
+  neo4j_history_data:
