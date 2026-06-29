@@ -14,7 +14,7 @@
     <a class="brand" href="/" aria-label="himate 홈">himate</a>
     <nav class="main-nav" aria-label="서비스 메뉴">
       <a href="/diagnosis/">진단 평가</a>
-      <a href="{% if request.user.is_authenticated %}/question/{% else %}/user/login/{% endif %}">문제 풀이</a>
+      <a href="/question/">문제 풀이</a>
       <a href="{% if request.user.is_authenticated %}/chatbot/{% else %}/user/login/{% endif %}">챗봇</a>
       <a href="{% if request.user.is_authenticated %}/analytics/mypage/{% else %}/user/login/{% endif %}">나의 학습실</a>
     </nav>
@@ -96,7 +96,7 @@
         <span class="feature-number">03</span>
         <h2>원하는 문제를 바로 만들어요</h2>
         <p>카테고리, 시대, 문제 유형, 난이도를 선택하면 AI가 맞춤 문제와 해설을 만듭니다.</p>
-        <a class="primary-button small" href="{% if request.user.is_authenticated %}/question/{% else %}/user/login/{% endif %}">문제 풀기</a>
+        <a class="primary-button small" href="/question/">문제 풀기</a>
       </div>
       <div class="feature-visual question-visual reveal reveal-delay-1" aria-hidden="true">
         <div class="filter-row">
