@@ -14,7 +14,7 @@ from openai import OpenAI
 
 SYSTEM_PROMPT = """당신은 한국사능력검정시험을 준비하는 학습자를 돕는 한국사 튜터입니다.
 반드시 제공된 검색 근거 안에서만 답변하세요.
-근거가 부족하면 부족하다고 말하고, 확실한 내용과 추정되는 내용을 구분하세요.
+검색 근거로 확인되는 내용만 답변하고, 근거 부족 안내 문장은 쓰지 마세요.
 첫 개념 질문은 교재 요약 노트처럼 제목, 번호 섹션, 표 또는 bullet로 작성하세요.
 중요 키워드라도 별도 Markdown 기호로 감싸지 말고 일반 텍스트로 쓰세요.
 한자나 한문 원문은 그대로 쓰지 말고, 현대 한국어 한글 표현으로 풀어 쓰세요.
@@ -35,7 +35,7 @@ Markdown 가로선(---)은 사용하지 마세요."""
 STRUCTURED_SYSTEM_PROMPT = """당신은 한국사능력검정시험을 준비하는 학습자를 돕는 한국사 튜터입니다.
 반드시 제공된 검색 근거 안에서만 답변하세요.
 출력은 JSON 객체 하나만 반환하세요. Markdown 코드블록, 설명 문장, 주석은 쓰지 마세요.
-근거가 부족하면 summary에 부족하다고 적고, 확실한 내용만 sections에 넣으세요.
+summary에는 검색 근거로 확인되는 핵심 내용만 쓰고, 근거 부족 안내 문장은 쓰지 마세요.
 한자나 한문 원문은 그대로 쓰지 말고, 현대 한국어 한글 표현으로 풀어 쓰세요.
 exam_points는 항상 빈 배열로 두세요."""
 
@@ -44,7 +44,7 @@ exam_points는 항상 빈 배열로 두세요."""
 class LLMConfig:
     provider: str
     model: str
-    temperature: float = 0.2
+    temperature: float = 0.0
     ollama_base_url: str = "http://localhost:11434"
 
 
@@ -113,6 +113,7 @@ def build_user_prompt(
 요구사항:
 - {output_instruction}
 - 근거에 없는 세부 사실을 새로 만들지 마세요.
+- 근거 부족, 확인 불가, 전체를 설명하기 부족하다는 안내 문장은 쓰지 마세요.
 - 최근 대화는 대명사와 후속 질문 해석에만 참고하고, 사실 답변은 검색 근거를 우선하세요.
 - 검색 근거의 문장을 그대로 길게 베끼지 말고 학습용으로 재구성하세요.
 - 한자나 한문 원문은 그대로 쓰지 말고, 현대 한국어 한글 표현으로 풀어 쓰세요.
@@ -146,7 +147,9 @@ def build_structured_prompt(
 최근 대화는 대명사와 후속 질문 해석에만 참고하고, 사실 답변은 검색 근거를 우선하세요.
 문자열 값 안에서 중요한 키워드는 별도 Markdown 없이 원문 키워드만 쓰세요.
 한자나 한문 원문은 그대로 쓰지 말고, 현대 한국어 한글 표현으로 풀어 쓰세요.
-없는 내용은 만들지 말고 빈 배열 또는 짧은 부족 설명으로 처리하세요.
+없는 내용은 만들지 말고 빈 배열로 처리하세요. 근거 부족 안내 문장은 쓰지 마세요.
+개념 정리 답변은 항상 3개 섹션, 각 섹션 2개 항목을 기본으로 작성하세요.
+섹션 heading은 "1. 정치와 제도", "2. 문화와 업적", "3. 시험 핵심 정리"처럼 번호와 제목을 함께 쓰세요.
 
 {{
   "answer_type": "{mode}",
@@ -174,6 +177,8 @@ def sanitize_answer(answer: str) -> str:
         if re.fullmatch(r"-{3,}|\*{3,}|_{3,}", stripped):
             continue
         if stripped.startswith("원하시면"):
+            continue
+        if any(term in stripped for term in ("근거는 부족", "근거가 부족", "근거 부족", "설명할 만큼의 근거", "충분한 근거")):
             continue
         lines.append(line.rstrip())
     return "\n".join(lines).strip()
@@ -265,7 +270,7 @@ def normalize_structured_answer(value: dict[str, Any]) -> dict[str, Any]:
     return {
         "answer_type": str(value.get("answer_type") or "textbook_note"),
         "title": str(value.get("title") or "한국사 개념 정리"),
-        "summary": str(value.get("summary") or ""),
+        "summary": sanitize_answer(str(value.get("summary") or "")),
         "sections": value.get("sections") if isinstance(value.get("sections"), list) else [],
         "exam_points": filter_exam_points(exam_points),
         "highlights": value.get("highlights") if isinstance(value.get("highlights"), list) else [],
@@ -292,7 +297,7 @@ class LLMAnswerGenerator:
             LLMConfig(
                 provider=selected_provider,
                 model=selected_model,
-                temperature=float(os.getenv("CHAT_TEMPERATURE", "0.2")),
+                temperature=float(os.getenv("CHAT_TEMPERATURE", "0")),
                 ollama_base_url=os.getenv("OLLAMA_BASE_URL", "http://localhost:11434").rstrip("/"),
             )
         )

@@ -8,17 +8,54 @@ import urllib.request
 from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
+from django.utils import timezone
+from django.db import transaction
 from django.views.decorators.http import require_GET
 from django.views.decorators.http import require_POST
 
 from question.models import QuestionOptions, SolveRecords
 
+from .models import ChatMessages, ChatSessions
 from .rag_service import build_history_rag_answer
 
 
 @login_required
 def chat_page(request):
     return render(request, "chatbot/chat.html")
+
+
+def save_chat_turn(request, session_id: str, user_content: str, result: dict) -> None:
+    if not session_id:
+        return
+    now = timezone.now()
+    with transaction.atomic():
+        session, created = ChatSessions.objects.select_for_update().get_or_create(
+            session_id=session_id[:50],
+            defaults={
+                "chat_type": "history",
+                "turn_count": 0,
+                "status": "active",
+                "created_at": now,
+                "user": request.user,
+            },
+        )
+        if session.user_id != request.user.user_id:
+            return
+        ChatMessages.objects.create(
+            session=session,
+            sender_type="user",
+            content=user_content,
+            created_at=now,
+        )
+        ChatMessages.objects.create(
+            session=session,
+            sender_type="assistant",
+            content=json.dumps(result, ensure_ascii=False),
+            created_at=now,
+        )
+        session.turn_count = (session.turn_count or 0) + 1
+        session.status = "active"
+        session.save(update_fields=["turn_count", "status"])
 
 
 @require_POST
@@ -40,6 +77,8 @@ def rag_chat_api(request):
     answer_format = payload.get("answer_format") or "structured"
     follow_up = bool(payload.get("follow_up", False))
     top_k = int(payload.get("top_k") or 5)
+    session_id = str(payload.get("session_id") or "").strip()
+    display_question = str(payload.get("display_question") or question).strip()
     conversation_history = payload.get("conversation_history")
     if not isinstance(conversation_history, list):
         conversation_history = []
@@ -63,6 +102,7 @@ def rag_chat_api(request):
             status=500,
         )
 
+    save_chat_turn(request, session_id, display_question, result)
     return JsonResponse(result, json_dumps_params={"ensure_ascii": False})
 
 
