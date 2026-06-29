@@ -1,6 +1,7 @@
 import random
 from datetime import date
 
+from django.contrib.auth.decorators import login_required
 from django.db import models, transaction
 from django.shortcuts import render
 from django.utils import timezone
@@ -77,16 +78,19 @@ QUESTION_SUBTYPE_FILTER_VALUES = ["개념", "사료", "연표", "인물", "지�
 
 
 # 문제 생성 조건 페이지를 렌더링한다.
+@login_required
 def question_create(request):
     return render(request, "question/create.html")
 
 
 # 문제 풀이 페이지를 렌더링한다.
+@login_required
 def question_exam(request):
     return render(request, "question/question_exam.html", {"exam_mode": "practice"})
 
 
 # 문제 풀이 결과 페이지를 렌더링한다.
+@login_required
 def question_result(request):
     return render(request, "study/result.html", {"result_mode": "practice"})
 
