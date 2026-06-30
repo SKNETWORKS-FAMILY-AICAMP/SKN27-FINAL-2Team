@@ -101,6 +101,8 @@ def build_document(row: dict[str, str]) -> dict:
         f"키워드: {', '.join(keywords)}" if keywords else "",
     ]
 
+    image_source = clean_text(row.get("이미지출처"))
+
     return {
         "doc_id": f"ki_{image_id}" if not image_id.startswith("ki_") else image_id,
         "source_type": SOURCE_TYPE,
@@ -120,7 +122,8 @@ def build_document(row: dict[str, str]) -> dict:
             "periods": periods,
             "category_main": category_main,
             "category_sub": category_sub,
-            "image_source": clean_text(row.get("이미지출처")),
+            "image_source": image_source,
+            "image": {"source": image_source},
             "list_category": clean_text(row.get("목록분류")),
             "thumbnail_url": thumbnail_url,
             "original_image_url": original_image_url,

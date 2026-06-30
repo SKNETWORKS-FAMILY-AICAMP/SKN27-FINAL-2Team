@@ -557,9 +557,14 @@
       const answerText = intent === "question"
         ? stripSourceSummary(data.answer || data.structured_answer?.summary || "답변을 생성하지 못했습니다.")
         : data.answer || data.structured_answer?.summary || "답변을 생성하지 못했습니다.";
-      const content = shouldShowStructured
+      const content = shouldShowImages
+        ? renderConversationalAnswer(stripImageUrls(cleanImageAnswerTitle(answerText)))
+        : shouldShowStructured
         ? renderStructuredAnswer(data.structured_answer, data.sources || [])
         : renderConversationalAnswer(answerText);
+      const body = shouldShowImages
+        ? `<div class="image-answer-layout">${content}${imageGallery}</div>`
+        : `${imageGallery}${content}`;
       const label = intent === "concept" ? "개념 정리"
         : intent === "image" ? "이미지 자료"
         : intent === "question" ? "문제 해설"
@@ -568,8 +573,7 @@
         <div class="avatar"><img src="/static/images/chatbot_label.png" alt="himate" /></div>
         <div class="bubble bot-bubble">
           ${renderBotLabel(label)}
-          ${imageGallery}
-          ${content}
+          ${body}
         </div>
       `;
       chatStream.appendChild(wrapper);
@@ -623,6 +627,7 @@
     function addMessageToActiveSession(message) {
       const session = getActiveSession();
       session.messages.push({ ...message, createdAt: new Date().toISOString() });
+      session.messages = session.messages.slice(-10);
       const firstUserMessage = session.messages.find((item) => item.sender === "user");
       if (firstUserMessage) {
         session.title = firstUserMessage.text.slice(0, 24) || "새 대화";
@@ -782,6 +787,17 @@
       return `<div class="markdown-answer conversational-answer">${html.join("")}</div>`;
     }
 
+    function cleanImageAnswerTitle(answer) {
+      return String(answer || "").replace(/^(#{1,3}\s+.+?)(?:\s*(?:사진|이미지|그림))\s*$/m, "$1");
+    }
+
+    function stripImageUrls(answer) {
+      return String(answer || "")
+        .split(/\r?\n/)
+        .filter((line) => !/이미지\s*주소|image\s*url|https?:\/\/\S+/i.test(line))
+        .join("\n");
+    }
+
     function renderStructuredAnswer(answer, sources) {
       const sections = (answer.sections || []).map((section, index) => {
         const numberMatch = String(section.heading || "").match(/^(\d+)\.\s*(.*)$/);
@@ -884,13 +900,15 @@
             const imageUrl = source.thumbnail_url || source.original_image_url;
             const proxiedUrl = proxiedImageUrl(imageUrl);
             const sourceUrl = source.source_url || source.original_image_url || imageUrl;
+            const imageSource = source.metadata?.image?.source || source.source_name || "한국사 이미지 자료";
+            const imageTitle = String(source.title || "이미지 자료").replace(/\s*사진\s*$/u, "");
             return `
               <article class="image-card">
                 <a href="${escapeHtml(sourceUrl)}" target="_blank" rel="noreferrer">
                   <img
                     src="${escapeHtml(proxiedUrl)}"
                     data-original-src="${escapeHtml(imageUrl)}"
-                    alt="${escapeHtml(source.title || "한국사 이미지 자료")}"
+                    alt="${escapeHtml(imageTitle)}"
                     loading="lazy"
                     referrerpolicy="no-referrer"
                     onerror="handleImageError(this)"
@@ -901,8 +919,8 @@
                   <span>카드를 클릭해 원본 자료를 확인해 주세요.</span>
                 </div>
                 <div class="image-meta">
-                  <strong>${escapeHtml(source.title || "이미지 자료")}</strong>
-                  <span>${escapeHtml(source.source_name || "한국사 이미지 자료")}</span>
+                  <strong>${escapeHtml(imageTitle)}</strong>
+                  <span>${escapeHtml(imageSource)}</span>
                 </div>
               </article>
             `;

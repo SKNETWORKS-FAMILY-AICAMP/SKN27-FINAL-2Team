@@ -53,7 +53,13 @@ def save_chat_turn(request, session_id: str, user_content: str, result: dict) ->
             content=json.dumps(result, ensure_ascii=False),
             created_at=now,
         )
-        session.turn_count = (session.turn_count or 0) + 1
+        keep_ids = list(
+            ChatMessages.objects.filter(session=session)
+            .order_by("-created_at", "-message_id")
+            .values_list("message_id", flat=True)[:10]
+        )
+        ChatMessages.objects.filter(session=session).exclude(message_id__in=keep_ids).delete()
+        session.turn_count = min((session.turn_count or 0) + 1, 5)
         session.status = "active"
         session.save(update_fields=["turn_count", "status"])
 

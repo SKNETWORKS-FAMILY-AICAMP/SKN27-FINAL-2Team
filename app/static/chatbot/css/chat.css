@@ -348,7 +348,7 @@
 
     .image-gallery {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(220px, 280px));
       gap: 14px;
       padding: 18px 18px 4px;
       border-bottom: 1px solid var(--line);
@@ -369,7 +369,7 @@
 
     .image-card img {
       width: 100%;
-      height: 260px;
+      height: min(220px, 28vh);
       display: block;
       object-fit: contain;
     }
@@ -2301,10 +2301,57 @@ body {
   background: #86df59 !important;
 }
 
+.chat-page .image-gallery {
+  grid-template-columns: repeat(auto-fill, minmax(180px, 240px)) !important;
+  align-items: start !important;
+  background: #ffffff !important;
+  border-bottom: 0 !important;
+  padding: 0 !important;
+}
+
+.chat-page .image-card a {
+  display: grid !important;
+  place-items: center !important;
+  min-height: 0 !important;
+  background: #ffffff !important;
+}
+
+.chat-page .image-card img {
+  width: 100% !important;
+  height: auto !important;
+  max-height: min(240px, 32vh) !important;
+  object-fit: contain !important;
+}
+
+.chat-page .image-card {
+  background: #ffffff !important;
+}
+
+.chat-page .image-answer-layout {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 480px) !important;
+  gap: 24px !important;
+  align-items: start !important;
+  padding: 22px 24px !important;
+}
+
+.chat-page .image-answer-layout .markdown-answer {
+  padding: 0 !important;
+}
+
+.chat-page .image-answer-layout .image-gallery {
+  order: 2 !important;
+  grid-template-columns: minmax(360px, 480px) !important;
+}
+
 @media (max-width: 760px) {
   .chat-stream > .message.bot > .bot-bubble {
     width: 100% !important;
     max-width: 100% !important;
     min-width: 0 !important;
+  }
+
+  .chat-page .image-answer-layout {
+    grid-template-columns: 1fr !important;
   }
 }
