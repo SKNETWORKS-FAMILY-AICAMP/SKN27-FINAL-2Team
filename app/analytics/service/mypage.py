@@ -51,17 +51,22 @@ def build_diagnosis_comparison_summary(user):
     """
     첫 진단평가 기준의 비교 요약을 만든다.
 
-    진단 이후 이번 주 연습과의 비교를 화면 표시용 데이터로 변환한다.
+    진단 이후 주간평가와의 비교를 화면 표시용 데이터로 변환한다.
     """
     comparison = get_diagnosis_improvement_summary(user.user_id)
     answer_display = _build_rate_change_display(comparison["answerRateChange"])
     time_display = _build_time_change_display(
         comparison["averageQuestionTimeChangeSec"],
     )
-    has_post_records = comparison["hasComparison"]
+    has_comparison = comparison["hasComparison"]
+    empty_display = _build_diagnosis_comparison_empty_display(comparison)
 
     return {
-        "has_records": has_post_records,
+        "has_records": has_comparison,
+        "has_diagnosis": comparison["hasDiagnosis"],
+        "has_weekly_review_plan": comparison["hasWeeklyReviewPlan"],
+        "has_post_diagnosis_practice": comparison["hasPostDiagnosisPractice"],
+        "empty": empty_display,
         "answer": {
             "diagnosis_rate": comparison["diagnosis"]["answerRate"],
             "current_rate": comparison["current"]["answerRate"],
@@ -78,6 +83,34 @@ def build_diagnosis_comparison_summary(user):
             "change_label": time_display["label"],
             "tone": time_display["tone"],
         },
+    }
+
+
+def _build_diagnosis_comparison_empty_display(comparison):
+    """
+    진단평가 비교 카드의 대기 상태 문구를 만든다.
+    """
+    if not comparison["hasDiagnosis"]:
+        return {
+            "title": "진단평가 필요",
+            "description": "첫 진단평가를 완료하면 이후 주간평가와 비교할 수 있습니다.",
+        }
+
+    if comparison["hasPostDiagnosisPractice"]:
+        return {
+            "title": "주간 평가 후 비교 가능",
+            "description": "일반 문제풀이 기록은 쌓였고, 7일차 주간평가 완료 후 진단평가와 비교됩니다.",
+        }
+
+    if comparison["hasWeeklyReviewPlan"]:
+        return {
+            "title": "비교 기준 준비 중",
+            "description": "7일 계획의 주간평가를 완료하면 진단평가 대비 개선도가 표시됩니다.",
+        }
+
+    return {
+        "title": "주간 계획 준비 중",
+        "description": "7일 학습계획을 생성하고 주간평가를 완료하면 진단평가와 비교됩니다.",
     }
 
 

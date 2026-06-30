@@ -220,19 +220,23 @@
               {% endif %}
             </div>
           </div>
+          <section
+            class="scope-breakdown"
+            data-scope-breakdown="{{ group.scope }}"
+            aria-label="{{ group.label }} 선택 상세 분석"
+            hidden
+          >
+            <div class="scope-breakdown-heading">
+              <div>
+                <p data-breakdown-kicker>{{ group.label }} 선택</p>
+                <h2 data-breakdown-title>{{ group.label }} 상세 분석</h2>
+              </div>
+              <span data-breakdown-description>{{ group.label }} 항목을 선택하면 상세 분석을 확인합니다.</span>
+            </div>
+            <div class="session-inline-body" data-breakdown-body></div>
+          </section>
         </article>
       {% endfor %}
-    </section>
-
-    <section class="scope-breakdown" data-session-breakdown aria-label="선택한 세션의 상세 분석" hidden>
-      <div class="scope-breakdown-heading">
-        <div>
-          <p data-breakdown-kicker>세션 선택</p>
-          <h2 data-breakdown-title>세션 상세 분석</h2>
-        </div>
-        <span data-breakdown-description>선택한 세션의 시대별, 유형별, 주제별 오답률을 확인합니다.</span>
-      </div>
-      <div class="session-inline-body" data-session-breakdown-body></div>
     </section>
 
     {% with group=plan_completion_chart_data %}
@@ -327,11 +331,6 @@
   <script>
     (() => {
       const detailButtons = document.querySelectorAll("[data-detail-category]");
-      const sessionBreakdown = document.querySelector("[data-session-breakdown]");
-      const sessionBreakdownBody = document.querySelector("[data-session-breakdown-body]");
-      const breakdownKicker = document.querySelector("[data-breakdown-kicker]");
-      const breakdownTitle = document.querySelector("[data-breakdown-title]");
-      const breakdownDescription = document.querySelector("[data-breakdown-description]");
       const detailModal = document.getElementById("wrongRateDetailModal");
       const detailClose = document.getElementById("closeWrongRateDetail");
       const detailCategory = document.getElementById("wrongRateDetailCategory");
@@ -357,11 +356,77 @@
       };
 
       const getStatusLabel = (statusClass) => statusLabels[statusClass] || "";
+      const activeInlineSelections = {
+        session: "",
+        period: "",
+      };
 
-      const hideSessionBreakdown = () => {
-        if (sessionBreakdown) {
-          sessionBreakdown.hidden = true;
+      const getInlineBreakdown = (scope) => {
+        const root = document.querySelector(`[data-scope-breakdown="${scope}"]`);
+        if (!root) {
+          return null;
         }
+        return {
+          root,
+          body: root.querySelector("[data-breakdown-body]"),
+          kicker: root.querySelector("[data-breakdown-kicker]"),
+          title: root.querySelector("[data-breakdown-title]"),
+          description: root.querySelector("[data-breakdown-description]"),
+        };
+      };
+
+      const hideInlineBreakdowns = (activeScope = "") => {
+        document.querySelectorAll("[data-scope-breakdown]").forEach((root) => {
+          if (root.dataset.scopeBreakdown === activeScope) {
+            return;
+          }
+          activeInlineSelections[root.dataset.scopeBreakdown] = "";
+          root.hidden = true;
+        });
+      };
+
+      const hideInlineBreakdown = (scope) => {
+        const breakdown = getInlineBreakdown(scope);
+        if (!breakdown) {
+          return;
+        }
+        activeInlineSelections[scope] = "";
+        breakdown.root.hidden = true;
+      };
+
+      const isInlineSelectionOpen = (scope, selectionKey) => {
+        const breakdown = getInlineBreakdown(scope);
+        return Boolean(
+          breakdown
+          && !breakdown.root.hidden
+          && activeInlineSelections[scope] === selectionKey
+        );
+      };
+
+      const getPeriodSelectionKey = (periodRange) => (
+        periodRange
+          ? `${periodRange.startDate}:${periodRange.endDate}`
+          : ""
+      );
+
+      const setInlineBreakdownHeading = (breakdown, kicker, title, description) => {
+        if (breakdown.kicker) {
+          breakdown.kicker.textContent = kicker;
+        }
+        if (breakdown.title) {
+          breakdown.title.textContent = title;
+        }
+        if (breakdown.description) {
+          breakdown.description.textContent = description;
+        }
+      };
+
+      const showInlineBreakdown = (breakdown, scope = "", selectionKey = "") => {
+        if (scope) {
+          activeInlineSelections[scope] = selectionKey;
+        }
+        breakdown.root.hidden = false;
+        breakdown.root.scrollIntoView({ behavior: "smooth", block: "start" });
       };
 
       const lineChartLayout = {
@@ -474,6 +539,7 @@
           if (periodChart) {
             drawLineChart(periodChart);
           }
+          hideInlineBreakdown("period");
         };
 
         startInput.addEventListener("change", applyPeriodFilter);
@@ -716,21 +782,20 @@
       const renderInlineSessionDetail = (detail) => {
         const overview = detail.overview || {};
         const groups = detail.groups || [];
-        if (!sessionBreakdown || !sessionBreakdownBody) {
+        const breakdown = getInlineBreakdown("session");
+        if (!breakdown?.body) {
           return;
         }
 
-        if (breakdownKicker) {
-          breakdownKicker.textContent = `${overview.recordedDate || "세션"} 선택`;
-        }
-        if (breakdownTitle) {
-          breakdownTitle.textContent = detail.title || "세션 상세 분석";
-        }
-        if (breakdownDescription) {
-          breakdownDescription.textContent = "선택한 세션의 시대별, 유형별, 주제별 오답률입니다.";
-        }
+        hideInlineBreakdowns("session");
+        setInlineBreakdownHeading(
+          breakdown,
+          `${overview.recordedDate || "세션"} 선택`,
+          detail.title || "세션 상세 분석",
+          "선택한 세션의 시대별, 유형별, 주제별 오답률입니다.",
+        );
 
-        sessionBreakdownBody.innerHTML = `
+        breakdown.body.innerHTML = `
           <article class="session-overview-card">
             <div>
               <span>${escapeHtml(overview.recordedDate)} · ${escapeHtml(overview.sessionTypeLabel)}</span>
@@ -745,45 +810,51 @@
           </article>
           ${groups.map((group) => renderInlineAnalysisGroup(group, overview.sessionId)).join("")}
         `;
-        sessionBreakdown.hidden = false;
-        sessionBreakdown.scrollIntoView({ behavior: "smooth", block: "start" });
+        showInlineBreakdown(breakdown, "session", activeInlineSelections.session);
       };
 
       const renderInlineSessionLoading = (sessionId) => {
-        if (!sessionBreakdown || !sessionBreakdownBody) {
+        const breakdown = getInlineBreakdown("session");
+        if (!breakdown?.body) {
           return;
         }
-        if (breakdownKicker) {
-          breakdownKicker.textContent = `세션 #${sessionId}`;
-        }
-        if (breakdownTitle) {
-          breakdownTitle.textContent = "세션 상세 분석";
-        }
-        if (breakdownDescription) {
-          breakdownDescription.textContent = "선택한 세션의 분류별 분석을 불러오고 있습니다.";
-        }
-        sessionBreakdownBody.innerHTML = `
+        hideInlineBreakdowns("session");
+        setInlineBreakdownHeading(
+          breakdown,
+          `세션 #${sessionId}`,
+          "세션 상세 분석",
+          "선택한 세션의 분류별 분석을 불러오고 있습니다.",
+        );
+        breakdown.body.innerHTML = `
           <article class="detail-empty">
             <strong>불러오는 중</strong>
             <span>세션별 시대, 유형, 주제 분석을 확인하고 있습니다.</span>
           </article>
         `;
-        sessionBreakdown.hidden = false;
+        showInlineBreakdown(breakdown, "session", String(sessionId || ""));
       };
 
-      const renderInlineSessionError = () => {
-        if (!sessionBreakdownBody) {
+      const renderInlineBreakdownError = (scope, message) => {
+        const breakdown = getInlineBreakdown(scope);
+        if (!breakdown?.body) {
           return;
         }
-        sessionBreakdownBody.innerHTML = `
+        breakdown.body.innerHTML = `
           <article class="detail-empty">
             <strong>불러오지 못했습니다</strong>
-            <span>잠시 후 세션을 다시 선택해 주세요.</span>
+            <span>${escapeHtml(message)}</span>
           </article>
         `;
+        showInlineBreakdown(breakdown, scope, activeInlineSelections[scope]);
       };
 
       const openInlineSessionDetail = async (sessionId) => {
+        const selectionKey = String(sessionId || "");
+        if (isInlineSelectionOpen("session", selectionKey)) {
+          hideInlineBreakdown("session");
+          return;
+        }
+
         renderInlineSessionLoading(sessionId);
         try {
           const url = new URL(sessionDetailUrl, window.location.origin);
@@ -797,9 +868,15 @@
             throw new Error("inline session detail request failed");
           }
           const payload = await response.json();
+          if (activeInlineSelections.session !== selectionKey) {
+            return;
+          }
           renderInlineSessionDetail(payload.detail);
         } catch (error) {
-          renderInlineSessionError();
+          if (activeInlineSelections.session !== selectionKey) {
+            return;
+          }
+          renderInlineBreakdownError("session", "잠시 후 세션을 다시 선택해 주세요.");
         }
       };
 
@@ -1058,21 +1135,20 @@
         const overview = detail.overview || {};
         const groups = detail.groups || [];
         const period = detail.period || {};
-        if (!sessionBreakdown || !sessionBreakdownBody) {
+        const breakdown = getInlineBreakdown("period");
+        if (!breakdown?.body) {
           return;
         }
 
-        if (breakdownKicker) {
-          breakdownKicker.textContent = `${period.label || "기간"} 선택`;
-        }
-        if (breakdownTitle) {
-          breakdownTitle.textContent = detail.title || "기간 상세 분석";
-        }
-        if (breakdownDescription) {
-          breakdownDescription.textContent = "선택한 기간의 전체 흐름과 분류별 오답률입니다.";
-        }
+        hideInlineBreakdowns("period");
+        setInlineBreakdownHeading(
+          breakdown,
+          `${period.label || "기간"} 선택`,
+          detail.title || "기간 상세 분석",
+          "선택한 기간의 전체 흐름과 분류별 오답률입니다.",
+        );
 
-        sessionBreakdownBody.innerHTML = `
+        breakdown.body.innerHTML = `
           <article class="session-overview-card">
             <div>
               <span>${escapeHtml(overview.periodLabel)} · ${escapeHtml(overview.sessionCount)}개 세션</span>
@@ -1090,30 +1166,28 @@
           ${renderTopWeakness(detail.topWeakItems || [])}
           ${groups.map((group) => renderPeriodAnalysisGroup(group, period)).join("")}
         `;
-        sessionBreakdown.hidden = false;
-        sessionBreakdown.scrollIntoView({ behavior: "smooth", block: "start" });
+        showInlineBreakdown(breakdown, "period", activeInlineSelections.period);
       };
 
       const renderInlinePeriodLoading = (periodRange) => {
-        if (!sessionBreakdown || !sessionBreakdownBody) {
+        const breakdown = getInlineBreakdown("period");
+        if (!breakdown?.body) {
           return;
         }
-        if (breakdownKicker) {
-          breakdownKicker.textContent = "기간 선택";
-        }
-        if (breakdownTitle) {
-          breakdownTitle.textContent = `${periodRange.startDate} - ${periodRange.endDate}`;
-        }
-        if (breakdownDescription) {
-          breakdownDescription.textContent = "선택한 기간의 상세 분석을 불러오고 있습니다.";
-        }
-        sessionBreakdownBody.innerHTML = `
+        hideInlineBreakdowns("period");
+        setInlineBreakdownHeading(
+          breakdown,
+          "기간 선택",
+          `${periodRange.startDate} - ${periodRange.endDate}`,
+          "선택한 기간의 상세 분석을 불러오고 있습니다.",
+        );
+        breakdown.body.innerHTML = `
           <article class="detail-empty">
             <strong>불러오는 중</strong>
             <span>기간 요약과 분류별 오답률을 확인하고 있습니다.</span>
           </article>
         `;
-        sessionBreakdown.hidden = false;
+        showInlineBreakdown(breakdown, "period", getPeriodSelectionKey(periodRange));
       };
 
       const openInlinePeriodDetail = async () => {
@@ -1121,6 +1195,12 @@
         if (!periodRange) {
           return;
         }
+        const selectionKey = getPeriodSelectionKey(periodRange);
+        if (isInlineSelectionOpen("period", selectionKey)) {
+          hideInlineBreakdown("period");
+          return;
+        }
+
         renderInlinePeriodLoading(periodRange);
         try {
           const url = new URL(periodDetailUrl, window.location.origin);
@@ -1135,9 +1215,15 @@
             throw new Error("period detail request failed");
           }
           const payload = await response.json();
+          if (activeInlineSelections.period !== selectionKey) {
+            return;
+          }
           renderInlinePeriodDetail(payload.detail);
         } catch (error) {
-          renderInlineSessionError();
+          if (activeInlineSelections.period !== selectionKey) {
+            return;
+          }
+          renderInlineBreakdownError("period", "잠시 후 기간을 다시 선택해 주세요.");
         }
       };
 
@@ -1315,7 +1401,7 @@
         }
       });
       setupPeriodFilter();
-      hideSessionBreakdown();
+      hideInlineBreakdowns();
       drawLineCharts();
     })();
   </script>

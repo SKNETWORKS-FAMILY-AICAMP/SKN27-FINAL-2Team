@@ -4,6 +4,7 @@ from django.db import DatabaseError
 from django.db.models import Avg, Count, Max, Min, Q
 from django.utils import timezone
 from analytics.models import Analytics, StudyPlanMypage
+from analytics.serializers import parse_study_plan_items
 from question.models import QuestionOptions, SolveRecords, SolveSessions
 
 
@@ -933,13 +934,12 @@ def get_diagnosis_improvement_summary(user_id, today=None):
     """
     첫 진단평가 기준의 개선 정도를 계산한다.
 
-    진단평가 이후의 이번 주 practice를 첫 진단평가 대비 향상도로 비교한다.
+    진단평가 이후 완료한 주간평가를 첫 진단평가 대비 향상도로 비교한다.
     """
     diagnosis_summary = get_first_diagnosis_summary(user_id)
-    post_diagnosis_summary = get_post_diagnosis_weekly_practice_summary(
+    post_diagnosis_summary = get_post_diagnosis_weekly_review_summary(
         user_id,
         diagnosis_summary,
-        today,
     )
     has_comparison = (
         diagnosis_summary["hasRecords"]
@@ -966,7 +966,128 @@ def get_diagnosis_improvement_summary(user_id, today=None):
         "answerRateChange": answer_rate_change,
         "averageQuestionTimeChangeSec": average_question_time_change_sec,
         "hasComparison": has_comparison,
+        "hasDiagnosis": diagnosis_summary["hasRecords"],
+        "hasWeeklyReviewPlan": post_diagnosis_summary["hasWeeklyReviewPlan"],
+        "hasPostDiagnosisPractice": has_post_diagnosis_practice_records(
+            user_id,
+            diagnosis_summary,
+            today,
+        ),
     }
+
+
+def get_post_diagnosis_weekly_review_summary(user_id, diagnosis_summary):
+    """
+    첫 진단평가 이후 완료한 주간평가 기록 요약을 반환한다.
+    """
+    block_refs = get_weekly_review_block_refs(user_id)
+    summary = build_record_summary(SolveRecords.objects.none())
+    summary["averageSessionTimeSec"] = None
+    summary["hasWeeklyReviewPlan"] = bool(block_refs)
+    summary["periodStart"] = None
+    summary["periodEnd"] = None
+    if not block_refs:
+        return summary
+
+    records = get_weekly_review_records(user_id, block_refs)
+    if diagnosis_summary["recordedDate"] is not None:
+        records = filter_records_after(
+            records,
+            diagnosis_summary["recordedDate"],
+            diagnosis_summary["sessionId"],
+        )
+
+    sessions = SolveSessions.objects.filter(
+        session_id__in=records.values_list("session_id", flat=True).distinct(),
+    )
+    summary = build_record_summary(records)
+    session_stats = sessions.aggregate(
+        average_session_time_sec=Avg("elapsed_sec"),
+    )
+    average_session_time_sec = None
+    if session_stats["average_session_time_sec"] is not None:
+        average_session_time_sec = int(round(session_stats["average_session_time_sec"]))
+
+    period_bounds = sessions.aggregate(
+        period_start=Min("recorded_date"),
+        period_end=Max("recorded_date"),
+    )
+    summary["averageSessionTimeSec"] = average_session_time_sec
+    summary["periodStart"] = period_bounds["period_start"]
+    summary["periodEnd"] = period_bounds["period_end"]
+    summary["hasWeeklyReviewPlan"] = bool(block_refs)
+    return summary
+
+
+def get_weekly_review_block_refs(user_id):
+    """
+    사용자의 학습계획 중 주간평가 블록 식별자를 모은다.
+    """
+    from analytics.service.studyplan import get_study_plan_config
+
+    weekly_review_type = get_study_plan_config()["weekly_review_block_type"]
+    block_refs = []
+    study_plans = StudyPlanMypage.objects.filter(user_id=user_id).exclude(status="deleted")
+    for study_plan in study_plans:
+        plan_items = parse_study_plan_items(study_plan.study_plan_items)
+        for day_plan in plan_items:
+            for block in day_plan.get("blocks", []):
+                block_id = block.get("blockId")
+                if block.get("blockType") == weekly_review_type and block_id:
+                    block_refs.append(
+                        {
+                            "studyplan_id": study_plan.studyplan_id,
+                            "block_id": str(block_id),
+                        }
+                    )
+
+    return block_refs
+
+
+def get_weekly_review_records(user_id, block_refs):
+    """
+    주간평가 블록과 연결된 완료 풀이 기록만 조회한다.
+    """
+    block_query = Q()
+    for block_ref in block_refs:
+        block_query |= Q(
+            studyplan_id=block_ref["studyplan_id"],
+            study_plan_block_id=block_ref["block_id"],
+        )
+
+    if not block_query:
+        return SolveRecords.objects.none()
+
+    return SolveRecords.objects.filter(
+        block_query,
+        session__user_id=user_id,
+        session__status="completed",
+    )
+
+
+def filter_records_after(records, recorded_date, session_id):
+    """
+    기준 세션 이후에 완료된 기록만 남긴다.
+    """
+    return records.filter(
+        Q(session__recorded_date__gt=recorded_date)
+        | Q(session__recorded_date=recorded_date, session_id__gt=session_id)
+    )
+
+
+def has_post_diagnosis_practice_records(user_id, diagnosis_summary, today=None):
+    """
+    진단평가 이후 일반 문제풀이 기록이 있는지 확인한다.
+    """
+    if diagnosis_summary["recordedDate"] is None:
+        return False
+
+    sessions = filter_sessions_after(
+        get_practice_sessions(user_id),
+        diagnosis_summary["recordedDate"],
+        diagnosis_summary["sessionId"],
+    )
+    return SolveRecords.objects.filter(session__in=sessions).exists()
 
 
 def get_post_diagnosis_weekly_practice_summary(user_id, diagnosis_summary, today=None):

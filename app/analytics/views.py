@@ -35,6 +35,8 @@ from analytics.service.mypage import (
     build_wrong_type_summary,
 )
 from analytics.service.studyplan import (
+    StudyPlanBlockDeleteLimitExceeded,
+    StudyPlanMoveDateOutOfRange,
     complete_study_plan_block,
     create_study_plan,
     delete_study_plan_block,
@@ -239,12 +241,22 @@ def delete_study_plan_block_view(request):
     except (TypeError, ValueError):
         return JsonResponse({"ok": False}, status=400)
 
-    deleted_plan = delete_study_plan_block(
-        request.user.user_id,
-        study_plan_id,
-        day_index,
-        block_index,
-    )
+    try:
+        deleted_plan = delete_study_plan_block(
+            request.user.user_id,
+            study_plan_id,
+            day_index,
+            block_index,
+        )
+    except StudyPlanBlockDeleteLimitExceeded:
+        return JsonResponse(
+            {
+                "ok": False,
+                "error": "하루에 삭제할 수 있는 학습계획은 최대 2개입니다.",
+            },
+            status=429,
+        )
+
     if deleted_plan is None:
         return JsonResponse({"ok": False}, status=404)
 
@@ -298,11 +310,20 @@ def move_study_plan_blocks_view(request):
     except (KeyError, TypeError, ValueError):
         return JsonResponse({"ok": False}, status=400)
 
-    updated_plans = move_study_plan_blocks(
-        request.user.user_id,
-        normalized_items,
-        target_date_key,
-    )
+    try:
+        updated_plans = move_study_plan_blocks(
+            request.user.user_id,
+            normalized_items,
+            target_date_key,
+        )
+    except StudyPlanMoveDateOutOfRange:
+        return JsonResponse(
+            {
+                "ok": False,
+                "error": "학습일 변경은 해당 학습계획 기간 안에서만 가능합니다.",
+            },
+            status=400,
+        )
     if not updated_plans:
         return JsonResponse({"ok": False}, status=404)
 

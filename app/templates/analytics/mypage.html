@@ -41,28 +41,27 @@
     <section class="summary-strip" aria-label="학습 요약">
       <article><span>이번 주 정답률</span><strong>{{ learning_summary.answer_rate }}%</strong></article>
       <article><span>이번 주 풀이 수</span><strong>{{ learning_summary.solved_count }}문제</strong></article>
-      <article><span>이번 주 문제당 평균 풀이시간</span><strong>{{ learning_summary.avg_question_time }}</strong></article>
       <article><span>연속 학습일수</span><strong>{{ learning_summary.study_streak_days }}일</strong></article>
     </section>
 
     <section class="improvement-grid" aria-label="진단평가 비교">
       {% if diagnosis_comparison.has_records %}
         <article class="improvement-card {{ diagnosis_comparison.answer.tone }}">
-          <span>첫 진단평가 이후 정답률</span>
+          <span>첫 진단평가 대비 정답률</span>
           <strong>{{ diagnosis_comparison.answer.change_label }}</strong>
-          <p>진단평가 {{ diagnosis_comparison.answer.diagnosis_rate }}% → 진단 후 이번 주 {{ diagnosis_comparison.answer.current_rate }}%</p>
+          <p>진단평가 {{ diagnosis_comparison.answer.diagnosis_rate }}% → 주간평가 {{ diagnosis_comparison.answer.current_rate }}%</p>
         </article>
         <article class="improvement-card {{ diagnosis_comparison.time.tone }}">
-          <span>첫 진단평가 이후 문제당 평균 풀이시간</span>
+          <span>첫 진단평가 대비 문제당 평균 풀이시간</span>
           <strong>{{ diagnosis_comparison.time.change_label }}</strong>
-          <p>진단평가 문제당 {{ diagnosis_comparison.time.diagnosis_time }} → 진단 후 이번 주 문제당 {{ diagnosis_comparison.time.current_time }}</p>
+          <p>진단평가 문제당 {{ diagnosis_comparison.time.diagnosis_time }} → 주간평가 문제당 {{ diagnosis_comparison.time.current_time }}</p>
         </article>
       {% endif %}
       {% if not diagnosis_comparison.has_records %}
         <article class="improvement-card empty">
           <span>진단평가 비교</span>
-          <strong>기록 준비 중</strong>
-          <p>진단평가 전후 문제풀이 기록이 쌓이면 비교 추이가 표시됩니다.</p>
+          <strong>{{ diagnosis_comparison.empty.title }}</strong>
+          <p>{{ diagnosis_comparison.empty.description }}</p>
         </article>
       {% endif %}
     </section>
@@ -123,12 +122,25 @@
             <span class="section-mark"></span>
             <h2>학습플래너</h2>
           </div>
-          <button class="planner-change" id="openPlanModal" type="button">학습일 변경</button>
+          {% if planner_summary.can_create_plan %}
+            <div class="planner-header-actions">
+              <form
+                class="planner-create-form"
+                id="createPlanForm"
+                method="post"
+                action="{% url 'analytics:study_plan_create' %}"
+                data-confirm="{{ planner_summary.create_plan_confirm }}"
+              >
+                {% csrf_token %}
+                <button class="planner-create" type="submit">{{ planner_summary.create_plan_label }}</button>
+              </form>
+            </div>
+          {% endif %}
         </div>
 
         <section class="planner-progress-summary" aria-label="학습계획 달성률">
           <div>
-            <span>문제풀이 달성률</span>
+            <span>계획 달성률</span>
             <strong>{{ planner_summary.progress.completionPercent }}%</strong>
           </div>
           <div class="planner-progress-meter" aria-label="현재 계획 달성률 {{ planner_summary.progress.completionPercent }}%">
@@ -154,9 +166,56 @@
                 <span id="plannerDayKicker">오늘의 계획</span>
                 <strong id="plannerDayLabel">{{ planner_summary.day_label }}</strong>
               </div>
+              {% if planner_summary.can_move_plan %}
+                <button class="planner-change" id="openPlanModal" type="button">학습일 변경</button>
+              {% endif %}
             </div>
 
-            <div class="plan-list planner-lessons" id="plannerLessons"></div>
+            <div class="plan-list planner-lessons" id="plannerLessons">
+              {% for item in planner_summary.selected_items %}
+                <article class="plan-item{% if item.done %} done{% endif %}" data-date-key="{{ planner_summary.selected_key }}" data-plan-index="{{ forloop.counter0 }}">
+                  <i></i>
+                  <div>
+                    <strong>{{ item.title }}</strong>
+                    <span>{{ item.meta }}</span>
+                    <div class="plan-progress-line" aria-label="{{ item.title }} 달성률 {{ item.progressPercent }}%">
+                      <b style="width: {{ item.progressPercent }}%"></b>
+                    </div>
+                  </div>
+                  <em class="plan-progress-count">{{ item.achievedCount }}/{{ item.questionCount }}</em>
+                  <div class="plan-actions">
+                    <button
+                      class="plan-start-button"
+                      type="button"
+                      data-study-plan-id="{{ item.studyPlanId }}"
+                      data-block-id="{{ item.blockId }}"
+                      data-classification="{{ item.classification }}"
+                      data-label="{{ item.label }}"
+                      data-era="{{ item.era }}"
+                      data-topic="{{ item.topic }}"
+                      data-q-type="{{ item.qType }}"
+                      data-question-count="{{ item.questionCount|default:10 }}"
+                      data-is-weekly-review="{% if item.isWeeklyReview %}true{% else %}false{% endif %}"
+                      {% if not item.canStart %}disabled aria-disabled="true"{% endif %}
+                    >{{ item.startLabel }}</button>
+                    {% if item.canDelete %}
+                      <button
+                        class="plan-delete-button"
+                        type="button"
+                        data-study-plan-id="{{ item.studyPlanId }}"
+                        data-day-index="{{ item.dayIndex }}"
+                        data-block-index="{{ item.blockIndex }}"
+                      >삭제</button>
+                    {% endif %}
+                  </div>
+                </article>
+              {% empty %}
+                <article class="plan-item empty">
+                  <i></i>
+                  <div><strong>등록된 학습 계획이 없습니다</strong><span>오늘 표시할 일정 없음</span></div>
+                </article>
+              {% endfor %}
+            </div>
           </section>
         </div>
       </section>
@@ -173,20 +232,24 @@
           <article>
             <span>STEP 1</span>
             <strong>변경할 학습을 선택해 주세요</strong>
-            {% for item in planner_summary.today_items %}
-              <label>
-                <input
-                  class="planner-move-item"
-                  type="checkbox"
-                  data-study-plan-id="{{ item.studyPlanId }}"
-                  data-day-index="{{ item.dayIndex }}"
-                  data-block-index="{{ item.blockIndex }}"
-                />
-                {{ item.title }}
-              </label>
-            {% empty %}
-              <p>변경할 학습이 없습니다.</p>
-            {% endfor %}
+            <div class="planner-move-items" id="plannerMoveItems">
+              {% for item in planner_summary.selected_items %}
+                <label>
+                  <input
+                    class="planner-move-item"
+                    type="checkbox"
+                    data-study-plan-id="{{ item.studyPlanId }}"
+                    data-plan-start-date="{{ item.planStartDate }}"
+                    data-plan-end-date="{{ item.planEndDate }}"
+                    data-day-index="{{ item.dayIndex }}"
+                    data-block-index="{{ item.blockIndex }}"
+                  />
+                  {{ item.title }}
+                </label>
+              {% empty %}
+                <p>변경할 학습이 없습니다.</p>
+              {% endfor %}
+            </div>
           </article>
           <article>
             <span>STEP 2</span>
@@ -206,10 +269,12 @@
   <script>
     const plannerModal = document.getElementById("plannerModal");
     const openPlanModal = document.getElementById("openPlanModal");
+    const createPlanForm = document.getElementById("createPlanForm");
     const closePlanModal = document.getElementById("closePlanModal");
     const cancelPlanModal = document.getElementById("cancelPlanModal");
     const savePlanModal = document.getElementById("savePlanModal");
     const planTargetDate = document.getElementById("planTargetDate");
+    const plannerMoveItems = document.getElementById("plannerMoveItems");
     const plannerCalendarGrid = document.getElementById("plannerCalendarGrid");
     const plannerMonthLabel = document.getElementById("plannerMonthLabel");
     const prevPlannerMonth = document.getElementById("prevPlannerMonth");
@@ -220,11 +285,12 @@
     const plannerData = JSON.parse(document.getElementById("planner-data").textContent);
     const todayKey = "{{ planner_summary.today_key }}";
     let selectedPlannerKey = "{{ planner_summary.selected_key }}";
-    const [initialYear, initialMonth] = todayKey.split("-").map(Number);
+    const [initialYear, initialMonth] = selectedPlannerKey.split("-").map(Number);
     let plannerDate = new Date(initialYear, initialMonth - 1, 1);
     const plannerPlans = plannerData.plansByDate || {};
     const completedKeys = new Set(plannerData.completedKeys || []);
     const plannedKeys = new Set(plannerData.plannedKeys || []);
+    const progressByDate = plannerData.progressByDate || {};
     const getCookie = (name) => {
       const cookies = document.cookie ? document.cookie.split("; ") : [];
       for (const cookie of cookies) {
@@ -246,7 +312,8 @@
         body: JSON.stringify(payload),
       });
       if (!response.ok) {
-        throw new Error("planner request failed");
+        const payload = await response.json().catch(() => ({}));
+        throw new Error(payload.error || "planner request failed");
       }
       return response.json();
 
@@ -274,12 +341,111 @@
       planIndex: index,
     }));
 
+    const renderPlannerMoveItems = () => {
+      const plans = getPlansByDateKey(selectedPlannerKey);
+      if (!plans.length) {
+        plannerMoveItems.innerHTML = "<p>변경할 학습이 없습니다.</p>";
+        updatePlanTargetDateBounds();
+        return;
+      }
+
+      plannerMoveItems.innerHTML = plans.map((plan) => `
+        <label>
+          <input
+            class="planner-move-item"
+            type="checkbox"
+            data-study-plan-id="${plan.studyPlanId || ""}"
+            data-plan-start-date="${escapeHtml(plan.planStartDate || "")}"
+            data-plan-end-date="${escapeHtml(plan.planEndDate || "")}"
+            data-day-index="${plan.dayIndex}"
+            data-block-index="${plan.blockIndex}"
+          />
+          ${escapeHtml(plan.title)}
+        </label>
+      `).join("");
+      updatePlanTargetDateBounds();
+    };
+
+    const getPlanMoveInputs = () => Array.from(plannerMoveItems.querySelectorAll(".planner-move-item"));
+
+    const getPlanMoveRangeSourceInputs = () => {
+      const checkedInputs = getPlanMoveInputs().filter((input) => input.checked);
+      if (checkedInputs.length) {
+        return checkedInputs;
+      }
+
+      return getPlanMoveInputs();
+    };
+
+    const updatePlanTargetDateBounds = () => {
+      const inputs = getPlanMoveRangeSourceInputs();
+      let minDate = "";
+      let maxDate = "";
+      inputs.forEach((input) => {
+        const planStartDate = input.dataset.planStartDate || "";
+        const planEndDate = input.dataset.planEndDate || "";
+        if (planStartDate && (!minDate || planStartDate > minDate)) {
+          minDate = planStartDate;
+        }
+        if (planEndDate && (!maxDate || planEndDate < maxDate)) {
+          maxDate = planEndDate;
+        }
+      });
+
+      planTargetDate.min = minDate;
+      planTargetDate.max = maxDate;
+      if (!planTargetDate.value) {
+        planTargetDate.value = selectedPlannerKey;
+      }
+      if (minDate && planTargetDate.value < minDate) {
+        planTargetDate.value = minDate;
+      }
+      if (maxDate && planTargetDate.value > maxDate) {
+        planTargetDate.value = maxDate;
+      }
+    };
+
+    const isPlanTargetDateWithinBounds = () => {
+      if (planTargetDate.min && planTargetDate.value < planTargetDate.min) {
+        return false;
+      }
+      if (planTargetDate.max && planTargetDate.value > planTargetDate.max) {
+        return false;
+      }
+
+      return true;
+    };
+
     const renderPlanProgress = (plan) => {
       return `
         <div class="plan-progress-line" aria-label="${escapeHtml(plan.title)} 달성률 ${plan.progressPercent || 0}%">
           <b style="width: ${plan.progressPercent || 0}%"></b>
         </div>
       `;
+    };
+
+    const renderPlanDeleteButton = (plan) => {
+      if (plan.canDelete === false) {
+        return "";
+      }
+
+      return `
+        <button
+          class="plan-delete-button"
+          type="button"
+          data-study-plan-id="${plan.studyPlanId || ""}"
+          data-day-index="${plan.dayIndex}"
+          data-block-index="${plan.blockIndex}"
+        >삭제</button>
+      `;
+    };
+
+    const renderDisabledAttribute = (canUse) => {
+      if (canUse === false) {
+        return " disabled aria-disabled=\"true\"";
+      }
+
+      return "";
     };
 
     const renderPlanItem = (plan) => `
@@ -291,18 +457,23 @@
           ${renderPlanProgress(plan)}
         </div>
         <em class="plan-progress-count">${plan.achievedCount || 0}/${plan.questionCount || 0}</em>
-        <button
-          class="plan-start-button"
-          type="button"
-          data-study-plan-id="${plan.studyPlanId || ""}"
-          data-block-id="${escapeHtml(plan.blockId || "")}"
-          data-classification="${escapeHtml(plan.classification || "")}"
-          data-label="${escapeHtml(plan.label || "")}"
-          data-era="${escapeHtml(plan.era || "")}"
-          data-topic="${escapeHtml(plan.topic || "")}"
-          data-q-type="${escapeHtml(plan.qType || "")}"
-          data-question-count="${plan.questionCount || 10}"
-        >문제 풀기</button>
+        <div class="plan-actions">
+          <button
+            class="plan-start-button"
+            type="button"
+            data-study-plan-id="${plan.studyPlanId || ""}"
+            data-block-id="${escapeHtml(plan.blockId || "")}"
+            data-classification="${escapeHtml(plan.classification || "")}"
+            data-label="${escapeHtml(plan.label || "")}"
+            data-era="${escapeHtml(plan.era || "")}"
+            data-topic="${escapeHtml(plan.topic || "")}"
+            data-q-type="${escapeHtml(plan.qType || "")}"
+            data-question-count="${plan.questionCount || 10}"
+            data-is-weekly-review="${plan.isWeeklyReview ? "true" : "false"}"
+            ${renderDisabledAttribute(plan.canStart)}
+          >${escapeHtml(plan.startLabel || "문제 풀기")}</button>
+          ${renderPlanDeleteButton(plan)}
+        </div>
       </article>
     `;
 
@@ -323,6 +494,20 @@
       plannerLessons.innerHTML = plans.map((plan) => renderPlanItem(plan)).join("");
     };
 
+    const getCalendarProgressStyle = (progress) => {
+      if (!progress) {
+        return "";
+      }
+      if (progress.state === "future") {
+        return "";
+      }
+      if (progress.state === "today") {
+        return "";
+      }
+
+      return ` style="--day-progress-hue: ${progress.hue}; --day-progress-percent: ${progress.percent}%;"`;
+    };
+
     const renderPlannerCalendar = () => {
       const year = plannerDate.getFullYear();
       const month = plannerDate.getMonth();
@@ -338,14 +523,30 @@
           const cellDate = new Date(gridStart);
           cellDate.setDate(gridStart.getDate() + weekIndex * 7 + dayIndex);
           const key = formatDateKey(cellDate);
+          const progress = progressByDate[key];
           const classes = [];
           if (cellDate.getMonth() !== month) classes.push("muted");
           if (key === todayKey) classes.push("today");
           if (key === selectedPlannerKey) classes.push("selected");
           if (completedKeys.has(key)) classes.push("done");
           if (plannedKeys.has(key)) classes.push("planned");
-          const label = key === todayKey ? "<em>오늘</em>" : completedKeys.has(key) ? "<em>달성</em>" : plannedKeys.has(key) ? "<em>예정</em>" : "";
-          cells.push(`<button type="button" class="${classes.join(" ")}" data-date="${key}">${cellDate.getDate()}${label}</button>`);
+          if (progress && progress.state !== "future" && progress.state !== "today") {
+            classes.push("progress-tracked", `progress-${progress.state}`);
+          }
+
+          let label = "";
+          if (key === todayKey) {
+            label = "<em>오늘</em>";
+          }
+          if (progress && progress.state !== "future" && progress.state !== "today") {
+            label = `<em>${escapeHtml(progress.label)}</em>`;
+          }
+          if (!label && plannedKeys.has(key)) {
+            label = "<em>예정</em>";
+          }
+
+          const progressStyle = getCalendarProgressStyle(progress);
+          cells.push(`<button type="button" class="${classes.join(" ")}" data-date="${key}"${progressStyle}>${cellDate.getDate()}${label}</button>`);
         }
         weeks.push(`<div class="calendar-week">${cells.join("")}</div>`);
       }
@@ -364,20 +565,85 @@
 
     const renderPlannerLessons = () => {
       const [yearValue, monthValue, dayValue] = selectedPlannerKey.split("-").map(Number);
-      const isToday = selectedPlannerKey === todayKey;
-      plannerDayKicker.textContent = isToday ? "오늘의 계획" : "선택한 날짜";
+      plannerDayKicker.textContent = "오늘의 계획";
+      if (selectedPlannerKey < todayKey) {
+        plannerDayKicker.textContent = "지난 계획";
+      }
+      if (selectedPlannerKey > todayKey) {
+        plannerDayKicker.textContent = "예정된 계획";
+      }
       plannerDayLabel.textContent = `${String(monthValue).padStart(2, "0")}월 ${String(dayValue).padStart(2, "0")}일`;
       renderPlannerPlanItems(getPlansByDateKey(selectedPlannerKey), "오늘 표시할 일정 없음");
     };
 
+    const hasInProgressDiagnosisSession = async () => {
+      const response = await fetch("/diagnosis/api/sessions/in-progress/", {
+        credentials: "same-origin",
+      });
+      if (!response.ok) {
+        return false;
+      }
+
+      const payload = await response.json();
+      return (payload.sessions || []).length > 0;
+    };
+
+    const startWeeklyReviewBlock = async (button) => {
+      button.disabled = true;
+      try {
+        const hasInProgress = await hasInProgressDiagnosisSession();
+        if (hasInProgress) {
+          const shouldCreateNew = confirm(
+            "풀다 만 진단평가가 있습니다. 새 주간평가를 시작하면 기존 진행 기록은 삭제됩니다. 계속하시겠습니까?"
+          );
+          if (!shouldCreateNew) {
+            button.disabled = false;
+            return;
+          }
+        }
+
+        const response = await fetch("/diagnosis/api/start/", {
+          method: "POST",
+          credentials: "same-origin",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": getCookie("csrftoken") || "{{ csrf_token }}",
+          },
+          body: JSON.stringify({
+            studyplan_id: Number(button.dataset.studyPlanId || 0),
+            study_plan_block_id: button.dataset.blockId || "",
+          }),
+        });
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          button.disabled = false;
+          alert(payload.error || "주간평가를 시작할 수 없습니다.");
+          return;
+        }
+
+        payload.startedAt = Date.now();
+        localStorage.removeItem("diagnosisInProgress");
+        sessionStorage.setItem("diagnosisSession", JSON.stringify(payload));
+        window.location.href = "/diagnosis/exam/";
+      } catch (error) {
+        button.disabled = false;
+        alert("주간평가를 시작할 수 없습니다.");
+      }
+    };
+
     const startStudyPlanBlock = (button) => {
+      if (button.dataset.isWeeklyReview === "true") {
+        startWeeklyReviewBlock(button);
+        return;
+      }
+
       const classification = button.dataset.classification || "";
       const label = button.dataset.label || "";
       const era = button.dataset.era || "";
       const topic = button.dataset.topic || "";
       const qType = button.dataset.qType || "";
       const condition = {
-        generationMode: "detail",
+        generationMode: "study_plan",
         "시대": [],
         "주제": [],
         "난이도": "중",
@@ -402,6 +668,28 @@
       window.location.href = "/question/exam/?new=1";
     };
 
+    const deleteStudyPlanBlock = async (button) => {
+      if (!confirm("이 학습계획을 삭제할까요? 삭제 후 우선순위가 높은 미배치 계획이 자동으로 들어옵니다.")) {
+        return;
+      }
+
+      button.disabled = true;
+      try {
+        await postPlannerJson(
+          "{% url 'analytics:study_plan_block_delete' %}",
+          {
+            studyPlanId: button.dataset.studyPlanId,
+            dayIndex: button.dataset.dayIndex,
+            blockIndex: button.dataset.blockIndex,
+          },
+        );
+        window.location.reload();
+      } catch (error) {
+        button.disabled = false;
+        alert(error.message);
+      }
+    };
+
     const setPlannerModal = (isOpen) => {
       plannerModal.hidden = !isOpen;
       document.body.classList.toggle("modal-open", isOpen);
@@ -416,9 +704,23 @@
       renderPlannerCalendar();
       renderPlannerLessons();
     });
-    openPlanModal.addEventListener("click", () => setPlannerModal(true));
+    if (createPlanForm) {
+      createPlanForm.addEventListener("submit", (event) => {
+        const message = createPlanForm.dataset.confirm || "";
+        if (message && !confirm(message)) {
+          event.preventDefault();
+        }
+      });
+    }
+    if (openPlanModal) {
+      openPlanModal.addEventListener("click", () => {
+        renderPlannerMoveItems();
+        setPlannerModal(true);
+      });
+    }
     closePlanModal.addEventListener("click", () => setPlannerModal(false));
     cancelPlanModal.addEventListener("click", () => setPlannerModal(false));
+    plannerMoveItems.addEventListener("change", updatePlanTargetDateBounds);
     savePlanModal.addEventListener("click", async () => {
       const items = Array.from(document.querySelectorAll(".planner-move-item:checked")).map((item) => ({
         studyPlanId: item.dataset.studyPlanId,
@@ -428,22 +730,41 @@
       if (!items.length || !planTargetDate.value) {
         return;
       }
-      await postPlannerJson(
-        "{% url 'analytics:study_plan_block_move' %}",
-        {
-          items,
-          targetDate: planTargetDate.value,
-        },
-      );
-      window.location.reload();
+      if (!isPlanTargetDateWithinBounds()) {
+        alert("학습일 변경은 해당 학습계획 기간 안에서만 가능합니다.");
+        return;
+      }
+
+      savePlanModal.disabled = true;
+      try {
+        await postPlannerJson(
+          "{% url 'analytics:study_plan_block_move' %}",
+          {
+            items,
+            targetDate: planTargetDate.value,
+          },
+        );
+        window.location.reload();
+      } catch (error) {
+        savePlanModal.disabled = false;
+        alert(error.message);
+      }
     });
     plannerModal.addEventListener("click", (event) => {
       if (event.target === plannerModal) setPlannerModal(false);
     });
     plannerLessons.addEventListener("click", (event) => {
-      const button = event.target.closest(".plan-start-button");
-      if (!button) return;
-      startStudyPlanBlock(button);
+      const deleteButton = event.target.closest(".plan-delete-button");
+      if (deleteButton) {
+        if (deleteButton.disabled) return;
+        deleteStudyPlanBlock(deleteButton);
+        return;
+      }
+
+      const startButton = event.target.closest(".plan-start-button");
+      if (!startButton) return;
+      if (startButton.disabled) return;
+      startStudyPlanBlock(startButton);
     });
     renderPlannerCalendar();
     renderPlannerLessons();

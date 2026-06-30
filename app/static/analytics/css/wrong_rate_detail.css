@@ -202,6 +202,11 @@ button {
   margin-bottom: 18px;
 }
 
+.scope-chart-panel .scope-breakdown {
+  margin-top: 18px;
+  margin-bottom: 0;
+}
+
 .scope-breakdown[hidden] {
   display: none;
 }
@@ -639,7 +644,7 @@ button {
 
 .rate-bars {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr));
   gap: 12px;
   padding: 20px;
   background: rgba(251, 252, 250, 0.86);
@@ -648,9 +653,11 @@ button {
 .rate-bar-card {
   min-height: 90px;
   display: grid;
-  grid-template-columns: minmax(110px, 0.55fr) minmax(220px, 1fr) 86px;
+  grid-template-columns: minmax(84px, 0.45fr) minmax(0, 1fr) max-content;
   gap: 10px;
   align-items: center;
+  min-width: 0;
+  overflow: hidden;
   border: 1px solid transparent;
   border-radius: 8px;
   padding: 16px 18px;
@@ -702,6 +709,7 @@ button {
 .bar-body {
   display: grid;
   gap: 8px;
+  min-width: 0;
 }
 
 .bar-meta {
@@ -709,17 +717,21 @@ button {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  min-width: 0;
 }
 
 .bar-meta span {
   min-width: 0;
+  overflow: hidden;
   color: #60704f;
   font-size: 14px;
   font-weight: 850;
   line-height: 1.35;
+  overflow-wrap: anywhere;
 }
 
 .bar-meta strong {
+  flex-shrink: 0;
   color: var(--ink);
   font-size: 17px;
   line-height: 1;
@@ -742,6 +754,7 @@ button {
 
 .bar-status {
   display: flex;
+  min-width: 0;
   justify-content: flex-end;
 }
 
