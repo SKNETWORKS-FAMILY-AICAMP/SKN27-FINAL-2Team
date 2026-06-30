@@ -1,5 +1,7 @@
+import json
 import random
 from datetime import date
+from pathlib import Path
 
 from django.db import models, transaction
 from django.shortcuts import render
@@ -59,6 +61,13 @@ DIFFICULTY_TO_SCORE = {
     "하": 1,
 }
 PLACEHOLDER_CONTENT = "문항 이미지를 보고 정답을 선택하세요."
+ERA_REFERENCE_PATH = (
+    Path(__file__).resolve().parents[2]
+    / "test"
+    / "CJ"
+    / "test_ml"
+    / "era_reference.json"
+)
 ERA_FILTER_VALUES = [
     "선사 시대",
     "고조선",
@@ -138,6 +147,20 @@ def _ordered_existing_values(qs, field_name, ordered_values):
         .distinct()
     )
     return [value for value in ordered_values if value in existing_values]
+
+
+def _reference_filter_values(section_name):
+    try:
+        with ERA_REFERENCE_PATH.open(encoding="utf-8-sig") as reference_file:
+            reference_data = json.load(reference_file)
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        return []
+
+    section = reference_data.get(section_name, {})
+    if not isinstance(section, dict):
+        return []
+
+    return [value for value in section.keys() if value]
 
 
 # Questions 모델 목록을 문제 생성 API 응답 JSON으로 변환한다.
@@ -427,10 +450,15 @@ def _score_counts_for_generation_mode(data):
 # 문제 생성 화면에서 사용할 필터 조건 목록을 제공한다.
 def question_filters(request):
     qs = _base_question_queryset()
+    era_values = _reference_filter_values("era_keywords") or ERA_FILTER_VALUES
+    topic_values = _reference_filter_values("topic_keywords")
 
     q_filters = FilterOptionsResponse({
-        "eras": _ordered_existing_values(qs, "era", ERA_FILTER_VALUES),
-        "topics": _distinct_values(qs, "topic"),
+        "eras": _ordered_existing_values(qs, "era", era_values),
+        "topics": (
+            _ordered_existing_values(qs, "topic", topic_values)
+            if topic_values else _distinct_values(qs, "topic")
+        ),
         "difficulties": ["상", "중", "하"],
         "question_types": _distinct_values(qs, "question_type"),
         "question_subtypes": QUESTION_SUBTYPE_FILTER_VALUES,
