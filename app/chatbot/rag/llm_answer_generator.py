@@ -55,6 +55,8 @@ def load_llm_env() -> None:
 def compact_source(source: dict[str, Any], index: int) -> str:
     source_url = source.get("source_url") or ""
     image_url = source.get("original_image_url") or source.get("thumbnail_url") or ""
+    metadata = source.get("metadata") or {}
+    image_source = (metadata.get("image") or {}).get("source") or metadata.get("image_source") or ""
     parts = [
         f"[근거 {index}]",
         f"title: {source.get('title', '')}",
@@ -66,6 +68,8 @@ def compact_source(source: dict[str, Any], index: int) -> str:
         parts.append(f"source_url: {source_url}")
     if image_url:
         parts.append(f"image_url: {image_url}")
+    if image_source:
+        parts.append(f"image_source: {image_source}")
     return "\n".join(parts)
 
 
@@ -99,7 +103,7 @@ def build_user_prompt(
         if style == "textbook" and not follow_up
         else f"출력 형식: 설명형 Markdown. 핵심 답변, 이유/배경{', 출처 요약' if include_source_summary else ''}을 포함하세요."
     )
-    source_rule = "- 출처 요약에는 사용한 title을 1~3개만 적으세요." if include_source_summary else "- 출처 요약은 쓰지 마세요."
+    source_rule = "- 출처 요약에는 사용한 title을 1~3개만 적고, 이미지 자료는 title 대신 image_source만 적으세요." if include_source_summary else "- 출처 요약은 쓰지 마세요."
 
     return f"""질문:
 {question}

@@ -37,6 +37,12 @@ OVERVIEW_IGNORE_TERMS = {
     "정책",
     "대해",
     "대한",
+    "조회",
+    "역사적",
+    "역사적으로",
+    "의미",
+    "어떤",
+    "있는지",
 }
 GENERIC_OVERVIEW_CONTEXT_TERMS = (
     "개요",
@@ -459,6 +465,11 @@ class PgVectorHybridRetriever:
 
 
 def result_to_payload(result: PgSearchResult) -> dict[str, Any]:
+    metadata = dict(result.metadata or {})
+    if result.source_type == "image_material":
+        image = dict(metadata.get("image") or {})
+        image.setdefault("source", metadata.get("image_source") or result.source_name)
+        metadata["image"] = image
     return {
         "chunk_id": result.chunk_id,
         "document_id": result.document_id,
@@ -468,8 +479,9 @@ def result_to_payload(result: PgSearchResult) -> dict[str, Any]:
         "score": round(result.score, 4),
         "vector_score": round(result.vector_score, 4),
         "keyword_score": round(result.keyword_score, 4),
-        "source_url": result.metadata.get("source_url"),
-        "thumbnail_url": result.metadata.get("thumbnail_url"),
-        "original_image_url": result.metadata.get("original_image_url"),
+        "source_url": metadata.get("source_url"),
+        "thumbnail_url": metadata.get("thumbnail_url"),
+        "original_image_url": metadata.get("original_image_url"),
+        "metadata": metadata,
         "snippet": compact_text(result.chunk_text),
     }
