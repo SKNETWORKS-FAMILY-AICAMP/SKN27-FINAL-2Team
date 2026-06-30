@@ -35,8 +35,7 @@ from neo4j.exceptions import ClientError, ServiceUnavailable, AuthError
 DEFAULT_URI = "bolt://localhost:7688"
 DEFAULT_USER = "neo4j"
 DEFAULT_PASSWORD = os.getenv("NEO4J_PASSWORD")
-DEFAULT_TTL_URI = "file:///us_history.ttl"
-
+DEFAULT_TTL_URI = "file:///var/lib/neo4j/import/us_history.ttl"
 
 CYPHER_CONSTRAINT = """
 CREATE CONSTRAINT n10s_unique_uri IF NOT EXISTS

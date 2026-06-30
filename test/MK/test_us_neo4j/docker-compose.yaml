@@ -1,18 +1,35 @@
+name: skn27-test-us-neo4j
+
 services:
   neo4j_history:
-    image: neo4j:5
-    container_name: neo4j_history
+    image: neo4j:5.26.27-community
+    container_name: test-us-neo4j
     ports:
-      - "7475:7474"
-      - "7688:7687"
+      - "${NEO4J_HTTP_PORT:-7475}:7474"
+      - "${NEO4J_BOLT_PORT:-7688}:7687"
     environment:
-      NEO4J_AUTH: neo4j/${NEO4J_PASSWORD:?NEO4J_PASSWORD is required}
+      NEO4J_AUTH: ${NEO4J_USER:-neo4j}/${NEO4J_PASSWORD:?NEO4J_PASSWORD is required}
       NEO4J_PLUGINS: '["apoc","n10s"]'
       NEO4J_server_memory_heap_initial__size: ${NEO4J_HEAP_INITIAL:-512m}
       NEO4J_server_memory_heap_max__size: ${NEO4J_HEAP_MAX:-1G}
+      NEO4J_server_memory_pagecache_size: ${NEO4J_PAGECACHE:-512m}
+      TZ: Asia/Seoul
     volumes:
-      - neo4j_history_data:/data
-      - ./import/history:/import
+      - neo4j_history_test_data:/data
+      - neo4j_history_test_logs:/logs
+      - ./import/history:/var/lib/neo4j/import
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "cypher-shell -u \"${NEO4J_USER:-neo4j}\" -p \"$${NEO4J_AUTH#*/}\" 'RETURN 1'",
+        ]
+      interval: 15s
+      timeout: 10s
+      retries: 8
 
 volumes:
-  neo4j_history_data:
+  neo4j_history_test_data:
+    name: test-us-neo4j-data
+  neo4j_history_test_logs:
+    name: test-us-neo4j-logs
