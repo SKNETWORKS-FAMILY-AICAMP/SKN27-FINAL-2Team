@@ -361,7 +361,8 @@ button {
 .summary-grid article > span {
   display: block;
   align-self: start;
-  justify-self: start;
+  justify-self: center;
+  text-align: center;
 }
 
 .summary-grid article > strong,
@@ -411,6 +412,10 @@ button {
   list-style: none;
   width: 100%;
   min-height: 42px;
+}
+
+.summary-grid article:last-child ul {
+  grid-row: 2 / 4;
 }
 
 .summary-grid li {

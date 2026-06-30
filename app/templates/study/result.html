@@ -4,8 +4,8 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>himate | 결과</title>
-  <link rel="stylesheet" href="/static/question/css/result.css?v=summary-card-layout-2" />
-  <link rel="stylesheet" href="../../static/question/css/result.css?v=summary-card-layout-2" />
+  <link rel="stylesheet" href="/static/question/css/result.css?v=summary-card-layout-4" />
+  <link rel="stylesheet" href="../../static/question/css/result.css?v=summary-card-layout-4" />
   <link rel="stylesheet" href="/static/himate.css" />
   <link rel="stylesheet" href="/static/layout.css" />
   <style>
@@ -469,6 +469,7 @@
         document.getElementById("summaryKicker").textContent = "진단 결과";
         document.getElementById("summaryDescription").textContent = "진단평가 점수와 예상 급수, 취약 영역을 요약합니다.";
         scoreLabel.textContent = "총점 / 정답률";
+        document.getElementById("scoreText").textContent = `${resultPayload.totalScore || 0}점`;
         document.getElementById("levelLabel").textContent = "예상 급수";
         document.getElementById("levelText").textContent = resultPayload.expectedGrade || "-";
         document.getElementById("levelDescription").textContent = `총점 ${resultPayload.totalScore || 0}점 기준 진단 결과입니다.`;
