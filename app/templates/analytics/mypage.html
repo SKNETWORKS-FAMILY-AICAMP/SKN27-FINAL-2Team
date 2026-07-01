@@ -631,41 +631,55 @@
       }
     };
 
-    const startStudyPlanBlock = (button) => {
+    const buildStudyPlanQuestionRequest = (button) => {
+      return {
+        generation_mode: "study_plan",
+        studyplan_id: Number(button.dataset.studyPlanId || 0),
+        study_plan_block_id: button.dataset.blockId || "",
+        count: Number(button.dataset.questionCount || 10),
+      };
+    };
+
+    const formatQuestionStartError = (payload) => {
+      const details = [];
+      if (Number.isInteger(payload.available_count)) details.push(`가능 ${payload.available_count}개`);
+      if (Number.isInteger(payload.requested_count)) details.push(`요청 ${payload.requested_count}개`);
+      if (Number.isInteger(payload.score)) details.push(`${payload.score}점 문제`);
+      return `${payload.error || "문제지를 생성할 수 없습니다."}${details.length ? ` (${details.join(" / ")})` : ""}`;
+    };
+
+    const startStudyPlanBlock = async (button) => {
       if (button.dataset.isWeeklyReview === "true") {
         startWeeklyReviewBlock(button);
         return;
       }
 
-      const classification = button.dataset.classification || "";
-      const label = button.dataset.label || "";
-      const era = button.dataset.era || "";
-      const topic = button.dataset.topic || "";
-      const qType = button.dataset.qType || "";
-      const condition = {
-        generationMode: "study_plan",
-        "시대": [],
-        "주제": [],
-        "난이도": "중",
-        "문제 수": String(button.dataset.questionCount || 10),
-        "대유형": [],
-        "소유형": [],
-        scoreCounts: {},
-        studyPlanId: Number(button.dataset.studyPlanId || 0),
-        studyPlanBlockId: button.dataset.blockId || "",
-      };
+      button.disabled = true;
+      try {
+        const response = await fetch("/question/api/start/", {
+          method: "POST",
+          credentials: "same-origin",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": getCookie("csrftoken") || "{{ csrf_token }}",
+          },
+          body: JSON.stringify(buildStudyPlanQuestionRequest(button)),
+        });
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          button.disabled = false;
+          alert(formatQuestionStartError(payload));
+          return;
+        }
 
-      if (era) condition["시대"] = [era];
-      if (topic) condition["주제"] = [topic];
-      if (qType) condition["대유형"] = [qType];
-      if (!era && !topic && !qType && classification === "시대") condition["시대"] = [label];
-      if (!era && !topic && !qType && classification === "주제") condition["주제"] = [label];
-      if (!era && !topic && !qType && classification === "유형") condition["대유형"] = [label];
-
-      sessionStorage.setItem("questionGenerationCondition", JSON.stringify(condition));
-      localStorage.removeItem("questionGenerationCondition");
-      localStorage.removeItem("questionInProgress");
-      window.location.href = "/question/exam/?new=1";
+        sessionStorage.removeItem("questionGenerationCondition");
+        localStorage.removeItem("questionGenerationCondition");
+        localStorage.removeItem("questionInProgress");
+        window.location.href = `/question/exam/?resume=1&session_id=${payload.session_id}`;
+      } catch (error) {
+        button.disabled = false;
+        alert("문제지를 생성할 수 없습니다.");
+      }
     };
 
     const deleteStudyPlanBlock = async (button) => {
