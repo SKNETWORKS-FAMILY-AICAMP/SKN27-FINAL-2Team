@@ -3,9 +3,14 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import os
+import re
 import sys
 import time
+import types
+import subprocess
 from dataclasses import dataclass
+from datetime import datetime
 from pathlib import Path
 from urllib.error import URLError
 from urllib.request import urlopen
@@ -21,7 +26,7 @@ except ImportError:
         return func
 
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 load_dotenv(PROJECT_ROOT / ".env")
 DEFAULT_GOLDEN = PROJECT_ROOT / "etl" / "preprocessing" / "history" / "embedding" / "golden_questions.jsonl"
 DEFAULT_OUT = PROJECT_ROOT / "etl" / "preprocessing" / "history" / "embedding" / "service_eval_results"
@@ -30,7 +35,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from app.chatbot.graph_service import build_graph_context
-from app.chatbot.rag.pgvector_retriever import PgVectorHybridRetriever
+from app.chatbot.rag.pgvector_retriever import PgVectorHybridRetriever, cached_pg_search
 from app.chatbot.rag_service import build_history_rag_answer
 
 
@@ -42,6 +47,16 @@ class Metric:
     threshold: str
     passed: bool | None
     verification: str
+
+    def to_row(self) -> dict[str, str]:
+        return {
+            "평가 항목": self.name,
+            "지표 정의": self.definition,
+            "측정 결과": self.value,
+            "통과 기준": self.threshold,
+            "통과 여부": "N/A" if self.passed is None else ("PASS" if self.passed else "FAIL"),
+            "검증 방법": self.verification,
+        }
 
 
 def load_jsonl(path: Path) -> list[dict]:
@@ -119,6 +134,7 @@ def evaluate_graph_connectivity(queries: list[str]) -> Metric:
 
 @traceable(name="evaluate_latency")
 def evaluate_latency(queries: list[str], full_answer: bool) -> Metric:
+    cached_pg_search.cache_clear()
     values = []
     retriever = None if full_answer else PgVectorHybridRetriever()
     for query in queries:
@@ -132,7 +148,7 @@ def evaluate_latency(queries: list[str], full_answer: bool) -> Metric:
     return Metric(
         "응답 속도",
         "쿼리 당 평균 소요 시간",
-        f"{avg:.1f}s",
+        f"{avg * 1000:.0f}ms" if avg < 1 else f"{avg:.2f}s",
         "2.0s 이내",
         avg <= 2.0,
         "LangSmith Latency Tracking" if full_answer else "로컬 검색 지연시간 측정",
@@ -169,12 +185,35 @@ def evaluate_mcp_success(urls: list[str], timeout: float) -> Metric:
     )
 
 
-@traceable(name="evaluate_ragas_faithfulness")
+def install_ragas_vertexai_compat() -> None:
+    try:
+        import langchain_community.chat_models.vertexai  # noqa: F401
+    except ModuleNotFoundError:
+        from langchain_openai import ChatOpenAI
+
+        module = types.ModuleType("langchain_community.chat_models.vertexai")
+        module.ChatVertexAI = ChatOpenAI
+        sys.modules["langchain_community.chat_models.vertexai"] = module
+
+
+def ragas_text(value: str) -> str:
+    lines = []
+    for line in (value or "").splitlines():
+        stripped = line.strip()
+        if not stripped or stripped.startswith("|"):
+            continue
+        lines.append(re.sub(r"^[#*\-\d.\s]+", "", stripped))
+    return " ".join(lines)
+
+
 def evaluate_ragas_faithfulness(questions: list[dict], limit: int) -> Metric:
     try:
+        install_ragas_vertexai_compat()
         from datasets import Dataset
         from ragas import evaluate
+        from ragas.llms import LangchainLLMWrapper
         from ragas.metrics import faithfulness
+        from langchain_openai import ChatOpenAI
     except ImportError as exc:
         return Metric(
             "RAGAS Faithfulness",
@@ -186,35 +225,52 @@ def evaluate_ragas_faithfulness(questions: list[dict], limit: int) -> Metric:
         )
 
     rows = []
+    retriever = PgVectorHybridRetriever()
     for question in questions[:limit]:
         result = build_history_rag_answer(question["query"], intent="concept", answer_format="text", top_k=5)
-        answer = result.get("answer") or ""
+        answer = ragas_text(result.get("answer") or structured_to_text(result.get("structured_answer") or {}))
         contexts = [source.get("snippet") or "" for source in result.get("sources") or [] if source.get("snippet")]
+        if not contexts:
+            contexts = [item.chunk_text for item in retriever.search(question["query"], top_k=5) if item.chunk_text]
+        if not contexts:
+            contexts = ["검색 근거 없음"]
         rows.append(
             {
-                "question": question["query"],
-                "answer": answer,
-                "contexts": contexts,
-                "ground_truth": ", ".join(question.get("expected_keywords") or []),
+                "user_input": question["query"],
+                "response": answer,
+                "retrieved_contexts": contexts,
+                "reference": ", ".join(question.get("expected_keywords") or []),
             }
         )
 
     try:
         dataset = Dataset.from_list(rows)
-        score = float(evaluate(dataset, metrics=[faithfulness])["faithfulness"])
-    except Exception:
-        dataset = Dataset.from_list(
-            [
-                {
-                    "user_input": row["question"],
-                    "response": row["answer"],
-                    "retrieved_contexts": row["contexts"],
-                    "reference": row["ground_truth"],
-                }
-                for row in rows
-            ]
+        evaluator_llm = LangchainLLMWrapper(
+            ChatOpenAI(
+                model=os.getenv("RAGAS_LLM_MODEL") or "gpt-4o-mini",
+                temperature=0,
+            )
         )
-        score = float(evaluate(dataset, metrics=[faithfulness])["faithfulness"])
+        last_error = None
+        for _ in range(3):
+            try:
+                result = evaluate(dataset, metrics=[faithfulness], llm=evaluator_llm, show_progress=False, batch_size=1)
+                break
+            except IndexError as exc:
+                last_error = exc
+        else:
+            raise last_error
+        scores = [row["faithfulness"] for row in result.scores if row.get("faithfulness") is not None]
+        score = sum(scores) / len(scores)
+    except Exception as exc:
+        return Metric(
+            "RAGAS Faithfulness",
+            "답변이 검색 근거에 충실한지 평가",
+            f"N/A ({type(exc).__name__}: {exc})",
+            "0.80 이상",
+            None,
+            "RAGAS Framework (Faithfulness)",
+        )
 
     return Metric(
         "RAGAS Faithfulness",
@@ -228,22 +284,41 @@ def evaluate_ragas_faithfulness(questions: list[dict], limit: int) -> Metric:
 
 def write_outputs(metrics: list[Metric], out_prefix: Path) -> None:
     out_prefix.parent.mkdir(parents=True, exist_ok=True)
-    rows = [
-        {
-            "평가 항목": item.name,
-            "지표 정의": item.definition,
-            "측정 결과": item.value,
-            "통과 기준": item.threshold,
-            "통과 여부": "N/A" if item.passed is None else ("PASS" if item.passed else "FAIL"),
-            "검증 방법": item.verification,
-        }
-        for item in metrics
-    ]
+    rows = [item.to_row() for item in metrics]
     (out_prefix.with_suffix(".json")).write_text(json.dumps(rows, ensure_ascii=False, indent=2), encoding="utf-8")
     with out_prefix.with_suffix(".csv").open("w", encoding="utf-8-sig", newline="") as fp:
         writer = csv.DictWriter(fp, fieldnames=list(rows[0]))
         writer.writeheader()
         writer.writerows(rows)
+    append_history(rows, out_prefix.with_name(f"{out_prefix.name}_history.csv"))
+
+
+def append_history(rows: list[dict[str, str]], path: Path) -> None:
+    run_at = datetime.now().isoformat(timespec="seconds")
+    version = current_version()
+    fieldnames = ["run_at", *version, *rows[0]]
+    exists = path.exists()
+    with path.open("a", encoding="utf-8-sig", newline="") as fp:
+        writer = csv.DictWriter(fp, fieldnames=fieldnames)
+        if not exists:
+            writer.writeheader()
+        for row in rows:
+            writer.writerow({"run_at": run_at, **version, **row})
+
+
+def git_text(*args: str) -> str:
+    try:
+        return subprocess.check_output(["git", *args], cwd=PROJECT_ROOT, text=True, stderr=subprocess.DEVNULL).strip()
+    except Exception:
+        return ""
+
+
+def current_version() -> dict[str, str]:
+    return {
+        "git_branch": git_text("branch", "--show-current"),
+        "git_commit": git_text("rev-parse", "--short", "HEAD"),
+        "git_dirty": "Y" if git_text("status", "--short") else "N",
+    }
 
 
 def print_markdown(metrics: list[Metric]) -> None:
@@ -251,6 +326,27 @@ def print_markdown(metrics: list[Metric]) -> None:
     print("|---|---|---:|---|---|")
     for item in metrics:
         print(f"| {item.name} | {item.definition} | {item.value} | {item.threshold} | {item.verification} |")
+
+
+def run_service_evaluation(args: argparse.Namespace, questions: list[dict], queries: list[str]) -> list[dict[str, str]]:
+    metrics = [
+        evaluate_search_accuracy(questions, args.top_k, args.limit),
+        evaluate_graph_connectivity(queries),
+        evaluate_latency(queries, args.latency_full_answer),
+        evaluate_mcp_success(args.mcp_url, args.timeout),
+    ]
+    if args.ragas:
+        metrics.append(evaluate_ragas_faithfulness(questions, args.ragas_limit))
+    return [item.to_row() for item in metrics]
+
+
+def structured_to_text(answer: dict) -> str:
+    parts = [answer.get("title") or "", answer.get("summary") or ""]
+    for section in answer.get("sections") or []:
+        parts.append(section.get("heading") or "")
+        for item in section.get("items") or []:
+            parts.append(f"{item.get('term', '')}: {item.get('content', '')}")
+    return "\n".join(part for part in parts if part)
 
 
 def parse_args() -> argparse.Namespace:
@@ -272,14 +368,18 @@ def main() -> None:
     args = parse_args()
     questions = load_jsonl(args.golden_file)
     queries = [item["query"] for item in questions[: args.latency_limit]]
+    rows = run_service_evaluation(args, questions, queries)
     metrics = [
-        evaluate_search_accuracy(questions, args.top_k, args.limit),
-        evaluate_graph_connectivity(queries),
-        evaluate_latency(queries, args.latency_full_answer),
-        evaluate_mcp_success(args.mcp_url, args.timeout),
+        Metric(
+            row["평가 항목"],
+            row["지표 정의"],
+            row["측정 결과"],
+            row["통과 기준"],
+            None if row["통과 여부"] == "N/A" else row["통과 여부"] == "PASS",
+            row["검증 방법"],
+        )
+        for row in rows
     ]
-    if args.ragas:
-        metrics.append(evaluate_ragas_faithfulness(questions, args.ragas_limit))
     write_outputs(metrics, args.out_prefix)
     print_markdown(metrics)
     print(f"\njson={args.out_prefix.with_suffix('.json')}")

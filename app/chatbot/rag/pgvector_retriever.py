@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import re
 from dataclasses import dataclass
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
@@ -20,7 +21,7 @@ TIMELINE_ERAS = ("고대", "고려", "조선", "근대", "현대")
 TIMELINE_FIELDS = ("인물", "사건", "조직·단체", "조직", "단체", "유물·유적", "유물", "유적")
 IMAGE_QUERY_TERMS = ("이미지", "사진", "그림", "유물", "유적", "자료", "찾아줘", "보여줘", "조회")
 IMAGE_TITLE_IGNORE_TERMS = set(IMAGE_QUERY_TERMS) | {"시대", "대표", "관련", "설명"}
-OVERVIEW_TERMS = ("정리", "요약", "흐름", "개념", "설명", "알려", "누구", "업적", "정책")
+OVERVIEW_TERMS = ("정리", "요약", "흐름", "개념", "설명", "알려", "누구", "업적", "정책", "대해", "대한", "대해서")
 OVERVIEW_IGNORE_TERMS = {
     "정리",
     "요약",
@@ -37,6 +38,7 @@ OVERVIEW_IGNORE_TERMS = {
     "정책",
     "대해",
     "대한",
+    "대해서",
     "조회",
     "역사적",
     "역사적으로",
@@ -78,7 +80,11 @@ def overview_focus_terms(question: str) -> tuple[str, ...]:
         normalized = token.strip()
         if len(normalized) < 2 or normalized in OVERVIEW_IGNORE_TERMS:
             continue
+        if terms and re.search(rf"{re.escape(normalized)}에\s*(대해|대한|대해서)", question):
+            continue
         if normalized.endswith("에") and len(normalized) > 2:
+            if terms:
+                continue
             normalized = normalized[:-1]
         if normalized.endswith("은") or normalized.endswith("는"):
             normalized = normalized[:-1]
@@ -144,6 +150,7 @@ def vector_literal(values: list[float]) -> str:
     return "[" + ",".join(f"{value:.8f}" for value in values) + "]"
 
 
+@lru_cache(maxsize=512)
 def embed_query(question: str, model: str, dimensions: int | None) -> list[float]:
     client = OpenAI()
     kwargs: dict[str, Any] = {"model": model, "input": question}
@@ -281,19 +288,93 @@ class PgVectorHybridRetriever:
         self,
         model: str | None = None,
         dimensions: int | None = None,
-        candidate_pool: int = 80,
+        candidate_pool: int = 50,
     ) -> None:
         load_env()
         self.model = model or os.getenv("EMBEDDING_MODEL", "text-embedding-3-small")
         self.dimensions = dimensions if dimensions is not None else int(os.getenv("EMBEDDING_DIMENSIONS", "1536"))
         self.candidate_pool = candidate_pool
 
+    def search_images(self, question: str, top_k: int = 5) -> list[PgSearchResult]:
+        title_tokens = image_title_tokens(question)
+        where_parts = [
+            "source_type = 'image_material'",
+            "(NULLIF(metadata->>'original_image_url', '') IS NOT NULL OR NULLIF(metadata->>'thumbnail_url', '') IS NOT NULL)",
+        ]
+        params: list[Any] = []
+        if title_tokens:
+            title_clauses = []
+            for token in title_tokens:
+                title_clauses.append("regexp_replace(lower(title), '\\s+', '', 'g') LIKE %s")
+                params.append(f"%{token}%")
+            where_parts.append("(" + " OR ".join(title_clauses) + ")")
+
+        sql = f"""
+        SELECT
+            chunk_id,
+            document_id,
+            source_type,
+            source_name,
+            title,
+            chunk_text,
+            metadata,
+            0.0 AS vector_score,
+            (
+                similarity(title, %s) * 3.0
+                + similarity(chunk_text, %s)
+                + CASE WHEN title ILIKE %s THEN 3.0 ELSE 0.0 END
+            ) AS keyword_score
+        FROM rag.document_chunks
+        WHERE {" AND ".join(where_parts)}
+        ORDER BY keyword_score DESC, title
+        LIMIT %s
+        """
+        query_params = [question, question, f"%{question}%", *params, top_k]
+
+        with connect_db() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                cur.execute(sql, query_params)
+                rows = cur.fetchall()
+
+        return [
+            PgSearchResult(
+                chunk_id=row["chunk_id"],
+                document_id=row["document_id"],
+                source_type=row["source_type"],
+                source_name=row["source_name"],
+                title=row["title"],
+                chunk_text=row["chunk_text"],
+                metadata=row["metadata"] or {},
+                vector_score=0.0,
+                keyword_score=float(row["keyword_score"] or 0.0),
+                score=float(row["keyword_score"] or 0.0),
+            )
+            for row in rows
+        ]
+
     def search(self, question: str, top_k: int = 5) -> list[PgSearchResult]:
+        question = question.strip()
+        if is_image_query(question):
+            return self._search_uncached(question, top_k)
+        return list(
+            cached_pg_search(
+                question,
+                top_k,
+                self.model,
+                self.dimensions,
+                self.candidate_pool,
+            )
+        )
+
+    def _search_uncached(self, question: str, top_k: int = 5) -> list[PgSearchResult]:
         question = question.strip()
         if not question:
             return []
 
         image_query = is_image_query(question)
+        if image_query:
+            return self.search_images(question, top_k)
+
         focus_terms = overview_focus_terms(question)
         generic_overview_query = is_generic_overview_query(question, focus_terms)
         keyword_question = build_keyword_question(
@@ -304,20 +385,11 @@ class PgVectorHybridRetriever:
         embedding_question = keyword_question if generic_overview_query else question
         embedding = vector_literal(embed_query(embedding_question, self.model, self.dimensions))
         overview_query = any(term in question for term in OVERVIEW_TERMS)
-        title_tokens = image_title_tokens(question) if image_query else []
         final_limit = max(top_k * 5, top_k) if generic_overview_query else top_k
 
         where_parts = ["embedding IS NOT NULL"]
         params: list[Any] = []
-        if image_query:
-            where_parts.append("source_type = 'image_material'")
-            if title_tokens:
-                title_clauses = []
-                for token in title_tokens:
-                    title_clauses.append("regexp_replace(lower(title), '\\s+', '', 'g') LIKE %s")
-                    params.append(f"%{token}%")
-                where_parts.append("(" + " OR ".join(title_clauses) + ")")
-        elif generic_overview_query and focus_terms:
+        if generic_overview_query and focus_terms:
             focus_clauses = []
             for term in focus_terms:
                 focus_clauses.extend(
@@ -464,12 +536,27 @@ class PgVectorHybridRetriever:
         ]
 
 
+@lru_cache(maxsize=256)
+def cached_pg_search(
+    question: str,
+    top_k: int,
+    model: str,
+    dimensions: int | None,
+    candidate_pool: int,
+) -> tuple[PgSearchResult, ...]:
+    if not question:
+        return ()
+    return tuple(PgVectorHybridRetriever(model, dimensions, candidate_pool)._search_uncached(question, top_k))
+
+
 def result_to_payload(result: PgSearchResult) -> dict[str, Any]:
     metadata = dict(result.metadata or {})
+    snippet = compact_text(result.chunk_text)
     if result.source_type == "image_material":
         image = dict(metadata.get("image") or {})
         image.setdefault("source", metadata.get("image_source") or result.source_name)
         metadata["image"] = image
+        snippet = re.sub(r"\s+", " ", result.chunk_text or "").strip()
     return {
         "chunk_id": result.chunk_id,
         "document_id": result.document_id,
@@ -483,5 +570,5 @@ def result_to_payload(result: PgSearchResult) -> dict[str, Any]:
         "thumbnail_url": metadata.get("thumbnail_url"),
         "original_image_url": metadata.get("original_image_url"),
         "metadata": metadata,
-        "snippet": compact_text(result.chunk_text),
+        "snippet": snippet,
     }

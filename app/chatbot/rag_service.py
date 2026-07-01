@@ -24,6 +24,8 @@ CONTEXT_ONLY_TERMS = ("업적", "정책", "활동", "과학적", "문화적", "�
 CONTEXT_ONLY_FOCUS_TERMS = {"과학적", "문화적", "정치적", "경제적"}
 KEYWORD_BLOCK_TERMS = ("업적", "정책", "정리", "요약", "설명", "설명해줘", "알려", "누구", "무엇", "뭐", "조회", "역사적", "의미", "어떤", "있는지")
 PERIOD_ONLY_SUFFIXES = ("시대", "전기", "후기")
+RELATION_QUERY_TERMS = ("관계", "관련", "연관", "사이", "부모", "어머니", "아버지", "아들", "딸", "부인", "아내", "남편", "스승", "제자", "문하", "가족")
+RELATION_JOIN_TERMS = ("와", "과", "이랑", "하고", "및")
 INSUFFICIENT_ANSWER_TERMS = (
     "확인 불가",
     "근거 부족",
@@ -136,6 +138,14 @@ def build_enriched_question(question: str, graph_context: dict[str, Any]) -> str
             break
     keyword_text = " ".join(selected)
     return f"{question} {keyword_text}".strip()
+
+
+def should_use_graph_context(question: str, intent: str) -> bool:
+    if intent in {"image", "chat", "casual"}:
+        return False
+    if any(term in question for term in RELATION_QUERY_TERMS):
+        return True
+    return any(term in question for term in RELATION_JOIN_TERMS) and len(overview_focus_terms(question)) >= 2
 
 
 def normalize_history(history: list[dict[str, Any]] | None, max_turns: int = 5) -> list[dict[str, str]]:
@@ -256,8 +266,8 @@ def build_history_rag_answer(
 
     search_seed = build_search_question(question, conversation_history)
     is_contextual_follow_up = search_seed != question
-    graph_context = None if intent == "image" else build_graph_context(search_seed, limit=8)
-    search_question = search_seed if intent == "image" else build_enriched_question(search_seed, graph_context)
+    graph_context = build_graph_context(search_seed, limit=8) if should_use_graph_context(search_seed, intent) else None
+    search_question = build_enriched_question(search_seed, graph_context) if graph_context else search_seed
     generation_history = conversation_history if is_contextual_follow_up else []
 
     retriever = PgVectorHybridRetriever()
@@ -270,15 +280,29 @@ def build_history_rag_answer(
         return not_found_answer(question, intent, graph_context)
 
     if intent == "image":
+        generator = LLMAnswerGenerator.from_env()
+        answer = generator.generate(
+            question,
+            sources,
+            style="textbook",
+            follow_up=False,
+            history=generation_history,
+            include_source_summary=False,
+        )
+        answer = re.sub(r"https?://\S+", "", answer).strip() or build_image_answer(question, sources)
         return {
             "question": question,
             "mode": mode,
             "intent": intent,
             "answer_format": "text",
-            "answer": build_image_answer(question, sources),
+            "answer": answer,
             "structured_answer": None,
             "not_found": False,
-            "llm": None,
+            "llm": {
+                "provider": generator.config.provider,
+                "model": generator.config.model,
+                "temperature": generator.config.temperature,
+            },
             "sources": sources,
             "graph_context": graph_context,
         }
