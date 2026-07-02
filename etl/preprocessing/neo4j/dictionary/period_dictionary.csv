@@ -1,0 +1,32 @@
+﻿period_id,period_name,period_level,start_year,end_year,term_count,event_count,source,source_values,review_status,note
+PERIOD_00001,?,UNCLASSIFIED,,,1,0,terms.term_times,근대-?,PENDING,year range requires manual dictionary enrichment
+PERIOD_00002,?∼?,UNCLASSIFIED,,,1,0,terms.term_times,?∼?,PENDING,year range requires manual dictionary enrichment
+PERIOD_00003,Contemporary Periods,UNCLASSIFIED,,,1,0,terms.term_times,Opening of Ports - Contemporary Periods,PENDING,year range requires manual dictionary enrichment
+PERIOD_00004,Opening of Ports,UNCLASSIFIED,,,1,0,terms.term_times,Opening of Ports - Contemporary Periods,PENDING,year range requires manual dictionary enrichment
+PERIOD_00005,개항기,UNCLASSIFIED,,,1225,0,terms.term_times,개항기|개항기 - 현대|개항기-대한제국기|개항기-일제시기|개항기-일제시대|개항기-현대|고려-개항기|고려후기-개항기|남북국시대-개항기|조선후기-개항기,PENDING,year range requires manual dictionary enrichment
+PERIOD_00006,고대,UNCLASSIFIED,,,1394,0,terms.term_times,고대|고대-고려시대|고대-근대|고대-근세|고대-조선시대|고대-조선후기|고대-현대|선사시대-고대,PENDING,year range requires manual dictionary enrichment
+PERIOD_00007,고려,UNCLASSIFIED,,,3,267,events.period|terms.term_times,고려|고려-개항기|고려-근대|고려-조선시대,PENDING,year range requires manual dictionary enrichment
+PERIOD_00008,고려시대,UNCLASSIFIED,,,4328,0,terms.term_times,고대-고려시대|고려시대|고려시대 |고려시대-근대|고려시대-대한제국기|고려시대-일제시대|고려시대-조선시대|고려시대-조선시대 |고려시대-조선전기|고려시대-조선후기|고려시대-현대|남북국시대-고려시대|삼국시대-고려시대,PENDING,year range requires manual dictionary enrichment
+PERIOD_00009,고려전기,UNCLASSIFIED,,,1724,0,terms.term_times,고려전기|고려전기-조선전기|고려전기-조선후기|고려전기-현대|남북국시대-고려전기|삼국시대-고려전기,PENDING,year range requires manual dictionary enrichment
+PERIOD_00010,고려후기,UNCLASSIFIED,,,3015,0,terms.term_times,"고려후기|고려후기-개항기|고려후기-대한제국기|고려후기-일제시기|고려후기-조선시대|고려후기-조선전기|고려후기-조선후기|고려후기-현대|남북국시대, 고려후기|남북국시대-고려후기|삼국시대-고려후기",PENDING,year range requires manual dictionary enrichment
+PERIOD_00011,구석기시대,UNCLASSIFIED,,,128,0,terms.term_times,구석기시대|구석기시대-신석기시대|구석기시대-청동기시대|구석기시대-초기철기시대,PENDING,year range requires manual dictionary enrichment
+PERIOD_00012,근대,UNCLASSIFIED,,,3318,0,terms.term_times,"고대-근대|고려-근대|고려시대-근대|근대|근대-?|근대-현대|근세-근대|조선-근대|조선시대, 근세-근대|조선시대-근대|조선전기-근대|조선후기-근대|중세-근대",PENDING,year range requires manual dictionary enrichment
+PERIOD_00013,근세,UNCLASSIFIED,,,360,0,terms.term_times,"고대-근세|근세-근대|근세-현대|선사시대-근세|조선시대, 근세-근대",PENDING,year range requires manual dictionary enrichment
+PERIOD_00014,남북국시대,UNCLASSIFIED,,,2535,0,terms.term_times,"남북국시대|남북국시대 |남북국시대, 고려후기|남북국시대, 조선후기|남북국시대-개항기|남북국시대-고려시대|남북국시대-고려전기|남북국시대-고려후기|남북국시대-대한제국기|남북국시대-조선시대|남북국시대-조선전기|남북국시대-조선후기|청동기시대-남북국시대",PENDING,year range requires manual dictionary enrichment
+PERIOD_00015,당(중국),UNCLASSIFIED,,,1,0,terms.term_times,당(중국),PENDING,year range requires manual dictionary enrichment
+PERIOD_00016,대한제국기,UNCLASSIFIED,,,1079,0,terms.term_times,개항기-대한제국기|고려시대-대한제국기|고려후기-대한제국기|남북국시대-대한제국기|대한제국기|대한제국기-|대한제국기-일제시기|대한제국기-일제시대|대한제국기-현대|조선시대-대한제국기|조선전기-대한제국기|조선후기-대한제국기,PENDING,year range requires manual dictionary enrichment
+PERIOD_00017,삼국시대,UNCLASSIFIED,,,3303,0,terms.term_times,삼국시대|삼국시대-고려시대|삼국시대-고려전기|삼국시대-고려후기|삼국시대-조선시대|삼국시대-조선전기|삼국시대-조선후기,PENDING,year range requires manual dictionary enrichment
+PERIOD_00018,선사시대,UNCLASSIFIED,,,714,0,terms.term_times,선사시대|선사시대-고대|선사시대-근세|선사시대-조선시대|선사시대-중세|선사시대-현대,PENDING,year range requires manual dictionary enrichment
+PERIOD_00019,신석기시대,UNCLASSIFIED,,,106,0,terms.term_times,구석기시대-신석기시대|신석기시대,PENDING,year range requires manual dictionary enrichment
+PERIOD_00020,일제시기,UNCLASSIFIED,,,5802,0,terms.term_times,개항기-일제시기|고려후기-일제시기|대한제국기-일제시기|일제시기|일제시기-현대|조선시대-일제시기,PENDING,year range requires manual dictionary enrichment
+PERIOD_00021,일제시대,UNCLASSIFIED,,,31,0,terms.term_times,개항기-일제시대|고려시대-일제시대|대한제국기-일제시대|일제시대|조선후기-일제시대,PENDING,year range requires manual dictionary enrichment
+PERIOD_00022,조선,UNCLASSIFIED,,,9,333,events.period|terms.term_times,조선|조선-근대|조선-현대,PENDING,year range requires manual dictionary enrichment
+PERIOD_00023,조선시대,UNCLASSIFIED,,,9218,0,terms.term_times,"고대-조선시대|고려-조선시대|고려시대-조선시대|고려시대-조선시대 |고려후기-조선시대|남북국시대-조선시대|삼국시대-조선시대|선사시대-조선시대|조선시대|조선시대, 근세-근대|조선시대-근대|조선시대-대한제국기|조선시대-일제시기|조선시대-현대|청동기시대, 조선시대",PENDING,year range requires manual dictionary enrichment
+PERIOD_00024,조선전기,UNCLASSIFIED,,,3950,0,terms.term_times,고려시대-조선전기|고려전기-조선전기|고려후기-조선전기|남북국시대-조선전기|삼국시대-조선전기|조선전기|조선전기-근대|조선전기-대한제국기,PENDING,year range requires manual dictionary enrichment
+PERIOD_00025,조선후기,UNCLASSIFIED,,,8805,0,terms.term_times,"고대-조선후기|고려시대-조선후기|고려전기-조선후기|고려후기-조선후기|남북국시대, 조선후기|남북국시대-조선후기|삼국시대-조선후기|조선후기|조선후기-개항기|조선후기-근대|조선후기-대한제국기|조선후기-일제시대|조선후기-현대|청동기시대, 조선후기",PENDING,year range requires manual dictionary enrichment
+PERIOD_00026,중세,UNCLASSIFIED,,,32,0,terms.term_times,선사시대-중세|중세|중세-근대|중세-현대,PENDING,year range requires manual dictionary enrichment
+PERIOD_00027,청동기시대,UNCLASSIFIED,,,50,0,terms.term_times,"구석기시대-청동기시대|청동기시대, 조선시대|청동기시대, 조선후기|청동기시대-남북국시대|청동기시대-초기철기시대",PENDING,year range requires manual dictionary enrichment
+PERIOD_00028,초기철기시대,UNCLASSIFIED,,,250,0,terms.term_times,구석기시대-초기철기시대|청동기시대-초기철기시대|초기철기시대,PENDING,year range requires manual dictionary enrichment
+PERIOD_00029,통시대,UNCLASSIFIED,,,5295,0,terms.term_times,통시대,PENDING,year range requires manual dictionary enrichment
+PERIOD_00030,현대,UNCLASSIFIED,,,7580,0,terms.term_times,개항기 - 현대|개항기-현대|고대-현대|고려시대-현대|고려전기-현대|고려후기-현대|근대-현대|근세-현대|대한제국기-현대|선사시대-현대|일제시기-현대|조선-현대|조선시대-현대|조선후기-현대|중세-현대|현대,PENDING,year range requires manual dictionary enrichment
+PERIOD_00031,후삼국시대,UNCLASSIFIED,,,34,0,terms.term_times,후삼국시대,PENDING,year range requires manual dictionary enrichment

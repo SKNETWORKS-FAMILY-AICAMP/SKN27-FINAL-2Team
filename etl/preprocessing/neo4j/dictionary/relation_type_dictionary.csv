@@ -1,0 +1,17 @@
+﻿relation_type_id,raw_relation_type,normalized_relation_type,neo4j_rel_type,relation_group,direction_rule,is_symmetric,inverse_relation_type,relation_count,source,review_status,note
+RELTYPE_00001,조부,HAS_GRANDFATHER,RELATED_TO,FAMILY_ANCESTOR,person_to_related,N,HAS_GRANDCHILD,23205,person_relations.relation_type,PENDING,
+RELTYPE_00002,증조부,HAS_GREAT_GRANDFATHER,RELATED_TO,FAMILY_ANCESTOR,person_to_related,N,HAS_GREAT_GRANDCHILD,18198,person_relations.relation_type,PENDING,
+RELTYPE_00003,자,HAS_CHILD,RELATED_TO,FAMILY_CHILD,person_to_related,N,HAS_PARENT,30456,person_relations.relation_type,PENDING,
+RELTYPE_00004,사위,HAS_SON_IN_LAW,RELATED_TO,FAMILY_IN_LAW,person_to_related,N,HAS_FATHER_IN_LAW,22872,person_relations.relation_type,PENDING,
+RELTYPE_00005,장인,HAS_FATHER_IN_LAW,RELATED_TO,FAMILY_IN_LAW,person_to_related,N,HAS_SON_IN_LAW,22872,person_relations.relation_type,PENDING,
+RELTYPE_00006,출자,LINEAGE_RELATED,RELATED_TO,FAMILY_LINEAGE,person_to_related,N,LINEAGE_RELATED,2089,person_relations.relation_type,REVIEW,meaning requires historical relation review
+RELTYPE_00007,모,HAS_MOTHER,RELATED_TO,FAMILY_PARENT,person_to_related,N,HAS_CHILD,411,person_relations.relation_type,PENDING,
+RELTYPE_00008,부,HAS_FATHER,RELATED_TO,FAMILY_PARENT,person_to_related,N,HAS_CHILD,30456,person_relations.relation_type,PENDING,
+RELTYPE_00009,생모,HAS_BIOLOGICAL_MOTHER,RELATED_TO,FAMILY_PARENT,person_to_related,N,HAS_BIOLOGICAL_CHILD,2,person_relations.relation_type,PENDING,
+RELTYPE_00010,생부,HAS_BIOLOGICAL_FATHER,RELATED_TO,FAMILY_PARENT,person_to_related,N,HAS_BIOLOGICAL_CHILD,2089,person_relations.relation_type,PENDING,
+RELTYPE_00011,형제,SIBLING_OF,RELATED_TO,FAMILY_SIBLING,undirected,Y,SIBLING_OF,36910,person_relations.relation_type,PENDING,symmetric relation; query both directions
+RELTYPE_00012,교유,ASSOCIATED_WITH,RELATED_TO,SOCIAL,undirected,Y,ASSOCIATED_WITH,7992,person_relations.relation_type,PENDING,social symmetric relation
+RELTYPE_00013,제자,HAS_STUDENT,RELATED_TO,SOCIAL_STUDENT,person_to_related,N,HAS_TEACHER,4031,person_relations.relation_type,PENDING,
+RELTYPE_00014,스승,HAS_TEACHER,RELATED_TO,SOCIAL_TEACHER,person_to_related,N,HAS_STUDENT,4032,person_relations.relation_type,PENDING,
+RELTYPE_00015,남편,HAS_HUSBAND,RELATED_TO,SPOUSE,person_to_related,N,HAS_WIFE,446,person_relations.relation_type,PENDING,
+RELTYPE_00016,아내,HAS_WIFE,RELATED_TO,SPOUSE,person_to_related,N,HAS_HUSBAND,446,person_relations.relation_type,PENDING,
