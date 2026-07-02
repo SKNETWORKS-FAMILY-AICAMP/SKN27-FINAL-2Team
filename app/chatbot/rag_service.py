@@ -22,6 +22,7 @@ FOLLOW_UP_MIN_COMBINED_SCORE = 0.50
 FOLLOW_UP_TERMS = ("그거", "이거", "저거", "그럼", "좀더", "자세", "설명", "의의", "역사적", "왜", "어떻게", "차이", "비교", "누가", "누구", "발명", "만든", "만들", "했는데", "인데")
 CONTEXT_ONLY_TERMS = ("업적", "정책", "활동", "과학적", "문화적", "정치적", "경제적")
 CONTEXT_ONLY_FOCUS_TERMS = {"과학적", "문화적", "정치적", "경제적"}
+FOLLOW_UP_FOCUS_ONLY_TERMS = CONTEXT_ONLY_FOCUS_TERMS | {"왕"}
 KEYWORD_BLOCK_TERMS = ("업적", "정책", "정리", "요약", "설명", "설명해줘", "알려", "누구", "무엇", "뭐", "조회", "역사적", "의미", "어떤", "있는지")
 PERIOD_ONLY_SUFFIXES = ("시대", "전기", "후기")
 RELATION_QUERY_TERMS = ("관계", "관련", "연관", "사이", "부모", "어머니", "아버지", "아들", "딸", "부인", "아내", "남편", "스승", "제자", "문하", "가족")
@@ -96,6 +97,8 @@ def has_enough_evidence(
     best_keyword = max(float(result.keyword_score or 0.0) for result in results)
     best_score = float(best.score or 0.0)
     min_score = FOLLOW_UP_MIN_COMBINED_SCORE if follow_up else MIN_COMBINED_SCORE
+    if best_score >= 1.8:
+        return True
     if best_keyword >= MIN_KEYWORD_SCORE and best_score >= min_score:
         return True
     return False
@@ -161,6 +164,19 @@ def normalize_history(history: list[dict[str, Any]] | None, max_turns: int = 5) 
     return normalized
 
 
+def recent_topic_from_history(history: list[dict[str, str]], question: str) -> str:
+    for item in reversed(history):
+        if item["role"] != "user":
+            continue
+        content = item["content"]
+        if not is_image_query(question):
+            content = re.sub(r"(사진|이미지|그림|도판|조회|보여줘|보여달라|보여줄래|찾아줘|가져와|띄워줘)", " ", content)
+        focus_terms = overview_focus_terms(content)
+        if focus_terms and not all(term in FOLLOW_UP_FOCUS_ONLY_TERMS for term in focus_terms):
+            return re.sub(r"\s+", " ", content).strip()
+    return ""
+
+
 def build_search_question(question: str, history: list[dict[str, str]]) -> str:
     if not history:
         return question
@@ -170,11 +186,10 @@ def build_search_question(question: str, history: list[dict[str, str]]) -> str:
         any(term in question for term in CONTEXT_ONLY_TERMS)
         and (not focus_terms or all(term in CONTEXT_ONLY_FOCUS_TERMS for term in focus_terms))
     )
+    needs_context = needs_context or bool(focus_terms and all(term in FOLLOW_UP_FOCUS_ONLY_TERMS for term in focus_terms))
     if not needs_context:
         return question
-    recent_user_text = next((item["content"] for item in reversed(history) if item["role"] == "user"), "")
-    if not is_image_query(question):
-        recent_user_text = re.sub(r"(사진|이미지|그림|도판|조회|보여줘|보여달라|보여줄래|찾아줘|가져와|띄워줘)", " ", recent_user_text)
+    recent_user_text = recent_topic_from_history(history, question)
     return f"{recent_user_text} {question}".strip()
 
 
@@ -268,7 +283,7 @@ def build_history_rag_answer(
     is_contextual_follow_up = search_seed != question
     graph_context = build_graph_context(search_seed, limit=8) if should_use_graph_context(search_seed, intent) else None
     search_question = build_enriched_question(search_seed, graph_context) if graph_context else search_seed
-    generation_history = conversation_history if is_contextual_follow_up else []
+    generation_question = search_seed if is_contextual_follow_up else question
 
     retriever = PgVectorHybridRetriever()
     results = retriever.search(search_question, top_k=max(top_k, 8 if graph_context and graph_context.get("keywords") else top_k))
@@ -282,11 +297,11 @@ def build_history_rag_answer(
     if intent == "image":
         generator = LLMAnswerGenerator.from_env()
         answer = generator.generate(
-            question,
+            generation_question,
             sources,
             style="textbook",
             follow_up=False,
-            history=generation_history,
+            history=[],
             include_source_summary=False,
         )
         answer = re.sub(r"https?://\S+", "", answer).strip() or build_image_answer(question, sources)
@@ -310,10 +325,10 @@ def build_history_rag_answer(
     generator = LLMAnswerGenerator.from_env()
     if answer_format == "structured":
         structured_answer = generator.generate_structured(
-            question,
+            generation_question,
             sources,
             follow_up=follow_up or mode == "question",
-            history=generation_history,
+            history=[],
         )
         if is_insufficient_structured_answer(structured_answer):
             return not_found_answer(question, intent, graph_context)
@@ -321,11 +336,11 @@ def build_history_rag_answer(
     else:
         structured_answer = None
         answer = generator.generate(
-            question,
+            generation_question,
             sources,
             style="textbook",
             follow_up=follow_up or mode == "question",
-            history=generation_history,
+            history=[],
             include_source_summary=intent not in {"question", "image"},
         )
         if is_insufficient_text_answer(answer):

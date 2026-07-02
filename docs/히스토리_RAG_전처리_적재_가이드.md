@@ -239,7 +239,7 @@ etl/preprocessing/history/embedding/embed_chunks_to_pgvector.py
 4. JSONL chunk upsert
 5. OpenAI embedding 생성
 6. embedding 저장
-7. 필요 시 ivfflat 인덱스 생성
+7. 필요 시 hnsw 인덱스 생성
 
 ## 10. 소량 테스트
 
@@ -335,8 +335,7 @@ SET maintenance_work_mem = '256MB';
 ```sql
 CREATE INDEX IF NOT EXISTS document_chunks_embedding_cosine_idx
 ON rag.document_chunks
-USING ivfflat (embedding vector_cosine_ops)
-WITH (lists = 100)
+USING hnsw (embedding vector_cosine_ops)
 WHERE embedding IS NOT NULL;
 
 ANALYZE rag.document_chunks;

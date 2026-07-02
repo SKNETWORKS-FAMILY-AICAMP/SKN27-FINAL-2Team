@@ -22,6 +22,22 @@ TIMELINE_FIELDS = ("인물", "사건", "조직·단체", "조직", "단체", "�
 IMAGE_QUERY_TERMS = ("이미지", "사진", "그림", "유물", "유적", "자료", "찾아줘", "보여줘", "조회")
 IMAGE_TITLE_IGNORE_TERMS = set(IMAGE_QUERY_TERMS) | {"시대", "대표", "관련", "설명"}
 OVERVIEW_TERMS = ("정리", "요약", "흐름", "개념", "설명", "알려", "누구", "업적", "정책", "대해", "대한", "대해서")
+REQUEST_SUFFIX_TERMS = tuple(
+    sorted(
+        {
+            *IMAGE_QUERY_TERMS,
+            *OVERVIEW_TERMS,
+            "알려줘",
+            "설명해줘",
+            "정리해줘",
+            "요약해줘",
+            "보여달라",
+            "보여줄래",
+        },
+        key=len,
+        reverse=True,
+    )
+)
 OVERVIEW_IGNORE_TERMS = {
     "정리",
     "요약",
@@ -45,6 +61,11 @@ OVERVIEW_IGNORE_TERMS = {
     "의미",
     "어떤",
     "있는지",
+    "유명한",
+    "대표",
+    "대표적",
+    "대표적인",
+    "주요",
 }
 GENERIC_OVERVIEW_CONTEXT_TERMS = (
     "개요",
@@ -71,14 +92,33 @@ ACHIEVEMENT_CONTEXT_TERMS = (
 )
 ACHIEVEMENT_QUERY_TERMS = ("업적", "정책", "활동")
 HONORIFIC_SUFFIXES = ("대왕",)
+SINGLE_CHAR_FOCUS_TERMS = {"왕"}
+
+
+def normalize_query_spacing(question: str) -> str:
+    value = re.sub(r"\s+", " ", question or "").strip()
+    for term in REQUEST_SUFFIX_TERMS:
+        value = re.sub(
+            rf"(?<=[가-힣A-Za-z0-9])({re.escape(term)})(?=$|\s|[?.!,])",
+            r" \1",
+            value,
+        )
+    return re.sub(r"\s+", " ", value).strip()
 
 
 def overview_focus_terms(question: str) -> tuple[str, ...]:
+    question = normalize_query_spacing(question)
     tokens = tokenize(question)
+    compact_question = re.sub(r"[^\w\s]", " ", question)
+    tokens.extend(
+        term
+        for term in SINGLE_CHAR_FOCUS_TERMS
+        if re.search(rf"(?<!\S){re.escape(term)}(?:은|는|이|가|을|를|의|에)?(?!\S)", compact_question)
+    )
     terms: list[str] = []
     for token in tokens:
         normalized = token.strip()
-        if len(normalized) < 2 or normalized in OVERVIEW_IGNORE_TERMS:
+        if (len(normalized) < 2 and normalized not in SINGLE_CHAR_FOCUS_TERMS) or normalized in OVERVIEW_IGNORE_TERMS:
             continue
         if terms and re.search(rf"{re.escape(normalized)}에\s*(대해|대한|대해서)", question):
             continue
@@ -101,6 +141,7 @@ def overview_focus_terms(question: str) -> tuple[str, ...]:
 
 
 def is_generic_overview_query(question: str, focus_terms: tuple[str, ...]) -> bool:
+    question = normalize_query_spacing(question)
     if not focus_terms:
         return False
     return any(term in question for term in OVERVIEW_TERMS)
@@ -161,6 +202,7 @@ def embed_query(question: str, model: str, dimensions: int | None) -> list[float
 
 
 def is_image_query(question: str) -> bool:
+    question = normalize_query_spacing(question)
     return any(term in question for term in IMAGE_QUERY_TERMS)
 
 
@@ -169,6 +211,7 @@ def normalize_compact(text: str) -> str:
 
 
 def image_title_tokens(question: str) -> list[str]:
+    question = normalize_query_spacing(question)
     tokens = expand_query_tokens(question, tokenize(question))
     result: list[str] = []
     for token in tokens:
@@ -288,7 +331,7 @@ class PgVectorHybridRetriever:
         self,
         model: str | None = None,
         dimensions: int | None = None,
-        candidate_pool: int = 50,
+        candidate_pool: int = 40,
     ) -> None:
         load_env()
         self.model = model or os.getenv("EMBEDDING_MODEL", "text-embedding-3-small")
@@ -353,7 +396,7 @@ class PgVectorHybridRetriever:
         ]
 
     def search(self, question: str, top_k: int = 5) -> list[PgSearchResult]:
-        question = question.strip()
+        question = normalize_query_spacing(question.strip())
         if is_image_query(question):
             return self._search_uncached(question, top_k)
         return list(
@@ -367,7 +410,7 @@ class PgVectorHybridRetriever:
         )
 
     def _search_uncached(self, question: str, top_k: int = 5) -> list[PgSearchResult]:
-        question = question.strip()
+        question = normalize_query_spacing(question.strip())
         if not question:
             return []
 
@@ -382,6 +425,7 @@ class PgVectorHybridRetriever:
             focus_terms if generic_overview_query else (),
             GENERIC_OVERVIEW_CONTEXT_TERMS if generic_overview_query else (),
         )
+        keyword_filter = focus_terms[0] if focus_terms else question
         embedding_question = keyword_question if generic_overview_query else question
         embedding = vector_literal(embed_query(embedding_question, self.model, self.dimensions))
         overview_query = any(term in question for term in OVERVIEW_TERMS)
@@ -390,31 +434,35 @@ class PgVectorHybridRetriever:
         where_parts = ["embedding IS NOT NULL"]
         params: list[Any] = []
         if generic_overview_query and focus_terms:
-            focus_clauses = []
-            for term in focus_terms:
-                focus_clauses.extend(
-                    [
-                        "title ILIKE %s",
-                        "chunk_text ILIKE %s",
-                        "metadata::text ILIKE %s",
-                    ]
-                )
-                params.extend([f"%{term}%", f"%{term}%", f"%{term}%"])
-            where_parts.append("(" + " OR ".join(focus_clauses) + ")")
+            term_sql = "(title ILIKE %s OR chunk_text ILIKE %s)"
+            scope_term_sql = "title ILIKE %s"
+            honorific_alias_query = (
+                len(focus_terms) == 2
+                and any(focus_terms[0].endswith(suffix) and focus_terms[1] == focus_terms[0][: -len(suffix)] for suffix in HONORIFIC_SUFFIXES)
+            )
+            if len(focus_terms) > 1 and not honorific_alias_query:
+                where_parts.append(f"({scope_term_sql} AND (" + " OR ".join(term_sql for _ in focus_terms[1:]) + "))")
+                params.append(f"%{focus_terms[0]}%")
+                for term in focus_terms[1:]:
+                    params.extend([f"%{term}%", f"%{term}%"])
+            else:
+                where_parts.append("(" + " OR ".join(term_sql for _ in focus_terms) + ")")
+                for term in focus_terms:
+                    params.extend([f"%{term}%", f"%{term}%"])
         where_sql = " AND ".join(where_parts)
 
         focus_match_sql = "FALSE"
         focus_match_params: list[Any] = []
         if generic_overview_query and focus_terms:
             focus_match_sql = " OR ".join(
-                "(title ILIKE %s OR chunk_text ILIKE %s OR metadata::text ILIKE %s)" for _ in focus_terms
+                "(title ILIKE %s OR chunk_text ILIKE %s)" for _ in focus_terms
             )
             for term in focus_terms:
                 like_term = f"%{term}%"
-                focus_match_params.extend([like_term, like_term, like_term])
+                focus_match_params.extend([like_term, like_term])
 
         sql = f"""
-        WITH base AS (
+        WITH vector_candidates AS (
             SELECT
                 id,
                 chunk_id,
@@ -425,35 +473,55 @@ class PgVectorHybridRetriever:
                 chunk_text,
                 metadata,
                 1 - (embedding <=> %s::vector) AS vector_score,
-                (
-                    similarity(title, %s) * 3.0
-                    + similarity(chunk_text, %s)
-                    + similarity(metadata::text, %s) * 1.2
-                    + CASE WHEN title ILIKE %s THEN 2.0 ELSE 0.0 END
-                    + CASE WHEN chunk_text ILIKE %s THEN 0.8 ELSE 0.0 END
-                    + CASE WHEN metadata::text ILIKE %s THEN 1.2 ELSE 0.0 END
-                ) AS keyword_score
+                0.0::float AS keyword_score
             FROM rag.document_chunks
             WHERE {where_sql}
-        ),
-        vector_candidates AS (
-            SELECT *
-            FROM base
-            ORDER BY vector_score DESC
+            ORDER BY embedding <=> %s::vector
             LIMIT %s
         ),
         keyword_candidates AS (
-            SELECT *
-            FROM base
+            SELECT
+                id,
+                chunk_id,
+                document_id,
+                source_type,
+                source_name,
+                title,
+                chunk_text,
+                metadata,
+                0.0::float AS vector_score,
+                (
+                    similarity(title, %s) * 3.0
+                    + similarity(chunk_text, %s)
+                    + CASE WHEN title ILIKE %s THEN 2.0 ELSE 0.0 END
+                    + CASE WHEN chunk_text ILIKE %s THEN 0.8 ELSE 0.0 END
+                ) AS keyword_score
+            FROM rag.document_chunks
+            WHERE {where_sql}
+              AND (title %% %s OR chunk_text %% %s OR title ILIKE %s OR chunk_text ILIKE %s)
             ORDER BY keyword_score DESC
             LIMIT %s
+        ),
+        merged_candidates AS (
+            SELECT * FROM vector_candidates
+            UNION ALL
+            SELECT * FROM keyword_candidates
         ),
         candidates AS (
             SELECT DISTINCT ON (chunk_id) *
             FROM (
-                SELECT * FROM vector_candidates
-                UNION ALL
-                SELECT * FROM keyword_candidates
+                SELECT
+                    id,
+                    chunk_id,
+                    document_id,
+                    source_type,
+                    source_name,
+                    title,
+                    chunk_text,
+                    metadata,
+                    max(vector_score) OVER (PARTITION BY chunk_id) AS vector_score,
+                    max(keyword_score) OVER (PARTITION BY chunk_id) AS keyword_score
+                FROM merged_candidates
             ) merged
             ORDER BY chunk_id, vector_score DESC, keyword_score DESC
         )
@@ -493,14 +561,18 @@ class PgVectorHybridRetriever:
 
         query_params: list[Any] = [
             embedding,
+            *params,
+            embedding,
+            self.candidate_pool,
             keyword_question,
             keyword_question,
-            keyword_question,
-            f"%{question}%",
             f"%{question}%",
             f"%{question}%",
             *params,
-            self.candidate_pool,
+            keyword_filter,
+            keyword_filter,
+            f"%{keyword_filter}%",
+            f"%{keyword_filter}%",
             self.candidate_pool,
             image_query,
             image_query,
@@ -514,6 +586,7 @@ class PgVectorHybridRetriever:
 
         with connect_db() as conn:
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                cur.execute("SET LOCAL hnsw.ef_search = 80")
                 cur.execute(sql, query_params)
                 rows = cur.fetchall()
 

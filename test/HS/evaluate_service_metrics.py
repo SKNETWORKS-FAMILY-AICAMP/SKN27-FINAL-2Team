@@ -329,10 +329,11 @@ def print_markdown(metrics: list[Metric]) -> None:
 
 
 def run_service_evaluation(args: argparse.Namespace, questions: list[dict], queries: list[str]) -> list[dict[str, str]]:
+    latency_full_answer = args.latency_full_answer or args.ragas
     metrics = [
         evaluate_search_accuracy(questions, args.top_k, args.limit),
         evaluate_graph_connectivity(queries),
-        evaluate_latency(queries, args.latency_full_answer),
+        evaluate_latency(queries, latency_full_answer),
         evaluate_mcp_success(args.mcp_url, args.timeout),
     ]
     if args.ragas:

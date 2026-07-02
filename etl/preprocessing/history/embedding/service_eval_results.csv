@@ -1,6 +1,6 @@
 ﻿평가 항목,지표 정의,측정 결과,통과 기준,통과 여부,검증 방법
-검색 정확도,Similarity Score 기반 적합성,0.90,0.80 이상,PASS,Golden Question 기반 RAG 검색 검증
+검색 정확도,Similarity Score 기반 적합성,0.85,0.80 이상,PASS,Golden Question 기반 RAG 검색 검증
 연결성(Graph),노드 간 탐색 성공률,100.0%,95% 이상,PASS,Cypher Query 성능 테스트 및 접속 조사
-응답 속도,쿼리 당 평균 소요 시간,14.09s,2.0s 이내,FAIL,로컬 검색 지연시간 측정
+응답 속도,쿼리 당 평균 소요 시간,4.78s,2.0s 이내,FAIL,LangSmith Latency Tracking
 MCP 연동 성공률,외부 도구 호출 및 데이터 수신,N/A,90% 이상,N/A,API 성공/실패 로그 분석
-RAGAS Faithfulness,답변이 검색 근거에 충실한지 평가,0.86,0.80 이상,PASS,RAGAS Framework (Faithfulness)
+RAGAS Faithfulness,답변이 검색 근거에 충실한지 평가,0.62,0.80 이상,FAIL,RAGAS Framework (Faithfulness)

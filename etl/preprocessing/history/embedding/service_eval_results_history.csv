@@ -1,0 +1,65 @@
+﻿run_at,git_branch,git_commit,git_dirty,평가 항목,지표 정의,측정 결과,통과 기준,통과 여부,검증 방법
+2026-07-01T13:49:33,feature-chatbot,290c2e7,Y,검색 정확도,Similarity Score 기반 적합성,0.90,0.80 이상,PASS,Golden Question 기반 RAG 검색 검증
+2026-07-01T13:49:33,feature-chatbot,290c2e7,Y,연결성(Graph),노드 간 탐색 성공률,100.0%,95% 이상,PASS,Cypher Query 성능 테스트 및 접속 조사
+2026-07-01T13:49:33,feature-chatbot,290c2e7,Y,응답 속도,쿼리 당 평균 소요 시간,13.29s,2.0s 이내,FAIL,로컬 검색 지연시간 측정
+2026-07-01T13:49:33,feature-chatbot,290c2e7,Y,MCP 연동 성공률,외부 도구 호출 및 데이터 수신,N/A,90% 이상,N/A,API 성공/실패 로그 분석
+2026-07-01T13:49:33,feature-chatbot,290c2e7,Y,RAGAS Faithfulness,답변이 검색 근거에 충실한지 평가,0.95,0.80 이상,PASS,RAGAS Framework (Faithfulness)
+2026-07-02T10:42:11,feature-chatbot,290c2e7,Y,검색 정확도,Similarity Score 기반 적합성,0.90,0.80 이상,PASS,Golden Question 기반 RAG 검색 검증
+2026-07-02T10:42:11,feature-chatbot,290c2e7,Y,연결성(Graph),노드 간 탐색 성공률,100.0%,95% 이상,PASS,Cypher Query 성능 테스트 및 접속 조사
+2026-07-02T10:42:11,feature-chatbot,290c2e7,Y,응답 속도,쿼리 당 평균 소요 시간,15.70s,2.0s 이내,FAIL,로컬 검색 지연시간 측정
+2026-07-02T10:42:11,feature-chatbot,290c2e7,Y,MCP 연동 성공률,외부 도구 호출 및 데이터 수신,N/A,90% 이상,N/A,API 성공/실패 로그 분석
+2026-07-02T10:42:11,feature-chatbot,290c2e7,Y,RAGAS Faithfulness,답변이 검색 근거에 충실한지 평가,0.50,0.80 이상,FAIL,RAGAS Framework (Faithfulness)
+2026-07-02T11:05:35,feature-chatbot,290c2e7,Y,검색 정확도,Similarity Score 기반 적합성,1.00,0.80 이상,PASS,Golden Question 기반 RAG 검색 검증
+2026-07-02T11:05:35,feature-chatbot,290c2e7,Y,연결성(Graph),노드 간 탐색 성공률,100.0%,95% 이상,PASS,Cypher Query 성능 테스트 및 접속 조사
+2026-07-02T11:05:35,feature-chatbot,290c2e7,Y,응답 속도,쿼리 당 평균 소요 시간,1.82s,2.0s 이내,PASS,로컬 검색 지연시간 측정
+2026-07-02T11:05:35,feature-chatbot,290c2e7,Y,MCP 연동 성공률,외부 도구 호출 및 데이터 수신,N/A,90% 이상,N/A,API 성공/실패 로그 분석
+2026-07-02T11:05:35,feature-chatbot,290c2e7,Y,RAGAS Faithfulness,답변이 검색 근거에 충실한지 평가,0.64,0.80 이상,FAIL,RAGAS Framework (Faithfulness)
+2026-07-02T11:14:41,feature-chatbot,290c2e7,Y,검색 정확도,Similarity Score 기반 적합성,0.90,0.80 이상,PASS,Golden Question 기반 RAG 검색 검증
+2026-07-02T11:14:41,feature-chatbot,290c2e7,Y,연결성(Graph),노드 간 탐색 성공률,100.0%,95% 이상,PASS,Cypher Query 성능 테스트 및 접속 조사
+2026-07-02T11:14:41,feature-chatbot,290c2e7,Y,응답 속도,쿼리 당 평균 소요 시간,5.54s,2.0s 이내,FAIL,LangSmith Latency Tracking
+2026-07-02T11:14:41,feature-chatbot,290c2e7,Y,MCP 연동 성공률,외부 도구 호출 및 데이터 수신,N/A,90% 이상,N/A,API 성공/실패 로그 분석
+2026-07-02T11:42:16,feature-chatbot,290c2e7,Y,검색 정확도,Similarity Score 기반 적합성,0.90,0.80 이상,PASS,Golden Question 기반 RAG 검색 검증
+2026-07-02T11:42:16,feature-chatbot,290c2e7,Y,연결성(Graph),노드 간 탐색 성공률,100.0%,95% 이상,PASS,Cypher Query 성능 테스트 및 접속 조사
+2026-07-02T11:42:16,feature-chatbot,290c2e7,Y,응답 속도,쿼리 당 평균 소요 시간,4.76s,2.0s 이내,FAIL,LangSmith Latency Tracking
+2026-07-02T11:42:16,feature-chatbot,290c2e7,Y,MCP 연동 성공률,외부 도구 호출 및 데이터 수신,N/A,90% 이상,N/A,API 성공/실패 로그 분석
+2026-07-02T11:42:16,feature-chatbot,290c2e7,Y,RAGAS Faithfulness,답변이 검색 근거에 충실한지 평가,0.77,0.80 이상,FAIL,RAGAS Framework (Faithfulness)
+2026-07-02T11:53:16,feature-chatbot,290c2e7,Y,검색 정확도,Similarity Score 기반 적합성,0.90,0.80 이상,PASS,Golden Question 기반 RAG 검색 검증
+2026-07-02T11:53:16,feature-chatbot,290c2e7,Y,연결성(Graph),노드 간 탐색 성공률,100.0%,95% 이상,PASS,Cypher Query 성능 테스트 및 접속 조사
+2026-07-02T11:53:16,feature-chatbot,290c2e7,Y,응답 속도,쿼리 당 평균 소요 시간,5.67s,2.0s 이내,FAIL,LangSmith Latency Tracking
+2026-07-02T11:53:16,feature-chatbot,290c2e7,Y,MCP 연동 성공률,외부 도구 호출 및 데이터 수신,N/A,90% 이상,N/A,API 성공/실패 로그 분석
+2026-07-02T11:53:16,feature-chatbot,290c2e7,Y,RAGAS Faithfulness,답변이 검색 근거에 충실한지 평가,0.87,0.80 이상,PASS,RAGAS Framework (Faithfulness)
+2026-07-02T12:04:54,feature-chatbot,290c2e7,Y,검색 정확도,Similarity Score 기반 적합성,0.90,0.80 이상,PASS,Golden Question 기반 RAG 검색 검증
+2026-07-02T12:04:54,feature-chatbot,290c2e7,Y,연결성(Graph),노드 간 탐색 성공률,100.0%,95% 이상,PASS,Cypher Query 성능 테스트 및 접속 조사
+2026-07-02T12:04:54,feature-chatbot,290c2e7,Y,응답 속도,쿼리 당 평균 소요 시간,4.99s,2.0s 이내,FAIL,LangSmith Latency Tracking
+2026-07-02T12:04:54,feature-chatbot,290c2e7,Y,MCP 연동 성공률,외부 도구 호출 및 데이터 수신,N/A,90% 이상,N/A,API 성공/실패 로그 분석
+2026-07-02T12:04:54,feature-chatbot,290c2e7,Y,RAGAS Faithfulness,답변이 검색 근거에 충실한지 평가,0.74,0.80 이상,FAIL,RAGAS Framework (Faithfulness)
+2026-07-02T12:10:32,feature-chatbot,290c2e7,Y,검색 정확도,Similarity Score 기반 적합성,0.90,0.80 이상,PASS,Golden Question 기반 RAG 검색 검증
+2026-07-02T12:10:32,feature-chatbot,290c2e7,Y,연결성(Graph),노드 간 탐색 성공률,100.0%,95% 이상,PASS,Cypher Query 성능 테스트 및 접속 조사
+2026-07-02T12:10:32,feature-chatbot,290c2e7,Y,응답 속도,쿼리 당 평균 소요 시간,5.24s,2.0s 이내,FAIL,LangSmith Latency Tracking
+2026-07-02T12:10:32,feature-chatbot,290c2e7,Y,MCP 연동 성공률,외부 도구 호출 및 데이터 수신,N/A,90% 이상,N/A,API 성공/실패 로그 분석
+2026-07-02T12:10:32,feature-chatbot,290c2e7,Y,RAGAS Faithfulness,답변이 검색 근거에 충실한지 평가,0.78,0.80 이상,FAIL,RAGAS Framework (Faithfulness)
+2026-07-02T12:18:46,feature-chatbot,290c2e7,Y,검색 정확도,Similarity Score 기반 적합성,0.90,0.80 이상,PASS,Golden Question 기반 RAG 검색 검증
+2026-07-02T12:18:46,feature-chatbot,290c2e7,Y,연결성(Graph),노드 간 탐색 성공률,100.0%,95% 이상,PASS,Cypher Query 성능 테스트 및 접속 조사
+2026-07-02T12:18:46,feature-chatbot,290c2e7,Y,응답 속도,쿼리 당 평균 소요 시간,4.47s,2.0s 이내,FAIL,LangSmith Latency Tracking
+2026-07-02T12:18:46,feature-chatbot,290c2e7,Y,MCP 연동 성공률,외부 도구 호출 및 데이터 수신,N/A,90% 이상,N/A,API 성공/실패 로그 분석
+2026-07-02T12:18:46,feature-chatbot,290c2e7,Y,RAGAS Faithfulness,답변이 검색 근거에 충실한지 평가,1.00,0.80 이상,PASS,RAGAS Framework (Faithfulness)
+2026-07-02T15:23:22,feature-chatbot,290c2e7,Y,검색 정확도,Similarity Score 기반 적합성,0.85,0.80 이상,PASS,Golden Question 기반 RAG 검색 검증
+2026-07-02T15:23:22,feature-chatbot,290c2e7,Y,연결성(Graph),노드 간 탐색 성공률,100.0%,95% 이상,PASS,Cypher Query 성능 테스트 및 접속 조사
+2026-07-02T15:23:22,feature-chatbot,290c2e7,Y,응답 속도,쿼리 당 평균 소요 시간,5.02s,2.0s 이내,FAIL,LangSmith Latency Tracking
+2026-07-02T15:23:22,feature-chatbot,290c2e7,Y,MCP 연동 성공률,외부 도구 호출 및 데이터 수신,N/A,90% 이상,N/A,API 성공/실패 로그 분석
+2026-07-02T15:23:22,feature-chatbot,290c2e7,Y,RAGAS Faithfulness,답변이 검색 근거에 충실한지 평가,0.77,0.80 이상,FAIL,RAGAS Framework (Faithfulness)
+2026-07-02T16:04:26,feature-chatbot,290c2e7,Y,검색 정확도,Similarity Score 기반 적합성,0.85,0.80 이상,PASS,Golden Question 기반 RAG 검색 검증
+2026-07-02T16:04:26,feature-chatbot,290c2e7,Y,연결성(Graph),노드 간 탐색 성공률,100.0%,95% 이상,PASS,Cypher Query 성능 테스트 및 접속 조사
+2026-07-02T16:04:26,feature-chatbot,290c2e7,Y,응답 속도,쿼리 당 평균 소요 시간,4.84s,2.0s 이내,FAIL,LangSmith Latency Tracking
+2026-07-02T16:04:26,feature-chatbot,290c2e7,Y,MCP 연동 성공률,외부 도구 호출 및 데이터 수신,N/A,90% 이상,N/A,API 성공/실패 로그 분석
+2026-07-02T16:04:26,feature-chatbot,290c2e7,Y,RAGAS Faithfulness,답변이 검색 근거에 충실한지 평가,0.62,0.80 이상,FAIL,RAGAS Framework (Faithfulness)
+2026-07-02T16:14:41,feature-chatbot,290c2e7,Y,검색 정확도,Similarity Score 기반 적합성,0.85,0.80 이상,PASS,Golden Question 기반 RAG 검색 검증
+2026-07-02T16:14:41,feature-chatbot,290c2e7,Y,연결성(Graph),노드 간 탐색 성공률,100.0%,95% 이상,PASS,Cypher Query 성능 테스트 및 접속 조사
+2026-07-02T16:14:41,feature-chatbot,290c2e7,Y,응답 속도,쿼리 당 평균 소요 시간,7.30s,2.0s 이내,FAIL,LangSmith Latency Tracking
+2026-07-02T16:14:41,feature-chatbot,290c2e7,Y,MCP 연동 성공률,외부 도구 호출 및 데이터 수신,N/A,90% 이상,N/A,API 성공/실패 로그 분석
+2026-07-02T16:14:41,feature-chatbot,290c2e7,Y,RAGAS Faithfulness,답변이 검색 근거에 충실한지 평가,0.66,0.80 이상,FAIL,RAGAS Framework (Faithfulness)
+2026-07-02T16:23:45,feature-chatbot,290c2e7,Y,검색 정확도,Similarity Score 기반 적합성,0.85,0.80 이상,PASS,Golden Question 기반 RAG 검색 검증
+2026-07-02T16:23:45,feature-chatbot,290c2e7,Y,연결성(Graph),노드 간 탐색 성공률,100.0%,95% 이상,PASS,Cypher Query 성능 테스트 및 접속 조사
+2026-07-02T16:23:45,feature-chatbot,290c2e7,Y,응답 속도,쿼리 당 평균 소요 시간,4.78s,2.0s 이내,FAIL,LangSmith Latency Tracking
+2026-07-02T16:23:45,feature-chatbot,290c2e7,Y,MCP 연동 성공률,외부 도구 호출 및 데이터 수신,N/A,90% 이상,N/A,API 성공/실패 로그 분석
+2026-07-02T16:23:45,feature-chatbot,290c2e7,Y,RAGAS Faithfulness,답변이 검색 근거에 충실한지 평가,0.62,0.80 이상,FAIL,RAGAS Framework (Faithfulness)
