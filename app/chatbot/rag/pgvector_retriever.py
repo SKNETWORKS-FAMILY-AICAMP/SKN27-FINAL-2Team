@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from functools import lru_cache
 from pathlib import Path
 from typing import Any
@@ -171,6 +171,33 @@ class PgSearchResult:
     vector_score: float
     keyword_score: float
     score: float
+
+
+@lru_cache(maxsize=1)
+def get_reranker():
+    model_name = os.getenv("RAG_RERANKER_MODEL", "BAAI/bge-reranker-v2-m3")
+    try:
+        from sentence_transformers import CrossEncoder
+    except ImportError:
+        return None
+    return CrossEncoder(model_name)
+
+
+def rerank_results(question: str, rows: list[PgSearchResult], top_k: int) -> list[PgSearchResult]:
+    if os.getenv("RAG_RERANKER_ENABLED", "").lower() not in {"1", "true", "yes"}:
+        return rows[:top_k]
+    model = get_reranker()
+    if model is None:
+        return rows[:top_k]
+
+    pairs = [(question, f"{row.title}\n{compact_text(row.chunk_text, 900)}") for row in rows]
+    scores = model.predict(pairs)
+    ranked = sorted(
+        (replace(row, score=float(score)) for row, score in zip(rows, scores)),
+        key=lambda row: row.score,
+        reverse=True,
+    )
+    return ranked[:top_k]
 
 
 def load_env() -> None:
@@ -429,7 +456,8 @@ class PgVectorHybridRetriever:
         embedding_question = keyword_question if generic_overview_query else question
         embedding = vector_literal(embed_query(embedding_question, self.model, self.dimensions))
         overview_query = any(term in question for term in OVERVIEW_TERMS)
-        final_limit = max(top_k * 5, top_k) if generic_overview_query else top_k
+        use_reranker = os.getenv("RAG_RERANKER_ENABLED", "").lower() in {"1", "true", "yes"}
+        final_limit = max(top_k * 5, top_k) if generic_overview_query or use_reranker else top_k
 
         where_parts = ["embedding IS NOT NULL"]
         params: list[Any] = []
@@ -466,14 +494,10 @@ class PgVectorHybridRetriever:
             SELECT
                 id,
                 chunk_id,
-                document_id,
                 source_type,
-                source_name,
-                title,
-                chunk_text,
-                metadata,
                 1 - (embedding <=> %s::vector) AS vector_score,
-                0.0::float AS keyword_score
+                0.0::float AS keyword_score,
+                CASE WHEN %s AND ({focus_match_sql}) THEN 1 ELSE 0 END AS focus_hit
             FROM rag.document_chunks
             WHERE {where_sql}
             ORDER BY embedding <=> %s::vector
@@ -483,19 +507,15 @@ class PgVectorHybridRetriever:
             SELECT
                 id,
                 chunk_id,
-                document_id,
                 source_type,
-                source_name,
-                title,
-                chunk_text,
-                metadata,
                 0.0::float AS vector_score,
                 (
                     similarity(title, %s) * 3.0
                     + similarity(chunk_text, %s)
                     + CASE WHEN title ILIKE %s THEN 2.0 ELSE 0.0 END
                     + CASE WHEN chunk_text ILIKE %s THEN 0.8 ELSE 0.0 END
-                ) AS keyword_score
+                ) AS keyword_score,
+                CASE WHEN %s AND ({focus_match_sql}) THEN 1 ELSE 0 END AS focus_hit
             FROM rag.document_chunks
             WHERE {where_sql}
               AND (title %% %s OR chunk_text %% %s OR title ILIKE %s OR chunk_text ILIKE %s)
@@ -513,54 +533,64 @@ class PgVectorHybridRetriever:
                 SELECT
                     id,
                     chunk_id,
-                    document_id,
                     source_type,
-                    source_name,
-                    title,
-                    chunk_text,
-                    metadata,
                     max(vector_score) OVER (PARTITION BY chunk_id) AS vector_score,
-                    max(keyword_score) OVER (PARTITION BY chunk_id) AS keyword_score
+                    max(keyword_score) OVER (PARTITION BY chunk_id) AS keyword_score,
+                    max(focus_hit) OVER (PARTITION BY chunk_id) AS focus_hit
                 FROM merged_candidates
             ) merged
             ORDER BY chunk_id, vector_score DESC, keyword_score DESC
+        ),
+        ranked AS (
+            SELECT
+                id,
+                chunk_id,
+                source_type,
+                vector_score,
+                keyword_score,
+                (
+                    vector_score * 0.65
+                    + keyword_score * 0.35
+                    + CASE
+                        WHEN %s AND source_type = 'image_material' THEN 1.2
+                        WHEN %s AND source_type <> 'image_material' THEN -1.0
+                        WHEN %s AND source_type = 'historical_overview' THEN 0.5
+                        WHEN %s AND source_type = 'historical_source' THEN -0.15
+                        ELSE 0.0
+                      END
+                    + CASE
+                        WHEN %s AND focus_hit = 1 THEN 1.8
+                        ELSE 0.0
+                      END
+                    + CASE
+                        WHEN %s AND source_type = 'image_material' THEN -1.0
+                        ELSE 0.0
+                      END
+                ) AS score
+            FROM candidates
+            ORDER BY score DESC
+            LIMIT %s
         )
         SELECT
-            chunk_id,
-            document_id,
-            source_type,
-            source_name,
-            title,
-            chunk_text,
-            metadata,
-            vector_score,
-            keyword_score,
-            (
-                vector_score * 0.65
-                + keyword_score * 0.35
-                + CASE
-                    WHEN %s AND source_type = 'image_material' THEN 1.2
-                    WHEN %s AND source_type <> 'image_material' THEN -1.0
-                    WHEN %s AND source_type = 'historical_overview' THEN 0.5
-                    WHEN %s AND source_type = 'historical_source' THEN -0.15
-                    ELSE 0.0
-                  END
-                + CASE
-                    WHEN %s AND ({focus_match_sql}) THEN 1.8
-                    ELSE 0.0
-                  END
-                + CASE
-                    WHEN %s AND source_type = 'image_material' THEN -1.0
-                    ELSE 0.0
-                  END
-            ) AS score
-        FROM candidates
-        ORDER BY score DESC
-        LIMIT %s
+            d.chunk_id,
+            d.document_id,
+            d.source_type,
+            d.source_name,
+            d.title,
+            d.chunk_text,
+            d.metadata,
+            ranked.vector_score,
+            ranked.keyword_score,
+            ranked.score
+        FROM ranked
+        JOIN rag.document_chunks d ON d.id = ranked.id
+        ORDER BY ranked.score DESC
         """
 
         query_params: list[Any] = [
             embedding,
+            generic_overview_query,
+            *focus_match_params,
             *params,
             embedding,
             self.candidate_pool,
@@ -568,6 +598,8 @@ class PgVectorHybridRetriever:
             keyword_question,
             f"%{question}%",
             f"%{question}%",
+            generic_overview_query,
+            *focus_match_params,
             *params,
             keyword_filter,
             keyword_filter,
@@ -579,7 +611,6 @@ class PgVectorHybridRetriever:
             overview_query,
             overview_query,
             generic_overview_query,
-            *focus_match_params,
             generic_overview_query,
             final_limit,
         ]
@@ -591,9 +622,8 @@ class PgVectorHybridRetriever:
                 cur.execute(sql, query_params)
                 rows = cur.fetchall()
 
-        rows = diversify_rows(rows, top_k) if generic_overview_query else rows[:top_k]
-
-        return [
+        rows = diversify_rows(rows, top_k) if generic_overview_query else rows
+        results = [
             PgSearchResult(
                 chunk_id=row["chunk_id"],
                 document_id=row["document_id"],
@@ -608,6 +638,9 @@ class PgVectorHybridRetriever:
             )
             for row in rows
         ]
+        if generic_overview_query:
+            return results[:top_k]
+        return rerank_results(question, results, top_k)
 
 
 @lru_cache(maxsize=256)
