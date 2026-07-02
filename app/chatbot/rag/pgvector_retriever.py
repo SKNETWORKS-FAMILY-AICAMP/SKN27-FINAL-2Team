@@ -331,7 +331,7 @@ class PgVectorHybridRetriever:
         self,
         model: str | None = None,
         dimensions: int | None = None,
-        candidate_pool: int = 40,
+        candidate_pool: int = 50,
     ) -> None:
         load_env()
         self.model = model or os.getenv("EMBEDDING_MODEL", "text-embedding-3-small")
@@ -586,7 +586,8 @@ class PgVectorHybridRetriever:
 
         with connect_db() as conn:
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
-                cur.execute("SET LOCAL hnsw.ef_search = 80")
+                cur.execute("SET LOCAL hnsw.ef_search = 120")
+                cur.execute("SET LOCAL pg_trgm.similarity_threshold = 0.18")
                 cur.execute(sql, query_params)
                 rows = cur.fetchall()
 
