@@ -155,6 +155,22 @@ CALL {
 } IN TRANSACTIONS OF 1000 ROWS;
 
 CALL {
+    LOAD CSV WITH HEADERS FROM 'file:///relations/term_refers_to_person.csv' AS row
+    MATCH (start:Term {term_id: row.start_term_id})
+    MATCH (target:Person {person_id: row.end_person_id})
+    MERGE (start)-[r:REFERS_TO]->(target)
+    SET r += row
+} IN TRANSACTIONS OF 1000 ROWS;
+
+CALL {
+    LOAD CSV WITH HEADERS FROM 'file:///relations/term_refers_to_event.csv' AS row
+    MATCH (start:Term {term_id: row.start_term_id})
+    MATCH (target:Event {event_id: row.end_event_id})
+    MERGE (start)-[r:REFERS_TO]->(target)
+    SET r += row
+} IN TRANSACTIONS OF 1000 ROWS;
+
+CALL {
     LOAD CSV WITH HEADERS FROM 'file:///relations/person_has_source_url.csv' AS row
     MATCH (start:Person {person_id: row.start_person_id})
     MATCH (target:SourceUrl {source_url_id: row.end_source_url_id})

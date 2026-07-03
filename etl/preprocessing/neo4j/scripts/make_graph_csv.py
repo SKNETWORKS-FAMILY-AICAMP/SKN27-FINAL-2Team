@@ -1857,6 +1857,142 @@ def build_person_involved_in_event(event_relations_data):
     ]
 
 
+def split_person_name_columns(person_nodes):
+    # Person name은 "이름(한자)" 형태라 base 이름과 한자를 분리한다.
+    person_data = person_nodes[["person_id", "name"]].copy()
+    name_series = person_data["name"].fillna("")
+    person_data["base_name"] = (
+        name_series.str.replace(r"\(.*?\)", "", regex=True).str.strip()
+    )
+    person_data["hanja"] = (
+        name_series.str.extract(r"\(([^)]*)\)", expand=False).fillna("").str.strip()
+    )
+
+    return person_data
+
+
+def find_unique_names(left_names, right_names):
+    left_counts = left_names.value_counts()
+    right_counts = right_names.value_counts()
+    unique_left = set(left_counts[left_counts == 1].index)
+    unique_right = set(right_counts[right_counts == 1].index)
+
+    return unique_left & unique_right
+
+
+def build_term_refers_to_person(term_nodes, person_nodes):
+    # 이름이 양쪽에서 유일하면 EXACT_NAME으로 연결하고,
+    # 동명이 있으면 이름+한자 조합이 양쪽에서 유일할 때만 NAME_HANJA로 연결한다.
+    # 그 외 동명 케이스는 검수 대상으로 보고 관계를 만들지 않는다.
+    term_data = term_nodes[["term_id", "name", "hanja"]].copy()
+    term_data["name"] = term_data["name"].fillna("").str.strip()
+    term_data["hanja"] = term_data["hanja"].fillna("").str.strip()
+    person_data = split_person_name_columns(person_nodes)
+
+    auto_names = find_unique_names(term_data["name"], person_data["base_name"])
+    auto_links = term_data[term_data["name"].isin(auto_names)].merge(
+        person_data,
+        left_on="name",
+        right_on="base_name",
+        suffixes=("", "_person"),
+    )
+    auto_links["match_type"] = "EXACT_NAME"
+
+    remaining_terms = term_data[
+        ~term_data["name"].isin(auto_names) & term_data["hanja"].ne("")
+    ].copy()
+    remaining_persons = person_data[
+        ~person_data["base_name"].isin(auto_names) & person_data["hanja"].ne("")
+    ].copy()
+
+    term_pair_counts = remaining_terms.groupby(["name", "hanja"]).size()
+    person_pair_counts = remaining_persons.groupby(["base_name", "hanja"]).size()
+    unique_term_pairs = set(term_pair_counts[term_pair_counts == 1].index)
+    unique_person_pairs = set(person_pair_counts[person_pair_counts == 1].index)
+    hanja_pairs = unique_term_pairs & unique_person_pairs
+
+    hanja_terms = remaining_terms[
+        remaining_terms[["name", "hanja"]].apply(tuple, axis=1).isin(hanja_pairs)
+    ]
+    hanja_links = hanja_terms.merge(
+        remaining_persons,
+        left_on=["name", "hanja"],
+        right_on=["base_name", "hanja"],
+        suffixes=("", "_person"),
+    )
+    hanja_links["match_type"] = "NAME_HANJA"
+
+    link_data = pd.concat([auto_links, hanja_links], ignore_index=True)
+    link_data["relation_type"] = "REFERS_TO"
+    link_data = link_data.rename(
+        columns={
+            "term_id": "start_term_id",
+            "person_id": "end_person_id",
+            "name": "matched_name",
+            "hanja": "matched_hanja",
+        }
+    )
+
+    return link_data[
+        [
+            "start_term_id",
+            "end_person_id",
+            "relation_type",
+            "match_type",
+            "matched_name",
+            "matched_hanja",
+        ]
+    ]
+
+
+def build_term_refers_to_event(term_nodes, event_nodes):
+    # 사건명은 한자 병기가 없으므로 이름이 양쪽에서 유일한 경우만 연결한다.
+    term_data = term_nodes[["term_id", "name"]].copy()
+    term_data["name"] = term_data["name"].fillna("").str.strip()
+    event_data = event_nodes[["event_id", "name"]].copy()
+    event_data["name"] = event_data["name"].fillna("").str.strip()
+
+    auto_names = find_unique_names(term_data["name"], event_data["name"])
+    link_data = term_data[term_data["name"].isin(auto_names)].merge(
+        event_data,
+        on="name",
+        suffixes=("", "_event"),
+    )
+    link_data["relation_type"] = "REFERS_TO"
+    link_data["match_type"] = "EXACT_NAME"
+    link_data = link_data.rename(
+        columns={
+            "term_id": "start_term_id",
+            "event_id": "end_event_id",
+            "name": "matched_name",
+        }
+    )
+
+    return link_data[
+        [
+            "start_term_id",
+            "end_event_id",
+            "relation_type",
+            "match_type",
+            "matched_name",
+        ]
+    ]
+
+
+def drop_symmetric_duplicate_pairs(relation_data):
+    # 대칭 관계(is_symmetric=Y)는 원본에 A->B, B->A 양방향으로 들어 있어
+    # 무방향 쌍 + 관계 유형 기준으로 한 방향만 남긴다.
+    pair_start = relation_data[["person_id", "related_person_id"]].min(axis=1)
+    pair_end = relation_data[["person_id", "related_person_id"]].max(axis=1)
+    pair_key = pair_start + ">" + pair_end + ">" + relation_data["relation_type"]
+
+    symmetric_mask = relation_data["is_symmetric"].eq("Y")
+    duplicated_pair_mask = pair_key.duplicated()
+    drop_mask = symmetric_mask & duplicated_pair_mask
+
+    return relation_data[~drop_mask].reset_index(drop=True)
+
+
 def build_person_related_to_person(person_relations_data, relation_type_dictionary):
     # 관계 타입은 Neo4j 관계명으로 쪼개기보다 RELATED_TO 하나로 두고,
     # raw/normalized relation type을 속성으로 보존한다.
@@ -1873,6 +2009,7 @@ def build_person_related_to_person(person_relations_data, relation_type_dictiona
     relation_data = relation_data.drop_duplicates(
         subset=["person_id", "related_person_id", "relation_type"]
     ).reset_index(drop=True)
+    relation_data = drop_symmetric_duplicate_pairs(relation_data)
     relation_data.insert(
         0,
         "person_relation_id",
@@ -1899,11 +2036,8 @@ def build_person_related_to_person(person_relations_data, relation_type_dictiona
             "direction_rule",
             "is_symmetric",
             "inverse_relation_type",
-            "person_name",
-            "related_person_name",
             "related_count",
             "evidence_url",
-            "detail_url",
         ]
     ]
 
@@ -2249,6 +2383,14 @@ def build_relation_outputs(inputs, node_outputs):
             inputs["person_relations"],
             inputs["relation_type_dictionary"],
         ),
+        "term_refers_to_person": build_term_refers_to_person(
+            node_outputs["terms"],
+            node_outputs["people"],
+        ),
+        "term_refers_to_event": build_term_refers_to_event(
+            node_outputs["terms"],
+            node_outputs["events"],
+        ),
         "event_has_source_url": build_event_has_source_url(
             inputs["events"],
             inputs["event_relations"],
@@ -2350,5 +2492,5 @@ def main():
     write_or_print_outputs(args, output_files, skipped_output_files)
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # entry point
     main()

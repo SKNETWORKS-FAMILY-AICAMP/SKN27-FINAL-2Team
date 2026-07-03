@@ -435,6 +435,8 @@ events.subject_category
 | `term_about_region.csv` | 82 | `Term - ABOUT_REGION - Region` |
 | `term_about_economic_domain.csv` | 2,894 | `Term - ABOUT_ECONOMIC_DOMAIN - EconomicDomain` |
 | `term_about_taxonomy_facet.csv` | 22,962 | `Term - ABOUT_TAXONOMY_FACET - TaxonomyFacet` |
+| `term_refers_to_person.csv` | 3,720 | `Term - REFERS_TO - Person` (이름/이름+한자 유일 매칭만 연결) |
+| `term_refers_to_event.csv` | 13 | `Term - REFERS_TO - Event` (이름 유일 매칭만 연결) |
 
 `term_in_period.csv`에는 `match_type`이 있다.
 
@@ -470,7 +472,7 @@ Cypher import 쪽에는 optional LOAD 대상으로 남겨두되, `load_schema.py
 | CSV | 행 수 | 의미 |
 |---|---:|---|
 | `person_involved_in_event.csv` | 6,918 | `Person - INVOLVED_IN - Event` |
-| `person_related_to_person.csv` | 206,507 | `Person - RELATED_TO - Person` |
+| `person_related_to_person.csv` | 184,056 | `Person - RELATED_TO - Person` (대칭 관계는 한 방향만 저장) |
 | `person_has_source_url.csv` | 56,212 | `Person - HAS_SOURCE_URL - SourceUrl` |
 
 `person_related_to_person.csv`는 `relation_type_dictionary.csv`를 적용한 결과다.
@@ -524,7 +526,7 @@ import 쿼리는 기존 Neo4j 실행 구조에 맞춰 `storage/neo4j/schema/` �
 
 | 파일 | 역할 |
 |---|---|
-| `history_graph_reset.cypher` | 현재 history graph 노드와 예전 schema 노드 삭제. 필요할 때만 실행 |
+| `history_graph_reset.cypher` | 기존 노드와 관계 전체를 배치 단위로 삭제. `load_schema.py` 실행 시 항상 먼저 실행 |
 | `history_graph_constraints.cypher` | node id 제약조건과 조회용 index 생성 |
 | `history_graph_import_nodes.cypher` | `storage/neo4j/neo4j_import/nodes/`의 node CSV 적재 |
 | `history_graph_import_relations.cypher` | `storage/neo4j/neo4j_import/relations/`의 relationship CSV 적재 |
@@ -548,16 +550,17 @@ storage/neo4j/neo4j_import/relations/*.csv
 
 노드 import 쿼리는 `SET n += row` 뒤에 숫자 속성을 `toIntegerOrNull()`로 다시 세팅한다. CSV는 문자열 기반이라 그대로 넣으면 `start_year`, `end_year`, `period_order`, `term_count` 같은 값도 문자열이 된다. 연도 범위 검색, 시대 정렬, 집계 비교를 제대로 하려면 import 시점에서 숫자 타입을 명시해야 한다.
 
-실행 순서는 보통 다음과 같다.
+실행 순서는 다음과 같다.
 
 ```text
+history_graph_reset.cypher
 history_graph_constraints.cypher
 history_graph_import_nodes.cypher
 history_graph_import_relations.cypher
 history_graph_verify.cypher
 ```
 
-처음부터 깨끗하게 다시 넣어야 하면 `storage/neo4j/load_schema.py --reset`을 실행한다. 이 옵션은 기본 import 순서 맨 앞에 `history_graph_reset.cypher`를 추가한다.
+`storage/neo4j/load_schema.py`를 실행하면 항상 기존 노드와 관계를 전부 삭제한 뒤 다시 적재한다.
 
 ---
 

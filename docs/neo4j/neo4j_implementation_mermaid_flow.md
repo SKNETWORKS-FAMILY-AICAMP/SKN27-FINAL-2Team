@@ -12,7 +12,7 @@
 - mapping CSV 6개
 - staging CSV 3개
 - 최종 node CSV 14개
-- 최종 relationship CSV 25개와 optional relation CSV 2개
+- 최종 relationship CSV 27개와 optional relation CSV 2개
 - Cypher 5개
 - Neo4j import 경로와 Docker mount
 - 카테고리, 이벤트 분류, 시대 범위, 인물 관계 생성 규칙
@@ -689,7 +689,7 @@ flowchart TB
 
     load_schema["load_schema.py"]
 
-    reset["history_graph_reset.cypher<br/>--reset 선택 실행<br/>현재 graph + legacy schema 삭제"]
+    reset["history_graph_reset.cypher<br/>항상 실행<br/>기존 노드/관계 전체 배치 삭제"]
     constraints["history_graph_constraints.cypher<br/>unique constraint / index 생성"]
     import_node_cypher["history_graph_import_nodes.cypher<br/>node CSV import"]
     import_relation_cypher["history_graph_import_relations.cypher<br/>relationship CSV import"]
@@ -703,8 +703,7 @@ flowchart TB
 
     container_import --> load_schema
 
-    load_schema -.-> reset
-    load_schema --> constraints
+    load_schema --> reset
     reset --> constraints
     constraints --> import_node_cypher
     import_node_cypher --> import_relation_cypher

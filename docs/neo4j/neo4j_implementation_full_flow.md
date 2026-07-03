@@ -77,7 +77,7 @@ runner 실행 순서:
 | `storage/neo4j/load_schema.py` | import runner | Cypher 파일을 순서대로 실행 |
 | `storage/neo4j/docker-compose.yml` | Neo4j 실행 | import 폴더를 컨테이너 `/var/lib/neo4j/import`로 마운트 |
 
-`storage/neo4j/neo4j_import` 루트에 남아 있는 `event.csv`, `event_relation.csv`, `history_terms.csv`는 현재 `history_graph_*.cypher` import 쿼리에서 직접 사용하지 않는다. 현재 사용 대상은 `nodes/*.csv`, `relations/*.csv`다.
+`storage/neo4j/neo4j_import` 아래의 import 대상은 `nodes/*.csv`, `relations/*.csv`다. 과거 루트에 있던 `event.csv`, `event_relation.csv`, `history_terms.csv`는 삭제되어 더 이상 존재하지 않는다.
 
 ---
 
@@ -263,6 +263,8 @@ flowchart LR
     Term -->|ABOUT_REGION| Region
     Term -->|ABOUT_ECONOMIC_DOMAIN| Econ
     Term -->|ABOUT_TAXONOMY_FACET| TaxFacet
+    Term -->|REFERS_TO| Person
+    Term -->|REFERS_TO| Event
 
     Event -->|HAS_EVENT_CATEGORY| SourceCat
     Event -->|HAS_CATEGORY| Category
@@ -297,6 +299,8 @@ flowchart LR
 | `term_about_region.csv` | `ABOUT_REGION` | 82 | `Term -> Region` | 용어의 category가 region crosswalk에 걸리면 연결 |
 | `term_about_economic_domain.csv` | `ABOUT_ECONOMIC_DOMAIN` | 2,894 | `Term -> EconomicDomain` | 용어의 category가 경제 분야 crosswalk에 걸리면 연결 |
 | `term_about_taxonomy_facet.csv` | `ABOUT_TAXONOMY_FACET` | 22,962 | `Term -> TaxonomyFacet` | 용어의 category가 중간 taxonomy facet에 속하면 연결 |
+| `term_refers_to_person.csv` | `REFERS_TO` | 3,720 | `Term -> Person` | 이름이 양쪽에서 유일하면 `EXACT_NAME`, 동명이 있으면 이름+한자 조합이 유일할 때만 `NAME_HANJA`로 연결. 그 외 동명 케이스는 관계를 만들지 않음 |
+| `term_refers_to_event.csv` | `REFERS_TO` | 13 | `Term -> Event` | 용어명과 사건명이 양쪽에서 유일하게 일치하는 경우만 연결 |
 | `event_has_source_category.csv` | `HAS_EVENT_CATEGORY` | 713 | `Event -> SourceEventCategory` | 이벤트 원천 분류를 원형 그대로 보존 |
 | `event_has_canonical_category.csv` | `HAS_CATEGORY` | 692 | `Event -> CanonicalCategory` | `taxonomy_crosswalk.csv`에서 표준 카테고리 매핑이 있는 이벤트만 연결 |
 | `event_has_facet.csv` | `HAS_EVENT_FACET` | 713 | `Event -> EventFacet` | source event category를 event facet seed 기준으로 연결 |
@@ -307,7 +311,7 @@ flowchart LR
 | `event_about_country.csv` | `ABOUT_COUNTRY` | 2 | `Event -> Country` | 이벤트 표준 카테고리가 국가 crosswalk에 걸리면 연결 |
 | `event_about_taxonomy_facet.csv` | `ABOUT_TAXONOMY_FACET` | 714 | `Event -> TaxonomyFacet` | 이벤트 표준 카테고리가 taxonomy facet에 속하면 연결 |
 | `person_involved_in_event.csv` | `INVOLVED_IN` | 6,918 | `Person -> Event` | event_relations의 사건-인물 관계. CSV 속성 `relation_type`도 Neo4j 관계 타입과 같은 `INVOLVED_IN`으로 맞춤 |
-| `person_related_to_person.csv` | `RELATED_TO` | 206,507 | `Person -> Person` | person_relations의 인물 관계. raw/normalized relation type과 방향성 속성 보존 |
+| `person_related_to_person.csv` | `RELATED_TO` | 184,056 | `Person -> Person` | person_relations의 인물 관계. raw/normalized relation type과 방향성 속성 보존. 대칭 관계(`is_symmetric=Y`)는 무방향 쌍 기준으로 한 방향만 저장. 인물 이름과 detail_url은 Person 노드에 있으므로 관계 속성에서 제외 |
 | `person_has_source_url.csv` | `HAS_SOURCE_URL` | 56,212 | `Person -> SourceUrl` | person detail URL을 출처 URL 노드에 연결 |
 | `canonical_category_subcategory_of.csv` | `SUBCATEGORY_OF` | 335 | `CanonicalCategory -> CanonicalCategory` | 표준 카테고리 부모-자식 관계. 국가/지역 의미 축으로 분리한 경로는 계층 관계에서 제외 |
 | `source_category_mapped_to_canonical_category.csv` | `MAPPED_TO_CATEGORY` | 45 | `SourceEventCategory -> CanonicalCategory` | 원천 이벤트 분류와 표준 카테고리 crosswalk |
@@ -360,6 +364,8 @@ flowchart LR
 
 관계 type을 `HAS_FATHER`, `SIBLING_OF`처럼 모두 쪼개지 않은 이유는 raw 관계명이 다양하고 검수 전 의미가 불안정하기 때문이다. type은 단순화하고 의미는 속성으로 두면 import가 안정적이고, 나중에 정제 규칙을 보강하기 쉽다.
 
+대칭 관계(`is_symmetric=Y`, 예: `교유`, `형제`)는 원본에 A->B, B->A 양방향으로 들어 있으므로 CSV 생성 단계에서 무방향 쌍 기준으로 한 방향만 남긴다. 따라서 대칭 관계를 조회할 때는 방향 없는 패턴 `(a)-[r:RELATED_TO]-(b)`을 사용해야 한다.
+
 ---
 
 ## 9. Cypher 구현
@@ -368,7 +374,7 @@ flowchart LR
 
 | 파일 | 기본 실행 여부 | 역할 |
 |---|---|---|
-| `history_graph_reset.cypher` | 아니오 | 현재 history graph label과 예전 `init.cypher`, `event.cypher`가 만들던 legacy label을 함께 `DETACH DELETE`로 삭제 |
+| `history_graph_reset.cypher` | 예 | 기존 노드와 관계 전체를 배치 단위(`CALL { } IN TRANSACTIONS`)로 `DETACH DELETE` |
 | `history_graph_constraints.cypher` | 예 | 14개 label의 ID unique constraint와 주요 name/path/url index 생성 |
 | `history_graph_import_nodes.cypher` | 예 | `file:///nodes/*.csv`에서 모든 노드 import |
 | `history_graph_import_relations.cypher` | 예 | `file:///relations/*.csv`에서 모든 관계 import |
@@ -377,19 +383,20 @@ flowchart LR
 `load_schema.py` 기본 실행 순서:
 
 ```text
+history_graph_reset.cypher
 history_graph_constraints.cypher
 history_graph_import_nodes.cypher
 history_graph_import_relations.cypher
 history_graph_verify.cypher
 ```
 
-초기화까지 같이 하고 싶으면 `--reset` 옵션을 쓴다. 이 옵션은 기본 실행 순서 맨 앞에 `history_graph_reset.cypher`를 추가한다.
+reset은 항상 실행된다. `load_schema.py`를 실행하면 기존 노드와 관계를 전부 삭제한 뒤 다시 적재한다.
 
 ```powershell
-.\.venv\Scripts\python.exe storage/neo4j/load_schema.py --reset
+.\.venv\Scripts\python.exe storage/neo4j/load_schema.py
 ```
 
-`NEO4J_SCHEMA_FILES` 환경변수로 직접 순서를 지정하는 방식도 지원한다. 이 경우에도 `--reset`을 함께 주면 `history_graph_reset.cypher`가 목록 앞에 없을 때 자동으로 추가된다.
+`NEO4J_SCHEMA_FILES` 환경변수로 직접 순서를 지정하는 방식도 지원한다. 이 경우에도 `history_graph_reset.cypher`가 목록 앞에 없으면 자동으로 추가된다.
 
 ### 9.2 constraints와 indexes
 
@@ -524,11 +531,7 @@ docker compose -f storage/neo4j/docker-compose.yml up -d
 .\.venv\Scripts\python.exe storage/neo4j/load_schema.py
 ```
 
-깨끗하게 다시 넣을 때:
-
-```powershell
-.\.venv\Scripts\python.exe storage/neo4j/load_schema.py --reset
-```
+실행하면 기존 노드와 관계를 전부 삭제한 뒤 다시 적재한다.
 
 ---
 
@@ -606,3 +609,48 @@ Tavily 같은 Web RAG 도구를 붙일 경우, 그래프에서 관련 `SourceUrl
 - 인물 관계는 type을 과하게 쪼개지 않고 `RELATED_TO` 하나와 속성으로 의미를 표현한다.
 - 최종 import 대상은 `storage/neo4j/neo4j_import/nodes`, `storage/neo4j/neo4j_import/relations`다.
 - Neo4j import 쿼리는 `storage/neo4j/schema/history_graph_*.cypher`만 보면 된다.
+
+---
+
+## 14. 노드와 관계 의미 사전
+
+### 14.1 노드 (Label) 의미
+
+| Label | 의미 | 예시 |
+|---|---|---|
+| `Term` | 한국역사용어 시소러스의 역사 용어. 그래프의 지식 검색 출발점 | 회사령, 강감찬, 위화도회군 |
+| `Event` | ITKC 관계망의 역사 사건 | 위화도회군, 강동성전투 |
+| `Person` | 사건 참여자와 인물 관계망의 인물 | 강감찬(姜邯贊), 이색(李穡) |
+| `CanonicalCategory` | `term_lk` 경로를 분해해 만든 표준 카테고리. 계층 구조를 가짐 | 정치·행정·법제>행정>중앙행정기구 |
+| `SourceEventCategory` | ITKC 사건 데이터의 원본 분류. 원형 보존용 | 전쟁, 반란, 옥사 |
+| `Period` | 표준 시대/기간. 순서와 연도 범위 보유 | 고려시대, 조선후기 |
+| `SourceUrl` | 출처 URL. RAG 본문 수집(Tavily) 후보 목록 겸 답변 근거 | thesaurus.itkc.or.kr/... |
+| `EventGroup` | `related_event` 기준으로 여러 사건을 묶은 사건군 | 고려거란전쟁 |
+| `EventFacet` | 사건 분류를 의미 단위로 재분류한 facet | 전쟁, 정치, 제도 |
+| `Country` | 카테고리 경로에서 분리한 국가/정치체 의미 축 | 러시아, 미국 |
+| `Region` | 카테고리 경로에서 분리한 권역 의미 축 | 동남아시아, 유럽 |
+| `EconomicDomain` | 경제·산업 하위의 경제 분야 의미 축 | 수산업, 광공업 |
+| `TaxonomyFacet` | 하위 카테고리를 가진 중간 카테고리 경로를 검색/필터 축으로 분리한 노드 | 정치·행정·법제>행정 |
+| `SearchTag` | 이벤트 검색 편의를 위해 여러 의미 축을 통합한 태그 | - |
+
+### 14.2 관계 (Relationship type) 의미
+
+| Type | 연결 | 의미 |
+|---|---|---|
+| `HAS_CATEGORY` | `Term/Event -> CanonicalCategory` | 용어/사건이 속한 표준 카테고리 (Term은 leaf에만 직접 연결) |
+| `SUBCATEGORY_OF` | `CanonicalCategory -> CanonicalCategory` | 카테고리 계층에서 자식 -> 부모 |
+| `IN_PERIOD` | `Term/Event -> Period` | 해당 시대에 속함. `match_type`으로 직접 표기인지 범위 확장인지 구분 |
+| `HAS_EVENT_CATEGORY` | `Event -> SourceEventCategory` | 사건의 원본 분류 (원형 보존) |
+| `MAPPED_TO_CATEGORY` | `SourceEventCategory -> CanonicalCategory` | 원본 사건 분류와 표준 카테고리의 crosswalk 매핑 |
+| `HAS_EVENT_FACET` | `Event -> EventFacet` | 사건의 의미 facet 분류 |
+| `PART_OF_EVENT_GROUP` | `Event -> EventGroup` | 사건이 상위 사건군에 속함 |
+| `INVOLVED_IN` | `Person -> Event` | 인물이 사건에 참여/관련됨 |
+| `RELATED_TO` | `Person -> Person` | 인물 간 관계. 의미는 `normalized_relation_type` 등 속성으로 보존. 대칭 관계는 한 방향만 저장하므로 무방향 패턴으로 조회 |
+| `REFERS_TO` | `Term -> Person/Event` | 용어가 가리키는 실제 인물/사건. 이름(+한자) 유일 매칭으로 생성. Term에서 SourceUrl로 가는 다리 역할 |
+| `HAS_SOURCE_URL` | `Event/Person -> SourceUrl` | 노드의 출처 URL. RAG 수집 경로 |
+| `HAS_SEARCH_TAG` | `Event -> SearchTag` | 사건의 통합 검색 태그 |
+| `ABOUT_COUNTRY` | `Term/Event/CanonicalCategory -> Country` | 해당 국가를 다룸 (카테고리 계층이 아닌 의미 축) |
+| `ABOUT_REGION` | `Term/Event/CanonicalCategory -> Region` | 해당 권역을 다룸 |
+| `ABOUT_ECONOMIC_DOMAIN` | `Term/Event/CanonicalCategory -> EconomicDomain` | 해당 경제 분야를 다룸 |
+| `ABOUT_TAXONOMY_FACET` | `Term/Event/CanonicalCategory -> TaxonomyFacet` | 해당 중간 분류 축에 속함 |
+| `SUBREGION_OF` | `Region -> Region` | 권역 계층에서 하위 -> 상위 |

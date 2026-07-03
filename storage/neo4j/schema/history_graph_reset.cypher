@@ -1,26 +1,5 @@
 MATCH (n)
-WHERE any(
-    node_label IN labels(n)
-    WHERE node_label IN [
-        'Term',
-        'Event',
-        'Person',
-        'CanonicalCategory',
-        'SourceEventCategory',
-        'Period',
-        'SourceUrl',
-        'EventGroup',
-        'EventFacet',
-        'Country',
-        'Region',
-        'EconomicDomain',
-        'TaxonomyFacet',
-        'SearchTag',
-        'TermName',
-        'TermTimes',
-        'TermLink',
-        'CategoryName',
-        'SubjectCategory'
-    ]
-)
-DETACH DELETE n;
+CALL {
+    WITH n
+    DETACH DELETE n
+} IN TRANSACTIONS OF 1000 ROWS;
