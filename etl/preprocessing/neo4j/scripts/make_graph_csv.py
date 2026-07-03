@@ -14,6 +14,7 @@ from neo4j_common import (
     build_sequential_ids,
     clean_value,
     first_value,
+    normalize_keyword_series,
     print_summary,
     read_csv,
     resolve_neo4j_dir,
@@ -136,6 +137,21 @@ def parse_args(default_paths):
         type=Path,
     )
     parser.add_argument(
+        "--term-year-parse-path",
+        default=default_paths["term_year_parse"],
+        type=Path,
+    )
+    parser.add_argument(
+        "--keyword-era-seed-path",
+        default=default_paths["keyword_era_seed"],
+        type=Path,
+    )
+    parser.add_argument(
+        "--term-person-review-approved-path",
+        default=default_paths["term_person_review_approved"],
+        type=Path,
+    )
+    parser.add_argument(
         "--nodes-dir",
         default=default_paths["nodes_dir"],
         type=Path,
@@ -164,7 +180,59 @@ def filter_actual_terms(terms_data):
     return target_data
 
 
-def build_term_nodes(terms_data):
+def merge_term_year_parse_columns(term_nodes, term_year_parse):
+    parse_columns = [
+        "term_id",
+        "start_year",
+        "end_year",
+        "date_precision",
+        "parse_status",
+    ]
+    parse_data = term_year_parse[parse_columns].drop_duplicates(
+        subset=["term_id"]
+    ).copy()
+    parse_data = parse_data.rename(
+        columns={
+            "date_precision": "year_precision",
+            "parse_status": "year_parse_status",
+        }
+    )
+    term_nodes = term_nodes.merge(parse_data, on="term_id", how="left")
+    term_nodes["year_precision"] = term_nodes["year_precision"].fillna("UNKNOWN")
+    term_nodes["year_parse_status"] = term_nodes["year_parse_status"].fillna("UNKNOWN")
+
+    return term_nodes
+
+
+def add_term_question_ready_columns(term_nodes):
+    description_text = term_nodes["description"].fillna("").astype(str).str.strip()
+    term_nodes["description_length"] = description_text.str.len()
+    term_nodes["question_ready"] = "N"
+    term_nodes.loc[
+        term_nodes["description_length"].ge(50),
+        "question_ready",
+    ] = "Y"
+
+    return term_nodes
+
+
+def add_exam_keyword_column(term_nodes, keyword_era_seed):
+    keyword_data = keyword_era_seed.copy()
+    keyword_data["normalized_keyword"] = normalize_keyword_series(keyword_data["keyword"])
+    exam_keywords = set(keyword_data["normalized_keyword"])
+
+    term_nodes["normalized_name_for_keyword"] = normalize_keyword_series(term_nodes["name"])
+    term_nodes["is_exam_keyword"] = "N"
+    term_nodes.loc[
+        term_nodes["normalized_name_for_keyword"].isin(exam_keywords),
+        "is_exam_keyword",
+    ] = "Y"
+    term_nodes = term_nodes.drop(columns=["normalized_name_for_keyword"])
+
+    return term_nodes
+
+
+def build_term_nodes(terms_data, keyword_era_seed, term_year_parse):
     target_data = filter_actual_terms(terms_data)
     term_nodes = target_data[
         [
@@ -191,6 +259,9 @@ def build_term_nodes(terms_data):
         }
     )
     term_nodes["source"] = "history_terms"
+    term_nodes = merge_term_year_parse_columns(term_nodes, term_year_parse)
+    term_nodes = add_term_question_ready_columns(term_nodes)
+    term_nodes = add_exam_keyword_column(term_nodes, keyword_era_seed)
 
     return term_nodes[
         [
@@ -203,6 +274,13 @@ def build_term_nodes(terms_data):
             "category_text",
             "description",
             "topterm_id",
+            "start_year",
+            "end_year",
+            "year_precision",
+            "year_parse_status",
+            "description_length",
+            "question_ready",
+            "is_exam_keyword",
             "source",
         ]
     ]
@@ -709,6 +787,7 @@ def build_person_nodes(event_relations_data, person_relations_data):
     ]
     people_data = pd.concat(people_parts, ignore_index=True)
     people_data = people_data.dropna(subset=["person_id"]).copy()
+    degree_lookup = build_person_degree_lookup(event_relations_data, person_relations_data)
 
     person_nodes = (
         people_data
@@ -727,6 +806,9 @@ def build_person_nodes(event_relations_data, person_relations_data):
         .sort_values("person_id")
         .reset_index(drop=True)
     )
+    person_nodes["degree"] = (
+        person_nodes["person_id"].map(degree_lookup).fillna(0).astype(int)
+    )
 
     return person_nodes[
         [
@@ -738,9 +820,33 @@ def build_person_nodes(event_relations_data, person_relations_data):
             "bonkwan",
             "father_name",
             "detail_urls",
+            "degree",
             "source",
         ]
     ]
+
+
+def build_person_degree_lookup(event_relations_data, person_relations_data):
+    # 그래프에서 인물의 연결 정도를 미리 계산해 출제 우선순위나 중심 인물 후보에 쓴다.
+    degree_parts = []
+
+    if "person_id" in event_relations_data.columns:
+        degree_parts.append(event_relations_data["person_id"])
+
+    if "person_id" in person_relations_data.columns:
+        degree_parts.append(person_relations_data["person_id"])
+
+    if "related_person_id" in person_relations_data.columns:
+        degree_parts.append(person_relations_data["related_person_id"])
+
+    if len(degree_parts) == 0:
+        return {}
+
+    degree_data = pd.concat(degree_parts, ignore_index=True).dropna()
+    degree_data = degree_data.astype(str).str.strip()
+    degree_data = degree_data[degree_data.ne("")]
+
+    return degree_data.value_counts().to_dict()
 
 
 def build_term_has_category(term_category_relation):
@@ -1880,7 +1986,72 @@ def find_unique_names(left_names, right_names):
     return unique_left & unique_right
 
 
-def build_term_refers_to_person(term_nodes, person_nodes):
+def build_term_person_relation_columns():
+    return [
+        "start_term_id",
+        "end_person_id",
+        "relation_type",
+        "match_type",
+        "matched_name",
+        "matched_hanja",
+    ]
+
+
+def empty_term_person_relations():
+    return pd.DataFrame(columns=build_term_person_relation_columns())
+
+
+def build_manual_term_person_links(
+    term_nodes,
+    person_nodes,
+    term_person_review_approved,
+):
+    if term_person_review_approved.empty:
+        return empty_term_person_relations()
+
+    if "review_status" not in term_person_review_approved.columns:
+        return empty_term_person_relations()
+
+    approved_data = term_person_review_approved[
+        term_person_review_approved["review_status"].isin(["APPROVED", "AUTO_APPROVED"])
+    ].copy()
+
+    if approved_data.empty:
+        return empty_term_person_relations()
+
+    approved_data = approved_data.rename(
+        columns={
+            "term_id": "start_term_id",
+            "person_id": "end_person_id",
+        }
+    )
+    term_data = term_nodes[["term_id", "name", "hanja"]].rename(
+        columns={
+            "term_id": "start_term_id",
+            "name": "matched_name",
+            "hanja": "matched_hanja",
+        }
+    )
+    person_data = person_nodes[["person_id"]].rename(
+        columns={"person_id": "end_person_id"}
+    )
+    link_data = approved_data[["start_term_id", "end_person_id"]].merge(
+        term_data,
+        on="start_term_id",
+        how="inner",
+    )
+    link_data = link_data.merge(person_data, on="end_person_id", how="inner")
+    link_data["relation_type"] = "REFERS_TO"
+    link_data["match_type"] = "MANUAL"
+
+    return link_data[build_term_person_relation_columns()]
+
+
+def build_term_refers_to_person(
+    term_nodes,
+    person_nodes,
+    term_person_review_approved,
+):
     # 이름이 양쪽에서 유일하면 EXACT_NAME으로 연결하고,
     # 동명이 있으면 이름+한자 조합이 양쪽에서 유일할 때만 NAME_HANJA로 연결한다.
     # 그 외 동명 케이스는 검수 대상으로 보고 관계를 만들지 않는다.
@@ -1922,9 +2093,9 @@ def build_term_refers_to_person(term_nodes, person_nodes):
     )
     hanja_links["match_type"] = "NAME_HANJA"
 
-    link_data = pd.concat([auto_links, hanja_links], ignore_index=True)
-    link_data["relation_type"] = "REFERS_TO"
-    link_data = link_data.rename(
+    auto_link_data = pd.concat([auto_links, hanja_links], ignore_index=True)
+    auto_link_data["relation_type"] = "REFERS_TO"
+    auto_link_data = auto_link_data.rename(
         columns={
             "term_id": "start_term_id",
             "person_id": "end_person_id",
@@ -1932,17 +2103,19 @@ def build_term_refers_to_person(term_nodes, person_nodes):
             "hanja": "matched_hanja",
         }
     )
+    auto_link_data = auto_link_data[build_term_person_relation_columns()]
 
-    return link_data[
-        [
-            "start_term_id",
-            "end_person_id",
-            "relation_type",
-            "match_type",
-            "matched_name",
-            "matched_hanja",
-        ]
-    ]
+    manual_links = build_manual_term_person_links(
+        term_nodes,
+        person_nodes,
+        term_person_review_approved,
+    )
+    link_data = pd.concat([auto_link_data, manual_links], ignore_index=True)
+    link_data = link_data.drop_duplicates(
+        subset=["start_term_id", "end_person_id"]
+    )
+
+    return link_data[build_term_person_relation_columns()]
 
 
 def build_term_refers_to_event(term_nodes, event_nodes):
@@ -2046,7 +2219,14 @@ def build_url_lookup(source_url_nodes):
     return dict(zip(source_url_nodes["url"], source_url_nodes["source_url_id"]))
 
 
-def append_url_relation_rows(relation_rows, start_id, url_value, url_lookup, source_column):
+def append_url_relation_rows(
+    relation_rows,
+    start_id,
+    url_value,
+    url_lookup,
+    source_column,
+    relation_type="HAS_SOURCE_URL",
+):
     for url in split_pipe_values(url_value):
         source_url_id = url_lookup.get(url)
 
@@ -2055,7 +2235,7 @@ def append_url_relation_rows(relation_rows, start_id, url_value, url_lookup, sou
                 {
                     "start_id": start_id,
                     "end_source_url_id": source_url_id,
-                    "relation_type": "HAS_SOURCE_URL",
+                    "relation_type": relation_type,
                     "source_column": source_column,
                     "url": url,
                 }
@@ -2115,6 +2295,78 @@ def build_person_has_source_url(person_relations_data, source_url_nodes):
     ]
 
 
+def append_person_evidence_url_rows(
+    relation_rows,
+    person_id,
+    evidence_url,
+    url_lookup,
+    evidence_role,
+    raw_relation_type,
+):
+    for url in split_pipe_values(evidence_url):
+        source_url_id = url_lookup.get(url)
+
+        if pd.notna(source_url_id):
+            relation_rows.append(
+                {
+                    "start_person_id": person_id,
+                    "end_source_url_id": source_url_id,
+                    "relation_type": "HAS_EVIDENCE_URL",
+                    "source_column": "person_relations.evidence_url",
+                    "evidence_role": evidence_role,
+                    "raw_relation_type": raw_relation_type,
+                    "url": url,
+                }
+            )
+
+
+def build_person_has_evidence_url(person_relations_data, source_url_nodes):
+    # 인물 관계의 근거 URL은 관계 속성만으로 두지 않고 양쪽 인물에서 탐색 가능한 URL 노드로도 연결한다.
+    url_lookup = build_url_lookup(source_url_nodes)
+    relation_rows = []
+    target_columns = [
+        "person_id",
+        "related_person_id",
+        "relation_type",
+        "evidence_url",
+    ]
+    target_data = person_relations_data[target_columns].dropna(
+        subset=["evidence_url"]
+    )
+
+    for row in target_data.itertuples(index=False):
+        append_person_evidence_url_rows(
+            relation_rows,
+            row.person_id,
+            row.evidence_url,
+            url_lookup,
+            "START_PERSON",
+            row.relation_type,
+        )
+        append_person_evidence_url_rows(
+            relation_rows,
+            row.related_person_id,
+            row.evidence_url,
+            url_lookup,
+            "RELATED_PERSON",
+            row.relation_type,
+        )
+
+    relation_data = pd.DataFrame(relation_rows).drop_duplicates()
+
+    return relation_data[
+        [
+            "start_person_id",
+            "end_source_url_id",
+            "relation_type",
+            "source_column",
+            "evidence_role",
+            "raw_relation_type",
+            "url",
+        ]
+    ]
+
+
 def build_default_paths(script_path):
     base_dir = resolve_neo4j_dir(script_path)
     normalized_dir = base_dir / "normalized"
@@ -2122,6 +2374,7 @@ def build_default_paths(script_path):
     mapping_dir = base_dir / "mapping"
     staging_dir = base_dir / "staging"
     graph_dir = base_dir / "graph"
+    seed_dir = base_dir / "seed"
 
     return {
         "terms": normalized_dir / "terms.csv",
@@ -2157,9 +2410,19 @@ def build_default_paths(script_path):
         "term_canonical_category_relation": staging_dir / "term_canonical_category_relation.csv",
         "event_source_category_relation": staging_dir / "event_source_category_relation.csv",
         "event_date_parse": staging_dir / "event_date_parse.csv",
+        "term_year_parse": staging_dir / "term_year_parse.csv",
+        "keyword_era_seed": seed_dir / "keyword_era_seed.csv",
+        "term_person_review_approved": seed_dir / "term_person_review_approved.csv",
         "nodes_dir": graph_dir / "nodes",
         "relations_dir": graph_dir / "relations",
     }
+
+
+def read_optional_csv(input_path, purpose):
+    if input_path.exists():
+        return read_csv(input_path, purpose)
+
+    return pd.DataFrame()
 
 
 def read_inputs(args):
@@ -2229,6 +2492,12 @@ def read_inputs(args):
             "event_source_category_relation",
         ),
         "event_date_parse": read_csv(args.event_date_parse_path, "event_date_parse"),
+        "term_year_parse": read_csv(args.term_year_parse_path, "term_year_parse"),
+        "keyword_era_seed": read_csv(args.keyword_era_seed_path, "keyword_era_seed"),
+        "term_person_review_approved": read_optional_csv(
+            args.term_person_review_approved_path,
+            "term_person_review_approved",
+        ),
     }
 
 
@@ -2245,7 +2514,11 @@ def build_node_outputs(inputs):
     )
 
     return {
-        "terms": build_term_nodes(inputs["terms"]),
+        "terms": build_term_nodes(
+            inputs["terms"],
+            inputs["keyword_era_seed"],
+            inputs["term_year_parse"],
+        ),
         "canonical_categories": build_category_nodes(inputs["canonical_category_dictionary"]),
         "source_event_categories": build_event_category_nodes(
             inputs["source_event_category_dictionary"]
@@ -2386,6 +2659,7 @@ def build_relation_outputs(inputs, node_outputs):
         "term_refers_to_person": build_term_refers_to_person(
             node_outputs["terms"],
             node_outputs["people"],
+            inputs["term_person_review_approved"],
         ),
         "term_refers_to_event": build_term_refers_to_event(
             node_outputs["terms"],
@@ -2397,6 +2671,10 @@ def build_relation_outputs(inputs, node_outputs):
             node_outputs["source_urls"],
         ),
         "person_has_source_url": build_person_has_source_url(
+            inputs["person_relations"],
+            node_outputs["source_urls"],
+        ),
+        "person_has_evidence_url": build_person_has_evidence_url(
             inputs["person_relations"],
             node_outputs["source_urls"],
         ),

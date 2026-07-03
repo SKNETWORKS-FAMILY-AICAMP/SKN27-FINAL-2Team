@@ -976,5 +976,66 @@ RETURN t, r.match_type
 
 쿼리 결과에서 `match_type`을 보면 원문에 직접 있던 시대인지, 범위에서 추론된 중간 시대인지 구분할 수 있다.
 
+---
+
+## 15. 이벤트 분류와 용어 카테고리를 바로 합치지 않는 이유
+
+`history_terms.term_lk`와 `events.subject_category`는 모두 카테고리처럼 보이지만 같은 성격의 데이터가 아니다.
+
+`term_lk`는 시소러스 기반 계층형 분류다.
+
+```text
+정치·행정·법제>행정>중앙행정기구
+문화·예술>음악
+```
+
+`>`는 depth를 뜻하고, `>>`는 한 용어가 여러 분류 경로에 속한다는 뜻이다. 그래서 `CanonicalCategory`와 `SUBCATEGORY_OF` 계층을 만들 수 있다.
+
+반면 `events.subject_category`는 사건 수집 과정에서 붙은 평면 분류다.
+
+```text
+전쟁
+반란
+정치인
+```
+
+계층이 없고, 쉼표나 줄바꿈으로 복수값이 섞여 있으며, `term_lk`와 같은 명명 규칙을 쓰지 않는다. 따라서 `전쟁 = 국방·군사`처럼 의미상 연결되는 경우도 문자열만으로는 안전하게 합칠 수 없다.
+
+그래서 다음 사전과 매핑을 둔다.
+
+| 파일 | 필요한 이유 |
+|---|---|
+| `source_event_category_dictionary.csv` | 이벤트 원본 분류를 손실 없이 보존 |
+| `canonical_category_dictionary.csv` | 용어집 기반 표준 카테고리 기준점 |
+| `taxonomy_crosswalk.csv` | 서로 다른 두 분류 체계를 연결하는 검수 가능한 매핑표 |
+
+이 방식은 원본 보존과 표준 검색을 동시에 만족한다. 매핑이 틀렸다면 원본 데이터를 고치지 않고 `taxonomy_crosswalk_seed.csv`만 수정하면 된다.
+
+## 16. EventFacet과 SearchTag가 겹쳐도 둘 다 필요한 이유
+
+`EventFacet`과 `SearchTag`에는 `전쟁`, `정치`, `제도`처럼 겹치는 값이 있을 수 있다. 하지만 둘의 목적은 다르다.
+
+| 구분 | 목적 |
+|---|---|
+| `EventFacet` | 사건의 의미 성격을 정규화한 축 |
+| `SearchTag` | 검색 쿼리를 단순하게 만들기 위한 통합 태그 축 |
+
+`EventFacet`은 의미 모델이다. “이 사건은 전쟁 성격이다”처럼 사건 분류를 재분류한다.
+
+`SearchTag`는 검색 최적화 레이어다. 사용자가 “전쟁 관련 사건”을 찾을 때 원본 분류, 표준 카테고리, facet, 국가, 지역, taxonomy facet을 모두 `OR`로 탐색하면 쿼리가 길어진다. `SearchTag`를 두면 다음처럼 한 관계로 조회할 수 있다.
+
+```cypher
+MATCH (e:Event)-[:HAS_SEARCH_TAG]->(:SearchTag {name: "전쟁"})
+RETURN e
+```
+
+대신 태그가 어디서 왔는지 잃지 않도록 `HAS_SEARCH_TAG` 관계에 `source_node_type`, `source_node_id`, `source_relation`을 남긴다.
+
+정리하면 다음과 같다.
+
+- 정밀한 의미 분석: `SourceEventCategory`, `CanonicalCategory`, `EventFacet`
+- 빠른 키워드 검색: `SearchTag`
+- 매핑 기준 수정: seed/crosswalk 수정 후 CSV 재생성
+
 
 

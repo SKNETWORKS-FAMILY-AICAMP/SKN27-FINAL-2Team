@@ -5,14 +5,14 @@
 포함 범위:
 
 - raw CSV 입력
-- 전처리 runner와 4개 스크립트
-- seed CSV 7개
+- 전처리 runner와 5개 스크립트
+- seed CSV 13개
 - normalized CSV 4개
 - dictionary CSV 10개
 - mapping CSV 6개
-- staging CSV 3개
-- 최종 node CSV 14개
-- 최종 relationship CSV 27개와 optional relation CSV 2개
+- staging CSV 4개
+- 최종 node CSV 17개
+- 최종 relationship CSV 32개와 optional relation CSV 2개
 - Cypher 5개
 - Neo4j import 경로와 Docker mount
 - 카테고리, 이벤트 분류, 시대 범위, 인물 관계 생성 규칙
@@ -452,59 +452,105 @@ flowchart TB
 
 ## 10. Neo4j 그래프 스키마
 
+### 10.1 서비스 관점 핵심 스키마 (문제 생성에 쓰는 축)
+
 ```mermaid
 flowchart LR
-    term["Term<br/>terms.csv"]
-    event["Event<br/>events.csv"]
-    person["Person<br/>people.csv"]
-    category["CanonicalCategory<br/>canonical_categories.csv"]
-    source_cat["SourceEventCategory<br/>source_event_categories.csv"]
-    period["Period<br/>periods.csv"]
-    source_url["SourceUrl<br/>source_urls.csv"]
-    event_group["EventGroup<br/>event_groups.csv"]
-    event_facet["EventFacet<br/>event_facets.csv"]
-    country["Country<br/>countries.csv"]
-    region["Region<br/>regions.csv"]
-    economic["EconomicDomain<br/>economic_domains.csv"]
-    taxonomy_facet["TaxonomyFacet<br/>taxonomy_facets.csv"]
-    search_tag["SearchTag<br/>search_tags.csv"]
+    subgraph core["핵심 노드"]
+        term["Term<br/>역사 용어 (61,598)"]
+        event["Event<br/>역사 사건 (600)"]
+        person["Person<br/>인물 (56,403)"]
+    end
 
-    term -->|"HAS_CATEGORY<br/>term_has_canonical_category.csv"| category
-    term -->|"IN_PERIOD<br/>term_in_period.csv"| period
-    term -->|"ABOUT_COUNTRY<br/>term_about_country.csv"| country
-    term -->|"ABOUT_REGION<br/>term_about_region.csv"| region
-    term -->|"ABOUT_ECONOMIC_DOMAIN<br/>term_about_economic_domain.csv"| economic
-    term -->|"ABOUT_TAXONOMY_FACET<br/>term_about_taxonomy_facet.csv"| taxonomy_facet
+    subgraph service["서비스 3축"]
+        theme["Theme<br/>주제 10개<br/>사건·인물·정치·제도·문화<br/>사회·군사·경제·사상종교·외교"]
+        era["Era<br/>표준 시대 10개<br/>선사~현대"]
+        entity["EntityType<br/>실체 유형 4개<br/>인물·문헌·문화재·장소"]
+    end
 
-    event -->|"HAS_EVENT_CATEGORY<br/>event_has_source_category.csv"| source_cat
-    event -->|"HAS_CATEGORY<br/>event_has_canonical_category.csv"| category
-    event -->|"HAS_EVENT_FACET<br/>event_has_facet.csv"| event_facet
-    event -->|"IN_PERIOD<br/>event_in_period.csv"| period
-    event -->|"PART_OF_EVENT_GROUP<br/>event_part_of_event_group.csv"| event_group
-    event -->|"HAS_SOURCE_URL<br/>event_has_source_url.csv"| source_url
-    event -->|"HAS_SEARCH_TAG<br/>event_has_search_tag.csv"| search_tag
-    event -->|"ABOUT_COUNTRY<br/>event_about_country.csv"| country
-    opt_event_region["ABOUT_REGION optional<br/>event_about_region.csv<br/>0행이면 미생성"]
-    opt_event_economic["ABOUT_ECONOMIC_DOMAIN optional<br/>event_about_economic_domain.csv<br/>0행이면 미생성"]
+    subgraph url["출처"]
+        source_url["SourceUrl<br/>출처 URL (79,693)<br/>RAG 수집 후보"]
+    end
 
-    event -.-> opt_event_region
-    opt_event_region -.-> region
-    event -.-> opt_event_economic
-    opt_event_economic -.-> economic
-    event -->|"ABOUT_TAXONOMY_FACET<br/>event_about_taxonomy_facet.csv"| taxonomy_facet
+    term -->|"HAS_THEME · 주제"| theme
+    event -->|"HAS_THEME · 주제"| theme
+    term -->|"IN_ERA · 시대"| era
+    event -->|"IN_ERA · 시대"| era
+    person -->|"IN_ERA · 시대 (생몰년/사건 추론)"| era
+    term -->|"HAS_ENTITY_TYPE · 실체 유형"| entity
 
-    person -->|"INVOLVED_IN<br/>person_involved_in_event.csv"| event
-    person -->|"RELATED_TO<br/>person_related_to_person.csv"| person
-    person -->|"HAS_SOURCE_URL<br/>person_has_source_url.csv"| source_url
+    term -->|"REFERS_TO · 가리키는 실체"| person
+    term -->|"REFERS_TO · 가리키는 실체"| event
+    person -->|"INVOLVED_IN · 사건 참여"| event
+    person -->|"RELATED_TO · 인물 관계"| person
 
-    category -->|"SUBCATEGORY_OF<br/>canonical_category_subcategory_of.csv"| category
-    source_cat -->|"MAPPED_TO_CATEGORY<br/>source_category_mapped_to_canonical_category.csv"| category
-    category -->|"ABOUT_COUNTRY<br/>canonical_category_about_country.csv"| country
-    category -->|"ABOUT_REGION<br/>canonical_category_about_region.csv"| region
-    category -->|"ABOUT_ECONOMIC_DOMAIN<br/>canonical_category_about_economic_domain.csv"| economic
-    category -->|"ABOUT_TAXONOMY_FACET<br/>canonical_category_about_taxonomy_facet.csv"| taxonomy_facet
-    region -->|"SUBREGION_OF<br/>region_subregion_of.csv"| region
+    event -->|"HAS_SOURCE_URL · 출처"| source_url
+    person -->|"HAS_SOURCE_URL · 상세 페이지"| source_url
+    person -->|"HAS_EVIDENCE_URL · 관계 근거"| source_url
 ```
+
+### 10.2 분류 체계와 의미 축 상세 스키마
+
+```mermaid
+flowchart LR
+    subgraph core2["핵심 노드"]
+        term2["Term<br/>역사 용어"]
+        event2["Event<br/>역사 사건"]
+    end
+
+    subgraph classify["분류 체계"]
+        category["CanonicalCategory<br/>표준 카테고리 (400)"]
+        source_cat["SourceEventCategory<br/>사건 원본 분류 (53)"]
+        event_facet["EventFacet<br/>사건 의미 facet (53)"]
+        taxonomy_facet["TaxonomyFacet<br/>중간 분류 축 (49)"]
+        search_tag["SearchTag<br/>통합 검색 태그 (583)"]
+        theme2["Theme<br/>주제 (원천 매핑)"]
+    end
+
+    subgraph time["시대 체계"]
+        period["Period<br/>원본 시대 표기 (30)"]
+        era2["Era<br/>표준 시대 (10)"]
+    end
+
+    subgraph axis["의미 축"]
+        country["Country<br/>국가 (5)"]
+        region["Region<br/>권역 (7)"]
+        economic["EconomicDomain<br/>경제 분야 (16)"]
+    end
+
+    subgraph grp["사건 그룹"]
+        event_group["EventGroup<br/>사건군 (32)"]
+    end
+
+    term2 -->|"HAS_CATEGORY · 카테고리 (leaf만)"| category
+    term2 -->|"IN_PERIOD · 원본 시대"| period
+    term2 -->|"ABOUT_COUNTRY · 관련 국가"| country
+    term2 -->|"ABOUT_REGION · 관련 권역"| region
+    term2 -->|"ABOUT_ECONOMIC_DOMAIN · 경제 분야"| economic
+    term2 -->|"ABOUT_TAXONOMY_FACET · 중간 분류"| taxonomy_facet
+
+    event2 -->|"HAS_EVENT_CATEGORY · 원본 분류"| source_cat
+    event2 -->|"HAS_CATEGORY · 표준 분류"| category
+    event2 -->|"HAS_EVENT_FACET · 의미 facet"| event_facet
+    event2 -->|"IN_PERIOD · 원본 시대"| period
+    event2 -->|"PART_OF_EVENT_GROUP · 사건군"| event_group
+    event2 -->|"HAS_SEARCH_TAG · 검색 태그"| search_tag
+    event2 -->|"ABOUT_COUNTRY · 관련 국가"| country
+    event2 -->|"ABOUT_TAXONOMY_FACET · 중간 분류"| taxonomy_facet
+    event2 -.->|"ABOUT_REGION / ABOUT_ECONOMIC_DOMAIN<br/>optional · 현재 0행이라 미생성"| region
+
+    category -->|"SUBCATEGORY_OF · 하위→상위"| category
+    category -->|"HAS_THEME · 주제 원천 매핑"| theme2
+    source_cat -->|"MAPPED_TO_CATEGORY · crosswalk"| category
+    category -->|"ABOUT_COUNTRY"| country
+    category -->|"ABOUT_REGION"| region
+    category -->|"ABOUT_ECONOMIC_DOMAIN"| economic
+    category -->|"ABOUT_TAXONOMY_FACET"| taxonomy_facet
+    region -->|"SUBREGION_OF · 하위 권역"| region
+    period -->|"PART_OF_ERA · 표준 시대 통합"| era2
+```
+
+읽는 법: 10.1이 문제 생성 서비스가 실제로 쓰는 관계이고(전부 1홉 직통), 10.2는 그 직통 엣지의 원천이 되는 분류/시대 체계다. 직통 엣지(`HAS_THEME`, `IN_ERA`)는 원천 매핑(`CanonicalCategory-HAS_THEME`, `Period-PART_OF_ERA`)에서 전처리 때 미리 펼친 파생 관계다.
 
 ---
 
@@ -812,3 +858,90 @@ flowchart LR
     relation_csv --> import_relations --> graph
     optional_relation_csv -.-> import_relations
 ```
+
+---
+
+## 19. 2026-07-03 파생 컬럼과 Era/URL 보강 흐름
+
+```mermaid
+flowchart TB
+    subgraph term_derivation["Term 파생 속성"]
+        term_year["terms.year_text<br/>예: 1910년~1945년, ?-1308"]
+        reign_seed["seed/reign_seed.csv<br/>왕대·연호 보조"]
+        year_parse["연도 숫자 추출<br/>범위·부분·B.C.·연대"]
+        term_year_parse["staging/term_year_parse.csv<br/>start_year, end_year<br/>date_precision, parse_status"]
+        term_node["nodes/terms.csv<br/>start_year, end_year<br/>year_precision, year_parse_status"]
+        desc_check["description 길이 계산<br/>50자 기준"]
+        question_ready["question_ready<br/>Y/N"]
+        keyword_seed["seed/keyword_era_seed.csv"]
+        exam_flag["is_exam_keyword"]
+
+        term_year --> year_parse
+        reign_seed --> year_parse --> term_year_parse --> term_node
+        desc_check --> question_ready --> term_node
+        keyword_seed --> exam_flag --> term_node
+    end
+
+    subgraph theme_derivation["Theme 직접 관계"]
+        theme_seed["seed/theme_seed.csv<br/>고정 주제 10개"]
+        category_theme["seed/category_theme_seed.csv<br/>카테고리→주제"]
+        term_theme["term_has_theme.csv<br/>Term - HAS_THEME - Theme"]
+        event_theme["event_has_theme.csv<br/>Event - HAS_THEME - Theme"]
+        person_label["Person 라벨<br/>match_source=PERSON_LABEL"]
+        person_event_theme["참여 사건 주제 상속<br/>match_source=EVENT_INVOLVED"]
+        person_name_theme["인명 세부 카테고리 상속<br/>match_source=NAME_CATEGORY"]
+        person_theme["person_has_theme.csv<br/>Person - HAS_THEME - Theme"]
+
+        theme_seed --> term_theme
+        category_theme --> term_theme
+        category_theme --> event_theme
+        person_label --> person_theme
+        event_theme --> person_event_theme --> person_theme
+        term_theme --> person_name_theme --> person_theme
+    end
+
+    subgraph era_derivation["Era 직접 관계"]
+        period_rel["term_in_period.csv / event_in_period.csv"]
+        period_era["period_part_of_era.csv"]
+        keyword_override["keyword_era_seed.csv<br/>override 우선"]
+        term_era["term_in_era.csv<br/>Term - IN_ERA - Era"]
+        event_era["event_in_era.csv<br/>Event - IN_ERA - Era"]
+        era_seed["era_seed.csv<br/>start_year, end_year"]
+        people_node["people.csv<br/>birth_year, death_year"]
+        person_year["생몰년 Era 겹침<br/>match_source=BIRTH_YEAR"]
+        involved["person_involved_in_event.csv"]
+        person_event["참여 사건 Era 추론<br/>match_source=EVENT_INFERRED"]
+        person_era["person_in_era.csv<br/>Person - IN_ERA - Era"]
+
+        period_rel --> period_era
+        period_era --> term_era
+        period_era --> event_era
+        keyword_override --> term_era
+        era_seed --> person_year
+        people_node --> person_year --> person_era
+        involved --> person_event
+        event_era --> person_event --> person_era
+    end
+
+    subgraph evidence_url["관계 근거 URL 보강"]
+        person_rel["person_relations.csv<br/>person_id, related_person_id, evidence_url"]
+        source_url_dict["source_url_dictionary.csv<br/>evidence_url 포함"]
+        source_url_node["nodes/source_urls.csv"]
+        evidence_rel["person_has_evidence_url.csv<br/>Person - HAS_EVIDENCE_URL - SourceUrl"]
+
+        person_rel --> source_url_dict --> source_url_node
+        person_rel --> evidence_rel
+        source_url_node --> evidence_rel
+    end
+
+    term_node --> import_nodes["history_graph_import_nodes.cypher"]
+    term_theme --> import_rel
+    event_theme --> import_rel
+    person_theme --> import_rel
+    term_era --> import_rel["history_graph_import_relations.cypher"]
+    event_era --> import_rel
+    person_era --> import_rel
+    evidence_rel --> import_rel
+```
+
+이 흐름에서 `IN_ERA`와 `HAS_EVIDENCE_URL`은 원본을 대체하지 않는다. `IN_PERIOD`, `PART_OF_ERA`, `RELATED_TO.evidence_url` 같은 원천 근거를 유지한 상태에서 서비스 조회와 RAG 수집을 빠르게 하기 위해 미리 펼친 관계다.

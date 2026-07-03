@@ -89,6 +89,16 @@ def split_pipe_values(value):
     return tokens
 
 
+def normalize_keyword_series(value_series):
+    # 키워드 매칭에서는 띄어쓰기, 가운뎃점, 마침표 표기 차이를 무시한다.
+    return (
+        value_series.fillna("")
+        .astype(str)
+        .str.strip()
+        .str.replace(r"[\s·.]+", "", regex=True)
+    )
+
+
 def split_category_paths(term_lk):
     if pd.isna(term_lk):
         return []

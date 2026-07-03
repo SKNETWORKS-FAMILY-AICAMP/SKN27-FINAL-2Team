@@ -3,7 +3,10 @@ CALL {
     WITH row WHERE row.term_id IS NOT NULL AND trim(row.term_id) <> ''
     MERGE (n:Term {term_id: row.term_id})
     SET n += row
-    SET n.topterm_id = toIntegerOrNull(row.topterm_id)
+    SET n.topterm_id = toIntegerOrNull(row.topterm_id),
+        n.start_year = toIntegerOrNull(row.start_year),
+        n.end_year = toIntegerOrNull(row.end_year),
+        n.description_length = toIntegerOrNull(row.description_length)
 } IN TRANSACTIONS OF 1000 ROWS;
 
 CALL {
@@ -25,7 +28,8 @@ CALL {
     MERGE (n:Person {person_id: row.person_id})
     SET n += row
     SET n.birth_year = toIntegerOrNull(row.birth_year),
-        n.death_year = toIntegerOrNull(row.death_year)
+        n.death_year = toIntegerOrNull(row.death_year),
+        n.degree = toIntegerOrNull(row.degree)
 } IN TRANSACTIONS OF 1000 ROWS;
 
 CALL {
@@ -121,4 +125,30 @@ CALL {
     WITH row WHERE row.search_tag_id IS NOT NULL AND trim(row.search_tag_id) <> ''
     MERGE (n:SearchTag {search_tag_id: row.search_tag_id})
     SET n += row
+} IN TRANSACTIONS OF 1000 ROWS;
+
+CALL {
+    LOAD CSV WITH HEADERS FROM 'file:///nodes/themes.csv' AS row
+    WITH row WHERE row.theme_id IS NOT NULL AND trim(row.theme_id) <> ''
+    MERGE (n:Theme {theme_id: row.theme_id})
+    SET n += row
+    SET n.theme_order = toIntegerOrNull(row.theme_order)
+} IN TRANSACTIONS OF 1000 ROWS;
+
+CALL {
+    LOAD CSV WITH HEADERS FROM 'file:///nodes/eras.csv' AS row
+    WITH row WHERE row.era_id IS NOT NULL AND trim(row.era_id) <> ''
+    MERGE (n:Era {era_id: row.era_id})
+    SET n += row
+    SET n.era_order = toIntegerOrNull(row.era_order),
+        n.start_year = toIntegerOrNull(row.start_year),
+        n.end_year = toIntegerOrNull(row.end_year)
+} IN TRANSACTIONS OF 1000 ROWS;
+
+CALL {
+    LOAD CSV WITH HEADERS FROM 'file:///nodes/entity_types.csv' AS row
+    WITH row WHERE row.entity_type_id IS NOT NULL AND trim(row.entity_type_id) <> ''
+    MERGE (n:EntityType {entity_type_id: row.entity_type_id})
+    SET n += row
+    SET n.entity_type_order = toIntegerOrNull(row.entity_type_order)
 } IN TRANSACTIONS OF 1000 ROWS;

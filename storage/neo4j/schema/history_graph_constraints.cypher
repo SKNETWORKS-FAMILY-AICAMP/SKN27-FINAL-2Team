@@ -54,9 +54,41 @@ CREATE CONSTRAINT search_tag_id_unique IF NOT EXISTS
 FOR (n:SearchTag)
 REQUIRE n.search_tag_id IS UNIQUE;
 
+CREATE CONSTRAINT theme_id_unique IF NOT EXISTS
+FOR (n:Theme)
+REQUIRE n.theme_id IS UNIQUE;
+
+CREATE CONSTRAINT era_id_unique IF NOT EXISTS
+FOR (n:Era)
+REQUIRE n.era_id IS UNIQUE;
+
+CREATE CONSTRAINT entity_type_id_unique IF NOT EXISTS
+FOR (n:EntityType)
+REQUIRE n.entity_type_id IS UNIQUE;
+
+CREATE INDEX theme_name_index IF NOT EXISTS
+FOR (n:Theme)
+ON (n.name);
+
+CREATE INDEX era_name_index IF NOT EXISTS
+FOR (n:Era)
+ON (n.name);
+
+CREATE INDEX entity_type_name_index IF NOT EXISTS
+FOR (n:EntityType)
+ON (n.name);
+
 CREATE INDEX term_name_index IF NOT EXISTS
 FOR (n:Term)
 ON (n.name);
+
+CREATE INDEX term_start_year_index IF NOT EXISTS
+FOR (n:Term)
+ON (n.start_year);
+
+CREATE INDEX term_end_year_index IF NOT EXISTS
+FOR (n:Term)
+ON (n.end_year);
 
 CREATE INDEX event_name_index IF NOT EXISTS
 FOR (n:Event)
@@ -65,6 +97,10 @@ ON (n.name);
 CREATE INDEX person_name_index IF NOT EXISTS
 FOR (n:Person)
 ON (n.name);
+
+CREATE INDEX person_degree_index IF NOT EXISTS
+FOR (n:Person)
+ON (n.degree);
 
 CREATE INDEX canonical_category_path_index IF NOT EXISTS
 FOR (n:CanonicalCategory)

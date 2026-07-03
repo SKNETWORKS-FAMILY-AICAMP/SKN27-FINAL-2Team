@@ -12,6 +12,7 @@ import pandas as pd
 
 from neo4j_common import (
     build_sequential_ids,
+    clean_value,
     print_summary,
     resolve_neo4j_dir,
     save_csv,
@@ -73,6 +74,12 @@ def parse_args(default_paths):
         default=default_paths["period_seed"],
         type=Path,
         help="시대 순서와 기간 정보를 보강하는 seed CSV 경로.",
+    )
+    parser.add_argument(
+        "--reign-seed-path",
+        default=default_paths["reign_seed"],
+        type=Path,
+        help="왕대/연호 기반 연도 보강 seed CSV 경로.",
     )
     parser.add_argument(
         "--save",
@@ -437,7 +444,284 @@ def build_period_dictionary(terms_data, events_data, period_seed):
     return period_dictionary[empty_period_dictionary().columns.tolist()]
 
 
-def parse_date_part(date_part):
+def build_reign_seed_columns():
+    return [
+        "reign_name",
+        "reign_type",
+        "dynasty",
+        "start_year",
+        "end_year",
+        "era_name",
+        "note",
+    ]
+
+
+def empty_reign_seed():
+    return pd.DataFrame(columns=build_reign_seed_columns())
+
+
+def read_reign_seed(reign_seed_path):
+    if not reign_seed_path.exists():
+        return empty_reign_seed()
+
+    return pd.read_csv(reign_seed_path, dtype=str)
+
+
+def build_reign_start_year_lookup(reign_seed):
+    if reign_seed.empty:
+        return {}
+
+    required_columns = {"reign_name", "start_year"}
+
+    if not required_columns.issubset(reign_seed.columns):
+        return {}
+
+    seed_data = reign_seed.dropna(subset=["reign_name", "start_year"]).copy()
+    seed_data["start_year_number"] = pd.to_numeric(
+        seed_data["start_year"],
+        errors="coerce",
+    )
+    seed_data = seed_data.dropna(subset=["start_year_number"])
+    unique_name_counts = seed_data.groupby("reign_name")["start_year_number"].transform(
+        "count"
+    )
+    seed_data = seed_data[unique_name_counts.eq(1)].copy()
+
+    return dict(zip(seed_data["reign_name"], seed_data["start_year_number"].astype(int)))
+
+
+def build_term_year_parse_columns():
+    return [
+        "term_id",
+        "year_text",
+        "start_year",
+        "end_year",
+        "date_precision",
+        "parse_status",
+    ]
+
+
+def build_unknown_term_year_parse(term_id, year_text):
+    return {
+        "term_id": term_id,
+        "year_text": year_text,
+        "start_year": pd.NA,
+        "end_year": pd.NA,
+        "date_precision": "UNKNOWN",
+        "parse_status": "UNKNOWN",
+    }
+
+
+def build_parsed_term_year_parse(
+    term_id,
+    year_text,
+    start_year,
+    end_year,
+    date_precision,
+):
+    return {
+        "term_id": term_id,
+        "year_text": year_text,
+        "start_year": start_year,
+        "end_year": end_year,
+        "date_precision": date_precision,
+        "parse_status": "PARSED",
+    }
+
+
+def parse_bc_term_year(term_id, year_text, clean_text):
+    bc_match = re.search(r"(B\.?\s*C\.?|기원전)\s*\.?\s*(\d{1,4})", clean_text)
+
+    if bc_match:
+        parsed_year = -int(bc_match.group(2))
+        return build_parsed_term_year_parse(
+            term_id,
+            year_text,
+            parsed_year,
+            parsed_year,
+            "EXACT_YEAR",
+        )
+
+    return None
+
+
+def parse_reign_term_year(term_id, year_text, clean_text, reign_start_year_lookup):
+    reign_match = re.search(r"([가-힣A-Za-z·]+)\s*(\d{1,2})\s*년?", clean_text)
+
+    if reign_match and len(reign_start_year_lookup) > 0:
+        reign_name = reign_match.group(1)
+        reign_year = int(reign_match.group(2))
+        reign_start_year = reign_start_year_lookup.get(reign_name)
+
+        if reign_start_year is not None:
+            parsed_year = reign_start_year + reign_year - 1
+            return build_parsed_term_year_parse(
+                term_id,
+                year_text,
+                parsed_year,
+                parsed_year,
+                "REIGN_YEAR",
+            )
+
+    return None
+
+
+def parse_decade_term_year(term_id, year_text, clean_text):
+    multi_decade_match = re.search(r"(\d{4})\s*[·ㆍ.]\s*(\d{1,4})\s*년대", clean_text)
+
+    if multi_decade_match:
+        start_year = int(multi_decade_match.group(1))
+        end_decade_value = int(multi_decade_match.group(2))
+        end_decade_start = end_decade_value
+
+        if end_decade_value < 100:
+            end_decade_start = (start_year // 100) * 100 + end_decade_value
+
+        return build_parsed_term_year_parse(
+            term_id,
+            year_text,
+            start_year,
+            end_decade_start + 9,
+            "DECADE",
+        )
+
+    decade_match = re.search(r"(\d{3,4})\s*년대", clean_text)
+
+    if decade_match:
+        start_year = int(decade_match.group(1))
+        return build_parsed_term_year_parse(
+            term_id,
+            year_text,
+            start_year,
+            start_year + 9,
+            "DECADE",
+        )
+
+    return None
+
+
+def parse_open_range_term_year(term_id, year_text, clean_text):
+    unknown_start_match = re.search(r"^\s*\?\s*[-~∼～]\s*(\d{1,4})", clean_text)
+
+    if unknown_start_match:
+        return build_parsed_term_year_parse(
+            term_id,
+            year_text,
+            pd.NA,
+            int(unknown_start_match.group(1)),
+            "PARTIAL",
+        )
+
+    unknown_end_match = re.search(r"(\d{1,4})\s*[-~∼～]\s*\?\s*$", clean_text)
+
+    if unknown_end_match:
+        return build_parsed_term_year_parse(
+            term_id,
+            year_text,
+            int(unknown_end_match.group(1)),
+            pd.NA,
+            "PARTIAL",
+        )
+
+    return None
+
+
+def parse_range_term_year(term_id, year_text, clean_text):
+    range_match = re.search(r"(\d{1,4})\s*[-~∼～]\s*(\d{1,4})", clean_text)
+
+    if range_match:
+        return build_parsed_term_year_parse(
+            term_id,
+            year_text,
+            int(range_match.group(1)),
+            int(range_match.group(2)),
+            "YEAR_RANGE",
+        )
+
+    return None
+
+
+def parse_multi_term_year(term_id, year_text, clean_text):
+    year_values = [int(value) for value in re.findall(r"\d{3,4}", clean_text)]
+    has_multi_separator = bool(re.search(r"[,/]|(?<!B)\.", clean_text))
+
+    if len(year_values) > 0 and has_multi_separator:
+        first_year = year_values[0]
+        return build_parsed_term_year_parse(
+            term_id,
+            year_text,
+            first_year,
+            first_year,
+            "MULTI",
+        )
+
+    return None
+
+
+def parse_single_term_year(term_id, year_text, clean_text):
+    year_match = re.search(r"\d{3,4}", clean_text)
+
+    if year_match:
+        parsed_year = int(year_match.group(0))
+        return build_parsed_term_year_parse(
+            term_id,
+            year_text,
+            parsed_year,
+            parsed_year,
+            "EXACT_YEAR",
+        )
+
+    return None
+
+
+def parse_term_year(term_id, year_text, reign_start_year_lookup):
+    clean_text = clean_value(year_text)
+
+    if pd.isna(clean_text):
+        return build_unknown_term_year_parse(term_id, year_text)
+
+    clean_text = str(clean_text).strip()
+
+    if re.fullmatch(r"[?\s\-~∼～]+", clean_text):
+        return build_unknown_term_year_parse(term_id, year_text)
+
+    parser_results = [
+        parse_bc_term_year(term_id, year_text, clean_text),
+        parse_reign_term_year(term_id, year_text, clean_text, reign_start_year_lookup),
+        parse_decade_term_year(term_id, year_text, clean_text),
+        parse_open_range_term_year(term_id, year_text, clean_text),
+        parse_range_term_year(term_id, year_text, clean_text),
+        parse_multi_term_year(term_id, year_text, clean_text),
+        parse_single_term_year(term_id, year_text, clean_text),
+    ]
+
+    for parser_result in parser_results:
+        if parser_result is not None:
+            return parser_result
+
+    return build_unknown_term_year_parse(term_id, year_text)
+
+
+def build_term_year_parse(terms_data, reign_seed):
+    target_data = terms_data[["term_id", "term_year"]].drop_duplicates(
+        subset=["term_id"]
+    )
+    reign_start_year_lookup = build_reign_start_year_lookup(reign_seed)
+    parse_rows = []
+
+    for row in target_data.itertuples(index=False):
+        parse_rows.append(
+            parse_term_year(
+                row.term_id,
+                row.term_year,
+                reign_start_year_lookup,
+            )
+        )
+
+    return pd.DataFrame(parse_rows, columns=build_term_year_parse_columns())
+
+
+def parse_date_part(date_part, reign_start_year_lookup):
     # 날짜 파서는 보수적으로 둔다. 애매한 한국사 날짜 표현은 검수 대상으로 남긴다.
     year_match = re.search(r"(\d{3,4})년", date_part)
     month_match = re.search(r"(\d{1,2})월", date_part)
@@ -457,6 +741,12 @@ def parse_date_part(date_part):
     if reign_match:
         parsed_reign_name = reign_match.group(1)
         parsed_reign_year = int(reign_match.group(2))
+
+    if pd.isna(parsed_year) and pd.notna(parsed_reign_name):
+        reign_start_year = reign_start_year_lookup.get(parsed_reign_name)
+
+        if reign_start_year is not None:
+            parsed_year = reign_start_year + parsed_reign_year - 1
 
     return {
         "year": parsed_year,
@@ -494,7 +784,7 @@ def determine_parse_status(start_part):
     return "FAILED"
 
 
-def parse_event_date(event_id, date_text):
+def parse_event_date(event_id, date_text, reign_start_year_lookup):
     clean_text = ""
 
     if pd.notna(date_text):
@@ -510,8 +800,8 @@ def parse_event_date(event_id, date_text):
         start_text = date_parts[0]
         end_text = date_parts[-1]
 
-    start_part = parse_date_part(start_text)
-    end_part = parse_date_part(end_text)
+    start_part = parse_date_part(start_text, reign_start_year_lookup)
+    end_part = parse_date_part(end_text, reign_start_year_lookup)
     date_precision = determine_date_precision(start_part, end_part, has_range)
     parse_status = determine_parse_status(start_part)
 
@@ -531,11 +821,18 @@ def parse_event_date(event_id, date_text):
     }
 
 
-def build_event_date_parse(events_data):
+def build_event_date_parse(events_data, reign_seed):
     event_date_rows = []
+    reign_start_year_lookup = build_reign_start_year_lookup(reign_seed)
 
     for row in events_data[["event_id", "event_date"]].itertuples(index=False):
-        event_date_rows.append(parse_event_date(row.event_id, row.event_date))
+        event_date_rows.append(
+            parse_event_date(
+                row.event_id,
+                row.event_date,
+                reign_start_year_lookup,
+            )
+        )
 
     return pd.DataFrame(event_date_rows)
 
@@ -744,6 +1041,7 @@ def build_default_paths(script_path):
         "staging_dir": neo4j_dir / "staging",
         "relation_type_seed": seed_dir / "relation_type_seed.csv",
         "period_seed": seed_dir / "period_seed.csv",
+        "reign_seed": seed_dir / "reign_seed.csv",
     }
 
 
@@ -756,6 +1054,7 @@ def build_output_specs():
         ("relation_type_dictionary", "relation_type_dictionary.csv", "dictionary_dir"),
         ("source_url_dictionary", "source_url_dictionary.csv", "dictionary_dir"),
         ("event_date_parse", "event_date_parse.csv", "staging_dir"),
+        ("term_year_parse", "term_year_parse.csv", "staging_dir"),
     ]
 
 
@@ -776,6 +1075,7 @@ def build_outputs(
     person_relations_data,
     relation_type_seed,
     period_seed,
+    reign_seed,
 ):
     return {
         "category_dictionary": build_category_dictionary(terms_data),
@@ -794,7 +1094,8 @@ def build_outputs(
             event_relations_data,
             person_relations_data,
         ),
-        "event_date_parse": build_event_date_parse(events_data),
+        "event_date_parse": build_event_date_parse(events_data, reign_seed),
+        "term_year_parse": build_term_year_parse(terms_data, reign_seed),
     }
 
 
@@ -809,6 +1110,7 @@ def main():
     person_relations_data = pd.read_csv(args.person_relations_path)
     relation_type_seed = read_relation_type_seed(args.relation_type_seed_path)
     period_seed = read_period_seed(args.period_seed_path)
+    reign_seed = read_reign_seed(args.reign_seed_path)
 
     outputs = build_outputs(
         terms_data,
@@ -817,6 +1119,7 @@ def main():
         person_relations_data,
         relation_type_seed,
         period_seed,
+        reign_seed,
     )
     output_files = build_output_files(args, outputs)
 

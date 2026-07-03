@@ -68,6 +68,16 @@ def build_pipeline_steps(script_dir, project_root):
                 import_output_dirs["relations_dir"],
             ],
         },
+        {
+            "step_name": "5. Theme/Era/EntityType 상위 레이어 생성",
+            "script_path": step_dir / "make_theme_era_csv.py",
+            "extra_args": [
+                "--nodes-dir",
+                import_output_dirs["nodes_dir"],
+                "--relations-dir",
+                import_output_dirs["relations_dir"],
+            ],
+        },
     ]
 
 

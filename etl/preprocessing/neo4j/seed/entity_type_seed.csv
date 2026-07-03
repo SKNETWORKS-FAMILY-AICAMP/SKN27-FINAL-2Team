@@ -1,0 +1,5 @@
+entity_type_id,root_category_name,entity_type_name,entity_type_order,note
+ENTITY_TYPE_0001,인명,인물,10,인명 카테고리 용어는 인물 실체
+ENTITY_TYPE_0002,서명,문헌,20,서명 카테고리 용어는 책·문헌 실체
+ENTITY_TYPE_0003,문화재,문화재,30,문화재 카테고리 용어는 유물·유적 실체
+ENTITY_TYPE_0004,지명,장소,40,지명 카테고리 용어는 장소 실체

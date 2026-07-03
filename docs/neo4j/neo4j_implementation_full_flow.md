@@ -54,6 +54,7 @@ runner 실행 순서:
 | 2 | `scripts/make_base_dictionaries.py` | `dictionary/`, `staging/` | 1차 사전, 날짜 파싱, URL 사전 생성 |
 | 3 | `scripts/make_mapping_tables.py` | `dictionary/`, `mapping/`, `staging/` | 카테고리/이벤트/국가/지역/경제/중간 facet 매핑 생성 |
 | 4 | `scripts/make_graph_csv.py` | `storage/neo4j/neo4j_import/nodes/`, `storage/neo4j/neo4j_import/relations/` | Neo4j import용 최종 CSV 생성 |
+| 5 | `scripts/make_theme_era_csv.py` | `storage/neo4j/neo4j_import/nodes/`, `storage/neo4j/neo4j_import/relations/` | Theme/Era/EntityType 상위 레이어 노드/관계 CSV 생성 |
 
 `make_graph_csv.py`를 단독 실행하면 기본 출력은 `etl/preprocessing/neo4j/graph/nodes/`, `etl/preprocessing/neo4j/graph/relations/`다. 다만 runner는 마지막 단계에서 `--nodes-dir`, `--relations-dir`를 넘겨 `storage/neo4j/neo4j_import/` 아래로 바로 저장한다.
 
@@ -118,6 +119,12 @@ seed는 자동 생성 결과가 아니라 사람이 관리하는 입력 규칙�
 | `period_seed.csv` | 29 | 시대 순서, 범위 확장 후보, 연도 범위, 상위 시대 정보 정의 |
 | `relation_type_seed.csv` | 16 | 인물 관계 원문 타입을 정규화 타입, 관계 그룹, 방향성 기준으로 매핑 |
 | `taxonomy_crosswalk_seed.csv` | 42 | 이벤트 분류와 표준 카테고리 사이의 수동 매핑 |
+| `theme_seed.csv` | 10 | 서비스 고정 주제 10개(사건/인물/정치/제도/문화/사회/군사/경제/사상·종교/외교). 계층 없는 평면 구조 |
+| `category_theme_seed.csv` | 20 | 표준 카테고리 경로와 주제의 매핑. prefix 규칙으로 하위 경로까지 흡수. 정치·행정·법제는 depth 2에서 정치/제도로 분리 |
+| `era_seed.csv` | 10 | 표준 시대(Era) 10개 정의. 선사시대~현대 |
+| `period_era_seed.csv` | 23 | 기존 Period 표기 변형(고려/고려시대, 일제시기/일제시대, 영문명 등)을 표준 시대로 매핑 |
+| `entity_type_seed.csv` | 4 | 실체 유형 카테고리(인명/서명/문화재/지명)를 유형 축(인물/문헌/문화재/장소)으로 정의 |
+| `keyword_era_seed.csv` | 120 | 시험 빈출 키워드와 표준 시대의 매핑. `test/CJ/test_ML/ml_keyword_era_overrides.json`에서 변환 후 고조선/초기 국가 키워드 20건 확장 |
 
 seed가 필요한 이유:
 
@@ -198,6 +205,7 @@ flowchart TD
     Category["CanonicalCategory"]
     SourceCat["SourceEventCategory"]
     Period["Period"]
+    Era["Era"]
     Url["SourceUrl"]
     EventGroup["EventGroup"]
     EventFacet["EventFacet"]
@@ -224,14 +232,17 @@ flowchart TD
 | `economic_domains.csv` | `EconomicDomain` | 16 | `economic_domain_id` | 경제·산업 내부의 수산업, 광공업 같은 경제 분야 축 |
 | `taxonomy_facets.csv` | `TaxonomyFacet` | 49 | `taxonomy_facet_id` | 중간 카테고리 경로를 독립 검색/필터 축으로 분리한 노드 |
 | `search_tags.csv` | `SearchTag` | 583 | `search_tag_id` | 이벤트 검색 편의를 위해 여러 의미 축을 통합한 tag 노드 |
+| `themes.csv` | `Theme` | 10 | `theme_id` | 문제 생성 서비스의 고정 주제 10개. 평면 구조 |
+| `eras.csv` | `Era` | 10 | `era_id` | 표준 시대 축. 선사시대~현대 10개 |
+| `entity_types.csv` | `EntityType` | 4 | `entity_type_id` | 용어의 실체 유형 축. 인물/문헌/문화재/장소 |
 
 ### 7.1 노드별 핵심 속성
 
 | Label | 주요 속성 |
 |---|---|
-| `Term` | `name`, `hanja`, `remark`, `year_text`, `period_text`, `category_text`, `description`, `topterm_id`, `source` |
+| `Term` | `name`, `hanja`, `remark`, `year_text`, `period_text`, `category_text`, `description`, `topterm_id`, `start_year`, `end_year`, `year_precision`, `year_parse_status`, `question_ready`, `source` |
 | `Event` | `name`, `subject_category`, `period_text`, `event_date`, `related_event_name`, `source_urls`, `start_year`, `end_year`, `date_precision`, `parse_status` |
-| `Person` | `name`, `name_candidates`, `birth_year`, `death_year`, `bonkwan`, `father_name`, `detail_urls`, `source` |
+| `Person` | `name`, `name_candidates`, `birth_year`, `death_year`, `bonkwan`, `father_name`, `detail_urls`, `degree`, `source` |
 | `CanonicalCategory` | `name`, `category_path`, `parent_category_id`, `depth`, `root_category_name`, `term_count`, `direct_term_count` |
 | `Period` | `name`, `period_level`, `range_group`, `period_order`, `start_year`, `end_year`, `is_range_expansion_candidate` |
 | `SourceUrl` | `url`, `source_tables`, `source_columns`, `source_types`, `source_count`, `use_for_rag`, `fetch_status` |
@@ -242,54 +253,81 @@ flowchart TD
 
 ```mermaid
 flowchart LR
-    Term["Term"]
-    Event["Event"]
-    Person["Person"]
-    Category["CanonicalCategory"]
-    SourceCat["SourceEventCategory"]
-    Period["Period"]
-    Url["SourceUrl"]
-    EventGroup["EventGroup"]
-    EventFacet["EventFacet"]
-    Country["Country"]
-    Region["Region"]
-    Econ["EconomicDomain"]
-    TaxFacet["TaxonomyFacet"]
-    SearchTag["SearchTag"]
+    %% ===== 핵심 노드 =====
+    Term["Term<br/>역사 용어 (61,598)"]
+    Event["Event<br/>역사 사건 (600)"]
+    Person["Person<br/>인물 (56,403)"]
 
-    Term -->|HAS_CATEGORY| Category
-    Term -->|IN_PERIOD| Period
-    Term -->|ABOUT_COUNTRY| Country
-    Term -->|ABOUT_REGION| Region
-    Term -->|ABOUT_ECONOMIC_DOMAIN| Econ
-    Term -->|ABOUT_TAXONOMY_FACET| TaxFacet
-    Term -->|REFERS_TO| Person
-    Term -->|REFERS_TO| Event
+    %% ===== 서비스 3축 =====
+    Theme["Theme<br/>주제 10개<br/>사건·인물·정치·제도·문화<br/>사회·군사·경제·사상종교·외교"]
+    Era["Era<br/>표준 시대 10개<br/>선사시대~현대"]
+    EntityType["EntityType<br/>실체 유형 4개<br/>인물·문헌·문화재·장소"]
 
-    Event -->|HAS_EVENT_CATEGORY| SourceCat
-    Event -->|HAS_CATEGORY| Category
-    Event -->|HAS_EVENT_FACET| EventFacet
-    Event -->|IN_PERIOD| Period
-    Event -->|PART_OF_EVENT_GROUP| EventGroup
-    Event -->|HAS_SOURCE_URL| Url
-    Event -->|HAS_SEARCH_TAG| SearchTag
-    Event -->|ABOUT_COUNTRY| Country
-    Event -->|ABOUT_REGION| Region
-    Event -->|ABOUT_ECONOMIC_DOMAIN| Econ
-    Event -->|ABOUT_TAXONOMY_FACET| TaxFacet
+    %% ===== 분류 체계 =====
+    Category["CanonicalCategory<br/>표준 카테고리 (400)"]
+    SourceCat["SourceEventCategory<br/>사건 원본 분류 (53)"]
+    EventFacet["EventFacet<br/>사건 의미 facet (53)"]
+    TaxFacet["TaxonomyFacet<br/>중간 분류 축 (49)"]
+    SearchTag["SearchTag<br/>통합 검색 태그 (583)"]
 
-    Person -->|INVOLVED_IN| Event
-    Person -->|RELATED_TO| Person
-    Person -->|HAS_SOURCE_URL| Url
+    %% ===== 시대/의미 축 =====
+    Period["Period<br/>원본 시대 표기 (30)"]
+    Country["Country<br/>국가 (5)"]
+    Region["Region<br/>권역 (7)"]
+    Econ["EconomicDomain<br/>경제 분야 (16)"]
 
-    Category -->|SUBCATEGORY_OF| Category
-    SourceCat -->|MAPPED_TO_CATEGORY| Category
-    Category -->|ABOUT_COUNTRY| Country
-    Category -->|ABOUT_REGION| Region
-    Category -->|ABOUT_ECONOMIC_DOMAIN| Econ
-    Category -->|ABOUT_TAXONOMY_FACET| TaxFacet
-    Region -->|SUBREGION_OF| Region
+    %% ===== 출처/그룹 =====
+    Url["SourceUrl<br/>출처 URL (79,693)"]
+    EventGroup["EventGroup<br/>사건군 (32)"]
+
+    %% ----- Term에서 나가는 관계 -----
+    Term -->|"HAS_THEME · 주제 (48,624)"| Theme
+    Term -->|"IN_ERA · 표준 시대 (54,246)"| Era
+    Term -->|"HAS_ENTITY_TYPE · 실체 유형 (20,662)"| EntityType
+    Term -->|"HAS_CATEGORY · 카테고리 (61,697)"| Category
+    Term -->|"IN_PERIOD · 원본 시대 (65,358)"| Period
+    Term -->|"REFERS_TO · 가리키는 인물 (3,720)"| Person
+    Term -->|"REFERS_TO · 가리키는 사건 (13)"| Event
+    Term -->|"ABOUT_COUNTRY (1,620)"| Country
+    Term -->|"ABOUT_REGION (82)"| Region
+    Term -->|"ABOUT_ECONOMIC_DOMAIN (2,894)"| Econ
+    Term -->|"ABOUT_TAXONOMY_FACET (22,962)"| TaxFacet
+
+    %% ----- Event에서 나가는 관계 -----
+    Event -->|"HAS_THEME · 주제 (1,405)"| Theme
+    Event -->|"IN_ERA · 표준 시대 (600)"| Era
+    Event -->|"HAS_EVENT_CATEGORY · 원본 분류 (713)"| SourceCat
+    Event -->|"HAS_CATEGORY · 표준 분류 (692)"| Category
+    Event -->|"HAS_EVENT_FACET (713)"| EventFacet
+    Event -->|"IN_PERIOD · 원본 시대 (600)"| Period
+    Event -->|"PART_OF_EVENT_GROUP · 사건군 (224)"| EventGroup
+    Event -->|"HAS_SOURCE_URL · 출처 (2,382)"| Url
+    Event -->|"HAS_SEARCH_TAG (2,811)"| SearchTag
+    Event -->|"ABOUT_COUNTRY (2)"| Country
+    Event -->|"ABOUT_TAXONOMY_FACET (714)"| TaxFacet
+    Event -.->|"ABOUT_REGION / ABOUT_ECONOMIC_DOMAIN<br/>optional · 현재 0행 미생성"| Region
+
+    %% ----- Person에서 나가는 관계 -----
+    Person -->|"INVOLVED_IN · 사건 참여 (6,918)"| Event
+    Person -->|"RELATED_TO · 인물 관계 (184,056)"| Person
+    Person -->|"HAS_THEME · 주제 (60,712)"| Theme
+    Person -->|"IN_ERA · 시대 (23,214)"| Era
+    Person -->|"HAS_SOURCE_URL · 상세 (56,212)"| Url
+    Person -->|"HAS_EVIDENCE_URL · 관계 근거 (326,699)"| Url
+
+    %% ----- 분류/시대 체계 내부 관계 -----
+    Category -->|"SUBCATEGORY_OF · 하위→상위 (335)"| Category
+    Category -->|"HAS_THEME · 주제 원천 매핑 (30)"| Theme
+    SourceCat -->|"MAPPED_TO_CATEGORY · crosswalk (45)"| Category
+    Category -->|"ABOUT_COUNTRY (41)"| Country
+    Category -->|"ABOUT_REGION (13)"| Region
+    Category -->|"ABOUT_ECONOMIC_DOMAIN (51)"| Econ
+    Category -->|"ABOUT_TAXONOMY_FACET (276)"| TaxFacet
+    Region -->|"SUBREGION_OF · 하위 권역 (6)"| Region
+    Period -->|"PART_OF_ERA · 표준 시대 통합 (23)"| Era
 ```
+
+위쪽(Term/Event/Person -> Theme/Era/EntityType)이 서비스가 사용하는 직통 관계이고, 아래쪽(Category/Period 내부 관계)이 그 직통 엣지를 만들어낸 원천 매핑이다. 점선은 optional 관계로 현재 데이터가 0행이라 생성하지 않는다.
 
 | Relationship CSV | Neo4j type | 행 수 | From -> To | 생성 규칙 |
 |---|---|---:|---|---|
@@ -320,6 +358,14 @@ flowchart LR
 | `canonical_category_about_economic_domain.csv` | `ABOUT_ECONOMIC_DOMAIN` | 51 | `CanonicalCategory -> EconomicDomain` | 표준 카테고리와 경제 분야 축 연결 |
 | `canonical_category_about_taxonomy_facet.csv` | `ABOUT_TAXONOMY_FACET` | 276 | `CanonicalCategory -> TaxonomyFacet` | 표준 카테고리와 중간 taxonomy facet 연결 |
 | `region_subregion_of.csv` | `SUBREGION_OF` | 6 | `Region -> Region` | 동남아시아, 유럽 등이 기타지역의 하위 region이면 연결 |
+| `canonical_category_has_theme.csv` | `HAS_THEME` | 30 | `CanonicalCategory -> Theme` | 표준 카테고리를 서비스 주제 10개에 연결. 인명 세부 카테고리는 인물 주제와 내용 주제를 함께 가질 수 있음 |
+| `period_part_of_era.csv` | `PART_OF_ERA` | 23 | `Period -> Era` | 기존 시대 노드(표기 변형 포함)를 표준 시대 10개로 통합 연결 |
+| `term_has_entity_type.csv` | `HAS_ENTITY_TYPE` | 20,662 | `Term -> EntityType` | 인명/서명/문화재/지명 카테고리 용어를 실체 유형 축으로 연결 |
+| `term_in_era.csv` | `IN_ERA` | 54,246 | `Term -> Era` | 소스 3종: `IN_PERIOD -> PART_OF_ERA` 펼침(PERIOD), 키워드 override(KEYWORD_OVERRIDE), 설명문 기반 검수 통과분(DESC_KEYWORD) |
+| `event_in_era.csv` | `IN_ERA` | 600 | `Event -> Era` | `event_in_period.csv`와 `period_part_of_era.csv`를 조인해 사건의 표준 Era 직접 관계 생성 |
+| `person_in_era.csv` | `IN_ERA` | 23,214 | `Person -> Era` | 생몰년과 Era 연도 범위 겹침을 우선 적용하고, 생몰년이 없는 인물은 참여 사건 Era로 보조 추론 |
+| `person_has_theme.csv` | `HAS_THEME` | 60,712 | `Person -> Theme` | 모든 Person은 인물 주제에 연결하고, 사건 참여/인명 세부 카테고리로 내용 주제를 보조 상속 |
+| `person_has_evidence_url.csv` | `HAS_EVIDENCE_URL` | 326,699 | `Person -> SourceUrl` | 인물 관계의 `evidence_url`을 관계 양쪽 인물에서 탐색 가능하게 연결 |
 
 ### 8.1 비어 있는 optional 관계를 생성하지 않는 이유
 
@@ -476,7 +522,7 @@ SET r += row
 | `person_involved_in_event.csv` | `event_person_relation_id` |
 | `person_related_to_person.csv` | `person_relation_id` |
 
-`history_graph_import_relations.cypher`에는 optional relation LOAD 블록도 남아 있다. 현재 `event_about_region.csv`, `event_about_economic_domain.csv`는 생성되지 않으므로 `load_schema.py`가 해당 문장을 건너뛴다. 직접 Neo4j Browser에서 Cypher 파일만 실행할 때는 optional CSV가 없으면 실패할 수 있으므로, 기본 import는 `storage/neo4j/load_schema.py`를 통해 실행하는 것을 기준으로 한다.
+`event_about_region.csv`, `event_about_economic_domain.csv`는 현재 0행이므로 최종 CSV도 만들지 않고 import Cypher에도 LOAD 블록을 두지 않는다. 따라서 `history_graph_import_relations.cypher`를 직접 실행해도 존재하지 않는 optional CSV 때문에 실패하지 않는다. `load_schema.py`의 optional skip 로직은 이후 해당 블록을 다시 추가할 경우를 대비한 방어 장치로 남아 있다.
 
 `history_graph_verify.cypher`의 반환 결과는 `load_schema.py`가 콘솔에 출력한다. 따라서 label별 노드 수와 relationship type별 관계 수를 import 직후 바로 확인할 수 있다.
 
@@ -632,6 +678,9 @@ Tavily 같은 Web RAG 도구를 붙일 경우, 그래프에서 관련 `SourceUrl
 | `EconomicDomain` | 경제·산업 하위의 경제 분야 의미 축 | 수산업, 광공업 |
 | `TaxonomyFacet` | 하위 카테고리를 가진 중간 카테고리 경로를 검색/필터 축으로 분리한 노드 | 정치·행정·법제>행정 |
 | `SearchTag` | 이벤트 검색 편의를 위해 여러 의미 축을 통합한 태그 | - |
+| `Theme` | 문제 출제/검색용 고정 주제 10개. 사건/인물/정치/제도/문화/사회/군사/경제/사상·종교/외교 | 군사, 경제, 인물 |
+| `Era` | 표준 시대 10개. 기존 Period의 표기 변형을 흡수하는 상위 시대 축 | 고려, 조선, 일제강점기 |
+| `EntityType` | 용어가 어떤 실체인지 나타내는 유형 축. 주제와 직교(이순신=인물이면서 군사 주제) | 인물, 문헌, 문화재, 장소 |
 
 ### 14.2 관계 (Relationship type) 의미
 
@@ -654,3 +703,185 @@ Tavily 같은 Web RAG 도구를 붙일 경우, 그래프에서 관련 `SourceUrl
 | `ABOUT_ECONOMIC_DOMAIN` | `Term/Event/CanonicalCategory -> EconomicDomain` | 해당 경제 분야를 다룸 |
 | `ABOUT_TAXONOMY_FACET` | `Term/Event/CanonicalCategory -> TaxonomyFacet` | 해당 중간 분류 축에 속함 |
 | `SUBREGION_OF` | `Region -> Region` | 권역 계층에서 하위 -> 상위 |
+
+### 14.3 의도된 중복과 쿼리 규칙
+
+이 그래프에는 의도적으로 중복시킨 구조가 있다. 삭제 대상이 아니라 역할이 다른 것이므로, 아래 규칙대로 사용한다.
+
+| 중복 구조 | 역할 구분 | 쿼리 규칙 |
+|---|---|---|
+| `Theme 인물` vs `EntityType 인물` | Term 기준 100% 동일 대상. Theme 인물은 서비스 주제 필터, EntityType 인물은 Term의 실체 유형 | 서비스의 주제 선택은 Theme, "용어가 무엇인가" 판별은 EntityType 사용 |
+| `SourceEventCategory` vs `EventFacet` | 53개 중 51개 이름 동일. SourceEventCategory는 원본 보존, EventFacet은 facet_type/confidence 확장용 | 신규 쿼리는 Theme 또는 SearchTag 기준으로 작성하고, EventFacet 기준 쿼리는 만들지 않는다 |
+| `SearchTag`의 이름 중복 (275건) | 정규화 노드가 아니라 검색 편의용 복사본. 같은 이름이 여러 원천에서 들어오는 것이 정상 | SearchTag 경유 조회는 반드시 `RETURN DISTINCT` 사용 |
+| 직통 엣지 (`HAS_THEME`, `IN_ERA`) vs 원천 경로 | 원천은 `Category-HAS_THEME`, `Period-PART_OF_ERA`. 직통 엣지는 전처리에서 미리 펼친 파생 | 서비스 쿼리는 직통 엣지 사용. 매핑 수정은 seed에서 하고 재생성 |
+| `HAS_EVIDENCE_URL` (326,699) | 가장 무거운 관계. RAG 근거 URL 탐색용 | RAG 수집/출처 표시에만 사용. 인물 관계 탐색 자체는 `RELATED_TO` 사용 |
+
+```cypher
+// SearchTag 조회 예시: DISTINCT 필수
+MATCH (e:Event)-[:HAS_SEARCH_TAG]->(:SearchTag {tag_name: "교육"})
+RETURN DISTINCT e
+```
+| `HAS_THEME` | `CanonicalCategory/Term/Event/Person -> Theme` | 카테고리 원천 매핑과 서비스 조회용 직통 주제 관계 |
+| `PART_OF_ERA` | `Period -> Era` | 세부/변형 시대 -> 표준 시대 (예: 고려전기 -> 고려, 대한제국기 -> 개항기) |
+| `HAS_ENTITY_TYPE` | `Term -> EntityType` | 용어의 실체 유형 (인명 카테고리 용어 -> 인물 등) |
+| `IN_ERA` | `Term/Event/Person -> Era` | 표준 시대 직접 연결. Term/Event는 `IN_PERIOD -> PART_OF_ERA`를 펼치고, Person은 생몰년 또는 참여 사건으로 연결 |
+| `HAS_EVIDENCE_URL` | `Person -> SourceUrl` | 인물 관계의 근거 URL을 관계 양쪽 인물에서 탐색할 수 있게 연결 |
+
+---
+
+## 15. 2026-07-03 파생 컬럼과 누락 관계 보강
+
+이번 보강은 기존 카테고리/시대 구조를 갈아엎지 않고, 조회와 출제에 필요한 파생 정보를 위에 얹는 방식으로 반영했다. 원천 데이터는 `Term`, `Period`, `Person`, `Event`, `SourceUrl`에 그대로 남기고, 서비스에서 자주 쓰는 필터와 RAG 경로만 미리 계산한다.
+
+### 15.1 Term 연도 파싱
+
+`terms.csv`에 다음 컬럼을 추가했다.
+
+| 컬럼 | 의미 |
+|---|---|
+| `start_year` | `term_year`에서 추출한 시작 연도 |
+| `end_year` | `term_year`에서 추출한 종료 연도 |
+| `year_precision` | `EXACT_YEAR`, `YEAR_RANGE`, `PARTIAL`, `DECADE`, `MULTI`, `REIGN_YEAR`, `UNKNOWN` |
+| `year_parse_status` | `PARSED` 또는 `UNKNOWN` |
+
+이 값은 `make_base_dictionaries.py`가 `staging/term_year_parse.csv`로 먼저 생성하고, `make_graph_csv.py`가 최종 `nodes/terms.csv`에 병합한다. 파싱 결과를 staging에 따로 남기는 이유는 `?-?`, `B.C.33`, `1920년대`, `1495. 1530` 같은 애매한 표현을 검수할 수 있게 하기 위해서다.
+
+현재 `term_year_parse.csv`는 61,598건이며 `PARSED` 33,465건, `UNKNOWN` 28,133건이다. `reign_seed.csv`는 왕대/연호 표현을 숫자 연도로 보강하는 seed인데, `고종`처럼 시대가 다른 동명이왕은 자동 계산에서 제외한다.
+
+이 값을 만드는 이유는 문자열인 `1876년`, `1910년~1945년`, `?-1308` 그대로는 범위 검색과 오답 후보 생성이 어렵기 때문이다. 이제 Neo4j에서 `Term.start_year`, `Term.end_year`를 숫자로 import하므로 “1850~1910년 사이 용어”처럼 직접 필터링할 수 있다.
+
+### 15.2 Term 출제 품질 플래그
+
+`terms.csv`에는 출제 후보 선별용 컬럼도 추가했다.
+
+| 컬럼 | 의미 |
+|---|---|
+| `description_length` | 설명문 길이 |
+| `question_ready` | 설명문 50자 이상이면 `Y`, 아니면 `N` |
+| `is_exam_keyword` | `keyword_era_seed.csv`에 있는 시험 키워드와 정규화 이름이 일치하면 `Y` |
+
+설명문이 너무 짧으면 지문형 문제를 만들기 어렵고, 시험 빈출 키워드는 우선 출제 후보로 올릴 필요가 있다. 이 판단을 매번 애플리케이션 코드에서 반복하지 않고 CSV 생성 시점에 속성으로 고정한다.
+
+### 15.3 Person 중요도
+
+`people.csv`에 `degree` 컬럼을 추가했다. `event_relations.person_id`, `person_relations.person_id`, `person_relations.related_person_id`에 등장한 횟수를 합산해 인물의 연결 정도를 표시한다.
+
+이 값은 “관계가 많은 중심 인물부터 문제로 낼지”, “그래프 탐색에서 중요한 인물을 먼저 보여줄지” 같은 우선순위 계산에 사용한다.
+
+### 15.4 Person, Event, Term의 Era 직접 관계
+
+기존에는 `Term/Event -> IN_PERIOD -> Period -> PART_OF_ERA -> Era`를 타야 했고, Person은 시대 축 연결이 없었다. 이번 보강으로 다음 CSV를 생성한다.
+
+| CSV | 건수 | 생성 규칙 |
+|---|---:|---|
+| `term_in_era.csv` | 54,246 | `term_in_period.csv`와 `period_part_of_era.csv`를 조인하고, `keyword_era_seed.csv` override와 `staging/term_era_candidate.csv`의 검수 통과분을 합류 |
+| `event_in_era.csv` | 600 | `event_in_period.csv`와 `period_part_of_era.csv`를 조인 |
+| `person_in_era.csv` | 23,214 | 1차는 생몰년(생년 또는 몰년 중 하나만 있어도 사용)과 `era_seed.csv` 연도 범위 겹침, 2차는 생몰년이 없는 인물은 참여 사건 Era로 보조 추론. `15??` 같은 부분 연도는 세기 해석이 애매해 사용하지 않음 |
+
+`person_in_era.csv`의 `match_source`는 다음처럼 구분한다.
+
+| match_source | 의미 |
+|---|---|
+| `BIRTH_YEAR` | 생몰년이 Era 범위와 겹쳐 연결 |
+| `EVENT_INFERRED` | 생몰년 정보가 없어 참여 사건의 Era로 보조 추론 |
+
+이 관계를 직접 만들어두는 이유는 import 후 조회 쿼리를 단순하게 만들기 위해서다. 예를 들어 “조선 시대 인물 문제”는 `Person - IN_ERA - Era`만 보면 되고, 상세 근거가 필요할 때만 `INVOLVED_IN`, `IN_PERIOD`, `PART_OF_ERA` 경로를 추가로 확인하면 된다.
+
+### 15.5 Person 주제 상속
+
+`person_has_theme.csv`를 추가했다. 현재 60,712건이며 중복 `Person-Theme` 키는 없다.
+
+| match_source | 의미 |
+|---|---|
+| `PERSON_LABEL` | 모든 Person 노드를 서비스 고정 주제 `인물`에 연결 |
+| `EVENT_INVOLVED` | 인물이 참여한 사건의 내용 주제를 상속. `사건`, `인물` 주제는 상속하지 않음 |
+| `NAME_CATEGORY` | `Term - REFERS_TO - Person`으로 연결된 인명 용어의 세부 카테고리 주제를 상속 |
+
+이렇게 한 이유는 “인물 문제”와 “군사 주제 인물 문제”가 서로 다른 요구이기 때문이다. `인물` 주제는 Person 라벨 자체로 확실하게 붙이고, 군사/정치/사상·종교 같은 내용 주제는 원천 근거가 있을 때만 보조로 붙인다. 따라서 주제가 없는 인물에게 억지로 정치/사회 같은 주제를 넣지 않는다.
+
+### 15.6 SourceUrl 고립 해소
+
+`source_url_dictionary.csv`에는 `person_relations.evidence_url`도 들어가지만, 이전에는 이 URL이 `RELATED_TO` 관계의 속성으로만 남아 있어 `SourceUrl` 노드와 연결되지 않는 경우가 많았다.
+
+이를 해결하기 위해 `person_has_evidence_url.csv`를 추가했다.
+
+| CSV | 건수 | 관계 |
+|---|---:|---|
+| `person_has_evidence_url.csv` | 326,699 | `Person - HAS_EVIDENCE_URL - SourceUrl` |
+
+하나의 인물 관계 근거 URL은 관계 양쪽 인물에서 모두 탐색 가능해야 하므로, `person_id`와 `related_person_id` 양쪽에 연결한다. 이 관계는 Web RAG/Tavily 후보 URL을 그래프에서 수집할 때 고립 URL이 빠지는 문제를 줄인다.
+
+### 15.7 Term-Person 수동 검수 흐름
+
+자동 `Term - REFERS_TO - Person`은 이름이 양쪽에서 유일하거나 이름+한자 조합이 유일할 때만 만든다. 동명이인은 자동 연결하지 않는다.
+
+검수가 필요한 경우 `make_term_person_review.py`를 수동 실행한다.
+
+```powershell
+.\.venv\Scripts\python.exe etl/preprocessing/neo4j/scripts/make_term_person_review.py --save
+```
+
+이 스크립트는 `staging/term_person_review.csv` 후보를 만들고, 사람이 승인한 행만 `seed/term_person_review_approved.csv`에 옮긴다. runner를 다시 실행하면 승인 행은 `term_refers_to_person.csv`에 `match_type=MANUAL`로 합류한다. 검수 결과를 staging이 아니라 seed에 두는 이유는 사람의 판단 결과가 재생성 가능한 규칙이 아니라 보존해야 하는 결정이기 때문이다.
+
+### 15.8 Import 변경
+
+`history_graph_import_nodes.cypher`는 다음 속성을 숫자로 캐스팅한다.
+
+- `Term.start_year`, `Term.end_year`, `Term.description_length`
+- `Person.degree`
+- `Era.start_year`, `Era.end_year`
+
+`history_graph_import_relations.cypher`는 다음 관계 CSV를 추가로 import한다.
+
+- `person_has_evidence_url.csv`
+- `person_has_theme.csv`
+- `event_in_era.csv`
+- `person_in_era.csv`
+
+`history_graph_constraints.cypher`에는 `Term.start_year`, `Term.end_year`, `Person.degree` 인덱스를 추가했다.
+서비스에서 이름으로 바로 조회하는 `Theme.name`, `Era.name`, `EntityType.name`에도 인덱스를 둔다.
+
+`Theme`, `Era`, `EntityType` ID는 전처리 코드가 행 순서로 생성하지 않고 seed의 명시 ID를 그대로 사용한다. seed에 행을 추가하거나 정렬해도 기존 `THEME_0001`, `ERA_0007` 같은 ID가 밀리지 않게 하기 위해서다.
+
+---
+
+## 16. Category 표준화와 EventFacet/SearchTag 분리 이유
+
+`terms.csv`의 `term_lk`와 `events.csv`의 `subject_category`는 둘 다 “분류”처럼 보이지만 성격이 다르다.
+
+| 원천 | 컬럼 | 성격 |
+|---|---|---|
+| `terms.csv` | `term_lk` | `>` 계층과 `>>` 복수 경로를 가진 시소러스 기반 taxonomy |
+| `events.csv` | `subject_category` | 사건 수집 과정에서 붙은 평면 분류. 쉼표/줄바꿈 복수값이 섞이고 계층이 없음 |
+
+예를 들어 `term_lk`의 `국방·군사`와 `subject_category`의 `전쟁`은 의미상 연결될 수 있지만 문자열도 다르고 관리 체계도 다르다. 그래서 둘을 문자열 기준으로 바로 합치지 않는다.
+
+현재 구조는 다음 3단으로 분리한다.
+
+| 레이어 | 역할 |
+|---|---|
+| `SourceEventCategory` | 이벤트 원본 분류를 그대로 보존 |
+| `CanonicalCategory` | `history_terms.term_lk`에서 만든 표준 카테고리 |
+| `taxonomy_crosswalk.csv` | 이벤트 원본 분류와 표준 카테고리를 연결하는 수동/반자동 매핑표 |
+
+이 구조의 장점은 원본 손실 없이 표준 축 검색이 가능하다는 점이다. 매핑이 틀리면 원본 CSV를 다시 고치지 않고 `taxonomy_crosswalk_seed.csv`만 수정한 뒤 전처리를 다시 돌리면 된다.
+
+`EventFacet`과 `SearchTag`는 일부 값이 겹치지만 목적이 다르다.
+
+| 노드 | 목적 | 예 |
+|---|---|---|
+| `EventFacet` | 사건 분류를 의미 축으로 정규화한 노드 | 전쟁, 정치, 제도 |
+| `SearchTag` | 챗봇/검색용 비정규화 태그 노드 | 원본 분류, 표준 카테고리, facet, 국가, taxonomy facet 등 |
+
+`EventFacet`은 의미 모델의 일부다. “이 사건은 전쟁 성격이다”처럼 사건의 성격을 정규화해서 표현한다.
+
+`SearchTag`는 조회 편의 레이어다. 검색어 하나로 사건을 찾으려면 원본 분류, 표준 카테고리, facet, 국가, 지역, 경제 분야, taxonomy facet을 모두 확인해야 한다. 이걸 매번 `OR` 조건으로 쓰면 쿼리가 길고 불안정해진다.
+
+그래서 다음처럼 통합 검색 태그를 둔다.
+
+```cypher
+MATCH (e:Event)-[:HAS_SEARCH_TAG]->(:SearchTag {name: "전쟁"})
+RETURN e;
+```
+
+대신 `HAS_SEARCH_TAG` 관계에는 `source_node_type`, `source_node_id`, `source_relation`을 남긴다. 따라서 빠른 검색은 `SearchTag`로 하고, 정확한 의미 검증은 `EventFacet`, `CanonicalCategory`, `SourceEventCategory` 같은 원래 축으로 되돌아가 확인할 수 있다.
