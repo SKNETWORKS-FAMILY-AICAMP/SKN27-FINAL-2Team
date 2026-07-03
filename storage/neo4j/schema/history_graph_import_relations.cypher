@@ -1,4 +1,4 @@
-CALL {
+﻿CALL () {
     LOAD CSV WITH HEADERS FROM 'file:///relations/term_has_canonical_category.csv' AS row
     MATCH (start:Term {term_id: row.start_term_id})
     MATCH (target:CanonicalCategory {category_id: row.end_category_id})
@@ -6,7 +6,7 @@ CALL {
     SET r += row
 } IN TRANSACTIONS OF 1000 ROWS;
 
-CALL {
+CALL () {
     LOAD CSV WITH HEADERS FROM 'file:///relations/term_in_period.csv' AS row
     MATCH (start:Term {term_id: row.start_term_id})
     MATCH (target:Period {period_id: row.end_period_id})
@@ -14,7 +14,7 @@ CALL {
     SET r += row
 } IN TRANSACTIONS OF 1000 ROWS;
 
-CALL {
+CALL () {
     LOAD CSV WITH HEADERS FROM 'file:///relations/term_about_country.csv' AS row
     MATCH (start:Term {term_id: row.start_term_id})
     MATCH (target:Country {country_id: row.end_country_id})
@@ -22,7 +22,7 @@ CALL {
     SET r += row
 } IN TRANSACTIONS OF 1000 ROWS;
 
-CALL {
+CALL () {
     LOAD CSV WITH HEADERS FROM 'file:///relations/term_about_region.csv' AS row
     MATCH (start:Term {term_id: row.start_term_id})
     MATCH (target:Region {region_id: row.end_region_id})
@@ -30,7 +30,7 @@ CALL {
     SET r += row
 } IN TRANSACTIONS OF 1000 ROWS;
 
-CALL {
+CALL () {
     LOAD CSV WITH HEADERS FROM 'file:///relations/term_about_economic_domain.csv' AS row
     MATCH (start:Term {term_id: row.start_term_id})
     MATCH (target:EconomicDomain {economic_domain_id: row.end_economic_domain_id})
@@ -38,7 +38,7 @@ CALL {
     SET r += row
 } IN TRANSACTIONS OF 1000 ROWS;
 
-CALL {
+CALL () {
     LOAD CSV WITH HEADERS FROM 'file:///relations/term_about_taxonomy_facet.csv' AS row
     MATCH (start:Term {term_id: row.start_term_id})
     MATCH (target:TaxonomyFacet {taxonomy_facet_id: row.end_taxonomy_facet_id})
@@ -46,7 +46,7 @@ CALL {
     SET r += row
 } IN TRANSACTIONS OF 1000 ROWS;
 
-CALL {
+CALL () {
     LOAD CSV WITH HEADERS FROM 'file:///relations/event_has_source_category.csv' AS row
     MATCH (start:Event {event_id: row.start_event_id})
     MATCH (target:SourceEventCategory {event_category_id: row.end_event_category_id})
@@ -54,7 +54,7 @@ CALL {
     SET r += row
 } IN TRANSACTIONS OF 1000 ROWS;
 
-CALL {
+CALL () {
     LOAD CSV WITH HEADERS FROM 'file:///relations/event_has_canonical_category.csv' AS row
     MATCH (start:Event {event_id: row.start_event_id})
     MATCH (target:CanonicalCategory {category_id: row.end_category_id})
@@ -62,7 +62,7 @@ CALL {
     SET r += row
 } IN TRANSACTIONS OF 1000 ROWS;
 
-CALL {
+CALL () {
     LOAD CSV WITH HEADERS FROM 'file:///relations/event_has_facet.csv' AS row
     MATCH (start:Event {event_id: row.start_event_id})
     MATCH (target:EventFacet {event_facet_id: row.end_event_facet_id})
@@ -70,7 +70,7 @@ CALL {
     SET r += row
 } IN TRANSACTIONS OF 1000 ROWS;
 
-CALL {
+CALL () {
     LOAD CSV WITH HEADERS FROM 'file:///relations/event_in_period.csv' AS row
     MATCH (start:Event {event_id: row.start_event_id})
     MATCH (target:Period {period_id: row.end_period_id})
@@ -78,7 +78,7 @@ CALL {
     SET r += row
 } IN TRANSACTIONS OF 1000 ROWS;
 
-CALL {
+CALL () {
     LOAD CSV WITH HEADERS FROM 'file:///relations/event_part_of_event_group.csv' AS row
     MATCH (start:Event {event_id: row.start_event_id})
     MATCH (target:EventGroup {event_group_id: row.end_event_group_id})
@@ -86,7 +86,7 @@ CALL {
     SET r += row
 } IN TRANSACTIONS OF 1000 ROWS;
 
-CALL {
+CALL () {
     LOAD CSV WITH HEADERS FROM 'file:///relations/event_has_source_url.csv' AS row
     MATCH (start:Event {event_id: row.start_event_id})
     MATCH (target:SourceUrl {source_url_id: row.end_source_url_id})
@@ -94,7 +94,7 @@ CALL {
     SET r += row
 } IN TRANSACTIONS OF 1000 ROWS;
 
-CALL {
+CALL () {
     LOAD CSV WITH HEADERS FROM 'file:///relations/event_has_search_tag.csv' AS row
     MATCH (start:Event {event_id: row.start_event_id})
     MATCH (target:SearchTag {search_tag_id: row.end_search_tag_id})
@@ -106,7 +106,7 @@ CALL {
     SET r += row
 } IN TRANSACTIONS OF 1000 ROWS;
 
-CALL {
+CALL () {
     LOAD CSV WITH HEADERS FROM 'file:///relations/event_about_country.csv' AS row
     MATCH (start:Event {event_id: row.start_event_id})
     MATCH (target:Country {country_id: row.end_country_id})
@@ -114,7 +114,7 @@ CALL {
     SET r += row
 } IN TRANSACTIONS OF 1000 ROWS;
 
-CALL {
+CALL () {
     LOAD CSV WITH HEADERS FROM 'file:///relations/event_about_taxonomy_facet.csv' AS row
     MATCH (start:Event {event_id: row.start_event_id})
     MATCH (target:TaxonomyFacet {taxonomy_facet_id: row.end_taxonomy_facet_id})
@@ -122,7 +122,7 @@ CALL {
     SET r += row
 } IN TRANSACTIONS OF 1000 ROWS;
 
-CALL {
+CALL () {
     LOAD CSV WITH HEADERS FROM 'file:///relations/person_involved_in_event.csv' AS row
     MATCH (start:Person {person_id: row.start_person_id})
     MATCH (target:Event {event_id: row.end_event_id})
@@ -130,7 +130,7 @@ CALL {
     SET r += row
 } IN TRANSACTIONS OF 1000 ROWS;
 
-CALL {
+CALL () {
     LOAD CSV WITH HEADERS FROM 'file:///relations/person_related_to_person.csv' AS row
     MATCH (start:Person {person_id: row.start_person_id})
     MATCH (target:Person {person_id: row.end_person_id})
@@ -138,7 +138,7 @@ CALL {
     SET r += row
 } IN TRANSACTIONS OF 1000 ROWS;
 
-CALL {
+CALL () {
     LOAD CSV WITH HEADERS FROM 'file:///relations/term_refers_to_person.csv' AS row
     MATCH (start:Term {term_id: row.start_term_id})
     MATCH (target:Person {person_id: row.end_person_id})
@@ -146,7 +146,7 @@ CALL {
     SET r += row
 } IN TRANSACTIONS OF 1000 ROWS;
 
-CALL {
+CALL () {
     LOAD CSV WITH HEADERS FROM 'file:///relations/term_refers_to_event.csv' AS row
     MATCH (start:Term {term_id: row.start_term_id})
     MATCH (target:Event {event_id: row.end_event_id})
@@ -154,7 +154,7 @@ CALL {
     SET r += row
 } IN TRANSACTIONS OF 1000 ROWS;
 
-CALL {
+CALL () {
     LOAD CSV WITH HEADERS FROM 'file:///relations/person_has_source_url.csv' AS row
     MATCH (start:Person {person_id: row.start_person_id})
     MATCH (target:SourceUrl {source_url_id: row.end_source_url_id})
@@ -162,7 +162,7 @@ CALL {
     SET r += row
 } IN TRANSACTIONS OF 1000 ROWS;
 
-CALL {
+CALL () {
     LOAD CSV WITH HEADERS FROM 'file:///relations/person_has_evidence_url.csv' AS row
     MATCH (start:Person {person_id: row.start_person_id})
     MATCH (target:SourceUrl {source_url_id: row.end_source_url_id})
@@ -174,7 +174,7 @@ CALL {
     SET r += row
 } IN TRANSACTIONS OF 1000 ROWS;
 
-CALL {
+CALL () {
     LOAD CSV WITH HEADERS FROM 'file:///relations/canonical_category_subcategory_of.csv' AS row
     MATCH (start:CanonicalCategory {category_id: row.start_category_id})
     MATCH (target:CanonicalCategory {category_id: row.end_category_id})
@@ -182,7 +182,7 @@ CALL {
     SET r += row
 } IN TRANSACTIONS OF 1000 ROWS;
 
-CALL {
+CALL () {
     LOAD CSV WITH HEADERS FROM 'file:///relations/source_category_mapped_to_canonical_category.csv' AS row
     MATCH (start:SourceEventCategory {event_category_id: row.start_event_category_id})
     MATCH (target:CanonicalCategory {category_id: row.end_category_id})
@@ -190,7 +190,7 @@ CALL {
     SET r += row
 } IN TRANSACTIONS OF 1000 ROWS;
 
-CALL {
+CALL () {
     LOAD CSV WITH HEADERS FROM 'file:///relations/canonical_category_about_country.csv' AS row
     MATCH (start:CanonicalCategory {category_id: row.start_category_id})
     MATCH (target:Country {country_id: row.end_country_id})
@@ -198,7 +198,7 @@ CALL {
     SET r += row
 } IN TRANSACTIONS OF 1000 ROWS;
 
-CALL {
+CALL () {
     LOAD CSV WITH HEADERS FROM 'file:///relations/canonical_category_about_region.csv' AS row
     MATCH (start:CanonicalCategory {category_id: row.start_category_id})
     MATCH (target:Region {region_id: row.end_region_id})
@@ -206,7 +206,7 @@ CALL {
     SET r += row
 } IN TRANSACTIONS OF 1000 ROWS;
 
-CALL {
+CALL () {
     LOAD CSV WITH HEADERS FROM 'file:///relations/canonical_category_about_economic_domain.csv' AS row
     MATCH (start:CanonicalCategory {category_id: row.start_category_id})
     MATCH (target:EconomicDomain {economic_domain_id: row.end_economic_domain_id})
@@ -214,7 +214,7 @@ CALL {
     SET r += row
 } IN TRANSACTIONS OF 1000 ROWS;
 
-CALL {
+CALL () {
     LOAD CSV WITH HEADERS FROM 'file:///relations/canonical_category_about_taxonomy_facet.csv' AS row
     MATCH (start:CanonicalCategory {category_id: row.start_category_id})
     MATCH (target:TaxonomyFacet {taxonomy_facet_id: row.end_taxonomy_facet_id})
@@ -222,7 +222,7 @@ CALL {
     SET r += row
 } IN TRANSACTIONS OF 1000 ROWS;
 
-CALL {
+CALL () {
     LOAD CSV WITH HEADERS FROM 'file:///relations/region_subregion_of.csv' AS row
     MATCH (start:Region {region_id: row.start_region_id})
     MATCH (target:Region {region_id: row.end_region_id})
@@ -230,7 +230,7 @@ CALL {
     SET r += row
 } IN TRANSACTIONS OF 1000 ROWS;
 
-CALL {
+CALL () {
     LOAD CSV WITH HEADERS FROM 'file:///relations/canonical_category_has_theme.csv' AS row
     MATCH (start:CanonicalCategory {category_id: row.start_category_id})
     MATCH (target:Theme {theme_id: row.end_theme_id})
@@ -238,7 +238,7 @@ CALL {
     SET r += row
 } IN TRANSACTIONS OF 1000 ROWS;
 
-CALL {
+CALL () {
     LOAD CSV WITH HEADERS FROM 'file:///relations/term_has_theme.csv' AS row
     MATCH (start:Term {term_id: row.start_term_id})
     MATCH (target:Theme {theme_id: row.end_theme_id})
@@ -246,7 +246,7 @@ CALL {
     SET r += row
 } IN TRANSACTIONS OF 1000 ROWS;
 
-CALL {
+CALL () {
     LOAD CSV WITH HEADERS FROM 'file:///relations/event_has_theme.csv' AS row
     MATCH (start:Event {event_id: row.start_event_id})
     MATCH (target:Theme {theme_id: row.end_theme_id})
@@ -254,7 +254,7 @@ CALL {
     SET r += row
 } IN TRANSACTIONS OF 1000 ROWS;
 
-CALL {
+CALL () {
     LOAD CSV WITH HEADERS FROM 'file:///relations/person_has_theme.csv' AS row
     MATCH (start:Person {person_id: row.start_person_id})
     MATCH (target:Theme {theme_id: row.end_theme_id})
@@ -262,7 +262,7 @@ CALL {
     SET r += row
 } IN TRANSACTIONS OF 1000 ROWS;
 
-CALL {
+CALL () {
     LOAD CSV WITH HEADERS FROM 'file:///relations/event_in_era.csv' AS row
     MATCH (start:Event {event_id: row.start_event_id})
     MATCH (target:Era {era_id: row.end_era_id})
@@ -270,7 +270,7 @@ CALL {
     SET r += row
 } IN TRANSACTIONS OF 1000 ROWS;
 
-CALL {
+CALL () {
     LOAD CSV WITH HEADERS FROM 'file:///relations/period_part_of_era.csv' AS row
     MATCH (start:Period {period_id: row.start_period_id})
     MATCH (target:Era {era_id: row.end_era_id})
@@ -278,7 +278,7 @@ CALL {
     SET r += row
 } IN TRANSACTIONS OF 1000 ROWS;
 
-CALL {
+CALL () {
     LOAD CSV WITH HEADERS FROM 'file:///relations/term_has_entity_type.csv' AS row
     MATCH (start:Term {term_id: row.start_term_id})
     MATCH (target:EntityType {entity_type_id: row.end_entity_type_id})
@@ -286,7 +286,7 @@ CALL {
     SET r += row
 } IN TRANSACTIONS OF 1000 ROWS;
 
-CALL {
+CALL () {
     LOAD CSV WITH HEADERS FROM 'file:///relations/term_in_era.csv' AS row
     MATCH (start:Term {term_id: row.start_term_id})
     MATCH (target:Era {era_id: row.end_era_id})
@@ -294,7 +294,7 @@ CALL {
     SET r += row
 } IN TRANSACTIONS OF 1000 ROWS;
 
-CALL {
+CALL () {
     LOAD CSV WITH HEADERS FROM 'file:///relations/person_in_era.csv' AS row
     MATCH (start:Person {person_id: row.start_person_id})
     MATCH (target:Era {era_id: row.end_era_id})

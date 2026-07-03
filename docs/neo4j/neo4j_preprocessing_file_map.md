@@ -558,11 +558,12 @@ import 쿼리는 기존 Neo4j 실행 구조에 맞춰 `storage/neo4j/schema/` �
 
 | 파일 | 역할 |
 |---|---|
-| `history_graph_reset.cypher` | 기존 노드와 관계 전체를 배치 단위로 삭제. `load_schema.py` 실행 시 항상 먼저 실행 |
 | `history_graph_constraints.cypher` | node id 제약조건과 조회용 index 생성 |
 | `history_graph_import_nodes.cypher` | `storage/neo4j/neo4j_import/nodes/`의 node CSV 적재 |
 | `history_graph_import_relations.cypher` | `storage/neo4j/neo4j_import/relations/`의 relationship CSV 적재 |
 | `history_graph_verify.cypher` | 적재 후 노드/관계 개수 확인 |
+
+reset은 별도 Cypher 파일이 아니라 `storage/neo4j/load_schema.py` 내부에서 실행한다. 관계를 먼저 배치 삭제하고, 그 다음 노드를 배치 삭제한다. 배치 크기는 `NEO4J_RESET_BATCH_SIZE`로 조절하며 기본값은 `10000`이다.
 
 Docker compose 기준 Neo4j 컨테이너는 `storage/neo4j/neo4j_import`를 `/var/lib/neo4j/import`로 마운트한다. 따라서 Cypher 파일은 다음 경로를 기준으로 CSV를 읽는다.
 
@@ -585,7 +586,7 @@ storage/neo4j/neo4j_import/relations/*.csv
 실행 순서는 다음과 같다.
 
 ```text
-history_graph_reset.cypher
+internal_graph_reset
 history_graph_constraints.cypher
 history_graph_import_nodes.cypher
 history_graph_import_relations.cypher

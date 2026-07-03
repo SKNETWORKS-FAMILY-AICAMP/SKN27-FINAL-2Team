@@ -44,7 +44,6 @@ def split_cypher_statements(cypher_text):
 
 def build_default_schema_file_names():
     return [
-        "history_graph_reset.cypher",
         "history_graph_constraints.cypher",
         "history_graph_import_nodes.cypher",
         "history_graph_import_relations.cypher",
@@ -56,21 +55,12 @@ def build_default_schema_file_text():
     return ",".join(build_default_schema_file_names())
 
 
-def prepend_reset_schema_file(schema_files):
-    if "history_graph_reset.cypher" not in schema_files:
-        return ["history_graph_reset.cypher", *schema_files]
-
-    return schema_files
-
-
 def build_schema_file_names(schema_file_text):
-    schema_files = [
+    return [
         schema_file.strip()
         for schema_file in schema_file_text.split(",")
-        if schema_file.strip()
+        if schema_file.strip() and schema_file.strip() != "history_graph_reset.cypher"
     ]
-
-    return prepend_reset_schema_file(schema_files)
 
 
 def build_optional_import_csv_paths():
@@ -151,8 +141,95 @@ def run_statement(session, statement, import_dir):
     }
 
 
+def load_reset_batch_size():
+    raw_batch_size = os.getenv("NEO4J_RESET_BATCH_SIZE")
+
+    if not raw_batch_size:
+        return 10000
+
+    batch_size = int(raw_batch_size)
+
+    if batch_size <= 0:
+        raise ValueError("NEO4J_RESET_BATCH_SIZE must be greater than 0")
+
+    return batch_size
+
+
+def run_batched_delete(session, statement, batch_size, phase_name):
+    total_deleted = 0
+    batch_count = 0
+
+    while True:
+        record = session.run(statement, batch_size=batch_size).single()
+        deleted_count = record["deleted_count"]
+
+        if deleted_count == 0:
+            break
+
+        total_deleted += deleted_count
+        batch_count += 1
+        print(
+            f"reset {phase_name}: deleted {deleted_count} "
+            f"(total {total_deleted})"
+        )
+
+    return {
+        "phase": phase_name,
+        "deleted": total_deleted,
+        "batches": batch_count,
+        "batch_size": batch_size,
+    }
+
+
+def run_reset_schema(driver):
+    batch_size = load_reset_batch_size()
+    relationship_delete_statement = """
+MATCH ()-[r]->()
+WITH r LIMIT $batch_size
+DELETE r
+RETURN count(*) AS deleted_count
+"""
+    node_delete_statement = """
+MATCH (n)
+WITH n LIMIT $batch_size
+DELETE n
+RETURN count(*) AS deleted_count
+"""
+
+    with driver.session() as session:
+        relationship_result = run_batched_delete(
+            session,
+            relationship_delete_statement,
+            batch_size,
+            "relationships",
+        )
+        node_result = run_batched_delete(
+            session,
+            node_delete_statement,
+            batch_size,
+            "nodes",
+        )
+
+    return {
+        "schema": "internal_graph_reset",
+        "statements": 2,
+        "executed_statements": 2,
+        "skipped_statements": 0,
+        "returned_results": [
+            {
+                "statement_index": 1,
+                "records": [relationship_result],
+            },
+            {
+                "statement_index": 2,
+                "records": [node_result],
+            },
+        ],
+    }
+
+
 def run_schema(driver, schema_path, import_dir):
-    cypher_text = schema_path.read_text(encoding="utf-8")
+    cypher_text = schema_path.read_text(encoding="utf-8-sig")
     statements = split_cypher_statements(cypher_text)
     executed_statements = 0
     skipped_statements = 0
@@ -234,10 +311,12 @@ def main():
         config["uri"],
         auth=(config["user"], config["password"]),
     ) as driver:
-        results = [
+        reset_result = run_reset_schema(driver)
+        schema_results = [
             run_schema(driver, schema_path, import_dir)
             for schema_path in schema_paths
         ]
+        results = [reset_result, *schema_results]
         graph_totals = count_graph_totals(driver)
 
     for result in results:

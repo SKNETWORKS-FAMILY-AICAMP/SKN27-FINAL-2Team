@@ -735,7 +735,7 @@ flowchart TB
 
     load_schema["load_schema.py"]
 
-    reset["history_graph_reset.cypher<br/>항상 실행<br/>기존 노드/관계 전체 배치 삭제"]
+    reset["internal_graph_reset<br/>load_schema.py 내부 배치 삭제<br/>관계 먼저, 노드 다음"]
     constraints["history_graph_constraints.cypher<br/>unique constraint / index 생성"]
     import_node_cypher["history_graph_import_nodes.cypher<br/>node CSV import"]
     import_relation_cypher["history_graph_import_relations.cypher<br/>relationship CSV import"]

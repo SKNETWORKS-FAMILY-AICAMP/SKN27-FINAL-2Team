@@ -420,7 +420,6 @@ flowchart LR
 
 | 파일 | 기본 실행 여부 | 역할 |
 |---|---|---|
-| `history_graph_reset.cypher` | 예 | 기존 노드와 관계 전체를 배치 단위(`CALL { } IN TRANSACTIONS`)로 `DETACH DELETE` |
 | `history_graph_constraints.cypher` | 예 | 14개 label의 ID unique constraint와 주요 name/path/url index 생성 |
 | `history_graph_import_nodes.cypher` | 예 | `file:///nodes/*.csv`에서 모든 노드 import |
 | `history_graph_import_relations.cypher` | 예 | `file:///relations/*.csv`에서 모든 관계 import |
@@ -429,20 +428,20 @@ flowchart LR
 `load_schema.py` 기본 실행 순서:
 
 ```text
-history_graph_reset.cypher
+internal_graph_reset
 history_graph_constraints.cypher
 history_graph_import_nodes.cypher
 history_graph_import_relations.cypher
 history_graph_verify.cypher
 ```
 
-reset은 항상 실행된다. `load_schema.py`를 실행하면 기존 노드와 관계를 전부 삭제한 뒤 다시 적재한다.
+reset은 Cypher 파일이 아니라 `load_schema.py` 내부 배치 루프로 항상 먼저 실행된다. 관계를 먼저 batch delete하고, 그 다음 노드를 batch delete한다. 기본 batch size는 `NEO4J_RESET_BATCH_SIZE` 환경변수로 조정할 수 있고, 기본값은 `10000`이다.
 
 ```powershell
 .\.venv\Scripts\python.exe storage/neo4j/load_schema.py
 ```
 
-`NEO4J_SCHEMA_FILES` 환경변수로 직접 순서를 지정하는 방식도 지원한다. 이 경우에도 `history_graph_reset.cypher`가 목록 앞에 없으면 자동으로 추가된다.
+`NEO4J_SCHEMA_FILES` 환경변수로 Cypher 파일 순서를 직접 지정하는 방식도 지원한다. 이 경우에도 internal reset은 Cypher 파일 목록과 별개로 항상 먼저 실행된다.
 
 ### 9.2 constraints와 indexes
 

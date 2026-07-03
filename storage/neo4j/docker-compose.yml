@@ -1,6 +1,6 @@
 services:
   neo4j:
-    image: neo4j:5.26.27-community
+    image: neo4j:5.26.28-community
     container_name: skn27-neo4j
     restart: unless-stopped
     environment:
