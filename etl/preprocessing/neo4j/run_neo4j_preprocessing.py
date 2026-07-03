@@ -24,8 +24,26 @@ def parse_args():
     return parser.parse_args()
 
 
-def build_pipeline_steps(script_dir):
+def resolve_project_root(start_path):
+    for parent_path in [start_path, *start_path.parents]:
+        if (parent_path / ".git").exists() and (parent_path / "etl").exists():
+            return parent_path
+
+    raise FileNotFoundError(f"프로젝트 루트를 찾을 수 없습니다: {start_path}")
+
+
+def build_import_output_dirs(project_root):
+    import_dir = project_root / "storage" / "neo4j" / "neo4j_import"
+
+    return {
+        "nodes_dir": import_dir / "nodes",
+        "relations_dir": import_dir / "relations",
+    }
+
+
+def build_pipeline_steps(script_dir, project_root):
     step_dir = script_dir / "scripts"
+    import_output_dirs = build_import_output_dirs(project_root)
 
     return [
         {
@@ -43,17 +61,27 @@ def build_pipeline_steps(script_dir):
         {
             "step_name": "4. 최종 graph node/relation 생성",
             "script_path": step_dir / "make_graph_csv.py",
+            "extra_args": [
+                "--nodes-dir",
+                import_output_dirs["nodes_dir"],
+                "--relations-dir",
+                import_output_dirs["relations_dir"],
+            ],
         },
     ]
 
 
-def build_step_command(python_path, script_path):
-    return [str(python_path), str(script_path), "--save"]
+def build_step_command(python_path, script_path, extra_args):
+    command = [str(python_path), str(script_path), "--save"]
+    command.extend([str(arg) for arg in extra_args])
+
+    return command
 
 
 def run_pipeline_step(step, python_path):
     script_path = step["script_path"]
-    command = build_step_command(python_path, script_path)
+    extra_args = step.get("extra_args", [])
+    command = build_step_command(python_path, script_path, extra_args)
 
     print("", flush=True)
     print(f"[START] {step['step_name']}", flush=True)
@@ -86,11 +114,13 @@ def resolve_python_path(args):
 def main():
     args = parse_args()
     script_dir = Path(__file__).resolve().parent
+    project_root = resolve_project_root(script_dir)
     python_path = resolve_python_path(args)
-    pipeline_steps = build_pipeline_steps(script_dir)
+    pipeline_steps = build_pipeline_steps(script_dir, project_root)
 
     print("Neo4j preprocessing pipeline", flush=True)
     print(f"python: {python_path}", flush=True)
+    print(f"project_root: {project_root}", flush=True)
     print("mode: save", flush=True)
 
     for step in pipeline_steps:

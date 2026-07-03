@@ -5,7 +5,7 @@
 핵심 기준은 다음과 같다.
 
 - `normalized/`, `dictionary/`, `mapping/`, `staging/`은 전처리 중간 산출물이다.
-- `graph/nodes/`, `graph/relations/`가 Neo4j import의 최종 대상이다.
+- runner 기준 Neo4j import 최종 대상은 `storage/neo4j/neo4j_import/nodes/`, `storage/neo4j/neo4j_import/relations/`이다.
 - `seed/`는 사람이 관리하는 규칙표다.
 - `scripts/`는 실제 전처리 로직이다.
 - `run_neo4j_preprocessing.py`는 전체 전처리를 순서대로 실행하는 시작 파일이다.
@@ -19,7 +19,7 @@ raw_data
   -> normalized
   -> dictionary
   -> mapping + staging
-  -> graph/nodes + graph/relations
+  -> storage/neo4j/neo4j_import/nodes + storage/neo4j/neo4j_import/relations
   -> Neo4j import
 ```
 
@@ -51,11 +51,11 @@ raw_data
 | `dictionary/` | 기준표 | 그래프 노드 후보를 정의하는 사전 CSV |
 | `mapping/` | 연결 규칙 | 서로 다른 사전이나 분류 체계를 연결하는 crosswalk CSV |
 | `staging/` | 관계 중간 산출물 | 최종 relation CSV를 만들기 전의 중간 관계/파싱 결과 |
-| `graph/nodes/` | 최종 import 대상 | Neo4j node로 import할 CSV |
-| `graph/relations/` | 최종 import 대상 | Neo4j relationship으로 import할 CSV |
+| `graph/nodes/` | 수동 실행 산출물 | `make_graph_csv.py`를 단독 실행할 때의 기본 node CSV 저장 위치 |
+| `graph/relations/` | 수동 실행 산출물 | `make_graph_csv.py`를 단독 실행할 때의 기본 relationship CSV 저장 위치 |
 | `__pycache__/` | 실행 캐시 | Python이 자동 생성한 캐시 폴더. import 대상 아님 |
 
-Neo4j import에서는 보통 `graph/nodes/`를 먼저 넣고, 그 다음 `graph/relations/`를 넣는다.
+`run_neo4j_preprocessing.py`로 실행하면 마지막 graph 생성 단계는 `graph/`가 아니라 `storage/neo4j/neo4j_import/` 아래에 바로 CSV를 만든다. Neo4j import에서는 보통 `storage/neo4j/neo4j_import/nodes/`를 먼저 넣고, 그 다음 `storage/neo4j/neo4j_import/relations/`를 넣는다.
 
 ### 2.1 runner가 생성하는 CSV와 생성하지 않는 CSV
 
@@ -65,8 +65,8 @@ Neo4j import에서는 보통 `graph/nodes/`를 먼저 넣고, 그 다음 `graph/
 - `dictionary/`
 - `mapping/`
 - `staging/`
-- `graph/nodes/`
-- `graph/relations/`
+- `storage/neo4j/neo4j_import/nodes/`
+- `storage/neo4j/neo4j_import/relations/`
 
 반대로 `seed/` 폴더의 CSV는 runner가 생성하지 않는다. `seed/`는 사람이 직접 관리하는 입력 규칙표이기 때문이다.
 
@@ -221,7 +221,7 @@ Neo4j import에서는 보통 `graph/nodes/`를 먼저 넣고, 그 다음 `graph/
 
 ## 6. `dictionary/` CSV
 
-`dictionary/`는 그래프 노드 후보를 정의하는 기준표다. 여기 있는 파일은 대부분 최종 `graph/nodes/`로 변환된다.
+`dictionary/`는 그래프 노드 후보를 정의하는 기준표다. 여기 있는 파일은 대부분 최종 node CSV로 변환된다. runner 기준 최종 node CSV 위치는 `storage/neo4j/neo4j_import/nodes/`다.
 
 | CSV | 행 수 | 의미 |
 |---|---:|---|
@@ -370,9 +370,11 @@ events.subject_category
 
 ---
 
-## 9. `graph/nodes/` CSV
+## 9. 최종 node CSV
 
-`graph/nodes/`는 Neo4j node import 대상이다. 이 폴더의 파일은 실제 그래프 노드가 된다.
+최종 node CSV는 Neo4j node import 대상이다. `run_neo4j_preprocessing.py`로 실행하면 `storage/neo4j/neo4j_import/nodes/` 아래에 생성된다.
+
+`make_graph_csv.py`를 단독 실행하면 기본값으로 `etl/preprocessing/neo4j/graph/nodes/` 아래에 생성된다.
 
 | CSV | 행 수 | Neo4j 노드 의미 |
 |---|---:|---|
@@ -417,9 +419,11 @@ events.subject_category
 
 ---
 
-## 10. `graph/relations/` CSV
+## 10. 최종 relationship CSV
 
-`graph/relations/`는 Neo4j relationship import 대상이다. 모든 파일은 보통 `start_*_id`, `end_*_id`, `relation_type`을 가진다.
+최종 relationship CSV는 Neo4j relationship import 대상이다. `run_neo4j_preprocessing.py`로 실행하면 `storage/neo4j/neo4j_import/relations/` 아래에 생성된다.
+
+`make_graph_csv.py`를 단독 실행하면 기본값으로 `etl/preprocessing/neo4j/graph/relations/` 아래에 생성된다. 모든 relation CSV는 보통 `start_*_id`, `end_*_id`, `relation_type`을 가진다.
 
 ### 10.1 용어 중심 관계
 
@@ -453,11 +457,13 @@ events.subject_category
 | `event_has_source_url.csv` | 2,382 | `Event - HAS_SOURCE_URL - SourceUrl` |
 | `event_has_search_tag.csv` | 2,811 | `Event - HAS_SEARCH_TAG - SearchTag` |
 | `event_about_country.csv` | 2 | `Event - ABOUT_COUNTRY - Country` |
-| `event_about_region.csv` | 0 | `Event - ABOUT_REGION - Region` |
-| `event_about_economic_domain.csv` | 0 | `Event - ABOUT_ECONOMIC_DOMAIN - EconomicDomain` |
 | `event_about_taxonomy_facet.csv` | 714 | `Event - ABOUT_TAXONOMY_FACET - TaxonomyFacet` |
 
-`event_about_region.csv`, `event_about_economic_domain.csv`이 0건인 것은 현재 이벤트-표준 카테고리 매핑 결과가 해당 의미 축까지 연결되지 않았기 때문이다. `taxonomy_crosswalk.csv`를 보강하면 증가할 수 있다.
+`event_about_region.csv`, `event_about_economic_domain.csv`는 현재 생성하지 않는다.
+
+이 두 관계는 설계상 가능한 관계지만, 현재 `taxonomy_crosswalk.csv` 기준 이벤트-표준 카테고리 매핑 결과가 `Region`, `EconomicDomain` 축까지 닿지 않는다. 0행 CSV를 최종 import 폴더에 남겨두면 실제 그래프에 들어가는 관계처럼 보이고, 문서와 검수 단계에서 불필요한 혼란이 생긴다. 그래서 현재 구현은 0행일 때 CSV를 물리적으로 생성하지 않고, 나중에 seed/mapping 보강으로 행이 생기면 자동으로 다시 생성하는 방식이다.
+
+Cypher import 쪽에는 optional LOAD 대상으로 남겨두되, `load_schema.py`가 해당 CSV 파일이 없으면 그 문장만 건너뛰게 했다. 이렇게 한 이유는 현재의 빈 산출물은 제거하면서도, 나중에 매핑이 보강되어 실제 행이 생겼을 때 별도 쿼리 구조를 다시 설계하지 않아도 되게 하기 위해서다.
 
 ### 10.3 인물 중심 관계
 
@@ -499,33 +505,59 @@ events.subject_category
 import 쿼리에서 직접 봐야 하는 폴더는 기본적으로 두 개다.
 
 ```text
-graph/nodes/
-graph/relations/
+storage/neo4j/neo4j_import/nodes/
+storage/neo4j/neo4j_import/relations/
 ```
 
 권장 import 순서는 다음과 같다.
 
 1. 제약조건과 인덱스 생성
-2. `graph/nodes/*.csv` 전체 import
-3. `graph/relations/*.csv` 전체 import
+2. `storage/neo4j/neo4j_import/nodes/*.csv` 전체 import
+3. `storage/neo4j/neo4j_import/relations/*.csv` 전체 import
 4. 참조 누락 검증
 
 `dictionary/`, `mapping/`, `staging/`은 import 쿼리에서 반드시 넣을 필요는 없다. 검수, 재생성, 원인 추적을 위한 전처리 산출물이다.
 
-다만 import 쿼리가 복잡해질 수 있으므로, 다음 단계에서는 `graph/nodes/`와 `graph/relations/`의 파일 목록을 기준으로 Cypher import 파일을 자동 생성하거나, 별도 import runner를 두는 편이 좋다.
+import 쿼리는 기존 Neo4j 실행 구조에 맞춰 `storage/neo4j/schema/` 아래에 둔다.
 
-예상 구조:
+현재 import 관련 Cypher 파일은 다음과 같다.
+
+| 파일 | 역할 |
+|---|---|
+| `history_graph_reset.cypher` | 현재 history graph 노드와 예전 schema 노드 삭제. 필요할 때만 실행 |
+| `history_graph_constraints.cypher` | node id 제약조건과 조회용 index 생성 |
+| `history_graph_import_nodes.cypher` | `storage/neo4j/neo4j_import/nodes/`의 node CSV 적재 |
+| `history_graph_import_relations.cypher` | `storage/neo4j/neo4j_import/relations/`의 relationship CSV 적재 |
+| `history_graph_verify.cypher` | 적재 후 노드/관계 개수 확인 |
+
+Docker compose 기준 Neo4j 컨테이너는 `storage/neo4j/neo4j_import`를 `/var/lib/neo4j/import`로 마운트한다. 따라서 Cypher 파일은 다음 경로를 기준으로 CSV를 읽는다.
 
 ```text
-etl/preprocessing/neo4j/import/
-  constraints.cypher
-  import_nodes.cypher
-  import_relations.cypher
-  verify_import.cypher
-  run_neo4j_import.py
+file:///nodes/*.csv
+file:///relations/*.csv
 ```
 
-이렇게 분리하면 전처리 CSV 생성과 Neo4j 적재 쿼리를 서로 섞지 않고 관리할 수 있다.
+`run_neo4j_preprocessing.py`로 실행하면 아래 위치에 바로 생성되므로 별도 복사가 필요 없다.
+
+```text
+storage/neo4j/neo4j_import/nodes/*.csv
+storage/neo4j/neo4j_import/relations/*.csv
+```
+
+단, `make_graph_csv.py`를 단독 실행해서 `etl/preprocessing/neo4j/graph/` 아래에 만들었다면 import 전에 `storage/neo4j/neo4j_import/`로 복사해야 한다.
+
+노드 import 쿼리는 `SET n += row` 뒤에 숫자 속성을 `toIntegerOrNull()`로 다시 세팅한다. CSV는 문자열 기반이라 그대로 넣으면 `start_year`, `end_year`, `period_order`, `term_count` 같은 값도 문자열이 된다. 연도 범위 검색, 시대 정렬, 집계 비교를 제대로 하려면 import 시점에서 숫자 타입을 명시해야 한다.
+
+실행 순서는 보통 다음과 같다.
+
+```text
+history_graph_constraints.cypher
+history_graph_import_nodes.cypher
+history_graph_import_relations.cypher
+history_graph_verify.cypher
+```
+
+처음부터 깨끗하게 다시 넣어야 하면 `storage/neo4j/load_schema.py --reset`을 실행한다. 이 옵션은 기본 import 순서 맨 앞에 `history_graph_reset.cypher`를 추가한다.
 
 ---
 
@@ -540,9 +572,9 @@ etl/preprocessing/neo4j/import/
 | 용어와 카테고리 연결이 이상함 | `staging/term_canonical_category_relation.csv` |
 | 이벤트 분류 매핑이 이상함 | `mapping/taxonomy_crosswalk.csv` |
 | 국가/지역/경제 분야 연결이 이상함 | `mapping/canonical_category_*_crosswalk.csv` |
-| 시대 범위가 이상하게 펼쳐짐 | `seed/period_seed.csv`, `dictionary/period_dictionary.csv`, `graph/relations/term_in_period.csv` |
-| 인물 관계 방향/의미가 이상함 | `seed/relation_type_seed.csv`, `dictionary/relation_type_dictionary.csv`, `graph/relations/person_related_to_person.csv` |
-| Neo4j import 대상 확인 | `graph/nodes/*.csv`, `graph/relations/*.csv` |
+| 시대 범위가 이상하게 펼쳐짐 | `seed/period_seed.csv`, `dictionary/period_dictionary.csv`, `storage/neo4j/neo4j_import/relations/term_in_period.csv` |
+| 인물 관계 방향/의미가 이상함 | `seed/relation_type_seed.csv`, `dictionary/relation_type_dictionary.csv`, `storage/neo4j/neo4j_import/relations/person_related_to_person.csv` |
+| Neo4j import 대상 확인 | `storage/neo4j/neo4j_import/nodes/*.csv`, `storage/neo4j/neo4j_import/relations/*.csv` |
 
 정리하면, 전처리 단계의 핵심 산출물은 많지만 역할은 분리되어 있다.
 

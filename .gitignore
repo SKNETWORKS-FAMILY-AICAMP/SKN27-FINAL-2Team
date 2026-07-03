@@ -292,3 +292,12 @@ $RECYCLE.BIN/
 # End of https://www.toptal.com/developers/gitignore/api/python,windows,django
 
 postgres_data/
+
+# Neo4j preprocessing generated CSV files
+etl/preprocessing/neo4j/normalized/*.csv
+etl/preprocessing/neo4j/dictionary/*.csv
+etl/preprocessing/neo4j/mapping/*.csv
+etl/preprocessing/neo4j/staging/*.csv
+etl/preprocessing/neo4j/graph/**/*.csv
+storage/neo4j/neo4j_import/nodes/*.csv
+storage/neo4j/neo4j_import/relations/*.csv

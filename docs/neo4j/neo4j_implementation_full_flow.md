@@ -1,0 +1,608 @@
+# Neo4j 구현 전체 흐름
+
+이 문서는 한국사 Graph DB 구현에서 전처리, CSV 생성 규칙, seed 관리, Neo4j import CSV, Cypher 쿼리까지 전체 흐름을 한 번에 보기 위한 기준 문서다.
+
+현재 기준은 다음과 같다.
+
+- 전체 전처리 시작 파일은 `etl/preprocessing/neo4j/run_neo4j_preprocessing.py`다.
+- 최종 Neo4j import CSV 위치는 `storage/neo4j/neo4j_import/nodes/`, `storage/neo4j/neo4j_import/relations/`다.
+- `etl/preprocessing/neo4j/normalized`, `dictionary`, `mapping`, `staging`은 import 전 중간 산출물이다.
+- `etl/preprocessing/neo4j/seed`는 사람이 관리하는 규칙표다. runner가 생성하지 않는다.
+- Cypher 파일은 `storage/neo4j/schema/` 아래의 `history_graph_*.cypher`를 사용한다.
+- 과거 `init.cypher`, `event.cypher`는 삭제했고 현재 import 흐름에서 사용하지 않는다.
+
+행 수는 현재 생성된 CSV 기준이다. raw 데이터나 seed를 바꾸면 다시 생성될 수 있다.
+
+---
+
+## 1. 전체 파이프라인
+
+```mermaid
+flowchart LR
+    raw["Raw CSV\nhistory terms / events / event relations / person relations"]
+    normalized["normalized CSV\nEDA 기준 정리"]
+    dictionary["dictionary CSV\n노드 후보 사전"]
+    mapping["mapping CSV\n사전 간 crosswalk"]
+    staging["staging CSV\n중간 관계/날짜 파싱"]
+    graph["Neo4j import CSV\nnodes / relations"]
+    cypher["Cypher import\nconstraints / nodes / relations / verify"]
+    neo4j["Neo4j Graph DB"]
+
+    raw --> normalized
+    normalized --> dictionary
+    normalized --> staging
+    dictionary --> mapping
+    mapping --> staging
+    dictionary --> graph
+    mapping --> graph
+    staging --> graph
+    graph --> cypher
+    cypher --> neo4j
+```
+
+전체 CSV를 다시 만들 때는 하나만 실행한다.
+
+```powershell
+.\.venv\Scripts\python.exe etl/preprocessing/neo4j/run_neo4j_preprocessing.py
+```
+
+runner 실행 순서:
+
+| 순서 | 스크립트 | 생성 대상 | 역할 |
+|---:|---|---|---|
+| 1 | `scripts/normalize_raw_data.py` | `normalized/` | raw CSV를 EDA 기준으로 정리 |
+| 2 | `scripts/make_base_dictionaries.py` | `dictionary/`, `staging/` | 1차 사전, 날짜 파싱, URL 사전 생성 |
+| 3 | `scripts/make_mapping_tables.py` | `dictionary/`, `mapping/`, `staging/` | 카테고리/이벤트/국가/지역/경제/중간 facet 매핑 생성 |
+| 4 | `scripts/make_graph_csv.py` | `storage/neo4j/neo4j_import/nodes/`, `storage/neo4j/neo4j_import/relations/` | Neo4j import용 최종 CSV 생성 |
+
+`make_graph_csv.py`를 단독 실행하면 기본 출력은 `etl/preprocessing/neo4j/graph/nodes/`, `etl/preprocessing/neo4j/graph/relations/`다. 다만 runner는 마지막 단계에서 `--nodes-dir`, `--relations-dir`를 넘겨 `storage/neo4j/neo4j_import/` 아래로 바로 저장한다.
+
+---
+
+## 2. 폴더와 파일 역할
+
+| 경로 | 성격 | 설명 |
+|---|---|---|
+| `etl/raw_data/` | raw 입력 | 원본 CSV가 있는 곳 |
+| `etl/preprocessing/neo4j/run_neo4j_preprocessing.py` | 시작 파일 | 전처리 스크립트 4개를 순서대로 실행 |
+| `etl/preprocessing/neo4j/scripts/` | 전처리 코드 | 정규화, 사전 생성, 매핑 생성, graph CSV 생성 로직 |
+| `etl/preprocessing/neo4j/seed/` | 수동 규칙 | 사람이 관리하는 고정 규칙표 |
+| `etl/preprocessing/neo4j/normalized/` | 중간 산출물 | raw를 EDA 기준으로 정리한 CSV |
+| `etl/preprocessing/neo4j/dictionary/` | 중간 산출물 | 그래프 노드 후보가 되는 사전 CSV |
+| `etl/preprocessing/neo4j/mapping/` | 중간 산출물 | 서로 다른 분류 체계를 잇는 crosswalk |
+| `etl/preprocessing/neo4j/staging/` | 중간 산출물 | 최종 관계 CSV 전 단계 |
+| `storage/neo4j/neo4j_import/nodes/` | 최종 산출물 | Neo4j node import CSV |
+| `storage/neo4j/neo4j_import/relations/` | 최종 산출물 | Neo4j relationship import CSV |
+| `storage/neo4j/schema/` | Cypher | 제약조건, import, 검증 쿼리 |
+| `storage/neo4j/load_schema.py` | import runner | Cypher 파일을 순서대로 실행 |
+| `storage/neo4j/docker-compose.yml` | Neo4j 실행 | import 폴더를 컨테이너 `/var/lib/neo4j/import`로 마운트 |
+
+`storage/neo4j/neo4j_import` 루트에 남아 있는 `event.csv`, `event_relation.csv`, `history_terms.csv`는 현재 `history_graph_*.cypher` import 쿼리에서 직접 사용하지 않는다. 현재 사용 대상은 `nodes/*.csv`, `relations/*.csv`다.
+
+---
+
+## 3. Raw 데이터와 정규화 규칙
+
+### 3.1 raw 입력
+
+| 입력 | 기본 경로 | 의미 |
+|---|---|---|
+| history terms | `etl/raw_data/교육부 국사편찬위원회_한국역사용어시소러스 정보_20211028 (1).csv` | 한국역사용어 시소러스 |
+| events | `etl/raw_data/한국고전종합DB_관계망/itkc_events.csv` | ITKC 사건 |
+| event relations | `etl/raw_data/한국고전종합DB_관계망/itkc_event_relations.csv` | 사건-인물 관계 |
+| person relations | `etl/raw_data/한국고전종합DB_관계망/itkc_person_relations.csv` | 인물-인물 관계 |
+
+### 3.2 normalized CSV
+
+| CSV | 행 수 | 생성 규칙 |
+|---|---:|---|
+| `normalized/terms.csv` | 61,598 | `term_kind=2`인 실제 용어만 남김. `term_id` 기준 중복 제거. `term_ch`는 `Term` 속성으로 보존. `term_user`, `term_created`, `term_reference`, `term_attr` 등 그래프 설계에 쓰지 않는 컬럼은 제외 |
+| `normalized/events.csv` | 600 | `event_id` 기준 중복 제거. `scope`, `person_count`, `detail_url` 제거. `detail_url`은 event별 `source_urls`로 합침 |
+| `normalized/event_relations.csv` | 6,918 | `event_id`, `person_id`, `relation_type`이 모두 같은 경우 중복 제거. `detail_url`은 `source_urls`로 합침. `scope`, 비어 있는 관련 사건/evidence 컬럼은 제외 |
+| `normalized/person_relations.csv` | 206,507 | `person_id`, `related_person_id`, `relation_type` 기준 중복 제거. 인물 관계 검수에 필요한 `related_*`, `related_count`, `evidence_url`, `detail_url`은 보존 |
+
+정규화 단계에서 URL을 바로 버리지 않는 이유는 이후 `SourceUrl` 노드로 분리해 Web RAG/Tavily 연계 후보로 쓸 수 있기 때문이다.
+
+---
+
+## 4. Seed 파일
+
+seed는 자동 생성 결과가 아니라 사람이 관리하는 입력 규칙표다. 전처리 재실행 시 seed를 읽어서 사전과 매핑을 만든다.
+
+| Seed CSV | 행 수 | 역할 |
+|---|---:|---|
+| `category_axis_seed.csv` | 2 | 표준 카테고리 경로에서 특정 의미 축을 어느 depth에서 뽑을지 정의. 현재 `country`, `economic_domain` 축 사용 |
+| `country_seed.csv` | 5 | 국가/정치체 노드 후보와 연결될 표준 카테고리 경로 정의 |
+| `region_seed.csv` | 7 | 기타지역, 동남아시아, 서남아시아, 아메리카, 아프리카, 유럽, 중앙아시아 같은 권역 정의 |
+| `event_facet_seed.csv` | 53 | 원천 이벤트 분류를 사건 의미 facet으로 재분류 |
+| `period_seed.csv` | 29 | 시대 순서, 범위 확장 후보, 연도 범위, 상위 시대 정보 정의 |
+| `relation_type_seed.csv` | 16 | 인물 관계 원문 타입을 정규화 타입, 관계 그룹, 방향성 기준으로 매핑 |
+| `taxonomy_crosswalk_seed.csv` | 42 | 이벤트 분류와 표준 카테고리 사이의 수동 매핑 |
+
+seed가 필요한 이유:
+
+- raw 분류명은 출처별로 다르다. `event.subject_category`와 `history_terms.term_lk`는 같은 체계가 아니다.
+- 정확히 이름이 같은 카테고리만 자동 매핑하면 누락이 생기고, 의미 유사도만으로 자동 연결하면 그래프가 흐려진다.
+- 국가, 지역, 경제 분야, 중간 taxonomy facet은 카테고리 경로 안에 섞여 있으므로 별도 노드로 뽑아야 쿼리가 단순해진다.
+- 시대 범위는 단순 문자열이 아니라 순서와 범위 규칙이 있어야 `삼국시대-조선시대` 같은 표현을 중간 시대까지 펼칠 수 있다.
+- 인물 관계는 `부`, `형`, `교유`처럼 방향성과 대칭성이 다르므로 raw 문자열 그대로 쓰면 쿼리 의미가 불안정해진다.
+
+---
+
+## 5. Dictionary CSV 생성 규칙
+
+### 5.1 1차 dictionary
+
+| Dictionary CSV | 행 수 | 생성 규칙 |
+|---|---:|---|
+| `canonical_category_dictionary.csv` | 400 | `terms.term_lk`를 `>>`로 복수 경로 분리, 각 경로를 `>`로 depth 분리. depth별 `category_path`를 모두 생성하고 부모 경로를 연결 |
+| `source_event_category_dictionary.csv` | 53 | `events.subject_category`를 쉼표/줄바꿈 기준으로 분리해 원천 이벤트 분류 사전 생성 |
+| `period_dictionary.csv` | 30 | `terms.term_times`, `events.period`의 시대명을 수집한 뒤 `period_seed.csv`로 순서/기간/범위 확장 가능 여부 보강 |
+| `relation_type_dictionary.csv` | 16 | `person_relations.relation_type` 빈도에 `relation_type_seed.csv`를 merge해서 정규화 관계 사전 생성 |
+| `source_url_dictionary.csv` | 79,693 | events, event_relations, person_relations의 URL을 모두 모아 중복 제거. RAG 후보 상태값 포함 |
+
+### 5.2 2차 dictionary
+
+| Dictionary CSV | 행 수 | 생성 규칙 |
+|---|---:|---|
+| `event_facet_dictionary.csv` | 53 | `event_facet_seed.csv`를 기준으로 이벤트 분류를 사건 의미 facet으로 그룹화 |
+| `country_dictionary.csv` | 5 | `country_seed.csv` 기준으로 국가/정치체 노드 생성 |
+| `region_dictionary.csv` | 7 | `region_seed.csv` 기준으로 권역 노드 생성. `parent_region_name`이 있으면 부모 region 연결 가능 |
+| `economic_domain_dictionary.csv` | 16 | `category_axis_seed.csv`의 `economic_domain` 설정에 따라 `경제·산업` 하위 depth에서 경제 분야 추출 |
+| `taxonomy_facet_dictionary.csv` | 49 | 표준 카테고리 중 하위 카테고리를 가진 중간 경로를 facet으로 추출. 국가/지역/경제 축으로 따로 뽑은 경로는 제외 |
+
+---
+
+## 6. Mapping과 Staging CSV 생성 규칙
+
+### 6.1 staging CSV
+
+| Staging CSV | 행 수 | 역할 |
+|---|---:|---|
+| `term_canonical_category_relation.csv` | 61,697 | 용어가 직접 속한 leaf 표준 카테고리 관계 후보 |
+| `event_source_category_relation.csv` | 713 | 사건이 가진 원천 이벤트 분류 관계 후보 |
+| `event_date_parse.csv` | 600 | `event_date`에서 시작/종료 연도, 월, 왕대 표현, 파싱 상태 추출 |
+
+### 6.2 mapping CSV
+
+| Mapping CSV | 행 수 | 역할 |
+|---|---:|---|
+| `taxonomy_crosswalk.csv` | 53 | 원천 이벤트 분류를 표준 카테고리에 연결. 자동 `EXACT_NAME` 후 seed 수동 매핑으로 보강 |
+| `source_event_category_facet_crosswalk.csv` | 53 | 원천 이벤트 분류를 `EventFacet`에 연결 |
+| `canonical_category_country_crosswalk.csv` | 41 | `외교·국제관계>러시아>...`처럼 경로 2번째 depth가 국가명인 경우 국가 축 연결 |
+| `canonical_category_region_crosswalk.csv` | 13 | region seed의 경로와 그 하위 경로를 권역 축에 연결 |
+| `canonical_category_economic_domain_crosswalk.csv` | 51 | `경제·산업>수산업>...`처럼 지정 depth의 경제 분야와 하위 경로를 연결 |
+| `canonical_category_taxonomy_facet_crosswalk.csv` | 276 | 표준 카테고리와 중간 taxonomy facet을 `SELF_PATH` 또는 `DESCENDANT_PATH`로 연결 |
+
+### 6.3 주요 매핑 원칙
+
+- `term_lk`는 `>>`를 먼저 분리하고, 각 경로 안에서 `>`를 분리한다.
+- `정치·행정·법제>인사` 같은 경로는 `정치·행정·법제`, `정치·행정·법제>인사` 두 category path를 모두 만든다.
+- 용어는 leaf category에 직접 연결한다. 상위 카테고리는 `SUBCATEGORY_OF`를 통해 따라간다.
+- 이벤트는 원천 분류를 `SourceEventCategory`로 보존하고, 별도로 표준 카테고리 매핑이 있는 경우에만 `CanonicalCategory`와 직접 연결한다.
+- `taxonomy_crosswalk_seed.csv`에 수동 매핑이 있으면 자동 exact 매핑보다 우선한다.
+- 국가/지역/경제 분야는 카테고리 계층에 그대로 끼워 넣지 않고 별도 의미 축 노드로 분리한다.
+- 국가와 지역은 서로 상하 개념으로 두지 않는다. `Country`는 국가/정치체, `Region`은 권역이다.
+- `기타지역>동남아시아` 같은 값은 `Region - SUBREGION_OF - Region`으로 표현한다.
+- `외교·국제관계>기타지역>동남아시아`의 `기타지역`과 `동남아시아`는 `외교·국제관계`의 단순 하위 카테고리가 아니라 지역 의미 축으로도 연결된다.
+
+---
+
+## 7. 최종 Node CSV
+
+```mermaid
+flowchart TD
+    Term["Term"]
+    Event["Event"]
+    Person["Person"]
+    Category["CanonicalCategory"]
+    SourceCat["SourceEventCategory"]
+    Period["Period"]
+    Url["SourceUrl"]
+    EventGroup["EventGroup"]
+    EventFacet["EventFacet"]
+    Country["Country"]
+    Region["Region"]
+    Econ["EconomicDomain"]
+    TaxFacet["TaxonomyFacet"]
+    SearchTag["SearchTag"]
+```
+
+| Node CSV | Label | 행 수 | ID | 의미 |
+|---|---|---:|---|---|
+| `terms.csv` | `Term` | 61,598 | `term_id` | 역사 용어. 이름, 한자, 설명, 원문 시대/연도/카테고리 텍스트 보존 |
+| `events.csv` | `Event` | 600 | `event_id` | 역사 사건. 원천 분류, 시대, 날짜 파싱 결과, 관련 사건명 포함 |
+| `people.csv` | `Person` | 56,403 | `person_id` | 사건 참여자와 인물 관계 양쪽 인물을 합친 인물 노드 |
+| `canonical_categories.csv` | `CanonicalCategory` | 400 | `category_id` | `history_terms.term_lk` 기반 표준 카테고리 |
+| `source_event_categories.csv` | `SourceEventCategory` | 53 | `event_category_id` | ITKC 이벤트 원천 분류 |
+| `periods.csv` | `Period` | 30 | `period_id` | 시대/기간 노드. 범위 확장 순서 정보 포함 |
+| `source_urls.csv` | `SourceUrl` | 79,693 | `source_url_id` | 출처 URL. RAG 수집 후보 |
+| `event_groups.csv` | `EventGroup` | 32 | `event_group_id` | `related_event`를 묶은 사건 그룹 |
+| `event_facets.csv` | `EventFacet` | 53 | `event_facet_id` | 전쟁, 정치, 제도 등 이벤트 의미 facet |
+| `countries.csv` | `Country` | 5 | `country_id` | 국가/정치체 의미 축 |
+| `regions.csv` | `Region` | 7 | `region_id` | 권역/지역 의미 축 |
+| `economic_domains.csv` | `EconomicDomain` | 16 | `economic_domain_id` | 경제·산업 내부의 수산업, 광공업 같은 경제 분야 축 |
+| `taxonomy_facets.csv` | `TaxonomyFacet` | 49 | `taxonomy_facet_id` | 중간 카테고리 경로를 독립 검색/필터 축으로 분리한 노드 |
+| `search_tags.csv` | `SearchTag` | 583 | `search_tag_id` | 이벤트 검색 편의를 위해 여러 의미 축을 통합한 tag 노드 |
+
+### 7.1 노드별 핵심 속성
+
+| Label | 주요 속성 |
+|---|---|
+| `Term` | `name`, `hanja`, `remark`, `year_text`, `period_text`, `category_text`, `description`, `topterm_id`, `source` |
+| `Event` | `name`, `subject_category`, `period_text`, `event_date`, `related_event_name`, `source_urls`, `start_year`, `end_year`, `date_precision`, `parse_status` |
+| `Person` | `name`, `name_candidates`, `birth_year`, `death_year`, `bonkwan`, `father_name`, `detail_urls`, `source` |
+| `CanonicalCategory` | `name`, `category_path`, `parent_category_id`, `depth`, `root_category_name`, `term_count`, `direct_term_count` |
+| `Period` | `name`, `period_level`, `range_group`, `period_order`, `start_year`, `end_year`, `is_range_expansion_candidate` |
+| `SourceUrl` | `url`, `source_tables`, `source_columns`, `source_types`, `source_count`, `use_for_rag`, `fetch_status` |
+
+---
+
+## 8. 최종 Relationship CSV
+
+```mermaid
+flowchart LR
+    Term["Term"]
+    Event["Event"]
+    Person["Person"]
+    Category["CanonicalCategory"]
+    SourceCat["SourceEventCategory"]
+    Period["Period"]
+    Url["SourceUrl"]
+    EventGroup["EventGroup"]
+    EventFacet["EventFacet"]
+    Country["Country"]
+    Region["Region"]
+    Econ["EconomicDomain"]
+    TaxFacet["TaxonomyFacet"]
+    SearchTag["SearchTag"]
+
+    Term -->|HAS_CATEGORY| Category
+    Term -->|IN_PERIOD| Period
+    Term -->|ABOUT_COUNTRY| Country
+    Term -->|ABOUT_REGION| Region
+    Term -->|ABOUT_ECONOMIC_DOMAIN| Econ
+    Term -->|ABOUT_TAXONOMY_FACET| TaxFacet
+
+    Event -->|HAS_EVENT_CATEGORY| SourceCat
+    Event -->|HAS_CATEGORY| Category
+    Event -->|HAS_EVENT_FACET| EventFacet
+    Event -->|IN_PERIOD| Period
+    Event -->|PART_OF_EVENT_GROUP| EventGroup
+    Event -->|HAS_SOURCE_URL| Url
+    Event -->|HAS_SEARCH_TAG| SearchTag
+    Event -->|ABOUT_COUNTRY| Country
+    Event -->|ABOUT_REGION| Region
+    Event -->|ABOUT_ECONOMIC_DOMAIN| Econ
+    Event -->|ABOUT_TAXONOMY_FACET| TaxFacet
+
+    Person -->|INVOLVED_IN| Event
+    Person -->|RELATED_TO| Person
+    Person -->|HAS_SOURCE_URL| Url
+
+    Category -->|SUBCATEGORY_OF| Category
+    SourceCat -->|MAPPED_TO_CATEGORY| Category
+    Category -->|ABOUT_COUNTRY| Country
+    Category -->|ABOUT_REGION| Region
+    Category -->|ABOUT_ECONOMIC_DOMAIN| Econ
+    Category -->|ABOUT_TAXONOMY_FACET| TaxFacet
+    Region -->|SUBREGION_OF| Region
+```
+
+| Relationship CSV | Neo4j type | 행 수 | From -> To | 생성 규칙 |
+|---|---|---:|---|---|
+| `term_has_canonical_category.csv` | `HAS_CATEGORY` | 61,697 | `Term -> CanonicalCategory` | `term_canonical_category_relation.csv`에서 용어와 leaf category 연결 |
+| `term_in_period.csv` | `IN_PERIOD` | 65,358 | `Term -> Period` | `term_times`를 period dictionary로 매칭. 범위 표현은 시작/중간/끝으로 확장 |
+| `term_about_country.csv` | `ABOUT_COUNTRY` | 1,620 | `Term -> Country` | 용어의 category가 국가 crosswalk에 걸리면 연결 |
+| `term_about_region.csv` | `ABOUT_REGION` | 82 | `Term -> Region` | 용어의 category가 region crosswalk에 걸리면 연결 |
+| `term_about_economic_domain.csv` | `ABOUT_ECONOMIC_DOMAIN` | 2,894 | `Term -> EconomicDomain` | 용어의 category가 경제 분야 crosswalk에 걸리면 연결 |
+| `term_about_taxonomy_facet.csv` | `ABOUT_TAXONOMY_FACET` | 22,962 | `Term -> TaxonomyFacet` | 용어의 category가 중간 taxonomy facet에 속하면 연결 |
+| `event_has_source_category.csv` | `HAS_EVENT_CATEGORY` | 713 | `Event -> SourceEventCategory` | 이벤트 원천 분류를 원형 그대로 보존 |
+| `event_has_canonical_category.csv` | `HAS_CATEGORY` | 692 | `Event -> CanonicalCategory` | `taxonomy_crosswalk.csv`에서 표준 카테고리 매핑이 있는 이벤트만 연결 |
+| `event_has_facet.csv` | `HAS_EVENT_FACET` | 713 | `Event -> EventFacet` | source event category를 event facet seed 기준으로 연결 |
+| `event_in_period.csv` | `IN_PERIOD` | 600 | `Event -> Period` | `events.period`를 period dictionary로 매칭 |
+| `event_part_of_event_group.csv` | `PART_OF_EVENT_GROUP` | 224 | `Event -> EventGroup` | `related_event`가 있는 사건을 사건 그룹에 연결 |
+| `event_has_source_url.csv` | `HAS_SOURCE_URL` | 2,382 | `Event -> SourceUrl` | events와 event_relations의 `source_urls`를 연결 |
+| `event_has_search_tag.csv` | `HAS_SEARCH_TAG` | 2,811 | `Event -> SearchTag` | 이벤트가 가진 source category, canonical category, facet, 국가/지역/경제/taxonomy facet을 검색 태그로 통합 연결 |
+| `event_about_country.csv` | `ABOUT_COUNTRY` | 2 | `Event -> Country` | 이벤트 표준 카테고리가 국가 crosswalk에 걸리면 연결 |
+| `event_about_taxonomy_facet.csv` | `ABOUT_TAXONOMY_FACET` | 714 | `Event -> TaxonomyFacet` | 이벤트 표준 카테고리가 taxonomy facet에 속하면 연결 |
+| `person_involved_in_event.csv` | `INVOLVED_IN` | 6,918 | `Person -> Event` | event_relations의 사건-인물 관계. CSV 속성 `relation_type`도 Neo4j 관계 타입과 같은 `INVOLVED_IN`으로 맞춤 |
+| `person_related_to_person.csv` | `RELATED_TO` | 206,507 | `Person -> Person` | person_relations의 인물 관계. raw/normalized relation type과 방향성 속성 보존 |
+| `person_has_source_url.csv` | `HAS_SOURCE_URL` | 56,212 | `Person -> SourceUrl` | person detail URL을 출처 URL 노드에 연결 |
+| `canonical_category_subcategory_of.csv` | `SUBCATEGORY_OF` | 335 | `CanonicalCategory -> CanonicalCategory` | 표준 카테고리 부모-자식 관계. 국가/지역 의미 축으로 분리한 경로는 계층 관계에서 제외 |
+| `source_category_mapped_to_canonical_category.csv` | `MAPPED_TO_CATEGORY` | 45 | `SourceEventCategory -> CanonicalCategory` | 원천 이벤트 분류와 표준 카테고리 crosswalk |
+| `canonical_category_about_country.csv` | `ABOUT_COUNTRY` | 41 | `CanonicalCategory -> Country` | 표준 카테고리와 국가 축 연결 |
+| `canonical_category_about_region.csv` | `ABOUT_REGION` | 13 | `CanonicalCategory -> Region` | 표준 카테고리와 권역 축 연결 |
+| `canonical_category_about_economic_domain.csv` | `ABOUT_ECONOMIC_DOMAIN` | 51 | `CanonicalCategory -> EconomicDomain` | 표준 카테고리와 경제 분야 축 연결 |
+| `canonical_category_about_taxonomy_facet.csv` | `ABOUT_TAXONOMY_FACET` | 276 | `CanonicalCategory -> TaxonomyFacet` | 표준 카테고리와 중간 taxonomy facet 연결 |
+| `region_subregion_of.csv` | `SUBREGION_OF` | 6 | `Region -> Region` | 동남아시아, 유럽 등이 기타지역의 하위 region이면 연결 |
+
+### 8.1 비어 있는 optional 관계를 생성하지 않는 이유
+
+`event_about_region.csv`, `event_about_economic_domain.csv`는 현재 최종 import CSV로 생성하지 않는다.
+
+이 두 관계는 설계상 가능하다. 이벤트가 표준 카테고리에 매핑되고, 그 표준 카테고리가 다시 `Region` 또는 `EconomicDomain` 축과 연결되면 `Event - ABOUT_REGION - Region`, `Event - ABOUT_ECONOMIC_DOMAIN - EconomicDomain` 관계를 만들 수 있다. 하지만 현재 `taxonomy_crosswalk.csv`의 이벤트-표준 카테고리 매핑 결과에는 해당 축으로 이어지는 행이 없다.
+
+0행 CSV를 그대로 만들지 않는 이유는 다음과 같다.
+
+- 최종 import 폴더에 있는 CSV는 실제 그래프 적재 대상이어야 한다.
+- 0행 CSV가 있으면 “이 관계가 존재하는데 데이터만 비어 있다”처럼 보인다.
+- 검수자가 실제 누락인지, 의도된 빈 결과인지 매번 구분해야 한다.
+- Neo4j import 문서와 파일 목록이 불필요하게 늘어난다.
+
+그래서 현재 구현은 `make_graph_csv.py`에서 두 optional relation이 0행이면 CSV를 생성하지 않고, 예전에 남아 있던 같은 이름의 빈 CSV도 삭제한다. 다만 Cypher import 블록은 유지하고, `load_schema.py`가 해당 optional CSV가 없으면 그 LOAD 문장만 건너뛴다. 이렇게 한 이유는 나중에 `taxonomy_crosswalk_seed.csv`나 이벤트 분류 매핑을 보강해서 실제 행이 생겼을 때, 별도 구조 변경 없이 같은 관계를 다시 import할 수 있게 하기 위해서다.
+
+### 8.2 시대 범위 확장 규칙
+
+`term_in_period.csv`, `event_in_period.csv`는 단순 문자열 매칭만 하지 않는다.
+
+| match_type | 의미 |
+|---|---|
+| `DIRECT` | 단일 시대 표현이 직접 매칭됨 |
+| `RANGE_START` | 범위 표현의 시작 시대 |
+| `RANGE_MIDDLE` | seed의 `range_group`, `period_order` 기준으로 사이에 있는 시대 |
+| `RANGE_END` | 범위 표현의 끝 시대 |
+
+예를 들어 `삼국시대-조선시대`가 들어오면 `period_seed.csv`에 같은 `range_group`과 순서가 잡힌 시대를 기준으로 시작, 중간, 끝 시대를 함께 연결한다. 이 처리를 import 쿼리에서 하지 않고 CSV 생성 단계에서 끝내는 이유는 Neo4j 쿼리를 단순하게 유지하기 위해서다.
+
+### 8.3 인물 관계 규칙
+
+인물 관계는 Neo4j type을 모두 `RELATED_TO`로 통일하고, 관계의 실제 의미는 속성으로 보존한다.
+
+| 속성 | 의미 |
+|---|---|
+| `raw_relation_type` | 원본 관계명 |
+| `normalized_relation_type` | seed 기준 정규화 관계명 |
+| `relation_group` | 가족, 교유, 사제 등 관계 묶음 |
+| `direction_rule` | 원본 행 방향을 어떻게 해석할지 |
+| `is_symmetric` | 대칭 관계 여부 |
+| `inverse_relation_type` | 반대 방향 관계 후보 |
+
+관계 type을 `HAS_FATHER`, `SIBLING_OF`처럼 모두 쪼개지 않은 이유는 raw 관계명이 다양하고 검수 전 의미가 불안정하기 때문이다. type은 단순화하고 의미는 속성으로 두면 import가 안정적이고, 나중에 정제 규칙을 보강하기 쉽다.
+
+---
+
+## 9. Cypher 구현
+
+### 9.1 Cypher 파일
+
+| 파일 | 기본 실행 여부 | 역할 |
+|---|---|---|
+| `history_graph_reset.cypher` | 아니오 | 현재 history graph label과 예전 `init.cypher`, `event.cypher`가 만들던 legacy label을 함께 `DETACH DELETE`로 삭제 |
+| `history_graph_constraints.cypher` | 예 | 14개 label의 ID unique constraint와 주요 name/path/url index 생성 |
+| `history_graph_import_nodes.cypher` | 예 | `file:///nodes/*.csv`에서 모든 노드 import |
+| `history_graph_import_relations.cypher` | 예 | `file:///relations/*.csv`에서 모든 관계 import |
+| `history_graph_verify.cypher` | 예 | label별 노드 수, 관계 type별 수, 빈 label/type 이상 여부 확인 |
+
+`load_schema.py` 기본 실행 순서:
+
+```text
+history_graph_constraints.cypher
+history_graph_import_nodes.cypher
+history_graph_import_relations.cypher
+history_graph_verify.cypher
+```
+
+초기화까지 같이 하고 싶으면 `--reset` 옵션을 쓴다. 이 옵션은 기본 실행 순서 맨 앞에 `history_graph_reset.cypher`를 추가한다.
+
+```powershell
+.\.venv\Scripts\python.exe storage/neo4j/load_schema.py --reset
+```
+
+`NEO4J_SCHEMA_FILES` 환경변수로 직접 순서를 지정하는 방식도 지원한다. 이 경우에도 `--reset`을 함께 주면 `history_graph_reset.cypher`가 목록 앞에 없을 때 자동으로 추가된다.
+
+### 9.2 constraints와 indexes
+
+`history_graph_constraints.cypher`는 다음 label의 ID uniqueness를 보장한다.
+
+| Label | Unique key |
+|---|---|
+| `Term` | `term_id` |
+| `Event` | `event_id` |
+| `Person` | `person_id` |
+| `CanonicalCategory` | `category_id` |
+| `SourceEventCategory` | `event_category_id` |
+| `Period` | `period_id` |
+| `SourceUrl` | `source_url_id` |
+| `EventGroup` | `event_group_id` |
+| `EventFacet` | `event_facet_id` |
+| `Country` | `country_id` |
+| `Region` | `region_id` |
+| `EconomicDomain` | `economic_domain_id` |
+| `TaxonomyFacet` | `taxonomy_facet_id` |
+| `SearchTag` | `search_tag_id` |
+
+조회 편의를 위해 다음 index도 만든다.
+
+| Label | Index property |
+|---|---|
+| `Term` | `name` |
+| `Event` | `name` |
+| `Person` | `name` |
+| `CanonicalCategory` | `category_path` |
+| `SourceUrl` | `url` |
+
+### 9.3 import 방식
+
+노드 import는 공통적으로 다음 방식이다.
+
+```cypher
+LOAD CSV WITH HEADERS FROM 'file:///nodes/<file>.csv' AS row
+MERGE (n:<Label> {id_property: row.id_property})
+SET n += row
+SET n.numeric_property = toIntegerOrNull(row.numeric_property)
+```
+
+`SET n += row`만 쓰면 CSV의 모든 값이 문자열로 들어간다. 그래서 연도, 월, 순서, 집계 수처럼 범위 검색이나 정렬에 쓰일 속성은 `toIntegerOrNull()`로 다시 세팅한다. 현재 명시 캐스팅 대상은 다음 계열이다.
+
+- `Term.topterm_id`
+- `Event.start_year`, `end_year`, `start_month`, `end_month`, `start_reign_year`, `end_reign_year`
+- `Person.birth_year`, `death_year`
+- `CanonicalCategory.depth`, `term_count`, `direct_term_count`
+- `SourceEventCategory.event_count`
+- `Period.period_order`, `start_year`, `end_year`, `term_count`, `event_count`
+- `SourceUrl.source_count`
+- `EventGroup.event_count`
+- `EventFacet.source_event_category_count`, `event_count`
+- `TaxonomyFacet.taxonomy_facet_depth`, `child_category_count`, `descendant_category_count`, `term_count`, `direct_term_count`
+
+ID 값은 Neo4j lookup key로 안정적으로 쓰기 위해 문자열로 유지한다.
+
+관계 import는 공통적으로 다음 방식이다.
+
+```cypher
+LOAD CSV WITH HEADERS FROM 'file:///relations/<file>.csv' AS row
+MATCH (start:<StartLabel> {start_id: row.start_id})
+MATCH (target:<EndLabel> {end_id: row.end_id})
+MERGE (start)-[r:<TYPE>]->(target)
+SET r += row
+```
+
+중복 collapse를 막아야 하는 관계는 `MERGE`에 추가 key 속성을 포함한다.
+
+| 관계 파일 | MERGE key 보강 |
+|---|---|
+| `event_has_canonical_category.csv` | `event_category_id` |
+| `event_has_facet.csv` | `source_event_category_id` |
+| `event_has_source_url.csv` | `source_column` |
+| `event_has_search_tag.csv` | `source_node_type`, `source_node_id`, `source_relation` |
+| `person_involved_in_event.csv` | `event_person_relation_id` |
+| `person_related_to_person.csv` | `person_relation_id` |
+
+`history_graph_import_relations.cypher`에는 optional relation LOAD 블록도 남아 있다. 현재 `event_about_region.csv`, `event_about_economic_domain.csv`는 생성되지 않으므로 `load_schema.py`가 해당 문장을 건너뛴다. 직접 Neo4j Browser에서 Cypher 파일만 실행할 때는 optional CSV가 없으면 실패할 수 있으므로, 기본 import는 `storage/neo4j/load_schema.py`를 통해 실행하는 것을 기준으로 한다.
+
+`history_graph_verify.cypher`의 반환 결과는 `load_schema.py`가 콘솔에 출력한다. 따라서 label별 노드 수와 relationship type별 관계 수를 import 직후 바로 확인할 수 있다.
+
+### 9.4 Docker import 경로
+
+`docker-compose.yml`은 다음 mount를 사용한다.
+
+```yaml
+./neo4j_import:/var/lib/neo4j/import
+```
+
+그래서 Cypher에서는 로컬 경로를 직접 쓰지 않고 아래처럼 읽는다.
+
+```text
+file:///nodes/*.csv
+file:///relations/*.csv
+```
+
+로컬 기준 실제 파일 위치는 다음이다.
+
+```text
+storage/neo4j/neo4j_import/nodes/*.csv
+storage/neo4j/neo4j_import/relations/*.csv
+```
+
+---
+
+## 10. 실행 순서
+
+### 10.1 CSV 재생성
+
+```powershell
+.\.venv\Scripts\python.exe etl/preprocessing/neo4j/run_neo4j_preprocessing.py
+```
+
+생성 확인:
+
+```powershell
+Get-ChildItem storage/neo4j/neo4j_import/nodes -Filter *.csv
+Get-ChildItem storage/neo4j/neo4j_import/relations -Filter *.csv
+```
+
+### 10.2 Neo4j 실행
+
+```powershell
+docker compose -f storage/neo4j/docker-compose.yml up -d
+```
+
+### 10.3 Cypher import
+
+```powershell
+.\.venv\Scripts\python.exe storage/neo4j/load_schema.py
+```
+
+깨끗하게 다시 넣을 때:
+
+```powershell
+.\.venv\Scripts\python.exe storage/neo4j/load_schema.py --reset
+```
+
+---
+
+## 11. 쿼리 관점에서 보는 설계 의도
+
+### 11.1 용어 탐색
+
+용어에서 출발할 때는 다음 축을 바로 탈 수 있다.
+
+- `Term - HAS_CATEGORY - CanonicalCategory`
+- `Term - IN_PERIOD - Period`
+- `Term - ABOUT_COUNTRY - Country`
+- `Term - ABOUT_REGION - Region`
+- `Term - ABOUT_ECONOMIC_DOMAIN - EconomicDomain`
+- `Term - ABOUT_TAXONOMY_FACET - TaxonomyFacet`
+
+상위 카테고리는 `CanonicalCategory - SUBCATEGORY_OF - CanonicalCategory`를 따라가면 된다.
+
+### 11.2 사건 탐색
+
+사건은 원천 분류와 표준 분류를 둘 다 가진다.
+
+- 원형 보존: `Event - HAS_EVENT_CATEGORY - SourceEventCategory`
+- 표준 검색: `Event - HAS_CATEGORY - CanonicalCategory`
+- 의미 facet 검색: `Event - HAS_EVENT_FACET - EventFacet`
+- 통합 태그 검색: `Event - HAS_SEARCH_TAG - SearchTag`
+
+이렇게 나눈 이유는 원천 데이터를 잃지 않으면서도, 표준 카테고리와 의미 facet으로 검색할 수 있게 하기 위해서다.
+
+### 11.3 인물 탐색
+
+인물은 사건 참여와 인물 관계를 분리한다.
+
+- `Person - INVOLVED_IN - Event`
+- `Person - RELATED_TO - Person`
+- `Person - HAS_SOURCE_URL - SourceUrl`
+
+인물 관계 방향과 의미는 관계 속성으로 확인한다.
+
+### 11.4 RAG/Web RAG 연계
+
+`SourceUrl`은 graph 자체의 출처 노드이면서 Web RAG 후보 목록이다.
+
+- `use_for_rag=Y`: RAG 수집 후보
+- `fetch_status=PENDING`: 아직 실제 fetch 여부 미정
+- `source_tables`, `source_columns`, `source_types`: URL이 어느 데이터에서 왔는지 추적
+
+Tavily 같은 Web RAG 도구를 붙일 경우, 그래프에서 관련 `SourceUrl`을 찾고 외부 fetch 결과를 별도 document/vector store에 연결하는 하이브리드 RAG 구조로 가는 것이 자연스럽다.
+
+---
+
+## 12. 검수 포인트
+
+| 영역 | 확인 파일 | 봐야 할 것 |
+|---|---|---|
+| 용어 카테고리 분해 | `dictionary/canonical_category_dictionary.csv`, `staging/term_canonical_category_relation.csv` | `>`, `>>` 분리 결과와 leaf category 연결 |
+| 이벤트-표준 카테고리 매핑 | `mapping/taxonomy_crosswalk.csv`, `seed/taxonomy_crosswalk_seed.csv` | `UNMAPPED`, 낮은 confidence, 수동 매핑 누락 |
+| 국가/지역 분리 | `country_dictionary.csv`, `region_dictionary.csv`, 관련 crosswalk | 국가와 region이 잘못 상하관계로 붙지 않았는지 |
+| 경제 분야 분리 | `economic_domain_dictionary.csv`, `canonical_category_economic_domain_crosswalk.csv` | 수산업, 광공업 같은 중간 경로 추출 |
+| 중간 taxonomy facet | `taxonomy_facet_dictionary.csv` | 너무 넓거나 애매한 중간 카테고리 |
+| 시대 범위 확장 | `period_seed.csv`, `term_in_period.csv`, `event_in_period.csv` | `RANGE_MIDDLE`이 의도대로 생성되는지 |
+| 인물 관계 | `relation_type_seed.csv`, `person_related_to_person.csv` | raw 관계명, 정규화명, 방향성, 대칭성 |
+| URL/RAG | `source_url_dictionary.csv`, `*_has_source_url.csv` | fetch 후보 URL, 중복 URL, 비정상 URL |
+| import 검증 | `history_graph_verify.cypher` | label별 노드 수, 관계 type별 수, 빈 label/type 이상 여부 |
+
+---
+
+## 13. 현재 구현에서 중요한 결론
+
+- 카테고리 계층은 `CanonicalCategory`로 유지한다.
+- 원천 이벤트 분류는 `SourceEventCategory`로 보존한다.
+- 이벤트 분류와 표준 카테고리의 연결은 `taxonomy_crosswalk.csv`로 명시한다.
+- 국가, 지역, 경제 분야, 중간 taxonomy facet은 카테고리에서 의미 축으로 분리한다.
+- 범위 시대 처리는 쿼리가 아니라 CSV 생성 단계에서 끝낸다.
+- 인물 관계는 type을 과하게 쪼개지 않고 `RELATED_TO` 하나와 속성으로 의미를 표현한다.
+- 최종 import 대상은 `storage/neo4j/neo4j_import/nodes`, `storage/neo4j/neo4j_import/relations`다.
+- Neo4j import 쿼리는 `storage/neo4j/schema/history_graph_*.cypher`만 보면 된다.

@@ -1841,7 +1841,7 @@ def build_person_involved_in_event(event_relations_data):
             "relation_type": "raw_relation_type",
         }
     )
-    relation_data["relation_type"] = "INVOLVED_IN_EVENT"
+    relation_data["relation_type"] = "INVOLVED_IN"
 
     return relation_data[
         [
@@ -2261,25 +2261,63 @@ def build_relation_outputs(inputs, node_outputs):
     }
 
 
+def build_optional_empty_relation_output_names():
+    return {
+        "event_about_region",
+        "event_about_economic_domain",
+    }
+
+
+def should_skip_empty_relation_output(output_name, data_frame):
+    optional_output_names = build_optional_empty_relation_output_names()
+
+    if output_name in optional_output_names and len(data_frame) == 0:
+        return True
+
+    return False
+
+
+def remove_stale_output_file(output_path):
+    if output_path.exists():
+        output_path.unlink()
+
+
 def build_output_files(args, node_outputs, relation_outputs):
     output_files = []
+    skipped_output_files = []
 
     for output_name, data_frame in node_outputs.items():
-        output_files.append((f"{output_name}.csv", data_frame, args.nodes_dir / f"{output_name}.csv"))
-
-    for output_name, data_frame in relation_outputs.items():
         output_files.append(
-            (f"{output_name}.csv", data_frame, args.relations_dir / f"{output_name}.csv")
+            (f"{output_name}.csv", data_frame, args.nodes_dir / f"{output_name}.csv")
         )
 
-    return output_files
+    for output_name, data_frame in relation_outputs.items():
+        output_file = (
+            f"{output_name}.csv",
+            data_frame,
+            args.relations_dir / f"{output_name}.csv",
+        )
+        skip_output = should_skip_empty_relation_output(output_name, data_frame)
+
+        if skip_output:
+            skipped_output_files.append(output_file)
+
+        if not skip_output:
+            output_files.append(output_file)
+
+    return output_files, skipped_output_files
 
 
-def write_or_print_outputs(args, output_files):
+def write_or_print_outputs(args, output_files, skipped_output_files):
     if args.save:
         for file_name, data_frame, output_path in output_files:
             save_csv(data_frame, output_path)
             print_summary(file_name, data_frame)
+
+        for file_name, data_frame, output_path in skipped_output_files:
+            remove_stale_output_file(output_path)
+            print_summary(file_name, data_frame)
+            print(f"skipped_empty_output: {output_path}")
 
         print(f"nodes_dir: {args.nodes_dir}")
         print(f"relations_dir: {args.relations_dir}")
@@ -2288,6 +2326,10 @@ def write_or_print_outputs(args, output_files):
         for file_name, data_frame, output_path in output_files:
             print_summary(file_name, data_frame)
             print(f"planned_path: {output_path}")
+
+        for file_name, data_frame, output_path in skipped_output_files:
+            print_summary(file_name, data_frame)
+            print(f"planned_skip_empty_output: {output_path}")
 
         print("dry_run: no files saved. Use --save to write CSV files.")
 
@@ -2299,9 +2341,13 @@ def main():
     inputs = read_inputs(args)
     node_outputs = build_node_outputs(inputs)
     relation_outputs = build_relation_outputs(inputs, node_outputs)
-    output_files = build_output_files(args, node_outputs, relation_outputs)
+    output_files, skipped_output_files = build_output_files(
+        args,
+        node_outputs,
+        relation_outputs,
+    )
 
-    write_or_print_outputs(args, output_files)
+    write_or_print_outputs(args, output_files, skipped_output_files)
 
 
 if __name__ == "__main__":

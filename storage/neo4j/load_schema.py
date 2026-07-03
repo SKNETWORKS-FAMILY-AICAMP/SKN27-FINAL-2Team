@@ -1,8 +1,22 @@
 from pathlib import Path
+import argparse
 import os
 
 from dotenv import load_dotenv
 from neo4j import GraphDatabase
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Neo4j history graph schema/import Cypher files를 순서대로 실행한다."
+    )
+    parser.add_argument(
+        "--reset",
+        action="store_true",
+        help="기본 schema 파일 목록 앞에 history_graph_reset.cypher를 추가해 깨끗하게 재적재한다.",
+    )
+
+    return parser.parse_args()
 
 
 def load_neo4j_config(project_root):
@@ -42,15 +56,94 @@ def split_cypher_statements(cypher_text):
     return [statement for statement in statements if statement]
 
 
-def load_schema_paths(schema_dir):
-    schema_file_text = os.getenv("NEO4J_SCHEMA_FILES", "init.cypher,event.cypher")
+def build_default_schema_file_names(include_reset):
+    schema_files = []
+
+    if include_reset:
+        schema_files.append("history_graph_reset.cypher")
+
+    schema_files.extend(
+        [
+            "history_graph_constraints.cypher",
+            "history_graph_import_nodes.cypher",
+            "history_graph_import_relations.cypher",
+            "history_graph_verify.cypher",
+        ]
+    )
+
+    return schema_files
+
+
+def build_default_schema_file_text(include_reset):
+    return ",".join(build_default_schema_file_names(include_reset))
+
+
+def prepend_reset_schema_file(schema_files):
+    if "history_graph_reset.cypher" not in schema_files:
+        return ["history_graph_reset.cypher", *schema_files]
+
+    return schema_files
+
+
+def build_schema_file_names(schema_file_text, include_reset):
+    schema_files = [
+        schema_file.strip()
+        for schema_file in schema_file_text.split(",")
+        if schema_file.strip()
+    ]
+
+    if include_reset:
+        schema_files = prepend_reset_schema_file(schema_files)
+
+    return schema_files
+
+
+def build_optional_import_csv_paths():
+    return {
+        "relations/event_about_region.csv",
+        "relations/event_about_economic_domain.csv",
+    }
+
+
+def extract_import_csv_path(statement):
+    marker = "file:///"
+    start_index = statement.find(marker)
+
+    if start_index == -1:
+        return ""
+
+    csv_start_index = start_index + len(marker)
+    quote_index = statement.find("'", csv_start_index)
+
+    if quote_index == -1:
+        return ""
+
+    return statement[csv_start_index:quote_index]
+
+
+def should_skip_optional_import(statement, import_dir):
+    import_csv_path = extract_import_csv_path(statement)
+
+    if import_csv_path in build_optional_import_csv_paths():
+        local_import_path = import_dir / import_csv_path
+
+        if not local_import_path.exists():
+            return True
+
+    return False
+
+
+def load_schema_paths(schema_dir, include_reset):
+    schema_file_text = os.getenv("NEO4J_SCHEMA_FILES")
+
+    if not schema_file_text:
+        schema_file_text = build_default_schema_file_text(include_reset)
+
+    schema_files = build_schema_file_names(schema_file_text, include_reset)
     schema_paths = []
 
-    for schema_file in schema_file_text.split(","):
-        schema_name = schema_file.strip()
-
-        if schema_name:
-            schema_paths.append(schema_dir / schema_name)
+    for schema_name in schema_files:
+        schema_paths.append(schema_dir / schema_name)
 
     if not schema_paths:
         raise ValueError("No schema files configured")
@@ -64,49 +157,114 @@ def load_schema_paths(schema_dir):
     return schema_paths
 
 
-def run_schema(driver, schema_path):
+def run_statement(session, statement, import_dir):
+    if should_skip_optional_import(statement, import_dir):
+        return {
+            "executed": False,
+            "skipped": True,
+            "records": [],
+        }
+
+    result = session.run(statement)
+    records = [record.data() for record in result]
+    result.consume()
+
+    return {
+        "executed": True,
+        "skipped": False,
+        "records": records,
+    }
+
+
+def run_schema(driver, schema_path, import_dir):
     cypher_text = schema_path.read_text(encoding="utf-8")
     statements = split_cypher_statements(cypher_text)
+    executed_statements = 0
+    skipped_statements = 0
+    returned_results = []
 
     with driver.session() as session:
-        for statement in statements:
-            session.run(statement).consume()
+        for statement_index, statement in enumerate(statements, start=1):
+            statement_result = run_statement(session, statement, import_dir)
+
+            if statement_result["skipped"]:
+                skipped_statements += 1
+
+            if statement_result["executed"]:
+                executed_statements += 1
+
+            if statement_result["records"]:
+                returned_results.append(
+                    {
+                        "statement_index": statement_index,
+                        "records": statement_result["records"],
+                    }
+                )
 
         node_count = session.run("MATCH (n) RETURN count(n) AS count").single()["count"]
-        relationship_count = session.run("MATCH ()-[r]->() RETURN count(r) AS count").single()["count"]
+        relationship_count = session.run(
+            "MATCH ()-[r]->() RETURN count(r) AS count"
+        ).single()["count"]
 
     return {
         "schema": schema_path.name,
         "statements": len(statements),
+        "executed_statements": executed_statements,
+        "skipped_statements": skipped_statements,
+        "returned_results": returned_results,
         "nodes": node_count,
         "relationships": relationship_count,
     }
 
 
+def print_schema_result(result):
+    print(f"Schema: {result['schema']}")
+    print(f"Total statements: {result['statements']}")
+    print(f"Executed statements: {result['executed_statements']}")
+    print(f"Skipped optional statements: {result['skipped_statements']}")
+    print(f"Node count: {result['nodes']}")
+    print(f"Relationship count: {result['relationships']}")
+
+    for returned_result in result["returned_results"]:
+        print(
+            f"Returned rows from {result['schema']} "
+            f"statement #{returned_result['statement_index']}:"
+        )
+
+        for record in returned_result["records"]:
+            print(record)
+
+
 def main():
+    args = parse_args()
     current_dir = Path(__file__).resolve().parent
     project_root = current_dir.parents[1]
     schema_dir = current_dir / "schema"
+    import_dir = current_dir / "neo4j_import"
 
     config = load_neo4j_config(project_root)
-    schema_paths = load_schema_paths(schema_dir)
+    schema_paths = load_schema_paths(schema_dir, args.reset)
 
     with GraphDatabase.driver(
         config["uri"],
         auth=(config["user"], config["password"]),
     ) as driver:
-        results = [run_schema(driver, schema_path) for schema_path in schema_paths]
+        results = [
+            run_schema(driver, schema_path, import_dir)
+            for schema_path in schema_paths
+        ]
 
     for result in results:
-        print(f"Schema: {result['schema']}")
-        print(f"Executed statements: {result['statements']}")
-        print(f"Node count: {result['nodes']}")
-        print(f"Relationship count: {result['relationships']}")
+        print_schema_result(result)
 
     total_statements = sum(result["statements"] for result in results)
+    total_executed_statements = sum(result["executed_statements"] for result in results)
+    total_skipped_statements = sum(result["skipped_statements"] for result in results)
     final_result = results[-1]
 
-    print(f"Total executed statements: {total_statements}")
+    print(f"Total statements: {total_statements}")
+    print(f"Total executed statements: {total_executed_statements}")
+    print(f"Total skipped optional statements: {total_skipped_statements}")
     print(f"Final node count: {final_result['nodes']}")
     print(f"Final relationship count: {final_result['relationships']}")
 
