@@ -43,8 +43,8 @@
 1. `term_kind = 0`으로 원본 대분류 17개를 확보한다.
 2. `term_lk`를 `>>` 기준으로 먼저 분리해 복수 분류 경로를 나눈다.
 3. 각 분류 경로를 `>` 기준으로 다시 분해한다.
-4. 분해된 경로 조각으로 `Category` 후보를 만든다.
-5. 실제 용어인 `term_kind = 2` 행을 해당 `Category`에 연결한다.
+4. 분해된 경로 조각으로 `CanonicalCategory` 후보를 만든다.
+5. 실제 용어인 `term_kind = 2` 행을 해당 `CanonicalCategory`에 연결한다.
 6. `term_kind = 1`은 직접 부모 관계로 확정하지 않고, `term_lk`에서 만든 카테고리 후보를 검증하거나 보강하는 참고 데이터로 사용한다.
 
 `범죄` 하위 분류의 실제 용어를 확인하려면 `topterm_id`만 보지 말고 `term_lk` 또는 `term_remark`를 같이 확인해야 한다.
@@ -63,16 +63,16 @@ df[
 
 ## EDA 정리: 1차 전처리 컬럼 사용 기준
 
-현재까지 확인한 기준으로 `history_terms.csv`는 `Term`, `Category`, `TopCategory`, `Period` 후보를 뽑는 원천 데이터로 사용한다. 핵심은 실제 용어 행인 `term_kind = 2`를 중심으로 보고, 분류 체계는 `term_lk`를 `>>`와 `>`로 분해해서 만드는 것이다.
+현재까지 확인한 기준으로 `history_terms.csv`는 `Term`, `CanonicalCategory`, `Period` 후보를 뽑는 원천 데이터로 사용한다. 핵심은 실제 용어 행인 `term_kind = 2`를 중심으로 보고, 분류 체계는 `term_lk`를 `>>`와 `>`로 분해해서 만드는 것이다.
 
 ### 1. 컬럼 기반 추출 가능 데이터
 
 | 뽑을 데이터 | 주로 쓰는 컬럼 |
 |---|---|
 | `Term` 노드 | `term_id`, `term_name`, `term_ch`, `term_desc` |
-| 원본 대분류 `TopCategory` | `term_kind=0`, `term_id`, `topterm_id`, `term_name` |
-| 상세 `Category` | `term_lk`를 `>>`, `>`로 분해 |
-| `Term - HAS_CATEGORY - Category` 관계 | `term_id`, `term_lk` |
+| 원본 대분류 `CanonicalCategory`의 root | `term_kind=0`, `term_id`, `topterm_id`, `term_name` |
+| 상세 `CanonicalCategory` | `term_lk`를 `>>`, `>`로 분해 |
+| `Term - HAS_CANONICAL_CATEGORY - CanonicalCategory` 관계 | `term_id`, `term_lk` |
 | 시대/기간 후보 `Period` | `term_times`, `term_year` |
 | `start_year`, `end_year`, `date_precision` | `term_year` |
 | `Term - IN_PERIOD / INFERRED_IN_PERIOD - Period` | `term_times`, `term_year`, 나중에 `term_desc` |
@@ -129,13 +129,13 @@ df[
 2번 경로: 사회·생활 > 일상생활 > 의생활
 ```
 
-따라서 `Term`은 각 경로의 마지막 `Category`와 `HAS_CATEGORY`로 연결하고, `Category`끼리는 `SUBCATEGORY_OF`로 연결한다.
+따라서 `Term`은 각 경로의 마지막 `CanonicalCategory`와 `HAS_CANONICAL_CATEGORY`로 연결하고, `CanonicalCategory`끼리는 `SUBCATEGORY_OF`로 연결한다.
 
 ### 5. 지금 단계에서 만들 수 있는 산출물
 
 - `normalized/terms.csv`: 실제 용어 행 정규화 결과
-- `category_dictionary.csv`: `term_lk`를 분해해서 만든 카테고리 노드 후보
-- `term_category_relation.csv`: `Term`과 최하위 `Category` 연결
+- `canonical_category_dictionary.csv`: `term_lk`를 분해해서 만든 카테고리 노드 후보
+- `term_canonical_category_relation.csv`: `Term`과 최하위 `CanonicalCategory` 연결
 - `period_dictionary.csv` 후보: `term_times`, `term_year` 기반 시대 후보
 - `term_period_relation.csv` 후보: `Term`과 `Period` 연결
 - `review_candidates.csv`: 중복 이름, 복수 카테고리, 불명확한 연도, 애매한 `term_remark` 검수 후보
@@ -154,13 +154,12 @@ Period
 관계:
 
 ```text
-Term - HAS_CATEGORY -> Category
-Category - SUBCATEGORY_OF -> Category 또는 TopCategory
-Term - HAS_TOP_CATEGORY -> TopCategory
+Term - HAS_CANONICAL_CATEGORY -> CanonicalCategory
+CanonicalCategory - SUBCATEGORY_OF -> CanonicalCategory
 Term - IN_PERIOD 또는 INFERRED_IN_PERIOD -> Period
 ```
 
-현재 EDA 결론상 다음 작업은 `term_lk` 분해 로직을 먼저 만들고, 그 결과로 `category_dictionary.csv`와 `term_category_relation.csv`를 만드는 것이다.
+현재 EDA 결론상 다음 작업은 `term_lk` 분해 로직을 먼저 만들고, 그 결과로 `canonical_category_dictionary.csv`와 `term_canonical_category_relation.csv`를 만드는 것이다.
 
 ---
 
@@ -233,7 +232,7 @@ diff_rows
 | `scope` | 수집 경로 | 제외 | `event_subject`, `event_period`는 사건 속성이 아니라 수집 route라서 최종 Event 노드에는 넣지 않는다. |
 | `event_id` | 사건 고유 ID | 사용 | Event 노드의 primary key 역할. 중복 제거 기준도 `event_id`로 둔다. |
 | `event_name` | 사건명 | 사용 | Event 노드의 `name` 속성으로 사용한다. |
-| `subject_category` | 사건 주제 분류 원문 | 사용 | 바로 표준 Category로 합치지 않고, `EventCategory` 또는 매핑 후보로 사용한다. |
+| `subject_category` | 사건 주제 분류 원문 | 사용 | 바로 표준 CanonicalCategory로 합치지 않고, `SourceEventCategory` 또는 매핑 후보로 사용한다. |
 | `period` | 시대 원문 | 사용 | `Period` 노드 연결 후보로 사용하되, 원문 값도 보존한다. |
 | `event_date` | 날짜/기간 원문 | 사용 | 연도, 월, 왕대 파싱 후보로 사용한다. 파싱 전에는 원문 속성으로 보존한다. |
 | `person_count` | 관련 인물 수 | 제외 가능 | `df2`의 `event_id`, `person_id` 관계에서 다시 계산할 수 있으므로 원본 count에 의존하지 않는다. |
@@ -270,10 +269,10 @@ event_df = (
 옥사,\r\n\r\n고변/탄핵
 ```
 
-따라서 `event.csv.subject_category`는 바로 표준 카테고리로 쓰지 말고, 별도 `category_mapping.csv`에서 표준 `Category`로 매핑한다.
+따라서 `event.csv.subject_category`는 바로 표준 카테고리로 쓰지 말고, 별도 `taxonomy_crosswalk.csv`에서 표준 `CanonicalCategory`로 매핑한다.
 
 ```text
-event.csv.subject_category -> category_mapping.csv -> Category
+event.csv.subject_category -> taxonomy_crosswalk.csv -> CanonicalCategory
 ```
 
 즉, 이벤트 카테고리는 `history_terms.term_lk`와 직접 합치는 것이 아니라 공통 표준 카테고리 사전에 매핑하는 방식으로 처리한다.
@@ -285,9 +284,9 @@ event.csv.subject_category -> category_mapping.csv -> Category
 | 만들 데이터 | 주로 쓰는 컬럼 | 설명 |
 |---|---|---|
 | `Event` 노드 | `event_id`, `event_name`, `event_date`, `period`, `source_urls` | 사건의 기본 노드. 날짜와 시대는 파싱 전 원문도 보존한다. |
-| `EventCategory` 후보 | `subject_category` | 119개 원문 분류를 토큰화해서 이벤트 전용 카테고리 사전으로 만든다. |
-| `Event - HAS_EVENT_CATEGORY - EventCategory` | `event_id`, `subject_category` | 사건과 이벤트 분류의 직접 관계. |
-| `EventCategory - MAPPED_TO - Category` 후보 | `subject_category`, `history_terms.term_lk` 기반 category dictionary | 이벤트 분류와 역사용어 표준 카테고리는 매핑표로 연결한다. |
+| `SourceEventCategory` 후보 | `subject_category` | 119개 원문 분류를 토큰화해서 이벤트 전용 카테고리 사전으로 만든다. |
+| `Event - HAS_SOURCE_CATEGORY - SourceEventCategory` | `event_id`, `subject_category` | 사건과 이벤트 분류의 직접 관계. |
+| `SourceEventCategory - MAPPED_TO - CanonicalCategory` 후보 | `subject_category`, `history_terms.term_lk` 기반 canonical category dictionary | 이벤트 분류와 역사용어 표준 카테고리는 매핑표로 연결한다. |
 | `Event - IN_PERIOD - Period` 후보 | `period`, `event_date` | `period`는 시대명, `event_date`는 상세 날짜/기간 파싱 후보로 사용한다. |
 | `Event - PART_OF_EVENT_GROUP - EventGroup` 후보 | `related_event` | `고려거란전쟁`처럼 여러 사건을 묶는 상위 사건군 후보로 사용한다. |
 | `Person - INVOLVED_IN - Event` 관계 | `df2.event_id`, `df2.person_id`, `relation_type` | 인물 관계는 `df1.person_count`가 아니라 `df2`에서 만든다. |
@@ -427,4 +426,7 @@ Tavily = URL 본문 추출과 외부 웹 근거 보강
 - `evidence_url`, `detail_url`은 RAG와 출처 추적을 위해 보존한다.
 
 ---
+
+
+
 

@@ -1,0 +1,8 @@
+region_name,region_type,canonical_category_path,parent_region_name,aliases,review_status,note
+기타지역,CATEGORY_BUCKET,외교·국제관계>기타지역,,기타지역,PENDING,외교·국제관계 하위 기타지역 분류 버킷
+동남아시아,MACRO_REGION,외교·국제관계>기타지역>동남아시아,기타지역,동남아시아,PENDING,외교·국제관계 기타지역 하위 권역
+서남아시아,MACRO_REGION,외교·국제관계>기타지역>서남아시아,기타지역,서남아시아,PENDING,외교·국제관계 기타지역 하위 권역
+아메리카,MACRO_REGION,외교·국제관계>기타지역>아메리카,기타지역,아메리카,PENDING,외교·국제관계 기타지역 하위 권역
+아프리카,MACRO_REGION,외교·국제관계>기타지역>아프리카,기타지역,아프리카,PENDING,외교·국제관계 기타지역 하위 권역
+유럽,MACRO_REGION,외교·국제관계>기타지역>유럽,기타지역,유럽,PENDING,외교·국제관계 기타지역 하위 권역
+중앙아시아,MACRO_REGION,외교·국제관계>기타지역>중앙아시아,기타지역,중앙아시아,PENDING,외교·국제관계 기타지역 하위 권역

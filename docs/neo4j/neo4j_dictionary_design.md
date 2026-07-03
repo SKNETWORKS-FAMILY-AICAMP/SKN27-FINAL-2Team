@@ -1,4 +1,4 @@
-# Neo4j 사전 설계 문서
+﻿# Neo4j 사전 설계 문서
 
 ## 1. 목적
 
@@ -16,9 +16,9 @@ Neo4j에 데이터를 넣기 전에 사전을 만드는 이유는 원본 CSV의 
 
 | 구분 | 의미 | 예시 |
 |---|---|---|
-| Dictionary | 표준 목록을 정하는 파일 | `category_dictionary.csv`, `event_category_dictionary.csv`, `relation_type_dictionary.csv` |
-| Staging relation | 원본 데이터를 Neo4j 관계로 넣기 좋게 펼친 중간 파일 | `term_category_relation.csv`, `event_category_relation.csv` |
-| Mapping | 서로 다른 분류 체계를 연결하는 파일 | `category_mapping.csv` |
+| Dictionary | 표준 목록을 정하는 파일 | `canonical_category_dictionary.csv`, `source_event_category_dictionary.csv`, `relation_type_dictionary.csv` |
+| Staging relation | 원본 데이터를 Neo4j 관계로 넣기 좋게 펼친 중간 파일 | `term_canonical_category_relation.csv`, `event_source_category_relation.csv` |
+| Mapping | 서로 다른 분류 체계를 연결하는 파일 | `taxonomy_crosswalk.csv` |
 
 정리하면 dictionary는 기준을 만들고, staging은 원본을 그래프 관계로 펼치며, mapping은 서로 다른 기준을 연결한다.
 
@@ -48,9 +48,9 @@ Neo4j에 데이터를 넣기 전에 사전을 만드는 이유는 원본 CSV의 
 
 | 문제 | 사전 없이 처리할 때 | 사전이 있을 때 |
 |---|---|---|
-| 카테고리 탐색 | `term_lk` 문자열을 매번 split해야 한다. | `Category` 노드와 `SUBCATEGORY_OF` 관계를 탐색한다. |
+| 카테고리 탐색 | `term_lk` 문자열을 매번 split해야 한다. | `CanonicalCategory` 노드와 `SUBCATEGORY_OF` 관계를 탐색한다. |
 | 복수 카테고리 | `>>`가 있는 값을 쿼리마다 다시 해석해야 한다. | staging 관계로 이미 펼쳐져 있다. |
-| 이벤트 분류 | `전쟁`, `옥사`, `국왕`이 표준 카테고리와 어떻게 연결되는지 불명확하다. | `category_mapping.csv`에서 연결 기준을 관리한다. |
+| 이벤트 분류 | `전쟁`, `옥사`, `국왕`이 표준 카테고리와 어떻게 연결되는지 불명확하다. | `taxonomy_crosswalk.csv`에서 연결 기준을 관리한다. |
 | 인물 관계 | `부`, `자`, `형제`의 방향과 의미를 쿼리마다 판단해야 한다. | `relation_type_dictionary.csv`에서 의미, 방향, 대칭성을 관리한다. |
 | 날짜 검색 | `1218년(고종 5) 12월` 같은 문자열 검색에 머문다. | `start_year`, `end_year`, `date_precision`으로 필터링한다. |
 | RAG 출처 | URL이 여러 컬럼에 흩어져 중복 수집된다. | `source_url_dictionary.csv`에서 URL과 출처를 관리한다. |
@@ -117,15 +117,15 @@ is_symmetric = N
 반란,\r\n\r\n정치인
 ```
 
-이 값을 바로 `Category`에 합쳐버리면 원본 이벤트 분류가 어떻게 생겼는지 흐려진다. 그래서 다음처럼 나눈다.
+이 값을 바로 `CanonicalCategory`에 합쳐버리면 원본 이벤트 분류가 어떻게 생겼는지 흐려진다. 그래서 다음처럼 나눈다.
 
 ```text
-event_category_dictionary.csv = 반란, 정치인이라는 원본 이벤트 분류 보존
-category_dictionary.csv = history_terms 기반 표준 카테고리 보존
-category_mapping.csv = 둘 사이의 연결 규칙 관리
+source_event_category_dictionary.csv = 반란, 정치인이라는 원본 이벤트 분류 보존
+canonical_category_dictionary.csv = history_terms 기반 표준 카테고리 보존
+taxonomy_crosswalk.csv = 둘 사이의 연결 규칙 관리
 ```
 
-이 구조에서는 원본 분류도 남고, 표준 분류도 남고, 둘을 어떻게 연결했는지도 남는다. 나중에 매핑이 틀렸다고 판단되면 원본 데이터를 다시 건드리지 않고 `category_mapping.csv`만 수정하면 된다.
+이 구조에서는 원본 분류도 남고, 표준 분류도 남고, 둘을 어떻게 연결했는지도 남는다. 나중에 매핑이 틀렸다고 판단되면 원본 데이터를 다시 건드리지 않고 `taxonomy_crosswalk.csv`만 수정하면 된다.
 
 ### 사전은 문제 생성 품질에 직접 영향을 준다
 
@@ -150,7 +150,7 @@ RAG에서 vector 검색만 쓰면 의미적으로 비슷한 문서를 찾을 수
 
 ```text
 1. 질문에서 인물/사건/용어 후보 추출
-2. Neo4j에서 관련 Period, Category, RelationGroup 탐색
+2. Neo4j에서 관련 Period, CanonicalCategory, RelationGroup 탐색
 3. 같은 시대와 분류 안에서 vector 검색
 4. source_url_dictionary의 URL 본문과 함께 답변 생성
 ```
@@ -161,7 +161,7 @@ RAG에서 vector 검색만 쓰면 의미적으로 비슷한 문서를 찾을 수
 
 원본 전체를 사람이 검수하는 것은 비현실적이다. 대신 사전을 만들면 검수 단위가 작아진다.
 
-예를 들어 `history_terms`는 수만 건이지만, `category_dictionary.csv`는 수백 건 수준이다. `itkc_person_relations.csv`는 수십만 행이지만, `relation_type_dictionary.csv`는 관계 유형 16개 수준이다.
+예를 들어 `history_terms`는 수만 건이지만, `canonical_category_dictionary.csv`는 수백 건 수준이다. `itkc_person_relations.csv`는 수십만 행이지만, `relation_type_dictionary.csv`는 관계 유형 16개 수준이다.
 
 즉 원본 전체를 검수하는 대신 다음만 집중해서 보면 된다.
 
@@ -216,16 +216,16 @@ etl/
         person_relations.csv
 
       dictionary/
-        category_dictionary.csv
-        event_category_dictionary.csv
-        category_mapping.csv
+        canonical_category_dictionary.csv
+        source_event_category_dictionary.csv
+        taxonomy_crosswalk.csv
         period_dictionary.csv
         relation_type_dictionary.csv
         source_url_dictionary.csv
 
       staging/
-        term_category_relation.csv
-        event_category_relation.csv
+        term_canonical_category_relation.csv
+        event_source_category_relation.csv
         event_date_parse.csv
         person_relation_staging.csv
 
@@ -251,11 +251,11 @@ etl/
 | `events.csv` | `normalized/` | EDA 기준으로 정리한 사건 원본 |
 | `event_relations.csv` | `normalized/` | EDA 기준으로 정리한 사건-인물 관계 원본 |
 | `person_relations.csv` | `normalized/` | EDA 기준으로 정리한 인물-인물 관계 원본 |
-| `category_dictionary.csv` | `dictionary/` | `history_terms.term_lk` 기반 `Category` 노드 사전 |
-| `term_category_relation.csv` | `staging/` | `Term - HAS_CATEGORY - Category` 관계 생성용 |
-| `event_category_dictionary.csv` | `dictionary/` | `itkc_events.subject_category` 기반 이벤트 분류 사전 |
-| `event_category_relation.csv` | `staging/` | `Event - HAS_EVENT_CATEGORY - EventCategory` 관계 생성용 |
-| `category_mapping.csv` | `dictionary/` 또는 `mapping/` | 이벤트 분류와 표준 카테고리 연결 규칙 |
+| `canonical_category_dictionary.csv` | `dictionary/` | `history_terms.term_lk` 기반 `CanonicalCategory` 노드 사전 |
+| `term_canonical_category_relation.csv` | `staging/` | `Term - HAS_CANONICAL_CATEGORY - CanonicalCategory` 관계 생성용 |
+| `source_event_category_dictionary.csv` | `dictionary/` | `itkc_events.subject_category` 기반 이벤트 분류 사전 |
+| `event_source_category_relation.csv` | `staging/` | `Event - HAS_SOURCE_CATEGORY - SourceEventCategory` 관계 생성용 |
+| `taxonomy_crosswalk.csv` | `mapping/` | 이벤트 분류와 표준 카테고리 연결 규칙 |
 | `period_dictionary.csv` | `dictionary/` | `Period` 노드 기준 사전 |
 | `event_date_parse.csv` | `staging/` | Event 날짜 원문 정규화 결과 |
 | `relation_type_dictionary.csv` | `dictionary/` | 인물 관계 의미, 방향, 대칭성 규칙 |
@@ -263,11 +263,11 @@ etl/
 
 ---
 
-## 4. `category_dictionary.csv`
+## 4. `canonical_category_dictionary.csv`
 
 ### 4.1 역할
 
-`category_dictionary.csv`는 `history_terms.term_lk`에서 만든 표준 카테고리 사전이다.
+`canonical_category_dictionary.csv`는 `history_terms.term_lk`에서 만든 표준 카테고리 사전이다.
 
 원본 `term_lk`는 다음처럼 문자열 하나에 계층 정보가 들어 있다.
 
@@ -285,13 +285,13 @@ etl/
 - 문화·예술 하위 카테고리 전체 탐색
 - 같은 카테고리의 오답 후보 찾기
 
-그래서 `term_lk`를 분해해서 `Category` 노드로 만들 기준표가 필요하다.
+그래서 `term_lk`를 분해해서 `CanonicalCategory` 노드로 만들 기준표가 필요하다.
 
 ### 4.2 왜 필요한가
 
-`category_dictionary.csv`가 필요한 이유는 다음과 같다.
+`canonical_category_dictionary.csv`가 필요한 이유는 다음과 같다.
 
-1. `Category` 노드의 기준 목록이 된다.
+1. `CanonicalCategory` 노드의 기준 목록이 된다.
 2. `SUBCATEGORY_OF` 관계를 만들 수 있다.
 3. 같은 카테고리에 속한 용어를 찾을 수 있다.
 4. 문제 생성에서 같은 분류의 오답 후보를 찾을 수 있다.
@@ -332,13 +332,13 @@ etl/
 
 ---
 
-## 5. `term_category_relation.csv`
+## 5. `term_canonical_category_relation.csv`
 
 ### 5.1 역할
 
-`term_category_relation.csv`는 dictionary가 아니라 staging relation이다. `Term`과 `Category`를 연결하기 위한 중간 산출물이다.
+`term_canonical_category_relation.csv`는 dictionary가 아니라 staging relation이다. `Term`과 `CanonicalCategory`를 연결하기 위한 중간 산출물이다.
 
-`category_dictionary.csv`만 있으면 카테고리 목록은 알 수 있지만, 어떤 `term_id`가 어떤 카테고리에 속하는지는 알 수 없다. 그 연결 정보가 `term_category_relation.csv`다.
+`canonical_category_dictionary.csv`만 있으면 카테고리 목록은 알 수 있지만, 어떤 `term_id`가 어떤 카테고리에 속하는지는 알 수 없다. 그 연결 정보가 `term_canonical_category_relation.csv`다.
 
 ### 5.2 왜 필요한가
 
@@ -350,7 +350,7 @@ etl/
 2. Cypher에서 문자열 파싱 로직을 반복하지 않아도 된다.
 3. 복수 카테고리 연결을 명확하게 확인할 수 있다.
 4. 원본 `term_lk`에서 어떤 관계가 만들어졌는지 검수할 수 있다.
-5. `Term - HAS_CATEGORY - Category` 관계를 안정적으로 만들 수 있다.
+5. `Term - HAS_CANONICAL_CATEGORY - CanonicalCategory` 관계를 안정적으로 만들 수 있다.
 
 ### 5.3 생성 방식
 
@@ -411,11 +411,11 @@ Term -> 매장
 
 ---
 
-## 6. `event_category_dictionary.csv`
+## 6. `source_event_category_dictionary.csv`
 
 ### 6.1 역할
 
-`event_category_dictionary.csv`는 `itkc_events.csv.subject_category`에서 만든 이벤트 전용 카테고리 사전이다.
+`source_event_category_dictionary.csv`는 `itkc_events.csv.subject_category`에서 만든 이벤트 전용 카테고리 사전이다.
 
 이벤트의 `subject_category`는 `history_terms.term_lk`와 성격이 다르다. `term_lk`는 계층형 용어 분류에 가깝고, `subject_category`는 사건 수집 과정에서 붙은 사건 분류에 가깝다.
 
@@ -469,11 +469,11 @@ Term -> 매장
 
 ---
 
-## 7. `event_category_relation.csv`
+## 7. `event_source_category_relation.csv`
 
 ### 7.1 역할
 
-`event_category_relation.csv`는 dictionary가 아니라 staging relation이다. `Event`와 `EventCategory`를 연결하기 위한 파일이다.
+`event_source_category_relation.csv`는 dictionary가 아니라 staging relation이다. `Event`와 `SourceEventCategory`를 연결하기 위한 파일이다.
 
 ### 7.2 쿼리로 만들 수 있는가
 
@@ -488,11 +488,11 @@ Term -> 매장
 
 ### 7.3 왜 필요한가
 
-1. `Event - HAS_EVENT_CATEGORY - EventCategory` 관계를 명확히 만든다.
+1. `Event - HAS_SOURCE_CATEGORY - SourceEventCategory` 관계를 명확히 만든다.
 2. `subject_category` 복합값을 여러 관계로 펼친다.
 3. 같은 `event_id` 중복을 정리한 뒤 관계를 생성할 수 있다.
 4. 원본 `subject_category`를 보존해 검수할 수 있다.
-5. 이후 `category_mapping.csv`를 통해 표준 카테고리와 연결할 수 있다.
+5. 이후 `taxonomy_crosswalk.csv`를 통해 표준 카테고리와 연결할 수 있다.
 
 ### 7.4 생성 예시
 
@@ -525,18 +525,18 @@ Event -> 정치인
 
 ---
 
-## 8. `category_mapping.csv`
+## 8. `taxonomy_crosswalk.csv`
 
 ### 8.1 역할
 
-`category_mapping.csv`는 `event_category_dictionary.csv`와 `category_dictionary.csv`를 연결하는 매핑표다.
+`taxonomy_crosswalk.csv`는 `source_event_category_dictionary.csv`와 `canonical_category_dictionary.csv`를 연결하는 매핑표다.
 
 중요한 점은 이 파일이 두 사전을 대체하지 않는다는 것이다.
 
 ```text
-event_category_dictionary.csv = 이벤트 원본 분류 사전
-category_dictionary.csv = history_terms.term_lk 기반 표준 카테고리 사전
-category_mapping.csv = 두 분류 체계를 연결하는 규칙표
+source_event_category_dictionary.csv = 이벤트 원본 분류 사전
+canonical_category_dictionary.csv = history_terms.term_lk 기반 표준 카테고리 사전
+taxonomy_crosswalk.csv = 두 분류 체계를 연결하는 규칙표
 ```
 
 ### 8.2 왜 필요한가
@@ -832,17 +832,17 @@ Tavily는 그래프의 확정 관계를 만드는 주 데이터가 아니라, UR
 
 사전과 staging 파일은 다음 순서로 만드는 것이 좋다.
 
-1. `category_dictionary.csv`
-2. `term_category_relation.csv`
-3. `event_category_dictionary.csv`
-4. `event_category_relation.csv`
+1. `canonical_category_dictionary.csv`
+2. `term_canonical_category_relation.csv`
+3. `source_event_category_dictionary.csv`
+4. `event_source_category_relation.csv`
 5. `relation_type_dictionary.csv`
 6. `event_date_parse.csv`
 7. `period_dictionary.csv`
 8. `source_url_dictionary.csv`
-9. `category_mapping.csv`
+9. `taxonomy_crosswalk.csv`
 
-`category_mapping.csv`는 중요하지만 가장 먼저 만들면 어렵다. 이벤트 카테고리와 표준 카테고리 사전이 먼저 있어야 매핑 후보를 만들 수 있다.
+`taxonomy_crosswalk.csv`는 중요하지만 가장 먼저 만들면 어렵다. 이벤트 카테고리와 표준 카테고리 사전이 먼저 있어야 매핑 후보를 만들 수 있다.
 
 ---
 
@@ -852,14 +852,129 @@ Neo4j 그래프 구축에서 사전은 부가물이 아니라 그래프 품질�
 
 각 파일의 핵심 역할은 다음과 같다.
 
-- `category_dictionary.csv`: 표준 카테고리 노드 기준
-- `term_category_relation.csv`: 용어와 카테고리 연결
-- `event_category_dictionary.csv`: 이벤트 원본 분류 보존
-- `event_category_relation.csv`: 사건과 이벤트 분류 연결
-- `category_mapping.csv`: 이벤트 분류와 표준 카테고리 연결
+- `canonical_category_dictionary.csv`: 표준 카테고리 노드 기준
+- `term_canonical_category_relation.csv`: 용어와 카테고리 연결
+- `source_event_category_dictionary.csv`: 이벤트 원본 분류 보존
+- `event_source_category_relation.csv`: 사건과 이벤트 분류 연결
+- `taxonomy_crosswalk.csv`: 이벤트 분류와 표준 카테고리 연결
 - `period_dictionary.csv`: 시대 노드 기준
 - `event_date_parse.csv`: 사건 날짜 정규화
 - `relation_type_dictionary.csv`: 인물 관계 의미 규칙
 - `source_url_dictionary.csv`: RAG와 출처 추적 기준
 
 이 구분을 해두면 Neo4j import, 검수, 문제 생성, Hybrid RAG 확장을 모두 같은 흐름 안에서 관리할 수 있다.
+
+---
+
+## 15. 2026-07-03 정리 기준
+
+### 15.1 dictionary와 mapping 분리
+
+`dictionary/`에는 노드의 기준표가 되는 CSV만 둔다.
+
+예시는 다음과 같다.
+
+- `canonical_category_dictionary.csv`
+- `source_event_category_dictionary.csv`
+- `period_dictionary.csv`
+- `relation_type_dictionary.csv`
+- `source_url_dictionary.csv`
+- `event_facet_dictionary.csv`
+- `country_dictionary.csv`
+- `region_dictionary.csv`
+- `economic_domain_dictionary.csv`
+- `taxonomy_facet_dictionary.csv`
+
+`mapping/`에는 서로 다른 기준표를 연결하는 crosswalk CSV를 둔다.
+
+예시는 다음과 같다.
+
+- `taxonomy_crosswalk.csv`
+- `source_event_category_facet_crosswalk.csv`
+- `canonical_category_country_crosswalk.csv`
+- `canonical_category_region_crosswalk.csv`
+- `canonical_category_economic_domain_crosswalk.csv`
+- `canonical_category_taxonomy_facet_crosswalk.csv`
+
+이렇게 나누는 이유는 사전과 매핑표의 책임이 다르기 때문이다.
+
+사전은 그래프에 들어갈 노드 후보를 정의한다. 매핑표는 이미 만들어진 노드 후보 사이의 연결 규칙을 정의한다. 두 종류가 같은 폴더에 있으면 파일 수가 많아 보이고, 어떤 파일을 검수해야 하는지 판단하기 어려워진다.
+
+### 15.2 국가와 지역은 카테고리 하위 개념이 아니다
+
+원본 `history_terms.term_lk`에는 다음과 같은 경로가 존재한다.
+
+```text
+외교·국제관계 > 러시아 > 경제·산업(러시아)
+외교·국제관계 > 기타지역 > 동남아시아
+```
+
+이 경로는 원본 분류 체계에서 사용한 탐색 경로다. 하지만 Neo4j 의미 그래프에서는 `러시아`, `기타지역`, `동남아시아`를 `외교·국제관계`의 개념적 하위 카테고리로 해석하면 안 된다.
+
+따라서 원본 경로는 `canonical_category_dictionary.csv`와 staging relation에 보존하되, 최종 그래프의 `SUBCATEGORY_OF` 관계에서는 국가/지역 facet으로 분리된 경로를 제외한다.
+
+의미 그래프에서는 다음 관계를 사용한다.
+
+```text
+CanonicalCategory -[:ABOUT_COUNTRY]-> Country
+CanonicalCategory -[:ABOUT_REGION]-> Region
+Term -[:ABOUT_COUNTRY]-> Country
+Term -[:ABOUT_REGION]-> Region
+Event -[:ABOUT_COUNTRY]-> Country
+Event -[:ABOUT_REGION]-> Region
+```
+
+즉, `러시아`는 `외교·국제관계`의 하위 카테고리가 아니라 해당 카테고리 경로가 다루는 국가 facet이다. `기타지역`은 실제 국가가 아니라 원본 taxonomy의 지역 묶음 버킷이며, `동남아시아`, `아메리카`, `유럽` 등은 별도 `Region` 노드로 다룬다.
+
+### 15.3 시대 범위는 전처리에서 확장한다
+
+`history_terms.term_times`에는 다음처럼 시작 시대와 끝 시대가 하나의 문자열로 들어간 경우가 있다.
+
+```text
+삼국시대-조선시대
+고려후기-조선후기
+개항기-현대
+```
+
+이 값은 쿼리 시점에 매번 해석하지 않는다. Cypher에서 문자열을 다시 파싱하면 쿼리가 복잡해지고, 시대 순서 기준이 여러 곳에 흩어진다.
+
+따라서 시대 순서와 범위 확장 기준은 `seed/period_seed.csv`에 두고, 최종 관계 CSV를 만들 때 `term_in_period.csv`, `event_in_period.csv`에 미리 펼쳐 저장한다.
+
+예를 들어 다음 원문은:
+
+```text
+삼국시대-조선시대
+```
+
+다음 관계로 확장된다.
+
+| period_name | match_type |
+|---|---|
+| 삼국시대 | `RANGE_START` |
+| 남북국시대 | `RANGE_MIDDLE` |
+| 후삼국시대 | `RANGE_MIDDLE` |
+| 고려시대 | `RANGE_MIDDLE` |
+| 조선시대 | `RANGE_END` |
+
+`match_type`은 다음 의미를 가진다.
+
+| match_type | 의미 |
+|---|---|
+| `DIRECT` | 원문에 단일 시대가 직접 적힌 경우 |
+| `RANGE_START` | 범위 표현의 시작 시대 |
+| `RANGE_MIDDLE` | seed의 시대 순서로 추론한 중간 시대 |
+| `RANGE_END` | 범위 표현의 끝 시대 |
+
+범위 확장은 `range_group`이 같은 시대끼리만 수행한다. 예를 들어 `korean_major_period`는 `삼국시대`, `남북국시대`, `고려시대`, `조선시대` 같은 주요 한국사 시대를 확장하고, `archaeological_period`는 `구석기시대`, `신석기시대`, `청동기시대`, `초기철기시대`를 별도 순서로 확장한다.
+
+이렇게 하면 조회 쿼리는 단순해진다.
+
+```cypher
+MATCH (t:Term)-[r:IN_PERIOD]->(p:Period {name: "고려시대"})
+RETURN t, r.match_type
+```
+
+쿼리 결과에서 `match_type`을 보면 원문에 직접 있던 시대인지, 범위에서 추론된 중간 시대인지 구분할 수 있다.
+
+
+

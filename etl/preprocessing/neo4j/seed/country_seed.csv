@@ -1,0 +1,6 @@
+country_name,country_type,canonical_category_path,aliases,review_status,note
+러시아,COUNTRY_OR_POLITY,외교·국제관계>러시아,러시아,PENDING,외교·국제관계 하위 국가 축
+미국,COUNTRY_OR_POLITY,외교·국제관계>미국,미국,PENDING,외교·국제관계 하위 국가 축
+북한,COUNTRY_OR_POLITY,외교·국제관계>북한,북한|조선민주주의인민공화국,PENDING,외교·국제관계 하위 국가 축
+일본,COUNTRY_OR_POLITY,외교·국제관계>일본,일본,PENDING,외교·국제관계 하위 국가 축
+중국,COUNTRY_OR_POLITY,외교·국제관계>중국,중국,PENDING,외교·국제관계 하위 국가 축

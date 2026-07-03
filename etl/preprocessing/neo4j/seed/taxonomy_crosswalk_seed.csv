@@ -1,0 +1,43 @@
+event_category_name,mapped_category_path,mapping_type,confidence,review_status,note
+전쟁,국방·군사>전쟁·전투,MANUAL,HIGH,PENDING,전쟁 사건
+호란,국방·군사>전쟁·전투,MANUAL,HIGH,PENDING,전쟁 사건
+왜(변)란,국방·군사>전쟁·전투,MANUAL,HIGH,PENDING,전쟁 사건
+정벌,국방·군사>전쟁·전투,MANUAL,HIGH,PENDING,군사 원정 사건
+방비,국방·군사>군사방어시설,MANUAL,HIGH,PENDING,방어 시설 및 방비
+조세,재정·금융>재정>조세제도,MANUAL,HIGH,PENDING,조세 제도
+출판,문화·예술>언론·출판,MANUAL,HIGH,PENDING,출판 주제
+종교,전통사상·종교,MANUAL_OVERRIDE,HIGH,PENDING,exact match가 서명 유형이라 사건 주제로 보정
+노비,사회·생활>신분·계급,MANUAL,HIGH,PENDING,신분 계급 주제
+능묘,사회·생활>풍속·의례>매장,MANUAL,HIGH,PENDING,능묘는 매장 의례로 연결
+옥사,정치·행정·법제>사법>범죄,MANUAL,HIGH,PENDING,옥사 사건
+유배,정치·행정·법제>사법>사법제도,MANUAL,HIGH,PENDING,형벌 및 사법 제도
+처결,정치·행정·법제>사법>사법제도,MANUAL,MEDIUM,REVIEW,처벌 처리 의미 검수 필요
+고변/탄핵,정치·행정·법제>정치>정치사건,MANUAL,MEDIUM,REVIEW,정치 사건 성격
+반란,정치·행정·법제>정치>정치사건,MANUAL,HIGH,PENDING,정치 사건
+정변,정치·행정·법제>정치>정치사건,MANUAL,HIGH,PENDING,정치 사건
+사화,정치·행정·법제>정치>정치사건,MANUAL,HIGH,PENDING,정치 사건
+민란,정치·행정·법제>정치>정치사건,MANUAL,MEDIUM,REVIEW,민란을 정치 사건으로 임시 연결
+예송,정치·행정·법제>정치>정치사건,MANUAL,MEDIUM,REVIEW,예송 논쟁을 정치 사건으로 임시 연결
+천도,정치·행정·법제>정치>정치사건,MANUAL,MEDIUM,REVIEW,수도 이동 사건
+공신/훈신) 정쟁(정변,정치·행정·법제>정치>정치사건,MANUAL,MEDIUM,REVIEW,복합 이벤트 분류 검수 필요
+붕당,정치·행정·법제>정치>정치조직·단체,MANUAL,HIGH,PENDING,정치 조직 및 붕당
+정치일반,정치·행정·법제>정치,MANUAL,HIGH,PENDING,정치 일반
+제도개혁,정치·행정·법제>행정>행정제도,MANUAL,MEDIUM,REVIEW,제도 개혁은 행정제도 후보
+정치인,인명>성격별>정치·행정가,MANUAL,HIGH,PENDING,정치 인물
+명신,인명>성격별>정치·행정가,MANUAL,MEDIUM,REVIEW,명신은 정치 행정가 후보
+상신,인명>성격별>정치·행정가,MANUAL,MEDIUM,REVIEW,상신은 정치 행정가 후보
+공신/훈신,인명>성격별>정치·행정가,MANUAL,MEDIUM,REVIEW,공신과 훈신은 정치 행정가 후보
+국왕,인명>성격별>왕실,MANUAL,HIGH,PENDING,왕실 인물
+비빈,인명>성격별>왕실>후비·황후,MANUAL,HIGH,PENDING,왕실 후비
+세자,인명>성격별>왕실>왕자,MANUAL,HIGH,PENDING,왕실 왕자
+종실,인명>성격별>왕실>종친,MANUAL,HIGH,PENDING,왕실 종친
+인물기타,인명,MANUAL,MEDIUM,REVIEW,인물 일반
+명,역사일반>국가>중국국가,MANUAL,MEDIUM,REVIEW,중국 왕조 후보
+청,역사일반>국가>중국국가,MANUAL,MEDIUM,REVIEW,중국 왕조 후보
+원,역사일반>국가>중국국가,MANUAL,MEDIUM,REVIEW,원 왕조 후보
+몽고,역사일반>종족·부족,MANUAL,MEDIUM,REVIEW,몽고 관련 후보
+거란,역사일반>종족·부족,MANUAL,MEDIUM,REVIEW,거란 관련 후보
+기관,정치·행정·법제>행정,MANUAL,MEDIUM,REVIEW,기관은 행정 카테고리 후보
+과거,정치·행정·법제>인사,MANUAL,MEDIUM,REVIEW,과거는 인사 제도 후보
+문형,정치·행정·법제>인사,MANUAL,MEDIUM,REVIEW,문형은 관료 인사 후보
+묘정배향,전통사상·종교>유교>유교관련사건·행사,MANUAL,MEDIUM,REVIEW,종묘 배향 관련 유교 사건 후보
