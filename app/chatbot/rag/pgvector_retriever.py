@@ -549,8 +549,8 @@ class PgVectorHybridRetriever:
                 vector_score,
                 keyword_score,
                 (
-                    vector_score * 0.65
-                    + keyword_score * 0.35
+                    vector_score * 0.55
+                    + keyword_score * 0.45
                     + CASE
                         WHEN %s AND source_type = 'image_material' THEN 1.2
                         WHEN %s AND source_type <> 'image_material' THEN -1.0
