@@ -181,8 +181,11 @@ def fetch_unembedded_chunks(conn, embedding_model: str, limit: int) -> list[tupl
             """
             SELECT chunk_id, chunk_text
             FROM rag.document_chunks
-            WHERE embedding IS NULL
-               OR embedding_model IS DISTINCT FROM %s
+            WHERE source_type <> 'image_material'
+              AND (
+                  embedding IS NULL
+                  OR embedding_model IS DISTINCT FROM %s
+              )
             ORDER BY id
             LIMIT %s
             """,
