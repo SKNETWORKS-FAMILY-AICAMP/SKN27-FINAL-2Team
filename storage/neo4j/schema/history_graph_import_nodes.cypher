@@ -1,5 +1,5 @@
-﻿CALL () {
-    LOAD CSV WITH HEADERS FROM 'file:///nodes/terms.csv' AS row
+LOAD CSV WITH HEADERS FROM 'file:///nodes/terms.csv' AS row
+CALL (row) {
     WITH row WHERE row.term_id IS NOT NULL AND trim(row.term_id) <> ''
     MERGE (n:Term {term_id: row.term_id})
     SET n += row
@@ -9,8 +9,8 @@
         n.description_length = toIntegerOrNull(row.description_length)
 } IN TRANSACTIONS OF 1000 ROWS;
 
-CALL () {
-    LOAD CSV WITH HEADERS FROM 'file:///nodes/events.csv' AS row
+LOAD CSV WITH HEADERS FROM 'file:///nodes/events.csv' AS row
+CALL (row) {
     WITH row WHERE row.event_id IS NOT NULL AND trim(row.event_id) <> ''
     MERGE (n:Event {event_id: row.event_id})
     SET n += row
@@ -22,8 +22,8 @@ CALL () {
         n.end_reign_year = toIntegerOrNull(row.end_reign_year)
 } IN TRANSACTIONS OF 1000 ROWS;
 
-CALL () {
-    LOAD CSV WITH HEADERS FROM 'file:///nodes/people.csv' AS row
+LOAD CSV WITH HEADERS FROM 'file:///nodes/people.csv' AS row
+CALL (row) {
     WITH row WHERE row.person_id IS NOT NULL AND trim(row.person_id) <> ''
     MERGE (n:Person {person_id: row.person_id})
     SET n += row
@@ -32,8 +32,8 @@ CALL () {
         n.degree = toIntegerOrNull(row.degree)
 } IN TRANSACTIONS OF 1000 ROWS;
 
-CALL () {
-    LOAD CSV WITH HEADERS FROM 'file:///nodes/canonical_categories.csv' AS row
+LOAD CSV WITH HEADERS FROM 'file:///nodes/canonical_categories.csv' AS row
+CALL (row) {
     WITH row WHERE row.category_id IS NOT NULL AND trim(row.category_id) <> ''
     MERGE (n:CanonicalCategory {category_id: row.category_id})
     SET n += row
@@ -42,16 +42,16 @@ CALL () {
         n.direct_term_count = toIntegerOrNull(row.direct_term_count)
 } IN TRANSACTIONS OF 1000 ROWS;
 
-CALL () {
-    LOAD CSV WITH HEADERS FROM 'file:///nodes/source_event_categories.csv' AS row
+LOAD CSV WITH HEADERS FROM 'file:///nodes/source_event_categories.csv' AS row
+CALL (row) {
     WITH row WHERE row.event_category_id IS NOT NULL AND trim(row.event_category_id) <> ''
     MERGE (n:SourceEventCategory {event_category_id: row.event_category_id})
     SET n += row
     SET n.event_count = toIntegerOrNull(row.event_count)
 } IN TRANSACTIONS OF 1000 ROWS;
 
-CALL () {
-    LOAD CSV WITH HEADERS FROM 'file:///nodes/periods.csv' AS row
+LOAD CSV WITH HEADERS FROM 'file:///nodes/periods.csv' AS row
+CALL (row) {
     WITH row WHERE row.period_id IS NOT NULL AND trim(row.period_id) <> ''
     MERGE (n:Period {period_id: row.period_id})
     SET n += row
@@ -62,24 +62,24 @@ CALL () {
         n.event_count = toIntegerOrNull(row.event_count)
 } IN TRANSACTIONS OF 1000 ROWS;
 
-CALL () {
-    LOAD CSV WITH HEADERS FROM 'file:///nodes/source_urls.csv' AS row
+LOAD CSV WITH HEADERS FROM 'file:///nodes/source_urls.csv' AS row
+CALL (row) {
     WITH row WHERE row.source_url_id IS NOT NULL AND trim(row.source_url_id) <> ''
     MERGE (n:SourceUrl {source_url_id: row.source_url_id})
     SET n += row
     SET n.source_count = toIntegerOrNull(row.source_count)
 } IN TRANSACTIONS OF 1000 ROWS;
 
-CALL () {
-    LOAD CSV WITH HEADERS FROM 'file:///nodes/event_groups.csv' AS row
+LOAD CSV WITH HEADERS FROM 'file:///nodes/event_groups.csv' AS row
+CALL (row) {
     WITH row WHERE row.event_group_id IS NOT NULL AND trim(row.event_group_id) <> ''
     MERGE (n:EventGroup {event_group_id: row.event_group_id})
     SET n += row
     SET n.event_count = toIntegerOrNull(row.event_count)
 } IN TRANSACTIONS OF 1000 ROWS;
 
-CALL () {
-    LOAD CSV WITH HEADERS FROM 'file:///nodes/event_facets.csv' AS row
+LOAD CSV WITH HEADERS FROM 'file:///nodes/event_facets.csv' AS row
+CALL (row) {
     WITH row WHERE row.event_facet_id IS NOT NULL AND trim(row.event_facet_id) <> ''
     MERGE (n:EventFacet {event_facet_id: row.event_facet_id})
     SET n += row
@@ -87,29 +87,29 @@ CALL () {
         n.event_count = toIntegerOrNull(row.event_count)
 } IN TRANSACTIONS OF 1000 ROWS;
 
-CALL () {
-    LOAD CSV WITH HEADERS FROM 'file:///nodes/countries.csv' AS row
+LOAD CSV WITH HEADERS FROM 'file:///nodes/countries.csv' AS row
+CALL (row) {
     WITH row WHERE row.country_id IS NOT NULL AND trim(row.country_id) <> ''
     MERGE (n:Country {country_id: row.country_id})
     SET n += row
 } IN TRANSACTIONS OF 1000 ROWS;
 
-CALL () {
-    LOAD CSV WITH HEADERS FROM 'file:///nodes/regions.csv' AS row
+LOAD CSV WITH HEADERS FROM 'file:///nodes/regions.csv' AS row
+CALL (row) {
     WITH row WHERE row.region_id IS NOT NULL AND trim(row.region_id) <> ''
     MERGE (n:Region {region_id: row.region_id})
     SET n += row
 } IN TRANSACTIONS OF 1000 ROWS;
 
-CALL () {
-    LOAD CSV WITH HEADERS FROM 'file:///nodes/economic_domains.csv' AS row
+LOAD CSV WITH HEADERS FROM 'file:///nodes/economic_domains.csv' AS row
+CALL (row) {
     WITH row WHERE row.economic_domain_id IS NOT NULL AND trim(row.economic_domain_id) <> ''
     MERGE (n:EconomicDomain {economic_domain_id: row.economic_domain_id})
     SET n += row
 } IN TRANSACTIONS OF 1000 ROWS;
 
-CALL () {
-    LOAD CSV WITH HEADERS FROM 'file:///nodes/taxonomy_facets.csv' AS row
+LOAD CSV WITH HEADERS FROM 'file:///nodes/taxonomy_facets.csv' AS row
+CALL (row) {
     WITH row WHERE row.taxonomy_facet_id IS NOT NULL AND trim(row.taxonomy_facet_id) <> ''
     MERGE (n:TaxonomyFacet {taxonomy_facet_id: row.taxonomy_facet_id})
     SET n += row
@@ -120,23 +120,23 @@ CALL () {
         n.direct_term_count = toIntegerOrNull(row.direct_term_count)
 } IN TRANSACTIONS OF 1000 ROWS;
 
-CALL () {
-    LOAD CSV WITH HEADERS FROM 'file:///nodes/search_tags.csv' AS row
+LOAD CSV WITH HEADERS FROM 'file:///nodes/search_tags.csv' AS row
+CALL (row) {
     WITH row WHERE row.search_tag_id IS NOT NULL AND trim(row.search_tag_id) <> ''
     MERGE (n:SearchTag {search_tag_id: row.search_tag_id})
     SET n += row
 } IN TRANSACTIONS OF 1000 ROWS;
 
-CALL () {
-    LOAD CSV WITH HEADERS FROM 'file:///nodes/themes.csv' AS row
+LOAD CSV WITH HEADERS FROM 'file:///nodes/themes.csv' AS row
+CALL (row) {
     WITH row WHERE row.theme_id IS NOT NULL AND trim(row.theme_id) <> ''
     MERGE (n:Theme {theme_id: row.theme_id})
     SET n += row
     SET n.theme_order = toIntegerOrNull(row.theme_order)
 } IN TRANSACTIONS OF 1000 ROWS;
 
-CALL () {
-    LOAD CSV WITH HEADERS FROM 'file:///nodes/eras.csv' AS row
+LOAD CSV WITH HEADERS FROM 'file:///nodes/eras.csv' AS row
+CALL (row) {
     WITH row WHERE row.era_id IS NOT NULL AND trim(row.era_id) <> ''
     MERGE (n:Era {era_id: row.era_id})
     SET n += row
@@ -145,8 +145,8 @@ CALL () {
         n.end_year = toIntegerOrNull(row.end_year)
 } IN TRANSACTIONS OF 1000 ROWS;
 
-CALL () {
-    LOAD CSV WITH HEADERS FROM 'file:///nodes/entity_types.csv' AS row
+LOAD CSV WITH HEADERS FROM 'file:///nodes/entity_types.csv' AS row
+CALL (row) {
     WITH row WHERE row.entity_type_id IS NOT NULL AND trim(row.entity_type_id) <> ''
     MERGE (n:EntityType {entity_type_id: row.entity_type_id})
     SET n += row

@@ -71,7 +71,7 @@ raw_data
 
 반대로 `seed/` 폴더의 CSV는 runner가 생성하지 않는다. `seed/`는 사람이 직접 관리하는 입력 규칙표이기 때문이다.
 
-현재 runner가 생성하지 않는 CSV는 다음 13개다.
+현재 runner가 생성하지 않는 CSV는 다음 15개다.
 
 - `seed/category_axis_seed.csv`
 - `seed/country_seed.csv`
@@ -86,6 +86,8 @@ raw_data
 - `seed/period_era_seed.csv`
 - `seed/entity_type_seed.csv`
 - `seed/keyword_era_seed.csv`
+- `seed/reign_seed.csv`
+- `seed/term_person_review_approved.csv`
 
 이 파일들은 자동 생성 산출물이 아니라 전처리 규칙을 담은 입력 파일이다.
 
@@ -127,10 +129,10 @@ raw_data
 
 | CSV | 행 수 | 의미 |
 |---|---:|---|
-| `terms.csv` | 61,598 | 역사 용어 원본에서 실제 용어 행만 남긴 정규화 데이터 |
-| `events.csv` | 600 | 사건 데이터에서 `event_id` 기준으로 중복을 정리한 정규화 데이터 |
-| `event_relations.csv` | 6,918 | 사건과 인물의 참여 관계를 정리한 데이터 |
-| `person_relations.csv` | 206,507 | 인물과 인물 사이의 관계를 정리한 데이터 |
+| `terms.csv` | 63,401 | 역사 용어 원본에서 실제 용어 행만 남긴 정규화 데이터 |
+| `events.csv` | 929 | 사건 데이터에서 `event_id` 기준으로 중복을 정리한 정규화 데이터 |
+| `event_relations.csv` | 7,249 | 사건과 인물의 참여 관계를 정리한 데이터 |
+| `person_relations.csv` | 211,389 | 인물과 인물 사이의 관계를 정리한 데이터 |
 
 ### 4.1 `terms.csv`
 
@@ -367,9 +369,10 @@ events.subject_category
 | CSV | 행 수 | 의미 |
 |---|---:|---|
 | `term_canonical_category_relation.csv` | 61,697 | 용어와 표준 카테고리 연결 중간 테이블 |
-| `event_source_category_relation.csv` | 713 | 사건과 원본 이벤트 분류 연결 중간 테이블 |
-| `event_date_parse.csv` | 600 | 사건 날짜 원문 parsing 결과 |
-| `term_era_candidate.csv` | 1,406 | 고조선/초기 국가 시대 후보 용어 검수 시트. `make_term_era_candidates.py`가 생성. HIGH 신뢰도는 `AUTO_APPROVED`, 나머지는 `PENDING`으로 사람 검수 대상. 검수 결정은 재실행 시 보존됨 |
+| `event_source_category_relation.csv` | 1,165 | 사건과 원본 이벤트 분류 연결 중간 테이블 |
+| `event_date_parse.csv` | 703 | 사건 날짜 원문 parsing 결과 |
+| `term_year_parse.csv` | 61,598 | 용어 연도 원문 parsing 결과. 최종 `nodes/terms.csv`에 병합 |
+| `term_era_candidate.csv` | (수동 생성) | 고조선/초기 국가 시대 후보 용어 검수 시트. `make_term_era_candidates.py` 수동 실행 시 생성되며 runner는 생성하지 않음(현재 미생성). HIGH 신뢰도는 `AUTO_APPROVED`, 나머지는 `PENDING`으로 사람 검수 대상. 검수 결정은 재실행 시 보존됨. `make_theme_era_csv.py`는 이 파일이 있으면 검수 통과분을 `term_in_era.csv`에 합류 |
 
 ### 8.1 `term_canonical_category_relation.csv`
 
@@ -399,9 +402,9 @@ events.subject_category
 
 | CSV | 행 수 | Neo4j 노드 의미 |
 |---|---:|---|
-| `terms.csv` | 61,598 | `Term` 노드 |
-| `events.csv` | 600 | `Event` 노드 |
-| `people.csv` | 56,403 | `Person` 노드 |
+| `terms.csv` | 63,401 | `Term` 노드 |
+| `events.csv` | 929 | `Event` 노드 |
+| `people.csv` | 56,727 | `Person` 노드 |
 | `canonical_categories.csv` | 400 | `CanonicalCategory` 노드 |
 | `source_event_categories.csv` | 53 | `SourceEventCategory` 노드 |
 | `periods.csv` | 30 | `Period` 노드 |
@@ -475,7 +478,7 @@ events.subject_category
 
 | CSV | 행 수 | 의미 |
 |---|---:|---|
-| `event_has_source_category.csv` | 713 | `Event - HAS_EVENT_CATEGORY - SourceEventCategory` |
+| `event_has_source_category.csv` | 1,165 | `Event - HAS_EVENT_CATEGORY - SourceEventCategory` |
 | `event_has_canonical_category.csv` | 692 | `Event - HAS_CATEGORY - CanonicalCategory` |
 | `event_has_facet.csv` | 713 | `Event - HAS_EVENT_FACET - EventFacet` |
 | `event_in_period.csv` | 600 | `Event - IN_PERIOD - Period` |
@@ -489,13 +492,13 @@ events.subject_category
 
 이 두 관계는 설계상 가능한 관계지만, 현재 `taxonomy_crosswalk.csv` 기준 이벤트-표준 카테고리 매핑 결과가 `Region`, `EconomicDomain` 축까지 닿지 않는다. 0행 CSV를 최종 import 폴더에 남겨두면 실제 그래프에 들어가는 관계처럼 보이고, 문서와 검수 단계에서 불필요한 혼란이 생긴다. 그래서 현재 구현은 0행일 때 CSV를 물리적으로 생성하지 않고, 나중에 seed/mapping 보강으로 행이 생기면 자동으로 다시 생성하는 방식이다.
 
-Cypher import 쪽에는 optional LOAD 대상으로 남겨두되, `load_schema.py`가 해당 CSV 파일이 없으면 그 문장만 건너뛰게 했다. 이렇게 한 이유는 현재의 빈 산출물은 제거하면서도, 나중에 매핑이 보강되어 실제 행이 생겼을 때 별도 쿼리 구조를 다시 설계하지 않아도 되게 하기 위해서다.
+현재 `history_graph_import_relations.cypher`에는 이 두 관계의 LOAD 블록이 없다. 따라서 Cypher 파일을 직접 실행해도 존재하지 않는 optional CSV 때문에 실패하지 않는다. `load_schema.py`의 optional skip 로직(해당 CSV 파일이 없으면 그 LOAD 문장만 건너뜀)은 이후 LOAD 블록을 다시 추가할 경우를 대비한 방어 장치로 남아 있다. 나중에 매핑이 보강되어 실제 행이 생기면 CSV는 자동으로 다시 생성되므로, LOAD 블록만 추가하면 별도 쿼리 구조를 다시 설계하지 않아도 된다.
 
 ### 10.3 인물 중심 관계
 
 | CSV | 행 수 | 의미 |
 |---|---:|---|
-| `person_involved_in_event.csv` | 6,918 | `Person - INVOLVED_IN - Event` |
+| `person_involved_in_event.csv` | 7,249 | `Person - INVOLVED_IN - Event` |
 | `person_related_to_person.csv` | 184,056 | `Person - RELATED_TO - Person` (대칭 관계는 한 방향만 저장) |
 | `person_has_source_url.csv` | 56,212 | `Person - HAS_SOURCE_URL - SourceUrl` |
 
@@ -524,7 +527,7 @@ Cypher import 쪽에는 optional LOAD 대상으로 남겨두되, `load_schema.py
 | `canonical_category_has_theme.csv` | 30 | `CanonicalCategory - HAS_THEME - Theme` |
 | `period_part_of_era.csv` | 23 | `Period - PART_OF_ERA - Era` (표기 변형 통합) |
 | `term_has_entity_type.csv` | 20,662 | `Term - HAS_ENTITY_TYPE - EntityType` |
-| `term_in_era.csv` | 54,246 | `Term - IN_ERA - Era` (`IN_PERIOD -> PART_OF_ERA` 파생 + 키워드 override + 설명문 검수 통과분) |
+| `term_in_era.csv` | 54,125 | `Term - IN_ERA - Era` (`IN_PERIOD -> PART_OF_ERA` 파생 + 키워드 override + 설명문 검수 통과분) |
 | `event_in_era.csv` | 600 | `Event - IN_ERA - Era` (`IN_PERIOD -> PART_OF_ERA` 파생) |
 | `person_in_era.csv` | 23,214 | `Person - IN_ERA - Era` (생몰년 기반 + 사건 기반 보조 추론) |
 | `person_has_theme.csv` | 60,712 | `Person - HAS_THEME - Theme` (인물 라벨 + 사건 참여/인명 세부 카테고리 주제 상속) |
@@ -656,7 +659,7 @@ history_graph_verify.cypher
 
 | CSV | 현재 건수 | 의미 |
 |---|---:|---|
-| `term_in_era.csv` | 54,246 | `Term - IN_ERA - Era`. `Term - IN_PERIOD - Period - PART_OF_ERA - Era`를 미리 펼친 관계이며, 키워드 override와 설명문 기반 검수 통과분(DESC_KEYWORD)을 합류한다. |
+| `term_in_era.csv` | 54,125 | `Term - IN_ERA - Era`. `Term - IN_PERIOD - Period - PART_OF_ERA - Era`를 미리 펼친 관계이며, 키워드 override와 설명문 기반 검수 통과분(DESC_KEYWORD)을 합류한다. |
 | `event_in_era.csv` | 600 | `Event - IN_ERA - Era`. 사건의 period를 Era로 펼친 관계다. |
 | `person_in_era.csv` | 23,214 | `Person - IN_ERA - Era`. 생몰년 기반 연결을 우선하고, 생몰년이 없는 인물은 참여 사건 Era로 보조 추론한다. |
 | `person_has_theme.csv` | 60,712 | `Person - HAS_THEME - Theme`. 모든 Person은 `인물` 주제에 연결하고, 참여 사건과 인명 세부 카테고리에서 얻은 내용 주제를 보조 상속한다. |

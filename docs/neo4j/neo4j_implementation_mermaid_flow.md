@@ -6,14 +6,14 @@
 
 - raw CSV 입력
 - 전처리 runner와 5개 스크립트
-- seed CSV 13개
+- seed CSV 15개
 - normalized CSV 4개
 - dictionary CSV 10개
 - mapping CSV 6개
 - staging CSV 4개
 - 최종 node CSV 17개
-- 최종 relationship CSV 32개와 optional relation CSV 2개
-- Cypher 5개
+- 최종 relationship CSV 37개와 optional relation CSV 2개
+- Cypher 4개와 내부 reset
 - Neo4j import 경로와 Docker mount
 - 카테고리, 이벤트 분류, 시대 범위, 인물 관계 생성 규칙
 
@@ -434,19 +434,19 @@ flowchart TB
     current_mapping["현재 taxonomy_crosswalk.csv<br/>이벤트 표준 카테고리 매핑"]
     no_rows["현재 결과 0행<br/>Region / EconomicDomain 축으로 이어지는 이벤트 없음"]
     skip_csv["make_graph_csv.py<br/>0행이면 CSV 미생성<br/>기존 stale CSV 삭제"]
-    keep_cypher["history_graph_import_relations.cypher<br/>LOAD 블록은 유지"]
-    loader_skip["load_schema.py<br/>파일이 없으면 optional LOAD만 skip"]
+    no_cypher["history_graph_import_relations.cypher<br/>현재 LOAD 블록 없음"]
+    loader_skip["load_schema.py<br/>optional skip 로직은 방어 장치로 유지"]
     future_rows["나중에 seed/mapping 보강<br/>행이 생기면 CSV 자동 생성"]
-    future_import["같은 Cypher 블록으로 import 가능"]
+    future_import["LOAD 블록만 추가하면 import 가능"]
 
     optional_relation --> current_mapping --> no_rows --> skip_csv
-    skip_csv --> loader_skip
-    keep_cypher --> loader_skip
+    skip_csv --> no_cypher
+    no_cypher --> loader_skip
     future_rows --> future_import
-    keep_cypher --> future_import
+    loader_skip --> future_import
 ```
 
-이렇게 구현한 이유는 최종 import 폴더를 실제 적재 대상만 남기는 곳으로 유지하기 위해서다. 0행 CSV를 남겨두면 실제 관계가 존재하는 것처럼 보이고, 검수 시 누락인지 의도된 빈 결과인지 계속 확인해야 한다. 반대로 Cypher 블록까지 완전히 삭제하면 나중에 매핑이 보강되어 행이 생겼을 때 import 구조를 다시 손봐야 한다. 그래서 현재 구현은 빈 CSV는 만들지 않고, `load_schema.py`에서 optional LOAD만 건너뛰는 절충 구조다.
+이렇게 구현한 이유는 최종 import 폴더를 실제 적재 대상만 남기는 곳으로 유지하기 위해서다. 0행 CSV를 남겨두면 실제 관계가 존재하는 것처럼 보이고, 검수 시 누락인지 의도된 빈 결과인지 계속 확인해야 한다. 현재 `history_graph_import_relations.cypher`에는 이 두 관계의 LOAD 블록이 없으므로 Cypher 파일을 직접 실행해도 실패하지 않는다. `load_schema.py`의 optional skip 로직(파일이 없으면 해당 LOAD 문장만 건너뜀)은 이후 LOAD 블록을 다시 추가할 경우를 대비한 방어 장치로 남아 있다. 매핑이 보강되어 행이 생기면 CSV는 자동으로 다시 생성되므로 LOAD 블록만 추가하면 된다.
 
 ---
 
@@ -457,9 +457,9 @@ flowchart TB
 ```mermaid
 flowchart LR
     subgraph core["핵심 노드"]
-        term["Term<br/>역사 용어 (61,598)"]
-        event["Event<br/>역사 사건 (600)"]
-        person["Person<br/>인물 (56,403)"]
+        term["Term<br/>역사 용어 (63,401)"]
+        event["Event<br/>역사 사건 (929)"]
+        person["Person<br/>인물 (56,727)"]
     end
 
     subgraph service["서비스 3축"]
@@ -800,7 +800,7 @@ flowchart TB
 
 ```mermaid
 flowchart LR
-    subgraph node_csv["Node CSV 14개"]
+    subgraph node_csv["Node CSV 17개"]
         n1["terms.csv"]
         n2["events.csv"]
         n3["people.csv"]
@@ -815,9 +815,12 @@ flowchart LR
         n12["economic_domains.csv"]
         n13["taxonomy_facets.csv"]
         n14["search_tags.csv"]
+        n15["themes.csv"]
+        n16["eras.csv"]
+        n17["entity_types.csv"]
     end
 
-    subgraph relation_csv["Relationship CSV 25개"]
+    subgraph relation_csv["Relationship CSV 37개"]
         e1["term_has_canonical_category.csv"]
         e2["term_in_period.csv"]
         e3["term_about_country.csv"]
@@ -843,11 +846,23 @@ flowchart LR
         e23["canonical_category_about_economic_domain.csv"]
         e24["canonical_category_about_taxonomy_facet.csv"]
         e25["region_subregion_of.csv"]
+        e26["canonical_category_has_theme.csv"]
+        e27["term_has_theme.csv"]
+        e28["event_has_theme.csv"]
+        e29["person_has_theme.csv"]
+        e30["period_part_of_era.csv"]
+        e31["term_in_era.csv"]
+        e32["event_in_era.csv"]
+        e33["person_in_era.csv"]
+        e34["term_has_entity_type.csv"]
+        e35["term_refers_to_person.csv"]
+        e36["term_refers_to_event.csv"]
+        e37["person_has_evidence_url.csv"]
     end
 
     subgraph optional_relation_csv["Optional relationship CSV 2개"]
         opt_e01["event_about_region.csv<br/>현재 0행이라 미생성"]
-        opt_e02["event_about_economic_domain.csv<br/>현재 0행이라 미생성"]
+        opt_e02["event_about_economic_domain.csv<br/>현재 0행이라 미생성<br/>import Cypher에 LOAD 블록 없음"]
     end
 
     import_nodes["history_graph_import_nodes.cypher"]
@@ -856,7 +871,6 @@ flowchart LR
 
     node_csv --> import_nodes --> graph
     relation_csv --> import_relations --> graph
-    optional_relation_csv -.-> import_relations
 ```
 
 ---

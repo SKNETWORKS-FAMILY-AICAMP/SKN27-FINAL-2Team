@@ -1,8 +1,10 @@
 from pathlib import Path
 import os
+import time
 
 from dotenv import load_dotenv
 from neo4j import GraphDatabase
+from neo4j.exceptions import TransientError
 
 
 def load_neo4j_config(project_root):
@@ -122,6 +124,20 @@ def load_schema_paths(schema_dir):
     return schema_paths
 
 
+def load_statement_max_retries():
+    raw_max_retries = os.getenv("NEO4J_STATEMENT_MAX_RETRIES")
+
+    if not raw_max_retries:
+        return 5
+
+    max_retries = int(raw_max_retries)
+
+    if max_retries < 0:
+        raise ValueError("NEO4J_STATEMENT_MAX_RETRIES must be 0 or greater")
+
+    return max_retries
+
+
 def run_statement(session, statement, import_dir):
     if should_skip_optional_import(statement, import_dir):
         return {
@@ -130,9 +146,25 @@ def run_statement(session, statement, import_dir):
             "records": [],
         }
 
-    result = session.run(statement)
-    records = [record.data() for record in result]
-    result.consume()
+    max_retries = load_statement_max_retries()
+
+    for attempt_index in range(max_retries + 1):
+        try:
+            result = session.run(statement)
+            records = [record.data() for record in result]
+            result.consume()
+            break
+        except TransientError as transient_error:
+            if attempt_index >= max_retries:
+                raise
+
+            wait_seconds = 2 ** attempt_index
+            print(
+                f"transient error ({transient_error.code}), "
+                f"retry {attempt_index + 1}/{max_retries} "
+                f"after {wait_seconds}s"
+            )
+            time.sleep(wait_seconds)
 
     return {
         "executed": True,
