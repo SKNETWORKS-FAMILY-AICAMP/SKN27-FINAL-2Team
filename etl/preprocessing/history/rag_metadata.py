@@ -166,6 +166,12 @@ def extract_years(*texts: str) -> list[int]:
     return years[:20]
 
 
+def strip_reference_section(text: str) -> str:
+    if not text:
+        return ""
+    return re.split(r"참고\s*(?:문헌|자료)", text, maxsplit=1, flags=re.IGNORECASE)[0].strip()
+
+
 def empty_chronology() -> dict:
     return {
         "era": "",
@@ -210,6 +216,8 @@ def build_chronology(
     content: str = "",
     extra_text: str = "",
 ) -> dict:
+    content = strip_reference_section(content)
+    extra_text = strip_reference_section(extra_text)
     years = extract_years(title, period, category, content, extra_text)
     metadata_text = " ".join(text for text in (period, category, title, extra_text) if text)
     chronology = infer_era(metadata_text, content[:1200])

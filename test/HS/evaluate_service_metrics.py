@@ -102,8 +102,8 @@ def evaluate_search_accuracy(questions: list[dict], top_k: int, limit: int | Non
     score = hits / len(selected) if selected else 0.0
     return Metric(
         "검색 정확도",
-        "Similarity Score 기반 적합성",
-        f"{score:.2f}",
+        "Golden Question 키워드 기반 Top-K 적합성",
+        f"{score:.2f} ({hits}/{len(selected)})",
         "0.80 이상",
         score >= 0.80,
         "Golden Question 기반 RAG 검색 검증",
@@ -353,12 +353,12 @@ def structured_to_text(answer: dict) -> str:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Evaluate RAG, Graph, latency, and external API metrics.")
     parser.add_argument("--golden-file", type=Path, default=DEFAULT_GOLDEN)
-    parser.add_argument("--limit", type=int, default=20)
+    parser.add_argument("--limit", type=int, default=50)
     parser.add_argument("--top-k", type=int, default=5)
     parser.add_argument("--latency-limit", type=int, default=5)
     parser.add_argument("--latency-full-answer", action="store_true")
     parser.add_argument("--ragas", action="store_true")
-    parser.add_argument("--ragas-limit", type=int, default=3)
+    parser.add_argument("--ragas-limit", type=int, default=50)
     parser.add_argument("--mcp-url", action="append", default=[])
     parser.add_argument("--timeout", type=float, default=5.0)
     parser.add_argument("--out-prefix", type=Path, default=DEFAULT_OUT)

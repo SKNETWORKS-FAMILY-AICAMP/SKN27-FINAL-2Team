@@ -294,8 +294,9 @@ def search_timeline_sources(question: str, limit: int = 12) -> list[dict[str, An
         params.append(field)
     where_sql = " AND ".join(where_parts) if where_parts else "TRUE"
 
+    conn = connect_db()
     try:
-        with connect_db() as conn:
+        with conn:
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
                 cur.execute(
                     f"""
@@ -310,6 +311,8 @@ def search_timeline_sources(question: str, limit: int = 12) -> list[dict[str, An
                 rows = cur.fetchall()
     except psycopg2.Error:
         return []
+    finally:
+        conn.close()
 
     if not rows:
         return []
@@ -401,10 +404,14 @@ class PgVectorHybridRetriever:
         """
         query_params = [question, question, f"%{question}%", *params, top_k]
 
-        with connect_db() as conn:
-            with conn.cursor(cursor_factory=RealDictCursor) as cur:
-                cur.execute(sql, query_params)
-                rows = cur.fetchall()
+        conn = connect_db()
+        try:
+            with conn:
+                with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                    cur.execute(sql, query_params)
+                    rows = cur.fetchall()
+        finally:
+            conn.close()
 
         return [
             PgSearchResult(
@@ -615,12 +622,16 @@ class PgVectorHybridRetriever:
             final_limit,
         ]
 
-        with connect_db() as conn:
-            with conn.cursor(cursor_factory=RealDictCursor) as cur:
-                cur.execute("SET LOCAL hnsw.ef_search = 120")
-                cur.execute("SET LOCAL pg_trgm.similarity_threshold = 0.18")
-                cur.execute(sql, query_params)
-                rows = cur.fetchall()
+        conn = connect_db()
+        try:
+            with conn:
+                with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                    cur.execute("SET LOCAL hnsw.ef_search = 120")
+                    cur.execute("SET LOCAL pg_trgm.similarity_threshold = 0.18")
+                    cur.execute(sql, query_params)
+                    rows = cur.fetchall()
+        finally:
+            conn.close()
 
         rows = diversify_rows(rows, top_k) if generic_overview_query else rows
         results = [

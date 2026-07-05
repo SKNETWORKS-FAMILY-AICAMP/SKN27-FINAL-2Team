@@ -15,7 +15,14 @@ import re
 from pathlib import Path
 from typing import Iterable
 
-from rag_metadata import build_category_tags, build_chronology, normalize_heading, normalize_periods, split_category_path
+from rag_metadata import (
+    build_category_tags,
+    build_chronology,
+    normalize_heading,
+    normalize_periods,
+    split_category_path,
+    strip_reference_section,
+)
 
 
 SOURCE_NAME = "사료로 본 한국사"
@@ -129,8 +136,7 @@ def build_document(row: dict[str, str]) -> dict:
     toc_path = normalize_path(clean_text(row.get("목차경로")))
     korean = clean_text(row.get("국문"))
     original = clean_text(row.get("원문"))
-    explanation = clean_text(row.get("해설"))
-    references = clean_text(row.get("참고자료"))
+    explanation = strip_reference_section(clean_text(row.get("해설")))
 
     content_parts = []
     if korean:
@@ -140,7 +146,7 @@ def build_document(row: dict[str, str]) -> dict:
     if original:
         content_parts.append(f"[원문]\n{original}")
 
-    content = "\n\n".join(content_parts)
+    content = strip_reference_section("\n\n".join(content_parts))
     keywords = split_keywords(title, period, field, toc_path)
     category_path = split_category_path(toc_path)
     category_tags = build_category_tags(
@@ -174,7 +180,6 @@ def build_document(row: dict[str, str]) -> dict:
         "metadata": {
             "toc_path": toc_path,
             "markdown_file": clean_text(row.get("Markdown파일")),
-            "reference": references,
             "source_file": row.get("_source_file"),
             "period": period,
             "periods": periods,
