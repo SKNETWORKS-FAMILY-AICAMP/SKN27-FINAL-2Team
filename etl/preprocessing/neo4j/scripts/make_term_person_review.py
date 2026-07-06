@@ -45,6 +45,7 @@ def parse_args(default_paths):
 
 def build_review_columns():
     return [
+        "review_type",
         "name",
         "term_id",
         "term_hanja",
@@ -156,7 +157,7 @@ def filter_candidates_by_reign_year(candidates):
 
 
 def filter_single_name_candidates(candidates):
-    name_counts = candidates.groupby("name")["person_id"].transform("count")
+    name_counts = candidates.groupby("name")["person_id"].transform("nunique")
 
     return candidates[name_counts.gt(1)].copy()
 
@@ -174,6 +175,19 @@ def filter_empty_year_candidates_with_complete_group_candidate(candidates):
     return candidates[
         has_complete_person_year | ~group_has_complete_person_year
     ].copy()
+
+
+def add_review_type(candidates):
+    group_columns = ["term_id", "name", "hanja_term", "term_desc_preview"]
+    group_person_counts = candidates.groupby(group_columns)["person_id"].transform(
+        "nunique"
+    )
+
+    candidates = candidates.copy()
+    candidates["review_type"] = "TERM_PERSON"
+    candidates.loc[group_person_counts.gt(1), "review_type"] = "PERSON_DUPLICATE"
+
+    return candidates
 
 
 def build_review_candidates(terms, people):
@@ -222,6 +236,7 @@ def build_review_candidates(terms, people):
 
     candidates["person_name"] = candidates["base_name"]
     candidates["term_desc_preview"] = candidates["description"].str.slice(0, 50)
+    candidates = add_review_type(candidates)
     candidates["review_status"] = "PENDING"
     candidates["note"] = ""
     candidates = candidates.rename(
