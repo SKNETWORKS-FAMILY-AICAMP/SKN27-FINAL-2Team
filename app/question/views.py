@@ -11,6 +11,8 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 from analytics.service.analysis_snapshot import create_session_snapshot
+from analytics.service.display import build_planner_summary
+from analytics.service.studyplan import get_study_plan_info
 from .models import QuestionOptions, Questions, SolveRecords, SolveSessions
 from .serializers import (
     FilterOptionsResponse,
@@ -87,7 +89,22 @@ QUESTION_SUBTYPE_FILTER_VALUES = ["개념", "사료", "연표", "인물", "지�
 
 # 문제 생성 조건 페이지를 렌더링한다.
 def question_create(request):
-    return render(request, "question/create.html")
+    planner_summary = {
+        "today_key": timezone.localdate().isoformat(),
+        "data": {"plansByDate": {}, "completedKeys": [], "plannedKeys": [], "progressByDate": {}},
+    }
+    if request.user.is_authenticated:
+        study_plan = get_study_plan_info(request.user.user_id)
+        planner_summary = build_planner_summary(study_plan, timezone.localdate())
+
+    return render(
+        request,
+        "question/create.html",
+        {
+            "planner_summary": planner_summary,
+            "planner_data": planner_summary["data"],
+        },
+    )
 
 
 # 문제 풀이 페이지를 렌더링한다.
