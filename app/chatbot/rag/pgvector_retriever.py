@@ -470,20 +470,10 @@ class PgVectorHybridRetriever:
         params: list[Any] = []
         if generic_overview_query and focus_terms:
             term_sql = "(title ILIKE %s OR chunk_text ILIKE %s)"
-            scope_term_sql = "title ILIKE %s"
-            honorific_alias_query = (
-                len(focus_terms) == 2
-                and any(focus_terms[0].endswith(suffix) and focus_terms[1] == focus_terms[0][: -len(suffix)] for suffix in HONORIFIC_SUFFIXES)
-            )
-            if len(focus_terms) > 1 and not honorific_alias_query:
-                where_parts.append(f"({scope_term_sql} AND (" + " OR ".join(term_sql for _ in focus_terms[1:]) + "))")
-                params.append(f"%{focus_terms[0]}%")
-                for term in focus_terms[1:]:
-                    params.extend([f"%{term}%", f"%{term}%"])
-            else:
-                where_parts.append("(" + " OR ".join(term_sql for _ in focus_terms) + ")")
-                for term in focus_terms:
-                    params.extend([f"%{term}%", f"%{term}%"])
+            # Always connect focus terms using OR to prevent strict filtering of comparison/complex queries
+            where_parts.append("(" + " OR ".join(term_sql for _ in focus_terms) + ")")
+            for term in focus_terms:
+                params.extend([f"%{term}%", f"%{term}%"])
         where_sql = " AND ".join(where_parts)
 
         focus_match_sql = "FALSE"
