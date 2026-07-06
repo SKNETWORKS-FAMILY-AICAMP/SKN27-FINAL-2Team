@@ -98,9 +98,11 @@
         <button class="outline-button" id="prevQuestion" type="button">이전 문제</button>
         <button class="outline-button" id="nextQuestion" type="button">다음 문제</button>
         <button class="primary-button" id="askChatbot" type="button">챗봇에게 질문</button>
+        {% if result_mode != 'diagnostic' %}
         <button class="primary-button" id="noteSaveButton" type="button">노트에 저장</button>
         <a class="outline-button" href="/user/wrong-note/">저장 문제 보기</a>
         <span class="note-save-status" id="noteSaveStatus" aria-live="polite"></span>
+        {% endif %}
       </nav>
     </section>
 
@@ -449,6 +451,7 @@
     }
 
     function renderNoteSaveState(message = "") {
+      if (!noteSaveButton || RESULT_MODE === "diagnostic") return;
       const questionId = questionIdOf(currentIndex);
       const isSaved = questionId !== null && savedQuestionIds.has(questionId);
       noteSaveButton.textContent = isSaved ? "저장됨" : "노트에 저장";
@@ -533,7 +536,8 @@
       sessionStorage.setItem("chatbotQuestionContext", buildChatContext(questions[currentIndex]));
       window.location.href = `/chatbot/?from=${RESULT_MODE}-result`;
     });
-    noteSaveButton.addEventListener("click", async () => {
+    noteSaveButton?.addEventListener("click", async () => {
+      if (RESULT_MODE === "diagnostic") return;
       const sessionId = resultPayload?.sessionId;
       const questionId = questionIdOf(currentIndex);
       if (!sessionId || !questionId) {

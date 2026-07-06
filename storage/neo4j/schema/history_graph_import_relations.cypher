@@ -146,6 +146,17 @@ CALL (row) {
     SET r += row
 } IN TRANSACTIONS OF 1000 ROWS;
 
+LOAD CSV WITH HEADERS FROM 'file:///relations/term_mentions_person.csv' AS row
+CALL (row) {
+    MATCH (start:Term {term_id: row.start_term_id})
+    MATCH (target:Person {person_id: row.end_person_id})
+    MERGE (start)-[r:MENTIONS_PERSON {
+        source_field: row.source_field,
+        matched_name: row.matched_name
+    }]->(target)
+    SET r += row
+} IN TRANSACTIONS OF 1000 ROWS;
+
 LOAD CSV WITH HEADERS FROM 'file:///relations/term_refers_to_event.csv' AS row
 CALL (row) {
     MATCH (start:Term {term_id: row.start_term_id})
@@ -161,17 +172,6 @@ CALL (row) {
     MERGE (start)-[r:HAS_SOURCE_URL {source_column: row.source_column}]->(target)
     SET r += row
 } IN TRANSACTIONS OF 1000 ROWS;
-
-LOAD CSV WITH HEADERS FROM 'file:///relations/person_has_evidence_url.csv' AS row
-CALL (row) {
-    MATCH (start:Person {person_id: row.start_person_id})
-    MATCH (target:SourceUrl {source_url_id: row.end_source_url_id})
-    MERGE (start)-[r:HAS_EVIDENCE_URL {
-        evidence_role: row.evidence_role,
-        raw_relation_type: row.raw_relation_type
-    }]->(target)
-    SET r += row
-} IN TRANSACTIONS OF 250 ROWS;
 
 LOAD CSV WITH HEADERS FROM 'file:///relations/canonical_category_subcategory_of.csv' AS row
 CALL (row) {

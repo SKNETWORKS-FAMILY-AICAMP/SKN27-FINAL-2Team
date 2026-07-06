@@ -1,0 +1,101 @@
+{
+  "input": {
+    "train": "ai/ml/output/split_topic_merged_v1/train_features_topic_merged_v1.json",
+    "test_answer": "ai/ml/output/split_topic_merged_v1/test_answer_topic_merged_v1.json"
+  },
+  "target_columns": [
+    "era",
+    "topic_train"
+  ],
+  "split_counts": {
+    "train": 1200,
+    "test": 400
+  },
+  "assets": {
+    "era": {
+      "label_to_id": {
+        "개항기": 0,
+        "고려": 1,
+        "고조선": 2,
+        "남북국 시대": 3,
+        "삼국 시대": 4,
+        "선사 시대": 5,
+        "일제 강점기": 6,
+        "조선": 7,
+        "초기 국가": 8,
+        "현대": 9
+      },
+      "id_to_label": {
+        "0": "개항기",
+        "1": "고려",
+        "2": "고조선",
+        "3": "남북국 시대",
+        "4": "삼국 시대",
+        "5": "선사 시대",
+        "6": "일제 강점기",
+        "7": "조선",
+        "8": "초기 국가",
+        "9": "현대"
+      },
+      "class_weights": {
+        "개항기": 0.944882,
+        "고려": 0.689655,
+        "고조선": 6.0,
+        "남북국 시대": 1.5,
+        "삼국 시대": 0.895522,
+        "선사 시대": 5.0,
+        "일제 강점기": 1.263158,
+        "조선": 0.316623,
+        "초기 국가": 2.307692,
+        "현대": 1.043478
+      },
+      "train_counts": {
+        "조선": 379,
+        "고려": 174,
+        "삼국 시대": 134,
+        "개항기": 127,
+        "현대": 115,
+        "일제 강점기": 95,
+        "남북국 시대": 80,
+        "초기 국가": 52,
+        "선사 시대": 24,
+        "고조선": 20
+      }
+    },
+    "topic_train": {
+      "label_to_id": {
+        "문화": 0,
+        "사건": 1,
+        "인물": 2,
+        "정치": 3,
+        "제도": 4
+      },
+      "id_to_label": {
+        "0": "문화",
+        "1": "사건",
+        "2": "인물",
+        "3": "정치",
+        "4": "제도"
+      },
+      "class_weights": {
+        "문화": 1.621622,
+        "사건": 0.705882,
+        "인물": 0.789474,
+        "정치": 0.882353,
+        "제도": 1.764706
+      },
+      "train_counts": {
+        "사건": 340,
+        "인물": 304,
+        "정치": 272,
+        "문화": 148,
+        "제도": 136
+      }
+    }
+  },
+  "outputs": {
+    "train_jsonl": "ai/ml/output/split_topic_merged_v1/ml_han_topic_merged_weighted_train_v1.jsonl",
+    "test_jsonl": "ai/ml/output/split_topic_merged_v1/ml_han_topic_merged_weighted_test_v1.jsonl",
+    "report_md": "ai/ml/output/split_topic_merged_v1/ml_han_topic_merged_class_weights_v1.md"
+  }
+}

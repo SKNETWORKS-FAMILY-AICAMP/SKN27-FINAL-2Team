@@ -789,54 +789,6 @@ def build_person_era_relations(people, person_involved_in_event, event_in_era, e
     ]
 
 
-def build_person_evidence_url_relations(person_relations, source_urls):
-    # 인물 관계의 evidence_url을 SourceUrl 노드와 연결해 고립 URL을 해소한다.
-    # 대칭 관계 dedup 이전의 normalized 원본을 사용해 양방향 URL을 모두 수집하고,
-    # 관계의 양쪽 인물 모두에서 근거 URL을 탐색할 수 있게 연결한다.
-    url_id_lookup = dict(zip(source_urls["url"], source_urls["source_url_id"]))
-
-    evidence_data = person_relations.dropna(subset=["evidence_url"])[
-        ["person_id", "related_person_id", "relation_type", "evidence_url"]
-    ].copy()
-    evidence_data = evidence_data.rename(
-        columns={"relation_type": "raw_relation_type"}
-    )
-
-    start_rows = evidence_data[
-        ["person_id", "raw_relation_type", "evidence_url"]
-    ].copy()
-    start_rows["evidence_role"] = "START_PERSON"
-
-    end_rows = evidence_data[
-        ["related_person_id", "raw_relation_type", "evidence_url"]
-    ].rename(columns={"related_person_id": "person_id"})
-    end_rows["evidence_role"] = "RELATED_PERSON"
-
-    relation_data = pd.concat([start_rows, end_rows], ignore_index=True)
-    relation_data["end_source_url_id"] = relation_data["evidence_url"].map(url_id_lookup)
-    relation_data = relation_data.dropna(subset=["end_source_url_id"])
-    relation_data["relation_type"] = "HAS_EVIDENCE_URL"
-    relation_data["source_column"] = "person_relations.evidence_url"
-    relation_data = relation_data.rename(
-        columns={"person_id": "start_person_id", "evidence_url": "url"}
-    )
-    relation_data = relation_data.drop_duplicates(
-        subset=["start_person_id", "end_source_url_id", "evidence_role", "raw_relation_type"]
-    )
-
-    return relation_data[
-        [
-            "start_person_id",
-            "end_source_url_id",
-            "relation_type",
-            "source_column",
-            "evidence_role",
-            "raw_relation_type",
-            "url",
-        ]
-    ]
-
-
 def build_entity_type_nodes(entity_type_seed):
     require_columns(
         entity_type_seed,
@@ -963,10 +915,6 @@ def build_outputs(inputs):
             event_in_era,
             era_nodes,
         ),
-        "person_has_evidence_url": build_person_evidence_url_relations(
-            inputs["person_relations"],
-            inputs["source_urls"],
-        ),
         "term_has_entity_type": build_term_entity_type_relations(
             inputs["term_has_canonical_category"],
             inputs["entity_type_seed"],
@@ -977,8 +925,20 @@ def build_outputs(inputs):
     return node_outputs, relation_outputs
 
 
+def build_discontinued_relation_output_names():
+    return {
+        "person_has_evidence_url",
+    }
+
+
+def remove_stale_output_file(output_path):
+    if output_path.exists():
+        output_path.unlink()
+
+
 def write_or_print_outputs(args, node_outputs, relation_outputs):
     output_files = []
+    discontinued_output_files = []
 
     for output_name, data_frame in node_outputs.items():
         output_files.append(
@@ -994,10 +954,24 @@ def write_or_print_outputs(args, node_outputs, relation_outputs):
             )
         )
 
+    for output_name in build_discontinued_relation_output_names():
+        discontinued_output_files.append(
+            (
+                f"{output_name}.csv",
+                pd.DataFrame(),
+                args.relations_dir / f"{output_name}.csv",
+            )
+        )
+
     if args.save:
         for file_name, data_frame, output_path in output_files:
             save_csv(data_frame, output_path)
             print_summary(file_name, data_frame)
+
+        for file_name, data_frame, output_path in discontinued_output_files:
+            remove_stale_output_file(output_path)
+            print_summary(file_name, data_frame)
+            print(f"removed_discontinued_output: {output_path}")
 
         print(f"nodes_dir: {args.nodes_dir}")
         print(f"relations_dir: {args.relations_dir}")
@@ -1006,6 +980,10 @@ def write_or_print_outputs(args, node_outputs, relation_outputs):
         for file_name, data_frame, output_path in output_files:
             print_summary(file_name, data_frame)
             print(f"planned_path: {output_path}")
+
+        for file_name, data_frame, output_path in discontinued_output_files:
+            print_summary(file_name, data_frame)
+            print(f"planned_remove_discontinued_output: {output_path}")
 
         print("dry_run: no files saved. Use --save to write CSV files.")
 
