@@ -123,7 +123,7 @@
       const hasInProgress = await hasInProgressDiagnosisSession();
       if (hasInProgress) {
         const shouldCreateNew = confirm(
-          "풀다 만 진단평가가 있습니다. 새 진단평가를 시작하면 기존 진행 기록은 삭제됩니다.\n저장된 진단평가는 문제 풀이 화면의 문제 불러오기에서 이어 풀 수 있습니다. 계속하시겠습니까?"
+          "풀다 만 진단평가가 있습니다. 새 진단평가를 시작하면 기존 진행 기록은 삭제됩니다. 계속하시겠습니까?"
         );
         if (!shouldCreateNew) return;
       }
