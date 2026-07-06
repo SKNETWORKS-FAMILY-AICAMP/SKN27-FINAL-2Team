@@ -12,7 +12,7 @@ from dotenv import load_dotenv
 from openai import OpenAI
 from psycopg2.extras import RealDictCursor
 
-from .rag_prototype.retriever import expand_query_tokens, tokenize
+from .query_terms import expand_query_tokens, tokenize
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
