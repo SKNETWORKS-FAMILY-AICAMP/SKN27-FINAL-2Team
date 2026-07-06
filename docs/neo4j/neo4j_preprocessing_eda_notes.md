@@ -1,4 +1,4 @@
-﻿# Neo4j 전처리 EDA 정리
+# Neo4j 전처리 EDA 정리
 
 이 문서는 `test/MK/prep_neo4j` 아래의 check 계열 노트북 하단에 정리해둔 전처리 EDA Markdown 블록을 문서화한 것이다.
 
@@ -285,7 +285,7 @@ event.csv.subject_category -> taxonomy_crosswalk.csv -> CanonicalCategory
 |---|---|---|
 | `Event` 노드 | `event_id`, `event_name`, `event_date`, `period`, `source_urls` | 사건의 기본 노드. 날짜와 시대는 파싱 전 원문도 보존한다. |
 | `SourceEventCategory` 후보 | `subject_category` | 119개 원문 분류를 토큰화해서 이벤트 전용 카테고리 사전으로 만든다. |
-| `Event - HAS_SOURCE_CATEGORY - SourceEventCategory` | `event_id`, `subject_category` | 사건과 이벤트 분류의 직접 관계. |
+| `Event - HAS_EVENT_CATEGORY - SourceEventCategory` | `event_id`, `subject_category` | 사건과 이벤트 분류의 직접 관계. |
 | `SourceEventCategory - MAPPED_TO - CanonicalCategory` 후보 | `subject_category`, `history_terms.term_lk` 기반 canonical category dictionary | 이벤트 분류와 역사용어 표준 카테고리는 매핑표로 연결한다. |
 | `Event - IN_PERIOD - Period` 후보 | `period`, `event_date` | `period`는 시대명, `event_date`는 상세 날짜/기간 파싱 후보로 사용한다. |
 | `Event - PART_OF_EVENT_GROUP - EventGroup` 후보 | `related_event` | `고려거란전쟁`처럼 여러 사건을 묶는 상위 사건군 후보로 사용한다. |

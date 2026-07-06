@@ -97,10 +97,10 @@ runner 실행 순서:
 
 | CSV | 행 수 | 생성 규칙 |
 |---|---:|---|
-| `normalized/terms.csv` | 63,401 | `term_kind=2`인 실제 용어만 남김. `term_id` 기준 중복 제거. `term_ch`는 `Term` 속성으로 보존. `term_user`, `term_created`, `term_reference`, `term_attr` 등 그래프 설계에 쓰지 않는 컬럼은 제외 |
-| `normalized/events.csv` | 929 | `event_id` 기준 중복 제거. `scope`, `person_count`, `detail_url` 제거. `detail_url`은 event별 `source_urls`로 합침 |
-| `normalized/event_relations.csv` | 7,249 | `event_id`, `person_id`, `relation_type`이 모두 같은 경우 중복 제거. `detail_url`은 `source_urls`로 합침. `scope`, 비어 있는 관련 사건/evidence 컬럼은 제외 |
-| `normalized/person_relations.csv` | 211,389 | `person_id`, `related_person_id`, `relation_type` 기준 중복 제거. 인물 관계 검수에 필요한 `related_*`, `related_count`, `evidence_url`, `detail_url`은 보존 |
+| `normalized/terms.csv` | 61,598 | `term_kind=2`인 실제 용어만 남김. `term_id` 기준 중복 제거. `term_ch`는 `Term` 속성으로 보존. `term_user`, `term_created`, `term_reference`, `term_attr` 등 그래프 설계에 쓰지 않는 컬럼은 제외 |
+| `normalized/events.csv` | 600 | `event_id` 기준 중복 제거. `scope`, `person_count`, `detail_url` 제거. `detail_url`은 event별 `source_urls`로 합침 |
+| `normalized/event_relations.csv` | 6,918 | `event_id`, `person_id`, `relation_type`이 모두 같은 경우 중복 제거. `detail_url`은 `source_urls`로 합침. `scope`, 비어 있는 관련 사건/evidence 컬럼은 제외 |
+| `normalized/person_relations.csv` | 206,507 | `person_id`, `related_person_id`, `relation_type` 기준 중복 제거. 인물 관계 검수에 필요한 `related_*`, `related_count`, `evidence_url`, `detail_url`은 보존 |
 
 정규화 단계에서 URL을 바로 버리지 않는 이유는 이후 `SourceUrl` 노드로 분리해 Web RAG/Tavily 연계 후보로 쓸 수 있기 때문이다.
 
@@ -148,7 +148,7 @@ seed가 필요한 이유:
 | `source_event_category_dictionary.csv` | 53 | `events.subject_category`를 쉼표/줄바꿈 기준으로 분리해 원천 이벤트 분류 사전 생성 |
 | `period_dictionary.csv` | 30 | `terms.term_times`, `events.period`의 시대명을 수집한 뒤 `period_seed.csv`로 순서/기간/범위 확장 가능 여부 보강 |
 | `relation_type_dictionary.csv` | 16 | `person_relations.relation_type` 빈도에 `relation_type_seed.csv`를 merge해서 정규화 관계 사전 생성 |
-| `source_url_dictionary.csv` | 79,693 | events, event_relations, person_relations의 URL을 모두 모아 중복 제거. RAG 후보 상태값 포함 |
+| `source_url_dictionary.csv` | 57,412 | events, event_relations의 `source_urls`와 person_relations의 `detail_url`만 모아 중복 제거. RAG 후보 상태값 포함 |
 
 ### 5.2 2차 dictionary
 
@@ -169,7 +169,7 @@ seed가 필요한 이유:
 | Staging CSV | 행 수 | 역할 |
 |---|---:|---|
 | `term_canonical_category_relation.csv` | 61,697 | 용어가 직접 속한 leaf 표준 카테고리 관계 후보 |
-| `event_source_category_relation.csv` | 1,165 | 사건이 가진 원천 이벤트 분류 관계 후보 |
+| `event_source_category_relation.csv` | 713 | 사건이 가진 원천 이벤트 분류 관계 후보 |
 | `event_date_parse.csv` | 703 | `event_date`에서 시작/종료 연도, 월, 왕대 표현, 파싱 상태 추출 |
 | `term_year_parse.csv` | 61,598 | `term_year`에서 시작/종료 연도, precision, 파싱 상태 추출. 최종 `nodes/terms.csv`에 병합 |
 
@@ -221,13 +221,13 @@ flowchart TD
 
 | Node CSV | Label | 행 수 | ID | 의미 |
 |---|---|---:|---|---|
-| `terms.csv` | `Term` | 63,401 | `term_id` | 역사 용어. 이름, 한자, 설명, 원문 시대/연도/카테고리 텍스트 보존 |
-| `events.csv` | `Event` | 929 | `event_id` | 역사 사건. 원천 분류, 시대, 날짜 파싱 결과, 관련 사건명 포함 |
-| `people.csv` | `Person` | 56,727 | `person_id` | 사건 참여자와 인물 관계 양쪽 인물을 합친 인물 노드 |
+| `terms.csv` | `Term` | 61,598 | `term_id` | 역사 용어. 이름, 한자, 설명, 원문 시대/연도/카테고리 텍스트 보존 |
+| `events.csv` | `Event` | 600 | `event_id` | 역사 사건. 원천 분류, 시대, 날짜 파싱 결과, 관련 사건명 포함 |
+| `people.csv` | `Person` | 56,403 | `person_id` | 사건 참여자와 인물 관계 양쪽 인물을 합친 인물 노드 |
 | `canonical_categories.csv` | `CanonicalCategory` | 400 | `category_id` | `history_terms.term_lk` 기반 표준 카테고리 |
 | `source_event_categories.csv` | `SourceEventCategory` | 53 | `event_category_id` | ITKC 이벤트 원천 분류 |
 | `periods.csv` | `Period` | 30 | `period_id` | 시대/기간 노드. 범위 확장 순서 정보 포함 |
-| `source_urls.csv` | `SourceUrl` | 79,693 | `source_url_id` | 출처 URL. RAG 수집 후보 |
+| `source_urls.csv` | `SourceUrl` | 57,412 | `source_url_id` | 출처 URL. RAG 수집 후보 |
 | `event_groups.csv` | `EventGroup` | 32 | `event_group_id` | `related_event`를 묶은 사건 그룹 |
 | `event_facets.csv` | `EventFacet` | 53 | `event_facet_id` | 전쟁, 정치, 제도 등 이벤트 의미 facet |
 | `countries.csv` | `Country` | 5 | `country_id` | 국가/정치체 의미 축 |
@@ -257,9 +257,9 @@ flowchart TD
 ```mermaid
 flowchart LR
     %% ===== 핵심 노드 =====
-    Term["Term<br/>역사 용어 (63,401)"]
-    Event["Event<br/>역사 사건 (929)"]
-    Person["Person<br/>인물 (56,727)"]
+    Term["Term<br/>역사 용어 (61,598)"]
+    Event["Event<br/>역사 사건 (600)"]
+    Person["Person<br/>인물 (56,403)"]
 
     %% ===== 서비스 3축 =====
     Theme["Theme<br/>주제 10개<br/>사건·인물·정치·제도·문화<br/>사회·군사·경제·사상종교·외교"]
@@ -280,16 +280,17 @@ flowchart LR
     Econ["EconomicDomain<br/>경제 분야 (16)"]
 
     %% ===== 출처/그룹 =====
-    Url["SourceUrl<br/>출처 URL (79,693)"]
+    Url["SourceUrl<br/>출처 URL (57,412)"]
     EventGroup["EventGroup<br/>사건군 (32)"]
 
     %% ----- Term에서 나가는 관계 -----
-    Term -->|"HAS_THEME · 주제 (48,624)"| Theme
+    Term -->|"HAS_THEME · 주제 (58,605)"| Theme
     Term -->|"IN_ERA · 표준 시대 (54,125)"| Era
     Term -->|"HAS_ENTITY_TYPE · 실체 유형 (20,662)"| EntityType
     Term -->|"HAS_CATEGORY · 카테고리 (61,697)"| Category
     Term -->|"IN_PERIOD · 원본 시대 (65,358)"| Period
-    Term -->|"REFERS_TO · 가리키는 인물 (3,720)"| Person
+    Term -->|"REFERS_TO · 가리키는 인물 (2,971)"| Person
+    Term -->|"MENTIONS_PERSON · 설명문 언급 (3,114)"| Person
     Term -->|"REFERS_TO · 가리키는 사건 (13)"| Event
     Term -->|"ABOUT_COUNTRY (1,620)"| Country
     Term -->|"ABOUT_REGION (82)"| Region
@@ -299,7 +300,7 @@ flowchart LR
     %% ----- Event에서 나가는 관계 -----
     Event -->|"HAS_THEME · 주제 (1,405)"| Theme
     Event -->|"IN_ERA · 표준 시대 (600)"| Era
-    Event -->|"HAS_EVENT_CATEGORY · 원본 분류 (1,165)"| SourceCat
+    Event -->|"HAS_EVENT_CATEGORY · 원본 분류 (713)"| SourceCat
     Event -->|"HAS_CATEGORY · 표준 분류 (692)"| Category
     Event -->|"HAS_EVENT_FACET (713)"| EventFacet
     Event -->|"IN_PERIOD · 원본 시대 (600)"| Period
@@ -311,12 +312,11 @@ flowchart LR
     Event -.->|"ABOUT_REGION / ABOUT_ECONOMIC_DOMAIN<br/>optional · 현재 0행 미생성"| Region
 
     %% ----- Person에서 나가는 관계 -----
-    Person -->|"INVOLVED_IN · 사건 참여 (7,249)"| Event
+    Person -->|"INVOLVED_IN · 사건 참여 (6,918)"| Event
     Person -->|"RELATED_TO · 인물 관계 (184,056)"| Person
-    Person -->|"HAS_THEME · 주제 (60,712)"| Theme
+    Person -->|"HAS_THEME · 주제 (60,553)"| Theme
     Person -->|"IN_ERA · 시대 (23,214)"| Era
     Person -->|"HAS_SOURCE_URL · 상세 (56,212)"| Url
-    Person -->|"HAS_EVIDENCE_URL · 관계 근거 (326,699)"| Url
 
     %% ----- 분류/시대 체계 내부 관계 -----
     Category -->|"SUBCATEGORY_OF · 하위→상위 (335)"| Category
@@ -340,9 +340,10 @@ flowchart LR
 | `term_about_region.csv` | `ABOUT_REGION` | 82 | `Term -> Region` | 용어의 category가 region crosswalk에 걸리면 연결 |
 | `term_about_economic_domain.csv` | `ABOUT_ECONOMIC_DOMAIN` | 2,894 | `Term -> EconomicDomain` | 용어의 category가 경제 분야 crosswalk에 걸리면 연결 |
 | `term_about_taxonomy_facet.csv` | `ABOUT_TAXONOMY_FACET` | 22,962 | `Term -> TaxonomyFacet` | 용어의 category가 중간 taxonomy facet에 속하면 연결 |
-| `term_refers_to_person.csv` | `REFERS_TO` | 3,720 | `Term -> Person` | 이름이 양쪽에서 유일하면 `EXACT_NAME`, 동명이 있으면 이름+한자 조합이 유일할 때만 `NAME_HANJA`로 연결. 그 외 동명 케이스는 관계를 만들지 않음 |
+| `term_refers_to_person.csv` | `REFERS_TO` | 2,971 | `Term -> Person` | 이름이 양쪽에서 유일하면 `EXACT_NAME`, 동명이 있으면 이름+한자 조합이 유일할 때만 `NAME_HANJA`로 연결. 그 외 동명 케이스는 관계를 만들지 않음 |
+| `term_mentions_person.csv` | `MENTIONS_PERSON` | 3,114 | `Term -> Person` | 용어 설명문에서 인물명이 언급된 경우 연결. `REFERS_TO`보다 약한 보조 맥락 관계 |
 | `term_refers_to_event.csv` | `REFERS_TO` | 13 | `Term -> Event` | 용어명과 사건명이 양쪽에서 유일하게 일치하는 경우만 연결 |
-| `event_has_source_category.csv` | `HAS_EVENT_CATEGORY` | 1,165 | `Event -> SourceEventCategory` | 이벤트 원천 분류를 원형 그대로 보존 |
+| `event_has_source_category.csv` | `HAS_EVENT_CATEGORY` | 713 | `Event -> SourceEventCategory` | 이벤트 원천 분류를 원형 그대로 보존 |
 | `event_has_canonical_category.csv` | `HAS_CATEGORY` | 692 | `Event -> CanonicalCategory` | `taxonomy_crosswalk.csv`에서 표준 카테고리 매핑이 있는 이벤트만 연결 |
 | `event_has_facet.csv` | `HAS_EVENT_FACET` | 713 | `Event -> EventFacet` | source event category를 event facet seed 기준으로 연결 |
 | `event_in_period.csv` | `IN_PERIOD` | 600 | `Event -> Period` | `events.period`를 period dictionary로 매칭 |
@@ -351,8 +352,8 @@ flowchart LR
 | `event_has_search_tag.csv` | `HAS_SEARCH_TAG` | 2,811 | `Event -> SearchTag` | 이벤트가 가진 source category, canonical category, facet, 국가/지역/경제/taxonomy facet을 검색 태그로 통합 연결 |
 | `event_about_country.csv` | `ABOUT_COUNTRY` | 2 | `Event -> Country` | 이벤트 표준 카테고리가 국가 crosswalk에 걸리면 연결 |
 | `event_about_taxonomy_facet.csv` | `ABOUT_TAXONOMY_FACET` | 714 | `Event -> TaxonomyFacet` | 이벤트 표준 카테고리가 taxonomy facet에 속하면 연결 |
-| `person_involved_in_event.csv` | `INVOLVED_IN` | 7,249 | `Person -> Event` | event_relations의 사건-인물 관계. CSV 속성 `relation_type`도 Neo4j 관계 타입과 같은 `INVOLVED_IN`으로 맞춤 |
-| `person_related_to_person.csv` | `RELATED_TO` | 184,056 | `Person -> Person` | person_relations의 인물 관계. raw/normalized relation type과 방향성 속성 보존. 대칭 관계(`is_symmetric=Y`)는 무방향 쌍 기준으로 한 방향만 저장. 인물 이름과 detail_url은 Person 노드에 있으므로 관계 속성에서 제외 |
+| `person_involved_in_event.csv` | `INVOLVED_IN` | 6,918 | `Person -> Event` | event_relations의 사건-인물 관계. CSV 속성 `relation_type`도 Neo4j 관계 타입과 같은 `INVOLVED_IN`으로 맞춤 |
+| `person_related_to_person.csv` | `RELATED_TO` | 184,056 | `Person -> Person` | person_relations의 인물 관계. raw/normalized relation type, 방향성, `evidence_url` 속성 보존. 대칭 관계(`is_symmetric=Y`)는 무방향 쌍 기준으로 한 방향만 저장. 인물 이름과 detail_url은 Person 노드에 있으므로 관계 속성에서 제외 |
 | `person_has_source_url.csv` | `HAS_SOURCE_URL` | 56,212 | `Person -> SourceUrl` | person detail URL을 출처 URL 노드에 연결 |
 | `canonical_category_subcategory_of.csv` | `SUBCATEGORY_OF` | 335 | `CanonicalCategory -> CanonicalCategory` | 표준 카테고리 부모-자식 관계. 국가/지역 의미 축으로 분리한 경로는 계층 관계에서 제외 |
 | `source_category_mapped_to_canonical_category.csv` | `MAPPED_TO_CATEGORY` | 45 | `SourceEventCategory -> CanonicalCategory` | 원천 이벤트 분류와 표준 카테고리 crosswalk |
@@ -361,14 +362,13 @@ flowchart LR
 | `canonical_category_about_economic_domain.csv` | `ABOUT_ECONOMIC_DOMAIN` | 51 | `CanonicalCategory -> EconomicDomain` | 표준 카테고리와 경제 분야 축 연결 |
 | `canonical_category_about_taxonomy_facet.csv` | `ABOUT_TAXONOMY_FACET` | 276 | `CanonicalCategory -> TaxonomyFacet` | 표준 카테고리와 중간 taxonomy facet 연결 |
 | `region_subregion_of.csv` | `SUBREGION_OF` | 6 | `Region -> Region` | 동남아시아, 유럽 등이 기타지역의 하위 region이면 연결 |
-| `canonical_category_has_theme.csv` | `HAS_THEME` | 30 | `CanonicalCategory -> Theme` | 표준 카테고리를 서비스 주제 10개에 연결. 인명 세부 카테고리는 인물 주제와 내용 주제를 함께 가질 수 있음 |
+| `canonical_category_has_theme.csv` | `HAS_THEME` | 32 | `CanonicalCategory -> Theme` | 표준 카테고리를 서비스 주제 10개에 연결. 인명 세부 카테고리는 인물 주제와 내용 주제를 함께 가질 수 있음 |
 | `period_part_of_era.csv` | `PART_OF_ERA` | 23 | `Period -> Era` | 기존 시대 노드(표기 변형 포함)를 표준 시대 10개로 통합 연결 |
 | `term_has_entity_type.csv` | `HAS_ENTITY_TYPE` | 20,662 | `Term -> EntityType` | 인명/서명/문화재/지명 카테고리 용어를 실체 유형 축으로 연결 |
 | `term_in_era.csv` | `IN_ERA` | 54,125 | `Term -> Era` | 소스 3종: `IN_PERIOD -> PART_OF_ERA` 펼침(PERIOD), 키워드 override(KEYWORD_OVERRIDE), 설명문 기반 검수 통과분(DESC_KEYWORD) |
 | `event_in_era.csv` | `IN_ERA` | 600 | `Event -> Era` | `event_in_period.csv`와 `period_part_of_era.csv`를 조인해 사건의 표준 Era 직접 관계 생성 |
 | `person_in_era.csv` | `IN_ERA` | 23,214 | `Person -> Era` | 생몰년과 Era 연도 범위 겹침을 우선 적용하고, 생몰년이 없는 인물은 참여 사건 Era로 보조 추론 |
-| `person_has_theme.csv` | `HAS_THEME` | 60,712 | `Person -> Theme` | 모든 Person은 인물 주제에 연결하고, 사건 참여/인명 세부 카테고리로 내용 주제를 보조 상속 |
-| `person_has_evidence_url.csv` | `HAS_EVIDENCE_URL` | 326,699 | `Person -> SourceUrl` | 인물 관계의 `evidence_url`을 관계 양쪽 인물에서 탐색 가능하게 연결 |
+| `person_has_theme.csv` | `HAS_THEME` | 60,553 | `Person -> Theme` | 모든 Person은 인물 주제에 연결하고, 사건 참여/인명 세부 카테고리로 내용 주제를 보조 상속 |
 
 ### 8.1 비어 있는 optional 관계를 생성하지 않는 이유
 
@@ -529,7 +529,6 @@ SET r += row
 | `event_has_search_tag.csv` | `source_node_type`, `source_node_id`, `source_relation` |
 | `person_involved_in_event.csv` | `event_person_relation_id` |
 | `person_related_to_person.csv` | `person_relation_id` |
-| `person_has_evidence_url.csv` | `evidence_role`, `raw_relation_type` |
 
 `event_about_region.csv`, `event_about_economic_domain.csv`는 현재 0행이므로 최종 CSV도 만들지 않고 import Cypher에도 LOAD 블록을 두지 않는다. 따라서 `history_graph_import_relations.cypher`를 직접 실행해도 존재하지 않는 optional CSV 때문에 실패하지 않는다. `load_schema.py`의 optional skip 로직은 이후 해당 블록을 다시 추가할 경우를 대비한 방어 장치로 남아 있다.
 
@@ -623,12 +622,13 @@ docker compose -f storage/neo4j/docker-compose.yml up -d
 - `Person - INVOLVED_IN - Event`
 - `Person - RELATED_TO - Person`
 - `Person - HAS_SOURCE_URL - SourceUrl`
+- 인물 관계 근거 URL은 `Person - RELATED_TO - Person`의 `evidence_url` 속성
 
 인물 관계 방향과 의미는 관계 속성으로 확인한다.
 
 ### 11.4 RAG/Web RAG 연계
 
-`SourceUrl`은 graph 자체의 출처 노드이면서 Web RAG 후보 목록이다.
+`SourceUrl`은 사건 URL과 인물 상세 URL의 출처 노드이면서 Web RAG 후보 목록이다.
 
 - `use_for_rag=Y`: RAG 수집 후보
 - `fetch_status=PENDING`: 아직 실제 fetch 여부 미정
@@ -703,8 +703,9 @@ Tavily 같은 Web RAG 도구를 붙일 경우, 그래프에서 관련 `SourceUrl
 | `HAS_EVENT_FACET` | `Event -> EventFacet` | 사건의 의미 facet 분류 |
 | `PART_OF_EVENT_GROUP` | `Event -> EventGroup` | 사건이 상위 사건군에 속함 |
 | `INVOLVED_IN` | `Person -> Event` | 인물이 사건에 참여/관련됨 |
-| `RELATED_TO` | `Person -> Person` | 인물 간 관계. 의미는 `normalized_relation_type` 등 속성으로 보존. 대칭 관계는 한 방향만 저장하므로 무방향 패턴으로 조회 |
-| `REFERS_TO` | `Term -> Person/Event` | 용어가 가리키는 실제 인물/사건. 이름(+한자) 유일 매칭으로 생성. Term에서 SourceUrl로 가는 다리 역할 |
+| `RELATED_TO` | `Person -> Person` | 인물 간 관계. 의미와 근거 URL은 `normalized_relation_type`, `evidence_url` 등 속성으로 보존. 대칭 관계는 한 방향만 저장하므로 무방향 패턴으로 조회 |
+| `REFERS_TO` | `Term -> Person/Event` | 용어가 가리키는 실제 인물/사건. 이름(+한자) 유일 매칭으로 생성 |
+| `MENTIONS_PERSON` | `Term -> Person` | 용어 설명문에서 인물이 언급됨. 직접 지시 관계인 `REFERS_TO`보다 약한 보조 맥락 관계 |
 | `HAS_SOURCE_URL` | `Event/Person -> SourceUrl` | 노드의 출처 URL. RAG 수집 경로 |
 | `HAS_SEARCH_TAG` | `Event -> SearchTag` | 사건의 통합 검색 태그 |
 | `ABOUT_COUNTRY` | `Term/Event/CanonicalCategory -> Country` | 해당 국가를 다룸 (카테고리 계층이 아닌 의미 축) |
@@ -723,7 +724,7 @@ Tavily 같은 Web RAG 도구를 붙일 경우, 그래프에서 관련 `SourceUrl
 | `SourceEventCategory` vs `EventFacet` | 53개 중 51개 이름 동일. SourceEventCategory는 원본 보존, EventFacet은 facet_type/confidence 확장용 | 신규 쿼리는 Theme 또는 SearchTag 기준으로 작성하고, EventFacet 기준 쿼리는 만들지 않는다 |
 | `SearchTag`의 이름 중복 (275건) | 정규화 노드가 아니라 검색 편의용 복사본. 같은 이름이 여러 원천에서 들어오는 것이 정상 | SearchTag 경유 조회는 반드시 `RETURN DISTINCT` 사용 |
 | 직통 엣지 (`HAS_THEME`, `IN_ERA`) vs 원천 경로 | 원천은 `Category-HAS_THEME`, `Period-PART_OF_ERA`. 직통 엣지는 전처리에서 미리 펼친 파생 | 서비스 쿼리는 직통 엣지 사용. 매핑 수정은 seed에서 하고 재생성 |
-| `HAS_EVIDENCE_URL` (326,699) | 가장 무거운 관계. RAG 근거 URL 탐색용 | RAG 수집/출처 표시에만 사용. 인물 관계 탐색 자체는 `RELATED_TO` 사용 |
+| `RELATED_TO.evidence_url` | 인물 관계의 근거 URL 속성. URL 노드로 승격하지 않음 | 관계 근거 확인은 `RELATED_TO` 속성을 보고, graph view에서는 URL 허브 노드를 만들지 않음 |
 
 ```cypher
 // SearchTag 조회 예시: DISTINCT 필수
@@ -734,7 +735,6 @@ RETURN DISTINCT e
 | `PART_OF_ERA` | `Period -> Era` | 세부/변형 시대 -> 표준 시대 (예: 고려전기 -> 고려, 대한제국기 -> 개항기) |
 | `HAS_ENTITY_TYPE` | `Term -> EntityType` | 용어의 실체 유형 (인명 카테고리 용어 -> 인물 등) |
 | `IN_ERA` | `Term/Event/Person -> Era` | 표준 시대 직접 연결. Term/Event는 `IN_PERIOD -> PART_OF_ERA`를 펼치고, Person은 생몰년 또는 참여 사건으로 연결 |
-| `HAS_EVIDENCE_URL` | `Person -> SourceUrl` | 인물 관계의 근거 URL을 관계 양쪽 인물에서 탐색할 수 있게 연결 |
 
 ---
 
@@ -798,7 +798,7 @@ RETURN DISTINCT e
 
 ### 15.5 Person 주제 상속
 
-`person_has_theme.csv`를 추가했다. 현재 60,712건이며 중복 `Person-Theme` 키는 없다.
+`person_has_theme.csv`를 추가했다. 현재 60,553건이며 중복 `Person-Theme` 키는 없다.
 
 | match_source | 의미 |
 |---|---|
@@ -808,17 +808,20 @@ RETURN DISTINCT e
 
 이렇게 한 이유는 “인물 문제”와 “군사 주제 인물 문제”가 서로 다른 요구이기 때문이다. `인물` 주제는 Person 라벨 자체로 확실하게 붙이고, 군사/정치/사상·종교 같은 내용 주제는 원천 근거가 있을 때만 보조로 붙인다. 따라서 주제가 없는 인물에게 억지로 정치/사회 같은 주제를 넣지 않는다.
 
-### 15.6 SourceUrl 고립 해소
+### 15.6 인물 관계 evidence URL 처리 기준
 
-`source_url_dictionary.csv`에는 `person_relations.evidence_url`도 들어가지만, 이전에는 이 URL이 `RELATED_TO` 관계의 속성으로만 남아 있어 `SourceUrl` 노드와 연결되지 않는 경우가 많았다.
+`person_relations.evidence_url`은 `source_url_dictionary.csv`와 `source_urls.csv`에 넣지 않는다. 같은 문헌/목록 URL이 많은 인물 관계에 반복될 수 있어서 URL 노드로 승격하면 하나의 `SourceUrl`이 과도한 허브가 된다.
 
-이를 해결하기 위해 `person_has_evidence_url.csv`를 추가했다.
+현재 기준은 다음과 같다.
 
-| CSV | 건수 | 관계 |
-|---|---:|---|
-| `person_has_evidence_url.csv` | 326,699 | `Person - HAS_EVIDENCE_URL - SourceUrl` |
+| 대상 | 처리 |
+|---|---|
+| `events.source_urls` | `SourceUrl` 노드 + `Event - HAS_SOURCE_URL - SourceUrl` |
+| `event_relations.source_urls` | `SourceUrl` 노드 + `Event - HAS_SOURCE_URL - SourceUrl` |
+| `person_relations.detail_url` | `SourceUrl` 노드 + `Person - HAS_SOURCE_URL - SourceUrl` |
+| `person_relations.evidence_url` | `Person - RELATED_TO - Person` 관계의 `evidence_url` 속성으로만 보존 |
 
-하나의 인물 관계 근거 URL은 관계 양쪽 인물에서 모두 탐색 가능해야 하므로, `person_id`와 `related_person_id` 양쪽에 연결한다. 이 관계는 Web RAG/Tavily 후보 URL을 그래프에서 수집할 때 고립 URL이 빠지는 문제를 줄인다.
+따라서 `person_has_evidence_url.csv`와 `HAS_EVIDENCE_URL` import 블록은 생성하지 않는다. 인물 관계의 근거를 확인할 때는 `RELATED_TO.evidence_url`을 조회한다.
 
 ### 15.7 Term-Person 수동 검수 흐름
 
@@ -842,7 +845,6 @@ RETURN DISTINCT e
 
 `history_graph_import_relations.cypher`는 다음 관계 CSV를 추가로 import한다.
 
-- `person_has_evidence_url.csv`
 - `person_has_theme.csv`
 - `event_in_era.csv`
 - `person_in_era.csv`

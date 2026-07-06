@@ -140,15 +140,13 @@ def load_statement_max_retries():
     return max_retries
 
 
-def run_statement(session, statement, import_dir):
+def run_statement(session, statement, import_dir, max_retries):
     if should_skip_optional_import(statement, import_dir):
         return {
             "executed": False,
             "skipped": True,
             "records": [],
         }
-
-    max_retries = load_statement_max_retries()
 
     for attempt_index in range(max_retries + 1):
         try:
@@ -265,6 +263,7 @@ RETURN count(*) AS deleted_count
 def run_schema(driver, schema_path, import_dir):
     cypher_text = schema_path.read_text(encoding="utf-8-sig")
     statements = split_cypher_statements(cypher_text)
+    max_retries = load_statement_max_retries()
     executed_statements = 0
     skipped_statements = 0
     returned_results = []
@@ -272,7 +271,12 @@ def run_schema(driver, schema_path, import_dir):
     with driver.session() as session:
         for statement_index, statement in enumerate(statements, start=1):
             try:
-                statement_result = run_statement(session, statement, import_dir)
+                statement_result = run_statement(
+                    session,
+                    statement,
+                    import_dir,
+                    max_retries,
+                )
             except Exception:
                 statement_preview = " ".join(statement.split())[:200]
                 print(f"Failed schema file: {schema_path.name}")

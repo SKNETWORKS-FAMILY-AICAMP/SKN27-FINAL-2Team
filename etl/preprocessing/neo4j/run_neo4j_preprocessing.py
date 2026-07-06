@@ -9,6 +9,10 @@ import subprocess
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent / "scripts"))
+
+from neo4j_common import resolve_project_root
+
 
 def parse_args():
     parser = argparse.ArgumentParser(
@@ -24,14 +28,6 @@ def parse_args():
     return parser.parse_args()
 
 
-def resolve_project_root(start_path):
-    for parent_path in [start_path, *start_path.parents]:
-        if (parent_path / ".git").exists() and (parent_path / "etl").exists():
-            return parent_path
-
-    raise FileNotFoundError(f"프로젝트 루트를 찾을 수 없습니다: {start_path}")
-
-
 def build_import_output_dirs(project_root):
     import_dir = project_root / "storage" / "neo4j" / "neo4j_import"
 
@@ -39,6 +35,55 @@ def build_import_output_dirs(project_root):
         "nodes_dir": import_dir / "nodes",
         "relations_dir": import_dir / "relations",
     }
+
+
+def build_generated_csv_dirs(script_dir, project_root):
+    import_output_dirs = build_import_output_dirs(project_root)
+
+    return [
+        script_dir / "normalized",
+        script_dir / "dictionary",
+        script_dir / "staging",
+        script_dir / "mapping",
+        import_output_dirs["nodes_dir"],
+        import_output_dirs["relations_dir"],
+    ]
+
+
+def resolve_project_path(target_path, project_root):
+    resolved_path = target_path.resolve()
+    resolved_root = project_root.resolve()
+
+    try:
+        resolved_path.relative_to(resolved_root)
+    except ValueError as exc:
+        raise ValueError(
+            f"CSV cleanup target is outside project root: {resolved_path}"
+        ) from exc
+
+    return resolved_path
+
+
+def remove_existing_csv_outputs(script_dir, project_root):
+    deleted_count = 0
+    generated_csv_dirs = build_generated_csv_dirs(script_dir, project_root)
+
+    print("", flush=True)
+    print("[CLEAN] removing existing generated Neo4j CSV files", flush=True)
+
+    for generated_csv_dir in generated_csv_dirs:
+        resolved_dir = resolve_project_path(generated_csv_dir, project_root)
+
+        if not resolved_dir.exists():
+            continue
+
+        for csv_path in sorted(resolved_dir.glob("*.csv")):
+            resolved_csv_path = resolve_project_path(csv_path, project_root)
+            resolved_csv_path.unlink()
+            deleted_count += 1
+            print(f"removed: {resolved_csv_path}", flush=True)
+
+    print(f"[CLEAN] removed {deleted_count} CSV files", flush=True)
 
 
 def build_pipeline_steps(script_dir, project_root):
@@ -132,6 +177,8 @@ def main():
     print(f"python: {python_path}", flush=True)
     print(f"project_root: {project_root}", flush=True)
     print("mode: save", flush=True)
+
+    remove_existing_csv_outputs(script_dir, project_root)
 
     for step in pipeline_steps:
         run_pipeline_step(step, python_path)

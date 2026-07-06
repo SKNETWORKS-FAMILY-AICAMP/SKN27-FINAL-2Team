@@ -100,6 +100,7 @@ raw_data
 | `dictionary/category_dictionary.csv` | `dictionary/canonical_category_dictionary.csv` |
 | `dictionary/event_category_dictionary.csv` | `dictionary/source_event_category_dictionary.csv` |
 | `dictionary/category_mapping.csv` | `mapping/taxonomy_crosswalk.csv` |
+| `relations/person_has_evidence_url.csv` | 없음. `person_relations.evidence_url`은 `person_related_to_person.csv`의 관계 속성으로만 보존 |
 | `staging/term_category_relation.csv` | `staging/term_canonical_category_relation.csv` |
 | `staging/event_category_relation.csv` | `staging/event_source_category_relation.csv` |
 
@@ -129,10 +130,10 @@ raw_data
 
 | CSV | 행 수 | 의미 |
 |---|---:|---|
-| `terms.csv` | 63,401 | 역사 용어 원본에서 실제 용어 행만 남긴 정규화 데이터 |
-| `events.csv` | 929 | 사건 데이터에서 `event_id` 기준으로 중복을 정리한 정규화 데이터 |
-| `event_relations.csv` | 7,249 | 사건과 인물의 참여 관계를 정리한 데이터 |
-| `person_relations.csv` | 211,389 | 인물과 인물 사이의 관계를 정리한 데이터 |
+| `terms.csv` | 61,598 | 역사 용어 원본에서 실제 용어 행만 남긴 정규화 데이터 |
+| `events.csv` | 600 | 사건 데이터에서 `event_id` 기준으로 중복을 정리한 정규화 데이터 |
+| `event_relations.csv` | 6,918 | 사건과 인물의 참여 관계를 정리한 데이터 |
+| `person_relations.csv` | 206,507 | 인물과 인물 사이의 관계를 정리한 데이터 |
 
 ### 4.1 `terms.csv`
 
@@ -251,7 +252,7 @@ raw_data
 | `source_event_category_dictionary.csv` | 53 | `events.subject_category`에서 만든 원본 사건 분류 사전 |
 | `period_dictionary.csv` | 30 | 시대 노드 기준 사전 |
 | `relation_type_dictionary.csv` | 16 | 인물 관계 유형 정규화 사전 |
-| `source_url_dictionary.csv` | 79,693 | URL 출처와 RAG 수집 대상 사전 |
+| `source_url_dictionary.csv` | 57,412 | URL 출처와 RAG 수집 대상 사전 |
 | `event_facet_dictionary.csv` | 53 | 사건 분류를 의미 facet으로 정리한 사전 |
 | `country_dictionary.csv` | 5 | 국가/정치체 사전 |
 | `region_dictionary.csv` | 7 | 지역/권역 사전 |
@@ -309,6 +310,8 @@ URL을 중복 없이 모아둔 출처 사전이다.
 - `Event - HAS_SOURCE_URL - SourceUrl`
 - `Person - HAS_SOURCE_URL - SourceUrl`
 - Tavily/Web RAG 수집 대상 관리
+
+`person_relations.evidence_url`은 이 사전에 넣지 않는다. 인물 관계 근거 URL은 `person_related_to_person.csv`의 `evidence_url` 속성으로만 남겨 URL 허브 노드 생성을 피한다.
 
 ### 6.6 facet 계열 사전
 
@@ -369,7 +372,7 @@ events.subject_category
 | CSV | 행 수 | 의미 |
 |---|---:|---|
 | `term_canonical_category_relation.csv` | 61,697 | 용어와 표준 카테고리 연결 중간 테이블 |
-| `event_source_category_relation.csv` | 1,165 | 사건과 원본 이벤트 분류 연결 중간 테이블 |
+| `event_source_category_relation.csv` | 713 | 사건과 원본 이벤트 분류 연결 중간 테이블 |
 | `event_date_parse.csv` | 703 | 사건 날짜 원문 parsing 결과 |
 | `term_year_parse.csv` | 61,598 | 용어 연도 원문 parsing 결과. 최종 `nodes/terms.csv`에 병합 |
 | `term_era_candidate.csv` | (수동 생성) | 고조선/초기 국가 시대 후보 용어 검수 시트. `make_term_era_candidates.py` 수동 실행 시 생성되며 runner는 생성하지 않음(현재 미생성). HIGH 신뢰도는 `AUTO_APPROVED`, 나머지는 `PENDING`으로 사람 검수 대상. 검수 결정은 재실행 시 보존됨. `make_theme_era_csv.py`는 이 파일이 있으면 검수 통과분을 `term_in_era.csv`에 합류 |
@@ -402,13 +405,13 @@ events.subject_category
 
 | CSV | 행 수 | Neo4j 노드 의미 |
 |---|---:|---|
-| `terms.csv` | 63,401 | `Term` 노드 |
-| `events.csv` | 929 | `Event` 노드 |
-| `people.csv` | 56,727 | `Person` 노드 |
+| `terms.csv` | 61,598 | `Term` 노드 |
+| `events.csv` | 600 | `Event` 노드 |
+| `people.csv` | 56,403 | `Person` 노드 |
 | `canonical_categories.csv` | 400 | `CanonicalCategory` 노드 |
 | `source_event_categories.csv` | 53 | `SourceEventCategory` 노드 |
 | `periods.csv` | 30 | `Period` 노드 |
-| `source_urls.csv` | 79,693 | `SourceUrl` 노드 |
+| `source_urls.csv` | 57,412 | `SourceUrl` 노드 |
 | `event_groups.csv` | 32 | 관련 사건 묶음 `EventGroup` 노드 |
 | `event_facets.csv` | 53 | 사건 의미 facet 노드 |
 | `countries.csv` | 5 | 국가/정치체 노드 |
@@ -462,7 +465,8 @@ events.subject_category
 | `term_about_region.csv` | 82 | `Term - ABOUT_REGION - Region` |
 | `term_about_economic_domain.csv` | 2,894 | `Term - ABOUT_ECONOMIC_DOMAIN - EconomicDomain` |
 | `term_about_taxonomy_facet.csv` | 22,962 | `Term - ABOUT_TAXONOMY_FACET - TaxonomyFacet` |
-| `term_refers_to_person.csv` | 3,720 | `Term - REFERS_TO - Person` (이름/이름+한자 유일 매칭만 연결) |
+| `term_refers_to_person.csv` | 2,971 | `Term - REFERS_TO - Person` (이름/이름+한자 유일 매칭만 연결) |
+| `term_mentions_person.csv` | 3,114 | `Term - MENTIONS_PERSON - Person` (설명문 안 인물명 언급. 직접 지시 관계보다 약함) |
 | `term_refers_to_event.csv` | 13 | `Term - REFERS_TO - Event` (이름 유일 매칭만 연결) |
 
 `term_in_period.csv`에는 `match_type`이 있다.
@@ -478,7 +482,7 @@ events.subject_category
 
 | CSV | 행 수 | 의미 |
 |---|---:|---|
-| `event_has_source_category.csv` | 1,165 | `Event - HAS_EVENT_CATEGORY - SourceEventCategory` |
+| `event_has_source_category.csv` | 713 | `Event - HAS_EVENT_CATEGORY - SourceEventCategory` |
 | `event_has_canonical_category.csv` | 692 | `Event - HAS_CATEGORY - CanonicalCategory` |
 | `event_has_facet.csv` | 713 | `Event - HAS_EVENT_FACET - EventFacet` |
 | `event_in_period.csv` | 600 | `Event - IN_PERIOD - Period` |
@@ -498,7 +502,7 @@ events.subject_category
 
 | CSV | 행 수 | 의미 |
 |---|---:|---|
-| `person_involved_in_event.csv` | 7,249 | `Person - INVOLVED_IN - Event` |
+| `person_involved_in_event.csv` | 6,918 | `Person - INVOLVED_IN - Event` |
 | `person_related_to_person.csv` | 184,056 | `Person - RELATED_TO - Person` (대칭 관계는 한 방향만 저장) |
 | `person_has_source_url.csv` | 56,212 | `Person - HAS_SOURCE_URL - SourceUrl` |
 
@@ -512,6 +516,7 @@ events.subject_category
 - `direction_rule`: 방향성 처리 기준
 - `is_symmetric`: 대칭 관계 여부
 - `inverse_relation_type`: 반대 방향 관계 후보
+- `evidence_url`: 인물 관계 근거 URL. 별도 `SourceUrl` 노드 관계로 만들지 않음
 
 ### 10.4 카테고리와 facet 관계
 
@@ -524,14 +529,13 @@ events.subject_category
 | `canonical_category_about_economic_domain.csv` | 51 | `CanonicalCategory - ABOUT_ECONOMIC_DOMAIN - EconomicDomain` |
 | `canonical_category_about_taxonomy_facet.csv` | 276 | `CanonicalCategory - ABOUT_TAXONOMY_FACET - TaxonomyFacet` |
 | `region_subregion_of.csv` | 6 | `Region - SUBREGION_OF - Region` |
-| `canonical_category_has_theme.csv` | 30 | `CanonicalCategory - HAS_THEME - Theme` |
+| `canonical_category_has_theme.csv` | 32 | `CanonicalCategory - HAS_THEME - Theme` |
 | `period_part_of_era.csv` | 23 | `Period - PART_OF_ERA - Era` (표기 변형 통합) |
 | `term_has_entity_type.csv` | 20,662 | `Term - HAS_ENTITY_TYPE - EntityType` |
 | `term_in_era.csv` | 54,125 | `Term - IN_ERA - Era` (`IN_PERIOD -> PART_OF_ERA` 파생 + 키워드 override + 설명문 검수 통과분) |
 | `event_in_era.csv` | 600 | `Event - IN_ERA - Era` (`IN_PERIOD -> PART_OF_ERA` 파생) |
 | `person_in_era.csv` | 23,214 | `Person - IN_ERA - Era` (생몰년 기반 + 사건 기반 보조 추론) |
-| `person_has_theme.csv` | 60,712 | `Person - HAS_THEME - Theme` (인물 라벨 + 사건 참여/인명 세부 카테고리 주제 상속) |
-| `person_has_evidence_url.csv` | 326,699 | `Person - HAS_EVIDENCE_URL - SourceUrl` |
+| `person_has_theme.csv` | 60,553 | `Person - HAS_THEME - Theme` (인물 라벨 + 사건 참여/인명 세부 카테고리 주제 상속) |
 
 `canonical_category_subcategory_of.csv`에서는 국가/지역 facet으로 분리된 경로를 제외했다. 따라서 `러시아`, `미국`, `기타지역` 같은 값이 `외교·국제관계`의 의미상 하위 카테고리처럼 붙지 않는다.
 
@@ -662,8 +666,7 @@ history_graph_verify.cypher
 | `term_in_era.csv` | 54,125 | `Term - IN_ERA - Era`. `Term - IN_PERIOD - Period - PART_OF_ERA - Era`를 미리 펼친 관계이며, 키워드 override와 설명문 기반 검수 통과분(DESC_KEYWORD)을 합류한다. |
 | `event_in_era.csv` | 600 | `Event - IN_ERA - Era`. 사건의 period를 Era로 펼친 관계다. |
 | `person_in_era.csv` | 23,214 | `Person - IN_ERA - Era`. 생몰년 기반 연결을 우선하고, 생몰년이 없는 인물은 참여 사건 Era로 보조 추론한다. |
-| `person_has_theme.csv` | 60,712 | `Person - HAS_THEME - Theme`. 모든 Person은 `인물` 주제에 연결하고, 참여 사건과 인명 세부 카테고리에서 얻은 내용 주제를 보조 상속한다. |
-| `person_has_evidence_url.csv` | 326,699 | `Person - HAS_EVIDENCE_URL - SourceUrl`. 인물 관계 근거 URL을 관계 양쪽 인물에서 탐색할 수 있게 연결한다. |
+| `person_has_theme.csv` | 60,553 | `Person - HAS_THEME - Theme`. 모든 Person은 `인물` 주제에 연결하고, 참여 사건과 인명 세부 카테고리에서 얻은 내용 주제를 보조 상속한다. |
 
 ### 13.5 왜 직접 관계를 만들었는가
 

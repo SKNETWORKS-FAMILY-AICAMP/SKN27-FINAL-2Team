@@ -19,10 +19,14 @@ import argparse
 import pandas as pd
 
 from neo4j_common import (
-    read_csv,
-    save_csv,
+    build_discontinued_relation_output_names,
+    normalize_keyword_series,
     print_summary,
+    read_csv,
+    read_optional_csv,
+    remove_stale_output_file,
     resolve_project_root,
+    save_csv,
     unique_join,
 )
 
@@ -155,14 +159,6 @@ def parse_args(default_paths):
     )
 
     return parser.parse_args()
-
-
-def read_optional_csv(input_path, purpose):
-    # 검수 후보 파일처럼 아직 없을 수 있는 입력은 빈 DataFrame으로 대체한다.
-    if input_path.exists():
-        return read_csv(input_path, purpose)
-
-    return pd.DataFrame()
 
 
 def read_inputs(args):
@@ -560,15 +556,6 @@ def build_period_era_relations(periods, period_era_seed, era_nodes):
     ]
 
 
-def normalize_keyword(name_series):
-    # 띄어쓰기, 가운뎃점, 마침표 표기 차이를 무시하고 비교하기 위한 정규화.
-    return (
-        name_series.fillna("")
-        .str.strip()
-        .str.replace(r"[\s·.]+", "", regex=True)
-    )
-
-
 def build_in_era_rows_from_period(in_period_data, id_column, period_era_seed, era_nodes):
     # 직통 엣지: X -> IN_PERIOD -> Period -> Era 경로를 X -> IN_ERA로 미리 펼친다.
     era_id_lookup = dict(zip(era_nodes["name"], era_nodes["era_id"]))
@@ -593,10 +580,10 @@ def build_in_era_rows_from_keywords(terms, keyword_era_seed, era_nodes):
     era_id_lookup = dict(zip(era_nodes["name"], era_nodes["era_id"]))
 
     term_data = terms[["term_id", "name"]].copy()
-    term_data["normalized_name"] = normalize_keyword(term_data["name"])
+    term_data["normalized_name"] = normalize_keyword_series(term_data["name"])
 
     keyword_data = keyword_era_seed.copy()
-    keyword_data["normalized_keyword"] = normalize_keyword(keyword_data["keyword"])
+    keyword_data["normalized_keyword"] = normalize_keyword_series(keyword_data["keyword"])
 
     relation_data = term_data.merge(
         keyword_data,
@@ -923,17 +910,6 @@ def build_outputs(inputs):
     }
 
     return node_outputs, relation_outputs
-
-
-def build_discontinued_relation_output_names():
-    return {
-        "person_has_evidence_url",
-    }
-
-
-def remove_stale_output_file(output_path):
-    if output_path.exists():
-        output_path.unlink()
 
 
 def write_or_print_outputs(args, node_outputs, relation_outputs):
