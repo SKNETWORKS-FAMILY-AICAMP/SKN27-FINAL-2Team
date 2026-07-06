@@ -58,8 +58,7 @@
             <button type="button" data-value="삼국 시대">삼국 시대</button>
             <button type="button" data-value="남북국 시대">남북국 시대</button>
             <button type="button" data-value="고려">고려</button>
-            <button type="button" data-value="조선 전기">조선 전기</button>
-            <button type="button" data-value="조선 후기">조선 후기</button>
+            <button type="button" data-value="조선">조선</button>
             <button type="button" data-value="개항기">개항기</button>
             <button type="button" data-value="일제 강점기">일제 강점기</button>
             <button type="button" data-value="현대">현대</button>
@@ -161,8 +160,22 @@
         </div>
       </section>
     </div>
+
+    <div class="study-plan-modal is-hidden" id="studyPlanModal" role="dialog" aria-modal="true" aria-labelledby="studyPlanModalTitle">
+      <section class="study-plan-dialog">
+        <header>
+          <div>
+            <span>Study Plan</span>
+            <h2 id="studyPlanModalTitle">오늘의 계획 선택</h2>
+          </div>
+          <button type="button" id="closeStudyPlanModal" aria-label="닫기">×</button>
+        </header>
+        <div class="study-plan-list" id="studyPlanList"></div>
+      </section>
+    </div>
   </main>
 
+  {{ planner_data|json_script:"planner-data" }}
   <script>
     const rows = document.querySelectorAll(".condition-row");
     const resetButton = document.getElementById("resetButton");
@@ -175,6 +188,13 @@
     const modeInputs = document.querySelectorAll('input[name="questionMode"]');
     const savedSessionModal = document.getElementById("savedSessionModal");
     const closeSavedSessionModal = document.getElementById("closeSavedSessionModal");
+    const studyPlanModal = document.getElementById("studyPlanModal");
+    const closeStudyPlanModal = document.getElementById("closeStudyPlanModal");
+    const studyPlanList = document.getElementById("studyPlanList");
+    const plannerData = JSON.parse(document.getElementById("planner-data").textContent);
+    const todayKey = "{{ planner_summary.today_key }}";
+    const todayStudyPlans = (plannerData.plansByDate?.[todayKey] || [])
+      .filter((plan) => plan && plan.isWeeklyReview !== true);
 
     const filterMap = {
       "시대": "eras",
@@ -184,6 +204,15 @@
       "대유형": "question_types",
       "소유형": "question_subtypes",
     };
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+    }
 
     function rowByLabel(label) {
       return [...rows].find((row) => row.querySelector("h2").textContent.trim() === label);
@@ -258,28 +287,62 @@
       return document.querySelector('input[name="questionMode"]:checked')?.value || "detail";
     }
 
-    // 학습 플래너가 넘긴 문제 생성 조건을 읽어 학습 계획 문제 풀이 API 요청으로 변환한다.
-    function readStudyPlanCondition() {
-      const rawCondition = sessionStorage.getItem("studyPlanQuestionCondition")
-        || sessionStorage.getItem("questionGenerationCondition")
-        || localStorage.getItem("studyPlanQuestionCondition");
-      if (!rawCondition) return null;
+    function buildStudyPlanCondition(plan) {
+      return {
+        generationMode: "study_plan",
+        studyPlanId: plan.studyPlanId,
+        studyPlanBlockId: plan.blockId,
+        count: Number(plan.questionCount || 10),
+        classification: plan.classification || "",
+        label: plan.label || plan.title || "",
+        title: plan.title || "",
+        meta: plan.meta || "",
+      };
+    }
 
-      try {
-        const condition = JSON.parse(rawCondition);
-        const studyPlanId = condition.studyPlanId || condition.studyplan_id;
-        const studyPlanBlockId = condition.studyPlanBlockId || condition.study_plan_block_id;
-        if (!studyPlanId || !studyPlanBlockId) return null;
-        return {
-          ...condition,
-          generationMode: "study_plan",
-          studyPlanId,
-          studyPlanBlockId,
-        };
-      } catch (error) {
-        console.error(error);
-        return null;
+    function closeStudyPlanSelector() {
+      studyPlanModal?.classList.add("is-hidden");
+    }
+
+    function renderStudyPlanSelector() {
+      if (!studyPlanList) return;
+
+      const selectablePlans = todayStudyPlans.filter((plan) => (
+        plan.canStart !== false && plan.studyPlanId && plan.blockId
+      ));
+      if (!selectablePlans.length) {
+        studyPlanList.innerHTML = `
+          <p class="study-plan-empty">오늘 선택할 수 있는 학습 계획 문제가 없습니다.</p>
+          <a class="outline-button" href="/analytics/mypage/">나의 학습실로 이동</a>
+        `;
+        return;
       }
+
+      studyPlanList.innerHTML = selectablePlans.map((plan, index) => `
+        <button class="study-plan-item" type="button" data-plan-index="${index}">
+          <strong>${escapeHtml(plan.title || plan.label || "학습 계획")}</strong>
+          <span>${escapeHtml(plan.meta || "")}</span>
+          <em>${Number(plan.achievedCount || 0)}/${Number(plan.questionCount || 0)}문항</em>
+        </button>
+      `).join("");
+
+      studyPlanList.querySelectorAll(".study-plan-item").forEach((button) => {
+        button.addEventListener("click", () => {
+          const plan = selectablePlans[Number(button.dataset.planIndex)];
+          if (!plan) return;
+          const condition = buildStudyPlanCondition(plan);
+          sessionStorage.setItem("questionGenerationCondition", JSON.stringify(condition));
+          sessionStorage.setItem("studyPlanQuestionCondition", JSON.stringify(condition));
+          localStorage.removeItem("questionGenerationCondition");
+          localStorage.removeItem("questionInProgress");
+          window.location.href = "/question/exam/?new=1";
+        });
+      });
+    }
+
+    function openStudyPlanSelector() {
+      renderStudyPlanSelector();
+      studyPlanModal?.classList.remove("is-hidden");
     }
 
     function updateModeView() {
@@ -344,12 +407,13 @@
 
     createButton.addEventListener("click", async () => {
       const mode = selectedMode();
-      const condition = mode === "study_plan" ? readStudyPlanCondition() : collectCondition();
 
-      if (mode === "study_plan" && !condition) {
-        alert("학습 계획 문제 풀기는 나의 학습실 학습 플래너에서 연결된 문제 생성 조건이 필요합니다.");
+      if (mode === "study_plan") {
+        openStudyPlanSelector();
         return;
       }
+
+      const condition = collectCondition();
 
       if (mode === "detail") {
         condition.generationMode = "detail";
@@ -438,6 +502,12 @@
     savedSessionModal?.addEventListener("click", (event) => {
       if (event.target === savedSessionModal) {
         closeSavedSessions();
+      }
+    });
+    closeStudyPlanModal?.addEventListener("click", closeStudyPlanSelector);
+    studyPlanModal?.addEventListener("click", (event) => {
+      if (event.target === studyPlanModal) {
+        closeStudyPlanSelector();
       }
     });
 
