@@ -937,6 +937,20 @@ def build_relation_type_dictionary(person_relations_data, relation_type_seed):
     ]
 
 
+def build_source_url_dictionary_columns():
+    return [
+        "source_url_id",
+        "url",
+        "source_tables",
+        "source_columns",
+        "source_types",
+        "source_count",
+        "use_for_rag",
+        "fetch_status",
+        "note",
+    ]
+
+
 def collect_source_url_rows(data_frame, source_table, source_column, source_type):
     url_rows = []
 
@@ -958,14 +972,17 @@ def collect_source_url_rows(data_frame, source_table, source_column, source_type
     return url_rows
 
 
-def build_source_url_dictionary(events_data, event_relations_data, person_relations_data):
+def build_source_url_dictionary(
+    events_data,
+    event_relations_data,
+    person_relations_data,
+):
     url_rows = []
 
     # URL 수집 대상은 정규화 CSV 컬럼명에 의존하므로 여기에서 명세한다.
     source_specs = [
         (events_data, "events", "source_urls", "EVENT_DETAIL"),
         (event_relations_data, "event_relations", "source_urls", "EVENT_RELATION_DETAIL"),
-        (person_relations_data, "person_relations", "evidence_url", "PERSON_RELATION_EVIDENCE"),
         (person_relations_data, "person_relations", "detail_url", "PERSON_DETAIL"),
     ]
 
@@ -975,19 +992,7 @@ def build_source_url_dictionary(events_data, event_relations_data, person_relati
         )
 
     if len(url_rows) == 0:
-        return pd.DataFrame(
-            columns=[
-                "source_url_id",
-                "url",
-                "source_tables",
-                "source_columns",
-                "source_types",
-                "source_count",
-                "use_for_rag",
-                "fetch_status",
-                "note",
-            ]
-        )
+        return pd.DataFrame(columns=build_source_url_dictionary_columns())
 
     url_frame = pd.DataFrame(url_rows)
     source_url_dictionary = (
@@ -1012,19 +1017,7 @@ def build_source_url_dictionary(events_data, event_relations_data, person_relati
     source_url_dictionary["fetch_status"] = "PENDING"
     source_url_dictionary["note"] = ""
 
-    return source_url_dictionary[
-        [
-            "source_url_id",
-            "url",
-            "source_tables",
-            "source_columns",
-            "source_types",
-            "source_count",
-            "use_for_rag",
-            "fetch_status",
-            "note",
-        ]
-    ]
+    return source_url_dictionary[build_source_url_dictionary_columns()]
 
 
 def build_default_paths(script_path):
