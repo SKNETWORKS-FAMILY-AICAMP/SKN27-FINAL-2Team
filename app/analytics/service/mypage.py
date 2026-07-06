@@ -7,6 +7,7 @@ from analytics.service.analytics import (
     get_diagnosis_improvement_summary,
     get_completed_records,
     get_completed_sessions,
+    get_recent_wrong_rate_period,
     get_weekly_practice_summary,
 )
 from analytics.service.studyplan import get_user_study_info
@@ -50,17 +51,22 @@ def build_diagnosis_comparison_summary(user):
     """
     첫 진단평가 기준의 비교 요약을 만든다.
 
-    진단 이후 이번 주 연습과의 비교를 화면 표시용 데이터로 변환한다.
+    진단 이후 주간평가와의 비교를 화면 표시용 데이터로 변환한다.
     """
     comparison = get_diagnosis_improvement_summary(user.user_id)
     answer_display = _build_rate_change_display(comparison["answerRateChange"])
     time_display = _build_time_change_display(
         comparison["averageQuestionTimeChangeSec"],
     )
-    has_post_records = comparison["hasComparison"]
+    has_comparison = comparison["hasComparison"]
+    empty_display = _build_diagnosis_comparison_empty_display(comparison)
 
     return {
-        "has_records": has_post_records,
+        "has_records": has_comparison,
+        "has_diagnosis": comparison["hasDiagnosis"],
+        "has_weekly_review_plan": comparison["hasWeeklyReviewPlan"],
+        "has_post_diagnosis_practice": comparison["hasPostDiagnosisPractice"],
+        "empty": empty_display,
         "answer": {
             "diagnosis_rate": comparison["diagnosis"]["answerRate"],
             "current_rate": comparison["current"]["answerRate"],
@@ -80,7 +86,35 @@ def build_diagnosis_comparison_summary(user):
     }
 
 
-def build_wrong_type_summary(user):
+def _build_diagnosis_comparison_empty_display(comparison):
+    """
+    진단평가 비교 카드의 대기 상태 문구를 만든다.
+    """
+    if not comparison["hasDiagnosis"]:
+        return {
+            "title": "진단평가 필요",
+            "description": "첫 진단평가를 완료하면 이후 주간평가와 비교할 수 있습니다.",
+        }
+
+    if comparison["hasPostDiagnosisPractice"]:
+        return {
+            "title": "주간 평가 후 비교 가능",
+            "description": "일반 문제풀이 기록은 쌓였고, 7일차 주간평가 완료 후 진단평가와 비교됩니다.",
+        }
+
+    if comparison["hasWeeklyReviewPlan"]:
+        return {
+            "title": "비교 기준 준비 중",
+            "description": "7일 계획의 주간평가를 완료하면 진단평가 대비 개선도가 표시됩니다.",
+        }
+
+    return {
+        "title": "주간 계획 준비 중",
+        "description": "7일 학습계획을 생성하고 주간평가를 완료하면 진단평가와 비교됩니다.",
+    }
+
+
+def build_wrong_type_summary(user, today=None):
     """
     유형별 오답률 요약 카드에 필요한 데이터를 만든다.
 
@@ -88,8 +122,13 @@ def build_wrong_type_summary(user):
     오답률이 높은 상위 항목에 강조용 CSS 클래스를 부여한다.
     """
     unclassified_label = "미분류"
+    period = get_recent_wrong_rate_period(today)
     rows = (
         get_completed_records(user.user_id)
+        .filter(
+            session__recorded_date__gte=period["startDate"],
+            session__recorded_date__lte=period["endDate"],
+        )
         .values("q_type")
         .annotate(
             total=Count("record_id"),
@@ -129,10 +168,11 @@ def build_wrong_type_summary(user):
         "items": sorted_items,
         "has_records": total_count > 0,
         "status_label": status_label,
+        "period_label": period["label"],
     }
 
 
-def build_weakness_summary(user):
+def build_weakness_summary(user, today=None):
     """
     시대와 주제 조합 기준의 취약점 목록을 만든다.
 
@@ -140,8 +180,13 @@ def build_weakness_summary(user):
     오답률과 오답 수 기준으로 정렬한다.
     """
     unclassified_label = "미분류"
+    period = get_recent_wrong_rate_period(today)
     rows = (
         get_completed_records(user.user_id)
+        .filter(
+            session__recorded_date__gte=period["startDate"],
+            session__recorded_date__lte=period["endDate"],
+        )
         .values("era", "topic")
         .annotate(
             total=Count("record_id"),
@@ -178,6 +223,53 @@ def build_weakness_summary(user):
     return {
         "items": sorted_items[:display_limit],
         "has_records": bool(items),
+        "period_label": period["label"],
+    }
+
+
+def build_mypage_summary_validation(
+    user,
+    today=None,
+    weakness_summary=None,
+    wrong_type_summary=None,
+):
+    """
+    임시 진단용 검증이다.
+
+    사용자 입력 검증이 아니라, 최근 풀이 기록이 있는데 마이페이지 카드가
+    비어 보이는 불일치를 확인하기 위한 안전망이다. 원인 확인 후 테스트로
+    대체하고 제거할 수 있다.
+    """
+    period = get_recent_wrong_rate_period(today)
+    records = get_completed_records(user.user_id).filter(
+        session__recorded_date__gte=period["startDate"],
+        session__recorded_date__lte=period["endDate"],
+    )
+    stats = records.aggregate(
+        total=Count("record_id"),
+        wrong=Count("record_id", filter=Q(is_correct=False)),
+    )
+    total_count = stats["total"] or 0
+    wrong_count = stats["wrong"] or 0
+    wrong_type_has_records = bool((wrong_type_summary or {}).get("has_records"))
+    weakness_has_records = bool((weakness_summary or {}).get("has_records"))
+    issues = []
+
+    if total_count > 0 and not wrong_type_has_records:
+        issues.append("recent_records_exist_but_wrong_type_empty")
+    if wrong_count > 0 and not weakness_has_records:
+        issues.append("recent_wrong_records_exist_but_weakness_empty")
+
+    return {
+        "userId": user.user_id,
+        "periodStart": period["startDate"],
+        "periodEnd": period["endDate"],
+        "recentRecordCount": total_count,
+        "recentWrongRecordCount": wrong_count,
+        "wrongTypeHasRecords": wrong_type_has_records,
+        "weaknessHasRecords": weakness_has_records,
+        "issues": issues,
+        "isValid": not issues,
     }
 
 
@@ -210,7 +302,7 @@ def _build_rate_change_display(change):
     label = "기록 부족"
     tone = "neutral"
     if change is not None:
-        label = f"{change:+d}%p"
+        label = f"{change:+d}%"
         if change > 0:
             tone = "good"
         elif change < 0:

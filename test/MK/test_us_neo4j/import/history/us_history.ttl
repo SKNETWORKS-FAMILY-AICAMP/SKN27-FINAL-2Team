@@ -1,0 +1,2323 @@
+@prefix foaf:	<http://xmlns.com/foaf/0.1/> .
+@prefix wikipedia-en:	<http://en.wikipedia.org/wiki/> .
+@prefix dbr:	<http://dbpedia.org/resource/> .
+wikipedia-en:History_of_the_United_States	foaf:primaryTopic	dbr:History_of_the_United_States .
+@prefix dbo:	<http://dbpedia.org/ontology/> .
+dbr:Adam_Mazer	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Women\u0027s_suffrage_in_Australia>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Lynn_Davidman	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/J._C._D._Clark>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Missouri_Historical_Review	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:academicDiscipline	dbr:History_of_the_United_States .
+@prefix dbp:	<http://dbpedia.org/property/> .
+dbr:Missouri_Historical_Review	dbp:discipline	dbr:History_of_the_United_States .
+dbr:Journal_of_the_West	dbo:academicDiscipline	dbr:History_of_the_United_States ;
+	dbp:discipline	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Frederick_C._Luebke>	dbp:knownFor	dbr:History_of_the_United_States ;
+	dbo:knownFor	dbr:History_of_the_United_States .
+dbr:Emily_Skidmore	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Stephen_Tuck	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbp:subDiscipline	dbr:History_of_the_United_States .
+dbr:Roanoke_people	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Adam_Fairclough	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+@prefix ns5:	<http://dbpedia.org/resource/The_Oregon_Trail:> .
+ns5:_A_New_American_Journey	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:nonFictionSubject	dbr:History_of_the_United_States ;
+	dbp:subject	dbr:History_of_the_United_States .
+dbr:H_Steven_Blum	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Charles_W._Ramsdell>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:The_Journal_of_American_History	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:academicDiscipline	dbr:History_of_the_United_States ;
+	dbp:discipline	dbr:History_of_the_United_States .
+@prefix dc:	<http://purl.org/dc/elements/1.1/> .
+dbr:Candice_Millard	dc:subject	dbr:History_of_the_United_States ;
+	dbp:subject	dbr:History_of_the_United_States .
+dbr:Pulitzer_Prize	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:History_of_collegiate_wrestling	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:List_of_Latter_Day_Saint_movement_topics	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Mormonism_and_violence	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:List_of_academic_fields	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Leavenworth,_Kansas>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Freedom_Trail	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Theodore_H._White>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Richard_Hofstadter	dbp:subDiscipline	dbr:History_of_the_United_States .
+dbr:Eric_Foner	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbp:subDiscipline	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Lawrence_W._Levine>	dbp:subDiscipline	dbr:History_of_the_United_States .
+dbr:Herbert_Gutman	dbp:subDiscipline	dbr:History_of_the_United_States .
+dbr:Bernard_Bailyn	dbp:fields	dbr:History_of_the_United_States ;
+	dbo:academicDiscipline	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Linda_K._Kerber>	dbp:subDiscipline	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Otis_L._Graham>	dbp:subDiscipline	dbr:History_of_the_United_States .
+dbr:American_history	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:wikiPageRedirects	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/What_Hath_God_Wrought:_The_Transformation_of_America,_1815\u20131848>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:nonFictionSubject	dbr:History_of_the_United_States ;
+	dbp:subject	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Paul_C._Nagel>	dc:subject	dbr:History_of_the_United_States ;
+	dbp:subject	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Brooks_D._Simpson>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Eleventh_grade	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/David_M._Kennedy_(historian)>	dbp:subDiscipline	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Disney\u0027s_America>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbp:theme	dbr:History_of_the_United_States .
+dbr:History_of_Chinese_Americans	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Steven_L._Danver>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Mornings_on_Horseback	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:nonFictionSubject	dbr:History_of_the_United_States ;
+	dbp:subject	dbr:History_of_the_United_States .
+dbr:Recarving_Rushmore	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:nonFictionSubject	dbr:History_of_the_United_States ;
+	dbp:subject	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/54-40_or_Fight_(book)>	dbo:nonFictionSubject	dbr:History_of_the_United_States ;
+	dbp:subject	dbr:History_of_the_United_States .
+dbr:The_American_Genealogist	dbo:academicDiscipline	dbr:History_of_the_United_States ;
+	dbp:discipline	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Mem\u00EDn_Pingu\u00EDn>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/\u0027Merican>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Cool_to_Be_You	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Lords_of_Finance	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:nonFictionSubject	dbr:History_of_the_United_States ;
+	dbp:subject	dbr:History_of_the_United_States .
+dbr:Howard_Henry_Peckham	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Republican_National_Convention	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/A_People\u0027s_History_of_the_United_States>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:nonFictionSubject	dbr:History_of_the_United_States ;
+	dbp:subject	dbr:History_of_the_United_States .
+dbr:History_of_Canada	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Kingsmill,_Virginia>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Across_America_on_an_Emigrant_Train	dbo:nonFictionSubject	dbr:History_of_the_United_States .
+dbr:History_of_ExxonMobil	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:List_of_governors_of_Iowa	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Ralph_J._Bunche_Library>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:List_of_African-American_United_States_Cabinet_members	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:General_Society_of_Colonial_Wars	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Charles_Long_(ABSRA)>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/History_of_Australia_(1788\u20131850)>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/20th_century_in_the_United_States>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:The_Fire_Next_Time	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Between_the_World_and_Me	dbo:nonFictionSubject	dbr:History_of_the_United_States .
+dbr:Day_of_the_Tentacle	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Richard_P._McCormick>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Noelani_Arista	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Flocabulary	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Claude_H._Van_Tyne>	dbo:academicDiscipline	dbr:History_of_the_United_States .
+dbr:Early_American_Studies	dbo:academicDiscipline	dbr:History_of_the_United_States ;
+	dbp:discipline	dbr:History_of_the_United_States .
+dbr:Nicole_Lowen	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Eugene_C._Barker>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbp:subDiscipline	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Fran\u00E7ois_Furstenberg>	dbp:discipline	dbr:History_of_the_United_States .
+dbr:Vortex_I	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:New_religious_movements_in_the_United_States	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Mohammed_ben_Abdallah	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/History_of_Australia_(1851\u20131900)>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Lockington_Locks	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Discrimination_in_the_United_States	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Ernst_Posner	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/1776_(book)>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:nonFictionSubject	dbr:History_of_the_United_States ;
+	dbp:subject	dbr:History_of_the_United_States .
+dbr:Away_West	dbo:nonFictionSubject	dbr:History_of_the_United_States ;
+	dbp:subject	dbr:History_of_the_United_States .
+dbr:The_Point_of_Pittsburgh	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:nonFictionSubject	dbr:History_of_the_United_States ;
+	dbp:subject	dbr:History_of_the_United_States .
+dbr:Best_Shot_in_the_West	dbo:nonFictionSubject	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Ol\u0027_Clip-Clop>	dbo:nonFictionSubject	dbr:History_of_the_United_States ;
+	dbp:subject	dbr:History_of_the_United_States .
+dbr:Run_Away_Home	dbo:literaryGenre	dbr:History_of_the_United_States ;
+	dbp:genre	dbr:History_of_the_United_States .
+dbr:To_Establish_Justice	dbo:nonFictionSubject	dbr:History_of_the_United_States ;
+	dbp:subject	dbr:History_of_the_United_States .
+dbr:The_Limits_of_Liberty	dbo:nonFictionSubject	dbr:History_of_the_United_States ;
+	dbp:subject	dbr:History_of_the_United_States .
+dbr:A_History_of_the_American_People	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:nonFictionSubject	dbr:History_of_the_United_States ;
+	dbp:subject	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Hard_Labor:_The_First_African_Americans,_1619>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Hard_Labor_(book)>	dbo:nonFictionSubject	dbr:History_of_the_United_States ;
+	dbp:subject	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Let_My_People_Go_(book)>	dbo:literaryGenre	dbr:History_of_the_United_States ;
+	dbp:genre	dbr:History_of_the_United_States .
+dbr:Ernest_Winkler	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbp:subDiscipline	dbr:History_of_the_United_States .
+dbr:Luther_Lawrence	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Nkeiru_Okoye	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Andrew_Preston_(historian)>	dbp:subDiscipline	dbr:History_of_the_United_States .
+dbr:Society_for_Historians_of_the_Early_American_Republic	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:The_Penguin_History_of_the_United_States_of_America	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:nonFictionSubject	dbr:History_of_the_United_States ;
+	dbp:subject	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Abraham_Lincoln\u0027s_World>	dbo:nonFictionSubject	dbr:History_of_the_United_States ;
+	dbp:subject	dbr:History_of_the_United_States .
+dbr:The_Year_That_Broke_Politics	dbo:nonFictionSubject	dbr:History_of_the_United_States ;
+	dbp:subject	dbr:History_of_the_United_States .
+dbr:Conspiracy_theory	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Textbook	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Nightmares_in_Red,_White_and_Blue>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Unfamiliar_Fishes	dbo:literaryGenre	dbr:History_of_the_United_States ;
+	dbp:genre	dbr:History_of_the_United_States .
+dbr:William_Sorrell	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:The_Global_Interior	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:literaryGenre	dbr:History_of_the_United_States ;
+	dbp:genre	dbr:History_of_the_United_States .
+@prefix rdfs:	<http://www.w3.org/2000/01/rdf-schema#> .
+<http://dbpedia.org/resource/History_of_Augusta,_Georgia>	rdfs:seeAlso	dbr:History_of_the_United_States .
+dbr:History_of_America	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Always_Hiding	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Beck_University	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/James_Oakes_(historian)>	dbo:birthPlace	dbr:History_of_the_United_States .
+dbr:The_Lights_that_Failed	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Jonathan_H._Earle>	dbp:discipline	dbr:History_of_the_United_States .
+dbr:A_Queer_History_of_the_United_States	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Tano_J\u014Ddai>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Caroline_Winterer	dbp:subDiscipline	dbr:History_of_the_United_States .
+dbr:The_Age_of_the_Crisis_of_Man	dbp:subjects	dbr:History_of_the_United_States .
+dbr:Jean_Leon_Gerome_Ferris	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/History_of_the_U.S.>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:wikiPageRedirects	dbr:History_of_the_United_States .
+dbr:Walter_Prescott_Webb	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbp:subDiscipline	dbr:History_of_the_United_States .
+dbr:Culture_of_the_United_States	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:History_of_salt	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Brumidi_Corridors	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:List_of_Dewey_Decimal_classes	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:New-York_Historical_Society	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Shane_Gillis	dbp:subject	dbr:History_of_the_United_States .
+dbr:History_of_Mexican_Americans	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Quintard_Taylor	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Elections_in_the_Southern_United_States	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/2004_United_States_election_voting_controversies>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Cider_syrup	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Kiliaen_van_Rensselaer_(merchant)>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Charles_Napier_(Royal_Navy_officer)>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Scientific_Integrity_in_Policymaking	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Maureen_Johnson	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Baron_Baltimore	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Dale_Minami	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Roy_Rosenzweig_Center_for_History_and_New_Media	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Larry_Portis	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Organization_of_American_Historians	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Tom_Woods	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Jewish-American_comedy	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Joseph_Palermo	dc:subject	dbr:History_of_the_United_States ;
+	dbp:subject	dbr:History_of_the_United_States .
+dbr:American_Pastoral	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:nonFictionSubject	dbr:History_of_the_United_States ;
+	dbp:subject	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/American_Government_(textbook)>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Dan_Blaine	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/St._Michael\u0027s_Church_(Trenton,_New_Jersey)>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/List_of_Sussex_County,_New_Jersey_people>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Academy_for_Mathematics,_Science,_and_Engineering>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Dwight_C._Miner>	dbp:subDiscipline	dbr:History_of_the_United_States .
+dbr:Erich_Lindemann	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Model_1816_Musket	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/William_Lambert_(writer)>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:The_Triumph_of_the_Dark	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Stephanie_Coontz	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Richard_D._Brown>	dbp:discipline	dbr:History_of_the_United_States .
+dbr:Nancy_MacLean	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbp:discipline	dbr:History_of_the_United_States .
+dbr:Robert_Byrd	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Franklin_D._Roosevelt>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Pennsylvania	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Germantown,_Philadelphia>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Veterans_of_Foreign_Wars	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:American_Civil_War	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Ulysses_S._Grant>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Timeline_of_the_Donald_Trump_presidency_(2020_Q3)>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Origins_of_global_surveillance	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:January_2	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Civil_Rights_Act_of_1960	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Italian_Americans	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Marcus_Garvey	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:History_of_Oklahoma_City	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Philippines\u2013United_States_relations>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Hate_crime	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Presidency_of_Harry_S._Truman>	rdfs:seeAlso	dbr:History_of_the_United_States .
+dbr:Jon_Wiener	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Pat_Tiberi	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:I_Have_a_Dream	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Mass_surveillance_in_the_United_States	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Racism_in_the_United_States	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Definitions_of_whiteness_in_the_United_States	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Human_history	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/1948_United_States_presidential_election>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:July_13	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:African-American_culture	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Cultural_impact_of_Madonna	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Tejanos	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Robert_Sidney_Maxwell	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbp:subDiscipline	dbr:History_of_the_United_States .
+dbr:Political_polarization_in_the_United_States	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Susan_Stryker	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Morris_Berman	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/HMS_Jersey_(1736)>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Massachusetts_Historical_Society	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Pulitzer_Prize_for_History	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Gettysburg_Address	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Arming_America	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Mae_Ngai	dbp:mainInterests	dbr:History_of_the_United_States .
+dbr:Tyler_Anbinder	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Ars_Americana_Ars_Politica	dbo:nonFictionSubject	dbr:History_of_the_United_States .
+dbr:Halvdan_Koht	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Arthur_Waskow	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:National_Hall_of_Fame_for_Famous_American_Indians	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Lower_Ninth_Ward	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Rankin_Barbee	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:The_Significance_of_the_Frontier_in_American_History	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Drug_Trafficking_Safe_Harbor_Elimination_Act	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Clean_living_movement	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Huck\u0027s_Raft>	dbo:nonFictionSubject	dbr:History_of_the_United_States ;
+	dbp:subject	dbr:History_of_the_United_States .
+dbr:Reviews_in_American_History	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:academicDiscipline	dbr:History_of_the_United_States ;
+	dbp:discipline	dbr:History_of_the_United_States .
+dbr:Bibliography_of_American_history	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Where_in_America\u0027s_Past_Is_Carmen_Sandiego%3F>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Education_in_Puerto_Rico	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Douglas_Brinkley	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Hurricane_Floyd	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Teachinghistory.org>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbp:focus	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/2021\u20132022_book_banning_in_the_United_States>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/H._R._McMaster>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Leonardo_Drew	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:West_Leyden_High_School	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Social_issue	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/El_Camino_Real_(California)>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Second_Great_Migration_(African_American)>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Indian_agent	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Shane_Douglas	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:American_urban_history	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:List_of_Veiled_Prophet_Parade_and_Ball_themes	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Andrew_R._Heinze>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Theodore_Roosevelt_High_School_(Kent,_Ohio)>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Sven_Beckert	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Gregory_Allen_Howard	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Zara_Steiner	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:The_Leaders_We_Deserved	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:nonFictionSubject	dbr:History_of_the_United_States ;
+	dbp:subject	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Elbert_B._Smith>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/The_U.S._of_Archie>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Edward_Moran	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Morganza_Spillway	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Vic_Feazell	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:List_of_South_Carolina_state_symbols	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:United_States_Academic_Decathlon	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/The_Muppets_Present...Great_Moments_in_American_History>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Oregon_Historical_Society	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Marvin_S._Hill>	dbp:subDiscipline	dbr:History_of_the_United_States .
+dbr:Laurel_Thatcher_Ulrich	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:The_Dream_Shall_Never_Die	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/U.S._space_exploration_history_on_U.S._stamps>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Kerby_A._Miller>	dbp:subDiscipline	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Jon_H._Roberts>	dbp:subDiscipline	dbr:History_of_the_United_States .
+dbr:Backroads_Pragmatists	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:nonFictionSubject	dbr:History_of_the_United_States ;
+	dbp:subject	dbr:History_of_the_United_States .
+@prefix ns8:	<http://dbpedia.org/resource/American_History:> .
+ns8:_A_Survey	dbo:nonFictionSubject	dbr:History_of_the_United_States .
+dbr:Myth_America	dbo:nonFictionSubject	dbr:History_of_the_United_States ;
+	dbp:subject	dbr:History_of_the_United_States .
+dbr:Massachusetts	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Index_of_history_articles	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Salem_witch_trials	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Deerfield_Beach_High_School	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:History_of_the_Southern_United_States	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Tarboro,_North_Carolina>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/1919_Florida_Keys_hurricane>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Collierville_Middle_School	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Merit_badge_(Boy_Scouts_of_America)>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Northwestern_High_School_(Hyattsville,_Maryland)>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Groton-Dunstable_Regional_High_School	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Eric_Alterman	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Alfred_H._Bill>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/David_M._Ludlum>	dbp:fields	dbr:History_of_the_United_States ;
+	dbo:academicDiscipline	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Alexander_Johnston_(historian)>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Harry_Cranbrook_Allen	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/The_Roosevelts_(miniseries)>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:American_History	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:wikiPageRedirects	dbr:History_of_the_United_States .
+dbr:Robert_Middlekauff	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Lawrence_A._Cremin>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Mary_Beth_Norton	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Freedom!_(video_game)>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:The_Next_Civil_War	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Edward_Percy_Moran	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Ari_Hoogenboom	dc:subject	dbr:History_of_the_United_States ;
+	dbp:subject	dbr:History_of_the_United_States .
+dbr:Corky_Lee	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:John_Austin_Stevens	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Victor_Ferkiss	dbp:discipline	dbr:History_of_the_United_States .
+dbr:New_York_State_School_of_Industrial_and_Labor_Relations_at_Cornell_University	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Irwin_Unger	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Alan_Brinkley	dbp:discipline	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Sunfire_(series)>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Lower_East_Side_Tenement_Museum	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Tatiana_Schlossberg	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Georges_Kersaudy	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Ellen_Schrecker	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Blizzard!_The_Storm_That_Changed_America>	dbo:nonFictionSubject	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Rattlesnake_Creek_(Bronx)>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Horatio_Strother	dbp:discipline	dbr:History_of_the_United_States .
+dbr:Margaret_Borland	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Mutiny_on_the_Amistad	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:nonFictionSubject	dbr:History_of_the_United_States ;
+	dbp:subject	dbr:History_of_the_United_States .
+dbr:The_Jewish_Confederates	dbo:literaryGenre	dbr:History_of_the_United_States ;
+	dbp:genre	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Robert_H._Babcock>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Religious_discrimination_in_the_United_States	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Anarky_(comic_book)>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Leo_J._Ryan_Federal_Building>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Southwest_High_School_(El_Centro,_California)>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Floodlines	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbp:genre	dbr:History_of_the_United_States .
+dbr:Form_N-400	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Neo-Confederates	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:National_Society_United_States_Daughters_of_1812	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/2021_South_Sandwich_Islands_earthquakes>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Rockefeller_family	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:US_Senate_career_of_Barack_Obama	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Parallel_36\u00B030\u2032_north>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Era_of_Good_Feelings	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:American_nationalism	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:American_Creation	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:History_of_the_United_States_Constitution	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:History_of_the_United_States_Congress	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:List_of_federal_political_sex_scandals_in_the_United_States	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:StudioEIS	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Carpetbagger	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:United_States_Capitol	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Robert_W._McElroy>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Thomas_E._Jeffrey>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Andrew_Neil	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Spain\u2013United_States_relations>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:American_exceptionalism	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:History_of_the_United_States_Marine_Corps	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Religious_discrimination	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Outline_of_United_States_history	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/118th_Infantry_Regiment_(United_States)>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Anti-Catholicism	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Cornell_University_Department_of_History	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Thirteenth_Amendment_to_the_United_States_Constitution	rdfs:seeAlso	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Why_We\u0027re_Polarized>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:David_Huebner	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Michael_Hayden_(general)>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Profiles_in_Courage_(TV_series)>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:List_of_Booknotes_interviews_first_aired_in_1994	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Reagan_era	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:List_of_Booknotes_interviews_first_aired_in_1993	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Scott_E._Green>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Albert_E._Van_Dusen>	dbp:discipline	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Brian_Kelly_(historian)>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/American_Heritage_(magazine)>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:genre	dbr:History_of_the_United_States ;
+	dbp:category	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Edward_J._Davies>	dbp:mainInterests	dbr:History_of_the_United_States .
+dbr:Tony_Badger	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Ingrid_Semmingsen	dbp:fields	dbr:History_of_the_United_States ;
+	dbo:academicDiscipline	dbr:History_of_the_United_States .
+dbr:Forest_Hills_Eastern_High_School	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Race_for_the_White_House	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+@prefix ns9:	<http://dbpedia.org/resource/USA/> .
+ns9:From_Where_We_Stand	dbo:nonFictionSubject	dbr:History_of_the_United_States ;
+	dbp:subject	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Alfonso_M\u00FAnera_Cavad\u00EDa>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:John_McWhorter	dbp:mainInterests	dbr:History_of_the_United_States .
+dbr:A_Song_for_Harlem	dbo:nonFictionSubject	dbr:History_of_the_United_States ;
+	dbp:subject	dbr:History_of_the_United_States .
+dbr:Herbert_Aptheker	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Camilla_Townsend	dbp:discipline	dbr:History_of_the_United_States .
+dbr:Louise_Barnett	dbp:period	dbr:History_of_the_United_States .
+dbr:Insignia_Films	dbp:industry	dbr:History_of_the_United_States ;
+	dbo:industry	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Martin_W._Sandler>	dbo:genre	dbr:History_of_the_United_States ;
+	dbp:genre	dbr:History_of_the_United_States .
+dbr:John_Olszowka	dbp:fields	dbr:History_of_the_United_States ;
+	dbo:academicDiscipline	dbr:History_of_the_United_States .
+dbr:United_States	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Spectrum_(brand)>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Hispanic_and_Latino_Americans	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Trucking_industry_in_the_United_States	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:United_States_home_front_during_World_War_I	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:History_of_antisemitism_in_the_United_States	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/2014_in_the_United_States>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Northern_Highlands_Regional_High_School	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:January_6_United_States_Capitol_attack	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Robert_F._Kennedy_Department_of_Justice_Building>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Kenneth_O\u0027Reilly>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Global_surveillance_disclosures_(2013\u2013present)>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Second_American_Civil_War	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:List_of_Italian_Americans	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Michael_Cimino	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Robert_De_Niro	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:List_of_earthquakes_in_2021	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Education_in_the_United_States	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/1830s>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/History_(American_TV_network)>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Punahou_School	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:List_of_people_educated_at_Bedford_School	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Stuyvesant_High_School	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:List_of_Booknotes_interviews_first_aired_in_1999	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Yakov_Lidski	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Thomas_Alan_Schwartz	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbp:fields	dbr:History_of_the_United_States ;
+	dbo:academicDiscipline	dbr:History_of_the_United_States .
+dbr:Propaganda_in_the_United_States	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/119th_Field_Artillery_Regiment>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Boise_High_School	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:American_Colonies	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+@prefix ns10:	<http://dbpedia.org/resource/Frederick_Douglass:> .
+ns10:_The_Lion_Who_Wrote_History	dbo:nonFictionSubject	dbr:History_of_the_United_States .
+dbr:The_Five_Thousand_Year_Leap	dbo:literaryGenre	dbr:History_of_the_United_States ;
+	dbp:genre	dbr:History_of_the_United_States .
+dbr:Texas_Academy_of_Mathematics_and_Science	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Lewis_H._Gann>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Recruit_Educational_Center	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Studebaker_National_Museum	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Treaty_with_Morocco_(1836)>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Theodore_P._Savas>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Simpich_Character_Dolls	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:The_City_on_the_Edge_of_Forever	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Oregon_Geographic_Names	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/List_of_American_women\u0027s_firsts>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Essex_County,_Ontario>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:San_Diego_Zoo	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Scalawag	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Internment_of_Japanese_Americans	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:American_Experience	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Crown_Heights_riot	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:The_Heroic_Age_of_American_Invention	dbo:nonFictionSubject	dbr:History_of_the_United_States ;
+	dbp:subject	dbr:History_of_the_United_States .
+dbr:List_of_museums_in_Florida	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/This_Is_America,_Charlie_Brown>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/History_of_Louisville,_Kentucky>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Gilded_Age	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Theodorus_Jacobus_Frelinghuysen	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+@prefix ns11:	<http://dbpedia.org/resource/Empire:> .
+ns11:_Total_War	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Universal_history	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Holiday_World_&_Splashin\u0027_Safari>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Marilynne_Robinson	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Leland_Sage	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Janelle_K._Sarauw>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/James_P._Shenton>	dbp:discipline	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/U.S._history>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:wikiPageRedirects	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/2020s_controversies_around_critical_race_theory>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:How_Curious_a_Land	dbo:literaryGenre	dbr:History_of_the_United_States ;
+	dbp:genre	dbr:History_of_the_United_States .
+dbr:List_of_African-American_United_States_senators	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Lost_Cause_of_the_Confederacy	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Sutter\u0027s_Mill>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Conceived_in_Liberty	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:nonFictionSubject	dbr:History_of_the_United_States ;
+	dbp:subject	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Steven_F._Hayward>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Plea	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/David_Rothman_(medical_historian)>	dbp:field	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/George_B._Hutchinson>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Seth_Rockman	dbp:discipline	dbr:History_of_the_United_States .
+dbr:Matthew_Frye_Jacobson	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Eric_Rauchway	dbp:fields	dbr:History_of_the_United_States ;
+	dbo:academicDiscipline	dbr:History_of_the_United_States .
+dbr:United_States_Armed_Forces	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:History_of_North_Carolina	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Unethical_human_experimentation_in_the_United_States	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:World_War_III	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+@prefix rdf:	<http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix owl:	<http://www.w3.org/2002/07/owl#> .
+dbr:History_of_the_United_States	rdf:type	owl:Thing ;
+	rdfs:seeAlso	dbr:Union_army ,
+		<http://dbpedia.org/resource/Cold_War_(1985\u20131991)> ,
+		dbr:Spanish_colonization_of_the_Americas ,
+		<http://dbpedia.org/resource/History_of_the_United_States_(1789\u20131815)> ,
+		dbr:United_States ,
+		dbr:American_entry_into_World_War_I ,
+		dbr:Native_Americans ,
+		dbr:French_colonization_of_the_Americas ,
+		dbr:Historiography_of_World_War_II ,
+		dbr:Plantation_complexes ,
+		dbr:Southern_United_States ,
+		dbr:Dutch_colonization_of_the_Americas ;
+	owl:sameAs	<http://ur.dbpedia.org/resource/\u062A\u0627\u0631\u06CC\u062E_\u0631\u06CC\u0627\u0633\u062A\u06C1\u0627\u0626\u06D2_\u0645\u062A\u062D\u062F\u06C1> .
+@prefix dbpedia-fi:	<http://fi.dbpedia.org/resource/> .
+dbr:History_of_the_United_States	owl:sameAs	dbpedia-fi:Yhdysvaltain_historia ,
+		<http://el.dbpedia.org/resource/\u0399\u03C3\u03C4\u03BF\u03C1\u03AF\u03B1_\u03C4\u03C9\u03BD_\u0397\u03BD\u03C9\u03BC\u03AD\u03BD\u03C9\u03BD_\u03A0\u03BF\u03BB\u03B9\u03C4\u03B5\u03B9\u03CE\u03BD_\u0391\u03BC\u03B5\u03C1\u03B9\u03BA\u03AE\u03C2> ,
+		<http://da.dbpedia.org/resource/USA\u0027s_historie> ,
+		<http://hr.dbpedia.org/resource/Povijest_Sjedinjenih_Ameri\u010Dkih_Dr\u017Eava> ,
+		<http://fo.dbpedia.org/resource/Amerikonsk_s\u00F8ga> ,
+		<http://sh.dbpedia.org/resource/Historija_Sjedinjenih_Ameri\u010Dkih_Dr\u017Eava> ,
+		<http://ar.dbpedia.org/resource/\u062A\u0627\u0631\u064A\u062E_\u0627\u0644\u0648\u0644\u0627\u064A\u0627\u062A_\u0627\u0644\u0645\u062A\u062D\u062F\u0629> .
+@prefix dbpedia-fy:	<http://fy.dbpedia.org/resource/> .
+dbr:History_of_the_United_States	owl:sameAs	dbpedia-fy:Skiednis_fan_de_Feriene_Steaten ,
+		<http://mk.dbpedia.org/resource/\u0418\u0441\u0442\u043E\u0440\u0438\u0458\u0430_\u043D\u0430_\u0421\u0410\u0414> ,
+		<http://ast.dbpedia.org/resource/Historia_d\u0027Estaos_Xun\u00EDos_d\u0027Am\u00E9rica> ,
+		<http://be.dbpedia.org/resource/\u0413\u0456\u0441\u0442\u043E\u0440\u044B\u044F_\u0417\u0428\u0410> ,
+		<http://pnb.dbpedia.org/resource/\u0631\u06CC\u0627\u0633\u062A\u06C1\u0627\u0626\u06D2_\u0645\u062A\u062D\u062F\u06C1_\u062F\u06CC_\u062A\u0631\u06CC\u062E> ,
+		<http://ta.dbpedia.org/resource/\u0B90\u0B95\u0BCD\u0B95\u0BBF\u0BAF_\u0B85\u0BAE\u0BC6\u0BB0\u0BBF\u0B95\u0BCD\u0B95_\u0BB5\u0BB0\u0BB2\u0BBE\u0BB1\u0BC1> ,
+		<http://az.dbpedia.org/resource/Amerika_Birl\u0259\u015Fmi\u015F_\u015Etatlar\u0131_tarixi> .
+@prefix wikidata:	<http://www.wikidata.org/entity/> .
+dbr:History_of_the_United_States	owl:sameAs	wikidata:Q131110 .
+@prefix dbpedia-ro:	<http://ro.dbpedia.org/resource/> .
+dbr:History_of_the_United_States	owl:sameAs	dbpedia-ro:Istoria_Statelor_Unite_ale_Americii ,
+		<http://cs.dbpedia.org/resource/D\u011Bjiny_Spojen\u00FDch_st\u00E1t\u016F_americk\u00FDch> .
+@prefix dbpedia-simple:	<http://simple.dbpedia.org/resource/> .
+dbr:History_of_the_United_States	owl:sameAs	dbpedia-simple:History_of_the_United_States ,
+		<http://ba.dbpedia.org/resource/\u0410\u04A0\u0428_\u0442\u0430\u0440\u0438\u0445\u044B> .
+@prefix ns19:	<http://sw.cyc.com/concept/> .
+dbr:History_of_the_United_States	owl:sameAs	ns19:Mx4rwIf82ZwpEbGdrcN5Y29ycA ,
+		<http://hu.dbpedia.org/resource/Az_Amerikai_Egyes\u00FClt_\u00C1llamok_t\u00F6rt\u00E9nelme> .
+@prefix ns20:	<http://sv.dbpedia.org/resource/USA:> .
+dbr:History_of_the_United_States	owl:sameAs	ns20:s_historia ,
+		<http://zh.dbpedia.org/resource/\u7F8E\u56FD\u5386\u53F2> ,
+		<http://tr.dbpedia.org/resource/Amerika_Birle\u015Fik_Devletleri_tarihi> ,
+		<http://ka.dbpedia.org/resource/\u10D0\u10E8\u10E8-\u10D8\u10E1_\u10D8\u10E1\u10E2\u10DD\u10E0\u10D8\u10D0> ,
+		<http://si.dbpedia.org/resource/\u0D85\u0DB8\u0DD9\u0DBB\u0DD2\u0D9A\u0DCF_\u0D91\u0D9A\u0DCA\u0DC3\u0DAD\u0DCA_\u0DA2\u0DB1\u0DB4\u0DAF\u0DBA\u0DDA_\u0D89\u0DAD\u0DD2\u0DC4\u0DCF\u0DC3\u0DBA> ,
+		<http://uk.dbpedia.org/resource/\u0406\u0441\u0442\u043E\u0440\u0456\u044F_\u0421\u0428\u0410> ,
+		<http://fa.dbpedia.org/resource/\u062A\u0627\u0631\u06CC\u062E_\u0627\u06CC\u0627\u0644\u0627\u062A_\u0645\u062A\u062D\u062F\u0647_\u0622\u0645\u0631\u06CC\u06A9\u0627> ,
+		<http://ckb.dbpedia.org/resource/\u0645\u06CE\u0698\u0648\u0648\u06CC_\u0648\u06CC\u0644\u0627\u06CC\u06D5\u062A\u06D5_\u06CC\u06D5\u06A9\u06AF\u0631\u062A\u0648\u0648\u06D5\u06A9\u0627\u0646\u06CC_\u0626\u06D5\u0645\u0631\u06CC\u06A9\u0627> .
+@prefix dbpedia-cy:	<http://cy.dbpedia.org/resource/> .
+dbr:History_of_the_United_States	owl:sameAs	dbpedia-cy:Hanes_yr_Unol_Daleithiau .
+@prefix dbpedia-io:	<http://io.dbpedia.org/resource/> .
+dbr:History_of_the_United_States	owl:sameAs	dbpedia-io:Historio_di_Usa ,
+		<http://yi.dbpedia.org/resource/\u05D4\u05D9\u05E1\u05D8\u05D0\u05E8\u05D9\u05E2_\u05E4\u05D5\u05DF_\u05D3\u05D9_\u05E4\u05D0\u05E8\u05D0\u05D9\u05D9\u05E0\u05D9\u05D2\u05D8\u05E2_\u05E9\u05D8\u05D0\u05D8\u05DF> ,
+		<http://jv.dbpedia.org/resource/Sajarah_Am\u00E9rika_Sar\u00E9kat> ,
+		<http://ja.dbpedia.org/resource/\u30A2\u30E1\u30EA\u30AB\u5408\u8846\u56FD\u306E\u6B74\u53F2> ,
+		<http://ky.dbpedia.org/resource/\u0410\u043C\u0435\u0440\u0438\u043A\u0430_\u041A\u043E\u0448\u043C\u043E_\u0428\u0442\u0430\u0442\u0442\u0430\u0440\u044B_\u0442\u0430\u0440\u044B\u0445\u044B> .
+@prefix dbpedia-nl:	<http://nl.dbpedia.org/resource/> .
+dbr:History_of_the_United_States	owl:sameAs	dbpedia-nl:Geschiedenis_van_de_Verenigde_Staten .
+@prefix dbpedia-war:	<http://war.dbpedia.org/resource/> .
+dbr:History_of_the_United_States	owl:sameAs	dbpedia-war:Kaagi_han_Estados_Unidos ,
+		<http://th.dbpedia.org/resource/\u0E1B\u0E23\u0E30\u0E27\u0E31\u0E15\u0E34\u0E28\u0E32\u0E2A\u0E15\u0E23\u0E4C\u0E2A\u0E2B\u0E23\u0E31\u0E10> .
+@prefix dbpedia-global:	<https://global.dbpedia.org/id/> .
+dbr:History_of_the_United_States	owl:sameAs	dbpedia-global:LYeY .
+@prefix dbpedia-la:	<http://la.dbpedia.org/resource/> .
+dbr:History_of_the_United_States	owl:sameAs	dbpedia-la:Historia_Civitatum_Foederatarum_Americae .
+@prefix dbpedia-ms:	<http://ms.dbpedia.org/resource/> .
+dbr:History_of_the_United_States	owl:sameAs	dbpedia-ms:Sejarah_Amerika_Syarikat ,
+		<http://bn.dbpedia.org/resource/\u09AE\u09BE\u09B0\u09CD\u0995\u09BF\u09A8_\u09AF\u09C1\u0995\u09CD\u09A4\u09B0\u09BE\u09B7\u09CD\u099F\u09CD\u09B0\u09C7\u09B0_\u0987\u09A4\u09BF\u09B9\u09BE\u09B8> ,
+		<http://pt.dbpedia.org/resource/Hist\u00F3ria_dos_Estados_Unidos> .
+@prefix dbpedia-af:	<http://af.dbpedia.org/resource/> .
+dbr:History_of_the_United_States	owl:sameAs	dbpedia-af:Geskiedenis_van_die_Verenigde_State_van_Amerika ,
+		<http://ca.dbpedia.org/resource/Hist\u00F2ria_dels_Estats_Units> ,
+		<http://pa.dbpedia.org/resource/\u0A05\u0A2E\u0A30\u0A40\u0A15\u0A3E_\u0A26\u0A3E_\u0A07\u0A24\u0A3F\u0A39\u0A3E\u0A38> .
+@prefix dbpedia-de:	<http://de.dbpedia.org/resource/> .
+dbr:History_of_the_United_States	owl:sameAs	dbpedia-de:Geschichte_der_Vereinigten_Staaten ,
+		<http://bg.dbpedia.org/resource/\u0418\u0441\u0442\u043E\u0440\u0438\u044F_\u043D\u0430_\u0421\u0410\u0429> ,
+		<http://kn.dbpedia.org/resource/\u0C85\u0CAE\u0CC6\u0CB0\u0CBF\u0C95\u0CA6_\u0C87\u0CA4\u0CBF\u0CB9\u0CBE\u0CB8> ,
+		<http://pl.dbpedia.org/resource/Historia_Stan\u00F3w_Zjednoczonych> .
+@prefix dbpedia-eu:	<http://eu.dbpedia.org/resource/> .
+dbr:History_of_the_United_States	owl:sameAs	dbpedia-eu:Ameriketako_Estatu_Batuetako_historia ,
+		<http://sk.dbpedia.org/resource/Dejiny_Spojen\u00FDch_\u0161t\u00E1tov> ,
+		<http://fr.dbpedia.org/resource/Histoire_des_\u00C9tats-Unis> .
+@prefix dbpedia-es:	<http://es.dbpedia.org/resource/> .
+dbr:History_of_the_United_States	owl:sameAs	dbpedia-es:Historia_de_los_Estados_Unidos .
+@prefix dbpedia-no:	<http://no.dbpedia.org/resource/> .
+dbr:History_of_the_United_States	owl:sameAs	dbpedia-no:USAs_historie ,
+		<http://it.dbpedia.org/resource/Storia_degli_Stati_Uniti_d\u0027America> ,
+		<http://ru.dbpedia.org/resource/\u0418\u0441\u0442\u043E\u0440\u0438\u044F_\u0421\u0428\u0410> .
+@prefix dbpedia-id:	<http://id.dbpedia.org/resource/> .
+dbr:History_of_the_United_States	owl:sameAs	dbpedia-id:Sejarah_Amerika_Serikat .
+@prefix dbpedia-eo:	<http://eo.dbpedia.org/resource/> .
+dbr:History_of_the_United_States	owl:sameAs	dbpedia-eo:Historio_de_Usono ,
+		<http://my.dbpedia.org/resource/\u1021\u1019\u1031\u101B\u102D\u1000\u1014\u103A\u1014\u102D\u102F\u1004\u103A\u1004\u1036\u101E\u1019\u102D\u102F\u1004\u103A\u1038> ,
+		<http://sr.dbpedia.org/resource/\u0418\u0441\u0442\u043E\u0440\u0438\u0458\u0430_\u0421\u0458\u0435\u0434\u0438\u045A\u0435\u043D\u0438\u0445_\u0410\u043C\u0435\u0440\u0438\u0447\u043A\u0438\u0445_\u0414\u0440\u0436\u0430\u0432\u0430> ,
+		dbr:History_of_the_United_States ,
+		<http://uz.dbpedia.org/resource/Amerika_Qo\u02BBshma_Shtatlari_tarixi> ,
+		<http://gl.dbpedia.org/resource/Historia_dos_Estados_Unidos_de_Am\u00E9rica> ,
+		<http://vi.dbpedia.org/resource/L\u1ECBch_s\u1EED_Hoa_K\u1EF3> ,
+		<http://sq.dbpedia.org/resource/Historia_e_Shteteve_t\u00EB_Bashkuara_t\u00EB_Amerik\u00EBs> ,
+		<http://bs.dbpedia.org/resource/Historija_Sjedinjenih_Ameri\u010Dkih_Dr\u017Eava> ,
+		<http://sl.dbpedia.org/resource/Zgodovina_Zdru\u017Eenih_dr\u017Eav_Amerike> ,
+		<http://lt.dbpedia.org/resource/Jungtini\u0173_Amerikos_Valstij\u0173_istorija> ,
+		<http://he.dbpedia.org/resource/\u05D4\u05D9\u05E1\u05D8\u05D5\u05E8\u05D9\u05D4_\u05E9\u05DC_\u05D0\u05E8\u05E6\u05D5\u05EA_\u05D4\u05D1\u05E8\u05D9\u05EA> ,
+		<http://hy.dbpedia.org/resource/\u0531\u0574\u0565\u0580\u056B\u056F\u0561\u0575\u056B_\u0544\u056B\u0561\u0581\u0575\u0561\u056C_\u0546\u0561\u0570\u0561\u0576\u0563\u0576\u0565\u0580\u056B_\u057A\u0561\u057F\u0574\u0578\u0582\u0569\u0575\u0578\u0582\u0576> .
+@prefix dbpedia-commons:	<http://commons.dbpedia.org/resource/> .
+dbr:History_of_the_United_States	owl:sameAs	dbpedia-commons:History_of_the_United_States ,
+		<http://lv.dbpedia.org/resource/ASV_v\u0113sture> ,
+		<http://ko.dbpedia.org/resource/\uBBF8\uAD6D\uC758_\uC5ED\uC0AC> ;
+	rdfs:label	"Histoire des \u00C9tats-Unis"@fr ,
+		"Historia de los Estados Unidos"@es ,
+		"\u30A2\u30E1\u30EA\u30AB\u5408\u8846\u56FD\u306E\u6B74\u53F2"@ja ,
+		"\uBBF8\uAD6D\uC758 \uC5ED\uC0AC"@ko ,
+		"USA:s historia"@sv ,
+		"Historia Stan\u00F3w Zjednoczonych"@pl ,
+		"\u062A\u0627\u0631\u064A\u062E \u0627\u0644\u0648\u0644\u0627\u064A\u0627\u062A \u0627\u0644\u0645\u062A\u062D\u062F\u0629"@ar ,
+		"Ameriketako Estatu Batuetako historia"@eu ,
+		"Geschiedenis van de Verenigde Staten"@nl ,
+		"Hist\u00F3ria dos Estados Unidos"@pt ,
+		"\u0418\u0441\u0442\u043E\u0440\u0438\u044F \u0421\u0428\u0410"@ru ,
+		"Historio de Usono"@eo ,
+		"\u7F8E\u56FD\u5386\u53F2"@zh ,
+		"Sejarah Amerika Serikat"@in ,
+		"Hist\u00F2ria dels Estats Units"@ca ,
+		"\u0399\u03C3\u03C4\u03BF\u03C1\u03AF\u03B1 \u03C4\u03C9\u03BD \u0397\u03BD\u03C9\u03BC\u03AD\u03BD\u03C9\u03BD \u03A0\u03BF\u03BB\u03B9\u03C4\u03B5\u03B9\u03CE\u03BD \u0391\u03BC\u03B5\u03C1\u03B9\u03BA\u03AE\u03C2"@el ,
+		"D\u011Bjiny Spojen\u00FDch st\u00E1t\u016F americk\u00FDch"@cs ,
+		"History of the United States"@en ,
+		"\u0406\u0441\u0442\u043E\u0440\u0456\u044F \u0421\u0428\u0410"@uk ,
+		"Geschichte der Vereinigten Staaten"@de ,
+		"Storia degli Stati Uniti d'America"@it .
+@prefix dct:	<http://purl.org/dc/terms/> .
+@prefix dbc:	<http://dbpedia.org/resource/Category:> .
+dbr:History_of_the_United_States	dct:subject	dbc:History_of_the_United_States ;
+	foaf:homepage	<http://usa.usembassy.de> ;
+	foaf:depiction	<http://commons.wikimedia.org/wiki/Special:FilePath/Official_Presidential_portrait_of_Thomas_Jefferson_(by_Rembrandt_Peale,_1800)(cropped).jpg> ,
+		<http://commons.wikimedia.org/wiki/Special:FilePath/Raising_the_Flag_on_Iwo_Jima,_larger_-_edit1.jpg> ,
+		<http://commons.wikimedia.org/wiki/Special:FilePath/Camp_meeting.jpg> ,
+		<http://commons.wikimedia.org/wiki/Special:FilePath/A_Man_on_the_Moon,_AS11-40-5903_(cropped).jpg> ,
+		<http://commons.wikimedia.org/wiki/Special:FilePath/Marshall_Plan_poster.jpg> ,
+		<http://commons.wikimedia.org/wiki/Special:FilePath/Operation_Arkansas,_Little_Rock_Nine.jpg> ,
+		<http://commons.wikimedia.org/wiki/Special:FilePath/Thoughts_and_Prayers_Don\u0027t_Save_Lives_(40369207261)_(cropped).jpg> ,
+		<http://commons.wikimedia.org/wiki/Special:FilePath/Gullah_s_carolina_1790.jpg> ,
+		<http://commons.wikimedia.org/wiki/Special:FilePath/Peopling_of_America_through_Beringia.png> ,
+		<http://commons.wikimedia.org/wiki/Special:FilePath/White_house_Rainbow_20150626.png> ,
+		<http://commons.wikimedia.org/wiki/Special:FilePath/The_USS_Arizona_(BB-39)_burning_after_the_Japanese_attack_on_Pearl_Harbor_-_NARA_195617_-_Edit.jpg> ,
+		<http://commons.wikimedia.org/wiki/Special:FilePath/Battle_erie.jpg> ,
+		<http://commons.wikimedia.org/wiki/Special:FilePath/Donald_Trump_Signs_One_Big_Beautiful_Bill_into_Law.png> ,
+		<http://commons.wikimedia.org/wiki/Special:FilePath/Kkk-carpetbagger-cartoon.jpg> ,
+		<http://commons.wikimedia.org/wiki/Special:FilePath/940721-remington-givingthemthebutt-harpersweekly.jpg> ,
+		<http://commons.wikimedia.org/wiki/Special:FilePath/North_American_cultural_areas.png> ,
+		<http://commons.wikimedia.org/wiki/Special:FilePath/Civil_Rights_March_on_Washington,_D.C._(Leaders_marching_from_the_Washington_Monument_to_the_Lincoln_Memorial)_-_NARA_-_542010.jpg> ,
+		<http://commons.wikimedia.org/wiki/Special:FilePath/Money_supply_during_the_great_depression_era.png> ,
+		<http://commons.wikimedia.org/wiki/Special:FilePath/General_Robert_E._Lee_surrenders_at_Appomattox_Court_House_1865.jpg> ,
+		<http://commons.wikimedia.org/wiki/Special:FilePath/NATO_vs._Warsaw_Pact_(1949-1990).svg> ,
+		<http://commons.wikimedia.org/wiki/Special:FilePath/Remember_Your_Weekly_Pledge_Massachusetts_Anti-Slavey_Society_collection_box.jpg> ,
+		<http://commons.wikimedia.org/wiki/Special:FilePath/Trails_of_Tears_en.png> ,
+		<http://commons.wikimedia.org/wiki/Special:FilePath/-i---i-_(52380995447).jpg> ,
+		<http://commons.wikimedia.org/wiki/Special:FilePath/Cimeti\u00E8re_am\u00E9ricain_de_Romagne-sous-Montfaucon_-_1918_-_France.jpg> ,
+		<http://commons.wikimedia.org/wiki/Special:FilePath/East_and_West_Shaking_hands_at_the_laying_of_last_rail_Union_Pacific_Railroad_-_Restoration.jpg> ,
+		<http://commons.wikimedia.org/wiki/Special:FilePath/A_female_demonstrator_offers_a_flower_to_military_police_on_guard_at_the_Pentagon_during_an_anti-Vietnam_demonstration._Arlington,_Virginia,_USA.jpg> ,
+		<http://commons.wikimedia.org/wiki/Special:FilePath/U.S._Territorial_Acquisitions.png> ,
+		<http://commons.wikimedia.org/wiki/Special:FilePath/US_Secession_map_1863_(BlankMap_derived).png> ,
+		<http://commons.wikimedia.org/wiki/Special:FilePath/USAF_F-16A_F-15C_F-15E_Desert_Storm_edit2.jpg> ,
+		<http://commons.wikimedia.org/wiki/Special:FilePath/Treaty_of_Penn_with_Indians_by_Benjamin_West.jpg> ,
+		<http://commons.wikimedia.org/wiki/Special:FilePath/Suffragists_Parade_Down_Fifth_Avenue,_1917.jpg> ,
+		<http://commons.wikimedia.org/wiki/Special:FilePath/Oklahomacitybombing-DF-ST-98-01356.jpg> ,
+		<http://commons.wikimedia.org/wiki/Special:FilePath/Nouvelle-France_map-en.svg> ,
+		<http://commons.wikimedia.org/wiki/Special:FilePath/1981\u20131989_monthly_unemployment,_inflation,_and_interest_rates.svg> ,
+		<http://commons.wikimedia.org/wiki/Special:FilePath/Mayflower_in_Plymouth_Harbor,_by_William_Halsall.jpg> ,
+		<http://commons.wikimedia.org/wiki/Special:FilePath/Boston_Tea_Party_Currier_colored.jpg> ,
+		<http://commons.wikimedia.org/wiki/Special:FilePath/Crowe-Slaves_Waiting_for_Sale_-_Richmond,_Virginia.jpg> ,
+		<http://commons.wikimedia.org/wiki/Special:FilePath/United_States_(+overseas),_administrative_divisions_-_en_-_colored_(zoom).svg> ,
+		<http://commons.wikimedia.org/wiki/Special:FilePath/FreedmenVotingInNewOrleans1867.jpeg> ,
+		<http://commons.wikimedia.org/wiki/Special:FilePath/Election_Day_1815_by_John_Lewis_Krimmel.jpg> ,
+		<http://commons.wikimedia.org/wiki/Special:FilePath/McKinleyAssassination.jpg> ,
+		<http://commons.wikimedia.org/wiki/Special:FilePath/Matth\u00E4us_Merian_d\u00C6,_S\u00E5ledes_blev_ogs\u00E5_denne_fred_brudt_p\u00E5_grund_af_bedrag,_,_KKSgb10894-5,_Statens_Museum_for_Kunst.jpg> ,
+		<http://commons.wikimedia.org/wiki/Special:FilePath/Monks_Mound_in_July.jpg> ,
+		<http://commons.wikimedia.org/wiki/Special:FilePath/Tlingit_K\u0027alyaan_Totem_Pole_August_2005.jpg> ,
+		<http://commons.wikimedia.org/wiki/Special:FilePath/Nothnagle_Log_House.jpg> ,
+		<http://commons.wikimedia.org/wiki/Special:FilePath/2021_storming_of_the_United_States_Capitol_DSC09254-2_(50820534063)_(retouched).jpg> ,
+		<http://commons.wikimedia.org/wiki/Special:FilePath/San_Pablo_Bastion,_Castillo_de_San_Marcos.jpg> ,
+		<http://commons.wikimedia.org/wiki/Special:FilePath/Explosion_following_the_plane_impact_into_the_South_Tower_(WTC_2)_-_B6019~11.jpg> ,
+		<http://commons.wikimedia.org/wiki/Special:FilePath/Victor_Gillam_A_Thing_Well_Begun_Is_Half_Done_1899_Cornell_CUL_PJM_1136_01.jpg> ,
+		<http://commons.wikimedia.org/wiki/Special:FilePath/Washington_Crossing_the_Delaware_by_Emanuel_Leutze,_MMA-NYC,_1851.jpg> ,
+		<http://commons.wikimedia.org/wiki/Special:FilePath/1850_Woman_and_Men_in_California_Gold_Rush.jpg> .
+@prefix prov:	<http://www.w3.org/ns/prov#> .
+dbr:History_of_the_United_States	prov:wasDerivedFrom	<http://en.wikipedia.org/wiki/History_of_the_United_States?oldid=1311817230&ns=0> .
+@prefix gold:	<http://purl.org/linguistics/gold/> .
+dbr:History_of_the_United_States	gold:hypernym	dbr:Subject ;
+	foaf:isPrimaryTopicOf	wikipedia-en:History_of_the_United_States ;
+	dbo:wikiPageWikiLink	dbr:Birmingham_campaign ,
+		dbr:Alice_Paul ,
+		<http://dbpedia.org/resource/File:Peopling_of_America_through_Beringia.png> ,
+		<http://dbpedia.org/resource/File:Grave_Creek_Mound.jpg> ,
+		dbr:Emancipation_Proclamation ,
+		dbr:Environmental_movement_in_the_United_States ,
+		dbr:Coretta_Scott_King ,
+		dbr:Carrie_Chapman_Catt ,
+		dbr:Black_site ,
+		dbr:African_Americans ,
+		dbr:Watergate_complex ,
+		dbr:Roaring_Twenties ,
+		dbr:Indigenous_peoples_of_the_Pacific_Northwest_Coast ,
+		<http://dbpedia.org/resource/Martin_Luther_King_Jr.> ,
+		dbr:Donald_Trump ,
+		dbr:Industrial_Revolution ,
+		dbr:Roanoke_Colony ,
+		dbr:Laos ,
+		dbr:Watson_Brake ,
+		dbr:Atlanta ,
+		<http://dbpedia.org/resource/Nat_Turner\u0027s_slave_rebellion> ,
+		dbr:Upper_Paleolithic ,
+		<http://dbpedia.org/resource/Susan_B._Anthony> ,
+		<http://dbpedia.org/resource/File:Vietnamdem.jpg> ,
+		<http://dbpedia.org/resource/People\u0027s_Party_(United_States)> ,
+		dbr:Territorial_evolution_of_the_United_States ,
+		dbr:Province_of_North_Carolina ,
+		dbr:Gerald_Ford ,
+		dbr:Democratic_National_Committee ,
+		dbr:Roger_Williams ,
+		dbr:Oregon_Territory ,
+		dbr:Unmanned_combat_aerial_vehicle ,
+		dbr:Monica_Lewinsky ,
+		dbr:Industrial_warfare ,
+		dbr:Province_of_New_York ,
+		dbr:Zimmermann_Telegram ,
+		<http://dbpedia.org/resource/L\u0027Anse_aux_Meadows> ,
+		dbr:Arizona ,
+		dbr:Same-sex_marriage ,
+		dbr:National_Endowment_for_the_Humanities ,
+		dbr:Megafauna ,
+		dbr:Frederick_Douglass ,
+		dbr:United_States ,
+		dbr:Poverty_Point_culture ,
+		dbr:Midwestern_United_States ,
+		<http://dbpedia.org/resource/Chattanooga,_Tennessee> ,
+		dbr:Impeachment_of_Bill_Clinton ,
+		<http://dbpedia.org/resource/2016_United_States_presidential_election> ,
+		dbr:Clovis_culture ,
+		<http://dbpedia.org/resource/2020_United_States_presidential_election> ,
+		dbr:Presidency_of_George_Washington ,
+		dbr:Montevideo ,
+		<http://dbpedia.org/resource/1876_United_States_presidential_election> ,
+		dbr:Wampanoag ,
+		dbr:International_slave_trade ,
+		dbr:Archaeology_of_the_Americas ,
+		dbr:Clovis_point ,
+		dbr:Bleeding_Kansas ,
+		dbr:Civil_Rights_Act_of_1968 ,
+		dbr:Royal_Proclamation_of_1763 ,
+		dbr:United_States_Bill_of_Rights ,
+		dbr:Battle_of_Okinawa ,
+		dbr:New_Amsterdam ,
+		<http://dbpedia.org/resource/File:Money_supply_during_the_great_depression_era.png> ,
+		<http://dbpedia.org/resource/File:Prohibition.jpg> ,
+		dbr:National_American_Woman_Suffrage_Association ,
+		dbr:Francis_Drake ,
+		dbr:United_States_invasion_of_Grenada ,
+		dbr:Janssen_COVID-19_vaccine ,
+		<http://dbpedia.org/resource/1984_United_States_presidential_election> ,
+		dbr:George_Whitefield ,
+		dbr:Dutch_East_India_Company ,
+		<http://dbpedia.org/resource/1970s_Energy_Crisis> ,
+		dbr:Causes_of_the_Great_Depression ,
+		dbr:Deep_South ,
+		dbr:National_debt_of_the_United_States ,
+		dbr:History_of_agriculture_in_the_United_States ,
+		dbr:Compromise_of_1850 ,
+		<http://dbpedia.org/resource/1986_United_States_bombing_of_Libya> ,
+		dbr:Phnom_Penh ,
+		dbr:League_of_Women_Voters ,
+		dbr:Cambodia ,
+		<http://dbpedia.org/resource/File:Nixon-depart.png> ,
+		dbr:Na-Dene_languages ,
+		<http://dbpedia.org/resource/File:President_Ronald_Reagan_making_his_Berlin_Wall_speech.jpg> ,
+		<http://dbpedia.org/resource/Border_states_(American_Civil_War)> ,
+		dbr:First_Continental_Congress ,
+		<http://dbpedia.org/resource/File:Kurz_and_Allison_-_Battle_of_Franklin,_November_30,_1864.jpg> ,
+		dbr:Tax_reform ,
+		dbr:Omaha_people ,
+		<http://dbpedia.org/resource/Shays\u0027_Rebellion> ,
+		<http://dbpedia.org/resource/Stephen_A._Douglas> ,
+		<http://dbpedia.org/resource/Fall_of_Kabul_(2021)> ,
+		<http://dbpedia.org/resource/Mason\u2013Dixon_line> ,
+		dbr:Guano ,
+		dbr:Early_voting ,
+		<http://dbpedia.org/resource/John_Brown\u0027s_raid_on_Harpers_Ferry> ,
+		dbr:Province_of_Pennsylvania ,
+		<http://dbpedia.org/resource/Wilmington,_Delaware> ,
+		<http://dbpedia.org/resource/Dred_Scott_v._Sandford> ,
+		dbr:Theodore_Roosevelt ,
+		<http://dbpedia.org/resource/Rutherford_B._Hayes> ,
+		dbr:Economic_depression ,
+		dbr:Feminism_in_the_United_States ,
+		dbr:Thirteen_Colonies ,
+		dbr:Conservative_coalition ,
+		dbr:Abolitionism_in_the_United_States ,
+		<http://dbpedia.org/resource/Treaty_of_Paris_(1783)> ,
+		<http://dbpedia.org/resource/Iran\u2013Contra_affair> ,
+		dbr:First_Great_Awakening ,
+		dbr:Scalawag ,
+		dbr:Folsom_point ,
+		dbr:Civilian_Conservation_Corps ,
+		dbr:New_York_Harbor ,
+		dbr:Philippines ,
+		dbr:George_Washington ,
+		dbr:American_Civil_War ,
+		dbr:Baptists_in_the_United_States ,
+		<http://dbpedia.org/resource/File:Camp_meeting.jpg> ,
+		dbr:Sherman_Antitrust_Act_of_1890 ,
+		dbr:New_Sweden ,
+		<http://dbpedia.org/resource/Earthworks_(archaeology)> ,
+		dbr:Fifteenth_Amendment_to_the_United_States_Constitution ,
+		dbr:Ponca ,
+		dbr:John_Winthrop ,
+		dbr:Free_negro ,
+		<http://dbpedia.org/resource/Ulysses_S._Grant> ,
+		dbr:Woodrow_Wilson ,
+		<http://dbpedia.org/resource/Philippine\u2013American_War> ,
+		dbr:Founding_Fathers_of_the_United_States ,
+		dbr:Science_education ,
+		<http://dbpedia.org/resource/Kansas\u2013Nebraska_Act> ,
+		dbr:Paulina_Kellogg_Wright_Davis ,
+		dbr:Immigration_to_the_United_States ,
+		<http://dbpedia.org/resource/Brown_v._Board_of_Education> ,
+		dbr:List_of_history_journals ,
+		dbr:Pendleton_Civil_Service_Reform_Act ,
+		dbr:Budget_Control_Act_of_2011 ,
+		<http://dbpedia.org/resource/File:Population_Density_in_the_American_Colonies_1775.gif> ,
+		dbr:Panama_Canal ,
+		dbr:Income_inequality_in_the_United_States ,
+		dbr:Petition_to_the_King ,
+		dbr:Anti-Japanese_sentiment_in_the_United_States ,
+		dbr:Calvinism ,
+		dbr:World_War_II ,
+		<http://dbpedia.org/resource/George_W._Bush> ,
+		dbr:Barack_Obama ,
+		dbr:Bill_Clinton ,
+		<http://dbpedia.org/resource/Social_Security_(United_States)> ,
+		dbr:Progressivism ,
+		<http://dbpedia.org/resource/Franklin_D._Roosevelt> ,
+		dbr:General_Motors ,
+		dbr:Vietnam_War ,
+		dbr:Early_modern_period ,
+		dbr:Chrysler ,
+		dbr:The_Pentagon ,
+		dbr:European_emigration ,
+		dbr:List_of_modern_conflicts_in_the_Middle_East ,
+		<http://dbpedia.org/resource/File:Christian-krohg-leiv-eriksson.jpg> ,
+		<http://dbpedia.org/resource/John_D._Rockefeller> ,
+		dbr:Cordell_Hull ,
+		dbr:Gesta_Hammaburgensis_ecclesiae_pontificum ,
+		dbr:War_on_poverty ,
+		<http://dbpedia.org/resource/Withdrawal_of_U.S._troops_from_Afghanistan_(2011\u20132016)> ,
+		dbr:Ohio ,
+		<http://dbpedia.org/resource/Warren_G._Harding> ,
+		dbr:Atomic_bombings_of_Hiroshima_and_Nagasaki ,
+		dbr:Macmillan_Publishers ,
+		<http://dbpedia.org/resource/Fascist_Italy_(1922\u20131943)> ,
+		dbr:German_Americans ,
+		dbr:Nuclear_weapon ,
+		dbr:Fundamental_rights ,
+		dbr:French_colonization_of_the_Americas ,
+		dbr:Betty_Friedan ,
+		dbr:Communism ,
+		<http://dbpedia.org/resource/Medicare_(United_States)> ,
+		dbr:Christopher_Columbus ,
+		dbr:Dissolution_of_the_Soviet_Union ,
+		dbr:Affordable_Care_Act ,
+		<http://dbpedia.org/resource/File:Stuart-george-washington-constable-1797.jpg> ,
+		<http://dbpedia.org/resource/Richmond,_Virginia> ,
+		dbr:Normandy_landings ,
+		dbr:European_colonization_of_the_Americas ,
+		dbr:Upstate_New_York ,
+		dbr:Domestic_violence ,
+		dbr:New_France ,
+		dbr:Jacob_Riis ,
+		dbr:Archaic_Southwest ,
+		dbr:Chaco_River ,
+		dbr:First_Red_Scare ,
+		dbr:Native_American_cultures_in_the_United_States ,
+		dbr:Attack_on_Pearl_Harbor ,
+		<http://dbpedia.org/resource/File:Mulberry_Street_NYC_c1900_LOC_3g04637u_edit.jpg> ,
+		<http://dbpedia.org/resource/File:The_USS_Arizona_(BB-39)_burning_after_the_Japanese_attack_on_Pearl_Harbor_-_NARA_195617_-_Edit.jpg> ,
+		dbr:Military_history_of_the_United_States ,
+		dbr:American_Recovery_and_Reinvestment_Act_of_2009 ,
+		<http://dbpedia.org/resource/Albuquerque,_New_Mexico> ,
+		dbr:Albany_Congress ,
+		dbr:Western_Theater_of_the_American_Civil_War ,
+		dbr:Free_people_of_color ,
+		dbr:Lucretia_Mott ,
+		dbr:Guam ,
+		dbr:Allan_Nevins ,
+		dbr:Impressment ,
+		dbr:Norsemen ,
+		dbr:Declaration_and_Resolves_of_the_First_Continental_Congress ,
+		dbr:Manhattan ,
+		dbr:United_States_home_front_during_World_War_II ,
+		dbr:London_Company ,
+		<http://dbpedia.org/resource/File:TeaPartyByFreedomFan.JPG> ,
+		dbr:Continental_Association ,
+		dbr:Western_Hemisphere ,
+		<http://dbpedia.org/resource/Robert_M._La_Follette> ,
+		dbr:First_impeachment_of_Donald_Trump ,
+		dbr:Battle_of_Perryville ,
+		dbr:San_Antonio ,
+		dbr:Colonial_history_of_the_United_States ,
+		dbr:Operation_Downfall ,
+		<http://dbpedia.org/resource/John_F._Kennedy> ,
+		dbr:National_Labor_Relations_Act_of_1935 ,
+		<http://dbpedia.org/resource/File:Woodstock_redmond_hair.JPG> ,
+		dbr:Civil_Rights_Act_of_1964 ,
+		dbr:Fort_Christina ,
+		dbr:Kamala_Harris ,
+		<http://dbpedia.org/resource/Lyndon_B._Johnson> ,
+		dbr:Settlement_movement ,
+		dbr:Continental_Army ,
+		dbr:Nagasaki ,
+		dbr:William_Penn ,
+		dbr:Hiroshima ,
+		dbr:Silent_Sentinels ,
+		dbr:Deflation ,
+		dbr:Mutual_assured_destruction ,
+		dbr:Police_brutality_in_the_United_States ,
+		dbr:Siege_of_Yorktown ,
+		dbr:Tecumseh ,
+		dbr:Quakers ,
+		dbr:Jazz ,
+		dbr:Mikhail_Gorbachev ,
+		dbr:Compromise_of_1877 ,
+		<http://dbpedia.org/resource/File:Martin_Luther_King,_Jr._and_Lyndon_Johnson.jpg> ,
+		dbr:Unilateralism ,
+		<http://dbpedia.org/resource/Jonathan_Edwards_(theologian)> ,
+		dbr:Tahitians ,
+		dbr:Troubled_Asset_Relief_Program ,
+		<http://dbpedia.org/resource/Game_(hunting)> ,
+		dbr:Southern_United_States ,
+		dbr:Vinland_sagas ,
+		dbr:Nazi_Germany ,
+		dbr:Murder_of_George_Floyd ,
+		dbr:Catholic_Church_in_the_United_States ,
+		dbr:Boston ,
+		<http://dbpedia.org/resource/1960_United_States_presidential_election> ,
+		dbr:North_African_campaign ,
+		dbr:American_Federation_of_Labor ,
+		dbr:Internment_of_Japanese_Americans ,
+		dbr:Allies_of_World_War_II ,
+		dbr:Third_Enforcement_Act ,
+		<http://dbpedia.org/resource/File:Nasdaq_Composite_dot-com_bubble.svg> ,
+		dbr:Nuclear_arms_race ,
+		dbr:Wagon_train ,
+		dbr:Fort_Sumter ,
+		dbr:Iron_Curtain ,
+		dbr:Equal_Credit_Opportunity_Act ,
+		dbr:William_Henry_Harrison ,
+		dbr:Nineteenth_Amendment_to_the_United_States_Constitution ,
+		dbr:Kingdom_of_Italy ,
+		dbr:George_III ,
+		<http://dbpedia.org/resource/Trinity_(nuclear_test)> ,
+		dbr:History_of_United_States_foreign_policy ,
+		dbr:Irrigation ,
+		<http://dbpedia.org/resource/File:GROWTH1850.JPG> ,
+		dbr:Nobel_Peace_Prize ,
+		dbr:Samuel_Gompers ,
+		dbr:New_Netherland ,
+		dbr:Protestant_theologies ,
+		dbr:Native_American_disease_and_epidemics ,
+		<http://dbpedia.org/resource/Pfizer\u2013BioNTech_COVID-19_vaccine> ,
+		<http://dbpedia.org/resource/Women\u0027s_March> ,
+		dbr:Boeing_B-29_Superfortress ,
+		dbr:Manumission ,
+		dbr:United_States_Department_of_War ,
+		dbr:Sweden ,
+		dbr:Guantanamo_Review_Task_Force ,
+		dbr:Oxford_University_Press ,
+		dbr:National_Organization_for_Women ,
+		dbr:Cesar_Chavez ,
+		dbr:Battle_of_Antietam ,
+		dbr:Saddam_Hussein ,
+		dbr:Death_and_state_funeral_of_Joseph_Stalin ,
+		dbr:Benjamin_Franklin ,
+		<http://dbpedia.org/resource/Ta\u00EDno> ,
+		dbr:Delaware_River ,
+		dbr:Grand_Canyon ,
+		dbr:Outline_of_United_States_history ,
+		dbr:Hartford_Convention ,
+		dbr:Strategic_Defense_Initiative ,
+		dbr:United_States_Declaration_of_Independence ,
+		dbr:Black_Lives_Matter ,
+		dbr:Harriet_Tubman ,
+		dbr:Mound_Builders ,
+		dbr:Federal_public_defender ,
+		dbr:Warsaw_Pact ,
+		dbr:Racism_in_the_United_States ,
+		dbr:Vientiane ,
+		dbr:United_States_Senate ,
+		dbr:Rip_Van_Winkle ,
+		<http://dbpedia.org/resource/Immunity_(medical)> ,
+		<http://dbpedia.org/resource/Dodd\u2013Frank_Wall_Street_Reform_and_Consumer_Protection_Act> ,
+		<http://dbpedia.org/resource/File:Aldrin_Apollo_11_original.jpg> ,
+		dbr:Battle_of_Shiloh ,
+		dbr:Sedition_Act_of_1918 ,
+		dbr:War-weariness ,
+		<http://dbpedia.org/resource/Treaty_of_Paris_(1898)> ,
+		dbr:Central_Intelligence_Agency ,
+		<http://dbpedia.org/resource/File:Nouvelle-France_map-en.svg> ,
+		dbr:League_of_Nations ,
+		dbr:Appeasement ,
+		dbr:Cold_War ,
+		dbr:War_Production_Board ,
+		dbr:Natural_rights_and_legal_rights ,
+		dbr:South_Vietnam ,
+		dbr:French_and_Indian_War ,
+		<http://dbpedia.org/resource/Patriot_(American_Revolution)> ,
+		dbr:Civilian_casualties ,
+		<http://dbpedia.org/resource/File:East_west_shaking_hands_by_russell.jpg> ,
+		dbr:Black_people ,
+		<http://dbpedia.org/resource/File:Thomas-Jefferson.jpg> ,
+		<http://dbpedia.org/resource/2010_United_States_elections> ,
+		dbr:Second_Northern_War ,
+		dbr:Maine ,
+		<http://dbpedia.org/resource/Charleston,_South_Carolina> ,
+		dbr:Watergate_scandal ,
+		dbr:Lend-Lease ,
+		dbr:September_11_attacks ,
+		dbr:Modern_liberalism_in_the_United_States ,
+		dbr:Iraq_War ,
+		dbr:James_Oglethorpe ,
+		dbr:United_States_housing_market_correction ,
+		dbr:Appalachian_Mountains ,
+		<http://dbpedia.org/resource/2003_invasion_of_Iraq> ,
+		dbr:Separation_of_powers ,
+		dbr:New_Deal_coalition ,
+		<http://dbpedia.org/resource/Financial_crisis_of_2007\u20132008> ,
+		<http://dbpedia.org/resource/War_in_Afghanistan_(2001\u2013present)> ,
+		dbr:Camp_David_Accords ,
+		<http://dbpedia.org/resource/File:Washington_Crossing_the_Delaware_by_Emanuel_Leutze,_MMA-NYC,_1851.jpg> ,
+		dbr:New_Jersey ,
+		dbr:United_States_involvement_in_regime_change ,
+		dbr:Denmark_Vesey ,
+		dbr:Confederation ,
+		<http://dbpedia.org/resource/Pilgrims_(Plymouth_Colony)> ,
+		dbr:History_of_education_in_the_United_States ,
+		dbr:Osama_bin_Laden ,
+		dbr:Northwest_Indian_War ,
+		dbr:Economic_history_of_the_United_States ,
+		dbr:NATO ,
+		dbr:Three-fifths_Compromise ,
+		<http://dbpedia.org/resource/John_Smith_(explorer)> ,
+		dbr:Gulf_War ,
+		dbr:Executive_Order_13492 ,
+		dbr:Mariana_Islands ,
+		dbr:Democratic-Republican_Party ,
+		dbr:Voter_suppression_in_the_United_States ,
+		dbr:Social_conservatism ,
+		dbr:Debt_limit ,
+		dbr:South_Carolina ,
+		dbr:Bibliography_of_American_history ,
+		dbr:Spanish_treasure_fleet ,
+		dbr:Thomas_Jefferson ,
+		dbr:Public_Works_Administration ,
+		dbr:Mound ,
+		dbr:Political_union ,
+		dbr:Arms_race ,
+		dbr:Princeton_University_Press ,
+		<http://dbpedia.org/resource/Freedom_from_Fear_(Kennedy_book)> ,
+		dbr:Army_of_the_Potomac ,
+		dbr:Battle_of_Gettysburg ,
+		dbr:Arsenal_of_Democracy ,
+		dbr:Army_of_Northern_Virginia ,
+		dbr:Moderna_COVID-19_vaccine ,
+		dbr:History_of_the_Southern_United_States ,
+		dbr:The_Gospel_of_Wealth ,
+		dbr:Occupy_movement ,
+		dbr:Battle_of_the_Coral_Sea ,
+		dbr:Economic_Recovery_Tax_Act_of_1981 ,
+		dbr:Andrew_Jackson ,
+		dbr:Battle_of_New_Orleans ,
+		dbr:Martin_Van_Buren ,
+		dbr:Osage_Nation ,
+		dbr:James_Madison ,
+		dbr:Harriet_Beecher_Stowe ,
+		dbr:Guantanamo_Bay_detention_camp ,
+		dbr:John_Marshall ,
+		dbr:Cucurbita ,
+		dbr:Nuclear_fission ,
+		dbr:Jacksonian_democracy ,
+		dbr:Territories_of_the_United_States ,
+		dbr:Appomattox_campaign ,
+		dbr:Quasi-War ,
+		dbr:Partus_sequitur_ventrem ,
+		dbr:Vinland ,
+		dbr:American_Indian_Wars ,
+		<http://dbpedia.org/resource/File:Trinity_Detonation_T&B.jpg> ,
+		dbr:Spanish_Florida ,
+		dbr:Slavery_in_the_United_States ,
+		<http://dbpedia.org/resource/File:Cimeti\u00E8re_am\u00E9ricain_de_Romagne-sous-Montfaucon_-_1918_-_France.JPG> ,
+		dbr:Alien_and_Sedition_Acts ,
+		<http://dbpedia.org/resource/File:US_Secession_map_1863_(BlankMap_derived).png> ,
+		dbr:Oregon_Country ,
+		dbr:Anti-Federalism ,
+		dbr:Federalist_Party ,
+		dbr:Thirteenth_Amendment_to_the_United_States_Constitution ,
+		<http://dbpedia.org/resource/Marbury_v._Madison> ,
+		<http://dbpedia.org/resource/Red_Shirts_(United_States)> ,
+		dbr:Alexander_Hamilton ,
+		dbr:Abraham_Lincoln ,
+		dbr:Whiskey_Rebellion ,
+		dbr:James_Monroe ,
+		dbr:John_Adams ,
+		dbr:Postal_voting_in_the_2020_United_States_elections ,
+		dbr:First-wave_feminism ,
+		<http://dbpedia.org/resource/1800_United_States_presidential_election> ,
+		<http://dbpedia.org/resource/File:Thanksgiving-Brownscombe.jpg> ,
+		dbr:Daniel_Walker_Howe ,
+		dbr:Illinois_River ,
+		dbr:Marshall_Plan ,
+		<http://dbpedia.org/resource/Francisco_V\u00E1zquez_de_Coronado> ,
+		dbr:Parliament_of_Great_Britain ,
+		dbr:Intermediate-Range_Nuclear_Forces_Treaty ,
+		dbr:Louisiana_Purchase ,
+		<http://dbpedia.org/resource/2022_abortion_rights_protests_in_the_United_States> ,
+		<http://dbpedia.org/resource/2000_United_States_presidential_election_recount_in_Florida> ,
+		dbr:Invasion_of_Poland ,
+		dbr:Era_of_Good_Feelings ,
+		dbr:Minimum_wage_in_the_United_States ,
+		dbr:History_of_the_socialist_movement_in_the_United_States ,
+		dbr:Voting_Rights_Act_of_1965 ,
+		dbr:Title_IX ,
+		dbr:Political_realignment ,
+		dbr:Chief_Justice_of_the_United_States ,
+		dbr:Treaty_of_Ghent ,
+		dbr:Lewis_and_Clark_Expedition ,
+		dbr:Hopewell_tradition ,
+		dbr:Sixteenth_Amendment_to_the_United_States_Constitution ,
+		<http://dbpedia.org/resource/1992_United_States_presidential_election> ,
+		dbr:Province_of_Maryland ,
+		<http://dbpedia.org/resource/111th_United_States_Congress> ,
+		dbr:Missouri_Compromise ,
+		dbr:Peninsula_campaign ,
+		<http://dbpedia.org/resource/Louisiana_(New_France)> ,
+		<http://dbpedia.org/resource/History_of_the_Democratic_Party_(United_States)> ,
+		dbr:Province_of_South_Carolina ,
+		dbr:Oath ,
+		dbr:Tea_Party_movement ,
+		dbr:Domestic_slave_trade ,
+		dbr:Republicanism_in_the_United_States ,
+		dbr:Evangelicalism ,
+		dbr:Great_Plains ,
+		dbr:Monroe_Doctrine ,
+		dbr:Oneida_Indian_Nation ,
+		dbr:Burning_of_Washington ,
+		dbr:Atlantic_slave_trade ,
+		dbr:Gerrit_Smith ,
+		dbr:Executive_Order_13491 ,
+		<http://dbpedia.org/resource/File:Victor_Gillam_A_Thing_Well_Begun_Is_Half_Done_1899_Cornell_CUL_PJM_1136_01.jpg> ,
+		dbr:Lake_Ontario ,
+		dbr:Second_Bank_of_the_United_States ,
+		dbr:Joe_Biden ,
+		dbr:American_frontier ,
+		dbr:Maryland ,
+		dbr:First_Bank_of_the_United_States ,
+		dbr:Al_Gore ,
+		dbr:European_theatre_of_World_War_II ,
+		<http://dbpedia.org/resource/Liberty_Party_(United_States,_1840)> ,
+		dbr:Racial_segregation_in_the_United_States ,
+		dbr:Al_Smith ,
+		<http://dbpedia.org/resource/Effects_of_the_2008\u20132010_automotive_industry_crisis_on_the_United_States> ,
+		dbr:Political_prisoner ,
+		dbr:Jacques_Cartier ,
+		<http://dbpedia.org/resource/Don\u0027t_Ask,_Don\u0027t_Tell_Repeal_Act_of_2010> ,
+		dbr:Cuba ,
+		dbr:American_Enlightenment ,
+		dbr:Popular_sovereignty_in_the_United_States ,
+		dbr:Seminole ,
+		dbr:Saint_Lawrence_River ,
+		dbr:Seminole_Wars ,
+		dbr:William_Lloyd_Garrison ,
+		dbr:Two-party_system ,
+		dbr:Jay_Treaty ,
+		dbr:Anglo-Dutch_Wars ,
+		dbr:Acadia ,
+		<http://dbpedia.org/resource/2017_Las_Vegas_shooting> ,
+		dbr:Subprime_mortgage_crisis ,
+		dbr:Space_Race ,
+		dbr:George_Floyd_protests ,
+		dbr:Black_Power ,
+		dbr:Folsom_tradition ,
+		dbr:History_of_women_in_the_United_States ,
+		dbr:Scotch-Irish_Americans ,
+		dbr:Cliff_Palace ,
+		<http://dbpedia.org/resource/File:Bill_Clinton,_Yitzhak_Rabin,_Yasser_Arafat_at_the_White_House_1993-09-13.jpg> ,
+		<http://dbpedia.org/resource/Woman\u0027s_Christian_Temperance_Union> ,
+		dbr:History_of_North_America ,
+		dbr:Espionage_Act_of_1917 ,
+		<http://dbpedia.org/resource/Juan_Ponce_de_Le\u00F3n> ,
+		dbr:Cooperative_banking ,
+		dbr:Seneca_people ,
+		dbr:Great_Society ,
+		dbr:Works_Progress_Administration ,
+		dbr:Dutch_colonization_of_the_Americas ,
+		<http://dbpedia.org/resource/Mexican\u2013American_War> ,
+		dbr:General_Secretary_of_the_Communist_Party_of_the_Soviet_Union ,
+		dbr:Yeoman ,
+		dbr:Lucy_Stone ,
+		dbr:Second_Continental_Congress ,
+		dbr:Housewife ,
+		dbr:Bison ,
+		dbr:Conservatism_in_the_United_States ,
+		dbr:Hohokam ,
+		dbr:Mexican_Americans ,
+		<http://dbpedia.org/resource/File:Battle_erie.jpg> ,
+		<http://dbpedia.org/resource/1900_United_States_presidential_election> ,
+		dbr:Eighteenth_Amendment_to_the_United_States_Constitution ,
+		dbr:Delaware_Bay ,
+		<http://dbpedia.org/resource/Pennsylvania_Hall_(Philadelphia)> ,
+		dbr:Bay_of_Pigs_Invasion ,
+		dbr:North_American_fur_trade ,
+		dbr:Wall_Street_Crash_of_1929 ,
+		dbr:March_for_Our_Lives ,
+		<http://dbpedia.org/resource/Iraqi_insurgency_(2003\u20132011)> ,
+		<http://dbpedia.org/resource/Assassination_of_John_F._Kennedy> ,
+		<http://dbpedia.org/resource/Assassination_of_Martin_Luther_King_Jr.> ,
+		dbr:Conquistador ,
+		<http://dbpedia.org/resource/St._Louis> ,
+		dbr:Indentured_servitude ,
+		dbr:Ronald_Reagan ,
+		dbr:New_Orleans ,
+		dbr:Panic_of_1893 ,
+		dbr:Exploration_of_North_America ,
+		dbr:The_Feminine_Mystique ,
+		dbr:Abortion_debate ,
+		dbr:Eurasia ,
+		dbr:United_States_Virgin_Islands ,
+		dbr:Gabriel_Prosser ,
+		dbr:Maya_peoples ,
+		dbr:California_Gold_Rush ,
+		dbr:Contras ,
+		dbr:Mammoth ,
+		dbr:Matthew_Josephson ,
+		dbr:Inauguration_of_Joe_Biden ,
+		dbr:Progressive_Era ,
+		dbr:Battles_of_Lexington_and_Concord ,
+		<http://dbpedia.org/resource/1964_United_States_presidential_election> ,
+		<http://dbpedia.org/resource/2013_United_States_federal_government_shutdown> ,
+		dbr:Open_Door_Policy ,
+		dbr:Boston_Tea_Party ,
+		dbr:Taliban ,
+		dbr:Boston_Marathon_bombing ,
+		dbr:Jimmy_Carter ,
+		dbr:Barry_Goldwater ,
+		dbr:Conscription_in_the_United_States ,
+		dbr:Public_opinion_in_the_United_States_on_the_invasion_of_Iraq ,
+		<http://dbpedia.org/resource/File:Boston_Tea_Party_Currier_colored.jpg> ,
+		dbr:Orlando_nightclub_shooting ,
+		dbr:Lesser_Antilles ,
+		dbr:James_VI_and_I ,
+		dbr:Treaty_of_Guadalupe_Hidalgo ,
+		dbr:Lutheranism ,
+		dbr:Indigenous_peoples_of_the_Americas ,
+		<http://dbpedia.org/resource/Biloxi,_Mississippi> ,
+		dbr:Human_rights ,
+		dbr:Southwestern_United_States ,
+		<http://dbpedia.org/resource/File:WTC_smoking_on_9-11.jpeg> ,
+		dbr:Ancestral_Puebloans ,
+		dbr:Lower_Manhattan ,
+		dbr:Turning_point_of_the_American_Civil_War ,
+		<http://dbpedia.org/resource/Uncle_Tom\u0027s_Cabin> ,
+		<http://dbpedia.org/resource/Tucson,_Arizona> ,
+		dbr:Temperance_movement ,
+		dbr:Herbert_Hoover ,
+		dbr:Indian_massacre_of_1622 ,
+		dbr:Richard_Nixon ,
+		dbr:Indefinite_detention ,
+		dbr:Paleo-Indians ,
+		dbr:Oshara_tradition ,
+		<http://dbpedia.org/resource/File:PinkertonLincolnMcClernand.jpg> ,
+		dbr:Freedman ,
+		dbr:Pre-Columbian_era ,
+		dbr:Monks_Mound ,
+		dbr:Alaska ,
+		dbr:Immigration_Act_of_1882 ,
+		dbr:Second_impeachment_trial_of_Donald_Trump ,
+		dbr:Mesa_Verde_National_Park ,
+		dbc:History_of_the_United_States ,
+		dbr:Pueblo_Bonito ,
+		dbr:Oregon_Trail ,
+		<http://dbpedia.org/resource/File:Lange-MigrantMother02.jpg> ,
+		dbr:New_England_Confederation ,
+		<http://dbpedia.org/resource/File:U.S._Territorial_Acquisitions.png> ,
+		dbr:The_Star-Spangled_Banner ,
+		dbr:Gilded_Age ,
+		<http://dbpedia.org/resource/Tidewater_(region)> ,
+		dbr:Frontier_thesis ,
+		<http://dbpedia.org/resource/File:69th_New_York_at_church.jpg> ,
+		dbr:History_of_the_Americas ,
+		dbr:Andrew_Carnegie ,
+		dbr:Spanish_flu ,
+		dbr:White_League ,
+		dbr:Louisiana ,
+		dbr:Islamic_State_of_Iraq_and_the_Levant ,
+		dbr:Me_Too_movement ,
+		dbr:American_Indian_Movement ,
+		dbr:Trump_administration_family_separation_policy ,
+		dbr:Demographics_of_the_United_States ,
+		dbr:Frederick_Jackson_Turner ,
+		dbr:Traditionalist_Catholicism ,
+		dbr:Salutary_neglect ,
+		dbr:No_taxation_without_representation ,
+		dbr:Giovanni_da_Verrazzano ,
+		<http://dbpedia.org/resource/Loving_v._Virginia> ,
+		dbr:Civil_and_political_rights ,
+		dbr:Sputnik_1 ,
+		dbr:Iroquois ,
+		dbr:Siege_of_Vicksburg ,
+		dbr:Black_women ,
+		dbr:Battle_of_Fort_Sumter ,
+		dbr:Seymour_Martin_Lipset ,
+		dbr:Carpetbagger ,
+		<http://dbpedia.org/resource/File:Frederick_Douglass_(circa_1879).jpg> ,
+		dbr:Unfree_labour ,
+		dbr:American_Revolutionary_War ,
+		dbr:Vietnam ,
+		dbr:Andrew_Johnson ,
+		<http://dbpedia.org/resource/Charles_A._Beard> ,
+		dbr:Quebec ,
+		dbr:Holy_Spirit_in_Christianity ,
+		<http://dbpedia.org/resource/Seven_Years\u0027_War> ,
+		<http://dbpedia.org/resource/Whig_Party_(United_States)> ,
+		<http://dbpedia.org/resource/Robert_E._Lee> ,
+		dbr:Confederate_States_of_America ,
+		<http://dbpedia.org/resource/Jacksonville,_Florida> ,
+		dbr:COVID-19_pandemic ,
+		dbr:Union_Navy ,
+		dbr:Anti-Slavery_Convention_of_American_Women ,
+		dbr:Articles_of_Confederation ,
+		dbr:Middle_Colonies ,
+		dbr:Indian_Removal_Act ,
+		dbr:East_Coast_of_the_United_States ,
+		dbr:Free_labor ,
+		<http://dbpedia.org/resource/George_B._McClellan> ,
+		<http://dbpedia.org/resource/Spanish\u2013American_War> ,
+		dbr:Mississippian_culture ,
+		<http://dbpedia.org/resource/File:Crowe-Slaves_Waiting_for_Sale_-_Richmond,_Virginia.jpg> ,
+		dbr:Grover_Cleveland ,
+		dbr:Eastern_Theater_of_the_American_Civil_War ,
+		dbr:James_Cook ,
+		dbr:Reconstruction_era ,
+		dbr:Indigenous_peoples_of_Mexico ,
+		dbr:Paris_Peace_Accords ,
+		dbr:New_Hampshire ,
+		dbr:Leif_Erikson ,
+		dbr:Civil_rights_movement ,
+		dbr:Henry_Clay ,
+		<http://dbpedia.org/resource/St._Augustine,_Florida> ,
+		dbr:Seven_Days_Battles ,
+		dbr:Ketanji_Brown_Jackson ,
+		dbr:Al-Qaeda ,
+		dbr:New_Deal ,
+		<http://dbpedia.org/resource/John_J._Pershing> ,
+		dbr:Iraq ,
+		dbr:William_Tecumseh_Sherman ,
+		dbr:California_genocide ,
+		dbr:Foreign_policy_of_the_United_States ,
+		<http://dbpedia.org/resource/Roe_v._Wade> ,
+		dbr:McCarthyism ,
+		dbr:Aftermath_of_World_War_II ,
+		dbr:Marital_rape ,
+		dbr:Feminist_movement ,
+		dbr:Mark_Twain ,
+		dbr:Parliament_of_the_United_Kingdom ,
+		<http://dbpedia.org/resource/File:Cesar_chavez2.jpg> ,
+		dbr:Equal_Employment_Opportunity_Act_of_1972 ,
+		<http://dbpedia.org/resource/2021_Taliban_offensive> ,
+		dbr:Fourteenth_Amendment_to_the_United_States_Constitution ,
+		<http://dbpedia.org/resource/File:Trails_of_Tears_en.png> ,
+		dbr:New_England ,
+		dbr:Fourteen_Points ,
+		dbr:Containment ,
+		dbr:White_Southerners ,
+		dbr:Battle_for_Mexico_City ,
+		dbr:Tehran ,
+		dbr:Free_Negro ,
+		dbr:Henry_Hudson ,
+		dbr:French_and_Indian_Wars ,
+		dbr:NASA ,
+		dbr:Blockade_runners_of_the_American_Civil_War ,
+		dbr:Slavery_in_the_colonial_history_of_the_United_States ,
+		dbr:Multiracial_American ,
+		dbr:Walter_Raleigh ,
+		dbr:New_Mexico ,
+		dbr:Protests_against_the_Iraq_War ,
+		<http://dbpedia.org/resource/Presidency_of_John_F._Kennedy> ,
+		dbr:Adam_of_Bremen ,
+		dbr:First_Battle_of_Bull_Run ,
+		dbr:Disenfranchisement_after_the_Reconstruction_era ,
+		dbr:Native_Americans_in_the_United_States ,
+		dbr:Province_of_New_Jersey ,
+		<http://dbpedia.org/resource/Episcopal_Church_(United_States)> ,
+		dbr:Reformed_Church_in_America ,
+		dbr:Declaration_of_Sentiments ,
+		dbr:Credit_union ,
+		dbr:Sachem ,
+		dbr:Virginia ,
+		dbr:Equal_Rights_Amendment ,
+		dbr:Seneca_Falls_Convention ,
+		dbr:Elizabeth_Cady_Stanton ,
+		dbr:Connecticut_River ,
+		dbr:American_Expeditionary_Forces ,
+		<http://dbpedia.org/resource/State_constitution_(United_States)> ,
+		dbr:Sinking_of_the_RMS_Lusitania ,
+		dbr:Confederate_army ,
+		dbr:Muckraker ,
+		dbr:Korean_War ,
+		dbr:Onondaga_people ,
+		dbr:Mexicans ,
+		dbr:Land_bridge ,
+		dbr:Congregational_church ,
+		dbr:Feminism ,
+		dbr:Digital_Revolution ,
+		dbr:World_War_I ,
+		dbr:Upland_South ,
+		dbr:Caribbean_Sea ,
+		dbr:Narragansett_Bay ,
+		<http://dbpedia.org/resource/1980_United_States_presidential_election> ,
+		dbr:Isolationism ,
+		<http://dbpedia.org/resource/Withdrawal_of_United_States_troops_from_Afghanistan_(2020\u20132021)> ,
+		dbr:Delaware_Colony ,
+		dbr:Kaw_people ,
+		dbr:Battle_of_Leyte_Gulf ,
+		dbr:Battle_of_Midway ,
+		dbr:NAACP ,
+		<http://dbpedia.org/resource/Mobile,_Alabama> ,
+		dbr:Last_Glacial_Period ,
+		dbr:Arawak ,
+		dbr:Terrorism ,
+		dbr:Jim_Crow_laws ,
+		dbr:Stagflation ,
+		dbr:Five_Civilized_Tribes ,
+		<http://dbpedia.org/resource/World_Trade_Center_(1973\u20132001)> ,
+		dbr:Racial_segregation ,
+		dbr:Chinese_Exclusion_Act ,
+		dbr:Pacific_Northwest ,
+		dbr:Trail_of_Tears ,
+		dbr:Mayflower_Compact ,
+		<http://dbpedia.org/resource/Planned_Parenthood_v._Casey> ,
+		dbr:Philadelphia ,
+		dbr:Pennsylvania ,
+		dbr:Phyllis_Schlafly ,
+		<http://dbpedia.org/resource/Withdrawal_of_U.S._troops_from_Iraq_(2007\u20132011)> ,
+		dbr:Four_Policemen ,
+		dbr:West_Coast_of_the_United_States ,
+		dbr:Iran_hostage_crisis ,
+		dbr:Battle_of_Lake_Erie ,
+		dbr:First_Party_System ,
+		dbr:Methodism ,
+		<http://dbpedia.org/resource/Dobbs_v._Jackson_Women\u0027s_Health_Organization> ,
+		dbr:January_6_United_States_Capitol_attack ,
+		dbr:Politics_of_the_United_States ,
+		<http://dbpedia.org/resource/State_(polity)> ,
+		<http://dbpedia.org/resource/Paris_Peace_Conference_(1919\u20131920)> ,
+		dbr:Environmental_movement ,
+		dbr:Spear ,
+		dbr:Eleanor_Roosevelt ,
+		dbr:Little_Rock_Nine ,
+		dbr:Royal_Navy ,
+		dbr:British_North_America ,
+		dbr:Individualism ,
+		dbr:Iraq_War_troop_surge_of_2007 ,
+		dbr:Commodity ,
+		dbr:Plantation_complexes_in_the_Southern_United_States ,
+		dbr:Trump_travel_ban ,
+		<http://dbpedia.org/resource/History_of_the_Republican_Party_(United_States)> ,
+		<http://dbpedia.org/resource/Wiley_(publisher)> ,
+		dbr:Northern_United_States ,
+		dbr:Battle_of_Plattsburgh ,
+		<http://dbpedia.org/resource/2000_United_States_presidential_election> ,
+		dbr:Cherokee ,
+		<http://dbpedia.org/resource/2008_United_States_presidential_election> ,
+		dbr:Hispanos_of_New_Mexico ,
+		<http://dbpedia.org/resource/File:IFP-135-F109-1M_Kennedy_Jingle_Campaign_Spot.webm> ,
+		dbr:Tariff ,
+		dbr:Second_New_Deal ,
+		dbr:Siberia ,
+		dbr:Charlesbourg-Royal ,
+		dbr:Peter_Minuit ,
+		<http://dbpedia.org/resource/Constitutional_Convention_(United_States)> ,
+		dbr:Adena_culture ,
+		dbr:Voyages_of_Christopher_Columbus ,
+		dbr:New_York_City_draft_riots ,
+		<http://dbpedia.org/resource/File:Tarawa_beach_HD-SN-99-03001.JPEG> ,
+		dbr:Pacific_War ,
+		dbr:History_of_religion_in_the_United_States ,
+		dbr:Fall_of_Saigon ,
+		<http://dbpedia.org/resource/File:Into_the_Jaws_of_Death_23-0455M_edit.jpg> ,
+		dbr:American_imperialism ,
+		dbr:Economic_impact_of_the_COVID-19_pandemic_in_the_United_States ,
+		dbr:QAnon ,
+		dbr:Transcontinental_railroad ,
+		dbr:ARPANET ,
+		<http://dbpedia.org/resource/File:Benjamin_Franklin_-_Join_or_Die.jpg> ,
+		dbr:Radical_Republicans ,
+		dbr:Battle_of_Baltimore ,
+		dbr:Japanese_occupation_of_the_Philippines ,
+		dbr:Totem_pole ,
+		<http://dbpedia.org/resource/Pedro_Men\u00E9ndez_de_Avil\u00E9s> ,
+		dbr:The_Crown ,
+		<http://dbpedia.org/resource/National_Women\u0027s_Rights_Convention> ,
+		<http://dbpedia.org/resource/File:1622_massacre_jamestown_de_Bry.jpg> ,
+		<http://dbpedia.org/resource/Join,_or_Die> ,
+		dbr:Plutocracy ,
+		<http://dbpedia.org/resource/Post\u2013Cold_War_era> ,
+		<http://dbpedia.org/resource/Women\u0027s_liberation_movement> ,
+		<http://dbpedia.org/resource/File:Nebel_Mexican_War_12_Scott_in_Mexico_City.jpg> ,
+		dbr:Amish ,
+		<http://dbpedia.org/resource/File:Atlanta_roundhouse_ruin3.jpg> ,
+		<http://dbpedia.org/resource/2000_United_States_presidential_election_in_New_Mexico> ,
+		dbr:Northwest_Passage ,
+		dbr:Great_Depression ,
+		dbr:Encomienda ,
+		dbr:October_Revolution ,
+		<http://dbpedia.org/resource/File:Thejungle_09_sinclair_64kb.ogg> ,
+		dbr:Freedom_of_speech_in_the_United_States ,
+		dbr:Treaty_of_Versailles ,
+		dbr:Huguenots ,
+		dbr:Settlement_of_the_Americas ,
+		dbr:Montgomery_bus_boycott ,
+		dbr:Free_silver ,
+		dbr:Salmon ,
+		dbr:United_States_Congress ,
+		dbr:LGBT_in_the_United_States ,
+		<http://dbpedia.org/resource/File:Vargas_e_Roosevelt.jpg> ,
+		dbr:Abolitionism ,
+		dbr:Potlatch ,
+		<http://dbpedia.org/resource/George_Washington\u0027s_Farewell_Address> ,
+		dbr:West_Virginia ,
+		dbr:Anarchism_in_the_United_States ,
+		dbr:Literacy_test ,
+		dbr:Counterculture_of_the_1960s ,
+		dbr:Nation ,
+		dbr:Reform_movement ,
+		dbr:Central_Powers ,
+		dbr:Guano_Islands_Act ,
+		dbr:COVID-19_pandemic_in_the_United_States ,
+		dbr:Yemen ,
+		dbr:Standing_army ,
+		dbr:Fort_Caroline ,
+		dbr:Plymouth_Colony ,
+		dbr:Rosa_Parks ,
+		dbr:William_Jennings_Bryan ,
+		<http://dbpedia.org/resource/King_Philip\u0027s_War> ,
+		dbr:Jazz_Age ,
+		dbr:Ortoiroid_people ,
+		dbr:Indian_reservation ,
+		dbr:Calvin_Coolidge ,
+		dbr:Textile_manufacturing ,
+		dbr:Second_Coming ,
+		dbr:Fugitive_slave_laws_in_the_United_States ,
+		<http://dbpedia.org/resource/Copperhead_(politics)> ,
+		dbr:Manhattan_Project ,
+		dbr:Millennialism ,
+		<http://dbpedia.org/resource/Women\u0027s_Equity_Action_League> ,
+		dbr:Cacique ,
+		dbr:Attrition_warfare ,
+		dbr:Mohawk_people ,
+		dbr:Poverty_Point ,
+		dbr:Supreme_Court_of_the_United_States ,
+		dbr:Jane_Addams ,
+		dbr:Constitution_of_the_United_States ,
+		dbr:Intolerable_Acts ,
+		dbr:Federal_Reserve ,
+		<http://dbpedia.org/resource/J._P._Morgan> ,
+		dbr:William_McKinley ,
+		dbr:Russian_interference_in_the_2016_United_States_elections ,
+		<http://dbpedia.org/resource/Clovis,_New_Mexico> ,
+		dbr:Californios ,
+		dbr:Unrestricted_submarine_warfare ,
+		dbr:Northeastern_United_States ,
+		<http://dbpedia.org/resource/File:North_American_cultural_areas.png> ,
+		<http://dbpedia.org/resource/2000s_energy_crisis> ,
+		dbr:Pregnancy_Discrimination_Act ,
+		dbr:Allies_of_World_War_I ,
+		dbr:Warren_Court ,
+		dbr:James_River ,
+		dbr:Stock_market ,
+		dbr:White_supremacy ,
+		dbr:Dutch_Americans ,
+		<http://dbpedia.org/resource/File:Cliff_Palace.JPG> ,
+		dbr:United_States_Census_Bureau ,
+		dbr:Vietnamization ,
+		dbr:Ku_Klux_Klan ,
+		<http://dbpedia.org/resource/File:Andrew_Carnegie,_three-quarter_length_portrait,_seated,_facing_slightly_left,_1913.jpg> ,
+		dbr:International_military_intervention_against_ISIL ,
+		dbr:Eastern_Bloc ,
+		dbr:Patriot_Act ,
+		dbr:United_States_factor ,
+		dbr:Killing_of_Osama_bin_Laden ,
+		dbr:Research_and_development ,
+		dbr:Executive_Order_9066 ,
+		<http://dbpedia.org/resource/Women\u0027s_suffrage_in_the_United_States> ,
+		dbr:Suicide_attack ,
+		<http://dbpedia.org/resource/Jamestown,_Virginia> ,
+		<http://dbpedia.org/resource/File:FreedmenVotingInNewOrleans1867.jpeg> ,
+		<http://dbpedia.org/resource/Edward_L._Ayers> ,
+		dbr:Pullman_Strike ,
+		dbr:Cayuga_people ,
+		<http://dbpedia.org/resource/File:Baptism_of_Pocahontas.jpg> ,
+		dbr:Immigration_reform ,
+		dbr:Great_Recession_in_the_United_States ,
+		dbr:John_Rolfe ,
+		<http://dbpedia.org/resource/Freedmen\u0027s_Bureau> ,
+		dbr:Yiddish ,
+		dbr:Prohibition_in_the_United_States ,
+		dbr:List_of_presidents_of_the_United_States ,
+		<http://dbpedia.org/resource/File:Articles_by_and_photo_of_Charlotte_Perkins_Gilman_in_1916.jpg> ,
+		dbr:Guantanamo_Bay_Naval_Base ,
+		dbr:Houghton_Mifflin ,
+		dbr:Apollo_11 ,
+		dbr:Kamehameha_I ,
+		dbr:United_States_Department_of_Homeland_Security ,
+		<http://dbpedia.org/resource/America_First_(policy)> ,
+		<http://dbpedia.org/resource/File:United_States_land_claims_and_cessions_1782-1802.png> ,
+		dbr:Great_Depression_in_the_United_States ,
+		dbr:Puerto_Rico ,
+		dbr:Mississippi_River ,
+		dbr:Counter-terrorism ,
+		<http://dbpedia.org/resource/Leapfrogging_(strategy)> ,
+		dbr:Hawaiian_Kingdom ,
+		dbr:Evangelicalism_in_the_United_States ,
+		dbr:Mexican_Repatriation ,
+		dbr:Stoneman_Douglas_High_School_shooting ,
+		<http://dbpedia.org/resource/2000_United_States_presidential_election_in_Florida> ,
+		dbr:Colony_of_Rhode_Island_and_Providence_Plantations ,
+		dbr:Province_of_Carolina ,
+		dbr:Newt_Gingrich ,
+		dbr:Hernando_de_Soto ,
+		dbr:Interstate_Commerce_Act_of_1887 ,
+		dbr:Joseph_Stalin ,
+		dbr:Empire_of_Japan ,
+		dbr:Labor_history_of_the_United_States ,
+		dbr:Weapon_of_mass_destruction ,
+		dbr:United_States_National_Guard ,
+		dbr:Car_Allowance_Rebate_System ,
+		dbr:Lincoln_Steffens ,
+		dbr:History_of_immigration_to_the_United_States ,
+		dbr:Jeannette_Rankin ,
+		dbr:Upton_Sinclair ,
+		<http://dbpedia.org/resource/National_Women\u0027s_Political_Caucus> ,
+		<http://dbpedia.org/resource/D\u00E9tente> ,
+		dbr:Battles_of_Saratoga ,
+		<http://dbpedia.org/resource/1860_United_States_presidential_election> ,
+		dbr:List_of_historians_by_area_of_study ,
+		<http://dbpedia.org/resource/File:Declaration_of_Independence_(1819),_by_John_Trumbull.jpg> ,
+		dbr:Providence_Plantations ,
+		dbr:Massachusetts_Bay_Colony ,
+		dbr:Indian_barrier_state ,
+		dbr:Secession ,
+		dbr:Southern_colonies ,
+		dbr:Soviet_Union ,
+		dbr:Stamp_Act_1765 ,
+		dbr:American_urban_history ,
+		dbr:Spanish_East_Indies ,
+		dbr:Charles_Evans_Hughes ,
+		dbr:Financial_crisis ,
+		dbr:Pequot_War ,
+		dbr:Beringia ,
+		dbr:Anti-Ballistic_Missile_Treaty ,
+		<http://dbpedia.org/resource/File:Monks_Mound_in_July.JPG> ,
+		dbr:Truman_Doctrine ,
+		dbr:History_of_the_United_States_government ,
+		<http://dbpedia.org/resource/Antifa_(United_States)> ,
+		dbr:Slave_states_and_free_states ,
+		<http://dbpedia.org/resource/Herbert_H._Lehman> ,
+		<http://dbpedia.org/resource/Van_Rensselaer_(family)> ,
+		dbr:Islamophobia ,
+		dbr:Battle_of_Iwo_Jima ,
+		<http://dbpedia.org/resource/File:Roosevelt_Pearl_Harbor.ogg> ,
+		dbr:Mercantilism ,
+		dbr:Cahokia ,
+		dbr:Reconstruction_Amendments ,
+		dbr:COVID-19_vaccination_in_the_United_States ,
+		dbr:Second_Great_Awakening ,
+		dbr:Fertilizer ,
+		<http://dbpedia.org/resource/1973_oil_crisis> ,
+		dbr:American_Labor_Party ,
+		dbr:Shortage ,
+		<http://dbpedia.org/resource/File:Reagan_and_Gorbachev_signing.jpg> ,
+		<http://dbpedia.org/resource/National_Woman\u0027s_Party> ,
+		dbr:Richard_Henry_Lee ,
+		dbr:Lehman_Brothers ,
+		dbr:Puritans ,
+		<http://dbpedia.org/resource/File:Bush_2002_UNGA.jpg> ,
+		dbr:Opposition_to_United_States_involvement_in_the_Vietnam_War ,
+		dbr:American_entry_into_World_War_I ,
+		<http://dbpedia.org/resource/File:MayflowerHarbor.jpg> ,
+		dbr:Southern_Democrats ,
+		<http://dbpedia.org/resource/File:Reagan_Brandenburg_Gate_speech.ogg> ,
+		<http://dbpedia.org/resource/File:Journallewisandclarke_06_lewis-clark_64kb.ogg> ,
+		<http://dbpedia.org/resource/File:F-4B_VF-151_CV-41_TU-95.jpg> ,
+		<http://dbpedia.org/resource/File:JFK_inaugural_address.ogg> ,
+		<http://dbpedia.org/resource/File:George_W._Bush\u0027s_Oval_Office_Address_of_September_11,_2001.oga> ,
+		<http://dbpedia.org/resource/File:2021_storming_of_the_United_States_Capitol_DSC09254-2_(50820534063)_(retouched).jpg> ,
+		<http://dbpedia.org/resource/File:Farewelladdresses_01_various_128kb.ogg> ,
+		<http://dbpedia.org/resource/File:Pioneers_Crossing_the_Plains_of_Nebraska_by_C.C.A._Christensen.png> ,
+		<http://dbpedia.org/resource/File:Gettysburg_by_Britton.ogg> ,
+		<http://dbpedia.org/resource/File:Protests_in_front_of_SCOTUS_after_Dobbs_-_2022-06-24.jpg> ,
+		<http://dbpedia.org/resource/File:Snf023_declarationofindependence_jefferson_bg.ogg> ,
+		<http://dbpedia.org/resource/File:Barack_Obama_inauguration_speech_2009.ogg> ,
+		<http://dbpedia.org/resource/File:Tlingit_K\u0027alyaan_Totem_Pole_August_2005.jpg> ,
+		<http://dbpedia.org/resource/File:I_Got_The_Ritz_From_The_One_I_Love.ogg> ,
+		<http://dbpedia.org/resource/File:Squantoteaching.png> ,
+		<http://dbpedia.org/resource/File:Pouso_da_Apollo_11_na_Lua.ogg> ,
+		dbr:Indian_removal ,
+		dbr:Recession ,
+		<http://dbpedia.org/resource/File:Indians_at_a_Hudson_Bay_Company_trading_post.jpg> ,
+		dbr:United_Airlines_Flight_93 ,
+		<http://dbpedia.org/resource/File:Clay44b.jpg> ,
+		<http://dbpedia.org/resource/File:United_States_(+overseas),_administrative_divisions_-_en_-_colored_(zoom).svg> ,
+		dbr:Frelinghuysen_family ,
+		<http://dbpedia.org/resource/Cherokee\u2013American_wars> ,
+		<http://dbpedia.org/resource/File:White_house_Rainbow_20150626.png> ,
+		<http://dbpedia.org/resource/File:1850_Woman_and_Men_in_California_Gold_Rush.jpg> ,
+		dbr:Cuban_Missile_Crisis ,
+		<http://dbpedia.org/resource/File:Libervox-the-first-corn-native-american-pawnee-legend.ogg> ,
+		dbr:Deregulation ,
+		<http://dbpedia.org/resource/File:Vietnam._As_the_second_phase_of_operation_%22Thayer,%22_the_1st_Air_Cavalry_Division_(airmobile)_is_having..._-_NARA_-_530612.tif> ,
+		<http://dbpedia.org/resource/File:Election_Day_1815_by_John_Lewis_Krimmel.jpg> ,
+		<http://dbpedia.org/resource/File:Aerial_Photograph_of_Intercontinental_Range_Ballistic_Missile_Launch_Site_Number_One_at_Guanajay,_Cuba_-_NARA_-_193934.tif> ,
+		<http://dbpedia.org/resource/File:The_Emancipation_Proclamation_-_read_by_Winston_Tharp_for_LibriVox\u0027s_Short_Nonfiction_Collection_Vol._028_(2013).ogg> ,
+		dbr:Province_of_Georgia ,
+		dbr:Reaganomics ,
+		dbr:Trade_war ,
+		<http://dbpedia.org/resource/File:Non-Native_American_Nations_Control_over_N_America_1750.png> ,
+		<http://dbpedia.org/resource/File:Barack_Obama_addresses_joint_session_of_Congress_2009-02-24.jpg> ,
+		<http://dbpedia.org/resource/File:The_Letter_of_Christopher_Columbus_on_the_Discovery_of_America_-_Read_by_Availle_for_LibriVox\u0027s_Short_Nonfiction_Collection_Vol._015_(2010).ogg> ,
+		dbr:Neutrality_Acts_of_the_1930s ,
+		<http://dbpedia.org/resource/File:Narrativeofthelife_07_douglass_64kb.ogg> ,
+		<http://dbpedia.org/resource/File:LBJ_Civil_Rights_signing_1964_edited.ogg> ,
+		<http://dbpedia.org/resource/File:Lt._Cmdr._Michael_Heimes_checks_on_a_patient_connected_to_a_ventilator_at_Baton_Rouge_General_Mid_City_campus.jpg> ,
+		<http://dbpedia.org/resource/File:Trialofsusanbanthony_18_anonymous_128kb.ogg> ,
+		<http://dbpedia.org/resource/File:Transcontinentalrailroad_14_bailey_128kb.ogg> ,
+		dbr:Equal_Pay_Act_of_1963 ,
+		dbr:Captaincy_General_of_Puerto_Rico ,
+		dbr:United_Farm_Workers ,
+		dbr:Texas_annexation ,
+		dbr:Nuclear_power_debate ,
+		<http://dbpedia.org/resource/File:Constitution.ogg> ,
+		<http://dbpedia.org/resource/File:American_1902_Fourth_of_July_fireworks.jpg> ,
+		<http://dbpedia.org/resource/File:Fireside_Chat_1_On_the_Banking_Crisis_(March_12,_1933)_Franklin_Delano_Roosevelt_edited.ogg> ,
+		dbr:Poll_taxes_in_the_United_States ,
+		<http://dbpedia.org/resource/File:A_man_stands_on_a_burned_out_car_on_Thursday_morning_as_fires_burn_behind_him_in_the_Lake_St_area_of_Minneapolis,_Minnesota_(49945886467).jpg> ,
+		dbr:Manifest_destiny ,
+		dbr:Proud_Boys ,
+		dbr:Union_Army ;
+	dbo:description	"AB\u015E tarixind\u0259ki hadis\u0259l\u0259r v\u0259 \u015F\u0259xsl\u0259r"@az ,
+		"\u0C87\u0CA4\u0CBF\u0CB9\u0CBE\u0CB8\u0CA6\u0CC1\u0CA6\u0CCD\u0CA6\u0C95\u0CCD\u0C95\u0CC2 \u0CAF\u0CC1.\u0CAF\u0CB8\u0CCD.\u0CA8\u0CB2\u0CCD\u0CB2\u0CBF \u0CB8\u0C82\u0CAD\u0CB5\u0CBF\u0CB8\u0CBF\u0CA6 \u0C98\u0C9F\u0CA8\u0CC6\u0C97\u0CB3\u0CC1"@kn ,
+		"\u4ECA\u306B\u81F3\u308B\u307E\u3067\u306E\u30A2\u30E1\u30EA\u30AB\u5408\u8846\u56FD\u306E\u6B74\u53F2"@ja ,
+		"\u0430\u0441\u043F\u0435\u043A\u0442 \u0456\u0441\u0442\u043E\u0440\u0456\u0457"@uk ,
+		"Wikimedia-Geschichts-Artikel"@de ,
+		"historia dos Estados Unidos de Am\u00E9rica e dos seus estados predecesores"@gl ,
+		"\u5730\u57DF\u5C08\u9580\u53F2"@zh ,
+		"narraci\u00F3n de los hechos acontecidos en este pa\u00EDs"@es ,
+		"h\u00E4ndelser och m\u00E4nniskor i USA genom historien"@sv ,
+		"\u0646\u0628\u0630\u0629 \u0639\u0646 \u062A\u0627\u0631\u064A\u062E \u0627\u0644\u0623\u0631\u0636"@ar ,
+		"\u0987\u09A4\u09BF\u09B9\u09BE\u09B8\u09C7\u09B0 \u09AC\u09BF\u09AD\u09BF\u09A8\u09CD\u09A8 \u09A6\u09BF\u0995"@bn ,
+		"narra\u00E7\u00E3o e estudo dos acontecimentos nesse lugar ou que o afetaram"@pt ,
+		"dzieje pa\u0144stwa USA i jego ziem"@pl ,
+		"\u0438\u0441\u0442\u043E\u0440\u0438\u044F \u0421\u043E\u0435\u0434\u0438\u043D\u0451\u043D\u043D\u044B\u0445 \u0428\u0442\u0430\u0442\u043E\u0432 \u0410\u043C\u0435\u0440\u0438\u043A\u0438"@ru ,
+		"occurrences and people in the USA throughout history"@en ,
+		"historio de la lando Usono"@eo ,
+		"Amerika k\u0131tas\u0131n\u0131n ke\u015Ffiyle ba\u015Flayan tarihi olaylar"@tr ,
+		"storia del territorio dello stato o della civilt\u00E0"@it ,
+		"peristiwa dan kejadian serta orang-orang di Amerika Serikat sepanjang sejarah"@in ,
+		"\u062A\u0627\u0631\u06CC\u062E \u06A9\u0634\u0648\u0631 \u0627\u06CC\u0627\u0644\u0627\u062A \u0645\u062A\u062D\u062F\u0647 \u0622\u0645\u0631\u06CC\u06A9\u0627 \u0627\u0632 \u0622\u063A\u0627\u0632 \u062A\u0627 \u0627\u0645\u0631\u0648\u0632"@fa ,
+		"D\u011Bjiny severoamerick\u00E9ho st\u00E1tu"@cs ,
+		"istorie a poporului \u0219i a teritoriilor americane"@ro ,
+		"s\u1EF1 xu\u1EA5t hi\u1EC7n v\u00E0 con ng\u01B0\u1EDDi \u1EDF Hoa K\u1EF3 trong su\u1ED1t l\u1ECBch s\u1EED"@vi ,
+		"podawki a lud\u017Ao w Zjedno\u0107enych statach p\u0159ez stawizny"@hsb ,
+		"\uBBF8\uAD6D\uC5D0 \uAD00\uD55C \uC5ED\uC0AC"@ko ,
+		"\u00E9tude et narration du pass\u00E9 des \u00C9tats-Unis"@fr ,
+		"\u05E4\u05D0\u05E1\u05D9\u05E8\u05D5\u05E0\u05D2\u05E2\u05DF \u05D0\u05D5\u05DF \u05DE\u05E2\u05E0\u05D8\u05E9\u05DF \u05D0\u05D9\u05DF \u05D3\u05D9 \u05E4\u05D0\u05E8\u05D0\u05D9\u05D9\u05E0\u05D9\u05D2\u05D8\u05E2 \u05E9\u05D8\u05D0\u05B7\u05D8\u05DF \u05D3\u05D5\u05E8\u05DB\u05D0\u05D5\u05D9\u05E1 \u05D3\u05D9 \u05D4\u05D9\u05E1\u05D8\u05D0\u05E8\u05D9\u05E2"@ji .
+@prefix dbt:	<http://dbpedia.org/resource/Template:> .
+dbr:History_of_the_United_States	dbp:wikiPageUsesTemplate	dbt:Circa ,
+		dbt:Authority_control ,
+		dbt:Citation_needed ,
+		dbt:World_topic ,
+		dbt:Legend ,
+		dbt:Use_mdy_dates ,
+		dbt:Pp-pc ,
+		dbt:Sfnp ,
+		dbt:Cite_web ,
+		dbt:Sister_project_links ,
+		dbt:History_of_the_United_States ,
+		dbt:See_also ,
+		dbt:Nbnd ,
+		dbt:Blockquote ,
+		dbt:SfnRef ,
+		dbt:Use_American_English ,
+		<http://dbpedia.org/resource/Template:U.S._political_divisions_histories> ,
+		dbt:Convert ,
+		dbt:Short_description ,
+		dbt:Reflist ,
+		dbt:Columns-list ,
+		dbt:Efn ,
+		dbt:Redirect ,
+		dbt:Further ,
+		dbt:Cite_encyclopedia ,
+		dbt:Portal ,
+		dbt:Sfn ,
+		dbt:Cite_book ,
+		dbt:Notelist ,
+		dbt:Page_needed ,
+		dbt:US_history ,
+		dbt:Main ,
+		dbt:United_States_topics ,
+		dbt:History_of_North_America_by_country .
+@prefix ns41:	<https://archive.org/details/> .
+dbr:History_of_the_United_States	dbo:wikiPageExternalLink	ns41:breakingheartofw00coop .
+@prefix ns42:	<https://web.archive.org/web/20130826003047/http:/edsitement.neh.gov/subject/> .
+dbr:History_of_the_United_States	dbo:wikiPageExternalLink	ns42:history-social-studies ,
+		<https://usa.usembassy.de/etexts/history/ch1.htm%23europeans> ,
+		<https://web.archive.org/web/20130117042507/http:/www.houstonculture.org/kids/usmap.html> ,
+		ns41:federalistera178008879mbp ,
+		<http://eas-ref.press.jhu.edu> ,
+		<http://backstoryradio.org> ,
+		<https://books.google.com/books%3Fid=ARbVmr941TsC&pg=PA107> ,
+		<https://books.google.com/books%3Fid=9-FtlblxbLgC> ,
+		<http://www.houstonculture.org/kids/usmap.html> ,
+		<http://www.gilderlehrman.org> ,
+		<https://web.archive.org/web/20120726213322/http:/www.questia.com/read/66002285> ,
+		<https://web.archive.org/web/20120729171018/http:/www.questia.com/read/109275503> ,
+		ns41:unitedstatesorig0000gadd ,
+		<https://www.questia.com/read/66002285> ,
+		<https://www.questia.com/read/109275503> ,
+		ns41:americanwestnewi00hine ,
+		ns41:americanpageanth00davi ,
+		ns41:riseofamericanci04bear ,
+		ns41:ageofreaganhisto00wile ,
+		<https://web.archive.org/web/20200808113230/https:/openstax.org/books/us-history/pages/16-3-radical-reconstruction-1867-1872> ,
+		ns41:mrmadisonswarpol0000stag .
+@prefix ns43:	<https://web.archive.org/web/20110611013210/http:/edsitement.neh.gov/curriculum-unit/> .
+dbr:History_of_the_United_States	dbo:wikiPageExternalLink	ns43:what-made-george-washington-good-military-leader ,
+		<https://web.archive.org/web/20161120021240/http:/usa.usembassy.de/etexts/history/ch1.htm%23europeans> ,
+		<https://cnx.org/contents/p7ovuIkl@10.8:orzCQOw6@8/3-3-English-Settlements-in-America> ,
+		<http://encarta.msn.com/text_1741502191___0/History_of_Colonial_America.html> .
+@prefix ns44:	<http://edsitement.neh.gov/curriculum-unit/> .
+dbr:History_of_the_United_States	dbo:wikiPageExternalLink	ns44:what-made-george-washington-good-military-leader ,
+		ns41:inventingamerica00glen .
+@prefix ns45:	<http://edsitement.neh.gov/subject/> .
+dbr:History_of_the_United_States	dbo:wikiPageExternalLink	ns45:history-social-studies ,
+		ns41:wartoendallwarsa0000coff ,
+		<https://web.archive.org/web/20090923141733/http:/encarta.msn.com/text_1741502191___0/History_of_Colonial_America.html> ,
+		ns41:handbookofameric00zoph ;
+	dbo:thumbnail	<http://commons.wikimedia.org/wiki/Special:FilePath/United_States_(+overseas),_administrative_divisions_-_en_-_colored_(zoom).svg?width=300> .
+<http://dbpedia.org/resource/Presidency_of_Franklin_D._Roosevelt,_third_and_fourth_terms>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Medford_High_School_(Massachusetts)>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:American_Indian_Wars	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Wall_Street_Crash_of_1929	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:American_tea_culture	rdfs:seeAlso	dbr:History_of_the_United_States .
+dbr:Martial_law_in_the_United_States	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Miscegenation	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Western_Islands_(publisher)>	dbp:topics	dbr:History_of_the_United_States .
+dbr:Non-Hispanic_whites	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Delaware_Valley	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Catherine_Kerrison	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbp:subDiscipline	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/2004_United_States_presidential_election_in_Ohio>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/David_Greenberg_(historian)>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Jim_Guy_Tucker	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Bury_My_Heart_at_Wounded_Knee	dbo:nonFictionSubject	dbr:History_of_the_United_States ;
+	dbp:subject	dbr:History_of_the_United_States .
+dbr:List_of_Pulitzer_Prizes_awarded_to_The_New_York_Times	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Military_history_of_the_United_States_during_World_War_II	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Frank_Rich	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:History_of_the_trucking_industry_in_the_United_States	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/2022_San_Antonio_migrant_deaths>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:List_of_Olympic_torch_designs	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:The_Finnish_dormitory_in_Taichung	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Suffrage_in_Australia	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:List_of_Booknotes_interviews_first_aired_in_1998	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Pauline_Maier	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Frederick_Merk	dbp:fields	dbr:History_of_the_United_States ;
+	dbo:academicDiscipline	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Ernest_R._May>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Invasion_of_Quebec_(1775)>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Oscar_Handlin	dbp:subDiscipline	dbr:History_of_the_United_States .
+dbr:Military_career_of_George_Washington	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+@prefix ns46:	<http://dbpedia.org/resource/Mellon:> .
+ns46:_An_American_Life	dbo:nonFictionSubject	dbr:History_of_the_United_States ;
+	dbp:subject	dbr:History_of_the_United_States .
+dbr:Imani_Perry	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Colin_Kidd	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Holy_Trinity_Diocesan_High_School	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Kevin_Gutzman	dbp:fields	dbr:History_of_the_United_States ;
+	dbo:academicDiscipline	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Cyclical_theory_(United_States_history)>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Robert_Hugh_Ferrell	dbp:discipline	dbr:History_of_the_United_States .
+dbr:Smart_Power	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:nonFictionSubject	dbr:History_of_the_United_States ;
+	dbp:subject	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Truman_(book)>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:nonFictionSubject	dbr:History_of_the_United_States ;
+	dbp:subject	dbr:History_of_the_United_States .
+dbr:Civil_defense_in_the_United_States	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Lubbock_Lake_Landmark	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Edward_Everett_Dale	dbo:genre	dbr:History_of_the_United_States ;
+	dbp:genre	dbr:History_of_the_United_States .
+dbr:Shmoop	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/\u00C1nimo_South_Los_Angeles_Charter_High_School>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Golden_Valley_High_School_(Bakersfield,_California)>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:The_Respectful_Prostitute	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Education_in_the_Philippines_during_American_rule	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Fred_T._Korematsu_Institute_for_Civil_Rights_and_Education>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Chronographer	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:List_of_American_Experience_episodes	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Metropolitan_Community_Church_of_New_Orleans	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Richard_Polenberg	dbp:subDiscipline	dbr:History_of_the_United_States .
+dbr:United_States_history	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:wikiPageRedirects	dbr:History_of_the_United_States .
+dbr:Alrutheus_Ambush_Taylor	dbp:discipline	dbr:History_of_the_United_States .
+dbr:American_civilization	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:wikiPageRedirects	dbr:History_of_the_United_States .
+dbr:The_Haymarket_Conspiracy	dbo:nonFictionSubject	dbr:History_of_the_United_States ;
+	dbp:subject	dbr:History_of_the_United_States .
+dbr:Gun_Country	dbo:nonFictionSubject	dbr:History_of_the_United_States ;
+	dbp:subject	dbr:History_of_the_United_States .
+dbr:Great_Depression_in_the_United_States	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Reconstruction_era	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:History_of_Boston	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Fourteen_Points	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Voting_rights_in_the_United_States	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Presidency_of_Theodore_Roosevelt	rdfs:seeAlso	dbr:History_of_the_United_States .
+dbr:Noel_Ignatiev	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Giles_Corey	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Alan_Wellikoff	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/A_People\u0027s_History_of_American_Empire>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:nonFictionSubject	dbr:History_of_the_United_States ;
+	dbp:subject	dbr:History_of_the_United_States .
+dbr:Bill_Orton	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Icarians	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:The_Great_Brain	dbp:genre	dbr:History_of_the_United_States .
+dbr:History_of_citizenship	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Strauss\u2013Howe_generational_theory>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Francis_Lewis_High_School	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:SAT_Subject_Tests	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Wilson_Jeremiah_Moses	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/David_R._Jones_(journalist)>	dbo:education	dbr:History_of_the_United_States .
+dbr:The_Almanac_of_American_History	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/The_Johnstown_Flood_(book)>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:nonFictionSubject	dbr:History_of_the_United_States ;
+	dbp:subject	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/The_Great_Bridge_(book)>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:nonFictionSubject	dbr:History_of_the_United_States ;
+	dbp:subject	dbr:History_of_the_United_States .
+dbr:Marianne_Debouzy	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Childtimes	dbo:literaryGenre	dbr:History_of_the_United_States ;
+	dbp:genre	dbr:History_of_the_United_States .
+@prefix ns47:	<http://dbpedia.org/resource/Childtimes:> .
+ns47:_A_Three-Generation_Memoir	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:William_Leuchtenburg	dbp:subDiscipline	dbr:History_of_the_United_States .
+dbr:Friederike_Baer	dbp:discipline	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Empire_of_Liberty:_A_History_of_the_Early_Republic,_1789\u20131815>	dbo:nonFictionSubject	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/John,_Paul,_George_&_Ben>	dbo:literaryGenre	dbr:History_of_the_United_States ;
+	dbp:genre	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Freedom_from_Fear_(Kennedy_book)>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:American_studies	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Susquehanna_River	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/An_Indigenous_Peoples\u0027_History_of_the_United_States>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Southern_Illinois	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Frazier_History_Museum	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:History_of_rail_transportation_in_the_United_States	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Virginia_Peninsula	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Jim_Crow_(1986_painting)>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Elwyn_B._Robinson>	dbo:academicDiscipline	dbr:History_of_the_United_States ;
+	dbp:field	dbr:History_of_the_United_States .
+dbr:Pull_Up_Some_Dust_and_Sit_Down	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Descendents	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Colonial_Williamsburg	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Abhimanyu_Singh_Arha	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Jeremiad	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/King\u0027s_Highway_Historic_District_(New_Jersey)>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Hysterical_History	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Lonnie_Bunch	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/John_Timoney_(police_officer)>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Franklin_Delano_Roosevelt_Memorial	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Eyes_on_the_Prize	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:History_of_the_Indian_Tribes_of_North_America	dbo:nonFictionSubject	dbr:History_of_the_United_States ;
+	dbp:subject	dbr:History_of_the_United_States .
+dbr:Sheltered_instruction	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Selamawi_Asgedom	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Brandywine_Springs	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Jeffrey_Pasley	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+@prefix ns48:	<http://dbpedia.org/resource/The_American_Future:> .
+ns48:_A_History	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/America,_Empire_of_Liberty>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbp:subject	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Pawe\u0142_Zaremba>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:David_Howard-Pitney	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+@prefix ns49:	<http://dbpedia.org/resource/Moonshot:> .
+ns49:_The_Flight_of_Apollo_11	dbo:nonFictionSubject	dbr:History_of_the_United_States ;
+	dbp:subject	dbr:History_of_the_United_States .
+dbr:A_Young_Patriot	dbo:nonFictionSubject	dbr:History_of_the_United_States .
+dbr:The_Long_Road_to_Gettysburg	dbo:nonFictionSubject	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/History\u0027s_Memory>	dbo:nonFictionSubject	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Walter_A._Friedman>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Lynching_in_the_United_States	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Five_Civilized_Tribes	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Nadir_of_American_race_relations	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:South_Central_United_States	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Sharp_v._Murphy>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Australian_frontier_wars	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Spartacus_Educational	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/David_W._Blight>	dbp:subDiscipline	dbr:History_of_the_United_States .
+dbr:Newburgh_letter	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/The_Suffering_(video_game)>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Chip_Maxwell	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Joe_Bertram_Frantz	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbp:subDiscipline	dbr:History_of_the_United_States .
+dbr:The_Negro_Soldier	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/American_Eclipse_(book)>	dbo:nonFictionSubject	dbr:History_of_the_United_States ;
+	dbp:subject	dbr:History_of_the_United_States .
+dbr:Gay_Nineties	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:The_White_House_Doctor	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Social_class_in_American_history	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Samuel_Whitcomb_Jr.>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:American_Civilization	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:wikiPageRedirects	dbr:History_of_the_United_States .
+dbr:Diplomacy_in_the_American_Revolutionary_War	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:List_of_awards_and_nominations_received_by_American_Experience	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:The_Politically_Incorrect_Guide_to_American_History	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Earl_Irvin_West	dbo:education	dbr:History_of_the_United_States .
+dbr:Hampton_Sides	dbo:genre	dbr:History_of_the_United_States ;
+	dbp:genre	dbr:History_of_the_United_States .
+dbr:Hasan_Kwame_Jeffries	dbp:discipline	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/R._J._Rushdoony>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Elementary_schools_in_the_United_States	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Brad_Zellar	dbo:genre	dbr:History_of_the_United_States ;
+	dbp:genre	dbr:History_of_the_United_States .
+dbr:The_Compilation_of_the_Messages_and_Papers_of_the_Presidents	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Cornelia_Fort	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:The_First_Tycoon	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:nonFictionSubject	dbr:History_of_the_United_States ;
+	dbp:subject	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/John_Adams_(book)>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:nonFictionSubject	dbr:History_of_the_United_States ;
+	dbp:subject	dbr:History_of_the_United_States .
+dbr:The_End_of_American_Childhood	dbo:nonFictionSubject	dbr:History_of_the_United_States .
+dbr:These_Truths	dbo:nonFictionSubject	dbr:History_of_the_United_States ;
+	dbp:subject	dbr:History_of_the_United_States .
+dbr:The_Alchemy_of_Race_and_Rights	dbo:nonFictionSubject	dbr:History_of_the_United_States ;
+	dbp:subject	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Blood_and_Thunder_(book)>	dbo:literaryGenre	dbr:History_of_the_United_States ;
+	dbp:genre	dbr:History_of_the_United_States .
+dbr:Hellhound_on_His_Trail	dbo:literaryGenre	dbr:History_of_the_United_States ;
+	dbp:genre	dbr:History_of_the_United_States .
+dbr:In_the_Kingdom_of_Ice	dbo:literaryGenre	dbr:History_of_the_United_States ;
+	dbp:genre	dbr:History_of_the_United_States .
+dbr:Lies_Across_America	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Interceptor_(film)>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Journal_of_the_Early_Republic	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:academicDiscipline	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/The_Crossing_(Murphy_book)>	dbo:nonFictionSubject	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/David_E._Maas>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:US_history	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:wikiPageRedirects	dbr:History_of_the_United_States .
+dbr:Indiana_Magazine_of_History	dbo:academicDiscipline	dbr:History_of_the_United_States ;
+	dbp:discipline	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Peter_W._Schramm>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:mainInterest	dbr:History_of_the_United_States ;
+	dbp:mainInterests	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Women_and_Social_Movements_in_the_United_States,_1600\u20132000>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:US_History	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:wikiPageRedirects	dbr:History_of_the_United_States .
+@prefix ns50:	<http://dbpedia.org/resource/Tennessee_Frontiers:> .
+ns50:_Three_Regions_in_Transition	dbo:nonFictionSubject	dbr:History_of_the_United_States ;
+	dbp:subject	dbr:History_of_the_United_States .
+dbr:Immigration_to_the_United_States	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:List_of_capitals_in_the_United_States	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Mankato,_Minnesota>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Joel_Rosenberg_(science_fiction_author)>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Chris_Massoglia	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Edmund_Morgan_(historian)>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/History_of_the_United_States_(2008\u2013present)>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/50_State_quarters>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/James_Shields_(politician,_born_1806)>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Oppression	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:List_of_African-American_United_States_representatives	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Earl_Warren	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:History_of_immigration_to_the_United_States	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Urbanization_in_the_United_States	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Mass_racial_violence_in_the_United_States	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Waziyatawin	dbp:discipline	dbr:History_of_the_United_States .
+dbr:Historical_racial_and_ethnic_demographics_of_the_United_States	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Droughts_in_the_United_States	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Aboriginal_title_in_the_United_States	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Capital_punishment_for_homosexuality	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:African-American_history	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:List_of_historians_by_area_of_study	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:History_of_Japanese_Americans	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Clayborne_Carson	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Ted_Steinberg	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/White_Acre_vs._Black_Acre>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:After_America	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Anti-Catholicism_in_the_United_States	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Christopher_McKnight_Nichols	dbp:subDiscipline	dbr:History_of_the_United_States .
+dbr:Roy_Rosenzweig	dbp:mainInterests	dbr:History_of_the_United_States .
+dbr:Reagan_administration_scandals	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:No_Religious_Test_Clause	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/2010s_in_history>	rdfs:seeAlso	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Americana_(Sides_book)>	dbo:nonFictionSubject	dbr:History_of_the_United_States ;
+	dbp:subject	dbr:History_of_the_United_States .
+@prefix ns51:	<http://dbpedia.org/resource/The_Americans:> .
+ns51:_The_Democratic_Experience	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:nonFictionSubject	dbr:History_of_the_United_States ;
+	dbp:subject	dbr:History_of_the_United_States .
+dbr:National_Register_of_Historic_Places	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Early_modern_period	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Museum_of_the_Bible	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Timeline_of_Boston	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Greater_Boston	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Americana_(culture)>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Labor_history_of_the_United_States	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+@prefix ns52:	<http://dbpedia.org/resource/America:> .
+ns52:_The_Story_of_Us	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Why_Orwell_Matters	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Presidency_of_Warren_G._Harding>	rdfs:seeAlso	dbr:History_of_the_United_States .
+dbr:Gore_Vidal	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Very_Short_Introductions	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Political_culture_of_the_United_States	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Frank_Zeidler	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Afghanistan\u2013United_States_relations>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/1776_Commission>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:History_of_United_States_foreign_policy	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Ken_Burns	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/H._W._Brands>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbp:subDiscipline	dbr:History_of_the_United_States .
+dbr:Brendan_McConville	dbp:fields	dbr:History_of_the_United_States ;
+	dbo:academicDiscipline	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/David_L._Hoggan>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Our_World_(1986_TV_program)>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:New_Coke	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Anti-Italianism	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:Kartunes	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:First_presidency_of_Grover_Cleveland	rdfs:seeAlso	dbr:History_of_the_United_States .
+dbr:John_Batchelor	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:United_States_History	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:wikiPageRedirects	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Leslie_M._Harris>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+dbr:George_Marsden	dbp:subDiscipline	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Thomas_S._Kidd>	dbp:subDiscipline	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/19th_century_in_the_United_States>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/18th_century_in_the_United_States>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/21st_century_in_the_United_States>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/History_of_the_United_States_(1991\u2013present)>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:wikiPageRedirects	dbr:History_of_the_United_States .
+dbr:Louis_Tuffly_Ellis	dbp:subDiscipline	dbr:History_of_the_United_States .
+dbr:History_of_United_States	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:wikiPageRedirects	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/David_M._Jacobs>	dbp:discipline	dbr:History_of_the_United_States .
+dbr:The_Communal_Experience	dbo:nonFictionSubject	dbr:History_of_the_United_States ;
+	dbp:subject	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/U.S._History>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:wikiPageRedirects	dbr:History_of_the_United_States .
+dbr:Impossible_Subjects	dbo:nonFictionSubject	dbr:History_of_the_United_States ;
+	dbp:subject	dbr:History_of_the_United_States .
+@prefix ns53:	<http://dbpedia.org/resource/America,_Empire_of_Liberty__:> .
+ns53:_A_New_History__1	dbo:nonFictionSubject	dbr:History_of_the_United_States .
+dbr:Lies_My_Teacher_Told_Me	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:nonFictionSubject	dbr:History_of_the_United_States ;
+	dbp:subject	dbr:History_of_the_United_States .
+dbr:Dawn_Mabalon	dbp:discipline	dbr:History_of_the_United_States .
+dbr:Roland_Marchand	dbp:discipline	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Grass_Lawn_(Gulfport,_Mississippi)>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/America\u0027s_Hometown_Thanksgiving_Parade>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/After_America_(Steyn_book)>	dbo:nonFictionSubject	dbr:History_of_the_United_States ;
+	dbp:subject	dbr:History_of_the_United_States .
+dbr:Age_of_Fracture	dbo:nonFictionSubject	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Grass_Roots_(Emily_Dufton)>	dbo:nonFictionSubject	dbr:History_of_the_United_States ;
+	dbp:subject	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/What_Is_America%3F>	dbo:nonFictionSubject	dbr:History_of_the_United_States ;
+	dbp:subject	dbr:History_of_the_United_States .
+dbr:Scandinavians_in_Chicago	dbo:nonFictionSubject	dbr:History_of_the_United_States ;
+	dbp:subject	dbr:History_of_the_United_States .
+@prefix ns54:	<http://dbpedia.org/resource/The_Boys\u0027_War:> .
+ns54:_Confederate_and_Union_Soldiers_Talk_About_the_Civil_War	dbo:nonFictionSubject	dbr:History_of_the_United_States .
+dbr:O_Strange_New_World	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:nonFictionSubject	dbr:History_of_the_United_States ;
+	dbp:subject	dbr:History_of_the_United_States .
+dbr:Historical_timeline_of_the_United_States	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:wikiPageRedirects	dbr:History_of_the_United_States .
+dbr:HistoryOfUnitedStates	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:wikiPageRedirects	dbr:History_of_the_United_States .
+dbr:USA_History	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:wikiPageRedirects	dbr:History_of_the_United_States .
+dbr:USA_history	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:wikiPageRedirects	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/America\u0027s_age>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:wikiPageRedirects	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/History_of_U.S.>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:wikiPageRedirects	dbr:History_of_the_United_States .
+dbr:History_of_US	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:wikiPageRedirects	dbr:History_of_the_United_States .
+dbr:History_of_USA	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:wikiPageRedirects	dbr:History_of_the_United_States .
+dbr:History_of_UnitedStates	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:wikiPageRedirects	dbr:History_of_the_United_States .
+dbr:History_of_United_States_of_America	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:wikiPageRedirects	dbr:History_of_the_United_States .
+dbr:History_of_United_States_timeline	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:wikiPageRedirects	dbr:History_of_the_United_States .
+dbr:History_of_the_US	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:wikiPageRedirects	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/History_of_the_United_States_(1776-1865)>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:wikiPageRedirects	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/History_of_the_United_States_(1865-)>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:wikiPageRedirects	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/History_of_the_United_States_(1945-present)>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:wikiPageRedirects	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/History_of_the_United_States_(1945\u2013present)>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:wikiPageRedirects	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/History_of_the_United_States_(1980-present)>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:wikiPageRedirects	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/History_of_the_United_States_(1980\u2013present)>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:wikiPageRedirects	dbr:History_of_the_United_States .
+dbr:History_of_the_United_States_of_America	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:wikiPageRedirects	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/History_of_the_u.s>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:wikiPageRedirects	dbr:History_of_the_United_States .
+dbr:History_of_the_united_states	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:wikiPageRedirects	dbr:History_of_the_United_States .
+dbr:History_of_the_united_states_of_america	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:wikiPageRedirects	dbr:History_of_the_United_States .
+dbr:History_of_the_us	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:wikiPageRedirects	dbr:History_of_the_United_States .
+dbr:History_of_the_usa	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:wikiPageRedirects	dbr:History_of_the_United_States .
+dbr:History_of_usa	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:wikiPageRedirects	dbr:History_of_the_United_States .
+dbr:History_usa	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:wikiPageRedirects	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/U._S._History>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:wikiPageRedirects	dbr:History_of_the_United_States .
+dbr:Pre-Columbian_history_of_the_United_States	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:wikiPageRedirects	dbr:History_of_the_United_States .
+dbr:The_History_of_the_United_States	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:wikiPageRedirects	dbr:History_of_the_United_States .
+dbr:The_Important_Steps_of_the_American_History	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:wikiPageRedirects	dbr:History_of_the_United_States .
+dbr:TimeLine_of_United_States_history	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:wikiPageRedirects	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/Timeline_of_U.S._History>	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:wikiPageRedirects	dbr:History_of_the_United_States .
+dbr:Timeline_of_United_States_History	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:wikiPageRedirects	dbr:History_of_the_United_States .
+dbr:Timeline_of_Untied_States_history	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:wikiPageRedirects	dbr:History_of_the_United_States .
+dbr:Timeline_of_the_United_States	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:wikiPageRedirects	dbr:History_of_the_United_States .
+dbr:Timeline_of_the_United_States_history	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:wikiPageRedirects	dbr:History_of_the_United_States .
+dbr:Timeline_of_united_states_history	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:wikiPageRedirects	dbr:History_of_the_United_States .
+dbr:Timeline_of_us_history	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:wikiPageRedirects	dbr:History_of_the_United_States .
+@prefix ns55:	<http://dbpedia.org/resource/United_States/> .
+ns55:History	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:wikiPageRedirects	dbr:History_of_the_United_States .
+dbr:United_States_History_timeline	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:wikiPageRedirects	dbr:History_of_the_United_States .
+dbr:United_States_list_of_events	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:wikiPageRedirects	dbr:History_of_the_United_States .
+dbr:Us_history	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:wikiPageRedirects	dbr:History_of_the_United_States .
+dbr:Usa_history	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:wikiPageRedirects	dbr:History_of_the_United_States .
+dbr:List_of_us_events_in_order	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:wikiPageRedirects	dbr:History_of_the_United_States .
+dbr:The_history_of_the_United_States	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:wikiPageRedirects	dbr:History_of_the_United_States .
+dbr:The_US_History	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:wikiPageRedirects	dbr:History_of_the_United_States .
+dbr:The_United_States_in_the_19th_century	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:wikiPageRedirects	dbr:History_of_the_United_States .
+dbr:History_of_the_USA	dbo:wikiPageWikiLink	dbr:History_of_the_United_States ;
+	dbo:wikiPageRedirects	dbr:History_of_the_United_States .
+<http://dbpedia.org/resource/The_New_York_Intellectuals_(book)>	dbo:nonFictionSubject	dbr:History_of_the_United_States ;
+	dbp:subject	dbr:History_of_the_United_States .
