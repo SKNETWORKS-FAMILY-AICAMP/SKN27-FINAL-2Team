@@ -11,6 +11,8 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 from analytics.service.analysis_snapshot import create_session_snapshot
+from analytics.service.display import build_planner_summary
+from analytics.service.studyplan import get_study_plan_info
 from .models import QuestionOptions, Questions, SolveRecords, SolveSessions
 from .serializers import (
     FilterOptionsResponse,
@@ -48,6 +50,9 @@ SCORE_RATIO = {
     2: 3,
     1: 1,
 }
+WRONG_NOTE_TOTAL_COUNT = 20
+WRONG_NOTE_TOP_LIMIT = 5
+WRONG_NOTE_ALLOCATION_BASE = [6, 5, 4, 3, 2]
 BASIC_SCORE_COUNTS = {3: 10, 2: 30, 1: 10}
 HARD_SCORE_COUNTS = {3: 20, 2: 10, 1: 20}
 DETAIL_DIFFICULTY_RATIOS = {
@@ -75,19 +80,48 @@ ERA_FILTER_VALUES = [
     "삼국 시대",
     "남북국 시대",
     "고려",
-    "조선 전기",
-    "조선 후기",
+    "조선",
     "개항기",
     "일제 강점기",
     "현대",
     "통합 주제",
 ]
-QUESTION_SUBTYPE_FILTER_VALUES = ["개념", "사료", "연표", "인물", "지역"]
+ML_QUESTION_TYPE_FILTER_VALUES = [
+    "역사 지식의 이해",
+    "연대기의 파악",
+    "역사 상황 및 쟁점의 인식",
+    "역사 자료의 분석 및 해석",
+    "역사 탐구의 설계 및 수행",
+    "결론의 도출 및 평가",
+]
+ML_QUESTION_SUBTYPE_FILTER_VALUES = [
+    "보기 조합 판단",
+    "시각 자료 해석",
+    "전후 시기 판단",
+    "자료 기반 시대·대상 추론",
+    "연표·흐름 빈칸",
+    "사건·자료 순서 배열",
+]
 
 
 # 문제 생성 조건 페이지를 렌더링한다.
 def question_create(request):
-    return render(request, "question/create.html")
+    planner_summary = {
+        "today_key": timezone.localdate().isoformat(),
+        "data": {"plansByDate": {}, "completedKeys": [], "plannedKeys": [], "progressByDate": {}},
+    }
+    if request.user.is_authenticated:
+        study_plan = get_study_plan_info(request.user.user_id)
+        planner_summary = build_planner_summary(study_plan, timezone.localdate())
+
+    return render(
+        request,
+        "question/create.html",
+        {
+            "planner_summary": planner_summary,
+            "planner_data": planner_summary["data"],
+        },
+    )
 
 
 # 문제 풀이 페이지를 렌더링한다.
@@ -137,8 +171,6 @@ def _distinct_values(qs, field_name):
     )
 
 
-# 기준 목록 순서대로 DB에 존재하는 값만 반환한다.
-# 화면에 불분명한 시대값이 노출되지 않도록 시대 필터에서 사용한다.
 def _ordered_existing_values(qs, field_name, ordered_values):
     existing_values = set(
         qs.exclude(**{field_name: ""})
@@ -147,6 +179,16 @@ def _ordered_existing_values(qs, field_name, ordered_values):
         .distinct()
     )
     return [value for value in ordered_values if value in existing_values]
+
+
+def _selected_existing_values(qs, field_name, selected_values):
+    existing_values = set(
+        qs.exclude(**{field_name: ""})
+        .exclude(**{field_name: None})
+        .values_list(field_name, flat=True)
+        .distinct()
+    )
+    return [value for value in selected_values if value in existing_values]
 
 
 def _reference_filter_values(section_name):
@@ -460,8 +502,8 @@ def question_filters(request):
             if topic_values else _distinct_values(qs, "topic")
         ),
         "difficulties": ["상", "중", "하"],
-        "question_types": _distinct_values(qs, "question_type"),
-        "question_subtypes": QUESTION_SUBTYPE_FILTER_VALUES,
+        "question_types": ML_QUESTION_TYPE_FILTER_VALUES,
+        "question_subtypes": ML_QUESTION_SUBTYPE_FILTER_VALUES,
         "counts": [10, 20, 30, 40, 50],
     })
     return Response(q_filters.data, status=status.HTTP_200_OK)
@@ -512,9 +554,21 @@ def question_start(request):
     if user_id is not None and data["topics"]:
         qs = qs.filter(topic__in=data["topics"])
     if user_id is not None and data["question_types"]:
-        qs = qs.filter(question_type__in=data["question_types"])
+        selected_question_types = _selected_existing_values(
+            qs,
+            "question_type",
+            data["question_types"],
+        )
+        if selected_question_types:
+            qs = qs.filter(question_type__in=selected_question_types)
     if user_id is not None and data["question_subtypes"]:
-        qs = qs.filter(question_subtype__in=data["question_subtypes"])
+        selected_question_subtypes = _selected_existing_values(
+            qs,
+            "question_subtype",
+            data["question_subtypes"],
+        )
+        if selected_question_subtypes:
+            qs = qs.filter(question_subtype__in=selected_question_subtypes)
 
     count = sum(score_counts.values()) if user_id is not None else GUEST_DAILY_COUNT
     if user_id is not None:
@@ -871,6 +925,276 @@ def question_save_answer(request, session_id):
         "is_answered": selected_display_no is not None,
     })
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+def _wrong_note_filter_value(source, key):
+    if hasattr(source, "query_params"):
+        value = source.query_params.get(key)
+    else:
+        value = (source or {}).get(key)
+    if value in (None, "", "all"):
+        return None
+    return value
+
+
+def _wrong_note_record_queryset(user_id, source):
+    qs = SolveRecords.objects.filter(
+        session__user_id=user_id,
+        session__status=COMPLETED_SESSION_STATUS,
+        selected_no__isnull=False,
+    )
+    session_id = _wrong_note_filter_value(source, "session_id")
+    session_type = _wrong_note_filter_value(source, "session_type")
+    era = _wrong_note_filter_value(source, "era")
+    topic = _wrong_note_filter_value(source, "topic")
+    q_type = _wrong_note_filter_value(source, "q_type")
+
+    if session_id:
+        qs = qs.filter(session_id=session_id)
+    if session_type:
+        qs = qs.filter(session__session_type=session_type)
+    if era:
+        qs = qs.filter(era=era)
+    if topic:
+        qs = qs.filter(topic=topic)
+    if q_type:
+        qs = qs.filter(q_type=q_type)
+    return qs
+
+
+def _allocate_wrong_note_counts(combo_count):
+    if combo_count <= 0:
+        return []
+
+    allocations = WRONG_NOTE_ALLOCATION_BASE[:combo_count]
+    total = sum(allocations)
+    index = 0
+    while total < WRONG_NOTE_TOTAL_COUNT:
+        allocations[index % combo_count] += 1
+        total += 1
+        index += 1
+    while total > WRONG_NOTE_TOTAL_COUNT:
+        target_index = max(range(combo_count), key=lambda item: allocations[item])
+        allocations[target_index] -= 1
+        total -= 1
+    return allocations
+
+
+def _wrong_note_top_combinations(user_id, source):
+    record_qs = _wrong_note_record_queryset(user_id, source)
+    raw_grouped_rows = list(
+        record_qs.values("era", "topic", "q_type")
+        .annotate(
+            total_count=models.Count("record_id"),
+            wrong_count=models.Count("record_id", filter=models.Q(is_correct=False)),
+        )
+        .filter(wrong_count__gt=0)
+    )
+    grouped_map = {}
+    for row in raw_grouped_rows:
+        key = (row["era"] or "", row["topic"] or "", row["q_type"] or "")
+        grouped = grouped_map.setdefault(
+            key,
+            {
+                "era": key[0],
+                "topic": key[1],
+                "q_type": key[2],
+                "total_count": 0,
+                "wrong_count": 0,
+            },
+        )
+        grouped["total_count"] += row["total_count"] or 0
+        grouped["wrong_count"] += row["wrong_count"] or 0
+    grouped_rows = list(grouped_map.values())
+    grouped_rows.sort(
+        key=lambda row: (
+            -(row["wrong_count"] or 0),
+            -((row["wrong_count"] or 0) / max(row["total_count"] or 1, 1)),
+            row["era"] or "",
+            row["topic"] or "",
+            row["q_type"] or "",
+        )
+    )
+
+    allocations = _allocate_wrong_note_counts(min(len(grouped_rows), WRONG_NOTE_TOP_LIMIT))
+    combinations = []
+    for index, row in enumerate(grouped_rows[:WRONG_NOTE_TOP_LIMIT]):
+        wrong_count = row["wrong_count"] or 0
+        total_count = row["total_count"] or 0
+        combinations.append({
+            "rank": index + 1,
+            "era": row["era"] or "",
+            "topic": row["topic"] or "",
+            "q_type": row["q_type"] or "",
+            "wrong_count": wrong_count,
+            "total_count": total_count,
+            "wrong_rate": round((wrong_count / total_count) * 100, 1) if total_count else 0,
+            "question_count": allocations[index],
+        })
+    return combinations
+
+
+def _pick_question_ids(queryset, needed_count, selected_ids, exclude_question_ids):
+    if needed_count <= 0:
+        return []
+
+    candidate_ids = list(
+        queryset.exclude(question_id__in=selected_ids)
+        .exclude(question_id__in=exclude_question_ids)
+        .order_by("question_id")
+        .values_list("question_id", flat=True)
+    )
+    if len(candidate_ids) < needed_count:
+        extra_ids = list(
+            queryset.exclude(question_id__in=selected_ids)
+            .order_by("question_id")
+            .values_list("question_id", flat=True)
+        )
+        candidate_ids = list(dict.fromkeys([*candidate_ids, *extra_ids]))
+
+    if len(candidate_ids) <= needed_count:
+        return candidate_ids
+    return random.sample(candidate_ids, needed_count)
+
+
+def _wrong_note_related_question_ids(combinations, user_id):
+    selected_ids = []
+    wrong_question_ids = set(
+        SolveRecords.objects.filter(
+            session__user_id=user_id,
+            session__status=COMPLETED_SESSION_STATUS,
+            selected_no__isnull=False,
+            is_correct=False,
+        ).values_list("question_id", flat=True)
+    )
+    base_qs = _base_question_queryset()
+
+    for combo in combinations:
+        target_count = combo["question_count"]
+        picked_for_combo = []
+        era_values = [combo["era"]]
+        tiers = [
+            base_qs.filter(era__in=era_values, topic=combo["topic"], question_type=combo["q_type"]),
+            base_qs.filter(era__in=era_values, topic=combo["topic"]),
+            base_qs.filter(topic=combo["topic"], question_type=combo["q_type"]),
+            base_qs.filter(era__in=era_values, question_type=combo["q_type"]),
+            base_qs.filter(
+                models.Q(era__in=era_values)
+                | models.Q(topic=combo["topic"])
+                | models.Q(question_type=combo["q_type"])
+            ),
+        ]
+        for tier_qs in tiers:
+            picked_ids = _pick_question_ids(
+                tier_qs,
+                target_count - len(picked_for_combo),
+                selected_ids,
+                wrong_question_ids,
+            )
+            picked_for_combo.extend(picked_ids)
+            selected_ids.extend(picked_ids)
+            if len(picked_for_combo) >= target_count:
+                break
+
+    if len(selected_ids) < WRONG_NOTE_TOTAL_COUNT:
+        selected_ids.extend(
+            _pick_question_ids(
+                base_qs,
+                WRONG_NOTE_TOTAL_COUNT - len(selected_ids),
+                selected_ids,
+                wrong_question_ids,
+            )
+        )
+    return selected_ids[:WRONG_NOTE_TOTAL_COUNT]
+
+
+@api_view(["GET"])
+def wrong_note_recommendation(request):
+    user_id = _get_login_user_id(request)
+    if user_id is None:
+        return Response(
+            {"error": "로그인이 필요합니다."},
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
+
+    combinations = _wrong_note_top_combinations(user_id, request)
+    if not combinations:
+        return Response(
+            {"error": "추천할 오답 조합이 없습니다."},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+
+    return Response(
+        {
+            "total_count": sum(item["question_count"] for item in combinations),
+            "combinations": combinations,
+            "fallback_notice": "정확히 일치하는 문제가 부족하면 시대/주제/유형 중 일부가 일치하는 문제로 보완됩니다.",
+        },
+        status=status.HTTP_200_OK,
+    )
+
+
+@api_view(["POST"])
+def wrong_note_start(request):
+    user_id = _get_login_user_id(request)
+    if user_id is None:
+        return Response(
+            {"error": "로그인이 필요합니다."},
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
+
+    combinations = _wrong_note_top_combinations(user_id, request.data)
+    if not combinations:
+        return Response(
+            {"error": "추천할 오답 조합이 없습니다."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    selected_ids = _wrong_note_related_question_ids(combinations, user_id)
+    if len(selected_ids) < WRONG_NOTE_TOTAL_COUNT:
+        return Response(
+            {
+                "error": "추천 조건에 맞춰 생성할 문제가 부족합니다.",
+                "available_count": len(selected_ids),
+                "requested_count": WRONG_NOTE_TOTAL_COUNT,
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    questions = list(Questions.objects.filter(question_id__in=selected_ids))
+    questions.sort(key=lambda question: selected_ids.index(question.question_id))
+    with transaction.atomic():
+        _delete_other_in_progress_sessions(user_id)
+        session = SolveSessions.objects.create(
+            user_id=user_id,
+            session_type=PRACTICE_SESSION_TYPE,
+            total_count=len(questions),
+            elapsed_sec=0,
+            status=IN_PROGRESS_SESSION_STATUS,
+            recorded_date=date.today(),
+        )
+        SolveRecords.objects.bulk_create([
+            SolveRecords(
+                session=session,
+                question=question,
+                selected_no=None,
+                is_correct=False,
+                q_type=question.question_type,
+                topic=question.topic,
+                era=question.era,
+                q_score=question.q_score,
+            )
+            for question in questions
+        ])
+
+    return Response(
+        {
+            "session_id": session.session_id,
+            "total_count": len(questions),
+            "combinations": combinations,
+        },
+        status=status.HTTP_201_CREATED,
+    )
 
 
 @api_view(["POST"])

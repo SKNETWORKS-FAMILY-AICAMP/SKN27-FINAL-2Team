@@ -195,7 +195,7 @@
         score_counts: condition?.scoreCounts || {},
         studyplan_id: condition?.studyPlanId || condition?.studyplan_id || null,
         study_plan_block_id: condition?.studyPlanBlockId || condition?.study_plan_block_id || null,
-        count: Number(condition?.["문제 수"] || 10),
+        count: Number(condition?.["문제 수"] || condition?.count || 10),
       };
     }
 

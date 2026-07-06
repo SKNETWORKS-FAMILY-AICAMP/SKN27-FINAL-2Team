@@ -181,8 +181,11 @@ def fetch_unembedded_chunks(conn, embedding_model: str, limit: int) -> list[tupl
             """
             SELECT chunk_id, chunk_text
             FROM rag.document_chunks
-            WHERE embedding IS NULL
-               OR embedding_model IS DISTINCT FROM %s
+            WHERE source_type <> 'image_material'
+              AND (
+                  embedding IS NULL
+                  OR embedding_model IS DISTINCT FROM %s
+              )
             ORDER BY id
             LIMIT %s
             """,
@@ -232,11 +235,10 @@ def update_embeddings(
 def create_vector_index(conn, index_lists: int) -> None:
     with conn.cursor() as cur:
         cur.execute(
-            f"""
+            """
             CREATE INDEX IF NOT EXISTS document_chunks_embedding_cosine_idx
             ON rag.document_chunks
-            USING ivfflat (embedding vector_cosine_ops)
-            WITH (lists = {index_lists})
+            USING hnsw (embedding vector_cosine_ops)
             WHERE embedding IS NOT NULL
             """
         )
@@ -258,7 +260,7 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Delete existing DB chunks for loaded source types when their chunk_id is no longer present in JSONL.",
     )
-    parser.add_argument("--create-index", action="store_true", help="Create ivfflat vector index after embedding.")
+    parser.add_argument("--create-index", action="store_true", help="Create hnsw vector index after embedding.")
     parser.add_argument("--index-lists", type=int, default=100)
     parser.add_argument("--sleep", type=float, default=0.0, help="Seconds to sleep between embedding batches.")
     parser.add_argument("--rate-limit-sleep", type=float, default=65.0, help="Seconds to wait after OpenAI 429 errors.")

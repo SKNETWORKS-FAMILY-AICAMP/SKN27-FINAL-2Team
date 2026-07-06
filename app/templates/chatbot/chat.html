@@ -194,7 +194,7 @@
           return;
         }
 
-        appendBotMessage(data);
+        appendBotMessage(data, true);
         addMessageToActiveSession({ sender: "bot", data, intent });
       } catch (error) {
         loading.remove();
@@ -536,7 +536,7 @@
       scrollToBottom();
     }
 
-    function appendBotMessage(data) {
+    function appendBotMessage(data, stream = false) {
       const wrapper = document.createElement("div");
       wrapper.className = "message bot";
       const intent = data.intent || "concept";
@@ -548,7 +548,8 @@
           </div>
         `;
         chatStream.appendChild(wrapper);
-        scrollToBottom();
+        if (stream) streamBotBubble(wrapper);
+        else scrollToBottom();
         return;
       }
       const shouldShowImages = intent === "image";
@@ -577,7 +578,82 @@
         </div>
       `;
       chatStream.appendChild(wrapper);
-      scrollToBottom();
+      if (stream) streamBotBubble(wrapper);
+      else scrollToBottom();
+    }
+
+    function streamBotBubble(wrapper) {
+      const bubble = wrapper.querySelector(".bot-bubble");
+      if (!bubble) return scrollToBottom();
+      const finalHtml = bubble.innerHTML;
+      const blocks = [...bubble.querySelectorAll(`
+        .note > .title,
+        .note > .summary,
+        .section-title,
+        .section tr,
+        .sources,
+        .conversational-answer > *,
+        .image-gallery .image-card
+      `)].filter((element) => !element.closest(".bot-label"));
+      if (!blocks.length) return scrollToBottom();
+
+      const rowTexts = new Map();
+      blocks.forEach((element) => {
+        element.dataset.streamDisplay = element.style.display || "";
+        if (element.matches(".section tr")) {
+          rowTexts.set(element, [...element.cells].map((cell) => cell.textContent));
+          [...element.cells].forEach((cell) => { cell.textContent = ""; });
+        }
+        element.style.display = "none";
+      });
+      let index = 0;
+      const showNext = () => {
+        const element = blocks[index];
+        if (!element) {
+          bubble.innerHTML = finalHtml;
+          scrollToBottom();
+          return;
+        }
+        element.style.display = element.dataset.streamDisplay;
+        if (element.matches(".section tr")) {
+          typeTableRow(element, rowTexts.get(element) || [], () => {
+            index += 1;
+            scrollToBottom();
+            setTimeout(showNext, 60);
+          });
+          return;
+        }
+        index += 1;
+        scrollToBottom();
+        setTimeout(showNext, element.matches(".section-title") ? 220 : 90);
+      };
+      showNext();
+    }
+
+    function typeTableRow(row, texts, done) {
+      const cells = [...row.cells];
+      let cellIndex = 0;
+      let charIndex = 0;
+
+      const step = () => {
+        const cell = cells[cellIndex];
+        if (!cell) return done();
+
+        const text = texts[cellIndex] || "";
+        cell.textContent = text.slice(0, charIndex + 1);
+        charIndex += 1;
+
+        if (charIndex <= text.length) {
+          setTimeout(step, 35);
+          return;
+        }
+
+        cellIndex += 1;
+        charIndex = 0;
+        setTimeout(step, 20);
+      };
+
+      step();
     }
 
     function renderBotLabel(label) {

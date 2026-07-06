@@ -38,3 +38,13 @@
 {"id":"GQ038","query":"광복 이후 좌우 합작 운동 설명해줘","intent":"concept","expected_era":"현대","expected_source_type":"historical_overview","expected_keywords":["좌우 합작","여운형","김규식"],"requires_image":false}
 {"id":"GQ039","query":"6월 민주 항쟁이 뭐야","intent":"concept","expected_era":"현대","expected_source_type":["historical_overview","historical_source"],"expected_keywords":["6월 민주 항쟁","직선제","민주화"],"requires_image":false}
 {"id":"GQ040","query":"한국사능력검정시험에서 조선 전기 정치는 어떻게 외우면 좋아?","intent":"study_tip","expected_era":"조선 전기","expected_source_type":"historical_overview","expected_keywords":["조선 전기","태종","세종","성종","경국대전"],"requires_image":false}
+{"id":"GQ041","query":"세종대왕알려줘","intent":"concept","expected_era":"조선 전기","expected_source_type":"historical_overview","expected_keywords":["세종","훈민정음","집현전","측우기"],"requires_image":false}
+{"id":"GQ042","query":"장영실 업적 알려줘","intent":"concept","expected_era":"조선 전기","expected_source_type":["historical_overview","image_material"],"expected_keywords":["장영실","측우기","자격루","앙부일구"],"requires_image":false}
+{"id":"GQ043","query":"권율 장군에 대해서 알려줘","intent":"concept","expected_era":"조선 전기","expected_source_type":"historical_overview","expected_keywords":["권율","임진왜란","행주대첩"],"requires_image":false}
+{"id":"GQ044","query":"왕건의 고려 건국 과정 정리해줘","intent":"concept","expected_era":"고려 시대","expected_source_type":"historical_overview","expected_keywords":["왕건","고려","후삼국","궁예"],"requires_image":false}
+{"id":"GQ045","query":"광종의 개혁 정치 알려줘","intent":"concept","expected_era":"고려 시대","expected_source_type":"historical_overview","expected_keywords":["광종","노비안검법","과거제","왕권"],"requires_image":false}
+{"id":"GQ046","query":"고려 성종의 통치 제도 설명해줘","intent":"concept","expected_era":"고려 시대","expected_source_type":"historical_overview","expected_keywords":["성종","최승로","12목","유교"],"requires_image":false}
+{"id":"GQ047","query":"이성계가 조선을 세운 배경 알려줘","intent":"concept","expected_era":["고려 시대","조선 전기"],"expected_source_type":"historical_overview","expected_keywords":["이성계","위화도 회군","신진 사대부","조선"],"requires_image":false}
+{"id":"GQ048","query":"실학의 역사적 의미 설명해줘","intent":"concept","expected_era":"조선 후기","expected_source_type":"historical_overview","expected_keywords":["실학","중농학파","중상학파","개혁"],"requires_image":false}
+{"id":"GQ049","query":"동학 농민 운동의 전개 과정 알려줘","intent":"summary","expected_era":"근대","expected_source_type":"historical_overview","expected_keywords":["동학 농민 운동","전봉준","고부","집강소"],"requires_image":false}
+{"id":"GQ050","query":"일제 강점기 문화 통치 특징 정리해줘","intent":"concept","expected_era":"일제 강점기","expected_source_type":"historical_overview","expected_keywords":["문화 통치","3.1 운동","민족 분열 통치"],"requires_image":false}
