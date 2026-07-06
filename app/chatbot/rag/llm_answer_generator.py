@@ -98,11 +98,14 @@ def build_user_prompt(
         context = "검색 근거 없음"
     history_context = compact_history(history) or "이전 대화 없음"
 
-    output_instruction = (
-        f"출력 형식: 교재 요약 노트 Markdown. 큰 제목, 1/2/3번 섹션, 표 또는 bullet{', 출처 요약' if include_source_summary else ''}을 포함하세요."
-        if style == "textbook" and not follow_up
-        else f"출력 형식: 설명형 Markdown. 핵심 답변, 이유/배경{', 출처 요약' if include_source_summary else ''}을 포함하세요."
-    )
+    if style == "short":
+        output_instruction = "출력 형식: 핵심 답만 1~2문장으로 짧게 답하세요. 제목, 표, 번호 섹션은 쓰지 마세요."
+    else:
+        output_instruction = (
+            f"출력 형식: 교재 요약 노트 Markdown. 큰 제목, 1/2/3번 섹션, 표 또는 bullet{', 출처 요약' if include_source_summary else ''}을 포함하세요."
+            if style == "textbook" and not follow_up
+            else f"출력 형식: 설명형 Markdown. 핵심 답변, 이유/배경{', 출처 요약' if include_source_summary else ''}을 포함하세요."
+        )
     source_rule = "- 출처 요약에는 사용한 title을 1~3개만 적고, 이미지 자료는 title 대신 image_source만 적으세요." if include_source_summary else "- 출처 요약은 쓰지 마세요."
 
     return f"""질문:
@@ -154,6 +157,9 @@ def build_structured_prompt(
 없는 내용은 만들지 말고 빈 배열로 처리하세요. 근거 부족 안내 문장은 쓰지 마세요.
 개념 정리 답변은 항상 3개 섹션, 각 섹션 2개 항목을 기본으로 작성하세요.
 섹션 heading은 "1. 정치와 제도", "2. 문화와 업적", "3. 시험 핵심 정리"처럼 번호와 제목을 함께 쓰세요.
+각 항목의 설명은 반드시 해당 섹션 제목의 범주와 맞아야 합니다.
+정치와 제도에는 통치, 왕권, 관제, 법, 군사, 영토 확장 내용을 넣고, 문화와 업적에는 불교, 예술, 건축, 편찬, 과학, 문화재 내용을 넣으세요.
+섹션 범주와 맞지 않는 근거는 억지로 넣지 말고 더 맞는 섹션으로 옮기거나 제외하세요.
 
 {{
   "answer_type": "{mode}",

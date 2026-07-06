@@ -81,6 +81,14 @@ ERA_RULES = [
 
 YEAR_PATTERN = re.compile(r"(?<!\d)([12]\d{3})(?:\s*년)?")
 TAG_SPLIT_PATTERN = re.compile(r"[>|,/·ㆍ：:\-－\s]+")
+HEADING_PREFIX_PATTERN = re.compile(
+    r"^\s*(?:"
+    r"[ⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩ]+\.?\s*|"
+    r"\(?\d+\)?[.)]?\s*|"
+    r"[가-힣]\.\s*|"
+    r"[A-Za-z]\.\s*"
+    r")+"
+)
 
 
 def dedupe(values: Iterable[str]) -> list[str]:
@@ -95,10 +103,20 @@ def dedupe(values: Iterable[str]) -> list[str]:
 def normalize_tag(value: str | None) -> str:
     if not value:
         return ""
-    value = re.sub(r"^[ⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩ]+\.?\s*", "", value.strip())
-    value = re.sub(r"^\(?\d+\)?\.?\s*", "", value)
+    value = normalize_heading(value)
     value = value.strip(" #`[]()")
     return value
+
+
+def normalize_heading(value: str | None) -> str:
+    if not value:
+        return ""
+    value = re.sub(r"\s+", " ", value.strip())
+    previous = None
+    while previous != value:
+        previous = value
+        value = HEADING_PREFIX_PATTERN.sub("", value).strip()
+    return value.strip(" -－")
 
 
 def split_category_path(value: str | None) -> list[str]:
@@ -106,6 +124,11 @@ def split_category_path(value: str | None) -> list[str]:
         return []
     parts = re.split(r"\s*>\s*|\|", value)
     return dedupe(parts)
+
+
+def normalize_periods(period: str | None, periods: Iterable[str] | None = None) -> tuple[str, list[str]]:
+    period_values = dedupe([*(periods or []), *(split_category_path(period) if period else [])])
+    return (period_values[0] if period_values else "", period_values)
 
 
 def keyword_tags(value: str | None) -> list[str]:
@@ -141,6 +164,12 @@ def extract_years(*texts: str) -> list[int]:
             if 1 <= year <= 2100 and year not in years:
                 years.append(year)
     return years[:20]
+
+
+def strip_reference_section(text: str) -> str:
+    if not text:
+        return ""
+    return re.split(r"참고\s*(?:문헌|자료)", text, maxsplit=1, flags=re.IGNORECASE)[0].strip()
 
 
 def empty_chronology() -> dict:
@@ -187,6 +216,8 @@ def build_chronology(
     content: str = "",
     extra_text: str = "",
 ) -> dict:
+    content = strip_reference_section(content)
+    extra_text = strip_reference_section(extra_text)
     years = extract_years(title, period, category, content, extra_text)
     metadata_text = " ".join(text for text in (period, category, title, extra_text) if text)
     chronology = infer_era(metadata_text, content[:1200])
