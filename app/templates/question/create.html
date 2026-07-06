@@ -151,10 +151,6 @@
         </header>
         <div class="saved-session-groups">
           <section>
-            <h3>진단 평가</h3>
-            <div class="saved-session-list" data-session-list="diagnostic"></div>
-          </section>
-          <section>
             <h3>문제 풀이</h3>
             <div class="saved-session-list" data-session-list="practice"></div>
           </section>
@@ -401,10 +397,8 @@
 
       list.querySelectorAll(".saved-session-item").forEach((button) => {
         button.addEventListener("click", () => {
-          const sessionType = button.dataset.sessionType;
           const sessionId = button.dataset.sessionId;
-          const baseUrl = sessionType === "diagnostic" ? "/diagnosis/exam/" : "/question/exam/";
-          window.location.href = `${baseUrl}?resume=1&session_id=${sessionId}`;
+          window.location.href = `/question/exam/?resume=1&session_id=${sessionId}`;
         });
       });
     }
@@ -418,15 +412,11 @@
       return payload;
     }
 
-    // 진단평가, 일반 문제풀이, 학습계획 문제풀이의 진행 중 세션을 모달에 나눠 표시한다.
+    // 일반 문제풀이와 학습계획 문제풀이의 진행 중 세션을 모달에 나눠 표시한다.
     async function openSavedSessionModal() {
       try {
-        const [diagnosisPayload, questionPayload] = await Promise.all([
-          fetchJson("/diagnosis/api/sessions/in-progress/"),
-          fetchJson("/question/api/sessions/in-progress/"),
-        ]);
+        const questionPayload = await fetchJson("/question/api/sessions/in-progress/");
         const questionSessions = questionPayload.sessions || [];
-        renderSavedSessionList("diagnostic", diagnosisPayload.sessions || []);
         renderSavedSessionList(
           "practice",
           questionSessions.filter((session) => session.session_source !== "study_plan")
