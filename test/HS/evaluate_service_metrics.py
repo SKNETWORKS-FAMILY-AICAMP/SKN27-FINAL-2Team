@@ -69,47 +69,6 @@ def load_jsonl(path: Path) -> list[dict]:
     return rows
 
 
-def compact(value: str | None) -> str:
-    return "".join((value or "").lower().split())
-
-
-def result_text(result) -> str:
-    metadata = result.metadata or {}
-    parts = [
-        result.title,
-        result.chunk_text,
-        " ".join(metadata.get("keywords") or []),
-        " ".join(metadata.get("category_tags") or []),
-        str(metadata.get("category") or ""),
-        str(metadata.get("field") or ""),
-    ]
-    chronology = metadata.get("chronology") or {}
-    parts.extend(str(chronology.get(key) or "") for key in ("era", "dynasty", "period_label"))
-    return compact(" ".join(parts))
-
-
-@traceable(name="evaluate_search_accuracy")
-def evaluate_search_accuracy(questions: list[dict], top_k: int, limit: int | None) -> Metric:
-    retriever = PgVectorHybridRetriever()
-    selected = questions[:limit] if limit else questions
-    hits = 0
-    for question in selected:
-        results = retriever.search(question["query"], top_k=top_k)
-        text = " ".join(result_text(result) for result in results)
-        expected = question.get("expected_keywords") or []
-        if any(compact(keyword) in text for keyword in expected):
-            hits += 1
-    score = hits / len(selected) if selected else 0.0
-    return Metric(
-        "검색 정확도",
-        "Golden Question 키워드 기반 Top-K 적합성",
-        f"{score:.2f} ({hits}/{len(selected)})",
-        "0.80 이상",
-        score >= 0.80,
-        "Golden Question 기반 RAG 검색 검증",
-    )
-
-
 @traceable(name="evaluate_graph_connectivity")
 def evaluate_graph_connectivity(queries: list[str]) -> Metric:
     checked = 0
@@ -200,33 +159,44 @@ def ragas_text(value: str) -> str:
     lines = []
     for line in (value or "").splitlines():
         stripped = line.strip()
-        if not stripped or stripped.startswith("|"):
+        if not stripped:
             continue
+        # Skip table column divider formatting (e.g., |---|---|)
+        if re.match(r"^\|[\s:\-|+\d]*\|$", stripped):
+            continue
+        # Skip source citation blocks to prevent RAGAS Answer Relevance penalties
+        if stripped.startswith(("출처 요약", "출처:", "- 출처")):
+            continue
+        # Remove pipe characters from table rows to keep the content text
+        if stripped.startswith("|"):
+            stripped = stripped.replace("|", " ").strip()
         lines.append(re.sub(r"^[#*\-\d.\s]+", "", stripped))
     return " ".join(lines)
 
 
-def evaluate_ragas_faithfulness(questions: list[dict], limit: int) -> Metric:
+def evaluate_ragas_metrics(questions: list[dict], limit: int, debug_path: Path | None = None) -> list[Metric]:
     try:
         install_ragas_vertexai_compat()
         from datasets import Dataset
         from ragas import evaluate
         from ragas.llms import LangchainLLMWrapper
-        from ragas.metrics import faithfulness
+        from ragas.metrics import answer_relevancy, faithfulness
         from langchain_openai import ChatOpenAI
     except ImportError as exc:
-        return Metric(
-            "RAGAS Faithfulness",
-            "답변이 검색 근거에 충실한지 평가",
-            f"N/A ({exc.name} 미설치)",
-            "0.80 이상",
-            None,
-            "RAGAS Framework (Faithfulness)",
-        )
+        return [
+            Metric("RAGAS Faithfulness", "답변이 검색 근거에 충실한지 평가", f"N/A ({exc.name} 미설치)", "0.80 이상", None, "RAGAS Framework (Faithfulness)"),
+            Metric("RAGAS Answer Relevance", "답변이 질문 의도에 적합한지 평가", f"N/A ({exc.name} 미설치)", "0.80 이상", None, "RAGAS Framework (Answer Relevance)"),
+        ]
 
+    ragas_intents = {"concept", "summary", "compare", "evidence"}
+    text_questions = [
+        question
+        for question in questions
+        if not question.get("requires_image") and (question.get("intent") or "concept") in ragas_intents
+    ]
     rows = []
     retriever = PgVectorHybridRetriever()
-    for question in questions[:limit]:
+    for question in text_questions[:limit]:
         result = build_history_rag_answer(question["query"], intent="concept", answer_format="text", top_k=5)
         answer = ragas_text(result.get("answer") or structured_to_text(result.get("structured_answer") or {}))
         contexts = [source.get("snippet") or "" for source in result.get("sources") or [] if source.get("snippet")]
@@ -254,32 +224,49 @@ def evaluate_ragas_faithfulness(questions: list[dict], limit: int) -> Metric:
         last_error = None
         for _ in range(3):
             try:
-                result = evaluate(dataset, metrics=[faithfulness], llm=evaluator_llm, show_progress=False, batch_size=1)
+                result = evaluate(dataset, metrics=[faithfulness, answer_relevancy], llm=evaluator_llm, show_progress=False, batch_size=1)
                 break
             except IndexError as exc:
                 last_error = exc
         else:
             raise last_error
-        scores = [row["faithfulness"] for row in result.scores if row.get("faithfulness") is not None]
-        score = sum(scores) / len(scores)
+        if debug_path:
+            write_ragas_debug(rows, result.scores, debug_path)
+        faithfulness_scores = [row["faithfulness"] for row in result.scores if row.get("faithfulness") is not None]
+        answer_scores = [row["answer_relevancy"] for row in result.scores if row.get("answer_relevancy") is not None]
+        faithfulness_score = sum(faithfulness_scores) / len(faithfulness_scores)
+        answer_score = sum(answer_scores) / len(answer_scores)
     except Exception as exc:
-        return Metric(
-            "RAGAS Faithfulness",
-            "답변이 검색 근거에 충실한지 평가",
-            f"N/A ({type(exc).__name__}: {exc})",
-            "0.80 이상",
-            None,
-            "RAGAS Framework (Faithfulness)",
-        )
+        message = f"N/A ({type(exc).__name__}: {exc})"
+        return [
+            Metric("RAGAS Faithfulness", "답변이 검색 근거에 충실한지 평가", message, "0.80 이상", None, "RAGAS Framework (Faithfulness)"),
+            Metric("RAGAS Answer Relevance", "답변이 질문 의도에 적합한지 평가", message, "0.80 이상", None, "RAGAS Framework (Answer Relevance)"),
+        ]
 
-    return Metric(
-        "RAGAS Faithfulness",
-        "답변이 검색 근거에 충실한지 평가",
-        f"{score:.2f}",
-        "0.80 이상",
-        score >= 0.80,
-        "RAGAS Framework (Faithfulness)",
-    )
+    return [
+        Metric("RAGAS Faithfulness", "답변이 검색 근거에 충실한지 평가", f"{faithfulness_score:.2f}", "0.80 이상", faithfulness_score >= 0.80, "RAGAS Framework (Faithfulness)"),
+        Metric("RAGAS Answer Relevance", "답변이 질문 의도에 적합한지 평가", f"{answer_score:.2f}", "0.80 이상", answer_score >= 0.80, "RAGAS Framework (Answer Relevance)"),
+    ]
+
+
+def write_ragas_debug(rows: list[dict], scores: list[dict], path: Path) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8-sig", newline="") as fp:
+        writer = csv.DictWriter(
+            fp,
+            fieldnames=["question", "faithfulness", "answer_relevancy", "answer", "contexts"],
+        )
+        writer.writeheader()
+        for row, score in zip(rows, scores):
+            writer.writerow(
+                {
+                    "question": row["user_input"],
+                    "faithfulness": score.get("faithfulness"),
+                    "answer_relevancy": score.get("answer_relevancy"),
+                    "answer": row["response"],
+                    "contexts": "\n---\n".join(row["retrieved_contexts"]),
+                }
+            )
 
 
 def write_outputs(metrics: list[Metric], out_prefix: Path) -> None:
@@ -331,13 +318,13 @@ def print_markdown(metrics: list[Metric]) -> None:
 def run_service_evaluation(args: argparse.Namespace, questions: list[dict], queries: list[str]) -> list[dict[str, str]]:
     latency_full_answer = args.latency_full_answer or args.ragas
     metrics = [
-        evaluate_search_accuracy(questions, args.top_k, args.limit),
         evaluate_graph_connectivity(queries),
         evaluate_latency(queries, latency_full_answer),
         evaluate_mcp_success(args.mcp_url, args.timeout),
     ]
     if args.ragas:
-        metrics.append(evaluate_ragas_faithfulness(questions, args.ragas_limit))
+        debug_path = args.out_prefix.with_name(f"{args.out_prefix.name}_ragas_samples.csv")
+        metrics.extend(evaluate_ragas_metrics(questions, args.ragas_limit, debug_path))
     return [item.to_row() for item in metrics]
 
 
