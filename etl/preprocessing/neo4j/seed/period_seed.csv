@@ -1,30 +1,30 @@
 period_name,period_level,range_group,period_order,start_year,end_year,parent_period_name,is_range_expansion_candidate,review_status,note
-구석기시대,ARCHAEOLOGICAL_PERIOD,archaeological_period,10,-700000,-8000,선사시대,Y,PENDING,고고학 시대 순서 검수 필요
-신석기시대,ARCHAEOLOGICAL_PERIOD,archaeological_period,20,-8000,-1500,선사시대,Y,PENDING,고고학 시대 순서 검수 필요
-청동기시대,ARCHAEOLOGICAL_PERIOD,archaeological_period,30,-1500,-300,선사시대,Y,PENDING,고고학 시대 순서 검수 필요
-초기철기시대,ARCHAEOLOGICAL_PERIOD,archaeological_period,40,-300,300,선사시대,Y,PENDING,고고학 시대 순서 검수 필요
-선사시대,BROAD_PERIOD,broad_period,10,,,,Y,PENDING,넓은 시대 구분
-고대,BROAD_PERIOD,broad_period,20,,,,Y,PENDING,넓은 시대 구분
-중세,BROAD_PERIOD,broad_period,30,,,,Y,PENDING,넓은 시대 구분
-근세,BROAD_PERIOD,broad_period,40,,,,Y,PENDING,넓은 시대 구분
-근대,BROAD_PERIOD,broad_period,50,,,,Y,PENDING,넓은 시대 구분
-현대,BROAD_PERIOD,broad_period,60,,,,Y,PENDING,넓은 시대 구분
-삼국시대,HISTORICAL_PERIOD,korean_major_period,30,,,고대,Y,PENDING,한국사 주요 시대 순서
-남북국시대,HISTORICAL_PERIOD,korean_major_period,40,,,고대,Y,PENDING,한국사 주요 시대 순서
-후삼국시대,HISTORICAL_PERIOD,korean_major_period,45,,,고대,Y,PENDING,한국사 주요 시대 순서
-고려시대,HISTORICAL_PERIOD,korean_major_period,50,918,1392,중세,Y,PENDING,한국사 주요 시대 순서
-고려,HISTORICAL_PERIOD,korean_major_period,50,918,1392,중세,N,PENDING,events.period의 축약 시대명
-조선시대,HISTORICAL_PERIOD,korean_major_period,60,1392,1910,근세,Y,PENDING,한국사 주요 시대 순서
-조선,HISTORICAL_PERIOD,korean_major_period,60,1392,1910,근세,N,PENDING,events.period의 축약 시대명
-개항기,HISTORICAL_PERIOD,korean_major_period,70,1876,1897,근대,Y,PENDING,시작/종료 연도 검수 필요
-Opening of Ports,HISTORICAL_PERIOD,korean_major_period,70,1876,1897,근대,N,PENDING,영문 시대명
-대한제국기,HISTORICAL_PERIOD,korean_major_period,80,1897,1910,근대,Y,PENDING,한국사 주요 시대 순서
-일제시기,HISTORICAL_PERIOD,korean_major_period,90,1910,1945,근대,Y,PENDING,한국사 주요 시대 순서
-일제시대,HISTORICAL_PERIOD,korean_major_period,90,1910,1945,근대,N,PENDING,일제시기의 동의 표현 후보
-Contemporary Periods,HISTORICAL_PERIOD,korean_major_period,100,1945,,현대,N,PENDING,영문 시대명
-고려전기,HISTORICAL_SUBPERIOD,korean_subperiod,51,918,1170,고려시대,Y,PENDING,세부 시대 순서 검수 필요
-고려후기,HISTORICAL_SUBPERIOD,korean_subperiod,52,1170,1392,고려시대,Y,PENDING,세부 시대 순서 검수 필요
-조선전기,HISTORICAL_SUBPERIOD,korean_subperiod,61,1392,1592,조선시대,Y,PENDING,세부 시대 순서 검수 필요
-조선후기,HISTORICAL_SUBPERIOD,korean_subperiod,62,1592,1910,조선시대,Y,PENDING,세부 시대 순서 검수 필요
-당(중국),FOREIGN_PERIOD,chinese_period,30,618,907,,N,PENDING,중국사 시대명
-통시대,TRANS_PERIOD,,999,,,,N,PENDING,특정 시대 범위로 확장하지 않음
+구석기시대,ARCHAEOLOGICAL_PERIOD,archaeological_period,10,-700000,-8000,선사시대,Y,APPROVED,고고학 시대 순서 검수 필요
+신석기시대,ARCHAEOLOGICAL_PERIOD,archaeological_period,20,-8000,-1500,선사시대,Y,APPROVED,고고학 시대 순서 검수 필요
+청동기시대,ARCHAEOLOGICAL_PERIOD,archaeological_period,30,-1500,-300,선사시대,Y,APPROVED,고고학 시대 순서 검수 필요
+초기철기시대,ARCHAEOLOGICAL_PERIOD,archaeological_period,40,-300,300,선사시대,Y,APPROVED,고고학 시대 순서 검수 필요
+선사시대,BROAD_PERIOD,broad_period,10,,,,Y,APPROVED,넓은 시대 구분
+고대,BROAD_PERIOD,broad_period,20,,,,Y,APPROVED,넓은 시대 구분
+중세,BROAD_PERIOD,broad_period,30,,,,Y,APPROVED,넓은 시대 구분
+근세,BROAD_PERIOD,broad_period,40,,,,Y,APPROVED,넓은 시대 구분
+근대,BROAD_PERIOD,broad_period,50,,,,Y,APPROVED,넓은 시대 구분
+현대,BROAD_PERIOD,broad_period,60,,,,Y,APPROVED,넓은 시대 구분
+삼국시대,HISTORICAL_PERIOD,korean_major_period,30,,,고대,Y,APPROVED,한국사 주요 시대 순서
+남북국시대,HISTORICAL_PERIOD,korean_major_period,40,,,고대,Y,APPROVED,한국사 주요 시대 순서
+후삼국시대,HISTORICAL_PERIOD,korean_major_period,45,,,고대,Y,APPROVED,한국사 주요 시대 순서
+고려시대,HISTORICAL_PERIOD,korean_major_period,50,918,1392,중세,Y,APPROVED,한국사 주요 시대 순서
+고려,HISTORICAL_PERIOD,korean_major_period,50,918,1392,중세,N,APPROVED,events.period의 축약 시대명
+조선시대,HISTORICAL_PERIOD,korean_major_period,60,1392,1910,근세,Y,APPROVED,한국사 주요 시대 순서
+조선,HISTORICAL_PERIOD,korean_major_period,60,1392,1910,근세,N,APPROVED,events.period의 축약 시대명
+개항기,HISTORICAL_PERIOD,korean_major_period,70,1876,1897,근대,Y,APPROVED,시작/종료 연도 검수 필요
+Opening of Ports,HISTORICAL_PERIOD,korean_major_period,70,1876,1897,근대,N,APPROVED,영문 시대명
+대한제국기,HISTORICAL_PERIOD,korean_major_period,80,1897,1910,근대,Y,APPROVED,한국사 주요 시대 순서
+일제시기,HISTORICAL_PERIOD,korean_major_period,90,1910,1945,근대,Y,APPROVED,한국사 주요 시대 순서
+일제시대,HISTORICAL_PERIOD,korean_major_period,90,1910,1945,근대,N,APPROVED,일제시기의 동의 표현 후보
+Contemporary Periods,HISTORICAL_PERIOD,korean_major_period,100,1945,,현대,N,APPROVED,영문 시대명
+고려전기,HISTORICAL_SUBPERIOD,korean_subperiod,51,918,1170,고려시대,Y,APPROVED,세부 시대 순서 검수 필요
+고려후기,HISTORICAL_SUBPERIOD,korean_subperiod,52,1170,1392,고려시대,Y,APPROVED,세부 시대 순서 검수 필요
+조선전기,HISTORICAL_SUBPERIOD,korean_subperiod,61,1392,1592,조선시대,Y,APPROVED,세부 시대 순서 검수 필요
+조선후기,HISTORICAL_SUBPERIOD,korean_subperiod,62,1592,1910,조선시대,Y,APPROVED,세부 시대 순서 검수 필요
+당(중국),FOREIGN_PERIOD,chinese_period,30,618,907,,N,APPROVED,중국사 시대명
+통시대,TRANS_PERIOD,,999,,,,N,APPROVED,특정 시대 범위로 확장하지 않음

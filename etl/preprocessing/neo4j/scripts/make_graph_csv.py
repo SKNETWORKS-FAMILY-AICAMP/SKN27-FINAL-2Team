@@ -156,6 +156,11 @@ def parse_args(default_paths):
         type=Path,
     )
     parser.add_argument(
+        "--person-duplicate-review-approved-path",
+        default=default_paths["person_duplicate_review_approved"],
+        type=Path,
+    )
+    parser.add_argument(
         "--nodes-dir",
         default=default_paths["nodes_dir"],
         type=Path,
@@ -853,6 +858,104 @@ def build_person_degree_lookup(event_relations_data, person_relations_data):
     degree_data = degree_data[degree_data.ne("")]
 
     return degree_data.value_counts().to_dict()
+
+
+def build_person_duplicate_review_lookup(person_duplicate_review_approved):
+    if person_duplicate_review_approved.empty:
+        return {}
+
+    required_columns = {
+        "duplicate_person_id",
+        "canonical_person_id",
+        "review_status",
+    }
+
+    if not required_columns.issubset(person_duplicate_review_approved.columns):
+        return {}
+
+    approved_data = person_duplicate_review_approved[
+        person_duplicate_review_approved["review_status"].isin(
+            ["APPROVED", "AUTO_APPROVED"]
+        )
+    ].copy()
+
+    if approved_data.empty:
+        return {}
+
+    approved_data["duplicate_person_id"] = (
+        approved_data["duplicate_person_id"].fillna("").astype(str).str.strip()
+    )
+    approved_data["canonical_person_id"] = (
+        approved_data["canonical_person_id"].fillna("").astype(str).str.strip()
+    )
+    approved_data = approved_data[
+        approved_data["duplicate_person_id"].ne("")
+        & approved_data["canonical_person_id"].ne("")
+        & approved_data["duplicate_person_id"].ne(approved_data["canonical_person_id"])
+    ].copy()
+
+    if approved_data.empty:
+        return {}
+
+    return dict(
+        zip(
+            approved_data["duplicate_person_id"],
+            approved_data["canonical_person_id"],
+        )
+    )
+
+
+def resolve_canonical_person_id(person_id, person_id_lookup):
+    current_id = str(person_id)
+    seen_ids = set()
+
+    while current_id in person_id_lookup and current_id not in seen_ids:
+        seen_ids.add(current_id)
+        current_id = person_id_lookup[current_id]
+
+    return current_id
+
+
+def apply_person_id_lookup(data_frame, person_id_lookup, target_columns):
+    if not person_id_lookup:
+        return data_frame
+
+    mapped_data = data_frame.copy()
+
+    for column_name in target_columns:
+        if column_name not in mapped_data.columns:
+            continue
+
+        mapped_data[column_name] = mapped_data[column_name].apply(
+            lambda value: resolve_canonical_person_id(value, person_id_lookup)
+            if pd.notna(value)
+            else value
+        )
+
+    return mapped_data
+
+
+def apply_person_duplicate_review(inputs):
+    person_id_lookup = build_person_duplicate_review_lookup(
+        inputs["person_duplicate_review_approved"]
+    )
+
+    if not person_id_lookup:
+        return inputs
+
+    mapped_inputs = inputs.copy()
+    mapped_inputs["event_relations"] = apply_person_id_lookup(
+        mapped_inputs["event_relations"],
+        person_id_lookup,
+        ["person_id"],
+    )
+    mapped_inputs["person_relations"] = apply_person_id_lookup(
+        mapped_inputs["person_relations"],
+        person_id_lookup,
+        ["person_id", "related_person_id"],
+    )
+
+    return mapped_inputs
 
 
 def build_term_has_category(term_category_relation):
@@ -2586,6 +2689,9 @@ def build_person_related_to_person(person_relations_data, relation_type_dictiona
     relation_data = person_relations_data.dropna(
         subset=["person_id", "related_person_id", "relation_type"]
     ).copy()
+    relation_data = relation_data[
+        relation_data["person_id"].ne(relation_data["related_person_id"])
+    ].copy()
     relation_data = relation_data.merge(
         relation_type_dictionary,
         left_on="relation_type",
@@ -2755,6 +2861,9 @@ def build_default_paths(script_path):
         "term_year_parse": staging_dir / "term_year_parse.csv",
         "keyword_era_seed": seed_dir / "keyword_era_seed.csv",
         "term_person_review_approved": seed_dir / "term_person_review_approved.csv",
+        "person_duplicate_review_approved": (
+            seed_dir / "person_duplicate_review_approved.csv"
+        ),
         "nodes_dir": import_dir / "nodes",
         "relations_dir": import_dir / "relations",
     }
@@ -2832,6 +2941,10 @@ def read_inputs(args):
         "term_person_review_approved": read_optional_csv(
             args.term_person_review_approved_path,
             "term_person_review_approved",
+        ),
+        "person_duplicate_review_approved": read_optional_csv(
+            args.person_duplicate_review_approved_path,
+            "person_duplicate_review_approved",
         ),
     }
 
@@ -3099,7 +3212,7 @@ def main():
     script_path = Path(__file__).resolve()
     default_paths = build_default_paths(script_path)
     args = parse_args(default_paths)
-    inputs = read_inputs(args)
+    inputs = apply_person_duplicate_review(read_inputs(args))
     node_outputs = build_node_outputs(inputs)
     relation_outputs = build_relation_outputs(inputs, node_outputs)
     output_files, skipped_output_files = build_output_files(

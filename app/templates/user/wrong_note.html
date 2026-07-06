@@ -39,6 +39,7 @@
       <div class="note-toolbar">
         <button class="back-button" id="backButton" type="button" aria-label="마이페이지로 돌아가기">‹</button>
         <div class="toolbar-actions">
+          <button class="practice-button" id="wrongPracticeButton" type="button">문제 풀이</button>
           <button class="delete-button" id="deleteButton" type="button">저장 해제</button>
           <details class="filter-menu">
             <summary>필터</summary>
@@ -121,6 +122,23 @@
         </article>
       </div>
     </section>
+
+    <div class="weak-practice-modal is-hidden" id="weakPracticeModal" role="dialog" aria-modal="true" aria-labelledby="weakPracticeTitle">
+      <section class="weak-practice-dialog">
+        <header>
+          <div>
+            <span>Wrong Note Practice</span>
+            <h2 id="weakPracticeTitle">취약 조합 문제 풀이</h2>
+          </div>
+          <button type="button" id="closeWeakPracticeModal" aria-label="닫기">×</button>
+        </header>
+        <div class="weak-practice-body" id="weakPracticeBody"></div>
+        <footer>
+          <button class="outline-button" id="cancelWeakPracticeButton" type="button">취소</button>
+          <button class="primary-button" id="startWeakPracticeButton" type="button">문제 생성</button>
+        </footer>
+      </section>
+    </div>
   </main>
 
   {{ note_payload|json_script:"notePayload" }}
@@ -153,6 +171,13 @@
     const eraFilter = document.getElementById("eraFilter");
     const topicFilter = document.getElementById("topicFilter");
     const typeFilter = document.getElementById("typeFilter");
+    const wrongPracticeButton = document.getElementById("wrongPracticeButton");
+    const weakPracticeModal = document.getElementById("weakPracticeModal");
+    const closeWeakPracticeModal = document.getElementById("closeWeakPracticeModal");
+    const cancelWeakPracticeButton = document.getElementById("cancelWeakPracticeButton");
+    const startWeakPracticeButton = document.getElementById("startWeakPracticeButton");
+    const weakPracticeBody = document.getElementById("weakPracticeBody");
+    let latestWeakPracticeRequest = null;
 
     function escapeHtml(value) {
       return String(value || "")
@@ -169,6 +194,118 @@
         .map((item) => item.trim())
         .find((item) => item.startsWith(`${name}=`))
         ?.split("=")[1] || "";
+    }
+
+    function weakPracticeParams() {
+      return {
+        session_id: sessionFilter.value,
+        session_type: sessionTypeFilter.value,
+        era: eraFilter.value,
+        topic: topicFilter.value,
+        q_type: typeFilter.value,
+      };
+    }
+
+    function buildWeakPracticeQuery(params) {
+      const query = new URLSearchParams();
+      Object.entries(params).forEach(([key, value]) => {
+        if (value && value !== "all") query.set(key, value);
+      });
+      return query.toString();
+    }
+
+    function closeWeakPractice() {
+      weakPracticeModal?.classList.add("is-hidden");
+    }
+
+    function renderWeakPracticeModal(payload) {
+      const combinations = payload.combinations || [];
+      weakPracticeBody.innerHTML = `
+        <p class="weak-practice-summary">오답 기록을 기준으로 취약 조합 ${combinations.length}개를 찾았습니다.</p>
+        <ol class="weak-combo-list">
+          ${combinations.map((combo) => `
+            <li>
+              <strong>${escapeHtml(combo.era)} · ${escapeHtml(combo.topic)} · ${escapeHtml(combo.q_type)}</strong>
+              <span>오답 ${combo.wrong_count}개 / 오답률 ${combo.wrong_rate}% / 추천 ${combo.question_count}문항</span>
+            </li>
+          `).join("")}
+        </ol>
+        <p class="weak-practice-notice">${escapeHtml(payload.fallback_notice || "")}</p>
+        <strong class="weak-practice-total">총 ${payload.total_count || 20}문항을 생성합니다.</strong>
+      `;
+      weakPracticeModal?.classList.remove("is-hidden");
+    }
+
+    async function hasInProgressPracticeSession() {
+      const response = await fetch("/question/api/sessions/in-progress/", {
+        credentials: "same-origin",
+      });
+      if (!response.ok) return false;
+      const payload = await response.json().catch(() => ({}));
+      return (payload.sessions || []).length > 0;
+    }
+
+    async function openWeakPracticeModal() {
+      if (activeTab !== "wrong") {
+        alert("오답 노트에서만 문제 풀이를 생성할 수 있습니다.");
+        return;
+      }
+      if (!filteredRecords().length) {
+        alert("현재 조건에 해당하는 오답 문항이 없습니다.");
+        return;
+      }
+
+      wrongPracticeButton.disabled = true;
+      latestWeakPracticeRequest = weakPracticeParams();
+      try {
+        const query = buildWeakPracticeQuery(latestWeakPracticeRequest);
+        const response = await fetch(`/question/api/wrong-note/recommendation/${query ? `?${query}` : ""}`, {
+          credentials: "same-origin",
+        });
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          throw new Error(payload.error || "오답 조합을 분석하지 못했습니다.");
+        }
+        renderWeakPracticeModal(payload);
+      } catch (error) {
+        alert(error.message || "오답 조합을 분석하지 못했습니다.");
+      } finally {
+        wrongPracticeButton.disabled = false;
+      }
+    }
+
+    async function startWeakPractice() {
+      if (!latestWeakPracticeRequest) return;
+      startWeakPracticeButton.disabled = true;
+      try {
+        if (await hasInProgressPracticeSession()) {
+          const shouldCreateNew = confirm("풀다 만 문제가 있습니다. 새 문제를 생성하면 기존 진행 기록은 삭제됩니다. 계속하시겠습니까?");
+          if (!shouldCreateNew) {
+            startWeakPracticeButton.disabled = false;
+            return;
+          }
+        }
+
+        const response = await fetch("/question/api/wrong-note/start/", {
+          method: "POST",
+          credentials: "same-origin",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": decodeURIComponent(getCookie("csrftoken")),
+          },
+          body: JSON.stringify(latestWeakPracticeRequest),
+        });
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          throw new Error(payload.error || "문제를 생성하지 못했습니다.");
+        }
+        localStorage.removeItem("questionInProgress");
+        sessionStorage.removeItem("questionGenerationCondition");
+        window.location.href = `/question/exam/?resume=1&session_id=${payload.session_id}`;
+      } catch (error) {
+        alert(error.message || "문제를 생성하지 못했습니다.");
+        startWeakPracticeButton.disabled = false;
+      }
     }
 
     function uniqueValues(field) {
@@ -315,6 +452,7 @@
       if (!filteredRecords().some((record) => record.id === activeId)) {
         activeId = filteredRecords()[0]?.id || null;
       }
+      wrongPracticeButton.disabled = activeTab !== "wrong" || filteredRecords().length === 0;
       renderTabs();
       renderList();
       renderDetail();
@@ -354,6 +492,16 @@
         alert(error.message || "저장 해제에 실패했습니다.");
       } finally {
         deleteButton.disabled = false;
+      }
+    });
+
+    wrongPracticeButton.addEventListener("click", openWeakPracticeModal);
+    startWeakPracticeButton.addEventListener("click", startWeakPractice);
+    closeWeakPracticeModal.addEventListener("click", closeWeakPractice);
+    cancelWeakPracticeButton.addEventListener("click", closeWeakPractice);
+    weakPracticeModal.addEventListener("click", (event) => {
+      if (event.target === weakPracticeModal) {
+        closeWeakPractice();
       }
     });
 

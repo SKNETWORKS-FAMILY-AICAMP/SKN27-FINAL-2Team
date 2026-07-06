@@ -257,7 +257,7 @@ def openai_json_from_image(prompt: str, image_bytes: bytes) -> dict[str, Any]:
     client = OpenAI()
     b64 = base64.b64encode(image_bytes).decode("utf-8")
     response = client.chat.completions.create(
-        model="gpt-4o-mini",
+        model="gpt-4o",
         messages=[
             {
                 "role": "user",

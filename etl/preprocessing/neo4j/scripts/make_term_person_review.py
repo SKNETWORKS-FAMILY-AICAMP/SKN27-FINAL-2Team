@@ -6,6 +6,7 @@ Term-Person 동명이인 수동 검수 후보 CSV를 만든다.
 """
 
 import argparse
+import re
 from pathlib import Path
 
 import pandas as pd
@@ -44,6 +45,7 @@ def parse_args(default_paths):
 
 def build_review_columns():
     return [
+        "review_type",
         "name",
         "term_id",
         "term_hanja",
@@ -88,6 +90,106 @@ def build_person_review_data(people):
     return person_data
 
 
+def extract_reign_year_range(description):
+    match = re.search(
+        r"재위\s*(\d{2,4})\s*[-~∼－–—]\s*(\d{2,4})\s*년",
+        str(description or ""),
+    )
+
+    if not match:
+        return pd.Series([pd.NA, pd.NA])
+
+    start_year = int(match.group(1))
+    end_year = int(match.group(2))
+
+    if start_year <= end_year:
+        return pd.Series([start_year, end_year])
+
+    return pd.Series([end_year, start_year])
+
+
+def filter_candidates_by_reign_year(candidates):
+    year_range_data = candidates["description"].apply(extract_reign_year_range)
+    year_range_data.columns = ["term_reign_start", "term_reign_end"]
+    candidates = candidates.join(year_range_data)
+    candidates["term_reign_start_number"] = pd.to_numeric(
+        candidates["term_reign_start"],
+        errors="coerce",
+    )
+    candidates["term_reign_end_number"] = pd.to_numeric(
+        candidates["term_reign_end"],
+        errors="coerce",
+    )
+    candidates["birth_year_number"] = pd.to_numeric(
+        candidates["birth_year"],
+        errors="coerce",
+    )
+    candidates["death_year_number"] = pd.to_numeric(
+        candidates["death_year"],
+        errors="coerce",
+    )
+    has_reign_year = (
+        candidates["term_reign_start_number"].notna()
+        & candidates["term_reign_end_number"].notna()
+    )
+    has_person_year = (
+        candidates["birth_year_number"].notna()
+        & candidates["death_year_number"].notna()
+    )
+    overlaps_reign_year = (
+        candidates["term_reign_start_number"].le(candidates["death_year_number"])
+        & candidates["term_reign_end_number"].ge(candidates["birth_year_number"])
+    )
+    filtered_candidates = candidates[
+        ~has_reign_year | (has_person_year & overlaps_reign_year)
+    ].copy()
+
+    return filtered_candidates.drop(
+        columns=[
+            "term_reign_start",
+            "term_reign_end",
+            "term_reign_start_number",
+            "term_reign_end_number",
+            "birth_year_number",
+            "death_year_number",
+        ],
+    )
+
+
+def filter_single_name_candidates(candidates):
+    name_counts = candidates.groupby("name")["person_id"].transform("nunique")
+
+    return candidates[name_counts.gt(1)].copy()
+
+
+def filter_empty_year_candidates_with_complete_group_candidate(candidates):
+    group_columns = ["term_id", "name", "hanja_term", "description"]
+    has_complete_person_year = (
+        candidates["birth_year"].fillna("").astype(str).str.strip().ne("")
+        & candidates["death_year"].fillna("").astype(str).str.strip().ne("")
+    )
+    group_has_complete_person_year = has_complete_person_year.groupby(
+        [candidates[column_name] for column_name in group_columns]
+    ).transform("any")
+
+    return candidates[
+        has_complete_person_year | ~group_has_complete_person_year
+    ].copy()
+
+
+def add_review_type(candidates):
+    group_columns = ["term_id", "name", "hanja_term", "term_desc_preview"]
+    group_person_counts = candidates.groupby(group_columns)["person_id"].transform(
+        "nunique"
+    )
+
+    candidates = candidates.copy()
+    candidates["review_type"] = "TERM_PERSON"
+    candidates.loc[group_person_counts.gt(1), "review_type"] = "PERSON_DUPLICATE"
+
+    return candidates
+
+
 def build_review_candidates(terms, people):
     term_data = build_term_review_data(terms)
     person_data = build_person_review_data(people)
@@ -106,8 +208,35 @@ def build_review_candidates(terms, people):
     if candidates.empty:
         return empty_review_candidates()
 
+    candidates["hanja_term"] = candidates["hanja_term"].fillna("").str.strip()
+    candidates["hanja_person"] = candidates["hanja_person"].fillna("").str.strip()
+    candidates = candidates[
+        candidates["hanja_term"].ne("")
+        & candidates["hanja_person"].ne("")
+        & candidates["hanja_term"].eq(candidates["hanja_person"])
+    ].copy()
+
+    if candidates.empty:
+        return empty_review_candidates()
+
+    candidates = filter_candidates_by_reign_year(candidates)
+
+    if candidates.empty:
+        return empty_review_candidates()
+
+    candidates = filter_empty_year_candidates_with_complete_group_candidate(candidates)
+
+    if candidates.empty:
+        return empty_review_candidates()
+
+    candidates = filter_single_name_candidates(candidates)
+
+    if candidates.empty:
+        return empty_review_candidates()
+
     candidates["person_name"] = candidates["base_name"]
     candidates["term_desc_preview"] = candidates["description"].str.slice(0, 50)
+    candidates = add_review_type(candidates)
     candidates["review_status"] = "PENDING"
     candidates["note"] = ""
     candidates = candidates.rename(
