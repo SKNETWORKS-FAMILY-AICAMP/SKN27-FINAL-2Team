@@ -15,7 +15,14 @@ import re
 from pathlib import Path
 from typing import Iterable
 
-from rag_metadata import build_category_tags, build_chronology
+from rag_metadata import (
+    build_category_tags,
+    build_chronology,
+    normalize_heading,
+    normalize_periods,
+    split_category_path,
+    strip_reference_section,
+)
 
 
 SOURCE_NAME = "사료로 본 한국사"
@@ -39,6 +46,21 @@ def split_keywords(*values: str) -> list[str]:
             if len(token) >= 2 and token not in tokens:
                 tokens.append(token)
     return tokens[:30]
+
+
+def normalize_path(value: str) -> str:
+    return " > ".join(split_category_path(value))
+
+
+def dedupe_chunks(chunks: list[str]) -> list[str]:
+    seen = set()
+    result = []
+    for chunk in chunks:
+        key = re.sub(r"\s+", "", chunk)
+        if key and key not in seen:
+            seen.add(key)
+            result.append(chunk)
+    return result
 
 
 def stable_id(*parts: str) -> str:
@@ -87,7 +109,7 @@ def chunk_text(text: str, chunk_size: int, overlap: int) -> list[str]:
         merged = f"{previous_tail}\n{chunk}".strip() if previous_tail else chunk
         overlapped.append(merged)
         previous_tail = chunk[-overlap:]
-    return overlapped
+    return dedupe_chunks(overlapped)
 
 
 def iter_csv_rows(input_dir: Path) -> Iterable[dict[str, str]]:
@@ -107,14 +129,14 @@ def iter_csv_rows(input_dir: Path) -> Iterable[dict[str, str]]:
 
 def build_document(row: dict[str, str]) -> dict:
     original_id = clean_text(row.get("자료ID")) or stable_id(row.get("제목", ""), row.get("상세URL", ""))
-    title = clean_text(row.get("제목"))
+    title = normalize_heading(clean_text(row.get("제목")))
     period = clean_text(row.get("시대"))
+    period, periods = normalize_periods(period)
     field = clean_text(row.get("분야"))
-    toc_path = clean_text(row.get("목차경로"))
+    toc_path = normalize_path(clean_text(row.get("목차경로")))
     korean = clean_text(row.get("국문"))
     original = clean_text(row.get("원문"))
-    explanation = clean_text(row.get("해설"))
-    references = clean_text(row.get("참고자료"))
+    explanation = strip_reference_section(clean_text(row.get("해설")))
 
     content_parts = []
     if korean:
@@ -124,8 +146,9 @@ def build_document(row: dict[str, str]) -> dict:
     if original:
         content_parts.append(f"[원문]\n{original}")
 
-    content = "\n\n".join(content_parts)
+    content = strip_reference_section("\n\n".join(content_parts))
     keywords = split_keywords(title, period, field, toc_path)
+    category_path = split_category_path(toc_path)
     category_tags = build_category_tags(
         title=title,
         period=period,
@@ -157,8 +180,10 @@ def build_document(row: dict[str, str]) -> dict:
         "metadata": {
             "toc_path": toc_path,
             "markdown_file": clean_text(row.get("Markdown파일")),
-            "reference": references,
             "source_file": row.get("_source_file"),
+            "period": period,
+            "periods": periods,
+            "category_path": category_path,
             "has_original_text": bool(original),
             "has_explanation": bool(explanation),
             "category_tags": category_tags,
@@ -197,8 +222,10 @@ def build_chunks(document: dict, chunk_size: int, overlap: int) -> list[dict]:
                         **document["metadata"],
                         "section": section_name,
                         "period": document["period"],
+                        "periods": document["metadata"].get("periods") or [],
                         "field": document["field"],
                         "category": document["category"],
+                        "category_path": document["metadata"].get("category_path") or [],
                         "keywords": document["keywords"],
                         "source_url": document["source_url"],
                     },

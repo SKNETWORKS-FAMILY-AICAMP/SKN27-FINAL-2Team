@@ -15,7 +15,7 @@ import re
 from pathlib import Path
 from typing import Iterable
 
-from rag_metadata import build_category_tags, build_chronology
+from rag_metadata import build_category_tags, build_chronology, normalize_heading, normalize_periods, split_category_path
 
 
 SOURCE_NAME = "신편 한국사"
@@ -36,15 +36,6 @@ def stable_id(*parts: str) -> str:
     return hashlib.sha1(raw.encode("utf-8")).hexdigest()[:12]
 
 
-def normalize_heading(value: str) -> str:
-    value = clean_text(value)
-    value = re.sub(r"^[ⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩ]+\.?\s*", "", value)
-    value = re.sub(r"^\d+\)\s*", "", value)
-    value = re.sub(r"^\d+\.?\s*", "", value)
-    value = re.sub(r"^\(\d+\)\s*", "", value)
-    return value.strip(" -")
-
-
 def parse_title_hierarchy(title: str) -> dict:
     parts = [normalize_heading(part) for part in clean_text(title).split(">")]
     parts = [part for part in parts if part]
@@ -60,6 +51,17 @@ def split_keywords(*values: str) -> list[str]:
             if len(token) >= 2 and token not in tokens:
                 tokens.append(token)
     return tokens[:30]
+
+
+def dedupe_chunk_rows(chunks: list[dict]) -> list[dict]:
+    seen = set()
+    result = []
+    for chunk in chunks:
+        key = re.sub(r"\s+", "", chunk["chunk_text"])
+        if key and key not in seen:
+            seen.add(key)
+            result.append(chunk)
+    return result
 
 
 def chunk_text(text: str, chunk_size: int, overlap: int) -> list[str]:
@@ -138,14 +140,16 @@ def infer_period(book_title: str, title: str) -> str:
 def build_document(row: dict[str, str]) -> dict:
     book_no = clean_text(row.get("권번호"))
     book_title = clean_text(row.get("권명"))
-    title = clean_text(row.get("제목"))
+    title = " > ".join(normalize_heading(part) for part in clean_text(row.get("제목")).split(">") if normalize_heading(part))
     body = clean_text(row.get("본문"))
     footnote = clean_text(row.get("각주"))
     hierarchy = parse_title_hierarchy(title)
     period = infer_period(book_title, title)
+    period, periods = normalize_periods(period)
     original_id = clean_text(row.get("페이지ID")) or f"nh_{book_no}_{stable_id(title, body)}"
     keywords = split_keywords(book_title, title, period)
     category = " > ".join(part for part in hierarchy.values() if part)
+    category_path = split_category_path(category)
     category_tags = build_category_tags(
         title=title,
         period=period,
@@ -184,6 +188,9 @@ def build_document(row: dict[str, str]) -> dict:
             "book_title": book_title,
             "page_id": clean_text(row.get("페이지ID")),
             "source_file": row.get("_source_file"),
+            "period": period,
+            "periods": periods,
+            "category_path": category_path,
             "category_tags": category_tags,
             "chronology": chronology,
             **hierarchy,
@@ -209,14 +216,16 @@ def build_chunks(document: dict, chunk_size: int, overlap: int) -> list[dict]:
                 "metadata": {
                     **document["metadata"],
                     "period": document["period"],
+                    "periods": document["metadata"].get("periods") or [],
                     "field": document["field"],
                     "category": document["category"],
+                    "category_path": document["metadata"].get("category_path") or [],
                     "keywords": document["keywords"],
                     "source_url": document["source_url"],
                 },
             }
         )
-    return chunks
+    return dedupe_chunk_rows(chunks)
 
 
 def write_jsonl(path: Path, rows: Iterable[dict]) -> int:
