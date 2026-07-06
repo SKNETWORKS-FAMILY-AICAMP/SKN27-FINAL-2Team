@@ -1,0 +1,43 @@
+{
+  "input": "test/CJ/test_ml/ML_han_v1.json",
+  "outputs": {
+    "json": "test/CJ/test_ml/output/ml_han_features_v2.json",
+    "csv": "test/CJ/test_ml/output/ml_han_features_v2.csv",
+    "md": "test/CJ/test_ml/output/ML_feature_v2.md"
+  },
+  "total_rows": 1600,
+  "split_counts": {
+    "train": 1200,
+    "test": 400
+  },
+  "question_type_v1_train_counts": {
+    "역사 자료의 분석 및 해석": 729,
+    "연대기의 파악": 288,
+    "역사 지식의 이해": 94,
+    "역사 탐구의 설계 및 수행": 76,
+    "결론의 도출 및 평가": 13
+  },
+  "question_type_v2_train_counts": {
+    "역사 자료의 분석 및 해석": 647,
+    "연대기의 파악": 285,
+    "역사 지식의 이해": 92,
+    "역사 탐구의 설계 및 수행": 84,
+    "결론의 도출 및 평가": 51,
+    "역사 상황 및 쟁점의 인식": 41
+  },
+  "question_type_v2_test_counts": {
+    "역사 자료의 분석 및 해석": 314,
+    "연대기의 파악": 32,
+    "역사 상황 및 쟁점의 인식": 27,
+    "역사 탐구의 설계 및 수행": 23,
+    "결론의 도출 및 평가": 4
+  },
+  "question_type_v2_overall_counts": {
+    "역사 자료의 분석 및 해석": 961,
+    "연대기의 파악": 317,
+    "역사 탐구의 설계 및 수행": 107,
+    "역사 지식의 이해": 92,
+    "역사 상황 및 쟁점의 인식": 68,
+    "결론의 도출 및 평가": 55
+  }
+}

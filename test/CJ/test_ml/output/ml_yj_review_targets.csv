@@ -1,0 +1,149 @@
+round_no,question_no,source_id,issue_type,severity,reason,source_topic,source_topic_type,source_minor_type,question_task,question
+47,1,advanced_47_01,image_like_question,high,이미지/지도/시각 자료 기반 문항 가능성,구석기 시대,기타,자료 기반 시대·대상 추론,standard_select,(가) 시대의 사회 모습으로 옳은 것은?
+47,5,advanced_47_05,missing_question,high,OCR JSONL에 해당 문항 번호가 없음,,,,,
+47,6,advanced_47_06,shift_risk_after_gap,medium,5번 누락 이후 문항이라 번호 밀림 검수 필요,대무예,인물,자료 기반 시대·대상 추론,standard_select,(가) 국가에 대한 설명으로 옳은 것은?
+47,7,advanced_47_07,shift_risk_after_gap,medium,5번 누락 이후 문항이라 번호 밀림 검수 필요,황산벌 전투,사건,전후 시기 판단,period_between,"(가), (나) 사이의 시기에 있었던 사실로 옳은 것은?"
+47,8,advanced_47_08,image_like_question,high,이미지/지도/시각 자료 기반 문항 가능성,통일신라,기타,기본 사실·개념 확인,standard_select,교사의 질문에 대한 학생의 답변으로 옳은 것은?
+47,8,advanced_47_08,shift_risk_after_gap,medium,5번 누락 이후 문항이라 번호 밀림 검수 필요,통일신라,기타,기본 사실·개념 확인,standard_select,교사의 질문에 대한 학생의 답변으로 옳은 것은?
+47,9,advanced_47_09,shift_risk_after_gap,medium,5번 누락 이후 문항이라 번호 밀림 검수 필요,원효,인물,자료 기반 시대·대상 추론,standard_select,(가) 인물에 대한 설명으로 옳은 것은?
+47,10,advanced_47_10,image_like_question,high,이미지/지도/시각 자료 기반 문항 가능성,가 후백제,사건,자료 기반 시대·대상 추론,standard_select,(가) 국가에 대한 설명으로 옳은 것은?
+47,10,advanced_47_10,shift_risk_after_gap,medium,5번 누락 이후 문항이라 번호 밀림 검수 필요,가 후백제,사건,자료 기반 시대·대상 추론,standard_select,(가) 국가에 대한 설명으로 옳은 것은?
+47,11,advanced_47_11,shift_risk_after_gap,medium,5번 누락 이후 문항이라 번호 밀림 검수 필요,과거제,제도,전후 시기 판단,standard_select,(가) 시기에 있었던 사실로 옳은 것은?
+47,12,advanced_47_12,shift_risk_after_gap,medium,5번 누락 이후 문항이라 번호 밀림 검수 필요,고려 시대,제도,전후 시기 판단,standard_select,다음 자료의 상황이 나타난 시기의 경제모습으로 옳은 것은?
+47,13,advanced_47_13,shift_risk_after_gap,medium,5번 누락 이후 문항이라 번호 밀림 검수 필요,동국이상국집,매체,자료 기반 시대·대상 추론,standard_select,'이 책'에 대한 설명으로 옳은 것은?
+47,14,advanced_47_14,shift_risk_after_gap,medium,5번 누락 이후 문항이라 번호 밀림 검수 필요,묘청의 서경천도운동,사건,연표·흐름 빈칸,timeline_position,다음 상황이 나타난 시기를 연표에서 옳게 고른 것은?
+47,15,advanced_47_15,missing_question,high,OCR JSONL에 해당 문항 번호가 없음,,,,,
+47,16,advanced_47_16,image_like_question,high,이미지/지도/시각 자료 기반 문항 가능성,,기타,기본 사실·개념 확인,standard_select,교사의 질문에 대한 학생의 답변으로 옳은 것은?
+47,16,advanced_47_16,shift_risk_after_gap,medium,5번 누락 이후 문항이라 번호 밀림 검수 필요,,기타,기본 사실·개념 확인,standard_select,교사의 질문에 대한 학생의 답변으로 옳은 것은?
+47,17,advanced_47_17,shift_risk_after_gap,medium,5번 누락 이후 문항이라 번호 밀림 검수 필요,세종,인물,전후 시기 판단,negative_select,'국왕'의 재위 시기에 볼 수 있는 모습으로 적절하지 않은 것은?
+47,18,advanced_47_18,shift_risk_after_gap,medium,5번 누락 이후 문항이라 번호 밀림 검수 필요,정치적,기타,사건·자료 순서 배열,order,(가)~(다)를 일어난 순서대로 옳게 나열한 것은?
+47,19,advanced_47_19,shift_risk_after_gap,medium,5번 누락 이후 문항이라 번호 밀림 검수 필요,직전법,인물,자료 기반 시대·대상 추론,standard_select,'제도'를 마련한 왕의 재위 기간에 있었던 사실로 옳은 것은?
+47,20,advanced_47_20,shift_risk_after_gap,medium,5번 누락 이후 문항이라 번호 밀림 검수 필요,향교,제도,자료 수집·검색 방법,standard_select,다음 검색창에 들어갈 교육 기관에 대한 설명으로 옳은 것은?
+47,21,advanced_47_21,shift_risk_after_gap,medium,5번 누락 이후 문항이라 번호 밀림 검수 필요,김종직,사건,전후 시기 판단,period_between,"(가), (나) 사이의 시기에 있었던 사실로 옳은 것은?"
+47,22,advanced_47_22,shift_risk_after_gap,medium,5번 누락 이후 문항이라 번호 밀림 검수 필요,전쟁이 임진왜란,사건,자료 기반 시대·대상 추론,standard_select,(가) 전쟁 중 있었던 사실로 옳은 것은?
+47,23,advanced_47_23,shift_risk_after_gap,medium,5번 누락 이후 문항이라 번호 밀림 검수 필요,균역법,제도,자료 기반 시대·대상 추론,standard_select,'대책'으로 옳은 것은?
+47,24,advanced_47_24,shift_risk_after_gap,medium,5번 누락 이후 문항이라 번호 밀림 검수 필요,인물이 정조,인물,자료 기반 시대·대상 추론,standard_select,(가)에 들어갈 내용으로 옳은 것은?
+47,25,advanced_47_25,shift_risk_after_gap,medium,5번 누락 이후 문항이라 번호 밀림 검수 필요,조선 후기,기타,전후 시기 판단,multi_select_combo,다음 상황이 나타난 시기에 볼 수 있는 모습으로 적절한 것을 ＜보기＞에서 고른 것은?
+47,26,advanced_47_26,shift_risk_after_gap,medium,5번 누락 이후 문항이라 번호 밀림 검수 필요,실학자 이익,인물,자료 기반 시대·대상 추론,standard_select,(가) 인물에 대한 설명으로 옳은 것은?
+47,27,advanced_47_27,missing_question,high,OCR JSONL에 해당 문항 번호가 없음,,,,,
+47,28,advanced_47_28,shift_risk_after_gap,medium,5번 누락 이후 문항이라 번호 밀림 검수 필요,비변사,사건,전후 시기 판단,negative_select,'시기'에 있었던 사실로 옳지 않은 것은?
+47,29,advanced_47_29,shift_risk_after_gap,medium,5번 누락 이후 문항이라 번호 밀림 검수 필요,병인양요,사건,자료 기반 시대·대상 추론,standard_select,(가) 사건의 원인으로 옳은 것은?
+47,30,advanced_47_30,shift_risk_after_gap,medium,5번 누락 이후 문항이라 번호 밀림 검수 필요,흥선대원군,제도,전후 시기 판단,period_between,"(가), (나) 사이의 시기에 있었던 사실로 옳은 것은?"
+47,31,advanced_47_31,shift_risk_after_gap,medium,5번 누락 이후 문항이라 번호 밀림 검수 필요,황쭌쉔,사건,기본 사실·개념 확인,multi_select_combo,다음 가상 대화 이후 전개된 사실로 옳은 것을 ＜보기＞에서 고른 것은?
+47,32,advanced_47_32,image_like_question,high,이미지/지도/시각 자료 기반 문항 가능성,거문도,기타,탐구 주제·활동 선정,map_location,다음 답사가 이루어진 지역을 지도에서 옳게 찾은 것은?
+47,32,advanced_47_32,shift_risk_after_gap,medium,5번 누락 이후 문항이라 번호 밀림 검수 필요,거문도,기타,탐구 주제·활동 선정,map_location,다음 답사가 이루어진 지역을 지도에서 옳게 찾은 것은?
+47,33,advanced_47_33,shift_risk_after_gap,medium,5번 누락 이후 문항이라 번호 밀림 검수 필요,갑오개혁,사건,자료 기반 시대·대상 추론,negative_select,'개혁'의 내용으로 옳지 않은 것은?
+47,34,advanced_47_34,image_like_question,high,이미지/지도/시각 자료 기반 문항 가능성,싸우다,사건,자료 기반 시대·대상 추론,standard_select,(가)에 들어갈 내용으로 가장 적절한 것은?
+47,34,advanced_47_34,shift_risk_after_gap,medium,5번 누락 이후 문항이라 번호 밀림 검수 필요,싸우다,사건,자료 기반 시대·대상 추론,standard_select,(가)에 들어갈 내용으로 가장 적절한 것은?
+47,35,advanced_47_35,shift_risk_after_gap,medium,5번 누락 이후 문항이라 번호 밀림 검수 필요,아관파천,사건,사건·자료 순서 배열,order,(가)~(다)를 일어난 순서대로 옳게 나열한 것은?
+47,36,advanced_47_36,shift_risk_after_gap,medium,5번 누락 이후 문항이라 번호 밀림 검수 필요,광무개혁,사건,제도·기관·정책 기능 이해,standard_select,다음 조서가 반포된 이후 추진된 정책으로 옳은 것은?
+47,37,advanced_47_37,image_like_question,high,이미지/지도/시각 자료 기반 문항 가능성,대한매일신보,매체,시각 자료 해석,standard_select,(가) 신문에 대한 설명으로 옳은 것은?
+47,37,advanced_47_37,shift_risk_after_gap,medium,5번 누락 이후 문항이라 번호 밀림 검수 필요,대한매일신보,매체,시각 자료 해석,standard_select,(가) 신문에 대한 설명으로 옳은 것은?
+47,38,advanced_47_38,shift_risk_after_gap,medium,5번 누락 이후 문항이라 번호 밀림 검수 필요,안창호,인물,자료 기반 시대·대상 추론,standard_select,다음 방송에서 소개하는 인물에 대한 설명으로 옳은 것은?
+47,39,advanced_47_39,image_like_question,high,이미지/지도/시각 자료 기반 문항 가능성,에네켄,기타,시각 자료 해석,map_location,(가)에 해당하는 지역을 지도에서 옳게 찾은 것은?
+47,39,advanced_47_39,shift_risk_after_gap,medium,5번 누락 이후 문항이라 번호 밀림 검수 필요,에네켄,기타,시각 자료 해석,map_location,(가)에 해당하는 지역을 지도에서 옳게 찾은 것은?
+47,40,advanced_47_40,shift_risk_after_gap,medium,5번 누락 이후 문항이라 번호 밀림 검수 필요,의열단,인물,탐구 주제·활동 선정,standard_select,(가) 단체의 활동으로 옳은 것은?
+47,41,advanced_47_41,shift_risk_after_gap,medium,5번 누락 이후 문항이라 번호 밀림 검수 필요,3·1 운동,사건,자료 기반 시대·대상 추론,standard_select,다음 자료에 나타난 민족 운동에 대한 설명으로 옳은 것은?
+47,42,advanced_47_42,image_like_question,high,이미지/지도/시각 자료 기반 문항 가능성,소년 운동,사건,자료 기반 시대·대상 추론,standard_select,다음 자료에 나타난 사회 운동에 대한 설명으로 옳은 것은?
+47,42,advanced_47_42,shift_risk_after_gap,medium,5번 누락 이후 문항이라 번호 밀림 검수 필요,소년 운동,사건,자료 기반 시대·대상 추론,standard_select,다음 자료에 나타난 사회 운동에 대한 설명으로 옳은 것은?
+47,43,advanced_47_43,image_like_question,high,이미지/지도/시각 자료 기반 문항 가능성,민족 말살 통치,제도,전후 시기 판단,standard_select,'시기'의 일제의 통치 정책으로 옳은 것은?
+47,43,advanced_47_43,shift_risk_after_gap,medium,5번 누락 이후 문항이라 번호 밀림 검수 필요,민족 말살 통치,제도,전후 시기 판단,standard_select,'시기'의 일제의 통치 정책으로 옳은 것은?
+47,44,advanced_47_44,shift_risk_after_gap,medium,5번 누락 이후 문항이라 번호 밀림 검수 필요,총사령관,인물,자료 기반 시대·대상 추론,standard_select,(가) 독립군 부대에 대한 설명으로 옳은 것은?
+47,45,advanced_47_45,shift_risk_after_gap,medium,5번 누락 이후 문항이라 번호 밀림 검수 필요,선언문,집단,기본 사실·개념 확인,standard_select,다음 선언문 발표 이후 일어난 사실로 옳은 것은?
+47,46,advanced_47_46,shift_risk_after_gap,medium,5번 누락 이후 문항이라 번호 밀림 검수 필요,박정희 정부,집단,전후 시기 판단,standard_select,'정부' 시기에 있었던 사실로 옳은 것은?
+47,47,advanced_47_47,shift_risk_after_gap,medium,5번 누락 이후 문항이라 번호 밀림 검수 필요,위원회,기타,전후 시기 판단,period_between,"(가), (나) 사이의 시기에 있었던 사실로 옳은 것은? [2점] (47번 공통지문 문제)"
+47,48,advanced_47_48,shift_risk_after_gap,medium,5번 누락 이후 문항이라 번호 밀림 검수 필요,총선,사건,자료 기반 시대·대상 추론,standard_select,'총선' 이후의 사실로 옳은 것은?
+47,49,advanced_47_49,shift_risk_after_gap,medium,5번 누락 이후 문항이라 번호 밀림 검수 필요,노무현 정부,집단,자료 기반 시대·대상 추론,standard_select,(가)에 들어갈 내용으로 옳은 것은?
+47,50,advanced_47_50,missing_question,high,OCR JSONL에 해당 문항 번호가 없음,,,,,
+48,1,advanced_48_01,image_like_question,high,이미지/지도/시각 자료 기반 문항 가능성,가) 시대가 신석기 시대,기타,자료 기반 시대·대상 추론,standard_select,(가) 시대의 생활 모습으로 옳은 것은?
+48,3,advanced_48_03,missing_question,high,OCR JSONL에 해당 문항 번호가 없음,,,,,
+48,4,advanced_48_04,shift_risk_after_gap,medium,3번 누락 이후 문항이라 번호 밀림 검수 필요,관산성 전투,사건,전후 시기 판단,period_between,"(가), (나) 사이의 시기에 있었던 사실로 옳은 것은?"
+48,5,advanced_48_05,shift_risk_after_gap,medium,3번 누락 이후 문항이라 번호 밀림 검수 필요,전투와 660년 황산벌 전투,사건,연표·흐름 빈칸,timeline_position,다음 가상뉴스의 보도 내용이 나타난 시기를 연표에서 옳게 고른 것은?
+48,6,advanced_48_06,shift_risk_after_gap,medium,3번 누락 이후 문항이라 번호 밀림 검수 필요,신문왕,인물,자료 기반 시대·대상 추론,standard_select,(가) 왕의 재위 기간에 있었던 사실로 옳은 것은?
+48,7,advanced_48_07,shift_risk_after_gap,medium,3번 누락 이후 문항이라 번호 밀림 검수 필요,중앙 정부,집단,전후 시기 판단,standard_select,‘이 시기’에 있었던 사실로 옳은 것은?
+48,8,advanced_48_08,image_like_question,high,이미지/지도/시각 자료 기반 문항 가능성,발해,기타,자료 기반 시대·대상 추론,standard_select,‘이 국가’에 대한 설명으로 옳은 것은?
+48,8,advanced_48_08,shift_risk_after_gap,medium,3번 누락 이후 문항이라 번호 밀림 검수 필요,발해,기타,자료 기반 시대·대상 추론,standard_select,‘이 국가’에 대한 설명으로 옳은 것은?
+48,9,advanced_48_09,image_like_question,high,이미지/지도/시각 자료 기반 문항 가능성,첨성대,문화유산,시각 자료 해석,negative_select,(가)~(마) 문화유산에 대한 설명으로 옳지 않은 것은?
+48,9,advanced_48_09,shift_risk_after_gap,medium,3번 누락 이후 문항이라 번호 밀림 검수 필요,첨성대,문화유산,시각 자료 해석,negative_select,(가)~(마) 문화유산에 대한 설명으로 옳지 않은 것은?
+48,10,advanced_48_10,shift_risk_after_gap,medium,3번 누락 이후 문항이라 번호 밀림 검수 필요,통일,사건,전후 시기 판단,period_between,"(가), (나) 사이의 시기에 있었던 사실로 옳은 것은?"
+48,11,advanced_48_11,image_like_question,high,이미지/지도/시각 자료 기반 문항 가능성,삼별초,인물,자료 기반 시대·대상 추론,standard_select,(가) 군사 조직에 대한 설명으로 옳은 것은?
+48,11,advanced_48_11,shift_risk_after_gap,medium,3번 누락 이후 문항이라 번호 밀림 검수 필요,삼별초,인물,자료 기반 시대·대상 추론,standard_select,(가) 군사 조직에 대한 설명으로 옳은 것은?
+48,12,advanced_48_12,shift_risk_after_gap,medium,3번 누락 이후 문항이라 번호 밀림 검수 필요,위한,제도,자료 기반 시대·대상 추론,standard_select,(가)에 들어갈 내용으로 옳은 것은?
+48,13,advanced_48_13,shift_risk_after_gap,medium,3번 누락 이후 문항이라 번호 밀림 검수 필요,건국하여,기타,연표·흐름 빈칸,timeline_position,다음 자료의 상화의 나타난 시기를 연표에서 옳게 고른 것은?
+48,14,advanced_48_14,shift_risk_after_gap,medium,3번 누락 이후 문항이라 번호 밀림 검수 필요,도병마사,제도,자료 기반 시대·대상 추론,standard_select,(가) 기구에 대한 설명으로 옳은 것은?
+48,15,advanced_48_15,shift_risk_after_gap,medium,3번 누락 이후 문항이라 번호 밀림 검수 필요,의천,인물,자료 기반 시대·대상 추론,standard_select,‘그’에 대한 설명으로 옳은 것은?
+48,16,advanced_48_16,image_like_question,high,이미지/지도/시각 자료 기반 문항 가능성,고려 시대,제도,제도·기관·정책 기능 이해,standard_select,다음 제도가 시행된 국가의 경제 상황으로 옳은 것은?
+48,16,advanced_48_16,shift_risk_after_gap,medium,3번 누락 이후 문항이라 번호 밀림 검수 필요,고려 시대,제도,제도·기관·정책 기능 이해,standard_select,다음 제도가 시행된 국가의 경제 상황으로 옳은 것은?
+48,17,advanced_48_17,shift_risk_after_gap,medium,3번 누락 이후 문항이라 번호 밀림 검수 필요,,제도,자료 기반 시대·대상 추론,negative_select,(가)에 들어갈 내용으로 옳지 않은 것은?
+48,18,advanced_48_18,image_like_question,high,이미지/지도/시각 자료 기반 문항 가능성,경복궁,문화유산,자료 기반 시대·대상 추론,negative_select,(가)에 대한 설명으로 옳지 않은 것은?
+48,18,advanced_48_18,shift_risk_after_gap,medium,3번 누락 이후 문항이라 번호 밀림 검수 필요,경복궁,문화유산,자료 기반 시대·대상 추론,negative_select,(가)에 대한 설명으로 옳지 않은 것은?
+48,19,advanced_48_19,shift_risk_after_gap,medium,3번 누락 이후 문항이라 번호 밀림 검수 필요,저자가 정도전,인물,자료 기반 시대·대상 추론,standard_select,다음 글을 쓴 인물에 대한 설명으로 옳은 것은?
+48,20,advanced_48_20,shift_risk_after_gap,medium,3번 누락 이후 문항이라 번호 밀림 검수 필요,세종 시대,인물,기본 사실·개념 확인,standard_select,교사의 질문에 대한 학생의 답변으로 옳은 것은?
+48,21,advanced_48_21,shift_risk_after_gap,medium,3번 누락 이후 문항이라 번호 밀림 검수 필요,김종직,사건,사건·자료 순서 배열,order,(가) ~ (라) 사건을 일어난 순서대로 옳게 나열한 것은?
+48,22,advanced_48_22,core_concept_suspicious,medium,core_concept가 비어 있거나 일반어/깨진 값/긴 문장에 가까움,이 전쟁'이 병자호란(1636,인물,자료 기반 시대·대상 추론,standard_select,‘이 전쟁’ 중에 있었던 사실로 옳은 것은?
+48,22,advanced_48_22,shift_risk_after_gap,medium,3번 누락 이후 문항이라 번호 밀림 검수 필요,이 전쟁'이 병자호란(1636,인물,자료 기반 시대·대상 추론,standard_select,‘이 전쟁’ 중에 있었던 사실로 옳은 것은?
+48,23,advanced_48_23,shift_risk_after_gap,medium,3번 누락 이후 문항이라 번호 밀림 검수 필요,1862년 임술 농민 봉기,사건,자료 기반 시대·대상 추론,standard_select,다음 사건에 대한 설명으로 옳은 것은?
+48,24,advanced_48_24,shift_risk_after_gap,medium,3번 누락 이후 문항이라 번호 밀림 검수 필요,전황 화폐 부족 현상,제도,전후 시기 판단,negative_select,다음 상황이 나타난 시기에 볼 수 있는 모습으로 옳지 않은 것은?
+48,25,advanced_48_25,image_like_question,high,이미지/지도/시각 자료 기반 문항 가능성,임진왜란,문화유산,자료 기반 시대·대상 추론,standard_select,(가) 지역에서 있었던 사실로 옳은 것은?
+48,25,advanced_48_25,shift_risk_after_gap,medium,3번 누락 이후 문항이라 번호 밀림 검수 필요,임진왜란,문화유산,자료 기반 시대·대상 추론,standard_select,(가) 지역에서 있었던 사실로 옳은 것은?
+48,26,advanced_48_26,shift_risk_after_gap,medium,3번 누락 이후 문항이라 번호 밀림 검수 필요,정조,인물,자료 기반 시대·대상 추론,negative_select,(가) 왕의 재위 기간에 있었던 사실로 옳지 않은 것은?
+48,27,advanced_48_27,shift_risk_after_gap,medium,3번 누락 이후 문항이라 번호 밀림 검수 필요,가) 종교가 동학,기타,자료 기반 시대·대상 추론,standard_select,(가) 종교에 대한 설명으로 옳은 것은?
+48,28,advanced_48_28,shift_risk_after_gap,medium,3번 누락 이후 문항이라 번호 밀림 검수 필요,흥선 대원군,인물,자료 기반 시대·대상 추론,standard_select,(가) 인물에 대한 설명으로 옳은 것은?
+48,29,advanced_48_29,shift_risk_after_gap,medium,3번 누락 이후 문항이라 번호 밀림 검수 필요,강화도 조약,사건,자료 기반 시대·대상 추론,standard_select,‘조약’에 대한 설명으로 옳은 것은?
+48,30,advanced_48_30,shift_risk_after_gap,medium,3번 누락 이후 문항이라 번호 밀림 검수 필요,인물이 박정양,인물,자료 기반 시대·대상 추론,standard_select,다음 인물에 대한 설명으로 옳은 것은?
+48,31,advanced_48_31,shift_risk_after_gap,medium,3번 누락 이후 문항이라 번호 밀림 검수 필요,곽기락,매체,기본 사실·개념 확인,standard_select,다음 상소가 올려진 이후의 사실로 옳은 것은?
+48,32,advanced_48_32,shift_risk_after_gap,medium,3번 누락 이후 문항이라 번호 밀림 검수 필요,국채보상운동,사건,자료 기반 시대·대상 추론,standard_select,‘이 운동’에 대한 설명으로 옳은 것은?
+48,33,advanced_48_33,shift_risk_after_gap,medium,3번 누락 이후 문항이라 번호 밀림 검수 필요,갑오개혁,사건,사건·자료 순서 배열,order,(가) ~ (다)를 발표된 순서대로 옳게 나열한 것은?
+48,34,advanced_48_34,shift_risk_after_gap,medium,3번 누락 이후 문항이라 번호 밀림 검수 필요,1910년대,제도,전후 시기 판단,standard_select,다음 법령이 시행된 시기에 볼 수 있는 모습으로 적절한 것은?
+48,35,advanced_48_35,shift_risk_after_gap,medium,3번 누락 이후 문항이라 번호 밀림 검수 필요,헤이그,기타,기본 사실·개념 확인,standard_select,다음 상황 이후에 일어난 사실로 옳은 것은?
+48,36,advanced_48_36,shift_risk_after_gap,medium,3번 누락 이후 문항이라 번호 밀림 검수 필요,신민회,집단,자료 기반 시대·대상 추론,standard_select,‘이 단체’에 대한 설명으로 옳은 것은?
+48,37,advanced_48_37,shift_risk_after_gap,medium,3번 누락 이후 문항이라 번호 밀림 검수 필요,아일랜드계 영국인 조지 루이스 쇼,인물,자료 기반 시대·대상 추론,multi_select_combo,"(가), (나) 인물에 대한 설명으로 옳은 것을 ＜보기＞에서 고른 것은?"
+48,38,advanced_48_38,shift_risk_after_gap,medium,3번 누락 이후 문항이라 번호 밀림 검수 필요,신간회,사건,자료 기반 시대·대상 추론,standard_select,다음 자료에 나타난 민족 운동에 대한 설명으로 옳은 것은?
+48,39,advanced_48_39,shift_risk_after_gap,medium,3번 누락 이후 문항이라 번호 밀림 검수 필요,남자현,인물,탐구 주제·활동 선정,standard_select,(가) 인물의 활동으로 옳은 것은?
+48,40,advanced_48_40,image_like_question,high,이미지/지도/시각 자료 기반 문항 가능성,봉오동,사건,자료 기반 시대·대상 추론,standard_select,(가) 지역에서 전개된 민족 운동에 대한 설명으로 옳은 것은?
+48,40,advanced_48_40,shift_risk_after_gap,medium,3번 누락 이후 문항이라 번호 밀림 검수 필요,봉오동,사건,자료 기반 시대·대상 추론,standard_select,(가) 지역에서 전개된 민족 운동에 대한 설명으로 옳은 것은?
+48,41,advanced_48_41,image_like_question,high,이미지/지도/시각 자료 기반 문항 가능성,식 선생,인물,시각 자료 해석,standard_select,다음 가상 인터뷰의 주인공에 대한 설명으로 옳은 것은?
+48,41,advanced_48_41,shift_risk_after_gap,medium,3번 누락 이후 문항이라 번호 밀림 검수 필요,식 선생,인물,시각 자료 해석,standard_select,다음 가상 인터뷰의 주인공에 대한 설명으로 옳은 것은?
+48,42,advanced_48_42,shift_risk_after_gap,medium,3번 누락 이후 문항이라 번호 밀림 검수 필요,미쓰야,사건,전후 시기 판단,period_between,"(가), (나) 사이의 시기에 있었던 사실로 옳은 것은?"
+48,43,advanced_48_43,shift_risk_after_gap,medium,3번 누락 이후 문항이라 번호 밀림 검수 필요,장려,집단,자료 기반 시대·대상 추론,standard_select,다음 자료에 나타난 민족 운동에 대한 설명으로 옳은 것은?
+48,44,advanced_48_44,image_like_question,high,이미지/지도/시각 자료 기반 문항 가능성,침략 전쟁을 확대하며 민족 말살 통치,제도,전후 시기 판단,negative_select,‘이 시기’에 시행된 일제의 정책으로 옳지 않은 것은?
+48,44,advanced_48_44,shift_risk_after_gap,medium,3번 누락 이후 문항이라 번호 밀림 검수 필요,침략 전쟁을 확대하며 민족 말살 통치,제도,전후 시기 판단,negative_select,‘이 시기’에 시행된 일제의 정책으로 옳지 않은 것은?
+48,45,advanced_48_45,shift_risk_after_gap,medium,3번 누락 이후 문항이라 번호 밀림 검수 필요,의용대,사건,자료 기반 시대·대상 추론,standard_select,(가) 부대에 대한 설명으로 옳은 것은?
+48,46,advanced_48_46,shift_risk_after_gap,medium,3번 누락 이후 문항이라 번호 밀림 검수 필요,박정희 정부,집단,전후 시기 판단,standard_select,다음 기념사를 발표한 정부 시기에 있었던 사실로 옳은 것은?
+48,47,advanced_48_47,shift_risk_after_gap,medium,3번 누락 이후 문항이라 번호 밀림 검수 필요,7원칙,기타,전후 시기 판단,period_between,"(가), (나) 사이의 시기에 있었던 사실로 옳은 것은?"
+48,48,advanced_48_48,shift_risk_after_gap,medium,3번 누락 이후 문항이라 번호 밀림 검수 필요,김영삼 정부,집단,전후 시기 판단,standard_select,다음 명령을 시행한 정부 시기에 있었던 사실로 옳은 것은?
+48,49,advanced_48_49,shift_risk_after_gap,medium,3번 누락 이후 문항이라 번호 밀림 검수 필요,5·18 민주화 운동,사건,자료 기반 시대·대상 추론,standard_select,(가) 민주화 운동에 대한 설명으로 옳은 것은?
+48,50,advanced_48_50,image_like_question,high,이미지/지도/시각 자료 기반 문항 가능성,노태우 정부,집단,전후 시기 판단,standard_select,다음 정부시기의 통일 노력으로 옳은 것은?
+48,50,advanced_48_50,shift_risk_after_gap,medium,3번 누락 이후 문항이라 번호 밀림 검수 필요,노태우 정부,집단,전후 시기 판단,standard_select,다음 정부시기의 통일 노력으로 옳은 것은?
+49,1,advanced_49_01,image_like_question,high,이미지/지도/시각 자료 기반 문항 가능성,비파형,문화유산,자료 기반 시대·대상 추론,standard_select,(가) 시대의 생활 모습으로 옳은 것은?
+49,4,advanced_49_04,image_like_question,high,이미지/지도/시각 자료 기반 문항 가능성,부소산성,문화유산,탐구 주제·활동 선정,standard_select,다음 지역에 대한 탐구 활동으로 적절한 것은?
+49,6,advanced_49_06,image_like_question,high,이미지/지도/시각 자료 기반 문항 가능성,문서,문화유산,자료 기반 시대·대상 추론,standard_select,(가) 국가의 경제 상황으로 옳은 것은?
+49,12,advanced_49_12,image_like_question,high,이미지/지도/시각 자료 기반 문항 가능성,고려 시대 문화유산,문화유산,자료 기반 시대·대상 추론,negative_select,(가)에 들어갈 내용으로 적절하지 않은 것은?
+49,20,advanced_49_20,image_like_question,high,이미지/지도/시각 자료 기반 문항 가능성,조선의 성종,인물,전후 시기 판단,standard_select,'이 왕'의 재위 시기에 있었던 사실로 옳은 것은?
+49,27,advanced_49_27,missing_question,high,OCR JSONL에 해당 문항 번호가 없음,,,,,
+49,28,advanced_49_28,image_like_question,high,이미지/지도/시각 자료 기반 문항 가능성,홍경래의 난,사건,자료 기반 시대·대상 추론,standard_select,(가) 사건에 대한 설명으로 옳은 것은?
+49,28,advanced_49_28,shift_risk_after_gap,medium,27번 누락 이후 문항이라 번호 밀림 검수 필요,홍경래의 난,사건,자료 기반 시대·대상 추론,standard_select,(가) 사건에 대한 설명으로 옳은 것은?
+49,29,advanced_49_29,shift_risk_after_gap,medium,27번 누락 이후 문항이라 번호 밀림 검수 필요,신미양요,인물,연표·흐름 빈칸,timeline_position,다음 상황이 나타난 시기를 연표에서 옳게 고른 것은?
+49,30,advanced_49_30,shift_risk_after_gap,medium,27번 누락 이후 문항이라 번호 밀림 검수 필요,김홍집,인물,자료 기반 시대·대상 추론,standard_select,다음 인물에 대한 설명으로 옳은 것은?
+49,31,advanced_49_31,core_concept_suspicious,medium,core_concept가 비어 있거나 일반어/깨진 값/긴 문장에 가까움,"허례를 폐지', '문벌 폐지' 등",사건,의의·영향·결과 평가,standard_select,(가) 사건의 결과로 옳은 것은?
+49,31,advanced_49_31,shift_risk_after_gap,medium,27번 누락 이후 문항이라 번호 밀림 검수 필요,"허례를 폐지', '문벌 폐지' 등",사건,의의·영향·결과 평가,standard_select,(가) 사건의 결과로 옳은 것은?
+49,32,advanced_49_32,image_like_question,high,이미지/지도/시각 자료 기반 문항 가능성,환구단 터,기타,자료 기반 시대·대상 추론,standard_select,(가)~(마)에서 있었던 사실로 옳은 것은?
+49,32,advanced_49_32,shift_risk_after_gap,medium,27번 누락 이후 문항이라 번호 밀림 검수 필요,환구단 터,기타,자료 기반 시대·대상 추론,standard_select,(가)~(마)에서 있었던 사실로 옳은 것은?
+49,33,advanced_49_33,shift_risk_after_gap,medium,27번 누락 이후 문항이라 번호 밀림 검수 필요,전봉준,인물,자료 기반 시대·대상 추론,standard_select,(가) 인물에 대한 설명으로 옳은 것은?
+49,34,advanced_49_34,shift_risk_after_gap,medium,27번 누락 이후 문항이라 번호 밀림 검수 필요,삼국 간섭,사건,기본 사실·개념 확인,standard_select,다음 대화에 나타난 상황 이후의 사실로 옳은 것은?
+49,35,advanced_49_35,shift_risk_after_gap,medium,27번 누락 이후 문항이라 번호 밀림 검수 필요,독립협회,집단,자료 기반 시대·대상 추론,standard_select,'협회'에 대한 설명으로 옳은 것은?
+49,36,advanced_49_36,shift_risk_after_gap,medium,27번 누락 이후 문항이라 번호 밀림 검수 필요,,기타,기본 사실·개념 확인,standard_select,교사의 질문에 대한 학생의 답변으로 옳은 것은?
+49,37,advanced_49_37,shift_risk_after_gap,medium,27번 누락 이후 문항이라 번호 밀림 검수 필요,과거제,제도,자료 기반 시대·대상 추론,standard_select,'개혁'에 대한 설명으로 옳은 것은?
+49,38,advanced_49_38,shift_risk_after_gap,medium,27번 누락 이후 문항이라 번호 밀림 검수 필요,이상설,인물,자료 기반 시대·대상 추론,standard_select,(가) 인물에 대한 설명으로 옳은 것은?
+49,39,advanced_49_39,missing_question,high,OCR JSONL에 해당 문항 번호가 없음,,,,,
+49,40,advanced_49_40,shift_risk_after_gap,medium,27번 누락 이후 문항이라 번호 밀림 검수 필요,1926년의 6·10 만세 운동,사건,자료 기반 시대·대상 추론,standard_select,(가) 민족 운동에 대한 설명으로 옳은 것은?
+49,41,advanced_49_41,shift_risk_after_gap,medium,27번 누락 이후 문항이라 번호 밀림 검수 필요,기지,사건,자료 기반 시대·대상 추론,standard_select,(가) 지역에서 전개된 민족 운동에 대한 설명으로 옳은 것은?
+49,42,advanced_49_42,shift_risk_after_gap,medium,27번 누락 이후 문항이라 번호 밀림 검수 필요,암태도,기타,자료 기반 시대·대상 추론,standard_select,'투쟁' 이후의 사실로 옳은 것은?
+49,43,advanced_49_43,shift_risk_after_gap,medium,27번 누락 이후 문항이라 번호 밀림 검수 필요,총동원법,제도,전후 시기 판단,negative_select,'시기'에 볼 수 있는 모습으로 적절하지 않은 것은?
+49,44,advanced_49_44,shift_risk_after_gap,medium,27번 누락 이후 문항이라 번호 밀림 검수 필요,대동단결선언,사건,연표·흐름 빈칸,timeline_position,다음 선언문이 발표된 시기를 연표에서 옳게 고른 것은?
+49,45,advanced_49_45,shift_risk_after_gap,medium,27번 누락 이후 문항이라 번호 밀림 검수 필요,장군,인물,탐구 주제·활동 선정,standard_select,다음 인물의 활동으로 옳은 것은?
+49,46,advanced_49_46,shift_risk_after_gap,medium,27번 누락 이후 문항이라 번호 밀림 검수 필요,모스크바,기타,기본 사실·개념 확인,negative_select,다음 성명이 발표된 이후에 있었던 사실로 옳지 않은 것은?
+49,47,advanced_49_47,shift_risk_after_gap,medium,27번 누락 이후 문항이라 번호 밀림 검수 필요,박정희 정부,집단,전후 시기 판단,period_between,"(가), (나) 사이의 시기에 있었던 사실로 옳은 것을 보기에서 고른 것은?"
+49,48,advanced_49_48,shift_risk_after_gap,medium,27번 누락 이후 문항이라 번호 밀림 검수 필요,전두환 정부,집단,전후 시기 판단,standard_select,다음 헌법이 시행된 시기의 사실로 옳은 것은?
+49,49,advanced_49_49,shift_risk_after_gap,medium,27번 누락 이후 문항이라 번호 밀림 검수 필요,6월 민주 항쟁,사건,의의·영향·결과 평가,standard_select,다음 기사에 보도된 민주화 운동의 결과로 옳은 것은?
+49,50,advanced_49_50,shift_risk_after_gap,medium,27번 누락 이후 문항이라 번호 밀림 검수 필요,김대중 정부,집단,자료 기반 시대·대상 추론,standard_select,'정부'의 통일 노력으로 옳은 것은?

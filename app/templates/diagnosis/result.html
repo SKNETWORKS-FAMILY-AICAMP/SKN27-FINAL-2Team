@@ -93,8 +93,6 @@
         <button class="outline-button" id="prevQuestion" type="button">이전 문제</button>
         <button class="outline-button" id="nextQuestion" type="button">다음 문제</button>
         <button class="primary-button" id="askChatbot" type="button">챗봇에게 질문</button>
-        <button class="primary-button" id="pdfSave" type="button">노트에 저장</button>
-        <span class="note-save-status" id="noteSaveStatus" aria-live="polite"></span>
       </nav>
     </section>
 
@@ -311,8 +309,6 @@
       sessionStorage.setItem("chatbotQuestionContext", buildChatContext(explanations[currentIndex]));
       window.location.href = "/chatbot/?from=diagnosis-result";
     });
-    document.getElementById("pdfSave").addEventListener("click", () => window.print());
-
     // ── 로드 시작 ─────────────────────────────────────────────────────────────────
     loadAll().catch((e) => {
       document.getElementById("loadingMsg").textContent = `오류: ${e.message}`;

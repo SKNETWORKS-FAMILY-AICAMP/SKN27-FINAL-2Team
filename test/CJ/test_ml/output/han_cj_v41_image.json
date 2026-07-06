@@ -1,0 +1,3392 @@
+[
+  {
+    "problem_id": "cj_v41_img_47_05",
+    "source_group_index": 1529,
+    "material": "이 문화유산은 국보 제287호로 부여 능산리 절터에서 출토되었습니다. 백제 왕실의 의례에 사용한 것으로 추정되는 이 유물은 도교적 요소가 복합적으로 표현된 작품입니다.",
+    "question": "다음 설명에 해당하는 문화유산으로 옳은 것은? [2점]",
+    "input_text": "이 문화유산은 국보 제287호로 부여 능산리 절터에서 출토되었습니다. 백제 왕실의 의례에 사용한 것으로 추정되는 이 유물은 도교적 요소가 복합적으로 표현된 작품입니다.\n다음 설명에 해당하는 문화유산으로 옳은 것은? [2점]",
+    "answer_choice": "백제 금동대향로",
+    "distractor_choices": [
+      "가야 기마인물형뿔잔",
+      "백제 무령왕릉 석수",
+      "발해 돌사자상",
+      "신라 금관총 금관 및 금제"
+    ],
+    "topic_type": "문화유산",
+    "topic": "백제의 문화유산",
+    "material_type": "시각 자료 설명",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "자료 기반 시대·대상 추론",
+    "question_task": "standard_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": true,
+        "content": "백제 금동대향로"
+      },
+      {
+        "is_answer": false,
+        "content": "가야 기마인물형뿔잔"
+      },
+      {
+        "is_answer": false,
+        "content": "백제 무령왕릉 석수"
+      },
+      {
+        "is_answer": false,
+        "content": "발해 돌사자상"
+      },
+      {
+        "is_answer": false,
+        "content": "신라 금관총 금관 및 금제"
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 47,
+    "question_no": 5
+  },
+  {
+    "problem_id": "cj_v41_img_47_15",
+    "source_group_index": 1530,
+    "material": "고려 초기의 저서로 (가)에 대해 언급한 글이다.\n충청남도 논산시 관촉사에 있는 불상으로 '은진 미륵'이라고 불린다.\n불상에서 발견된 기록을 통해 고려 광종 때 만들어진 것으로 알려졌다. \n 파격적이고 대범한 미적 감각을 담고 있다고 인정받아 2018년에 국보 제323호로 승격되었다.",
+    "question": "다음 중 (가)에 해당하는 문화유산으로 옳은 것은?",
+    "input_text": "고려 초기의 저서로 (가)에 대해 언급한 글이다.\n충청남도 논산시 관촉사에 있는 불상으로 '은진 미륵'이라고 불린다.\n불상에서 발견된 기록을 통해 고려 광종 때 만들어진 것으로 알려졌다. \n 파격적이고 대범한 미적 감각을 담고 있다고 인정받아 2018년에 국보 제323호로 승격되었다. \n다음 중 (가)에 해당하는 문화유산으로 옳은 것은?",
+    "answer_choice": "논산 관촉사 석조미륵보살입상",
+    "distractor_choices": [
+      "경산 팔공산 관봉 석조여래좌상",
+      "안동 이천 마애여래입상",
+      "서산 용현리 마애여래삼존상",
+      "파주 용미리 마애이불입상"
+    ],
+    "topic_type": "문화유산",
+    "topic": "고려 초기의 문화유산",
+    "material_type": "짧은 설명 자료",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "자료 기반 시대·대상 추론",
+    "question_task": "standard_select",
+    "difficulty_label": "쉬움",
+    "choices": [
+      {
+        "is_answer": true,
+        "content": "논산 관촉사 석조미륵보살입상"
+      },
+      {
+        "is_answer": false,
+        "content": "경산 팔공산 관봉 석조여래좌상"
+      },
+      {
+        "is_answer": false,
+        "content": "안동 이천 마애여래입상"
+      },
+      {
+        "is_answer": false,
+        "content": "서산 용현리 마애여래삼존상"
+      },
+      {
+        "is_answer": false,
+        "content": "파주 용미리 마애이불입상"
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 47,
+    "question_no": 15
+  },
+  {
+    "problem_id": "cj_v41_img_47_27",
+    "source_group_index": 1531,
+    "material": "이 그림은 겸재(가)이/가 한양 근교의 경치를 그린 경교명승첩 중 한 작품이다. \n 그는 우리나라의 산천을 사실적으로 표현한 진경산수화의 대표적인 화가로 금강전도를 비롯한 뛰어난 작품을 남겼다.",
+    "question": "(가)의 작품으로 옳은 것은?",
+    "input_text": "이 그림은 겸재(가)이/가 한양 근교의 경치를 그린 경교명승첩 중 한 작품이다. \n 그는 우리나라의 산천을 사실적으로 표현한 진경산수화의 대표적인 화가로 금강전도를 비롯한 뛰어난 작품을 남겼다.\n(가)의 작품으로 옳은 것은?",
+    "answer_choice": "인왕제색도",
+    "distractor_choices": [
+      "총석정",
+      "영통동구도",
+      "세한도",
+      "몽유도원도"
+    ],
+    "topic_type": "문화유산",
+    "topic": "조선 후기의 저서",
+    "material_type": "시각 자료 설명",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "자료 기반 시대·대상 추론",
+    "question_task": "standard_select",
+    "difficulty_label": "쉬움",
+    "choices": [
+      {
+        "is_answer": false,
+        "content": "총석정"
+      },
+      {
+        "is_answer": true,
+        "content": "인왕제색도"
+      },
+      {
+        "is_answer": false,
+        "content": "영통동구도"
+      },
+      {
+        "is_answer": false,
+        "content": "세한도"
+      },
+      {
+        "is_answer": false,
+        "content": "몽유도원도"
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 47,
+    "question_no": 27
+  },
+  {
+    "problem_id": "cj_v41_img_47_50",
+    "source_group_index": 1532,
+    "material": "행정 중심 복합 도시 추진 \n국토 균형 발전 \n국민 보건 증진 \n질병 관리 본부 설치 \n진실,화해를 위한 과거사 정리 위원회 구성 \n과거사 정리 \n평화 통일 노력 \n(가)",
+    "question": "다음 중 (가)에 들어갈 내용으로 옳은 것은?",
+    "input_text": "행정 중심 복합 도시 추진 \n국토 균형 발전 \n국민 보건 증진 \n질병 관리 본부 설치 \n진실,화해를 위한 과거사 정리 위원회 구성 \n과거사 정리 \n평화 통일 노력 \n(가) \n다음 중 (가)에 들어갈 내용으로 옳은 것은?",
+    "answer_choice": "10·4 남북 정상 선언 발표",
+    "distractor_choices": [
+      "남북 기본 합의서 서명",
+      "남북 조절 위원회 구성",
+      "한반도 비핵화 공동 선언 채택",
+      "이산가족 고향 방문 최초 성사"
+    ],
+    "topic_type": "사건",
+    "topic": "한국 현대사 정치적 사건",
+    "material_type": "짧은 설명 자료",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "자료 기반 시대·대상 추론",
+    "question_task": "standard_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": false,
+        "content": "남북 기본 합의서 서명"
+      },
+      {
+        "is_answer": false,
+        "content": "남북 조절 위원회 구성"
+      },
+      {
+        "is_answer": true,
+        "content": "10·4 남북 정상 선언 발표"
+      },
+      {
+        "is_answer": false,
+        "content": "한반도 비핵화 공동 선언 채택"
+      },
+      {
+        "is_answer": false,
+        "content": "이산가족 고향 방문 최초 성사"
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 47,
+    "question_no": 50
+  },
+  {
+    "problem_id": "cj_v41_img_48_03",
+    "source_group_index": 35,
+    "material": "이곳은 김해 대성동 고분군 108호분 발굴 조사 현장의 설명입니다. 대형 옹관이 400여 점의 토기들과, 철촉 등 130여 점의 철기 유물이 출토되었습니다. 이번 발굴로 금수로왕이 건국하였다고 전해지는 (가)에 대한 연구가 활발하게 이루어질 전망입니다.",
+    "question": "(가) 나라의 문화유산으로 옳은 것은?",
+    "input_text": "이곳은 김해 대성동 고분군 108호분 발굴 조사 현장의 설명입니다. 대형 옹관이 400여 점의 토기들과, 철촉 등 130여 점의 철기 유물이 출토되었습니다. 이번 발굴로 금수로왕이 건국하였다고 전해지는 (가)에 대한 연구가 활발하게 이루어질 전망입니다.\n(가) 나라의 문화유산으로 옳은 것은?",
+    "answer_choice": "철갑옷",
+    "distractor_choices": [
+      "산수무늬 벽돌",
+      "칠지도",
+      "무령왕릉 진묘수",
+      "정혜공주묘 돌사자상"
+    ],
+    "topic_type": "문화유산",
+    "topic": "김해 대성동 고분군",
+    "material_type": "시각 자료 설명",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "자료 기반 시대·대상 추론",
+    "question_task": "standard_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": false,
+        "content": "산수무늬 벽돌"
+      },
+      {
+        "is_answer": false,
+        "content": "칠지도"
+      },
+      {
+        "is_answer": true,
+        "content": "철갑옷"
+      },
+      {
+        "is_answer": false,
+        "content": "무령왕릉 진묘수"
+      },
+      {
+        "is_answer": false,
+        "content": "정혜공주묘 돌사자상"
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 48,
+    "question_no": 3
+  },
+  {
+    "problem_id": "cj_v41_img_49_27",
+    "source_group_index": 35,
+    "material": "문화유산 소개하기 \n국보 제258호인 이 자기는 회회청 또는 토청 등의 코발트 안료를 사용하여 만들어진 것입니다. 이러한 종류의 자기는 조선 전기부터 생상되었고 후기에 널리 보급되었다. \n(가)에 들어갈 문화유산",
+    "question": "가)에 들어갈 문화유산으로 옳은 것은?",
+    "input_text": "문화유산 소개하기 \n국보 제258호인 이 자기는 회회청 또는 토청 등의 코발트 안료를 사용하여 만들어진 것입니다. 이러한 종류의 자기는 조선 전기부터 생상되었고 후기에 널리 보급되었다. \n(가)에 들어갈 문화유산\n가)에 들어갈 문화유산으로 옳은 것은?",
+    "answer_choice": "청화백자",
+    "distractor_choices": [
+      "분청사기",
+      "은입사",
+      "상감청자",
+      "순청자"
+    ],
+    "topic_type": "문화유산",
+    "topic": "한국의 문화유산",
+    "material_type": "짧은 설명 자료",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "자료 기반 시대·대상 추론",
+    "question_task": "standard_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": false,
+        "content": "분청사기"
+      },
+      {
+        "is_answer": false,
+        "content": "은입사"
+      },
+      {
+        "is_answer": false,
+        "content": "상감청자"
+      },
+      {
+        "is_answer": true,
+        "content": "청화백자"
+      },
+      {
+        "is_answer": false,
+        "content": "순청자"
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 49,
+    "question_no": 27
+  },
+  {
+    "problem_id": "cj_v41_img_49_39",
+    "source_group_index": 36,
+    "material": "덕원부의 관민이 힘을 합쳐 설립한 우리나라 최초의 근대 학교로, 외국어 교육 등을 실시한 이 교육 기관은 무엇인가?",
+    "question": "다음 퀴즈의 정답으로 옳은 것은?",
+    "input_text": "덕원부의 관민이 힘을 합쳐 설립한 우리나라 최초의 근대 학교로, 외국어 교육 등을 실시한 이 교육 기관은 무엇인가?\n다음 퀴즈의 정답으로 옳은 것은?",
+    "answer_choice": "원산 학사",
+    "distractor_choices": [
+      "동문학",
+      "명동 학교",
+      "서전서숙",
+      "배재 학당"
+    ],
+    "topic_type": "제도",
+    "topic": "덕원부 관민이 설립한 학교",
+    "material_type": "짧은 설명 자료",
+    "major_type": "역사 지식의 이해",
+    "minor_type": "기본 사실·개념 확인",
+    "question_task": "standard_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": false,
+        "content": "동문학"
+      },
+      {
+        "is_answer": false,
+        "content": "명동 학교"
+      },
+      {
+        "is_answer": true,
+        "content": "원산 학사"
+      },
+      {
+        "is_answer": false,
+        "content": "서전서숙"
+      },
+      {
+        "is_answer": false,
+        "content": "배재 학당"
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 49,
+    "question_no": 39
+  },
+  {
+    "problem_id": "cj_v41_img_50_14",
+    "source_group_index": 35,
+    "material": "이 성채에는 ○○○ 시대 불상의 사진을 전시합니다. ○○시대에는 대형 불상이 유행하였으며, 본사 관음사 석조 미륵보살 입상처럼 거대한 불상이 조성되기도 하였습니다.",
+    "question": "다음 사진전에 전시될 사진으로 적절하지 않은 것은?",
+    "input_text": "이 성채에는 ○○○ 시대 불상의 사진을 전시합니다. ○○시대에는 대형 불상이 유행하였으며, 본사 관음사 석조 미륵보살 입상처럼 거대한 불상이 조성되기도 하였습니다.\n다음 사진전에 전시될 사진으로 적절하지 않은 것은?",
+    "answer_choice": "경주 석굴암 본존불상",
+    "distractor_choices": [
+      "고려 하남 하사창동 철불",
+      "고려 안동 이천동 마애 여래 입상",
+      "고려 영주 부석사 소조 여래 좌상",
+      "고려 하남 교산동 마애 약사 여래 좌상"
+    ],
+    "topic_type": "문화유산",
+    "topic": "고려 시대 불상",
+    "material_type": "시각 자료 설명",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "시각 자료 해석",
+    "question_task": "negative_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": false,
+        "content": "고려 하남 하사창동 철불"
+      },
+      {
+        "is_answer": true,
+        "content": "경주 석굴암 본존불상"
+      },
+      {
+        "is_answer": false,
+        "content": "고려 안동 이천동 마애 여래 입상"
+      },
+      {
+        "is_answer": false,
+        "content": "고려 영주 부석사 소조 여래 좌상"
+      },
+      {
+        "is_answer": false,
+        "content": "고려 하남 교산동 마애 약사 여래 좌상"
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 50,
+    "question_no": 14
+  },
+  {
+    "problem_id": "cj_v41_img_50_50",
+    "source_group_index": 36,
+    "material": "신문 기사: 광주 대단지 주민 5만여 명, 대규모 시위",
+    "question": "다음 기사의 사건이 일어난 정부 시기의 통일 정책으로 옳은 것은?",
+    "input_text": "신문 기사: 광주 대단지 주민 5만여 명, 대규모 시위\n다음 기사의 사건이 일어난 정부 시기의 통일 정책으로 옳은 것은?",
+    "answer_choice": "남북 조절 위원회를 설치하여 통일 방안을 논의하였다.",
+    "distractor_choices": [
+      "남북한의 유엔에 동시 가입하였다.",
+      "10·4 남북 공동 선언을 발표하였다.",
+      "남북 기본 합의서를 바탕으로 공동 선언이 시행하였다.",
+      "남북한의 교류 협력을 위한 개성 공업 지구 건설에 착수하였다."
+    ],
+    "topic_type": "사건",
+    "topic": "광주 대단지 사건",
+    "material_type": "자료 제시문",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "자료 기반 시대·대상 추론",
+    "question_task": "standard_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": false,
+        "content": "남북한의 유엔에 동시 가입하였다."
+      },
+      {
+        "is_answer": false,
+        "content": "10·4 남북 공동 선언을 발표하였다."
+      },
+      {
+        "is_answer": false,
+        "content": "남북 기본 합의서를 바탕으로 공동 선언이 시행하였다."
+      },
+      {
+        "is_answer": true,
+        "content": "남북 조절 위원회를 설치하여 통일 방안을 논의하였다."
+      },
+      {
+        "is_answer": false,
+        "content": "남북한의 교류 협력을 위한 개성 공업 지구 건설에 착수하였다."
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 50,
+    "question_no": 50
+  },
+  {
+    "problem_id": "cj_v41_img_51_09",
+    "source_group_index": 35,
+    "material": "문화유산 DB 검색 화면 이미지. 검색어: (가) 국보 제11호, 소재지: 전라북도 익산시, 소개: 현존하는 삼국 시대 석탑 중 가장 규모가 크며 목탑 양식을 반영하여 건립되었다. 탑의 중심에는 여러 개의 사각형 돌을 수직으로 쌓아 올린 기둥이 4층까지 연속된다. 1층 심주석에서 발견된 시리봉영기의 기록을 통해 석탑의 건립 연도가 639년경으로 명확하게 밝혀졌다.",
+    "question": "(가)에 해당하는 문화유산으로 옳은 것은?",
+    "input_text": "문화유산 DB 검색 화면 이미지. 검색어: (가) 국보 제11호, 소재지: 전라북도 익산시, 소개: 현존하는 삼국 시대 석탑 중 가장 규모가 크며 목탑 양식을 반영하여 건립되었다. 탑의 중심에는 여러 개의 사각형 돌을 수직으로 쌓아 올린 기둥이 4층까지 연속된다. 1층 심주석에서 발견된 시리봉영기의 기록을 통해 석탑의 건립 연도가 639년경으로 명확하게 밝혀졌다.\n(가)에 해당하는 문화유산으로 옳은 것은?",
+    "answer_choice": "미륵사지 석탑",
+    "distractor_choices": [
+      "정림사지 5층 석탑",
+      "불국사 다보탑",
+      "영광탑",
+      "왕궁리 5층 석탑"
+    ],
+    "topic_type": "문화유산",
+    "topic": "백제의 건축물",
+    "material_type": "시각 자료 설명",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "자료 기반 시대·대상 추론",
+    "question_task": "standard_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": false,
+        "content": "정림사지 5층 석탑"
+      },
+      {
+        "is_answer": false,
+        "content": "불국사 다보탑"
+      },
+      {
+        "is_answer": true,
+        "content": "미륵사지 석탑"
+      },
+      {
+        "is_answer": false,
+        "content": "영광탑"
+      },
+      {
+        "is_answer": false,
+        "content": "왕궁리 5층 석탑"
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 51,
+    "question_no": 9
+  },
+  {
+    "problem_id": "cj_v41_img_51_27",
+    "source_group_index": 36,
+    "material": "이 그림은 조선 후기 풍속화가인 (가)이/가 그린 미인도인가요? (가)은/는 이 그림 외에도 양반들의 풍류와 남녀 사이의 애정을 소재로한 작품을 많이 남겼어요.",
+    "question": "(가) 인물의 작품으로 옳은 것은?",
+    "input_text": "이 그림은 조선 후기 풍속화가인 (가)이/가 그린 미인도인가요? (가)은/는 이 그림 외에도 양반들의 풍류와 남녀 사이의 애정을 소재로한 작품을 많이 남겼어요.\n(가) 인물의 작품으로 옳은 것은?",
+    "answer_choice": "신윤복",
+    "distractor_choices": [
+      "씨름",
+      "고사관수도",
+      "파적도",
+      "영통동구도"
+    ],
+    "topic_type": "인물",
+    "topic": "조선 후기 화가",
+    "material_type": "시각 자료 설명",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "기본 사실·개념 확인",
+    "question_task": "standard_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": false,
+        "content": "씨름"
+      },
+      {
+        "is_answer": false,
+        "content": "고사관수도"
+      },
+      {
+        "is_answer": false,
+        "content": "파적도"
+      },
+      {
+        "is_answer": true,
+        "content": "신윤복"
+      },
+      {
+        "is_answer": false,
+        "content": "영통동구도"
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 51,
+    "question_no": 27
+  },
+  {
+    "problem_id": "cj_v41_img_52_03",
+    "source_group_index": 34,
+    "material": "삼국사기 프로그램 화면에 '6년 - 거벌부가 국사를 편찬하다', '11년 - 이사부가 도살성과 금성을 정복하다', '27년 - 황룡사를 완공하다'라는 내용이 나와 있음.",
+    "question": "다음 검색창에 들어갈 왕에 대한 설명으로 옳은 것은?",
+    "input_text": "삼국사기 프로그램 화면에 '6년 - 거벌부가 국사를 편찬하다', '11년 - 이사부가 도살성과 금성을 정복하다', '27년 - 황룡사를 완공하다'라는 내용이 나와 있음.\n다음 검색창에 들어갈 왕에 대한 설명으로 옳은 것은?",
+    "answer_choice": "마운령, 황초령 등에 순수비를 세웠다.",
+    "distractor_choices": [
+      "불국사 삼층 석탑을 건립하였다.",
+      "첨성대의 설계 전체를 관측하였다.",
+      "금관가야를 복속하여 영토를 확장하였다.",
+      "시장을 감독하는 관청인 동시전을 설치하였다."
+    ],
+    "topic_type": "인물",
+    "topic": "신라의 왕",
+    "material_type": "시각 자료 설명",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "자료 기반 시대·대상 추론",
+    "question_task": "standard_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": false,
+        "content": "불국사 삼층 석탑을 건립하였다."
+      },
+      {
+        "is_answer": false,
+        "content": "첨성대의 설계 전체를 관측하였다."
+      },
+      {
+        "is_answer": true,
+        "content": "마운령, 황초령 등에 순수비를 세웠다."
+      },
+      {
+        "is_answer": false,
+        "content": "금관가야를 복속하여 영토를 확장하였다."
+      },
+      {
+        "is_answer": false,
+        "content": "시장을 감독하는 관청인 동시전을 설치하였다."
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 52,
+    "question_no": 3
+  },
+  {
+    "problem_id": "cj_v41_img_52_06",
+    "source_group_index": 35,
+    "material": "국보 제119호인 이 불상은 고구려의 승려들이 만들어 유포한 천불 중 하나로, 경상남도 의령에서 출토되었습니다. 연가(緣迦)라는 7년이라는 명문이 새겨져 있어 제작 연대를 추정할 수 있습니다.",
+    "question": "밑줄 그은 '이 불상'으로 옳은 것은?",
+    "input_text": "국보 제119호인 이 불상은 고구려의 승려들이 만들어 유포한 천불 중 하나로, 경상남도 의령에서 출토되었습니다. 연가(緣迦)라는 7년이라는 명문이 새겨져 있어 제작 연대를 추정할 수 있습니다.\n밑줄 그은 '이 불상'으로 옳은 것은?",
+    "answer_choice": "금동 연가 7년명 여래 입상",
+    "distractor_choices": [
+      "금동관음보살좌상",
+      "이불병좌상",
+      "금제 여래 좌상",
+      "금동반가사유상"
+    ],
+    "topic_type": "문화유산",
+    "topic": "고구려 불상",
+    "material_type": "자료 제시문",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "자료 기반 시대·대상 추론",
+    "question_task": "standard_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": false,
+        "content": "금동관음보살좌상"
+      },
+      {
+        "is_answer": true,
+        "content": "금동 연가 7년명 여래 입상"
+      },
+      {
+        "is_answer": false,
+        "content": "이불병좌상"
+      },
+      {
+        "is_answer": false,
+        "content": "금제 여래 좌상"
+      },
+      {
+        "is_answer": false,
+        "content": "금동반가사유상"
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 52,
+    "question_no": 6
+  },
+  {
+    "problem_id": "cj_v41_img_52_14",
+    "source_group_index": 36,
+    "material": "국보 제18호인 (가)는 고려 시대의 목조 건물로, 배흘림 기둥에 주심포 양식으로 축조되었습니다. 건물 내부에는 국보 45호인 소조 여래 좌상이 봉인되어 있습니다.",
+    "question": "(가)에 들어갈 문화유산으로 옳은 것은?",
+    "input_text": "국보 제18호인 (가)는 고려 시대의 목조 건물로, 배흘림 기둥에 주심포 양식으로 축조되었습니다. 건물 내부에는 국보 45호인 소조 여래 좌상이 봉인되어 있습니다.\n(가)에 들어갈 문화유산으로 옳은 것은?",
+    "answer_choice": "영주 부석사 무량수전",
+    "distractor_choices": [
+      "공주 마곡사 대웅보전",
+      "예산 수덕사 대웅전",
+      "구례 화엄사 각황전",
+      "안동 봉정사 극락전"
+    ],
+    "topic_type": "문화유산",
+    "topic": "고려 시대의 목조 건축물",
+    "material_type": "시각 자료 설명",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "자료 기반 시대·대상 추론",
+    "question_task": "standard_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": false,
+        "content": "공주 마곡사 대웅보전"
+      },
+      {
+        "is_answer": true,
+        "content": "영주 부석사 무량수전"
+      },
+      {
+        "is_answer": false,
+        "content": "예산 수덕사 대웅전"
+      },
+      {
+        "is_answer": false,
+        "content": "구례 화엄사 각황전"
+      },
+      {
+        "is_answer": false,
+        "content": "안동 봉정사 극락전"
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 52,
+    "question_no": 14
+  },
+  {
+    "problem_id": "cj_v41_img_53_09",
+    "source_group_index": 25,
+    "material": "국보로 지정된 이(가) 마애불은 둥근 얼굴 윤곽에 자비로운 인상을 지녀 '백제의 미소'라고 불립니다. 6세기 말에서 7세기 초, 중국을 오가던 사람들의 안녕을 기원하고자 교통로에 만들어진 것으로 보입니다. \n (가)는 한국의 마애불을 표시",
+    "question": "(가)에 해당하는 문화유산으로 옳은 것은?",
+    "input_text": "국보로 지정된 이(가) 마애불은 둥근 얼굴 윤곽에 자비로운 인상을 지녀 '백제의 미소'라고 불립니다. 6세기 말에서 7세기 초, 중국을 오가던 사람들의 안녕을 기원하고자 교통로에 만들어진 것으로 보입니다. \n (가)는 한국의 마애불을 표시\n(가)에 해당하는 문화유산으로 옳은 것은?",
+    "answer_choice": "서산마애삼존불",
+    "distractor_choices": [
+      "마애여래입상",
+      "마애불상군",
+      "마애여래좌상",
+      "마애이불입상"
+    ],
+    "topic_type": "문화유산",
+    "topic": "백제의 미소",
+    "material_type": "시각 자료 설명",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "자료 기반 시대·대상 추론",
+    "question_task": "standard_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": false,
+        "content": "마애여래입상"
+      },
+      {
+        "is_answer": false,
+        "content": "마애불상군"
+      },
+      {
+        "is_answer": false,
+        "content": "마애여래좌상"
+      },
+      {
+        "is_answer": true,
+        "content": "서산마애삼존불"
+      },
+      {
+        "is_answer": false,
+        "content": "마애이불입상"
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 53,
+    "question_no": 9
+  },
+  {
+    "problem_id": "cj_v41_img_53_17",
+    "source_group_index": 26,
+    "material": "이 탑은 개성에 있었는데 지금 국립 중앙 박물관에 전시되고 있어. 원의 영향을 받은 다각 다층의 대리석 탑이야. 원각사지 십층 석탑에 영향을 주기도 하였지.",
+    "question": "다음 대화에 해당하는 문화유산으로 옳은 것은?",
+    "input_text": "이 탑은 개성에 있었는데 지금 국립 중앙 박물관에 전시되고 있어. 원의 영향을 받은 다각 다층의 대리석 탑이야. 원각사지 십층 석탑에 영향을 주기도 하였지.\n다음 대화에 해당하는 문화유산으로 옳은 것은?",
+    "answer_choice": "경천사지 10층 석탑",
+    "distractor_choices": [
+      "안동 법흥사지 7층 전탑",
+      "불국사 다보탑",
+      "미륵사지 석탑",
+      "월정사 8각 9층 석탑"
+    ],
+    "topic_type": "문화유산",
+    "topic": "고려 시대의 석탑",
+    "material_type": "시각 자료 설명",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "자료 기반 시대·대상 추론",
+    "question_task": "standard_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": false,
+        "content": "안동 법흥사지 7층 전탑"
+      },
+      {
+        "is_answer": false,
+        "content": "불국사 다보탑"
+      },
+      {
+        "is_answer": true,
+        "content": "경천사지 10층 석탑"
+      },
+      {
+        "is_answer": false,
+        "content": "미륵사지 석탑"
+      },
+      {
+        "is_answer": false,
+        "content": "월정사 8각 9층 석탑"
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 53,
+    "question_no": 17
+  },
+  {
+    "problem_id": "cj_v41_img_53_21",
+    "source_group_index": 27,
+    "material": "(가)에 대해 알려줄래? 조선 전기에 많이 제작된 도자기야. 회색의 태토 위에 맑게 거른 백토로 표면을 분장한 뒤 유약을 씌워 구운 도자기야. 백자가 본격적으로 생산되면서 덜 만들어지게 되었어.",
+    "question": "(가)에 해당하는 문화유산으로 옳은 것은?",
+    "input_text": "(가)에 대해 알려줄래? 조선 전기에 많이 제작된 도자기야. 회색의 태토 위에 맑게 거른 백토로 표면을 분장한 뒤 유약을 씌워 구운 도자기야. 백자가 본격적으로 생산되면서 덜 만들어지게 되었어.\n(가)에 해당하는 문화유산으로 옳은 것은?",
+    "answer_choice": "분청사기",
+    "distractor_choices": [
+      "상감청자",
+      "청화백자",
+      "순청자",
+      "청동 사자 장식 향로"
+    ],
+    "topic_type": "문화유산",
+    "topic": "조선 전기의 도자기",
+    "material_type": "시각 자료 설명",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "시각 자료 해석",
+    "question_task": "standard_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": false,
+        "content": "상감청자"
+      },
+      {
+        "is_answer": false,
+        "content": "청화백자"
+      },
+      {
+        "is_answer": false,
+        "content": "순청자"
+      },
+      {
+        "is_answer": true,
+        "content": "분청사기"
+      },
+      {
+        "is_answer": false,
+        "content": "청동 사자 장식 향로"
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 53,
+    "question_no": 21
+  },
+  {
+    "problem_id": "cj_v41_img_53_47",
+    "source_group_index": 28,
+    "material": "독립운동가이자 유학자인 김창숙 선생이 오늘 기자 회견을 열었습니다. 회견에서 선생은 자유당이 강도적으로 통과시킨 보인법은 무효이며, 과거 부산 정치 파동 때와 같이 빈독재 구국 범국민 투쟁을 전개해야 한다며 여생을 민주주의를 위하여 바치겠다는 결의를 표명하였습니다.",
+    "question": "다음 뉴스가 보도된 정부 시기의 사실로 옳지 않은 것은?",
+    "input_text": "독립운동가이자 유학자인 김창숙 선생이 오늘 기자 회견을 열었습니다. 회견에서 선생은 자유당이 강도적으로 통과시킨 보인법은 무효이며, 과거 부산 정치 파동 때와 같이 빈독재 구국 범국민 투쟁을 전개해야 한다며 여생을 민주주의를 위하여 바치겠다는 결의를 표명하였습니다.\n다음 뉴스가 보도된 정부 시기의 사실로 옳지 않은 것은?",
+    "answer_choice": "인민 혁명당 재건위 사건으로 조작된 관련자를 탄압하였다.",
+    "distractor_choices": [
+      "평화 통일론을 주장한 진보당의 조봉암을 제거하였다.",
+      "정부에 비판적인 경향신문을 폐간하는 등 언론을 통제하였다.",
+      "여당 부통령 후보 당선을 위해 3·15 부정 선거를 자행하였다.",
+      "반민 특위로 이끌던 국회 의원들에게 간첩 혐의를 씌워 체포하였다."
+    ],
+    "topic_type": "사건",
+    "topic": "한국 현대사에서의 정치적 탄압과 언론 통제",
+    "material_type": "자료 제시문",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "자료 기반 시대·대상 추론",
+    "question_task": "negative_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": false,
+        "content": "평화 통일론을 주장한 진보당의 조봉암을 제거하였다."
+      },
+      {
+        "is_answer": true,
+        "content": "인민 혁명당 재건위 사건으로 조작된 관련자를 탄압하였다."
+      },
+      {
+        "is_answer": false,
+        "content": "정부에 비판적인 경향신문을 폐간하는 등 언론을 통제하였다."
+      },
+      {
+        "is_answer": false,
+        "content": "여당 부통령 후보 당선을 위해 3·15 부정 선거를 자행하였다."
+      },
+      {
+        "is_answer": false,
+        "content": "반민 특위로 이끌던 국회 의원들에게 간첩 혐의를 씌워 체포하였다."
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 53,
+    "question_no": 47
+  },
+  {
+    "problem_id": "cj_v41_img_54_05",
+    "source_group_index": 25,
+    "material": "이 국가의 고분 벽화는 도읍이었던 지안과 평양 일대에 주로 남아 있는데 일상생활과 풍속, 신앙과 의례를 묘사한 것으로 유명합니다. 이제 벽화 사진을 바탕으로 제작한 영상을 생생하게 만나 보세요.",
+    "question": "밑줄 그은 ‘이 국가’의 벽화로 옳지 않은 것은?",
+    "input_text": "이 국가의 고분 벽화는 도읍이었던 지안과 평양 일대에 주로 남아 있는데 일상생활과 풍속, 신앙과 의례를 묘사한 것으로 유명합니다. 이제 벽화 사진을 바탕으로 제작한 영상을 생생하게 만나 보세요.\n밑줄 그은 ‘이 국가’의 벽화로 옳지 않은 것은?",
+    "answer_choice": "밀양 박익의 무덤 벽화",
+    "distractor_choices": [
+      "수산리 벽화",
+      "무용총 접객도",
+      "강서대묘 사신도 현무도",
+      "각저총 씨름도"
+    ],
+    "topic_type": "문화유산",
+    "topic": "고구려 고분 벽화",
+    "material_type": "시각 자료 설명",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "시각 자료 해석",
+    "question_task": "negative_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": false,
+        "content": "수산리 벽화"
+      },
+      {
+        "is_answer": false,
+        "content": "무용총 접객도"
+      },
+      {
+        "is_answer": false,
+        "content": "강서대묘 사신도 현무도"
+      },
+      {
+        "is_answer": false,
+        "content": "각저총 씨름도"
+      },
+      {
+        "is_answer": true,
+        "content": "조선초기 밀양 박익의 무덤벽화"
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 54,
+    "question_no": 5
+  },
+  {
+    "problem_id": "cj_v41_img_54_20",
+    "source_group_index": 26,
+    "material": "이곳은 경기도 수원시에 위치한 조선 시대 지방 교육 기관인 (가) 입니다. 대부분 지방 관아 가까운 곳에 위치하였으며 제향 공간인 대성전, 강학 공간인 명륜당, 기숙사인 동재와 서재 등으로 이루어져 있습니다.",
+    "question": "(가) 교육 기관에 대한 설명으로 옳은 것은?",
+    "input_text": "이곳은 경기도 수원시에 위치한 조선 시대 지방 교육 기관인 (가) 입니다. 대부분 지방 관아 가까운 곳에 위치하였으며 제향 공간인 대성전, 강학 공간인 명륜당, 기숙사인 동재와 서재 등으로 이루어져 있습니다.\n(가) 교육 기관에 대한 설명으로 옳은 것은?",
+    "answer_choice": "중앙에서 교수나 훈도를 파견하기도 하였다.",
+    "distractor_choices": [
+      "전문 강좌인 7재를 운영하였다.",
+      "풍기 군수 주세붕이 처음 세웠다.",
+      "생원과 진사에게 입학 자격을 부여하였다.",
+      "유학을 비롯하여 율학, 서학, 산학을 교육하였다."
+    ],
+    "topic_type": "제도",
+    "topic": "조선 시대의 교육 기관",
+    "material_type": "시각 자료 설명",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "자료 기반 시대·대상 추론",
+    "question_task": "standard_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": false,
+        "content": "전문 강좌인 7재로 운영하였다."
+      },
+      {
+        "is_answer": false,
+        "content": "풍기 군수 주세붕이 처음 세웠다."
+      },
+      {
+        "is_answer": false,
+        "content": "생원과 진사에게 입학 자격을 부여하였다."
+      },
+      {
+        "is_answer": true,
+        "content": "중앙에서 교수나 훈도를 파견하기도 하였다."
+      },
+      {
+        "is_answer": false,
+        "content": "유학을 비롯하여 율학, 서학, 산학을 교육하였다."
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 54,
+    "question_no": 20
+  },
+  {
+    "problem_id": "cj_v41_img_54_24",
+    "source_group_index": 27,
+    "material": "그림을 묘사하고 있습니다.\n 겸재의 시선으로 바라본 우리 강산 \n겸재 정선은 우리 산천의 아름다움을 사실적으로 표현한 대표적인 화가입니다. 그의 그림을 온라인으로 만나보세요. 그림(가)",
+    "question": "(가)에 들어갈 그림으로 옳은 것은?",
+    "input_text": "그림을 묘사하고 있습니다.\n 겸재의 시선으로 바라본 우리 강산 \n겸재 정선은 우리 산천의 아름다움을 사실적으로 표현한 대표적인 화가입니다. 그의 그림을 온라인으로 만나보세요. 그림(가)\n(가)에 들어갈 그림으로 옳은 것은?",
+    "answer_choice": "인왕제색도",
+    "distractor_choices": [
+      "영통동구도",
+      "송석원시사야연도",
+      "몽유도원도",
+      "한임강유람도권"
+    ],
+    "topic_type": "문화유산",
+    "topic": "한국 전통 회화",
+    "material_type": "시각 자료 설명",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "시각 자료 해석",
+    "question_task": "standard_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": false,
+        "content": "영통동구도"
+      },
+      {
+        "is_answer": false,
+        "content": "송석원시사야연도"
+      },
+      {
+        "is_answer": true,
+        "content": "인왕제색도"
+      },
+      {
+        "is_answer": false,
+        "content": "몽유도원도"
+      },
+      {
+        "is_answer": false,
+        "content": "한임강유람도권"
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 54,
+    "question_no": 24
+  },
+  {
+    "problem_id": "cj_v41_img_54_43",
+    "source_group_index": 28,
+    "material": "이 자료는 대한민국 임시 정부가 침체에 빠지자 독립운동의 새로운 활로와 방향을 모색하기 위해 상하이에서 개최한 회의의 의사일정입니다. 국내외 각지에서 온 대표들은 연합하여 임시 정부에 대한 처리를 둘러싸고 창조파와 개조파 등으로 나뉘어서 격론을 벌였습니다.",
+    "question": "밑줄 그은 ‘회의’가 개최된 시기를 연표에서 옳게 고른 것은?",
+    "input_text": "이 자료는 대한민국 임시 정부가 침체에 빠지자 독립운동의 새로운 활로와 방향을 모색하기 위해 상하이에서 개최한 회의의 의사일정입니다. 국내외 각지에서 온 대표들은 연합하여 임시 정부에 대한 처리를 둘러싸고 창조파와 개조파 등으로 나뉘어서 격론을 벌였습니다.\n밑줄 그은 ‘회의’가 개최된 시기를 연표에서 옳게 고른 것은?",
+    "answer_choice": "가(1919~1925)",
+    "distractor_choices": [
+      "나(1925~1931)",
+      "다(1931~1935)",
+      "라(1935~1940)",
+      "마(1940~1945)"
+    ],
+    "topic_type": "사건",
+    "topic": "대한민국 임시 정부의 회의 개최",
+    "material_type": "시각 자료 설명",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "자료 기반 시대·대상 추론",
+    "question_task": "standard_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": true,
+        "content": "가(1919~1925)"
+      },
+      {
+        "is_answer": false,
+        "content": "나(1925~1931)"
+      },
+      {
+        "is_answer": false,
+        "content": "다(1931~1935)"
+      },
+      {
+        "is_answer": false,
+        "content": "라(1935~1940)"
+      },
+      {
+        "is_answer": false,
+        "content": "마(1940~1945)"
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 54,
+    "question_no": 43
+  },
+  {
+    "problem_id": "cj_v41_img_54_45",
+    "source_group_index": 29,
+    "material": "(가)의 총사령 양세봉, 참모장 김학규 등은 일부 병력을 이끌고 중국 의용군 부대와 합세하였다. 일본군과 만주군이 신빈현성의 고지대를 거점으로 삼아 먼저 공격했으나 아군이 응전하여 이를 탈취하였다. 아군은 승세를 몰아 적들을 추격한 끝에 당일 오후 3시경 영릉가성을 점령하였다. 5일간의 격렬한 전투에서 한중 연합군은 신빈형 일대 여러 곳을 점령하는 등 커다란 수확을 거두었다.",
+    "question": "(가) 단체에 대한 설명으로 옳은 것은?",
+    "input_text": "(가)의 총사령 양세봉, 참모장 김학규 등은 일부 병력을 이끌고 중국 의용군 부대와 합세하였다. 일본군과 만주군이 신빈현성의 고지대를 거점으로 삼아 먼저 공격했으나 아군이 응전하여 이를 탈취하였다. 아군은 승세를 몰아 적들을 추격한 끝에 당일 오후 3시경 영릉가성을 점령하였다. 5일간의 격렬한 전투에서 한중 연합군은 신빈형 일대 여러 곳을 점령하는 등 커다란 수확을 거두었다.\n(가) 단체에 대한 설명으로 옳은 것은?",
+    "answer_choice": "홍경성 전투에서 승리하였다.",
+    "distractor_choices": [
+      "자유시 참변 이후 세력이 약화되었다.",
+      "중국 팔로군에 편제되어 항일 전선에 참여하였다.",
+      "영국군의 요청으로 인도·미얀마 전선에서 활동하였다.",
+      "북만주 지역에서 활동한 한국 독립당의 산하 부대였다."
+    ],
+    "topic_type": "집단",
+    "topic": "한국 독립군",
+    "material_type": "자료 제시문",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "자료 기반 시대·대상 추론",
+    "question_task": "standard_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": true,
+        "content": "홍경성 전투에서 승리하였다."
+      },
+      {
+        "is_answer": false,
+        "content": "자유시 참변 이후 세력이 약화되었다."
+      },
+      {
+        "is_answer": false,
+        "content": "중국 팔로군에 편제되어 항일 전선에 참여하였다."
+      },
+      {
+        "is_answer": false,
+        "content": "영국군의 요청으로 인도·미얀마 전선에서 활동하였다."
+      },
+      {
+        "is_answer": false,
+        "content": "북만주 지역에서 활동한 한국 독립당의 산하 부대였다."
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 54,
+    "question_no": 45
+  },
+  {
+    "problem_id": "cj_v41_img_55_17",
+    "source_group_index": 24,
+    "material": "이 불상은 천연 임벽을 이용하여 몸체를 만들고 머리는 따로 만들어 올렸습니다. 눈, 코, 입 등을 크게 만들어 거대한 느낌을 주며 조형미는 다소 떨어지지만 지방화된 불상 양식을 잘 보여줍니다. 불상 측면에는 세조의 비 정희 왕후와 성종의 안녕을 기원하는 발원문이 새겨져 있습니다. \n 한국의 불상 \n 그림 (가) \n종목: 보물, 소재: 경기도 파주시",
+    "question": "(가)에 해당하는 문화유산으로 옳은 것은?",
+    "input_text": "이 불상은 천연 임벽을 이용하여 몸체를 만들고 머리는 따로 만들어 올렸습니다. 눈, 코, 입 등을 크게 만들어 거대한 느낌을 주며 조형미는 다소 떨어지지만 지방화된 불상 양식을 잘 보여줍니다. 불상 측면에는 세조의 비 정희 왕후와 성종의 안녕을 기원하는 발원문이 새겨져 있습니다. \n 한국의 불상 \n 그림 (가) \n종목: 보물, 소재: 경기도 파주시\n(가)에 해당하는 문화유산으로 옳은 것은?",
+    "answer_choice": "마애이불입상",
+    "distractor_choices": [
+      "석조여래좌상",
+      "마애여래입상",
+      "석조미륵보살입상",
+      "미륵사지 석불"
+    ],
+    "topic_type": "문화유산",
+    "topic": "한국의 불상",
+    "material_type": "시각 자료 설명",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "시각 자료 해석",
+    "question_task": "standard_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": true,
+        "content": "마애이불입상"
+      },
+      {
+        "is_answer": false,
+        "content": "석조여래좌상"
+      },
+      {
+        "is_answer": false,
+        "content": "마애여래입상"
+      },
+      {
+        "is_answer": false,
+        "content": "석조미륵보살입상"
+      },
+      {
+        "is_answer": false,
+        "content": "미륵사지 석불"
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 55,
+    "question_no": 17
+  },
+  {
+    "problem_id": "cj_v41_img_56_16",
+    "source_group_index": 25,
+    "material": "박물관 심화 콘텐츠 구성안: 제목 - 오늘, 탑을 만나다. 기획 의도 - 증강 현실(AR) 기술을 활용하여 우리 문화유산을 생생하게 체험하는 기회 제공. 대상 유물 특징 - 원의 영향을 받아 대리석으로 만든 석탑. 원각사지 십층 석탑에 영향을 주었음. 체험 내용 - 탑을 쌓으며 각 층의 구조 파악하기, 기단부에 조각된 서유기 이야기를 퀴즈로 풀기.",
+    "question": "다음 구성안의 소재가 된 탑으로 옳은 것은?",
+    "input_text": "박물관 심화 콘텐츠 구성안: 제목 - 오늘, 탑을 만나다. 기획 의도 - 증강 현실(AR) 기술을 활용하여 우리 문화유산을 생생하게 체험하는 기회 제공. 대상 유물 특징 - 원의 영향을 받아 대리석으로 만든 석탑. 원각사지 십층 석탑에 영향을 주었음. 체험 내용 - 탑을 쌓으며 각 층의 구조 파악하기, 기단부에 조각된 서유기 이야기를 퀴즈로 풀기.\n다음 구성안의 소재가 된 탑으로 옳은 것은?",
+    "answer_choice": "경천사지 10층 석탑",
+    "distractor_choices": [
+      "불국사 3층석탑",
+      "화엄사 4사자 3층 석탑",
+      "진전사지 3층 석탑",
+      "월정사 8각 9층 석탑"
+    ],
+    "topic_type": "문화유산",
+    "topic": "한국의 석탑",
+    "material_type": "시각 자료 설명",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "시각 자료 해석",
+    "question_task": "standard_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": false,
+        "content": "불국사 3층석탑"
+      },
+      {
+        "is_answer": false,
+        "content": "화엄사 4사자 3층 석탑"
+      },
+      {
+        "is_answer": false,
+        "content": "진전사지 3층 석탑"
+      },
+      {
+        "is_answer": false,
+        "content": "월정사 8각 9층 석탑"
+      },
+      {
+        "is_answer": true,
+        "content": "경천사지 10층 석탑"
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 56,
+    "question_no": 16
+  },
+  {
+    "problem_id": "cj_v41_img_56_33",
+    "source_group_index": 26,
+    "material": "국민의 품에 안긴 조선 후기 명화\n추사 김정희의 대표작이 소장자의 뜻에 따라 ○○박물관에 기증되었다. 그동안 기탁 형태로 관리되었으나 온전히 국가에 귀속된 것이다. 이 작품은 김정희가 제주도 유배 중에 쓴 사제의 의리를 변함없이 지킨 제자 이상적에게 그려준 것으로, 시서화의 일치를 추구하였던 조선 시대 문인화의 진수를 보여준다.",
+    "question": "다음 기사에 보도된 문화유산으로 옳은 것은?",
+    "input_text": "국민의 품에 안긴 조선 후기 명화\n추사 김정희의 대표작이 소장자의 뜻에 따라 ○○박물관에 기증되었다. 그동안 기탁 형태로 관리되었으나 온전히 국가에 귀속된 것이다. 이 작품은 김정희가 제주도 유배 중에 쓴 사제의 의리를 변함없이 지킨 제자 이상적에게 그려준 것으로, 시서화의 일치를 추구하였던 조선 시대 문인화의 진수를 보여준다.\n다음 기사에 보도된 문화유산으로 옳은 것은?",
+    "answer_choice": "세한도",
+    "distractor_choices": [
+      "인왕제색도",
+      "영통골 입구도",
+      "몽유도원도",
+      "월하정인"
+    ],
+    "topic_type": "문화유산",
+    "topic": "조선 후기 명화와 김정희의 세한도",
+    "material_type": "자료 제시문",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "자료 기반 시대·대상 추론",
+    "question_task": "standard_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": false,
+        "content": "인왕제색도"
+      },
+      {
+        "is_answer": false,
+        "content": "영통골 입구도"
+      },
+      {
+        "is_answer": false,
+        "content": "몽유도원도"
+      },
+      {
+        "is_answer": true,
+        "content": "세한도"
+      },
+      {
+        "is_answer": false,
+        "content": "월하정인"
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 56,
+    "question_no": 33
+  },
+  {
+    "problem_id": "cj_v41_img_56_35",
+    "source_group_index": 27,
+    "material": "검색창에 (가) 검색 \n종목: 국가등록문화재 제506호\n소개: 1896년 4월 7일 서재필이 창간한 근대적 민간 신문이다. 창간 당시에는 한글판 3면과 영어판 1면으로 발행하였다. 띄어쓰기를 시행하는 등 한글 발전에 기여하였다.",
+    "question": "(가)에 해당하는 신문으로 옳은 것은?",
+    "input_text": "검색창에 (가) 검색 \n종목: 국가등록문화재 제506호\n소개: 1896년 4월 7일 서재필이 창간한 근대적 민간 신문이다. 창간 당시에는 한글판 3면과 영어판 1면으로 발행하였다. 띄어쓰기를 시행하는 등 한글 발전에 기여하였다.\n(가)에 해당하는 신문으로 옳은 것은?",
+    "answer_choice": "독립신문",
+    "distractor_choices": [
+      "해조신문",
+      "제국신문",
+      "한성순보",
+      "황성신문"
+    ],
+    "topic_type": "매체",
+    "topic": "근대적 민간 신문",
+    "material_type": "자료 제시문",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "자료 기반 시대·대상 추론",
+    "question_task": "standard_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": false,
+        "content": "해조신문"
+      },
+      {
+        "is_answer": false,
+        "content": "제국신문"
+      },
+      {
+        "is_answer": false,
+        "content": "한성순보"
+      },
+      {
+        "is_answer": true,
+        "content": "독립신문"
+      },
+      {
+        "is_answer": false,
+        "content": "황성신문"
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 56,
+    "question_no": 35
+  },
+  {
+    "problem_id": "cj_v41_img_57_04",
+    "source_group_index": 25,
+    "material": "삼산관을 쓰고 깊은 생각에 빠져 있는 모습의 이 불상을 가상 박물관에서 볼 수 있다니 너무 신기하다. 나도 그래 다음 전시실에는 이 불상과 재료만 다를 뿐 모습이 매우 닮은 일본 교토 고류사의 불상이 있다고 해, 그것도 보러 가자.",
+    "question": "밑줄 그은 '이 불상'으로 옳은 것은?",
+    "input_text": "삼산관을 쓰고 깊은 생각에 빠져 있는 모습의 이 불상을 가상 박물관에서 볼 수 있다니 너무 신기하다. 나도 그래 다음 전시실에는 이 불상과 재료만 다를 뿐 모습이 매우 닮은 일본 교토 고류사의 불상이 있다고 해, 그것도 보러 가자.\n밑줄 그은 '이 불상'으로 옳은 것은?",
+    "answer_choice": "금동 미륵보살 반가 사유상",
+    "distractor_choices": [
+      "금제여래입상",
+      "이불 병좌상",
+      "금동연가7년명여래입상",
+      "광주춘궁리철불"
+    ],
+    "topic_type": "문화유산",
+    "topic": "한국의 불상",
+    "material_type": "시각 자료 설명",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "시각 자료 해석",
+    "question_task": "standard_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": false,
+        "content": "금제여래입상"
+      },
+      {
+        "is_answer": true,
+        "content": "금동 미륵보살 반가 사유상"
+      },
+      {
+        "is_answer": false,
+        "content": "이불 병좌상"
+      },
+      {
+        "is_answer": false,
+        "content": "금동연가7년명여래입상"
+      },
+      {
+        "is_answer": false,
+        "content": "광주춘궁리철불"
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 57,
+    "question_no": 4
+  },
+  {
+    "problem_id": "cj_v41_img_57_15",
+    "source_group_index": 26,
+    "material": "우리나라에 현존하는 가장 오래된 목조 건축물에 대해 이야기해 보자. \n 공민왕 때 지붕을 크게 수리했다는 상량문의 기록을 통해 건축 연대를 추정할 수 있지. \n 공포가 기둥위에만 있는 주심포 양식의 건물로, 지붕의 형태는 맞배지붕이야.",
+    "question": "다음 대화에 해당하는 문화유산으로 옳은 것은?",
+    "input_text": "우리나라에 현존하는 가장 오래된 목조 건축물에 대해 이야기해 보자. \n 공민왕 때 지붕을 크게 수리했다는 상량문의 기록을 통해 건축 연대를 추정할 수 있지. \n 공포가 기둥위에만 있는 주심포 양식의 건물로, 지붕의 형태는 맞배지붕이야.\n다음 상황이 나타난 시기에 볼 수 있는 모습으로 가장 적절한 것은?",
+    "answer_choice": "안동 봉정사 극락전",
+    "distractor_choices": [
+      "보은 법주사 팔상전",
+      "구례 화엄사 각황전",
+      "예산 수덕사 대웅전",
+      "영주 부석사 무량수전"
+    ],
+    "topic_type": "제도",
+    "topic": "조선 시대의 부세 제도와 관련된 상황",
+    "material_type": "자료 제시문",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "자료 기반 시대·대상 추론",
+    "question_task": "standard_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": true,
+        "content": "안동 봉정사 극락전"
+      },
+      {
+        "is_answer": false,
+        "content": "보은 법주사 팔상전"
+      },
+      {
+        "is_answer": false,
+        "content": "구례 화엄사 각황전"
+      },
+      {
+        "is_answer": false,
+        "content": "예산 수덕사 대웅전"
+      },
+      {
+        "is_answer": false,
+        "content": "영주 부석사 무량수전"
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 57,
+    "question_no": 15
+  },
+  {
+    "problem_id": "cj_v41_img_57_20",
+    "source_group_index": 27,
+    "material": "(가)에 대해 조사한 내용을 올려주세요. 세조 때 축조하였으며, 현재 국보로 지정되어 있습니다. 대리석으로 만든 이 탑의 각 면에는 부처, 보살, 천인상 등이 새겨져 있습니다. 이 탑 근처에 살던 박지원, 이덕무 등이 서로 교류하여 이들을 백탑파라고 부르기도 했습니다.",
+    "question": "(가)에 해당하는 문화유산으로 옳은 것은?",
+    "input_text": "(가)에 대해 조사한 내용을 올려주세요. 세조 때 축조하였으며, 현재 국보로 지정되어 있습니다. 대리석으로 만든 이 탑의 각 면에는 부처, 보살, 천인상 등이 새겨져 있습니다. 이 탑 근처에 살던 박지원, 이덕무 등이 서로 교류하여 이들을 백탑파라고 부르기도 했습니다.\n(가)에 해당하는 문화유산으로 옳은 것은?",
+    "answer_choice": "원각사지 10층 석탑",
+    "distractor_choices": [
+      "미륵사지 석탑",
+      "다보탑",
+      "정림사지 5층 석탑",
+      "영광탑"
+    ],
+    "topic_type": "문화유산",
+    "topic": "한국의 문화유산",
+    "material_type": "짧은 설명 자료",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "자료 기반 시대·대상 추론",
+    "question_task": "standard_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": true,
+        "content": "원각사지 10층 석탑"
+      },
+      {
+        "is_answer": false,
+        "content": "미륵사지 석탑"
+      },
+      {
+        "is_answer": false,
+        "content": "다보탑"
+      },
+      {
+        "is_answer": false,
+        "content": "정림사지 5층 석탑"
+      },
+      {
+        "is_answer": false,
+        "content": "영광탑"
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 57,
+    "question_no": 20
+  },
+  {
+    "problem_id": "cj_v41_img_57_50",
+    "source_group_index": 28,
+    "material": "수행 과제 안내문\n과제: (가) 정부의 통일 노력 소개하기\n안내: 제2차 남북 정상 회담을 개최한 (가) 정부의 통일 노력을 카드 뉴스로 제작해 봅시다.\n주의 사항: 사진 자료는 공신력 있는 기관에서 수집할 것\n예시: 남북 간의 교류와 협력을 위해 경의선 철도를 시험 운행하였다.",
+    "question": "(가) 정부의 통일 노력으로 옳은 것은?",
+    "input_text": "수행 과제 안내문\n과제: (가) 정부의 통일 노력 소개하기\n안내: 제2차 남북 정상 회담을 개최한 (가) 정부의 통일 노력을 카드 뉴스로 제작해 봅시다.\n주의 사항: 사진 자료는 공신력 있는 기관에서 수집할 것\n예시: 남북 간의 교류와 협력을 위해 경의선 철도를 시험 운행하였다.\n(가) 정부의 통일 노력으로 옳은 것은?",
+    "answer_choice": "10·4 남북 공동 선언을 발표하였다",
+    "distractor_choices": [
+      "남북 기본 합의서를 채택하였다",
+      "남북한이 유엔에 동시 가입하였다",
+      "남북 조절 위원회를 운영하고 합의하였다",
+      "남북 이산가족 고향 방문단의 교환 방문을 최초로 성사하였다"
+    ],
+    "topic_type": "제도",
+    "topic": "남북 관계와 통일 정책",
+    "material_type": "자료 제시문",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "자료 기반 시대·대상 추론",
+    "question_task": "standard_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": false,
+        "content": "남북 기본 합의서를 채택하였다"
+      },
+      {
+        "is_answer": false,
+        "content": "남북한이 유엔에 동시 가입하였다"
+      },
+      {
+        "is_answer": true,
+        "content": "10·4 남북 공동 선언을 발표하였다"
+      },
+      {
+        "is_answer": false,
+        "content": "남북 조절 위원회를 운영하고 합의하였다"
+      },
+      {
+        "is_answer": false,
+        "content": "남북 이산가족 고향 방문단의 교환 방문을 최초로 성사하였다"
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 57,
+    "question_no": 50
+  },
+  {
+    "problem_id": "cj_v41_img_58_16",
+    "source_group_index": 25,
+    "material": "이번 기획전에서는 고려 시대 귀족 문화를 보여주는 비색의 순청자와 음각한 부분에 백토나 흑토를 채워 화려하게 장식한 상감 청자가 전시됩니다.",
+    "question": "다음 기획전에 전시될 문화유산으로 적절한 것은?",
+    "input_text": "이번 기획전에서는 고려 시대 귀족 문화를 보여주는 비색의 순청자와 음각한 부분에 백토나 흑토를 채워 화려하게 장식한 상감 청자가 전시됩니다.\n다음 기획전에 전시될 문화유산으로 적절한 것은?",
+    "answer_choice": "청자 상감운학문 매병",
+    "distractor_choices": [
+      "연유인화문 항아리",
+      "청동 은입사 포류수금문 정병",
+      "청화백자",
+      "분청사기"
+    ],
+    "topic_type": "문화유산",
+    "topic": "고려 시대의 청자",
+    "material_type": "짧은 설명 자료",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "자료 기반 시대·대상 추론",
+    "question_task": "standard_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": false,
+        "content": "연유인화문 항아리"
+      },
+      {
+        "is_answer": false,
+        "content": "청동 은입사 포류수금문 정병"
+      },
+      {
+        "is_answer": true,
+        "content": "청자 상감운학문 매병"
+      },
+      {
+        "is_answer": false,
+        "content": "청화백자"
+      },
+      {
+        "is_answer": false,
+        "content": "분청사기"
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 58,
+    "question_no": 16,
+    "_needs_answer": true
+  },
+  {
+    "problem_id": "cj_v41_img_59_06",
+    "source_group_index": 25,
+    "material": "메타버스 ‘사라벌’ 오픈! (가)의 수도 경주로 문화유산을 아바타로 생생하게 체험해 보세요.",
+    "question": "(가) 국가의 문화유산으로 옳은 것은?",
+    "input_text": "메타버스 ‘사라벌’ 오픈! (가)의 수도 경주로 문화유산을 아바타로 생생하게 체험해 보세요.\n(가) 국가의 문화유산으로 옳은 것은?",
+    "answer_choice": "불국사 석굴암",
+    "distractor_choices": [
+      "철갑옷",
+      "이불병좌상",
+      "금동대향로",
+      "월정사 8각 9층석탑"
+    ],
+    "topic_type": "문화유산",
+    "topic": "신라의 수도 경주와 관련된 문화유산",
+    "material_type": "시각 자료 설명",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "자료 기반 시대·대상 추론",
+    "question_task": "standard_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": false,
+        "content": "철갑옷"
+      },
+      {
+        "is_answer": false,
+        "content": "이불병좌상"
+      },
+      {
+        "is_answer": true,
+        "content": "불국사 석굴암"
+      },
+      {
+        "is_answer": false,
+        "content": "금동대향로"
+      },
+      {
+        "is_answer": false,
+        "content": "월정사 8각 9층석탑"
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 59,
+    "question_no": 6
+  },
+  {
+    "problem_id": "cj_v41_img_59_15",
+    "source_group_index": 26,
+    "material": "??시대 문화유산 사진전\n 우리 학교 역사 동아리에서 ??시대에 만들어진 문화유산을 소개하는 사진전을 개최합니다. 학생 여러분의 많은 관심과 참여 바랍니다.\n 사진: 청자 상감 운학문 매병, (가), 수월관음도",
+    "question": "(가)에 들어갈 사진 자료로 적절한 것은?",
+    "input_text": "??시대 문화유산 사진전\n 우리 학교 역사 동아리에서 ??시대에 만들어진 문화유산을 소개하는 사진전을 개최합니다. 학생 여러분의 많은 관심과 참여 바랍니다.\n 사진: 청자 상감 운학문 매병, (가), 수월관음도\n(가)에 들어갈 사진 자료로 적절한 것은?",
+    "answer_choice": "영주 부석사 무량수전",
+    "distractor_choices": [
+      "금동 연가 7년명 여래 입상",
+      "서산 용현리 미애 여래 삼존상",
+      "경주 분황사 모전 석탑",
+      "보은 법주사 팔상전"
+    ],
+    "topic_type": "문화유산",
+    "topic": "고려시대 문화유산",
+    "material_type": "자료 제시문",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "자료 기반 시대·대상 추론",
+    "question_task": "standard_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": false,
+        "content": "금동 연가 7년명 여래 입상"
+      },
+      {
+        "is_answer": false,
+        "content": "서산 용현리 미애 여래 삼존상"
+      },
+      {
+        "is_answer": false,
+        "content": "경주 분황사 모전 석탑"
+      },
+      {
+        "is_answer": true,
+        "content": "영주 부석사 무량수전"
+      },
+      {
+        "is_answer": false,
+        "content": "보은 법주사 팔상전"
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 59,
+    "question_no": 15
+  },
+  {
+    "problem_id": "cj_v41_img_60_10",
+    "source_group_index": 25,
+    "material": "이미지 (가) \n종목: 보물 소장처: 국립중앙박물관 소개: 경기도 하남시 하사창동에서 발견된 철불이다. 고려 초기 호족의 후원을 받아 제작되었으며, 석굴암 본존불의 양식을 이어받았다.",
+    "question": "(가)에 들어갈 불상으로 옳은 것은?",
+    "input_text": "이미지 (가) \n종목: 보물 소장처: 국립중앙박물관 소개: 경기도 하남시 하사창동에서 발견된 철불이다. 고려 초기 호족의 후원을 받아 제작되었으며, 석굴암 본존불의 양식을 이어받았다.\n(가)에 들어갈 불상으로 옳은 것은?",
+    "answer_choice": "철조석가여래좌상",
+    "distractor_choices": [
+      "금동연가7년명여러입상",
+      "마애여래삼존상",
+      "금동미륵보살반가사유상",
+      "금동 미륵보살 간가사유상"
+    ],
+    "topic_type": "문화유산",
+    "topic": "석등",
+    "material_type": "시각 자료 설명",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "자료 기반 시대·대상 추론",
+    "question_task": "standard_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": false,
+        "content": "금동연가7년명여러입상"
+      },
+      {
+        "is_answer": true,
+        "content": "철조석가여래좌상"
+      },
+      {
+        "is_answer": false,
+        "content": "마애여래삼존상"
+      },
+      {
+        "is_answer": false,
+        "content": "금동미륵보살반가사유상"
+      },
+      {
+        "is_answer": false,
+        "content": "금동 미륵보살 간가사유상"
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 60,
+    "question_no": 10
+  },
+  {
+    "problem_id": "cj_v41_img_61_18",
+    "source_group_index": 25,
+    "material": "이것은 고려 시대에 만들어진 나전 합입니다. 고려에 온 송의 사신 서긍이 솜씨가 세밀하여 귀하다고 평가할 정도로 고려의 나전 칠기 기술은 매우 뛰어났습니다. 이 나전 합을 비롯하여 고려 시대에는 다양한 문화유산이 만들어졌습니다.",
+    "question": "밑줄 그은 '문화유산'으로 옳지 않은 것은?",
+    "input_text": "이것은 고려 시대에 만들어진 나전 합입니다. 고려에 온 송의 사신 서긍이 솜씨가 세밀하여 귀하다고 평가할 정도로 고려의 나전 칠기 기술은 매우 뛰어났습니다. 이 나전 합을 비롯하여 고려 시대에는 다양한 문화유산이 만들어졌습니다.\n밑줄 그은 '문화유산'으로 옳지 않은 것은?",
+    "answer_choice": "법주사 팔상전",
+    "distractor_choices": [
+      "청동 은입사 포류수금문 정병",
+      "부석사 소조여래좌상",
+      "청자 상감운학문 매병",
+      "월정사 팔각 구층 석탑"
+    ],
+    "topic_type": "문화유산",
+    "topic": "고려 시대의 문화유산",
+    "material_type": "짧은 설명 자료",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "자료 기반 시대·대상 추론",
+    "question_task": "negative_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": false,
+        "content": "청동 은입사 포류수금문 정병"
+      },
+      {
+        "is_answer": false,
+        "content": "부석사 소조여래좌상"
+      },
+      {
+        "is_answer": false,
+        "content": "청자 상감운학문 매병"
+      },
+      {
+        "is_answer": false,
+        "content": "월정사 팔각 구층 석탑"
+      },
+      {
+        "is_answer": true,
+        "content": "법주사 팔상전"
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 61,
+    "question_no": 18
+  },
+  {
+    "problem_id": "cj_v41_img_61_20",
+    "source_group_index": 26,
+    "material": "전하께서 명하신대로 장악원에 소장된 의궤와 악보를 새로이 교감하여 악학궤범을 완성하였습니다. \n 예조 판서 성현을 비롯하여 편찬에 공을 세운 이들에게 차등을 두어 상을 내리도록 하라",
+    "question": "다음 대화에 등장하는 왕의 재위 시기에 있었던 사실로 옳은 것은?",
+    "input_text": "전하께서 명하신대로 장악원에 소장된 의궤와 악보를 새로이 교감하여 악학궤범을 완성하였습니다. \n 예조 판서 성현을 비롯하여 편찬에 공을 세운 이들에게 차등을 두어 상을 내리도록 하라\n다음 대화에 등장하는 왕의 재위 시기에 있었던 사실로 옳은 것은?",
+    "answer_choice": "전국의 지리, 풍속 등이 수록된 동국여지승랑이 편찬된었다.",
+    "distractor_choices": [
+      "주자소가 설치되어 계미자가 주조되었다.",
+      "전통 한의학을 집대성한 동의보감이 완성되었다.",
+      "통치 체제를 정비하기 위해 속대전이 간행되었다.",
+      "한양을 기준으로 역법을 정리한 칠정산이 제작되었다."
+    ],
+    "topic_type": "사건",
+    "topic": "악학궤범은 성종시절에 나온 음악서적",
+    "material_type": "자료 제시문",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "자료 기반 시대·대상 추론",
+    "question_task": "standard_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": false,
+        "content": "주자소가 설치되어 계미자가 주조되었다."
+      },
+      {
+        "is_answer": false,
+        "content": "전통 한의학을 집대성한 동의보감이 완성되었다."
+      },
+      {
+        "is_answer": false,
+        "content": "통치 체제를 정비하기 위해 속대전이 간행되었다."
+      },
+      {
+        "is_answer": false,
+        "content": "한양을 기준으로 역법을 정리한 칠정산이 제작되었다."
+      },
+      {
+        "is_answer": true,
+        "content": "전국의 지리, 풍속 등이 수록된 동국여지승랑이 편찬된었다."
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 61,
+    "question_no": 20
+  },
+  {
+    "problem_id": "cj_v41_img_61_28",
+    "source_group_index": 27,
+    "material": "이 작품은 단원 (가)이가 그린 추성부도(秋聲賦圖)로, 인생의 허망함과 쓸쓸함을 묘사한 글인 추성부를 그림으로 표현했습니다. 죽음을 앞둔 노년에 자신의 심정을 나타낸 것으로 보입니다. 도화서 화원 출신인 그는 풍속화, 산수화, 인물화 등 다양한 분야에서 뛰어난 작품을 남겼습니다.",
+    "question": "(가) 인물의 작품으로 옳은 것은?",
+    "input_text": "이 작품은 단원 (가)이가 그린 추성부도(秋聲賦圖)로, 인생의 허망함과 쓸쓸함을 묘사한 글인 추성부를 그림으로 표현했습니다. 죽음을 앞둔 노년에 자신의 심정을 나타낸 것으로 보입니다. 도화서 화원 출신인 그는 풍속화, 산수화, 인물화 등 다양한 분야에서 뛰어난 작품을 남겼습니다.\n(가) 인물의 작품으로 옳은 것은?",
+    "answer_choice": "벼타작",
+    "distractor_choices": [
+      "인왕제색도",
+      "단오풍정",
+      "영통동구도",
+      "세한도"
+    ],
+    "topic_type": "문화유산",
+    "topic": "추성부도와 관련된 한국 전통 회화",
+    "material_type": "시각 자료 설명",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "시각 자료 해석",
+    "question_task": "standard_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": false,
+        "content": "인왕제색도"
+      },
+      {
+        "is_answer": true,
+        "content": "벼타작"
+      },
+      {
+        "is_answer": false,
+        "content": "단오풍정"
+      },
+      {
+        "is_answer": false,
+        "content": "영통동구도"
+      },
+      {
+        "is_answer": false,
+        "content": "세한도"
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 61,
+    "question_no": 28
+  },
+  {
+    "problem_id": "cj_v41_img_61_50",
+    "source_group_index": 28,
+    "material": "정주영의 소 떼 방북을 계기로 남북한의 교류와 협력이 본격화되면서 금강산 관광 사업이 시작되었습니다. 이 사업은 남북 교류를 활성화에 크게 기여할 것으로 보입니다.",
+    "question": "다음 뉴스가 보도된 정부 시기의 통일 노력으로 옳은 것은?",
+    "input_text": "정주영의 소 떼 방북을 계기로 남북한의 교류와 협력이 본격화되면서 금강산 관광 사업이 시작되었습니다. 이 사업은 남북 교류를 활성화에 크게 기여할 것으로 보입니다.\n다음 뉴스가 보도된 정부 시기의 통일 노력으로 옳은 것은?",
+    "answer_choice": "6·15 남북 공동 선언을 채택하였다.",
+    "distractor_choices": [
+      "남북 조절 위원회가 구성하였다.",
+      "남북한이 유엔에 동시 가입하였다.",
+      "한반도 비핵화 공동 선언을 발표하였다.",
+      "남북 이산가족의 교환 방문을 최초로 실현하였다."
+    ],
+    "topic_type": "문화",
+    "topic": "남북한의 문학적 협력과 금강산 관광 사업",
+    "material_type": "시각 자료 설명",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "자료 기반 시대·대상 추론",
+    "question_task": "standard_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": false,
+        "content": "남북 조절 위원회가 구성하였다."
+      },
+      {
+        "is_answer": false,
+        "content": "남북한이 유엔에 동시 가입하였다."
+      },
+      {
+        "is_answer": true,
+        "content": "6·15 남북 공동 선언을 채택하였다."
+      },
+      {
+        "is_answer": false,
+        "content": "한반도 비핵화 공동 선언을 발표하였다."
+      },
+      {
+        "is_answer": false,
+        "content": "남북 이산가족의 교환 방문을 최초로 실현하였다."
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 61,
+    "question_no": 50
+  },
+  {
+    "problem_id": "cj_v41_img_62_05",
+    "source_group_index": 25,
+    "material": "금제 사리봉영기가 남긴 고대사의 수수께끼 2009년 이 탑의 해체 수리 중에 사리장엄구와 금제 사리봉영기가 발견되었다. 사리봉영기에는 '우리 백제 왕후께서는 좌평 사택적덕의 따님으로 …… 가람을 세우시고 기해년 정월 29일에 사리를 받들어 맞이하셨다.'라는 명문이 있어 큰 주목을 받았다. 이 탑을 세운 주체가 삼국유사에 나오는 선화 공주가 아니라 백제 귀족의 딸로 밝혀져 서동 왕자와 선화 공주 설화의 진위 여부에 대한 논란이 일어나기도 하였다.",
+    "question": "이 탑으로 옳은 것은?",
+    "input_text": "금제 사리봉영기가 남긴 고대사의 수수께끼 2009년 이 탑의 해체 수리 중에 사리장엄구와 금제 사리봉영기가 발견되었다. 사리봉영기에는 '우리 백제 왕후께서는 좌평 사택적덕의 따님으로 …… 가람을 세우시고 기해년 정월 29일에 사리를 받들어 맞이하셨다.'라는 명문이 있어 큰 주목을 받았다. 이 탑을 세운 주체가 삼국유사에 나오는 선화 공주가 아니라 백제 귀족의 딸로 밝혀져 서동 왕자와 선화 공주 설화의 진위 여부에 대한 논란이 일어나기도 하였다.\n이 탑으로 옳은 것은?",
+    "answer_choice": "미륵사지석탑",
+    "distractor_choices": [
+      "분황사 모전석탑",
+      "경천사지 십층석탑",
+      "영광탑",
+      "감은사지 삼층석탑"
+    ],
+    "topic_type": "문화유산",
+    "topic": "한국의 역사적 탑",
+    "material_type": "시각 자료 설명",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "시각 자료 해석",
+    "question_task": "standard_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": false,
+        "content": "분황사 모전석탑"
+      },
+      {
+        "is_answer": false,
+        "content": "경천사지 십층석탑"
+      },
+      {
+        "is_answer": true,
+        "content": "미륵사지석탑"
+      },
+      {
+        "is_answer": false,
+        "content": "영광탑"
+      },
+      {
+        "is_answer": false,
+        "content": "감은사지 삼층석탑"
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 62,
+    "question_no": 5
+  },
+  {
+    "problem_id": "cj_v41_img_62_50",
+    "source_group_index": 26,
+    "material": "ㄱ, (가) - 최승로의 시무 28조를 받아들여 달라진 제도를 살펴본다.\nㄴ. (나) - 광종이 왕권 강화를 위해 추진한 정책에 대해 알아본다.\nㄷ. (다) - 중종 때 사림파 언관들이 제기한 주장을 조사해 본다.\nㄹ. (라) - 임술 농민 봉기를 수습하기 위한 정부의 대책을 파악한다.",
+    "question": "밑줄 그은 ㉠, ㉡에 대한 설명으로 옳은 것은?",
+    "input_text": "ㄱ, (가) - 최승로의 시무 28조를 받아들여 달라진 제도를 살펴본다.\nㄴ. (나) - 광종이 왕권 강화를 위해 추진한 정책에 대해 알아본다.\nㄷ. (다) - 중종 때 사림파 언관들이 제기한 주장을 조사해 본다.\nㄹ. (라) - 임술 농민 봉기를 수습하기 위한 정부의 대책을 파악한다.\n밑줄 그은 ㉠, ㉡에 대한 설명으로 옳은 것은?",
+    "answer_choice": "㉠ - 지공거와 합격자 사이에 좌주와 문생 관계가 형성되었다.",
+    "distractor_choices": [
+      "㉠ - 역분전이 제정되는 겨로가를 가져왔다.",
+      "㉡ - 제술과, 명경과, 잡과, 승과로 구성되었다.",
+      "㉡ - 성균관에서 보는 관시, 한성부에서 보는 한성시, 각 지방에서 보는 향시로 나뉘었다.",
+      "㉠,㉡ - 홍범 14조 반포로 계기로 시행되었다."
+    ],
+    "topic_type": "제도",
+    "topic": "과거 제도",
+    "material_type": "자료 제시문",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "자료 기반 시대·대상 추론",
+    "question_task": "standard_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": false,
+        "content": "㉠ - 역분전이 제정되는 겨로가를 가져왔다."
+      },
+      {
+        "is_answer": true,
+        "content": "㉠ - 지공거와 합격자 사이에 좌주와 문생 관계가 형성되었다."
+      },
+      {
+        "is_answer": false,
+        "content": "㉡ - 제술과, 명경과, 잡과, 승과로 구성되었다."
+      },
+      {
+        "is_answer": false,
+        "content": "㉡ - 성균관에서 보는 관시, 한성부에서 보는 한성시, 각 지방에서 보는 향시로 나뉘었다."
+      },
+      {
+        "is_answer": false,
+        "content": "㉠,㉡ - 홍범 14조 반포로 계기로 시행되었다."
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 62,
+    "question_no": 50
+  },
+  {
+    "problem_id": "cj_v41_img_63_10",
+    "source_group_index": 25,
+    "material": "경주 불국사에 있는 이 탑의 해체 보수 과정에서 발견된 금동제 사리외함이다. 2층 탑신부에 봉안되어 있던 이 유물 안에는 은제 사리 내 · 외합과 무구정광대다라니경 등이 함께 놓여 있었다. 이를 통해 당시의 뛰어난 공예 기술 및 사리 장엄 방식과 특징을 알 수 있다.",
+    "question": "밑줄 그은 '이 탑'으로 옳은 것은?",
+    "input_text": "경주 불국사에 있는 이 탑의 해체 보수 과정에서 발견된 금동제 사리외함이다. 2층 탑신부에 봉안되어 있던 이 유물 안에는 은제 사리 내 · 외합과 무구정광대다라니경 등이 함께 놓여 있었다. 이를 통해 당시의 뛰어난 공예 기술 및 사리 장엄 방식과 특징을 알 수 있다.\n밑줄 그은 '이 탑'으로 옳은 것은?",
+    "answer_choice": "석가탑",
+    "distractor_choices": [
+      "정림사지 오층석탑",
+      "미륵사지 석탑",
+      "화엄사 사사자 삼층석",
+      "월정사 팔각 구층석탑"
+    ],
+    "topic_type": "문화유산",
+    "topic": "경주 불국사 석가탑",
+    "material_type": "짧은 설명 자료",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "자료 기반 시대·대상 추론",
+    "question_task": "standard_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": true,
+        "content": "석가탑"
+      },
+      {
+        "is_answer": false,
+        "content": "정림사지 오층석탑"
+      },
+      {
+        "is_answer": false,
+        "content": "미륵사지 석탑"
+      },
+      {
+        "is_answer": false,
+        "content": "화엄사 사사자 삼층석"
+      },
+      {
+        "is_answer": false,
+        "content": "월정사 팔각 구층석탑"
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 63,
+    "question_no": 10
+  },
+  {
+    "problem_id": "cj_v41_img_63_15",
+    "source_group_index": 26,
+    "material": "△△△ 시대 문화유산 사진전\n우리 학교 역사 동아리에서 △△△ 시대의 대표적인 문화유산을 소개하는 사진전을 개최합니다. 학생 여러분의 많은 관람 바랍니다.\n직지심체요절, (가), 천신대렵도",
+    "question": "(가)에 들어갈 문화유산으로 옳은 것은?",
+    "input_text": "△△△ 시대 문화유산 사진전\n우리 학교 역사 동아리에서 △△△ 시대의 대표적인 문화유산을 소개하는 사진전을 개최합니다. 학생 여러분의 많은 관람 바랍니다.\n직지심체요절, (가), 천신대렵도\n(가)에 들어갈 문화유산으로 옳은 것은?",
+    "answer_choice": "청자 상감 모란문 표주박모양 주전자",
+    "distractor_choices": [
+      "금동 대향로",
+      "호우총 청동 그릇",
+      "이불병좌상",
+      "인왕제색도"
+    ],
+    "topic_type": "문화유산",
+    "topic": "직지심체요절, 천신대렵도",
+    "material_type": "시각 자료 설명",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "자료 기반 시대·대상 추론",
+    "question_task": "standard_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": false,
+        "content": "금동 대향로"
+      },
+      {
+        "is_answer": false,
+        "content": "호우총 청동 그릇"
+      },
+      {
+        "is_answer": true,
+        "content": "청자 상감 모란문 표주박모양 주전자"
+      },
+      {
+        "is_answer": false,
+        "content": "이불병좌상"
+      },
+      {
+        "is_answer": false,
+        "content": "인왕제색도"
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 63,
+    "question_no": 15
+  },
+  {
+    "problem_id": "cj_v41_img_63_46",
+    "source_group_index": 27,
+    "material": "그림 (가) \n부석사 무량수전에 있는 소조불상으로 우리나라 소조불상 가운데 가장 규모가 크고 오래되어 그 가치가 높다. 얼굴은 풍만한 편이며 두꺼운 입술과 날카로운 코 등에서 근엄한 인상을 준다. 옷 주름의 형태 등은 통해 고려 시대 불상을 임을 수 있다.",
+    "question": "(가)에 해당하는 문화유산으로 옳은 것은?",
+    "input_text": "그림 (가) \n부석사 무량수전에 있는 소조불상으로 우리나라 소조불상 가운데 가장 규모가 크고 오래되어 그 가치가 높다. 얼굴은 풍만한 편이며 두꺼운 입술과 날카로운 코 등에서 근엄한 인상을 준다. 옷 주름의 형태 등은 통해 고려 시대 불상을 임을 수 있다.\n(가)에 해당하는 문화유산으로 옳은 것은?",
+    "answer_choice": "금동석가여래좌상",
+    "distractor_choices": [
+      "석굴암 본존불상",
+      "금동관음보살좌상",
+      "광주 하사창동 출토 철불",
+      "금동미륵보살반가사유상"
+    ],
+    "topic_type": "문화유산",
+    "topic": "부석사 소조 아미타여래좌상",
+    "material_type": "시각 자료 설명",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "자료 기반 시대·대상 추론",
+    "question_task": "standard_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": false,
+        "content": "석굴암 본존불상"
+      },
+      {
+        "is_answer": false,
+        "content": "금동관음보살좌상"
+      },
+      {
+        "is_answer": false,
+        "content": "광주 하사창동 출토 철불"
+      },
+      {
+        "is_answer": false,
+        "content": "금동미륵보살반가사유상"
+      },
+      {
+        "is_answer": true,
+        "content": "금동석가여래좌상"
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 63,
+    "question_no": 46
+  },
+  {
+    "problem_id": "cj_v41_img_63_50",
+    "source_group_index": 28,
+    "material": "나는 오늘 온 겨레의 염원인 조국의 평화적 통일을 실현해 나가기 위한 새 공화국의 정책을 밝히려 합니다. 우리 민족이 남북 분단의 고통을 겪어온 지 반세기가 가까워 옵니다. …… 민족자존과 통일 번영의 새 시대를 열어나갈 것임을 약속하면서 다음과 같은 정책을 추진해 나갈 것을 내외에 선언합니다. ...…\n셋째, 남북 간 교역의 문호를 개방하고 남북 간 교역을 민족 내부교역으로 간주한다.\n여섯째, 한반도의 평화를 정착시킬 여건을 조성하기 위하여 북한이 미국, 일본 등 우리 우방과익 관계를 개선하는 데 협조할 용의가 있으며 또한 우리는 소련, 중국을 비롯한 사회주의 국가들과의 관계 개선을 추구한다.",
+    "question": "다음 선언을 발표한 정부의 통일 노선으로 옳은 것은?",
+    "input_text": "나는 오늘 온 겨레의 염원인 조국의 평화적 통일을 실현해 나가기 위한 새 공화국의 정책을 밝히려 합니다. 우리 민족이 남북 분단의 고통을 겪어온 지 반세기가 가까워 옵니다. …… 민족자존과 통일 번영의 새 시대를 열어나갈 것임을 약속하면서 다음과 같은 정책을 추진해 나갈 것을 내외에 선언합니다. ...…\n셋째, 남북 간 교역의 문호를 개방하고 남북 간 교역을 민족 내부교역으로 간주한다.\n여섯째, 한반도의 평화를 정착시킬 여건을 조성하기 위하여 북한이 미국, 일본 등 우리 우방과익 관계를 개선하는 데 협조할 용의가 있으며 또한 우리는 소련, 중국을 비롯한 사회주의 국가들과의 관계 개선을 추구한다.\n다음 선언을 발표한 정부의 통일 노선으로 옳은 것은?",
+    "answer_choice": "남북한이 국제 연합(UN)에 동시 가입하였다.",
+    "distractor_choices": [
+      "남북 조절 위원회를 구성하였다.",
+      "개성 공업 지구 건설에 합의하였다.",
+      "10·4 남북 정상 선언을 발표하였다.",
+      "남북 이산가족 고향 방문을 최초로 실현하였다."
+    ],
+    "topic_type": "제도",
+    "topic": "남북 관계 및 통일 정책",
+    "material_type": "자료 제시문",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "자료 기반 시대·대상 추론",
+    "question_task": "standard_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": false,
+        "content": "남북 조절 위원회를 구성하였다."
+      },
+      {
+        "is_answer": false,
+        "content": "개성 공업 지구 건설에 합의하였다."
+      },
+      {
+        "is_answer": false,
+        "content": "10·4 남북 정상 선언을 발표하였다."
+      },
+      {
+        "is_answer": true,
+        "content": "남북한이 국제 연합(UN)에 동시 가입하였다."
+      },
+      {
+        "is_answer": false,
+        "content": "남북 이산가족 고향 방문을 최초로 실현하였다."
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 63,
+    "question_no": 50
+  },
+  {
+    "problem_id": "cj_v41_img_64_04",
+    "source_group_index": 25,
+    "material": "문화유산 DB 화면 (가) 검색 \n'종목: 국보', '지정일: 1996년 5월 30일', '소개: 부여 능산리 절터에서 출토되었다. 백제의 공예 기술 수준을 보여주는 문화유산으로 불교와 도교 사상 등을 복합적으로 반영하고 있다.",
+    "question": "(가)에 해당하는 문화유산으로 옳은 것은?",
+    "input_text": "문화유산 DB 화면 (가) 검색 \n'종목: 국보', '지정일: 1996년 5월 30일', '소개: 부여 능산리 절터에서 출토되었다. 백제의 공예 기술 수준을 보여주는 문화유산으로 불교와 도교 사상 등을 복합적으로 반영하고 있다.\n(가)에 해당하는 문화유산으로 옳은 것은?",
+    "answer_choice": "금동대향로",
+    "distractor_choices": [
+      "이불병좌상",
+      "금동연가7년명 여래입상",
+      "금동관",
+      "가마 인물형 토기"
+    ],
+    "topic_type": "문화유산",
+    "topic": "부여 능산리",
+    "material_type": "시각 자료 설명",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "자료 기반 시대·대상 추론",
+    "question_task": "standard_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": false,
+        "content": "이불병좌상"
+      },
+      {
+        "is_answer": false,
+        "content": "금동연가7년명 여래입상"
+      },
+      {
+        "is_answer": false,
+        "content": "금동관"
+      },
+      {
+        "is_answer": false,
+        "content": "가마 인물형 토기"
+      },
+      {
+        "is_answer": true,
+        "content": "금동대향로"
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 64,
+    "question_no": 4
+  },
+  {
+    "problem_id": "cj_v41_img_64_16",
+    "source_group_index": 26,
+    "material": "사진으로 보는 고려의 불교 문화\n우리 박물관에서는 고려 시대의 다양한 불교 문화를 보여주는 특별 사진전을 마련하였으니 많은 관심과 참여 바랍니다.\n예산 수덕사 대웅전, 수월관음도, (가)\n기간: 2023년 ○○월 ○○일~○○월 ○○일\n장소: ○○시립박물관",
+    "question": "(가)에 들어갈 문화유산으로 적절하지 않은 것은?",
+    "input_text": "사진으로 보는 고려의 불교 문화\n우리 박물관에서는 고려 시대의 다양한 불교 문화를 보여주는 특별 사진전을 마련하였으니 많은 관심과 참여 바랍니다.\n예산 수덕사 대웅전, 수월관음도, (가)\n기간: 2023년 ○○월 ○○일~○○월 ○○일\n장소: ○○시립박물관\n(가)에 들어갈 문화유산으로 적절하지 않은 것은?",
+    "answer_choice": "보은 법주사 팔상전",
+    "distractor_choices": [
+      "평창 월정사 팔각 구층 석탑",
+      "논산 관촉사 석조 미륵보살 입상",
+      "원주 법천사지 지광국사 탑비",
+      "영주 부석사 무량수전"
+    ],
+    "topic_type": "문화유산",
+    "topic": "고려 시대의 불교 문화유산",
+    "material_type": "시각 자료 설명",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "자료 기반 시대·대상 추론",
+    "question_task": "negative_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": false,
+        "content": "평창 월정사 팔각 구층 석탑"
+      },
+      {
+        "is_answer": false,
+        "content": "논산 관촉사 석조 미륵보살 입상"
+      },
+      {
+        "is_answer": false,
+        "content": "원주 법천사지 지광국사 탑비"
+      },
+      {
+        "is_answer": true,
+        "content": "보은 법주사 팔상전"
+      },
+      {
+        "is_answer": false,
+        "content": "영주 부석사 무량수전"
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 64,
+    "question_no": 16
+  },
+  {
+    "problem_id": "cj_v41_img_65_04",
+    "source_group_index": 25,
+    "material": "박물관 소장품 검색 화면. (가) 검색\n'종목: 보물', '지정(등록)일: 2015년 9월 2일', '소개: 1946년 경주 호우총에서 출토됨','을묘년국강상광개토지호태왕호우십 이라는 명문이 있음', '신라의 고구려 사이의 정치적 관계를 살펴볼 수 있는 유물로 평가'라는 설명이 있음.",
+    "question": "(가)에 해당하는 문화유산으로 옳은 것은?",
+    "input_text": "박물관 소장품 검색 화면. (가) 검색\n'종목: 보물', '지정(등록)일: 2015년 9월 2일', '소개: 1946년 경주 호우총에서 출토됨','을묘년국강상광개토지호태왕호우십 이라는 명문이 있음', '신라의 고구려 사이의 정치적 관계를 살펴볼 수 있는 유물로 평가'라는 설명이 있음.\n(가)에 해당하는 문화유산으로 옳은 것은?",
+    "answer_choice": "호우명 그릇",
+    "distractor_choices": [
+      "석사자상",
+      "칠지도",
+      "금동연가7년명여래입상",
+      "가마 인물형 토기"
+    ],
+    "topic_type": "문화유산",
+    "topic": "신라와 고구려의 정치적 관계를 보여주는 유물",
+    "material_type": "시각 자료 설명",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "자료 기반 시대·대상 추론",
+    "question_task": "standard_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": true,
+        "content": "호우명 그릇"
+      },
+      {
+        "is_answer": false,
+        "content": "석사자상"
+      },
+      {
+        "is_answer": false,
+        "content": "칠지도"
+      },
+      {
+        "is_answer": false,
+        "content": "금동연가7년명여래입상"
+      },
+      {
+        "is_answer": false,
+        "content": "가마 인물형 토기"
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 65,
+    "question_no": 4
+  },
+  {
+    "problem_id": "cj_v41_img_65_17",
+    "source_group_index": 26,
+    "material": "국보로 지정된 불교 건축물 (가) \n충청남도 예산군에 있는 이 건물은 맞배지붕에 주심포 양식입니다. 건물 보수 중 묵서명이 발견되어 충렬왕 34년이라는 정확한 건립 연도를 알게 되었습니다.",
+    "question": "다음 중 (가)에 해당하는 문화유산으로 옳은 것은?",
+    "input_text": "국보로 지정된 불교 건축물 (가) \n충청남도 예산군에 있는 이 건물은 맞배지붕에 주심포 양식입니다. 건물 보수 중 묵서명이 발견되어 충렬왕 34년이라는 정확한 건립 연도를 알게 되었습니다.\n다음 중 (가)에 해당하는 문화유산으로 옳은 것은?",
+    "answer_choice": "수덕사 대웅전",
+    "distractor_choices": [
+      "화엄사 각황전",
+      "부석사 무량수전",
+      "봉정사 극락전",
+      "법주사 팔상전"
+    ],
+    "topic_type": "문화유산",
+    "topic": "한국의 전통 건축물",
+    "material_type": "시각 자료 설명",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "자료 기반 시대·대상 추론",
+    "question_task": "standard_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": true,
+        "content": "수덕사 대웅전"
+      },
+      {
+        "is_answer": false,
+        "content": "화엄사 각황전"
+      },
+      {
+        "is_answer": false,
+        "content": "부석사 무량수전"
+      },
+      {
+        "is_answer": false,
+        "content": "봉정사 극락전"
+      },
+      {
+        "is_answer": false,
+        "content": "법주사 팔상전"
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 65,
+    "question_no": 17
+  },
+  {
+    "problem_id": "cj_v41_img_65_22",
+    "source_group_index": 27,
+    "material": "조선의 예술, 메타버스 회화 전시관\n 그림 (가)\n이 그림은 안견이 안평대군의 꿈 이야기를 듣고 그린 것입니다. 현실 세계와 이상 세계가 대비를 이루면서도 전체적으로 통일된 분위기를 자아내고 있습니다.",
+    "question": "(가)에 해당하는 작품으로 옳은 것은?",
+    "input_text": "조선의 예술, 메타버스 회화 전시관\n 그림 (가)\n이 그림은 안견이 안평대군의 꿈 이야기를 듣고 그린 것입니다. 현실 세계와 이상 세계가 대비를 이루면서도 전체적으로 통일된 분위기를 자아내고 있습니다.\n(가)에 해당하는 작품으로 옳은 것은?",
+    "answer_choice": "몽유도원도",
+    "distractor_choices": [
+      "세한도",
+      "옥순봉도",
+      "고사관수도",
+      "인왕제색도"
+    ],
+    "topic_type": "문화유산",
+    "topic": "조선 시대의 회화 작품",
+    "material_type": "시각 자료 설명",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "시각 자료 해석",
+    "question_task": "standard_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": true,
+        "content": "몽유도원도"
+      },
+      {
+        "is_answer": false,
+        "content": "세한도"
+      },
+      {
+        "is_answer": false,
+        "content": "옥순봉도"
+      },
+      {
+        "is_answer": false,
+        "content": "고사관수도"
+      },
+      {
+        "is_answer": false,
+        "content": "인왕제색도"
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 65,
+    "question_no": 22
+  },
+  {
+    "problem_id": "cj_v41_img_66_03",
+    "source_group_index": 24,
+    "material": "천마총 발굴 50주년 특별전이 개최됩니다. 천마총은 (가)의 대표적인 돌무지덧널무덤 중 하나로 발굴 당시 많은 유물이 출토되어 주목을 받았습니다. 그중에서도 가장 유명한 천마도의 실물이 9년 만에 세상에 공개됩니다.",
+    "question": "(가) 국가의 문화유산으로 옳은 것은?",
+    "input_text": "천마총 발굴 50주년 특별전이 개최됩니다. 천마총은 (가)의 대표적인 돌무지덧널무덤 중 하나로 발굴 당시 많은 유물이 출토되어 주목을 받았습니다. 그중에서도 가장 유명한 천마도의 실물이 9년 만에 세상에 공개됩니다.\n(가) 국가의 문화유산으로 옳은 것은?",
+    "answer_choice": "천마총 금관",
+    "distractor_choices": [
+      "청동 은입사 물가풍경무늬 정병",
+      "금동연가7년명여래입상",
+      "이불병좌상",
+      "백제 금동대향로"
+    ],
+    "topic_type": "문화유산",
+    "topic": "천마총과 관련된 문화유산",
+    "material_type": "시각 자료 설명",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "자료 기반 시대·대상 추론",
+    "question_task": "standard_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": false,
+        "content": "청동 은입사 물가풍경무늬 정병"
+      },
+      {
+        "is_answer": false,
+        "content": "금동연가7년명여래입상"
+      },
+      {
+        "is_answer": true,
+        "content": "천마총 금관"
+      },
+      {
+        "is_answer": false,
+        "content": "이불병좌상"
+      },
+      {
+        "is_answer": false,
+        "content": "백제 금동대향로"
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 66,
+    "question_no": 3
+  },
+  {
+    "problem_id": "cj_v41_img_66_17",
+    "source_group_index": 25,
+    "material": "문화유산 DB 검색 화면. (가)로 검색된 결과가 표시됨.\n종목: 국보\n소재지: 강원도 평창군\n소개: 고려 시대 다각 다층 석탑을 대표하는 작품이다. 탑의 꼭대기 머리 장식이 완벽하게 남아 있고 지붕돌의 귀퉁이마다 풍경을 달아 화려한 아름다움을 더한다. 2000년대 들어 실시된 조사 결과 석탑의 조성 연대가 고려 전기로 밝혀졌다.",
+    "question": "(가)에 해당하는 문화유산으로 옳은 것은?",
+    "input_text": "문화유산 DB 검색 화면. (가)로 검색된 결과가 표시됨.\n종목: 국보\n소재지: 강원도 평창군\n소개: 고려 시대 다각 다층 석탑을 대표하는 작품이다. 탑의 꼭대기 머리 장식이 완벽하게 남아 있고 지붕돌의 귀퉁이마다 풍경을 달아 화려한 아름다움을 더한다. 2000년대 들어 실시된 조사 결과 석탑의 조성 연대가 고려 전기로 밝혀졌다.\n(가)에 해당하는 문화유산으로 옳은 것은?",
+    "answer_choice": "월정사 8각 9층 석탑",
+    "distractor_choices": [
+      "정혜사지 13층 석탑",
+      "경천사지 10층 석탑",
+      "영광탑",
+      "정암사 수마노탑"
+    ],
+    "topic_type": "문화유산",
+    "topic": "고려 시대의 석탑",
+    "material_type": "시각 자료 설명",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "시각 자료 해석",
+    "question_task": "standard_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": true,
+        "content": "월정사 8각 9층 석탑"
+      },
+      {
+        "is_answer": false,
+        "content": "정혜사지 13층 석탑"
+      },
+      {
+        "is_answer": false,
+        "content": "경천사지 10층 석탑"
+      },
+      {
+        "is_answer": false,
+        "content": "영광탑"
+      },
+      {
+        "is_answer": false,
+        "content": "정암사 수마노탑"
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 66,
+    "question_no": 17
+  },
+  {
+    "problem_id": "cj_v41_img_66_24",
+    "source_group_index": 26,
+    "material": "1장 - 명문가의 자제로 태어나다. 2장 - 농수각을 세우고 천문을 관측하다. 3장 - 연행사의 일원으로 청에 가다. 4장 - 연기, 을병연행록을 저술하다.",
+    "question": "다음 인물에 대한 설명으로 옳은 것은?",
+    "input_text": "1장 - 명문가의 자제로 태어나다. 2장 - 농수각을 세우고 천문을 관측하다. 3장 - 연행사의 일원으로 청에 가다. 4장 - 연기, 을병연행록을 저술하다.\n다음 인물에 대한 설명으로 옳은 것은?",
+    "answer_choice": "의산문답에서 무한 우주론을 주장하였다.",
+    "distractor_choices": [
+      "지봉유설에서 천주실의를 소개하였다.",
+      "양반전을 지어 양반의 허례와 무능을 풍자하였다.",
+      "북학의를 저술하여 청의 문물 수용을 가조하였다.",
+      "동의수세보원을 편찬하여 사상 의학을 정립하였다."
+    ],
+    "topic_type": "인물",
+    "topic": "담헌 평전",
+    "material_type": "시각 자료 설명",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "자료 기반 시대·대상 추론",
+    "question_task": "standard_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": false,
+        "content": "지봉유설에서 천주실의를 소개하였다."
+      },
+      {
+        "is_answer": true,
+        "content": "의산문답에서 무한 우주론을 주장하였다."
+      },
+      {
+        "is_answer": false,
+        "content": "양반전을 지어 양반의 허례와 무능을 풍자하였다."
+      },
+      {
+        "is_answer": false,
+        "content": "북학의를 저술하여 청의 문물 수용을 가조하였다."
+      },
+      {
+        "is_answer": false,
+        "content": "동의수세보원을 편찬하여 사상 의학을 정립하였다."
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 66,
+    "question_no": 24
+  },
+  {
+    "problem_id": "cj_v41_img_66_50",
+    "source_group_index": 27,
+    "material": "(가) - 남북 간의 제반 문제를 개선, 해결하며 나라의 통일 문제를 다루는 남북 조절 위원회가 정식으로 발족하였다. 남북 조절 위원회는 판문점에 공동 사무국을 두기로 하였으며, 회의는 서울과 평양에서 번갈아 진행하기로 하였다. (나) - 서울에서 열린 제5차 남북 고위급 회담에서 남북 사이의 화해와 불가침 및 교류·협력 등을 주요 내용으로 하는 남북 기본 합의서를 채택하였다. 특히 이번 합의서에서는 분단 이후 처음으로 남북 양측의 국호를 사용하였다.",
+    "question": "(가), (나) 사이에 있었던 사실로 옳은 것은?",
+    "input_text": "(가) - 남북 간의 제반 문제를 개선, 해결하며 나라의 통일 문제를 다루는 남북 조절 위원회가 정식으로 발족하였다. 남북 조절 위원회는 판문점에 공동 사무국을 두기로 하였으며, 회의는 서울과 평양에서 번갈아 진행하기로 하였다. (나) - 서울에서 열린 제5차 남북 고위급 회담에서 남북 사이의 화해와 불가침 및 교류·협력 등을 주요 내용으로 하는 남북 기본 합의서를 채택하였다. 특히 이번 합의서에서는 분단 이후 처음으로 남북 양측의 국호를 사용하였다.\n(가), (나) 사이에 있었던 사실로 옳은 것은?",
+    "answer_choice": "남북 이산가족 교환 방문이 최초로 성사되었다.",
+    "distractor_choices": [
+      "금강산 육로 관광이 시작되었다.",
+      "6·15 남북 공동 선언이 발표되었다.",
+      "평창 동계 올림픽에 남북 단일팀이 참가하였다.",
+      "남북 경제 협력을 위한 개성 공업 지구가 조성되었다."
+    ],
+    "topic_type": "사건",
+    "topic": "남북 조절 위원회 발족",
+    "material_type": "자료 제시문",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "자료 기반 시대·대상 추론",
+    "question_task": "standard_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": false,
+        "content": "금강산 육로 관광이 시작되었다."
+      },
+      {
+        "is_answer": false,
+        "content": "6·15 남북 공동 선언이 발표되었다."
+      },
+      {
+        "is_answer": false,
+        "content": "평창 동계 올림픽에 남북 단일팀이 참가하였다."
+      },
+      {
+        "is_answer": false,
+        "content": "남북 경제 협력을 위한 개성 공업 지구가 조성되었다."
+      },
+      {
+        "is_answer": true,
+        "content": "남북 이산가족 교환 방문이 최초로 성사되었다."
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 66,
+    "question_no": 50
+  },
+  {
+    "problem_id": "cj_v41_img_68_49",
+    "source_group_index": 25,
+    "material": "(가) 태토와 유약이 모두 백색이고 1,200도 이상에서 구워 만든 자기다. 영국 여왕 엘리자베스 2세가 이 자기 중 하나를 보면서 '세상에서 제일 아름다운 그릇'이라는 찬사를 보냈다. \n(나) 철분이 약간 함유된 태토에 유약을 입혀 고온에서 구워낸 자기다. 송 사신 서긍은 '푸른 빛깔을 고려인은 비색(翡色)이라 하는데 근래에 들어 빛깔이 더욱 좋아졌다.'고 하였다.\n(다) 회색 태토 위에 백토로 표면을 분장한 뒤에 유약을 입혀 구운 자기다. 고유섭이 회청색을 띠는 사기라는 의미로 '분장회청사기(분청사기)'라 하였다.\n(라) 초벌구이한 백자 위에 코발트로 그림 그린 후 유약을 발라 구운 자기다. 코발트는 수입산 안료였기에 예종은 관찰사를 통해 백성들이 회회청(코발트)을 구해오도록 독려할 정도였다.\n(마) 표면에 무늬를 파고 백토와 자토를 그 자리에 넣어 초벌구이한 후 유약을 발라 구워낸 자기다. 최순우는 '고려 사람들은 비색의 자기에 영롱한 수를 놓은 방법을 궁리해 냈다.'고 하였다.",
+    "question": "(가)~(마)의 설명과 사진을 연결할 것으로 옳지 않은 것은?",
+    "input_text": "(가) 태토와 유약이 모두 백색이고 1,200도 이상에서 구워 만든 자기다. 영국 여왕 엘리자베스 2세가 이 자기 중 하나를 보면서 '세상에서 제일 아름다운 그릇'이라는 찬사를 보냈다. \n(나) 철분이 약간 함유된 태토에 유약을 입혀 고온에서 구워낸 자기다. 송 사신 서긍은 '푸른 빛깔을 고려인은 비색(翡色)이라 하는데 근래에 들어 빛깔이 더욱 좋아졌다.'고 하였다.\n(다) 회색 태토 위에 백토로 표면을 분장한 뒤에 유약을 입혀 구운 자기다. 고유섭이 회청색을 띠는 사기라는 의미로 '분장회청사기(분청사기)'라 하였다.\n(라) 초벌구이한 백자 위에 코발트로 그림 그린 후 유약을 발라 구운 자기다. 코발트는 수입산 안료였기에 예종은 관찰사를 통해 백성들이 회회청(코발트)을 구해오도록 독려할 정도였다.\n(마) 표면에 무늬를 파고 백토와 자토를 그 자리에 넣어 초벌구이한 후 유약을 발라 구워낸 자기다. 최순우는 '고려 사람들은 비색의 자기에 영롱한 수를 놓은 방법을 궁리해 냈다.'고 하였다.\n(가)~(마)의 설명과 사진을 연결할 것으로 옳지 않은 것은?",
+    "answer_choice": "민무늬토기",
+    "distractor_choices": [
+      "백자",
+      "고려청자",
+      "청화백자",
+      "상감청자"
+    ],
+    "topic_type": "문화유산",
+    "topic": "한국 전통 도자기",
+    "material_type": "시각 자료 설명",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "시각 자료 해석",
+    "question_task": "negative_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": false,
+        "content": "백자"
+      },
+      {
+        "is_answer": false,
+        "content": "고려청자"
+      },
+      {
+        "is_answer": true,
+        "content": "민무늬토기"
+      },
+      {
+        "is_answer": false,
+        "content": "청화백자"
+      },
+      {
+        "is_answer": false,
+        "content": "상감청자"
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 68,
+    "question_no": 49
+  },
+  {
+    "problem_id": "cj_v41_img_69_48",
+    "source_group_index": 25,
+    "material": "여덟째는 적금서당이다. '왕' 6년에 보덕국 사람들로 당을 만들었다. 금장의 색은 적흑이다. 아홉째는 청금서당이다. …… 금장의 색은 청백이다.",
+    "question": "밑줄 친 '왕'의 임무로 옳은 것은?",
+    "input_text": "여덟째는 적금서당이다. '왕' 6년에 보덕국 사람들로 당을 만들었다. 금장의 색은 적흑이다. 아홉째는 청금서당이다. …… 금장의 색은 청백이다.\n밑줄 친 '왕'의 임무로 옳은 것은?",
+    "answer_choice": "김흠돌의 난을 진압하였다.",
+    "distractor_choices": [
+      "법부와 상대등을 설치하였다.",
+      "나선 정벌에 조총 부대를 파견하였다.",
+      "정계와 계백료서를 지어 관리의 규범을 제시하였다.",
+      "쌍성총관부를 공략하여 철령 이북의 땅을 수복하였다."
+    ],
+    "topic_type": "인물",
+    "topic": "신라의 왕권 강화와 관련된 역사적 사건",
+    "material_type": "짧은 설명 자료",
+    "major_type": "역사 지식의 이해",
+    "minor_type": "기본 사실·개념 확인",
+    "question_task": "standard_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": true,
+        "content": "김흠돌의 난을 진압하였다."
+      },
+      {
+        "is_answer": false,
+        "content": "법부와 상대등을 설치하였다."
+      },
+      {
+        "is_answer": false,
+        "content": "나선 정벌에 조총 부대를 파견하였다."
+      },
+      {
+        "is_answer": false,
+        "content": "정계와 계백료서를 지어 관리의 규범을 제시하였다."
+      },
+      {
+        "is_answer": false,
+        "content": "쌍성총관부를 공략하여 철령 이북의 땅을 수복하였다."
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 69,
+    "question_no": 48
+  },
+  {
+    "problem_id": "cj_v41_img_70_27",
+    "source_group_index": 25,
+    "material": "이 작품은 조선 후기 대표적 풍속 화가인 단원 (가) 이/가 나귀를 타고 유람하는 나그네의 시점으로 그린 행려풍속도병입니다. 8폭 병풍에는 계절에 따라 변해가는 산수와 대장간, 나루터 등 다양한 세상살이의 모습이 생동감 있게 표현되어 있습니다. 각 폭의 그림 위쪽에는 그의 스승인 강세황의 그림평이 적혀 있습니다.",
+    "question": "(가) 인물의 작품으로 옳은 것은?",
+    "input_text": "이 작품은 조선 후기 대표적 풍속 화가인 단원 (가) 이/가 나귀를 타고 유람하는 나그네의 시점으로 그린 행려풍속도병입니다. 8폭 병풍에는 계절에 따라 변해가는 산수와 대장간, 나루터 등 다양한 세상살이의 모습이 생동감 있게 표현되어 있습니다. 각 폭의 그림 위쪽에는 그의 스승인 강세황의 그림평이 적혀 있습니다.\n(가) 인물의 작품으로 옳은 것은?",
+    "answer_choice": "씨름",
+    "distractor_choices": [
+      "금강전도",
+      "파적도",
+      "월하정인",
+      "영통동구도"
+    ],
+    "topic_type": "인물",
+    "topic": "조선 후기의 대표적 풍속 화가",
+    "material_type": "시각 자료 설명",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "자료 기반 시대·대상 추론",
+    "question_task": "standard_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": true,
+        "content": "씨름"
+      },
+      {
+        "is_answer": false,
+        "content": "금강전도"
+      },
+      {
+        "is_answer": false,
+        "content": "파적도"
+      },
+      {
+        "is_answer": false,
+        "content": "월하정인"
+      },
+      {
+        "is_answer": false,
+        "content": "영통동구도"
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 70,
+    "question_no": 27
+  },
+  {
+    "problem_id": "cj_v41_img_71_16",
+    "source_group_index": 25,
+    "material": "청자 상감 모란무늬 항아리 \n△△ 신문\n '국보 순회전: 모두의 곁으로', 강진군에서 열려\n 국립중앙박물관이 지역 간의 문화 격차를 해소하기 위해 기획한 국보 순회전이 전남 강진군에서 '도자기에 핀 꽃, 상감 청자'를 주제로 개최된다. 이번 전시에서는 청자 상감 모란무늬 항아리, 청자 상감 물가풍경무늬 매병 등 (가) 의 대표적인 국가유산인 상감 청자가 공개된다. 특히 국보 '청자 상감 모란무늬 항아리'는 왕실 자기의 전형을 보여 주는 유물로 모란을 정교하고 화려하면서도 사심적으로 묘사하였다는 평가를 받는다. 전시회 관계자는 '상감 청자의 생산지였던 강진군에서 개최되어 더 큰 의미가 있다.'라고 밝혔다.",
+    "question": "(가) 국가의 국가유산으로 옳지 않은 것은?",
+    "input_text": "청자 상감 모란무늬 항아리\n△△ 신문\n '국보 순회전: 모두의 곁으로', 강진군에서 열려\n 국립중앙박물관이 지역 간의 문화 격차를 해소하기 위해 기획한 국보 순회전이 전남 강진군에서 '도자기에 핀 꽃, 상감 청자'를 주제로 개최된다. 이번 전시에서는 청자 상감 모란무늬 항아리, 청자 상감 물가풍경무늬 매병 등 (가) 의 대표적인 국가유산인 상감 청자가 공개된다. 특히 국보 '청자 상감 모란무늬 항아리'는 왕실 자기의 전형을 보여 주는 유물로 모란을 정교하고 화려하면서도 사심적으로 묘사하였다는 평가를 받는다. 전시회 관계자는 '상감 청자의 생산지였던 강진군에서 개최되어 더 큰 의미가 있다.'라고 밝혔다.(가) 국가의 국가유산으로 옳지 않은 것은?",
+    "answer_choice": "파적도",
+    "distractor_choices": [
+      "관촉사 석조 미륵보살 입상",
+      "나전칠기함",
+      "수월관음도",
+      "경천사지 10층 석탑"
+    ],
+    "topic_type": "문화유산",
+    "topic": "한국의 국가유산",
+    "material_type": "시각 자료 설명",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "자료 기반 시대·대상 추론",
+    "question_task": "standard_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": false,
+        "content": "관촉사 석조 미륵보살 입상"
+      },
+      {
+        "is_answer": false,
+        "content": "나전칠기함"
+      },
+      {
+        "is_answer": false,
+        "content": "수월관음도"
+      },
+      {
+        "is_answer": false,
+        "content": "경천사지 10층 석탑"
+      },
+      {
+        "is_answer": true,
+        "content": "파적도"
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 71,
+    "question_no": 16
+  },
+  {
+    "problem_id": "cj_v41_img_72_47",
+    "source_group_index": 25,
+    "material": "(가) '㉠.왕'은 5월에 교서를 내려 문무 관료들에게 토지를 차등 있게 주었다. …… 봄 정월에 중앙과 지방 관리들의 녹읍을 폐지하고 해마다 조를 차등 있게 주고 이를 일정한 법으로 삼았다. \n(나) 처음으로 직관(職官) ·산관(散官)의 각 품의 전시과를 제정하였는데, 관품의 높고 낮은 것은 논하지 않고 다만 인품만 가지고 전시과의 등급을 결정하였다. \n(다) 도평의사사에서 글을 올려 과전을 지급하는 법을 정할 것을 청하니, 그 의견을 따랐다. 경기는 사방의 근본이므로 마땅히 과전을 설치하여 사대부를 우대하여야 한다. 무릇 수도에 거주하며 왕실을 지키는 자는 현직, 산직(散職)을 불문하고 각각 과(科)에 따라 받게 한다. \n(라) 만약 그 자신이 죽고 그 아내에게 미치게 되면 수신전이라 일컬었고, 부부가 다 죽고 그 아들에게 전해지면 휼양전이라 일컬었으며, 만약 그 아들이 관직에 제수되더라도 그대로 그 전지를 주고는 과전이라 일컬었는데, …… 왕께서 이를 없애고, 현직 관리에게 주어 직전(識田)이라 하였던 것입니다.",
+    "question": "(가)~(라) 를 일어난 순서대로 옳게 나열한 것은?",
+    "input_text": "(가) '㉠.왕'은 5월에 교서를 내려 문무 관료들에게 토지를 차등 있게 주었다. …… 봄 정월에 중앙과 지방 관리들의 녹읍을 폐지하고 해마다 조를 차등 있게 주고 이를 일정한 법으로 삼았다. \n(나) 처음으로 직관(職官) ·산관(散官)의 각 품의 전시과를 제정하였는데, 관품의 높고 낮은 것은 논하지 않고 다만 인품만 가지고 전시과의 등급을 결정하였다. \n(다) 도평의사사에서 글을 올려 과전을 지급하는 법을 정할 것을 청하니, 그 의견을 따랐다. 경기는 사방의 근본이므로 마땅히 과전을 설치하여 사대부를 우대하여야 한다. 무릇 수도에 거주하며 왕실을 지키는 자는 현직, 산직(散職)을 불문하고 각각 과(科)에 따라 받게 한다. \n(라) 만약 그 자신이 죽고 그 아내에게 미치게 되면 수신전이라 일컬었고, 부부가 다 죽고 그 아들에게 전해지면 휼양전이라 일컬었으며, 만약 그 아들이 관직에 제수되더라도 그대로 그 전지를 주고는 과전이라 일컬었는데, …… 왕께서 이를 없애고, 현직 관리에게 주어 직전(識田)이라 하였던 것입니다.\n(가)~(라) 를 일어난 순서대로 옳게 나열한 것은?",
+    "answer_choice": "(가)-(나)-(다)-(라)",
+    "distractor_choices": [
+      "(가)-(나)-(라)-(다)",
+      "(나)-(가)-(라)-(다)",
+      "(나)-(다)-(가)-(라)",
+      "(다)-(라)-(나)-(가)"
+    ],
+    "topic_type": "제도",
+    "topic": "관료전 지급, 녹읍 폐지, 전시과, 과전법, 직전법",
+    "material_type": "자료 제시문",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "자료 기반 시대·대상 추론",
+    "question_task": "standard_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": true,
+        "content": "(가)-(나)-(다)-(라)"
+      },
+      {
+        "is_answer": false,
+        "content": "(가)-(나)-(라)-(다)"
+      },
+      {
+        "is_answer": false,
+        "content": "(나)-(가)-(라)-(다)"
+      },
+      {
+        "is_answer": false,
+        "content": "(나)-(다)-(가)-(라)"
+      },
+      {
+        "is_answer": false,
+        "content": "(다)-(라)-(나)-(가)"
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 72,
+    "question_no": 47
+  },
+  {
+    "problem_id": "cj_v41_img_73_04",
+    "source_group_index": 25,
+    "material": "여러 나라의 성장\n(가)\n○정치: 삼로라고 부리는 군장이 다스림. ○경제: 소금, 해산물이 풍부함. ○사회: 사람이 죽으면 시체를 가매장하였다가 나중에 뼈만 추려 가족 공동 목곽에 안치함.\n(나) ○정치: 신지, 읍차 등의 지배자가 있었음. ○경제: 철은 생산하고 벼농사가 발달함. ○사회: 씨뿌리기가 끝난 5월과 농사를 마친 10월에 제사를 지냄.",
+    "question": "(가), (나) 나라에 대한 설명으로 옳은 것은?",
+    "input_text": "여러 나라의 성장\n(가)\n○정치: 삼로라고 부리는 군장이 다스림. ○경제: 소금, 해산물이 풍부함. ○사회: 사람이 죽으면 시체를 가매장하였다가 나중에 뼈만 추려 가족 공동 목곽에 안치함.\n(나) ○정치: 신지, 읍차 등의 지배자가 있었음. ○경제: 철은 생산하고 벼농사가 발달함. ○사회: 씨뿌리기가 끝난 5월과 농사를 마친 10월에 제사를 지냄.\n(가), (나) 나라에 대한 설명으로 옳은 것은?",
+    "answer_choice": "(나) - 신성 지역인 소도가 존재하였다.",
+    "distractor_choices": [
+      "(가) - 영고라는 제천 행사를 열었다.",
+      "(가) - 사회 질서를 유지하기 위해 범금 8조를 만들었다.",
+      "(나) - 제가 회의에서 나라의 중대사를 결정하였다.",
+      "(가), (나) - 도둑질한 자에게 12배로 배상하게 하였다."
+    ],
+    "topic_type": "문화",
+    "topic": "여러 나라의 성장과 사회 구조",
+    "material_type": "자료 제시문",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "자료 기반 시대·대상 추론",
+    "question_task": "standard_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": false,
+        "content": "(가) - 영고라는 제천 행사를 열었다."
+      },
+      {
+        "is_answer": false,
+        "content": "(가) - 사회 질서를 유지하기 위해 범금 8조를 만들었다."
+      },
+      {
+        "is_answer": true,
+        "content": "(나) - 신성 지역인 소도가 존재하였다."
+      },
+      {
+        "is_answer": false,
+        "content": "(나) - 제가 회의에서 나라의 중대사를 결정하였다."
+      },
+      {
+        "is_answer": false,
+        "content": "(가), (나) - 도둑질한 자에게 12배로 배상하게 하였다."
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 73,
+    "question_no": 4,
+    "_needs_answer": true
+  },
+  {
+    "problem_id": "cj_v41_img_73_06",
+    "source_group_index": 26,
+    "material": "디지털 실감 영상으로 재현한 고구려의 문화유산 \n 우리 박물관은 '영락' 이라는 연호를 사용한 왕의 능비를 디지털 영상으로 복원하여 선보이고자 합니다. 네 면에 새겨진 1,700여 개의 문자와 능비의 실물 크기, 표면 질감을 생성하게 재현하였습니다. 한편, 이번 전시에서는 그의 시호가 새겨진 문화유산도 함께 전시할 예정이오니 많은 관심 부탁드립니다.",
+    "question": "다음 특별전에 전시될 문화유산으로 가장 적절한 것은?",
+    "input_text": "디지털 실감 영상으로 재현한 고구려의 문화유산 \n 우리 박물관은 '영락' 이라는 연호를 사용한 왕의 능비를 디지털 영상으로 복원하여 선보이고자 합니다. 네 면에 새겨진 1,700여 개의 문자와 능비의 실물 크기, 표면 질감을 생성하게 재현하였습니다. 한편, 이번 전시에서는 그의 시호가 새겨진 문화유산도 함께 전시할 예정이오니 많은 관심 부탁드립니다.\n다음 특별전에 전시될 문화유산으로 가장 적절한 것은?",
+    "answer_choice": "호우명 그릇",
+    "distractor_choices": [
+      "중성리 신라비",
+      "무령왕릉 석수",
+      "가야 판갑",
+      "농경문"
+    ],
+    "topic_type": "문화유산",
+    "topic": "고구려의 문화유산",
+    "material_type": "시각 자료 설명",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "자료 기반 시대·대상 추론",
+    "question_task": "standard_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": false,
+        "content": "중성리 신라비"
+      },
+      {
+        "is_answer": false,
+        "content": "무령왕릉 석수"
+      },
+      {
+        "is_answer": false,
+        "content": "가야 판갑"
+      },
+      {
+        "is_answer": false,
+        "content": "농경문"
+      },
+      {
+        "is_answer": true,
+        "content": "호우명 그릇"
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 73,
+    "question_no": 6,
+    "_needs_answer": true
+  },
+  {
+    "problem_id": "cj_v41_img_73_14",
+    "source_group_index": 27,
+    "material": "망이 등이 홍경원에 불을 지르고 절에 있던 승려 10여인을 죽였으며, 주지승을 위협하여 개경으로 서신을 가져 가게 하었다. 그 서신에 대략 이르기를, '이미 우리 고을을 현으로 승격시키고 또 수령을 두어 안무하더니, 돌이켜 다시 군대를 내어 토벌하러 와서 우리 어머니와 아내를 옥에 가두었으니 그 뜻은 어디에 있는가? 차라리 칼날 아래 죽을지언정 끝내 항복하여 포로가 되지 않을 것이며, 반드시 개경까지 가고야 말겠다.'라고 하였다.",
+    "question": "다음 사건에 대한 탐구 활동으로 가장 적절한 것은?",
+    "input_text": "망이 등이 홍경원에 불을 지르고 절에 있던 승려 10여인을 죽였으며, 주지승을 위협하여 개경으로 서신을 가져 가게 하었다. 그 서신에 대략 이르기를, '이미 우리 고을을 현으로 승격시키고 또 수령을 두어 안무하더니, 돌이켜 다시 군대를 내어 토벌하러 와서 우리 어머니와 아내를 옥에 가두었으니 그 뜻은 어디에 있는가? 차라리 칼날 아래 죽을지언정 끝내 항복하여 포로가 되지 않을 것이며, 반드시 개경까지 가고야 말겠다.'라고 하였다.\n다음 사건에 대한 탐구 활동으로 가장 적절한 것은?",
+    "answer_choice": "특수 행정 구역인 소에 대한 차별을 조사한다.",
+    "distractor_choices": [
+      "안동도호부가 설치된 경위를 알아본다.",
+      "신라 말 호족 세력이 성장하게 된 계기를 살펴본다.",
+      "통청 운동을 통해 청요직으로 진출한 인물을 검색한다.",
+      "경기에 한하여 설치된 과전이 농민에게 미친 영향을 파악한다."
+    ],
+    "topic_type": "제도",
+    "topic": "망이 망소이의 난",
+    "material_type": "시각 자료 설명",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "자료 기반 시대·대상 추론",
+    "question_task": "standard_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": false,
+        "content": "안동도호부가 설치된 경위를 알아본다."
+      },
+      {
+        "is_answer": true,
+        "content": "특수 행정 구역인 소에 대한 차별을 조사한다."
+      },
+      {
+        "is_answer": false,
+        "content": "신라 말 호족 세력이 성장하게 된 계기를 살펴본다."
+      },
+      {
+        "is_answer": false,
+        "content": "통청 운동을 통해 청요직으로 진출한 인물을 검색한다."
+      },
+      {
+        "is_answer": false,
+        "content": "경기에 한하여 설치된 과전이 농민에게 미친 영향을 파악한다."
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 73,
+    "question_no": 14,
+    "_needs_answer": true
+  },
+  {
+    "problem_id": "cj_v41_img_73_26",
+    "source_group_index": 28,
+    "material": "이곳 철원 삼부연 폭포는 겸재 (가)이/가 그린 그림으로 유명합니다. 우리 산천의 아름다움을 사실적으로 표현한 진경 산수화를 실제 모습과 함께 감상해 보세요.",
+    "question": "(가) 인물의 작품으로 옳은 것은?",
+    "input_text": "이곳 철원 삼부연 폭포는 겸재 (가)이/가 그린 그림으로 유명합니다. 우리 산천의 아름다움을 사실적으로 표현한 진경 산수화를 실제 모습과 함께 감상해 보세요.\n(가) 인물의 작품으로 옳은 것은?",
+    "answer_choice": "금강내산",
+    "distractor_choices": [
+      "산수인물도",
+      "월하정인",
+      "영통동구",
+      "몽유도원도"
+    ],
+    "topic_type": "인물",
+    "topic": "정선과 그의 진경 산수화",
+    "material_type": "시각 자료 설명",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "시각 자료 해석",
+    "question_task": "standard_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": true,
+        "content": "금강내산"
+      },
+      {
+        "is_answer": false,
+        "content": "산수인물도"
+      },
+      {
+        "is_answer": false,
+        "content": "월하정인"
+      },
+      {
+        "is_answer": false,
+        "content": "영통동구"
+      },
+      {
+        "is_answer": false,
+        "content": "몽유도원도"
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 73,
+    "question_no": 26,
+    "_needs_answer": true
+  },
+  {
+    "problem_id": "cj_v41_img_73_27",
+    "source_group_index": 29,
+    "material": "(가)어진\n이 그림은 (가) 왕의 초상화로, 조선 시대에 그려진 현존하는 어진 가운데 군복을 입고 있는 유일한 사례이다. 강화 도령으로 불렸던 그는 안동 김씨인 순원 왕후의 명으로 왕위에 올랐지만, 임술 농민 봉기가 일어나는 등 혼란한 상황 속에서 승하하였디. 6.25 전쟁 때 화재로 어진의 일부가 소실되었다.",
+    "question": "(가) 왕의 재위 시기에 있었던 사실로 옳은 것은?",
+    "input_text": "(가)어진\n이 그림은 (가) 왕의 초상화로, 조선 시대에 그려진 현존하는 어진 가운데 군복을 입고 있는 유일한 사례이다. 강화 도령으로 불렸던 그는 안동 김씨인 순원 왕후의 명으로 왕위에 올랐지만, 임술 농민 봉기가 일어나는 등 혼란한 상황 속에서 승하하였디. 6.25 전쟁 때 화재로 어진의 일부가 소실되었다.\n(가) 왕의 재위 시기에 있었던 사실로 옳은 것은?",
+    "answer_choice": "박규수의 건의로 삼정이정청이 설치되었다.",
+    "distractor_choices": [
+      "윤지충 등이 처형된 신해박해가 일어났다.",
+      "오페르트가 남연군 묘 도굴을 시도하였다.",
+      "국왕의 친위 부대인 장용영이 창설되었다.",
+      "경신환국 등 여러 차례 환국이 발생하였다."
+    ],
+    "topic_type": "인물",
+    "topic": "조선 시대 왕과 관련된 역사적 사건",
+    "material_type": "시각 자료 설명",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "자료 기반 시대·대상 추론",
+    "question_task": "standard_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": false,
+        "content": "윤지충 등이 처형된 신해박해가 일어났다."
+      },
+      {
+        "is_answer": false,
+        "content": "오페르트가 남연군 묘 도굴을 시도하였다."
+      },
+      {
+        "is_answer": false,
+        "content": "국왕의 친위 부대인 장용영이 창설되었다."
+      },
+      {
+        "is_answer": false,
+        "content": "경신환국 등 여러 차례 환국이 발생하였다."
+      },
+      {
+        "is_answer": false,
+        "content": "박규수의 건의로 삼정이정청이 설치되었다."
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 73,
+    "question_no": 27,
+    "_needs_answer": true
+  },
+  {
+    "problem_id": "cj_v41_img_76_04",
+    "source_group_index": 25,
+    "material": "금동 대향로\n부여 능산리에서 발견된 금동 대향로는 (가)를 대표하는 문화유산으로 국보로 지정되어 있습니다. 용이 받치고 있는 연꽃 형태의 몸체 위에 산봉우리로 둘러싸인 반원형의 뚜껑이 있고, 그 꼭대기에는 봉황이 자리 잡고 있습니다. 불교와 도교 요소가 복합적으로 표현된 걸작입니다.",
+    "question": "(가) 국가의 문화유산으로 옳은 것은?",
+    "input_text": "금동 대향로\n부여 능산리에서 발견된 금동 대향로는 (가)를 대표하는 문화유산으로 국보로 지정되어 있습니다. 용이 받치고 있는 연꽃 형태의 몸체 위에 산봉우리로 둘러싸인 반원형의 뚜껑이 있고, 그 꼭대기에는 봉황이 자리 잡고 있습니다. 불교와 도교 요소가 복합적으로 표현된 걸작입니다.\n(가) 국가의 문화유산으로 옳은 것은?",
+    "answer_choice": "백제 산수문전",
+    "distractor_choices": [
+      "신라 금관",
+      "고구려 호우명 그릇",
+      "금관가야 철제 판갑옷",
+      "발해의 이불병좌상"
+    ],
+    "topic_type": "문화유산",
+    "topic": "백제 금동대향로",
+    "material_type": "시각 자료 설명",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "자료 기반 시대·대상 추론",
+    "question_task": "standard_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": true,
+        "content": "백제 산수문전"
+      },
+      {
+        "is_answer": false,
+        "content": "신라 금관"
+      },
+      {
+        "is_answer": false,
+        "content": "고구려 호우명 그릇"
+      },
+      {
+        "is_answer": false,
+        "content": "금관가야 철제 판갑옷"
+      },
+      {
+        "is_answer": false,
+        "content": "발해의 이불병좌상"
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 76,
+    "question_no": 4
+  },
+  {
+    "problem_id": "cj_v41_img_76_17",
+    "source_group_index": 26,
+    "material": "아름다운 비색 빼어난 조형성 고려 시대 공예의 높은 기술적 성취 한국 문화의 정수 상형자기 그 아름다움을 느껴 보시기 바랍니다.",
+    "question": "다음 특별전에 전시될 문화유산으로 가장 적절한 것은?",
+    "input_text": "아름다운 비색 빼어난 조형성 고려 시대 공예의 높은 기술적 성취 한국 문화의 정수 상형자기 그 아름다움을 느껴 보시기 바랍니다.\n다음 특별전에 전시될 문화유산으로 가장 적절한 것은?",
+    "answer_choice": "청자 비룡형 주자",
+    "distractor_choices": [
+      "백자 청화 이형",
+      "분청사기 철화 풀무늬 자라병",
+      "수레바퀴모양 토기",
+      "분철사기 자라무늬 상준"
+    ],
+    "topic_type": "문화유산",
+    "topic": "고려 시대의 도자기",
+    "material_type": "시각 자료 설명",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "시각 자료 해석",
+    "question_task": "standard_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": true,
+        "content": "청자 비룡형 주자"
+      },
+      {
+        "is_answer": false,
+        "content": "백자 청화 이형"
+      },
+      {
+        "is_answer": false,
+        "content": "분청사기 철화 풀무늬 자라병"
+      },
+      {
+        "is_answer": false,
+        "content": "수레바퀴모양 토기"
+      },
+      {
+        "is_answer": false,
+        "content": "분철사기 자라무늬 상준"
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 76,
+    "question_no": 17
+  },
+  {
+    "problem_id": "cj_v41_img_76_27",
+    "source_group_index": 27,
+    "material": "이 그림은 조선 후기의 대표적인 풍속 화가인 혜원이 그린 연소답청입니다. 양반들이 봄날에 자연을 즐기고자 나들이하는 모습을 그린 작품입니다.",
+    "question": "다음 중 (가)에 해당하는 작품으로 옳은 것은?",
+    "input_text": "이 그림은 조선 후기의 대표적인 풍속 화가인 혜원이 그린 연소답청입니다. 양반들이 봄날에 자연을 즐기고자 나들이하는 모습을 그린 작품입니다.\n다음 중 (가)에 해당하는 작품으로 옳은 것은?",
+    "answer_choice": "연소답청",
+    "distractor_choices": [
+      "파적도",
+      "초례도",
+      "벼타작도",
+      "고사관수도"
+    ],
+    "topic_type": "문화유산",
+    "topic": "조선 후기의 풍속화",
+    "material_type": "시각 자료 설명",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "시각 자료 해석",
+    "question_task": "standard_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": false,
+        "content": "파적도"
+      },
+      {
+        "is_answer": false,
+        "content": "초례도"
+      },
+      {
+        "is_answer": true,
+        "content": "연소답청"
+      },
+      {
+        "is_answer": false,
+        "content": "벼타작도"
+      },
+      {
+        "is_answer": false,
+        "content": "고사관수도"
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 76,
+    "question_no": 27
+  },
+  {
+    "problem_id": "cj_v41_img_77_04",
+    "source_group_index": 24,
+    "material": "이 전시실에서는 (가)의 수도에서 발굴된 경주 천마총 장니 천마도와 금령총 천마무늬 말다래 등을 통해 다양한 천마의 모습을 볼 수 있습니다. 장니는 말의 안장 양쪽에 늘어뜨려 놓은 것으로 말다래 라고도 불립니다.",
+    "question": "(가) 국가의 문화유산으로 옳은 것은?",
+    "input_text": "이 전시실에서는 (가)의 수도에서 발굴된 경주 천마총 장니 천마도와 금령총 천마무늬 말다래 등을 통해 다양한 천마의 모습을 볼 수 있습니다. 장니는 말의 안장 양쪽에 늘어뜨려 놓은 것으로 말다래 라고도 불립니다.\n(가) 국가의 문화유산으로 옳은 것은?",
+    "answer_choice": "천마총 금제 관식",
+    "distractor_choices": [
+      "백제의 금동 대향로",
+      "백제 칠지도",
+      "농경문",
+      "금동연가7년명여래입상"
+    ],
+    "topic_type": "문화유산",
+    "topic": "경주 첨성대 출토 유물",
+    "material_type": "시각 자료 설명",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "자료 기반 시대·대상 추론",
+    "question_task": "standard_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": false,
+        "content": "백제의 금동 대향로"
+      },
+      {
+        "is_answer": false,
+        "content": "백제 칠지도"
+      },
+      {
+        "is_answer": false,
+        "content": "농경문"
+      },
+      {
+        "is_answer": true,
+        "content": "천마총 금제 관식"
+      },
+      {
+        "is_answer": false,
+        "content": "금동연가7년명여래입상"
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 77,
+    "question_no": 4
+  },
+  {
+    "problem_id": "cj_v41_img_77_13",
+    "source_group_index": 25,
+    "material": "제가 소개할 문화유산은 청주 명암동에서 출토된 단산오옥명 먹입니다. (가)의 먹은 주로 묵소에서 생산되었으며 중국 사신 서긍도 언급했을 정도로 잘 알려져 있었습니다.\n 다인철소 유적 출토 솥단지, 나전국화 넝쿨무늬 합",
+    "question": "(가) 국가의 문화유산으로 옳지 않은 것은?",
+    "input_text": "제가 소개할 문화유산은 청주 명암동에서 출토된 단산오옥명 먹입니다. (가)의 먹은 주로 묵소에서 생산되었으며 중국 사신 서긍도 언급했을 정도로 잘 알려져 있었습니다.\n 다인철소 유적 출토 솥단지, 나전국화 넝쿨무늬 합\n(가) 국가의 문화유산으로 옳지 않은 것은?",
+    "answer_choice": "호우명 그릇",
+    "distractor_choices": [
+      "월정사 팔각 구층 석탑",
+      "청자 상감 모란문 표주박 모양 주전자",
+      "수원관음도",
+      "석조 미륵보살입상"
+    ],
+    "topic_type": "문화유산",
+    "topic": "한국의 주요 문화유산",
+    "material_type": "시각 자료 설명",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "자료 기반 시대·대상 추론",
+    "question_task": "negative_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": false,
+        "content": "월정사 팔각 구층 석탑"
+      },
+      {
+        "is_answer": false,
+        "content": "청자 상감 모란문 표주박 모양 주전자"
+      },
+      {
+        "is_answer": false,
+        "content": "수원관음도"
+      },
+      {
+        "is_answer": true,
+        "content": "호우명 그릇"
+      },
+      {
+        "is_answer": false,
+        "content": "석조 미륵보살입상"
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 77,
+    "question_no": 13
+  },
+  {
+    "problem_id": "cj_v41_img_78_09",
+    "source_group_index": 25,
+    "material": "이것은 중국 지린성 룽터우산 고분군에서 출토된 (가)의 효의황후와 순목황후의 묘지입니다. 묘지에는 각각 보력과 건흥이라는 문왕 대와 선왕 대의 독자적인 연호가 기록되어 있고, 황후라는 글자가 새겨져 있어 (가) 이/가 황제국의 제도를 운용하였음을 알 수 있습니다.\n효의황후 묘지, 순목황후 묘지",
+    "question": "(가) 국가의 문화유산으로 옳은 것은?",
+    "input_text": "이것은 중국 지린성 룽터우산 고분군에서 출토된 (가)의 효의황후와 순목황후의 묘지입니다. 묘지에는 각각 보력과 건흥이라는 문왕 대와 선왕 대의 독자적인 연호가 기록되어 있고, 황후라는 글자가 새겨져 있어 (가) 이/가 황제국의 제도를 운용하였음을 알 수 있습니다.\n효의황후 묘지, 순목황후 묘지\n(가) 국가의 문화유산으로 옳은 것은?",
+    "answer_choice": "이불병좌상",
+    "distractor_choices": [
+      "금동연가7년명여래입상.",
+      "하남 하사창동 철조 석가여래 좌상",
+      "영조 부석사 소조 아미타여래",
+      "경주 구황동 금제 여래 좌상"
+    ],
+    "topic_type": "문화유산",
+    "topic": "발해의 문화유산",
+    "material_type": "시각 자료 설명",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "자료 기반 시대·대상 추론",
+    "question_task": "standard_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": false,
+        "content": "금동연가7년명여래입상."
+      },
+      {
+        "is_answer": false,
+        "content": "하남 하사창동 철조 석가여래 좌상"
+      },
+      {
+        "is_answer": true,
+        "content": "이불병좌상"
+      },
+      {
+        "is_answer": false,
+        "content": "영조 부석사 소조 아미타여래"
+      },
+      {
+        "is_answer": false,
+        "content": "경주 구황동 금제 여래 좌상"
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 78,
+    "question_no": 9
+  },
+  {
+    "problem_id": "cj_v41_img_78_14",
+    "source_group_index": 26,
+    "material": "이것은 청주 흥덕사에서 간행된 직지심체요절입니다. 백운 화상이 부처와 여러 고승의 가르침에서 중요한 내용을 뽑아 편찬한 책으로, 현존하는 금속 활자 인쇄본 중 가장 오래된 것입니다.",
+    "question": "(가) 국가의 문화유산으로 옳은 것은?",
+    "input_text": "이것은 청주 흥덕사에서 간행된 직지심체요절입니다. 백운 화상이 부처와 여러 고승의 가르침에서 중요한 내용을 뽑아 편찬한 책으로, 현존하는 금속 활자 인쇄본 중 가장 오래된 것입니다.\n(가) 국가의 문화유산으로 옳은 것은?",
+    "answer_choice": "월정사 팔각 구층 석탑",
+    "distractor_choices": [
+      "정림사지 오층 석탑",
+      "영광탑",
+      "진전사지 삼층 석탑",
+      "분항사 모전석탑"
+    ],
+    "topic_type": "문화유산",
+    "topic": "직지심체요절",
+    "material_type": "시각 자료 설명",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "자료 기반 시대·대상 추론",
+    "question_task": "standard_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": false,
+        "content": "정림사지 오층 석탑"
+      },
+      {
+        "is_answer": false,
+        "content": "영광탑"
+      },
+      {
+        "is_answer": true,
+        "content": "월정사 팔각 구층 석탑"
+      },
+      {
+        "is_answer": false,
+        "content": "진전사지 삼층 석탑"
+      },
+      {
+        "is_answer": false,
+        "content": "분항사 모전석탑"
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 78,
+    "question_no": 14
+  },
+  {
+    "problem_id": "cj_v41_img_78_26",
+    "source_group_index": 27,
+    "material": "불이선란도\n 이 작품은 (가) 이/가 자신만의 서예 필법으로 글씨 쓰듯이 그린 것이다. 그림 속 글과 도장을 통해 그의 예술 세계와 소장자 변동 등을 확인 할 수 있다. (가) 은/는 혹독한 제주도 유배 시절을 견뎌내며 추사체 라는 독창적 서체를 남겼다.",
+    "question": "(가) 인물의 작품으로 옳은 것은?",
+    "input_text": "불이선란도\n 이 작품은 (가) 이/가 자신만의 서예 필법으로 글씨 쓰듯이 그린 것이다. 그림 속 글과 도장을 통해 그의 예술 세계와 소장자 변동 등을 확인 할 수 있다. (가) 은/는 혹독한 제주도 유배 시절을 견뎌내며 추사체 라는 독창적 서체를 남겼다.\n(가) 인물의 작품으로 옳은 것은?",
+    "answer_choice": "세한도",
+    "distractor_choices": [
+      "월하정인",
+      "매화초옥도",
+      "불이선란도",
+      "야묘도추"
+    ],
+    "topic_type": "인물",
+    "topic": "조선 시대의 화가",
+    "material_type": "시각 자료 설명",
+    "major_type": "역사 자료의 분석 및 해석",
+    "minor_type": "시각 자료 해석",
+    "question_task": "standard_select",
+    "difficulty_label": "보통",
+    "choices": [
+      {
+        "is_answer": false,
+        "content": "월하정인"
+      },
+      {
+        "is_answer": false,
+        "content": "매화초옥도"
+      },
+      {
+        "is_answer": false,
+        "content": "불이선란도"
+      },
+      {
+        "is_answer": false,
+        "content": "야묘도추"
+      },
+      {
+        "is_answer": true,
+        "content": "세한도"
+      }
+    ],
+    "choice_count": 5,
+    "distractor_count": 4,
+    "round_no": 78,
+    "question_no": 26
+  }
+]

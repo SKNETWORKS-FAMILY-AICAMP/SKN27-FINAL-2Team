@@ -1,0 +1,44 @@
+{
+  "rounds": [
+    47,
+    48,
+    49
+  ],
+  "total_rows": 143,
+  "round_summary": {
+    "47": {
+      "record_count": 46,
+      "missing": [
+        5,
+        15,
+        27,
+        50
+      ],
+      "duplicates": [],
+      "first_missing": 5
+    },
+    "48": {
+      "record_count": 49,
+      "missing": [
+        3
+      ],
+      "duplicates": [],
+      "first_missing": 3
+    },
+    "49": {
+      "record_count": 48,
+      "missing": [
+        27,
+        39
+      ],
+      "duplicates": [],
+      "first_missing": 27
+    }
+  },
+  "issue_counts": {
+    "missing_question": 7,
+    "image_like_question": 28,
+    "shift_risk_after_gap": 111,
+    "core_concept_suspicious": 2
+  }
+}
