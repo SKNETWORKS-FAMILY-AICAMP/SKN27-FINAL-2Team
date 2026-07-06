@@ -293,11 +293,12 @@ $RECYCLE.BIN/
 
 postgres_data/
 
+
 # Neo4j preprocessing generated CSV files
-etl/preprocessing/neo4j/normalized/*.csv
-etl/preprocessing/neo4j/dictionary/*.csv
-etl/preprocessing/neo4j/mapping/*.csv
-etl/preprocessing/neo4j/staging/*.csv
-etl/preprocessing/neo4j/graph/**/*.csv
-storage/neo4j/neo4j_import/nodes/*.csv
-storage/neo4j/neo4j_import/relations/*.csv
+etl/preprocessing/neo4j/**/*.csv
+!etl/preprocessing/neo4j/seed/
+!etl/preprocessing/neo4j/seed/**/*.csv
+
+# Neo4j import generated CSV files
+storage/neo4j/neo4j_import/*.csv
+storage/neo4j/neo4j_import/**/*.csv
