@@ -1,0 +1,225 @@
+{
+  "schema_version": "imjin_generation_basis_pack_v2",
+  "model": "gpt-5.4-mini",
+  "seed": {
+    "seed_id": "tmp_imjin_20260706",
+    "topic": "임진왜란",
+    "topic_type": "사건",
+    "era": "조선",
+    "material_type": "짧은 설명 자료",
+    "major_type": "역사 지식의 이해",
+    "minor_type": "기본 사실·개념 확인",
+    "question_task": "standard_select",
+    "question_task_instruction": "material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",
+    "difficulty_label": "보통"
+  },
+  "generated_material": "16세기 말 조선은 일본의 침략으로 전국 각지에서 전쟁 피해를 입었고, 국토와 군사·민생 질서가 크게 흔들렸다. 이 시기에는 중국 상인들이 서울과 지방에 널리 드나들며 조선인들에게 중국산 물화를 직접 팔기도 하였다. 전쟁이 길어지면서 조선·중국·일본 사이의 무역 질서도 이전과는 다른 모습으로 바뀌었다.",
+  "answer_fact_basis": [
+    "임진왜란은 1592년 일본이 조선을 침략하여 시작된 전쟁으로, 조선은 전국적 전란을 겪으며 국토와 사회가 큰 피해를 입었다. 이 전쟁을 계기로 조선·명·일본 사이의 무역 질서가 흔들리고, 중국 상인의 조선 진출과 중개무역이 활발해지는 변화가 나타났다."
+  ],
+  "graph_anchor": {
+    "term_name": "임진왜란",
+    "term_times": "조선후기",
+    "description": "1592년부터 1598년까지 2차에 걸쳐서 우리나라에 침입한 일본과의 싸움."
+  },
+  "difficulty_packs": [
+    {
+      "difficulty_label": "쉬움",
+      "graph_depth": 1,
+      "graph_anchor": "임진왜란",
+      "correct_choice_input": {
+        "task_type": "correct_choice_generation",
+        "material": "16세기 말 조선은 일본의 침략으로 전국 각지에서 전쟁 피해를 입었고, 국토와 군사·민생 질서가 크게 흔들렸다. 이 시기에는 중국 상인들이 서울과 지방에 널리 드나들며 조선인들에게 중국산 물화를 직접 팔기도 하였다. 전쟁이 길어지면서 조선·중국·일본 사이의 무역 질서도 이전과는 다른 모습으로 바뀌었다.",
+        "answer_fact_basis": [
+          "임진왜란은 1592년 일본이 조선을 침략하여 시작된 전쟁으로, 조선은 전국적 전란을 겪으며 국토와 사회가 큰 피해를 입었다. 이 전쟁을 계기로 조선·명·일본 사이의 무역 질서가 흔들리고, 중국 상인의 조선 진출과 중개무역이 활발해지는 변화가 나타났다."
+        ],
+        "topic_type": "사건",
+        "topic": "임진왜란",
+        "material_type": "짧은 설명 자료",
+        "major_type": "역사 지식의 이해",
+        "minor_type": "기본 사실·개념 확인",
+        "question_task": "standard_select",
+        "question_task_instruction": "material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",
+        "difficulty_label": "쉬움"
+      },
+      "distractor_fact_basis_list": [
+        [
+          {
+            "target": "5군",
+            "basis_text": "조선시대에 임진왜란 이후 5군영(五軍營)에 소속된 군대.",
+            "source_type": "neo4j_term_desc",
+            "title": "5군",
+            "chunk_id": "neo4j:5군",
+            "source_name": "Neo4j TermName.term_desc",
+            "retrieval_note": "fallback because RAG keyword hit failed exact/context filter"
+          }
+        ],
+        [
+          {
+            "target": "강항",
+            "basis_text": "조선 선조-광해군 때의 문신. 본관은 진주. 전라남도 영광 출신. 성혼(成渾0의 문인. 임진왜란 때 의병으로 활약하다 일본에 잡혀가 성리학을 전파. 영광 용계사(龍溪祠)와 내산서원(內山書院)에 재향.",
+            "source_type": "neo4j_term_desc",
+            "title": "강항",
+            "chunk_id": "neo4j:강항",
+            "source_name": "Neo4j TermName.term_desc",
+            "retrieval_note": "fallback because RAG keyword hit failed exact/context filter"
+          }
+        ],
+        [
+          {
+            "target": "곽준",
+            "basis_text": "조선후기의 문신. 임진왜란 때 의병으로 참가하고, 정유재란 때 황석산성(黃石山城) 전투에서 전사함.",
+            "source_type": "neo4j_term_desc",
+            "title": "곽준",
+            "chunk_id": "neo4j:곽준",
+            "source_name": "Neo4j TermName.term_desc",
+            "retrieval_note": "fallback because RAG keyword hit failed exact/context filter"
+          }
+        ],
+        [
+          {
+            "target": "곽진",
+            "basis_text": "조선후기의 학자·의병장. 임진왜란 때 화왕산성(火旺山城) 전투 등에서 활약하고, 광해군 때에는 영남유생을 대표하여 이이첨(李爾瞻)을 탄핵하는 상소문을 올림.",
+            "source_type": "neo4j_term_desc",
+            "title": "곽진",
+            "chunk_id": "neo4j:곽진",
+            "source_name": "Neo4j TermName.term_desc",
+            "retrieval_note": "fallback because RAG keyword hit failed exact/context filter"
+          }
+        ]
+      ]
+    },
+    {
+      "difficulty_label": "보통",
+      "graph_depth": 2,
+      "graph_anchor": "임진왜란",
+      "correct_choice_input": {
+        "task_type": "correct_choice_generation",
+        "material": "16세기 말 조선은 일본의 침략으로 전국 각지에서 전쟁 피해를 입었고, 국토와 군사·민생 질서가 크게 흔들렸다. 이 시기에는 중국 상인들이 서울과 지방에 널리 드나들며 조선인들에게 중국산 물화를 직접 팔기도 하였다. 전쟁이 길어지면서 조선·중국·일본 사이의 무역 질서도 이전과는 다른 모습으로 바뀌었다.",
+        "answer_fact_basis": [
+          "임진왜란은 1592년 일본이 조선을 침략하여 시작된 전쟁으로, 조선은 전국적 전란을 겪으며 국토와 사회가 큰 피해를 입었다. 이 전쟁을 계기로 조선·명·일본 사이의 무역 질서가 흔들리고, 중국 상인의 조선 진출과 중개무역이 활발해지는 변화가 나타났다."
+        ],
+        "topic_type": "사건",
+        "topic": "임진왜란",
+        "material_type": "짧은 설명 자료",
+        "major_type": "역사 지식의 이해",
+        "minor_type": "기본 사실·개념 확인",
+        "question_task": "standard_select",
+        "question_task_instruction": "material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",
+        "difficulty_label": "보통"
+      },
+      "distractor_fact_basis_list": [
+        [
+          {
+            "target": "부로",
+            "basis_text": "왜군에 의해 강제로 일본에 끌려간 조선인.",
+            "source_type": "neo4j_term_desc",
+            "title": "부로",
+            "chunk_id": "neo4j:부로",
+            "source_name": "Neo4j TermName.term_desc",
+            "retrieval_note": "fallback because RAG keyword hit failed exact/context filter"
+          }
+        ],
+        [
+          {
+            "target": "양요",
+            "basis_text": "조선 후기 프랑스·미국 등 서양 제국주의 세력의 침입으로 야기된 전투.",
+            "source_type": "neo4j_term_desc",
+            "title": "양요",
+            "chunk_id": "neo4j:양요",
+            "source_name": "Neo4j TermName.term_desc",
+            "retrieval_note": "fallback because RAG keyword hit failed exact/context filter"
+          }
+        ],
+        [
+          {
+            "target": "호란",
+            "basis_text": "조선시대 만주족의 침입으로 발생한 전란(戰亂).",
+            "source_type": "neo4j_term_desc",
+            "title": "호란",
+            "chunk_id": "neo4j:호란",
+            "source_name": "Neo4j TermName.term_desc",
+            "retrieval_note": "fallback because RAG keyword hit failed exact/context filter"
+          }
+        ],
+        [
+          {
+            "target": "3포왜란",
+            "basis_text": "1510년(중종 5) 3포에서 왜인들이 활동 제한에 불만을 품어 일으킨 폭동.",
+            "source_type": "neo4j_term_desc",
+            "title": "3포왜란",
+            "chunk_id": "neo4j:3포왜란",
+            "source_name": "Neo4j TermName.term_desc",
+            "retrieval_note": "fallback because RAG keyword hit failed exact/context filter"
+          }
+        ]
+      ]
+    },
+    {
+      "difficulty_label": "어려움",
+      "graph_depth": 3,
+      "graph_anchor": "임진왜란",
+      "correct_choice_input": {
+        "task_type": "correct_choice_generation",
+        "material": "16세기 말 조선은 일본의 침략으로 전국 각지에서 전쟁 피해를 입었고, 국토와 군사·민생 질서가 크게 흔들렸다. 이 시기에는 중국 상인들이 서울과 지방에 널리 드나들며 조선인들에게 중국산 물화를 직접 팔기도 하였다. 전쟁이 길어지면서 조선·중국·일본 사이의 무역 질서도 이전과는 다른 모습으로 바뀌었다.",
+        "answer_fact_basis": [
+          "임진왜란은 1592년 일본이 조선을 침략하여 시작된 전쟁으로, 조선은 전국적 전란을 겪으며 국토와 사회가 큰 피해를 입었다. 이 전쟁을 계기로 조선·명·일본 사이의 무역 질서가 흔들리고, 중국 상인의 조선 진출과 중개무역이 활발해지는 변화가 나타났다."
+        ],
+        "topic_type": "사건",
+        "topic": "임진왜란",
+        "material_type": "짧은 설명 자료",
+        "major_type": "역사 지식의 이해",
+        "minor_type": "기본 사실·개념 확인",
+        "question_task": "standard_select",
+        "question_task_instruction": "material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",
+        "difficulty_label": "어려움"
+      },
+      "distractor_fact_basis_list": [
+        [
+          {
+            "target": "곽월",
+            "basis_text": "조선전기의 문신. 의병장 곽재우의 어버지로 사간·의주목사·동지사 등의 관직을 역임함.",
+            "source_type": "neo4j_term_desc",
+            "title": "곽월",
+            "chunk_id": "neo4j:곽월",
+            "source_name": "Neo4j TermName.term_desc",
+            "retrieval_note": "fallback because RAG keyword hit failed exact/context filter"
+          }
+        ],
+        [
+          {
+            "target": "구항",
+            "basis_text": "조선 선조대의 학자·의병장. 본관은 능성(綾城).",
+            "source_type": "neo4j_term_desc",
+            "title": "구항",
+            "chunk_id": "neo4j:구항",
+            "source_name": "Neo4j TermName.term_desc",
+            "retrieval_note": "fallback because RAG keyword hit failed exact/context filter"
+          }
+        ],
+        [
+          {
+            "target": "구희",
+            "basis_text": "조선 선조대의 학자·의병. 본관은 능성(綾城).",
+            "source_type": "neo4j_term_desc",
+            "title": "구희",
+            "chunk_id": "neo4j:구희",
+            "source_name": "Neo4j TermName.term_desc",
+            "retrieval_note": "fallback because RAG keyword hit failed exact/context filter"
+          }
+        ],
+        [
+          {
+            "target": "권엽",
+            "basis_text": "조선 선조-효종 때 문신. 본관은 안동(安東). 정묘호란 때 의병으로 참가, 파주목·첨지중추부사·오위도총부부총관·고성군수를 역임. 저서로는 ≪구사집≫·≪구사금강록(龜沙金剛錄(≫이 있음.",
+            "source_type": "neo4j_term_desc",
+            "title": "권엽",
+            "chunk_id": "neo4j:권엽",
+            "source_name": "Neo4j TermName.term_desc",
+            "retrieval_note": "fallback because RAG keyword hit failed exact/context filter"
+          }
+        ]
+      ]
+    }
+  ]
+}

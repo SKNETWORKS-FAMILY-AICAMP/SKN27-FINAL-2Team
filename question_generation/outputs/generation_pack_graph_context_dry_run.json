@@ -1,0 +1,120 @@
+{
+  "schema_version": "generation_pack_v1",
+  "model": "",
+  "dry_run": true,
+  "items": [
+    {
+      "seed_id": "seed_20260706_001",
+      "topic": "녹읍",
+      "topic_type": "제도",
+      "era": "삼국",
+      "material_type": "자료 제시문",
+      "major_type": "역사 자료의 분석 및 해석",
+      "minor_type": "자료 기반 시대·대상 추론",
+      "question_task": "standard_select",
+      "question_task_instruction": "material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",
+      "difficulty_label": "쉬움",
+      "graph_context": {
+        "anchor_label": "Term",
+        "anchor": {
+          "year_parse_status": "UNKNOWN",
+          "topterm_id": 199,
+          "description": "신라시대와 고려 초기에 관료들에게 일정한 경제적 수취를 허용해준 특수한 지역.",
+          "year_text": "?-?",
+          "source": "history_terms",
+          "hanja": "祿邑",
+          "term_id": "2929",
+          "period_text": "삼국시대-고려시대",
+          "description_length": 43,
+          "name": "녹읍",
+          "year_precision": "UNKNOWN",
+          "is_exam_keyword": "N",
+          "category_text": "경제·산업>농업>토지제도",
+          "question_ready": "N"
+        },
+        "themes": [
+          "경제"
+        ],
+        "categories": [
+          "경제·산업>농업>토지제도"
+        ],
+        "eras": [
+          "고려",
+          "남북국시대",
+          "삼국시대"
+        ],
+        "required_clues": [
+          "신라시대와 고려 초기에 관료들에게 일정한 경제적 수취를 허용해준 특수한 지역."
+        ],
+        "graph_facts": [
+          "신라시대와 고려 초기에 관료들에게 일정한 경제적 수취를 허용해준 특수한 지역."
+        ]
+      },
+      "forbidden_terms": [
+        "녹읍"
+      ],
+      "required_clues": [
+        "신라시대와 고려 초기에 관료들에게 일정한 경제적 수취를 허용해준 특수한 지역."
+      ],
+      "material_sources": [
+        {
+          "chunk_id": "neo4j:Term",
+          "source_type": "neo4j_graph_fact",
+          "title": "Term fact",
+          "score": 1.0,
+          "snippet": "신라시대와 고려 초기에 관료들에게 일정한 경제적 수취를 허용해준 특수한 지역."
+        },
+        {
+          "chunk_id": "nh_009_0030_0050_0010_0020_chunk_0002",
+          "source_type": "historical_overview",
+          "title": "(2) 녹읍",
+          "score": 2.6487,
+          "snippet": "(2) 녹읍 치적 상황으로 보아도 일면 설득력이 있다고 보인다. 그러나 이 같은 이해는 전체적인 정황에서는 설득력이 있다고 보이지만 지나치게 대세론을 따름으로써 녹읍제가 폐지되었던 67년간의 역사를 간과해 버린 채 녹읍의 부활을 단순히 제도의 복고라고 보는 해석을 내린 감이 있다. 전근대사회 역사에서 60여 년이란 큰 의미없는 기간이 될지도 모를 일이다. 그러나 통일신라 신문왕대에서 경덕왕대에 이르는 이 시기는 매우 역동적인 시기였다. 녹읍이 폐지된 이후 성덕..."
+        },
+        {
+          "chunk_id": "nh_001_0040_0020_0020_0020_chunk_0002",
+          "source_type": "historical_overview",
+          "title": "(2) 녹읍제의 성격",
+          "score": 2.4707,
+          "snippet": "(2) 녹읍제의 성격 245) 金容燮,＜前近代의 土地制度＞(≪韓國學入門≫, 學術院, 1983). 이경식,＜고대 중세의 녹읍제의 구조와 전개＞(≪손보기박사정년기념한국사학논총≫, 1988). 246) 李景植,＜新羅時期 祿邑制의 施行과 그 推移＞(≪歷史硏究≫72, 1999). 247) 吉田 孝,＜公地公民制について＞(≪坂本太郞古稀記念 續日本古代史論集≫中卷, 1972). 木村 誠,＜新羅祿邑制と村落構造＞(≪歷史學硏究≫428 別冊(世界史の新局面と歷史像の再構成), 1976)..."
+        },
+        {
+          "chunk_id": "nh_013_0030_0020_chunk_0000",
+          "source_type": "historical_overview",
+          "title": "2. 군현제도",
+          "score": 2.4862,
+          "snippet": "2. 군현제도 2. 군현제도 郡縣制는 전국에 동일한 政令을 가지고 행정구획을 정하여, 중앙정부에서 임명한 지방관으로 하여금 국가의 물적 기반을 구성하는 토지지배 및 조부·공역의 수취체계를 원활히 운영하기 위한 제도적 장치이다. 고려의 직권적 중앙 권력을 뒷받침해 주는 하부조직인 군현제에 관해서≪高麗史≫에서는 다음과 같이 언급하고 있다. 삼한이 처음 평정되어 아직 행정구역을 정리할 여가가 없었다가 태조 23년(940)에야 비로소 전국의 州府郡縣의 명칭을 고쳤고,..."
+        },
+        {
+          "chunk_id": "nh_023_0060_0030_chunk_0004",
+          "source_type": "historical_overview",
+          "title": "3. 과거제의 정비와 운영",
+          "score": 2.4832,
+          "snippet": "3. 과거제의 정비와 운영 와 4학에서 양성한 인재를 생원·진사시로 뽑아 성균관에 입학하도록 하여 원점 300을 따게 한 다음 문과에 응시시키는 제도는 비록 명·청에서처럼 학교시험 자체가 과거시험의 예비시험으로 된 것과는 다르지만 두 제도를 유기적으로 연결시켜 보려는 노력을 엿볼 수 있게 한다. 학교제도와 과거제도가 일원화될 수 없었던 까닭은 여러 가지를 들 수 있으나 무엇보다도 조선사회가 양반이 지배하는 양반관료제 사회였기 때문이다. 양반들이 구태여 평민들과..."
+        },
+        {
+          "chunk_id": "nh_030_0040_0010_0010_chunk_0003",
+          "source_type": "historical_overview",
+          "title": "Ⅲ. 붕당정치하의 정치구조의 변동 > 1. 비변사의 강화 > 1) 설립 배경과 혁파 과정",
+          "score": 2.4823,
+          "snippet": "Ⅲ. 붕당정치하의 정치구조의 변동 > 1. 비변사의 강화 > 1) 설립 배경과 혁파 과정 비변사 설립 기사가 전후 연결없이 돌출하여 이의 해설을 구구하게 한 점과,≪備邊司謄錄≫에도 설립 시기의 기록이 없어 그 경위를 알 수 없게 한 점, 이에 더하여 이 시기 비변사와 유사한 성격의 防禦廳·築城司 등 몇몇 권설아문의 置廢가 혼재되어 있는 점을 들 수 있다. 둘째, 제도사적 측면에서 관청의 설치 기준을 어디에다 둘 것이냐 하는 문제 때문이다. 즉 어느 관아의 경우..."
+        }
+      ],
+      "material": "",
+      "answer_fact_basis": [],
+      "correct_choice_input": {
+        "task_type": "correct_choice_generation",
+        "material": "",
+        "answer_fact_basis": [],
+        "topic_type": "제도",
+        "topic": "녹읍",
+        "material_type": "자료 제시문",
+        "major_type": "역사 자료의 분석 및 해석",
+        "minor_type": "자료 기반 시대·대상 추론",
+        "question_task": "standard_select",
+        "question_task_instruction": "material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",
+        "difficulty_label": "쉬움"
+      }
+    }
+  ]
+}

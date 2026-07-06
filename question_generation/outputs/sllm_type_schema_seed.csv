@@ -1,0 +1,166 @@
+﻿topic_type,material_type,major_type,minor_type,question_task,question_task_instruction,difficulty_label,training_count,sample_source_id
+기타,자료 제시문,역사 자료의 분석 및 해석,자료 기반 시대·대상 추론,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",보통,158,advanced_48_02
+인물,자료 제시문,역사 자료의 분석 및 해석,자료 기반 시대·대상 추론,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",보통,100,advanced_47_06
+사건,자료 제시문,역사 자료의 분석 및 해석,자료 기반 시대·대상 추론,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",보통,89,advanced_47_10
+기타,자료 제시문,역사 자료의 분석 및 해석,자료 기반 시대·대상 추론,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",쉬움,63,advanced_47_01
+사건,자료 제시문,역사 자료의 분석 및 해석,자료 기반 시대·대상 추론,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",쉬움,44,advanced_48_38
+제도,자료 제시문,역사 자료의 분석 및 해석,자료 기반 시대·대상 추론,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",보통,38,advanced_47_23
+인물,자료 제시문,역사 자료의 분석 및 해석,자료 기반 시대·대상 추론,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",쉬움,35,advanced_47_09
+기타,자료 제시문,역사 자료의 분석 및 해석,자료 기반 시대·대상 추론,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",어려움,35,advanced_52_26
+인물,자료 제시문,역사 자료의 분석 및 해석,자료 기반 시대·대상 추론,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",어려움,30,advanced_48_22
+사건,짧은 설명 자료,연대기의 파악,전후 시기 판단,period_between,"두 사건이나 자료 사이의 시기를 판단하게 하는 발문을 만들고, 그 사이에 해당하는 answer_fact_basis의 사실을 정답 선지로 만든다.",보통,22,advanced_47_07
+사건,사건 배열 자료,연대기의 파악,사건·자료 순서 배열,order,"material에 제시된 사건들의 시간 순서를 묻는 발문을 만들고, answer_fact_basis의 순서 근거를 정답 형식으로 만든다.",어려움,21,advanced_47_03
+사건,연표 자료,연대기의 파악,연표·흐름 빈칸,timeline_position,"material의 사건이 연표의 어느 구간에 해당하는지 묻는 발문을 만들고, answer_fact_basis의 위치 근거를 정답 기호로 만든다.",보통,20,advanced_47_14
+사건,짧은 설명 자료,연대기의 파악,전후 시기 판단,period_between,"두 사건이나 자료 사이의 시기를 판단하게 하는 발문을 만들고, 그 사이에 해당하는 answer_fact_basis의 사실을 정답 선지로 만든다.",어려움,20,advanced_47_21
+집단,자료 제시문,역사 자료의 분석 및 해석,자료 기반 시대·대상 추론,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",보통,20,advanced_48_36
+사건,짧은 설명 자료,역사 지식의 이해,기본 사실·개념 확인,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",보통,20,advanced_51_23
+집단,짧은 설명 자료,연대기의 파악,전후 시기 판단,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",보통,19,advanced_48_46
+사건,자료 제시문,역사 자료의 분석 및 해석,자료 기반 시대·대상 추론,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",어려움,16,advanced_47_48
+인물,탐구 자료,역사 탐구의 설계 및 수행,탐구 주제·활동 선정,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",보통,16,advanced_49_45
+인물,짧은 설명 자료,연대기의 파악,전후 시기 판단,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",보통,15,advanced_47_04
+제도,짧은 설명 자료,연대기의 파악,전후 시기 판단,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",보통,13,advanced_47_11
+매체,자료 제시문,역사 자료의 분석 및 해석,자료 기반 시대·대상 추론,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",보통,12,advanced_47_02
+기타,짧은 설명 자료,연대기의 파악,전후 시기 판단,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",쉬움,12,advanced_49_13
+제도,자료 제시문,역사 자료의 분석 및 해석,자료 기반 시대·대상 추론,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",쉬움,10,advanced_48_14
+기타,자료 제시문,역사 자료의 분석 및 해석,자료 기반 시대·대상 추론,negative_select,"material의 조건에 적절하지 않은 사실을 묻는 발문을 만들고, answer_fact_basis의 부적절한 사실을 정답 선지로 만든다.",보통,9,advanced_53_18
+인물,탐구 자료,역사 탐구의 설계 및 수행,자료 수집·검색 방법,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",보통,8,advanced_50_15
+사건,짧은 설명 자료,연대기의 파악,전후 시기 판단,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",보통,8,advanced_51_07
+기타,짧은 설명 자료,역사 지식의 이해,기본 사실·개념 확인,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",보통,7,advanced_49_36
+제도,짧은 설명 자료,연대기의 파악,전후 시기 판단,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",쉬움,6,advanced_47_43
+문화유산,자료 제시문,역사 자료의 분석 및 해석,자료 기반 시대·대상 추론,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",보통,6,advanced_48_25
+인물,탐구 자료,역사 탐구의 설계 및 수행,탐구 주제·활동 선정,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",어려움,6,advanced_48_39
+기타,짧은 설명 자료,연대기의 파악,전후 시기 판단,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",보통,6,advanced_50_11
+사건,자료 제시문,역사 자료의 분석 및 해석,자료 기반 시대·대상 추론,negative_select,"material의 조건에 적절하지 않은 사실을 묻는 발문을 만들고, answer_fact_basis의 부적절한 사실을 정답 선지로 만든다.",보통,6,advanced_51_29
+집단,짧은 설명 자료,역사 지식의 이해,기본 사실·개념 확인,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",보통,6,advanced_51_48
+제도,짧은 설명 자료,역사 지식의 이해,기본 사실·개념 확인,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",보통,6,advanced_52_13
+사건,사건 배열 자료,연대기의 파악,사건·자료 순서 배열,order,"material에 제시된 사건들의 시간 순서를 묻는 발문을 만들고, answer_fact_basis의 순서 근거를 정답 형식으로 만든다.",보통,6,advanced_52_21
+기타,자료 제시문,역사 자료의 분석 및 해석,보기 조합 판단,multi_select_combo,"material과 보기 조건에 맞는 항목 조합을 묻는 발문을 만들고, answer_fact_basis의 항목 근거를 정답 조합으로 만든다.",보통,6,advanced_67_02
+문화,자료 제시문,역사 자료의 분석 및 해석,자료 기반 시대·대상 추론,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",보통,6,advanced_68_10
+기타,자료 제시문,연대기의 파악,전후 시기 판단,period_between,"두 사건이나 자료 사이의 시기를 판단하게 하는 발문을 만들고, 그 사이에 해당하는 answer_fact_basis의 사실을 정답 선지로 만든다.",어려움,6,advanced_69_39
+기타,짧은 설명 자료,역사 지식의 이해,기본 사실·개념 확인,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",어려움,5,advanced_47_08
+기타,사건 배열 자료,연대기의 파악,사건·자료 순서 배열,order,"material에 제시된 사건들의 시간 순서를 묻는 발문을 만들고, answer_fact_basis의 순서 근거를 정답 형식으로 만든다.",보통,5,advanced_47_18
+기타,짧은 설명 자료,연대기의 파악,전후 시기 판단,period_between,"두 사건이나 자료 사이의 시기를 판단하게 하는 발문을 만들고, 그 사이에 해당하는 answer_fact_basis의 사실을 정답 선지로 만든다.",보통,5,advanced_47_47
+기타,연표 자료,연대기의 파악,연표·흐름 빈칸,timeline_position,"material의 사건이 연표의 어느 구간에 해당하는지 묻는 발문을 만들고, answer_fact_basis의 위치 근거를 정답 기호로 만든다.",어려움,5,advanced_48_13
+인물,연표 자료,연대기의 파악,연표·흐름 빈칸,timeline_position,"material의 사건이 연표의 어느 구간에 해당하는지 묻는 발문을 만들고, answer_fact_basis의 위치 근거를 정답 기호로 만든다.",보통,5,advanced_49_29
+사건,짧은 설명 자료,결론의 도출 및 평가,의의·영향·결과 평가,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",보통,5,advanced_49_31
+사건,짧은 설명 자료,역사 지식의 이해,기본 사실·개념 확인,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",어려움,5,advanced_49_34
+사건,연표 자료,연대기의 파악,연표·흐름 빈칸,timeline_position,"material의 사건이 연표의 어느 구간에 해당하는지 묻는 발문을 만들고, answer_fact_basis의 위치 근거를 정답 기호로 만든다.",어려움,5,advanced_49_44
+기타,사건 배열 자료,연대기의 파악,사건·자료 순서 배열,order,"material에 제시된 사건들의 시간 순서를 묻는 발문을 만들고, answer_fact_basis의 순서 근거를 정답 형식으로 만든다.",어려움,5,advanced_50_22
+인물,짧은 설명 자료,역사 지식의 이해,기본 사실·개념 확인,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",보통,5,advanced_58_11
+기타,자료 제시문,역사 자료의 분석 및 해석,자료 기반 시대·대상 추론,negative_select,"material의 조건에 적절하지 않은 사실을 묻는 발문을 만들고, answer_fact_basis의 부적절한 사실을 정답 선지로 만든다.",쉬움,5,advanced_67_23
+기타,자료 제시문,연대기의 파악,전후 시기 판단,period_between,"두 사건이나 자료 사이의 시기를 판단하게 하는 발문을 만들고, 그 사이에 해당하는 answer_fact_basis의 사실을 정답 선지로 만든다.",보통,5,advanced_67_36
+기타,짧은 설명 자료,연대기의 파악,전후 시기 판단,negative_select,"material의 조건에 적절하지 않은 사실을 묻는 발문을 만들고, answer_fact_basis의 부적절한 사실을 정답 선지로 만든다.",보통,4,advanced_51_26
+집단,탐구 자료,역사 탐구의 설계 및 수행,탐구 주제·활동 선정,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",보통,4,advanced_52_40
+사건,짧은 설명 자료,연대기의 파악,전후 시기 판단,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",어려움,4,advanced_57_38
+문화,자료 제시문,역사 자료의 분석 및 해석,자료 기반 시대·대상 추론,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",쉬움,4,advanced_71_42
+매체,자료 제시문,역사 자료의 분석 및 해석,자료 기반 시대·대상 추론,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",어려움,3,advanced_47_13
+사건,짧은 설명 자료,역사 지식의 이해,기본 사실·개념 확인,multi_select_combo,"material과 보기 조건에 맞는 항목 조합을 묻는 발문을 만들고, answer_fact_basis의 항목 근거를 정답 조합으로 만든다.",보통,3,advanced_47_31
+집단,짧은 설명 자료,역사 지식의 이해,기본 사실·개념 확인,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",어려움,3,advanced_47_45
+인물,자료 제시문,역사 자료의 분석 및 해석,자료 기반 시대·대상 추론,multi_select_combo,"material과 보기 조건에 맞는 항목 조합을 묻는 발문을 만들고, answer_fact_basis의 항목 근거를 정답 조합으로 만든다.",어려움,3,advanced_48_37
+집단,자료 제시문,역사 자료의 분석 및 해석,자료 기반 시대·대상 추론,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",쉬움,3,advanced_48_43
+기타,짧은 설명 자료,연대기의 파악,전후 시기 판단,period_between,"두 사건이나 자료 사이의 시기를 판단하게 하는 발문을 만들고, 그 사이에 해당하는 answer_fact_basis의 사실을 정답 선지로 만든다.",어려움,3,advanced_48_47
+문화유산,자료 제시문,역사 자료의 분석 및 해석,자료 기반 시대·대상 추론,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",쉬움,3,advanced_49_01
+인물,짧은 설명 자료,연대기의 파악,전후 시기 판단,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",어려움,3,advanced_49_20
+제도,짧은 설명 자료,연대기의 파악,전후 시기 판단,negative_select,"material의 조건에 적절하지 않은 사실을 묻는 발문을 만들고, answer_fact_basis의 부적절한 사실을 정답 선지로 만든다.",쉬움,3,advanced_49_43
+집단,짧은 설명 자료,연대기의 파악,전후 시기 판단,period_between,"두 사건이나 자료 사이의 시기를 판단하게 하는 발문을 만들고, 그 사이에 해당하는 answer_fact_basis의 사실을 정답 선지로 만든다.",보통,3,advanced_49_47
+제도,자료 제시문,역사 자료의 분석 및 해석,자료 기반 시대·대상 추론,multi_select_combo,"material과 보기 조건에 맞는 항목 조합을 묻는 발문을 만들고, answer_fact_basis의 항목 근거를 정답 조합으로 만든다.",보통,3,advanced_50_02
+사건,짧은 설명 자료,역사 지식의 이해,기본 사실·개념 확인,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",쉬움,3,advanced_50_41
+제도,짧은 설명 자료,역사 지식의 이해,기본 사실·개념 확인,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",쉬움,3,advanced_51_14
+사건,자료 제시문,역사 자료의 분석 및 해석,자료 기반 시대·대상 추론,multi_select_combo,"material과 보기 조건에 맞는 항목 조합을 묻는 발문을 만들고, answer_fact_basis의 항목 근거를 정답 조합으로 만든다.",어려움,3,advanced_51_30
+기타,짧은 설명 자료,연대기의 파악,전후 시기 판단,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",어려움,3,advanced_53_32
+기타,탐구 자료,역사 탐구의 설계 및 수행,탐구 주제·활동 선정,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",보통,3,advanced_53_45
+집단,짧은 설명 자료,연대기의 파악,전후 시기 판단,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",어려움,3,advanced_56_48
+기타,자료 제시문,역사 자료의 분석 및 해석,자료 기반 시대·대상 추론,negative_select,"material의 조건에 적절하지 않은 사실을 묻는 발문을 만들고, answer_fact_basis의 부적절한 사실을 정답 선지로 만든다.",어려움,3,advanced_60_46
+기타,연표 자료,연대기의 파악,연표·흐름 빈칸,timeline_position,"material의 사건이 연표의 어느 구간에 해당하는지 묻는 발문을 만들고, answer_fact_basis의 위치 근거를 정답 기호로 만든다.",보통,3,advanced_63_20
+문화,자료 제시문,역사 자료의 분석 및 해석,자료 기반 시대·대상 추론,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",어려움,3,advanced_67_04
+사건,자료 제시문,연대기의 파악,전후 시기 판단,period_between,"두 사건이나 자료 사이의 시기를 판단하게 하는 발문을 만들고, 그 사이에 해당하는 answer_fact_basis의 사실을 정답 선지로 만든다.",보통,3,advanced_67_14
+사건,자료 제시문,연대기의 파악,전후 시기 판단,period_between,"두 사건이나 자료 사이의 시기를 판단하게 하는 발문을 만들고, 그 사이에 해당하는 answer_fact_basis의 사실을 정답 선지로 만든다.",어려움,3,advanced_68_05
+제도,짧은 설명 자료,연대기의 파악,전후 시기 판단,period_between,"두 사건이나 자료 사이의 시기를 판단하게 하는 발문을 만들고, 그 사이에 해당하는 answer_fact_basis의 사실을 정답 선지로 만든다.",보통,2,advanced_47_30
+사건,자료 제시문,역사 자료의 분석 및 해석,자료 기반 시대·대상 추론,negative_select,"material의 조건에 적절하지 않은 사실을 묻는 발문을 만들고, answer_fact_basis의 부적절한 사실을 정답 선지로 만든다.",어려움,2,advanced_47_33
+인물,탐구 자료,역사 탐구의 설계 및 수행,탐구 주제·활동 선정,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",쉬움,2,advanced_47_40
+집단,짧은 설명 자료,연대기의 파악,전후 시기 판단,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",쉬움,2,advanced_48_07
+인물,짧은 설명 자료,역사 지식의 이해,기본 사실·개념 확인,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",쉬움,2,advanced_48_20
+제도,짧은 설명 자료,연대기의 파악,전후 시기 판단,negative_select,"material의 조건에 적절하지 않은 사실을 묻는 발문을 만들고, answer_fact_basis의 부적절한 사실을 정답 선지로 만든다.",보통,2,advanced_48_24
+인물,자료 제시문,역사 자료의 분석 및 해석,자료 기반 시대·대상 추론,negative_select,"material의 조건에 적절하지 않은 사실을 묻는 발문을 만들고, answer_fact_basis의 부적절한 사실을 정답 선지로 만든다.",보통,2,advanced_48_26
+문화유산,탐구 자료,역사 탐구의 설계 및 수행,탐구 주제·활동 선정,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",보통,2,advanced_49_04
+인물,짧은 설명 자료,역사 지식의 이해,제도·기관·정책 기능 이해,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",보통,2,advanced_49_11
+기타,짧은 설명 자료,연대기의 파악,전후 시기 판단,negative_select,"material의 조건에 적절하지 않은 사실을 묻는 발문을 만들고, answer_fact_basis의 부적절한 사실을 정답 선지로 만든다.",쉬움,2,advanced_50_28
+집단,탐구 자료,역사 탐구의 설계 및 수행,탐구 주제·활동 선정,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",쉬움,2,advanced_50_36
+사건,탐구 자료,역사 탐구의 설계 및 수행,자료 수집·검색 방법,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",쉬움,2,advanced_50_37
+집단,탐구 자료,역사 탐구의 설계 및 수행,자료 수집·검색 방법,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",보통,2,advanced_51_36
+집단,자료 제시문,역사 자료의 분석 및 해석,자료 기반 시대·대상 추론,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",어려움,2,advanced_51_50
+인물,짧은 설명 자료,역사 지식의 이해,기본 사실·개념 확인,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",어려움,2,advanced_52_11
+인물,탐구 자료,역사 탐구의 설계 및 수행,자료 수집·검색 방법,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",어려움,2,advanced_52_43
+인물,짧은 설명 자료,연대기의 파악,전후 시기 판단,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",쉬움,2,advanced_53_07
+사건,탐구 자료,역사 탐구의 설계 및 수행,탐구 주제·활동 선정,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",보통,2,advanced_53_20
+매체,자료 제시문,역사 자료의 분석 및 해석,자료 기반 시대·대상 추론,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",쉬움,2,advanced_54_13
+제도,짧은 설명 자료,연대기의 파악,전후 시기 판단,period_between,"두 사건이나 자료 사이의 시기를 판단하게 하는 발문을 만들고, 그 사이에 해당하는 answer_fact_basis의 사실을 정답 선지로 만든다.",어려움,2,advanced_54_17
+제도,사건 배열 자료,연대기의 파악,사건·자료 순서 배열,order,"material에 제시된 사건들의 시간 순서를 묻는 발문을 만들고, answer_fact_basis의 순서 근거를 정답 형식으로 만든다.",보통,2,advanced_54_42
+기타,탐구 자료,역사 탐구의 설계 및 수행,자료 수집·검색 방법,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",보통,2,advanced_55_43
+인물,짧은 설명 자료,역사 지식의 이해,제도·기관·정책 기능 이해,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",어려움,2,advanced_56_15
+기타,탐구 자료,역사 탐구의 설계 및 수행,탐구 주제·활동 선정,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",어려움,2,advanced_58_04
+제도,짧은 설명 자료,역사 지식의 이해,기본 사실·개념 확인,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",어려움,2,advanced_61_06
+인물,자료 제시문,역사 자료의 분석 및 해석,자료 기반 시대·대상 추론,multi_select_combo,"material과 보기 조건에 맞는 항목 조합을 묻는 발문을 만들고, answer_fact_basis의 항목 근거를 정답 조합으로 만든다.",보통,2,advanced_61_39
+문화유산,자료 제시문,역사 자료의 분석 및 해석,자료 기반 시대·대상 추론,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",어려움,2,advanced_64_18
+사건,자료 제시문,역사 자료의 분석 및 해석,자료 기반 시대·대상 추론,multi_select_combo,"material과 보기 조건에 맞는 항목 조합을 묻는 발문을 만들고, answer_fact_basis의 항목 근거를 정답 조합으로 만든다.",보통,2,advanced_64_31
+인물,연표 자료,연대기의 파악,연표·흐름 빈칸,timeline_position,"material의 사건이 연표의 어느 구간에 해당하는지 묻는 발문을 만들고, answer_fact_basis의 위치 근거를 정답 기호로 만든다.",어려움,2,advanced_65_11
+문화,자료 제시문,역사 자료의 분석 및 해석,자료 기반 시대·대상 추론,negative_select,"material의 조건에 적절하지 않은 사실을 묻는 발문을 만들고, answer_fact_basis의 부적절한 사실을 정답 선지로 만든다.",보통,2,advanced_68_04
+사건,자료 제시문,역사 자료의 분석 및 해석,보기 조합 판단,multi_select_combo,"material과 보기 조건에 맞는 항목 조합을 묻는 발문을 만들고, answer_fact_basis의 항목 근거를 정답 조합으로 만든다.",보통,2,advanced_68_37
+기타,짧은 설명 자료,연대기의 파악,전후 시기 판단,multi_select_combo,"material과 보기 조건에 맞는 항목 조합을 묻는 발문을 만들고, answer_fact_basis의 항목 근거를 정답 조합으로 만든다.",어려움,1,advanced_47_25
+사건,짧은 설명 자료,연대기의 파악,전후 시기 판단,negative_select,"material의 조건에 적절하지 않은 사실을 묻는 발문을 만들고, answer_fact_basis의 부적절한 사실을 정답 선지로 만든다.",보통,1,advanced_47_28
+기타,탐구 자료,역사 탐구의 설계 및 수행,탐구 주제·활동 선정,map_location,"material의 조건이 지도에서 어느 위치에 해당하는지 묻는 발문을 만들고, answer_fact_basis의 위치 근거를 정답 기호로 만든다.",쉬움,1,advanced_47_32
+사건,짧은 설명 자료,역사 지식의 이해,제도·기관·정책 기능 이해,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",보통,1,advanced_47_36
+제도,짧은 설명 자료,역사 지식의 이해,제도·기관·정책 기능 이해,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",보통,1,advanced_48_16
+제도,자료 제시문,역사 자료의 분석 및 해석,자료 기반 시대·대상 추론,negative_select,"material의 조건에 적절하지 않은 사실을 묻는 발문을 만들고, answer_fact_basis의 부적절한 사실을 정답 선지로 만든다.",보통,1,advanced_48_17
+매체,짧은 설명 자료,역사 지식의 이해,기본 사실·개념 확인,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",보통,1,advanced_48_31
+인물,탐구 자료,역사 탐구의 설계 및 수행,자료 수집·검색 방법,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",쉬움,1,advanced_49_09
+문화유산,자료 제시문,역사 자료의 분석 및 해석,자료 기반 시대·대상 추론,negative_select,"material의 조건에 적절하지 않은 사실을 묻는 발문을 만들고, answer_fact_basis의 부적절한 사실을 정답 선지로 만든다.",어려움,1,advanced_49_12
+매체,짧은 설명 자료,연대기의 파악,전후 시기 판단,negative_select,"material의 조건에 적절하지 않은 사실을 묻는 발문을 만들고, answer_fact_basis의 부적절한 사실을 정답 선지로 만든다.",보통,1,advanced_49_22
+매체,짧은 설명 자료,연대기의 파악,전후 시기 판단,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",어려움,1,advanced_49_24
+기타,짧은 설명 자료,역사 지식의 이해,기본 사실·개념 확인,negative_select,"material의 조건에 적절하지 않은 사실을 묻는 발문을 만들고, answer_fact_basis의 부적절한 사실을 정답 선지로 만든다.",어려움,1,advanced_49_46
+제도,짧은 설명 자료,역사 지식의 이해,제도·기관·정책 기능 이해,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",쉬움,1,advanced_50_17
+인물,탐구 자료,역사 탐구의 설계 및 수행,탐구 주제·활동 선정,negative_select,"material의 조건에 적절하지 않은 사실을 묻는 발문을 만들고, answer_fact_basis의 부적절한 사실을 정답 선지로 만든다.",어려움,1,advanced_50_18
+제도,탐구 자료,역사 탐구의 설계 및 수행,탐구 주제·활동 선정,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",어려움,1,advanced_51_06
+사건,사건 배열 자료,연대기의 파악,사건·자료 순서 배열,order,"material에 제시된 사건들의 시간 순서를 묻는 발문을 만들고, answer_fact_basis의 순서 근거를 정답 형식으로 만든다.",쉬움,1,advanced_52_50
+기타,자료 제시문,역사 자료의 분석 및 해석,자료 기반 시대·대상 추론,multi_select_combo,"material과 보기 조건에 맞는 항목 조합을 묻는 발문을 만들고, answer_fact_basis의 항목 근거를 정답 조합으로 만든다.",보통,1,advanced_53_08
+사건,짧은 설명 자료,연대기의 파악,전후 시기 판단,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",쉬움,1,advanced_53_42
+집단,짧은 설명 자료,역사 지식의 이해,기본 사실·개념 확인,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",쉬움,1,advanced_53_48
+집단,사건 배열 자료,연대기의 파악,사건·자료 순서 배열,order,"material에 제시된 사건들의 시간 순서를 묻는 발문을 만들고, answer_fact_basis의 순서 근거를 정답 형식으로 만든다.",보통,1,advanced_54_50
+인물,짧은 설명 자료,연대기의 파악,전후 시기 판단,period_between,"두 사건이나 자료 사이의 시기를 판단하게 하는 발문을 만들고, 그 사이에 해당하는 answer_fact_basis의 사실을 정답 선지로 만든다.",보통,1,advanced_55_04
+제도,사건 배열 자료,연대기의 파악,사건·자료 순서 배열,order,"material에 제시된 사건들의 시간 순서를 묻는 발문을 만들고, answer_fact_basis의 순서 근거를 정답 형식으로 만든다.",어려움,1,advanced_55_11
+사건,짧은 설명 자료,역사 지식의 이해,기본 사실·개념 확인,negative_select,"material의 조건에 적절하지 않은 사실을 묻는 발문을 만들고, answer_fact_basis의 부적절한 사실을 정답 선지로 만든다.",어려움,1,advanced_55_23
+인물,짧은 설명 자료,연대기의 파악,전후 시기 판단,multi_select_combo,"material과 보기 조건에 맞는 항목 조합을 묻는 발문을 만들고, answer_fact_basis의 항목 근거를 정답 조합으로 만든다.",보통,1,advanced_55_29
+제도,짧은 설명 자료,연대기의 파악,전후 시기 판단,period_between,"두 사건이나 자료 사이의 시기를 판단하게 하는 발문을 만들고, 그 사이에 해당하는 answer_fact_basis의 사실을 정답 선지로 만든다.",쉬움,1,advanced_55_39
+기타,짧은 설명 자료,역사 지식의 이해,기본 사실·개념 확인,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",쉬움,1,advanced_56_10
+집단,자료 제시문,역사 자료의 분석 및 해석,자료 기반 시대·대상 추론,multi_select_combo,"material과 보기 조건에 맞는 항목 조합을 묻는 발문을 만들고, answer_fact_basis의 항목 근거를 정답 조합으로 만든다.",어려움,1,advanced_56_38
+제도,짧은 설명 자료,결론의 도출 및 평가,의의·영향·결과 평가,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",쉬움,1,advanced_57_23
+인물,탐구 자료,역사 탐구의 설계 및 수행,탐구 주제·활동 선정,multi_select_combo,"material과 보기 조건에 맞는 항목 조합을 묻는 발문을 만들고, answer_fact_basis의 항목 근거를 정답 조합으로 만든다.",어려움,1,advanced_57_35
+집단,탐구 자료,역사 탐구의 설계 및 수행,탐구 주제·활동 선정,multi_select_combo,"material과 보기 조건에 맞는 항목 조합을 묻는 발문을 만들고, answer_fact_basis의 항목 근거를 정답 조합으로 만든다.",보통,1,advanced_57_36
+집단,탐구 자료,역사 탐구의 설계 및 수행,자료 수집·검색 방법,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",쉬움,1,advanced_57_39
+인물,짧은 설명 자료,결론의 도출 및 평가,의의·영향·결과 평가,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",보통,1,advanced_57_41
+사건,짧은 설명 자료,연대기의 파악,전후 시기 판단,multi_select_combo,"material과 보기 조건에 맞는 항목 조합을 묻는 발문을 만들고, answer_fact_basis의 항목 근거를 정답 조합으로 만든다.",보통,1,advanced_57_44
+매체,짧은 설명 자료,연대기의 파악,전후 시기 판단,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",보통,1,advanced_58_07
+인물,짧은 설명 자료,연대기의 파악,전후 시기 판단,period_between,"두 사건이나 자료 사이의 시기를 판단하게 하는 발문을 만들고, 그 사이에 해당하는 answer_fact_basis의 사실을 정답 선지로 만든다.",어려움,1,advanced_58_22
+매체,짧은 설명 자료,연대기의 파악,전후 시기 판단,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",쉬움,1,advanced_59_25
+사건,탐구 자료,역사 탐구의 설계 및 수행,탐구 주제·활동 선정,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",쉬움,1,advanced_59_42
+기타,탐구 자료,역사 탐구의 설계 및 수행,탐구 주제·활동 선정,negative_select,"material의 조건에 적절하지 않은 사실을 묻는 발문을 만들고, answer_fact_basis의 부적절한 사실을 정답 선지로 만든다.",보통,1,advanced_59_47
+제도,자료 제시문,역사 자료의 분석 및 해석,자료 기반 시대·대상 추론,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",어려움,1,advanced_60_16
+제도,자료 제시문,역사 자료의 분석 및 해석,자료 기반 시대·대상 추론,multi_select_combo,"material과 보기 조건에 맞는 항목 조합을 묻는 발문을 만들고, answer_fact_basis의 항목 근거를 정답 조합으로 만든다.",어려움,1,advanced_60_27
+집단,짧은 설명 자료,연대기의 파악,전후 시기 판단,negative_select,"material의 조건에 적절하지 않은 사실을 묻는 발문을 만들고, answer_fact_basis의 부적절한 사실을 정답 선지로 만든다.",보통,1,advanced_60_47
+매체,짧은 설명 자료,결론의 도출 및 평가,비교·공통점 도출,multi_select_combo,"material과 보기 조건에 맞는 항목 조합을 묻는 발문을 만들고, answer_fact_basis의 항목 근거를 정답 조합으로 만든다.",보통,1,advanced_61_29
+인물,짧은 설명 자료,결론의 도출 및 평가,비교·공통점 도출,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",보통,1,advanced_62_28
+제도,짧은 설명 자료,결론의 도출 및 평가,비교·공통점 도출,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",어려움,1,advanced_62_49
+매체,탐구 자료,역사 탐구의 설계 및 수행,탐구 주제·활동 선정,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",보통,1,advanced_63_02
+제도,짧은 설명 자료,연대기의 파악,전후 시기 판단,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",어려움,1,advanced_63_44
+사건,짧은 설명 자료,결론의 도출 및 평가,비교·공통점 도출,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",보통,1,advanced_63_47
+사건,연표 자료,연대기의 파악,연표·흐름 빈칸,timeline_position,"material의 사건이 연표의 어느 구간에 해당하는지 묻는 발문을 만들고, answer_fact_basis의 위치 근거를 정답 기호로 만든다.",쉬움,1,advanced_64_12
+인물,자료 제시문,역사 자료의 분석 및 해석,자료 기반 시대·대상 추론,negative_select,"material의 조건에 적절하지 않은 사실을 묻는 발문을 만들고, answer_fact_basis의 부적절한 사실을 정답 선지로 만든다.",어려움,1,advanced_64_49
+집단,탐구 자료,역사 탐구의 설계 및 수행,탐구 주제·활동 선정,negative_select,"material의 조건에 적절하지 않은 사실을 묻는 발문을 만들고, answer_fact_basis의 부적절한 사실을 정답 선지로 만든다.",보통,1,advanced_65_39
+집단,연표 자료,연대기의 파악,연표·흐름 빈칸,timeline_position,"material의 사건이 연표의 어느 구간에 해당하는지 묻는 발문을 만들고, answer_fact_basis의 위치 근거를 정답 기호로 만든다.",어려움,1,advanced_65_47
+제도,짧은 설명 자료,역사 지식의 이해,제도·기관·정책 기능 이해,negative_select,"material의 조건에 적절하지 않은 사실을 묻는 발문을 만들고, answer_fact_basis의 부적절한 사실을 정답 선지로 만든다.",보통,1,advanced_66_10
+매체,짧은 설명 자료,결론의 도출 및 평가,비교·공통점 도출,standard_select,"material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",보통,1,advanced_66_30
+집단,짧은 설명 자료,연대기의 파악,전후 시기 판단,period_between,"두 사건이나 자료 사이의 시기를 판단하게 하는 발문을 만들고, 그 사이에 해당하는 answer_fact_basis의 사실을 정답 선지로 만든다.",어려움,1,advanced_66_49
+사건,자료 제시문,역사 자료의 분석 및 해석,보기 조합 판단,multi_select_combo,"material과 보기 조건에 맞는 항목 조합을 묻는 발문을 만들고, answer_fact_basis의 항목 근거를 정답 조합으로 만든다.",쉬움,1,advanced_67_38
+기타,자료 제시문,역사 자료의 분석 및 해석,보기 조합 판단,multi_select_combo,"material과 보기 조건에 맞는 항목 조합을 묻는 발문을 만들고, answer_fact_basis의 항목 근거를 정답 조합으로 만든다.",어려움,1,advanced_69_03
+문화,자료 제시문,역사 자료의 분석 및 해석,자료 기반 시대·대상 추론,negative_select,"material의 조건에 적절하지 않은 사실을 묻는 발문을 만들고, answer_fact_basis의 부적절한 사실을 정답 선지로 만든다.",어려움,1,advanced_74_13
+문화,자료 제시문,역사 자료의 분석 및 해석,자료 기반 시대·대상 추론,negative_select,"material의 조건에 적절하지 않은 사실을 묻는 발문을 만들고, answer_fact_basis의 부적절한 사실을 정답 선지로 만든다.",쉬움,1,advanced_74_40

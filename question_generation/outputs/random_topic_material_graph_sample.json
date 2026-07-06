@@ -1,0 +1,77 @@
+{
+  "selection": {
+    "seed_id": "random_graph_seed_20260706",
+    "topic": "매일신보",
+    "topic_type": "기타",
+    "era": "개항기",
+    "material_type": "연표 자료",
+    "major_type": "연대기의 파악",
+    "minor_type": "연표·흐름 빈칸",
+    "question_task": "timeline_position",
+    "question_task_instruction": "material의 사건이 연표의 어느 구간에 해당하는지 묻는 발문을 만들고, answer_fact_basis의 위치 근거를 정답 기호로 만든다.",
+    "difficulty_label": "보통"
+  },
+  "graph_anchor": {
+    "anchor_label": "Term",
+    "anchor": {
+      "year_parse_status": "PARSED",
+      "topterm_id": 439,
+      "start_year": 1910,
+      "description": "일제시기 조선총독부의 기관지로 발행되던 한국어 일간신문.",
+      "year_text": "1910-1945",
+      "source": "history_terms",
+      "hanja": "每日新報",
+      "term_id": "3755",
+      "period_text": "일제시기",
+      "description_length": 31,
+      "name": "매일신보",
+      "year_precision": "YEAR_RANGE",
+      "is_exam_keyword": "N",
+      "category_text": "문화·예술>언론·출판",
+      "end_year": 1945,
+      "question_ready": "N"
+    },
+    "themes": [
+      "문화"
+    ],
+    "categories": [
+      "문화·예술>언론·출판"
+    ],
+    "eras": [
+      "일제강점기"
+    ],
+    "required_clues": [
+      "일제시기",
+      "조선총독부의",
+      "기관지로",
+      "발행되던",
+      "한국어"
+    ],
+    "source_snippet": "일제시기 조선총독부의 기관지로 발행되던 한국어 일간신문."
+  },
+  "forbidden_terms": [
+    "매일신보"
+  ],
+  "required_clues": [
+    "일제시기",
+    "조선총독부의",
+    "기관지로",
+    "발행되던"
+  ],
+  "material": "일제시기 조선총독부의 기관지로 발행되던 한국어 일간신문이 있었다. 이 신문은 1904년 이후 여러 신문들이 창간되던 시기와 1945년 해방 직전까지 발행되었다. 1910년 한일병합조약 체결과 1930년대 일제의 통치 강화 시기에 중요한 역할을 했다.",
+  "answer_fact_basis": [
+    "일제시기 조선총독부의 기관지로 발행되던 한국어 일간신문",
+    "1910년 한일병합조약 체결과 1930년대 일제의 통치 강화 시기"
+  ],
+  "checks": {
+    "material_has_topic": false,
+    "included_required_clues": [
+      "일제시기",
+      "조선총독부의",
+      "기관지로",
+      "발행되던"
+    ],
+    "char_len": 139,
+    "sentence_count": 3
+  }
+}

@@ -1,0 +1,219 @@
+{
+  "node": "select_seed",
+  "schema_version": "v41_sllm_seed_v1",
+  "topic_pool": "C:\\dev\\project\\SKN27-FINAL-2Team\\question_generation\\outputs\\topic_keywords_seed_balanced.csv",
+  "schema_source": "C:\\Users\\Playdata\\Desktop\\hanneung_47_66_dataset\\v41_pgvector_rag_basis_polished_single_choice_47_78_dataset\\hanneung_v41_pgvector_rag_basis_polished_single_choice_47_78_all_problem_structured_pretty.json",
+  "schema_cache": "C:\\dev\\project\\SKN27-FINAL-2Team\\question_generation\\outputs\\sllm_type_schema_seed.csv",
+  "items": [
+    {
+      "seed_id": "seed_20260706_001",
+      "node": "select_seed",
+      "schema_basis": "v41_sllm_input_schema",
+      "selection": {
+        "topic": "녹읍",
+        "topic_type": "제도",
+        "era": "삼국",
+        "material_type": "자료 제시문",
+        "major_type": "역사 자료의 분석 및 해석",
+        "minor_type": "자료 기반 시대·대상 추론",
+        "question_task": "standard_select",
+        "question_task_instruction": "material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",
+        "difficulty_label": "어려움"
+      },
+      "topic_source": {
+        "term_id": "tg_001_0630",
+        "rank": "24",
+        "keyword_source": "pdf_textbook_term",
+        "source_field": ""
+      },
+      "schema_source": {
+        "training_count": 35,
+        "sample_source_id": "advanced_52_26"
+      },
+      "sllm_correct_choice_input_preview": {
+        "task_type": "correct_choice_generation",
+        "material": "<generated_by_material_node>",
+        "answer_fact_basis": [
+          "<generated_by_material_node>"
+        ],
+        "topic": "녹읍",
+        "topic_type": "제도",
+        "era": "삼국",
+        "material_type": "자료 제시문",
+        "major_type": "역사 자료의 분석 및 해석",
+        "minor_type": "자료 기반 시대·대상 추론",
+        "question_task": "standard_select",
+        "question_task_instruction": "material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",
+        "difficulty_label": "어려움"
+      }
+    },
+    {
+      "seed_id": "seed_20260706_002",
+      "node": "select_seed",
+      "schema_basis": "v41_sllm_input_schema",
+      "selection": {
+        "topic": "수선사",
+        "topic_type": "사건",
+        "era": "고려",
+        "material_type": "짧은 설명 자료",
+        "major_type": "연대기의 파악",
+        "minor_type": "전후 시기 판단",
+        "question_task": "standard_select",
+        "question_task_instruction": "material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",
+        "difficulty_label": "어려움"
+      },
+      "topic_source": {
+        "term_id": "tg_002_1140",
+        "rank": "129",
+        "keyword_source": "pdf_textbook_term",
+        "source_field": ""
+      },
+      "schema_source": {
+        "training_count": 3,
+        "sample_source_id": "advanced_53_32"
+      },
+      "sllm_correct_choice_input_preview": {
+        "task_type": "correct_choice_generation",
+        "material": "<generated_by_material_node>",
+        "answer_fact_basis": [
+          "<generated_by_material_node>"
+        ],
+        "topic": "수선사",
+        "topic_type": "사건",
+        "era": "고려",
+        "material_type": "짧은 설명 자료",
+        "major_type": "연대기의 파악",
+        "minor_type": "전후 시기 판단",
+        "question_task": "standard_select",
+        "question_task_instruction": "material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",
+        "difficulty_label": "어려움"
+      }
+    },
+    {
+      "seed_id": "seed_20260706_003",
+      "node": "select_seed",
+      "schema_basis": "v41_sllm_input_schema",
+      "selection": {
+        "topic": "서얼",
+        "topic_type": "기타",
+        "era": "조선",
+        "material_type": "자료 제시문",
+        "major_type": "역사 자료의 분석 및 해석",
+        "minor_type": "자료 기반 시대·대상 추론",
+        "question_task": "standard_select",
+        "question_task_instruction": "material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",
+        "difficulty_label": "보통"
+      },
+      "topic_source": {
+        "term_id": "tg_003_0330",
+        "rank": "21",
+        "keyword_source": "pdf_textbook_term",
+        "source_field": ""
+      },
+      "schema_source": {
+        "training_count": 158,
+        "sample_source_id": "advanced_48_02"
+      },
+      "sllm_correct_choice_input_preview": {
+        "task_type": "correct_choice_generation",
+        "material": "<generated_by_material_node>",
+        "answer_fact_basis": [
+          "<generated_by_material_node>"
+        ],
+        "topic": "서얼",
+        "topic_type": "기타",
+        "era": "조선",
+        "material_type": "자료 제시문",
+        "major_type": "역사 자료의 분석 및 해석",
+        "minor_type": "자료 기반 시대·대상 추론",
+        "question_task": "standard_select",
+        "question_task_instruction": "material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",
+        "difficulty_label": "보통"
+      }
+    },
+    {
+      "seed_id": "seed_20260706_004",
+      "node": "select_seed",
+      "schema_basis": "v41_sllm_input_schema",
+      "selection": {
+        "topic": "6부",
+        "topic_type": "기타",
+        "era": "삼국",
+        "material_type": "자료 제시문",
+        "major_type": "역사 자료의 분석 및 해석",
+        "minor_type": "자료 기반 시대·대상 추론",
+        "question_task": "standard_select",
+        "question_task_instruction": "material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",
+        "difficulty_label": "보통"
+      },
+      "topic_source": {
+        "term_id": "tg_001_0470",
+        "rank": "140",
+        "keyword_source": "pdf_textbook_term",
+        "source_field": ""
+      },
+      "schema_source": {
+        "training_count": 158,
+        "sample_source_id": "advanced_48_02"
+      },
+      "sllm_correct_choice_input_preview": {
+        "task_type": "correct_choice_generation",
+        "material": "<generated_by_material_node>",
+        "answer_fact_basis": [
+          "<generated_by_material_node>"
+        ],
+        "topic": "6부",
+        "topic_type": "기타",
+        "era": "삼국",
+        "material_type": "자료 제시문",
+        "major_type": "역사 자료의 분석 및 해석",
+        "minor_type": "자료 기반 시대·대상 추론",
+        "question_task": "standard_select",
+        "question_task_instruction": "material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",
+        "difficulty_label": "보통"
+      }
+    },
+    {
+      "seed_id": "seed_20260706_005",
+      "node": "select_seed",
+      "schema_basis": "v41_sllm_input_schema",
+      "selection": {
+        "topic": "슴베찌르개",
+        "topic_type": "문화재",
+        "era": "선사·초기국가",
+        "material_type": "시각 자료 설명",
+        "major_type": "연대기의 파악",
+        "minor_type": "전후 시기 판단",
+        "question_task": "standard_select",
+        "question_task_instruction": "material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",
+        "difficulty_label": "보통"
+      },
+      "topic_source": {
+        "term_id": "timeline:-40000:슴베찌르개",
+        "rank": "307",
+        "keyword_source": "history_timeline",
+        "source_field": "유물·유적"
+      },
+      "schema_source": {
+        "training_count": 4,
+        "sample_source_id": "advanced_47_46"
+      },
+      "sllm_correct_choice_input_preview": {
+        "task_type": "correct_choice_generation",
+        "material": "<generated_by_material_node>",
+        "answer_fact_basis": [
+          "<generated_by_material_node>"
+        ],
+        "topic": "슴베찌르개",
+        "topic_type": "문화재",
+        "era": "선사·초기국가",
+        "material_type": "시각 자료 설명",
+        "major_type": "연대기의 파악",
+        "minor_type": "전후 시기 판단",
+        "question_task": "standard_select",
+        "question_task_instruction": "material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",
+        "difficulty_label": "보통"
+      }
+    }
+  ]
+}

@@ -1,0 +1,165 @@
+{
+  "selection": {
+    "seed_id": "manual_imjin_eventgroup_distractor_test",
+    "topic": "임진왜란",
+    "topic_type": "사건",
+    "era": "조선",
+    "material_type": "짧은 설명 자료",
+    "major_type": "역사 지식의 이해",
+    "minor_type": "기본 사실·개념 확인",
+    "question_task": "standard_select",
+    "question_task_instruction": "",
+    "difficulty_label": "보통"
+  },
+  "graph_context": {
+    "anchor_label": "EventGroup",
+    "anchor": {
+      "event_count": 35,
+      "name": "임진왜란",
+      "source": "events.related_event",
+      "event_group_id": "EVENT_GROUP_00029"
+    },
+    "required_clues": [
+      "승려 의병장",
+      "연안대첩",
+      "명량대첩",
+      "곽재우",
+      "영남의병"
+    ],
+    "graph_facts": [
+      "임진왜란 관련 하위 사건: 승려 의병장, 연안대첩, 명량대첩, 곽재우, 영남의병, 경기의병, 정유재란의 발발, 김덕령"
+    ]
+  },
+  "distractor_targets": [
+    {
+      "term_name": "기묘사화",
+      "term_times": "",
+      "description": "1519년(중종 14) 11월 남곤(南袞)·심정(沈貞)·홍경주(洪景舟) 등의 훈구 재상(勳舊宰相)에 의해서 조광조(趙光祖)·김정(金淨)·김식(金湜) 등 신진 사류가 화를 입은 사건.",
+      "relation_reason": "same_era_event_group"
+    },
+    {
+      "term_name": "병자호란",
+      "term_times": "",
+      "description": "1636년(인조 14) 12월부터 이듬해 1월까지 청(淸)나라가 조선에 침입하여 벌였던 전쟁.",
+      "relation_reason": "same_era_event_group"
+    },
+    {
+      "term_name": "인조반정",
+      "term_times": "",
+      "description": "1623년(광해군 26) 서인(西人) 등이 광해군 및 대북파(大北派)를 몰아내고 능양군(綾陽君) 종(倧: 인조)을 왕으로 옹립한 사건.",
+      "relation_reason": "same_era_event_group"
+    },
+    {
+      "term_name": "갑인예송",
+      "term_times": "",
+      "description": "조선후기 현종 때 효종의 비인 인선왕후(仁宣王后)가 사망하자, 서인과 남인이 인조의 계비인 조대비(趙大妃)의 복제와 관련하여 대립한 사건.",
+      "relation_reason": "same_era_event_group"
+    },
+    {
+      "term_name": "경신환국",
+      "term_times": "",
+      "description": "1680년(숙종 6)에 남인(南人) 일파가 정치적으로 대거 축출된 사건.",
+      "relation_reason": "same_era_event_group"
+    },
+    {
+      "term_name": "계축옥사",
+      "term_times": "",
+      "description": "1613년(광해군 5)에 대북파(大北派)가 영창대군(永昌大君) 및 서인, 남인 세력을 제거하기 위해 일으킨 옥사(獄事).",
+      "relation_reason": "same_era_event_group"
+    },
+    {
+      "term_name": "여진정벌",
+      "term_times": "",
+      "description": "1107년(예종 2) 윤관을 도원수, 오연총(吳延寵)을 부원수로 하여 군사 17만을 동원, 함흥평야일대의 여진족을 토벌하고 북청까지 진출해 함주를 중심으로 9성(九城)을 쌓은 일.",
+      "relation_reason": "same_era_event_group"
+    },
+    {
+      "term_name": "을사사화",
+      "term_times": "",
+      "description": "1545년(명종 1) 소윤이 대윤을 몰아내는 과정에서 사림이 화를 압은 정치사건.",
+      "relation_reason": "same_era_event_group"
+    }
+  ],
+  "distractor_fact_basis_list": [
+    [
+      {
+        "target": "기묘사화",
+        "chunk_id": "neo4j:distractor:기묘사화",
+        "source_type": "neo4j_graph_fact",
+        "title": "기묘사화 fact",
+        "score": 1.0,
+        "snippet": "1519년(중종 14) 11월 남곤(南袞)·심정(沈貞)·홍경주(洪景舟) 등의 훈구 재상(勳舊宰相)에 의해서 조광조(趙光祖)·김정(金淨)·김식(金湜) 등 신진 사류가 화를 입은 사건."
+      }
+    ],
+    [
+      {
+        "target": "병자호란",
+        "chunk_id": "neo4j:distractor:병자호란",
+        "source_type": "neo4j_graph_fact",
+        "title": "병자호란 fact",
+        "score": 1.0,
+        "snippet": "1636년(인조 14) 12월부터 이듬해 1월까지 청(淸)나라가 조선에 침입하여 벌였던 전쟁."
+      }
+    ],
+    [
+      {
+        "target": "인조반정",
+        "chunk_id": "neo4j:distractor:인조반정",
+        "source_type": "neo4j_graph_fact",
+        "title": "인조반정 fact",
+        "score": 1.0,
+        "snippet": "1623년(광해군 26) 서인(西人) 등이 광해군 및 대북파(大北派)를 몰아내고 능양군(綾陽君) 종(倧: 인조)을 왕으로 옹립한 사건."
+      }
+    ],
+    [
+      {
+        "target": "갑인예송",
+        "chunk_id": "neo4j:distractor:갑인예송",
+        "source_type": "neo4j_graph_fact",
+        "title": "갑인예송 fact",
+        "score": 1.0,
+        "snippet": "조선후기 현종 때 효종의 비인 인선왕후(仁宣王后)가 사망하자, 서인과 남인이 인조의 계비인 조대비(趙大妃)의 복제와 관련하여 대립한 사건."
+      }
+    ],
+    [
+      {
+        "target": "경신환국",
+        "chunk_id": "neo4j:distractor:경신환국",
+        "source_type": "neo4j_graph_fact",
+        "title": "경신환국 fact",
+        "score": 1.0,
+        "snippet": "1680년(숙종 6)에 남인(南人) 일파가 정치적으로 대거 축출된 사건."
+      }
+    ],
+    [
+      {
+        "target": "계축옥사",
+        "chunk_id": "neo4j:distractor:계축옥사",
+        "source_type": "neo4j_graph_fact",
+        "title": "계축옥사 fact",
+        "score": 1.0,
+        "snippet": "1613년(광해군 5)에 대북파(大北派)가 영창대군(永昌大君) 및 서인, 남인 세력을 제거하기 위해 일으킨 옥사(獄事)."
+      }
+    ],
+    [
+      {
+        "target": "여진정벌",
+        "chunk_id": "neo4j:distractor:여진정벌",
+        "source_type": "neo4j_graph_fact",
+        "title": "여진정벌 fact",
+        "score": 1.0,
+        "snippet": "1107년(예종 2) 윤관을 도원수, 오연총(吳延寵)을 부원수로 하여 군사 17만을 동원, 함흥평야일대의 여진족을 토벌하고 북청까지 진출해 함주를 중심으로 9성(九城)을 쌓은 일."
+      }
+    ],
+    [
+      {
+        "target": "을사사화",
+        "chunk_id": "neo4j:distractor:을사사화",
+        "source_type": "neo4j_graph_fact",
+        "title": "을사사화 fact",
+        "score": 1.0,
+        "snippet": "1545년(명종 1) 소윤이 대윤을 몰아내는 과정에서 사림이 화를 압은 정치사건."
+      }
+    ]
+  ]
+}
