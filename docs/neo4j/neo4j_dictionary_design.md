@@ -1,4 +1,4 @@
-﻿# Neo4j 사전 설계 문서
+# Neo4j 사전 설계 문서
 
 ## 1. 목적
 
@@ -254,7 +254,7 @@ etl/
 | `canonical_category_dictionary.csv` | `dictionary/` | `history_terms.term_lk` 기반 `CanonicalCategory` 노드 사전 |
 | `term_canonical_category_relation.csv` | `staging/` | `Term - HAS_CANONICAL_CATEGORY - CanonicalCategory` 관계 생성용 |
 | `source_event_category_dictionary.csv` | `dictionary/` | `itkc_events.subject_category` 기반 이벤트 분류 사전 |
-| `event_source_category_relation.csv` | `staging/` | `Event - HAS_SOURCE_CATEGORY - SourceEventCategory` 관계 생성용 |
+| `event_source_category_relation.csv` | `staging/` | `Event - HAS_EVENT_CATEGORY - SourceEventCategory` 관계 생성용 |
 | `taxonomy_crosswalk.csv` | `mapping/` | 이벤트 분류와 표준 카테고리 연결 규칙 |
 | `period_dictionary.csv` | `dictionary/` | `Period` 노드 기준 사전 |
 | `event_date_parse.csv` | `staging/` | Event 날짜 원문 정규화 결과 |
@@ -488,7 +488,7 @@ Term -> 매장
 
 ### 7.3 왜 필요한가
 
-1. `Event - HAS_SOURCE_CATEGORY - SourceEventCategory` 관계를 명확히 만든다.
+1. `Event - HAS_EVENT_CATEGORY - SourceEventCategory` 관계를 명확히 만든다.
 2. `subject_category` 복합값을 여러 관계로 펼친다.
 3. 같은 `event_id` 중복을 정리한 뒤 관계를 생성할 수 있다.
 4. 원본 `subject_category`를 보존해 검수할 수 있다.
@@ -781,20 +781,21 @@ MVP에서는 관계 타입을 너무 많이 나누지 않고 `RELATED_TO` 하나
 
 `source_url_dictionary.csv`는 RAG와 출처 추적을 위한 URL 사전이다.
 
-원본 데이터에는 여러 URL 컬럼이 있다.
+현재 URL 사전 대상은 다음 세 가지다.
 
 ```text
-itkc_events.detail_url
-itkc_event_relations.detail_url
-itkc_person_relations.evidence_url
-itkc_person_relations.detail_url
+events.source_urls
+event_relations.source_urls
+person_relations.detail_url
 ```
+
+`person_relations.evidence_url`은 URL 사전에 넣지 않고 `RELATED_TO.evidence_url` 관계 속성으로만 보존한다. 인물 관계 근거 URL을 `SourceUrl` 노드로 승격하면 같은 URL 하나가 많은 인물 관계를 묶는 허브가 될 수 있기 때문이다.
 
 URL은 그래프 구조 자체에는 필수는 아니지만, 답변의 근거와 RAG 품질에는 중요하다.
 
 ### 12.2 왜 필요한가
 
-1. 중복 URL을 제거한다.
+1. 사건 URL과 인물 상세 URL의 중복을 제거한다.
 2. URL이 어떤 테이블과 컬럼에서 왔는지 추적한다.
 3. Tavily extract 대상 URL queue로 쓸 수 있다.
 4. `Evidence`, `Source`, `DocumentChunk` 확장에 사용할 수 있다.
@@ -819,12 +820,13 @@ Tavily는 그래프의 확정 관계를 만드는 주 데이터가 아니라, UR
 |---|---|
 | `source_url_id` | URL 고유 ID |
 | `url` | 원본 URL |
-| `source_table` | URL이 나온 테이블 |
-| `source_column` | URL이 나온 컬럼 |
-| `source_type` | `EVIDENCE`, `DETAIL`, `SOURCE` 등 |
+| `source_tables` | URL이 나온 테이블 목록 |
+| `source_columns` | URL이 나온 컬럼 목록 |
+| `source_types` | EVENT_DETAIL, EVENT_RELATION_DETAIL, PERSON_DETAIL 같은 URL 출처 유형 |
+| `source_count` | 같은 URL이 수집 대상 컬럼에서 등장한 횟수 |
 | `use_for_rag` | RAG 수집 대상 여부 |
 | `fetch_status` | Tavily 수집 상태 |
-| `note` | 비고 |
+| `note` | 수집/검수 메모 |
 
 ---
 
@@ -1036,6 +1038,4 @@ RETURN e
 - 정밀한 의미 분석: `SourceEventCategory`, `CanonicalCategory`, `EventFacet`
 - 빠른 키워드 검색: `SearchTag`
 - 매핑 기준 수정: seed/crosswalk 수정 후 CSV 재생성
-
-
 

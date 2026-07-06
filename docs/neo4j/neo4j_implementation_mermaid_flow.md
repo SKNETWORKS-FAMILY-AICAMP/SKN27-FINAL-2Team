@@ -457,9 +457,9 @@ flowchart TB
 ```mermaid
 flowchart LR
     subgraph core["핵심 노드"]
-        term["Term<br/>역사 용어 (63,401)"]
-        event["Event<br/>역사 사건 (929)"]
-        person["Person<br/>인물 (56,727)"]
+        term["Term<br/>역사 용어 (61,598)"]
+        event["Event<br/>역사 사건 (600)"]
+        person["Person<br/>인물 (56,403)"]
     end
 
     subgraph service["서비스 3축"]
@@ -469,7 +469,7 @@ flowchart LR
     end
 
     subgraph url["출처"]
-        source_url["SourceUrl<br/>출처 URL (79,693)<br/>RAG 수집 후보"]
+        source_url["SourceUrl<br/>출처 URL (57,412)<br/>RAG 수집 후보"]
     end
 
     term -->|"HAS_THEME · 주제"| theme
@@ -480,13 +480,14 @@ flowchart LR
     term -->|"HAS_ENTITY_TYPE · 실체 유형"| entity
 
     term -->|"REFERS_TO · 가리키는 실체"| person
+    term -->|"MENTIONS_PERSON · 설명문 언급"| person
     term -->|"REFERS_TO · 가리키는 실체"| event
     person -->|"INVOLVED_IN · 사건 참여"| event
     person -->|"RELATED_TO · 인물 관계"| person
 
     event -->|"HAS_SOURCE_URL · 출처"| source_url
     person -->|"HAS_SOURCE_URL · 상세 페이지"| source_url
-    person -->|"HAS_EVIDENCE_URL · 관계 근거"| source_url
+    person -.->|"RELATED_TO.evidence_url · 관계 속성"| person
 ```
 
 ### 10.2 분류 체계와 의미 축 상세 스키마
@@ -702,6 +703,7 @@ flowchart TB
     event_urls["events.source_urls"]
     event_relation_urls["event_relations.source_urls"]
     person_evidence["person_relations.evidence_url"]
+    related_evidence["person_related_to_person.csv<br/>RELATED_TO.evidence_url 속성"]
     person_detail["person_relations.detail_url"]
 
     source_url_dict["source_url_dictionary.csv<br/>use_for_rag=Y<br/>fetch_status=PENDING"]
@@ -713,7 +715,7 @@ flowchart TB
 
     event_urls --> source_url_dict
     event_relation_urls --> source_url_dict
-    person_evidence --> source_url_dict
+    person_evidence --> related_evidence
     person_detail --> source_url_dict
 
     source_url_dict --> source_urls_node
@@ -857,7 +859,7 @@ flowchart LR
         e34["term_has_entity_type.csv"]
         e35["term_refers_to_person.csv"]
         e36["term_refers_to_event.csv"]
-        e37["person_has_evidence_url.csv"]
+        e37["term_mentions_person.csv"]
     end
 
     subgraph optional_relation_csv["Optional relationship CSV 2개"]
@@ -937,15 +939,11 @@ flowchart TB
         event_era --> person_event --> person_era
     end
 
-    subgraph evidence_url["관계 근거 URL 보강"]
+    subgraph evidence_url["관계 근거 URL 처리"]
         person_rel["person_relations.csv<br/>person_id, related_person_id, evidence_url"]
-        source_url_dict["source_url_dictionary.csv<br/>evidence_url 포함"]
-        source_url_node["nodes/source_urls.csv"]
-        evidence_rel["person_has_evidence_url.csv<br/>Person - HAS_EVIDENCE_URL - SourceUrl"]
+        related_rel["person_related_to_person.csv<br/>Person - RELATED_TO - Person<br/>evidence_url 관계 속성"]
 
-        person_rel --> source_url_dict --> source_url_node
-        person_rel --> evidence_rel
-        source_url_node --> evidence_rel
+        person_rel --> related_rel
     end
 
     term_node --> import_nodes["history_graph_import_nodes.cypher"]
@@ -955,7 +953,7 @@ flowchart TB
     term_era --> import_rel["history_graph_import_relations.cypher"]
     event_era --> import_rel
     person_era --> import_rel
-    evidence_rel --> import_rel
+    related_rel --> import_rel
 ```
 
-이 흐름에서 `IN_ERA`와 `HAS_EVIDENCE_URL`은 원본을 대체하지 않는다. `IN_PERIOD`, `PART_OF_ERA`, `RELATED_TO.evidence_url` 같은 원천 근거를 유지한 상태에서 서비스 조회와 RAG 수집을 빠르게 하기 위해 미리 펼친 관계다.
+이 흐름에서 `IN_ERA`는 원본을 대체하지 않는다. `IN_PERIOD`, `PART_OF_ERA` 같은 원천 경로를 유지한 상태에서 서비스 조회를 빠르게 하기 위해 미리 펼친 관계다. 인물 관계 근거 URL은 별도 `HAS_EVIDENCE_URL` 관계로 만들지 않고 `RELATED_TO.evidence_url` 속성으로만 보존한다.

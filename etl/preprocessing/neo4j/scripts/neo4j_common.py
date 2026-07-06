@@ -168,9 +168,29 @@ def read_csv(input_path, purpose):
     return pd.read_csv(input_path, dtype=str)
 
 
+def read_optional_csv(input_path, purpose):
+    # 검수 후보 파일처럼 아직 없을 수 있는 입력은 빈 DataFrame으로 대체한다.
+    if input_path.exists():
+        return read_csv(input_path, purpose)
+
+    return pd.DataFrame()
+
+
 def save_csv(data_frame, output_path):
     output_path.parent.mkdir(parents=True, exist_ok=True)
     data_frame.to_csv(output_path, index=False, encoding="utf-8-sig")
+
+
+def remove_stale_output_file(output_path):
+    if output_path.exists():
+        output_path.unlink()
+
+
+def build_discontinued_relation_output_names():
+    # 더 이상 생성하지 않는 관계 CSV 이름. graph/theme 스크립트가 함께 사용한다.
+    return {
+        "person_has_evidence_url",
+    }
 
 
 def print_summary(file_name, data_frame):

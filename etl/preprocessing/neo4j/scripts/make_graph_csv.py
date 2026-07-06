@@ -11,12 +11,15 @@ from pathlib import Path
 import pandas as pd
 
 from neo4j_common import (
+    build_discontinued_relation_output_names,
     build_sequential_ids,
     clean_value,
     first_value,
     normalize_keyword_series,
     print_summary,
     read_csv,
+    read_optional_csv,
+    remove_stale_output_file,
     resolve_neo4j_dir,
     resolve_project_root,
     save_csv,
@@ -2216,7 +2219,7 @@ def extract_person_mention_context(text, start_index, end_index, window_size=32)
 def has_person_hanja_context(context, alias_name, matched_hanja):
     hanja_text = str(matched_hanja or "").strip()
 
-    if hanja_text == "":
+    if len(hanja_text) < 2:
         return False
 
     compact_context = re.sub(r"\s+", "", str(context))
@@ -2757,13 +2760,6 @@ def build_default_paths(script_path):
     }
 
 
-def read_optional_csv(input_path, purpose):
-    if input_path.exists():
-        return read_csv(input_path, purpose)
-
-    return pd.DataFrame()
-
-
 def read_inputs(args):
     return {
         "terms": read_csv(args.terms_path, "terms"),
@@ -3029,12 +3025,6 @@ def build_optional_empty_relation_output_names():
     }
 
 
-def build_discontinued_relation_output_names():
-    return {
-        "person_has_evidence_url",
-    }
-
-
 def should_skip_empty_relation_output(output_name, data_frame):
     optional_output_names = build_optional_empty_relation_output_names()
 
@@ -3042,11 +3032,6 @@ def should_skip_empty_relation_output(output_name, data_frame):
         return True
 
     return False
-
-
-def remove_stale_output_file(output_path):
-    if output_path.exists():
-        output_path.unlink()
 
 
 def build_output_files(args, node_outputs, relation_outputs):

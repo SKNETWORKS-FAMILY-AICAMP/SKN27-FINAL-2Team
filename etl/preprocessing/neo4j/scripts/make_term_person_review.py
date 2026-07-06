@@ -106,6 +106,17 @@ def build_review_candidates(terms, people):
     if candidates.empty:
         return empty_review_candidates()
 
+    candidates["hanja_term"] = candidates["hanja_term"].fillna("").str.strip()
+    candidates["hanja_person"] = candidates["hanja_person"].fillna("").str.strip()
+    candidates = candidates[
+        candidates["hanja_term"].ne("")
+        & candidates["hanja_person"].ne("")
+        & candidates["hanja_term"].eq(candidates["hanja_person"])
+    ].copy()
+
+    if candidates.empty:
+        return empty_review_candidates()
+
     candidates["person_name"] = candidates["base_name"]
     candidates["term_desc_preview"] = candidates["description"].str.slice(0, 50)
     candidates["review_status"] = "PENDING"

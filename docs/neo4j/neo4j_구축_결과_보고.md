@@ -2,7 +2,7 @@
 
 한국사 학습 챗봇의 문제 생성·개념 검색을 위해, 한국사 용어·사건·인물 데이터를 Neo4j 지식 그래프로 구축했다. 이 문서는 전처리를 어떻게 했고, 왜 그렇게 했으며, 그 결과 무엇을 얻었는지, 그리고 노드·엣지를 어떤 기준으로 설계했는지를 정리한 보고 문서다.
 
-**최종 결과: 노드 17종 202,002건, 관계 37종 952,027건, 전처리 스크립트 1회 실행으로 전체 재현 가능.**
+**최종 결과: 노드 17종 177,265건, 관계 CSV 37개 636,734건, 관계 타입 22종. 전처리 스크립트 1회 실행으로 전체 재현 가능.**
 
 ---
 
@@ -12,10 +12,10 @@
 
 | 원천 | 내용 | 규모(정규화 후) |
 |---|---|---:|
-| 한국역사용어시소러스 (국사편찬위원회) | 역사 용어 + 계층형 분류 + 시대 | 63,401 |
-| 한국고전종합DB 관계망 (ITKC) | 역사 사건 | 929 |
-| ITKC 사건-인물 관계 | 사건 참여 | 7,249 |
-| ITKC 인물-인물 관계 | 가족·교유·사제 등 | 211,389 |
+| 한국역사용어시소러스 (국사편찬위원회) | 역사 용어 + 계층형 분류 + 시대 | 61,598 |
+| 한국고전종합DB 관계망 (ITKC) | 역사 사건 | 600 |
+| ITKC 사건-인물 관계 | 사건 참여 | 6,918 |
+| ITKC 인물-인물 관계 | 가족·교유·사제 등 | 206,507 |
 
 이 데이터의 핵심 가치는 개별 행이 아니라 **연결**에 있다. "조선 시대 군사 주제의 인물", "위화도회군에 참여한 인물의 사제 관계", "이 용어와 관련된 사건의 출처 URL" 같은 질문은 관계형 DB에서는 다단계 조인이 필요하지만, 그래프에서는 엣지를 따라가는 것으로 끝난다. 벡터 DB(의미 검색)와 역할을 나눠, **구조적·관계형 질의는 GraphDB가 담당**하도록 설계했다.
 
@@ -72,13 +72,13 @@ raw CSV → normalized → dictionary → mapping/staging → Neo4j import CSV �
 
 | 그룹 | Label (건수) | 역할 |
 |---|---|---|
-| 핵심 데이터 | Term(63,401), Event(929), Person(56,727) | 검색·출제의 실제 대상 |
+| 핵심 데이터 | Term(61,598), Event(600), Person(56,403) | 검색·출제의 실제 대상 |
 | 분류 체계 | CanonicalCategory(400), SourceEventCategory(53) | 표준 카테고리 계층 / 사건 원본 분류 보존 |
 | 시대 축 | Period(30), Era(10) | 원본 시대 표기 / 표준 시대 10개 |
 | 서비스 축 | Theme(10), EntityType(4) | 고정 주제 10개 / 실체 유형(인물·문헌·문화재·장소) |
 | 의미 축 | Country(5), Region(7), EconomicDomain(16), TaxonomyFacet(49) | 카테고리 경로에서 분리한 국가·권역·경제·중간 분류 |
 | 검색·묶음 | EventFacet(53), EventGroup(32), SearchTag(583) | 사건 성격 facet / 관련 사건 묶음 / 통합 검색 태그 |
-| 출처 | SourceUrl(79,693) | 근거 URL. Web RAG 수집 후보 |
+| 출처 | SourceUrl(57,412) | 사건 URL과 인물 상세 URL. Web RAG 수집 후보 |
 
 ### 3.2 설계 결정 1 — 원본 보존과 표준화의 분리
 
@@ -123,12 +123,13 @@ raw CSV → normalized → dictionary → mapping/staging → Neo4j import CSV �
 | HAS_CATEGORY | Term/Event → CanonicalCategory | 61,697 / 692 |
 | IN_PERIOD | Term/Event → Period | 65,358 / 600 |
 | IN_ERA (직통) | Term/Event/Person → Era | 54,125 / 600 / 23,214 |
-| HAS_THEME (직통) | Term/Event/Person → Theme | 48,624 / 1,405 / 60,712 |
+| HAS_THEME (직통) | Term/Event/Person → Theme | 58,605 / 1,405 / 60,553 |
 | HAS_ENTITY_TYPE | Term → EntityType | 20,662 |
 | RELATED_TO | Person → Person | 184,056 |
-| INVOLVED_IN | Person → Event | 7,249 |
-| REFERS_TO | Term → Person/Event | 3,720 / 13 |
-| HAS_SOURCE_URL / HAS_EVIDENCE_URL | Event/Person → SourceUrl | 2,382 / 56,212 / 326,699 |
+| INVOLVED_IN | Person → Event | 6,918 |
+| REFERS_TO | Term → Person/Event | 2,971 / 13 |
+| MENTIONS_PERSON | Term → Person | 3,114 |
+| HAS_SOURCE_URL | Event/Person → SourceUrl | 2,382 / 56,212 |
 | HAS_SEARCH_TAG | Event → SearchTag | 2,811 |
 | 구조 관계 | SUBCATEGORY_OF 335, MAPPED_TO_CATEGORY 45, PART_OF_ERA 23 등 | - |
 
@@ -158,11 +159,11 @@ raw CSV → normalized → dictionary → mapping/staging → Neo4j import CSV �
 
 ### 4.5 설계 결정 4 — 출처 URL을 관계 속성이 아닌 노드로
 
-URL을 각 행의 속성으로 두지 않고 `SourceUrl` 노드(79,693건, 중복 제거)로 분리한 뒤 HAS_SOURCE_URL/HAS_EVIDENCE_URL로 연결했다. 인물 관계의 근거 URL은 관계 양쪽 인물 모두에서 탐색 가능하게 연결했다(326,699건).
+`events.source_urls`, `event_relations.source_urls`, `person_relations.detail_url`은 `SourceUrl` 노드(57,412건, 중복 제거)로 분리한 뒤 `HAS_SOURCE_URL`로 연결한다. 반면 `person_relations.evidence_url`은 범용 URL 허브가 되는 것을 막기 위해 `RELATED_TO.evidence_url` 관계 속성으로만 보존한다.
 
-**왜.** 속성으로 묻어두면 "이 URL이 어떤 사건·인물들의 근거인가"를 역방향으로 물을 수 없고, RAG 수집 대상 관리(수집 여부, 상태)도 불가능하다.
+**왜.** 사건 URL과 인물 상세 URL은 출처 노드와 RAG 후보로 유용하지만, 인물 관계의 근거 URL은 같은 문헌/목록 URL 하나가 많은 사람에게 붙을 수 있다. 이를 노드 관계로 승격하면 특정 URL이 과도한 허브가 되어 graph view와 탐색 품질을 흐린다.
 
-**이익.** SourceUrl이 그래프의 출처 노드이자 Web RAG(Tavily) 수집 후보 목록을 겸한다. `use_for_rag`, `fetch_status` 속성으로 수집 파이프라인 상태를 그래프 안에서 관리한다.
+**이익.** `SourceUrl`은 사건과 인물 상세 페이지의 출처 노드이자 Web RAG(Tavily) 수집 후보 목록을 겸한다. 인물 관계의 근거 URL은 `RELATED_TO` 속성에 남아 관계 근거를 잃지 않으면서도 URL 허브 노드를 만들지 않는다.
 
 ---
 
@@ -171,7 +172,7 @@ URL을 각 행의 속성으로 두지 않고 `SourceUrl` 노드(79,693건, 중�
 - **적재**: `storage/neo4j/load_schema.py` 실행 한 번으로 기존 그래프 reset → 제약조건 → 노드 → 관계 → 검증 순서로 진행. `LOAD CSV + MERGE` 기반 멱등 적재라 재실행해도 안전하다.
 - **무결성**: 17개 label 전부에 ID unique constraint. 다중 근거가 정당한 관계(사건-인물 참여 등)는 MERGE 키에 원본 식별자를 포함해 중복 collapse를 방지했다.
 - **타입**: CSV는 전부 문자열이므로 연도·순서·집계 속성은 import 시점에 `toIntegerOrNull()`로 캐스팅. 덕분에 "1850~1910년 사이 용어" 같은 숫자 범위 검색이 가능하다.
-- **검증**: 적재 직후 `history_graph_verify.cypher`가 label별 노드 수(202,002)와 관계 type별 수(952,027)를 출력해 누락·빈 label을 즉시 확인한다.
+- **검증**: 적재 직후 `history_graph_verify.cypher`가 label별 노드 수(총 177,265)와 relationship type별 관계 수(총 636,734)를 출력해 누락·빈 label을 즉시 확인한다.
 
 ---
 
@@ -192,9 +193,9 @@ URL을 각 행의 속성으로 두지 않고 `SourceUrl` 노드(79,693건, 중�
 
 | Label | 건수 | 의미 (예시) | 왜 이렇게 설계했는가 |
 |---|---:|---|---|
-| `Term` | 63,401 | 한국역사용어시소러스의 역사 용어. 이름·한자·설명문·원문 시대/연도 텍스트 보존 (회사령, 강감찬, 위화도회군) | 검색과 출제의 출발점. 설명문이 있어 지문형 문제의 원천이 되므로 독립 노드로 두고, 파생 속성(연도 파싱, question_ready)을 노드에 물리화해 매 쿼리마다 재계산하지 않게 함 |
-| `Event` | 929 | ITKC 관계망의 역사 사건. 원천 분류·시대·날짜 파싱 결과 보유 (위화도회군, 강동성전투) | 사건은 인물·분류·시대·출처가 모이는 허브다. 행이 아니라 노드로 두어야 "이 사건에 누가 참여했고 근거는 무엇인가"를 엣지로 풀 수 있음 |
-| `Person` | 56,727 | 사건 참여자와 인물 관계망의 인물. 생몰년·본관·연결 정도(degree) 보유 (강감찬(姜邯贊)) | 원천 2곳(사건 참여, 인물 관계)에 등장하는 인물을 person_id 기준 하나로 합침. 동일 인물이 두 세계에 분리되어 있으면 관계 탐색이 끊기기 때문 |
+| `Term` | 61,598 | 한국역사용어시소러스의 역사 용어. 이름·한자·설명문·원문 시대/연도 텍스트 보존 (회사령, 강감찬, 위화도회군) | 검색과 출제의 출발점. 설명문이 있어 지문형 문제의 원천이 되므로 독립 노드로 두고, 파생 속성(연도 파싱, question_ready)을 노드에 물리화해 매 쿼리마다 재계산하지 않게 함 |
+| `Event` | 600 | ITKC 관계망의 역사 사건. 원천 분류·시대·날짜 파싱 결과 보유 (위화도회군, 강동성전투) | 사건은 인물·분류·시대·출처가 모이는 허브다. 행이 아니라 노드로 두어야 "이 사건에 누가 참여했고 근거는 무엇인가"를 엣지로 풀 수 있음 |
+| `Person` | 56,403 | 사건 참여자와 인물 관계망의 인물. 생몰년·본관·연결 정도(degree) 보유 (강감찬(姜邯贊)) | 원천 2곳(사건 참여, 인물 관계)에 등장하는 인물을 person_id 기준 하나로 합침. 동일 인물이 두 세계에 분리되어 있으면 관계 탐색이 끊기기 때문 |
 | `CanonicalCategory` | 400 | `term_lk` 경로를 분해한 표준 카테고리 계층 (정치·행정·법제>행정>중앙행정기구) | 경로 문자열(`A>B>C`)을 그대로 속성으로 두면 모든 분류 검색이 문자열 파싱이 된다. depth별로 노드화하고 계층을 엣지로 표현해 상·하위 탐색을 그래프 연산으로 전환 |
 | `SourceEventCategory` | 53 | ITKC 사건의 원본 분류, 원형 보존 (전쟁, 반란, 옥사) | 표준화 과정에서 원본을 덮어쓰면 매핑 오류를 교정할 기준이 사라진다. 원본은 불변으로 보존하고 표준 연결은 crosswalk로만 |
 | `Period` | 30 | 원본 시대/기간 표기. 순서·연도 범위·범위 확장 가능 여부 보유 (고려시대, 조선후기) | 원본 표기(고려/고려시대 등 변형 포함)를 지우지 않고 보존해야 "왜 이 용어가 이 시대인가"의 근거 추적이 가능 |
@@ -208,7 +209,7 @@ URL을 각 행의 속성으로 두지 않고 `SourceUrl` 노드(79,693건, 중�
 | `EventFacet` | 53 | 사건 원본 분류를 의미 단위로 재분류한 facet (전쟁, 정치, 제도) | 원본 분류는 수집 기준이라 검색 의미와 어긋날 수 있다. seed 기반 재분류로 "사건의 성격" 축을 별도 확보 |
 | `EventGroup` | 32 | related_event 기준 사건군 (고려거란전쟁) | 전쟁 시리즈처럼 연속 사건의 흐름 질문("귀주대첩 전후 사건은?")에 답하려면 개별 사건 위에 묶음 단위가 필요 |
 | `SearchTag` | 583 | 여러 의미 축을 통합한 검색 태그. 의도된 비정규화 (전쟁, 교육) | 키워드 하나로 사건을 찾으려면 원래 7개 축을 OR로 뒤져야 한다. 통합 태그로 한 줄 검색을 만들되, 출처 속성을 남겨 원래 축으로 회귀 가능하게 함 |
-| `SourceUrl` | 79,693 | 출처 URL 노드. use_for_rag, fetch_status로 수집 상태 관리 | URL을 속성으로 묻어두면 "이 URL이 어떤 노드들의 근거인가"를 역방향으로 물을 수 없고 수집 상태 관리도 불가. 노드로 승격해 그래프 출처 + RAG 수집 대기열을 겸하게 함 |
+| `SourceUrl` | 57,412 | 사건 URL과 인물 상세 URL 노드. use_for_rag, fetch_status로 수집 상태 관리 | URL을 속성으로만 묻어두면 RAG 후보 관리가 어렵다. 다만 인물 관계 근거 URL은 허브화를 막기 위해 노드로 승격하지 않고 `RELATED_TO.evidence_url`에만 둔다 |
 
 ---
 
@@ -218,9 +219,10 @@ URL을 각 행의 속성으로 두지 않고 `SourceUrl` 노드(79,693건, 중�
 
 | Type | 연결 | 행 수 | 의미 | 왜 이렇게 설계했는가 |
 |---|---|---:|---|---|
-| `INVOLVED_IN` | Person → Event | 7,249 | 인물이 사건에 참여/관련됨 | 원본 참여 기록의 식별자를 MERGE 키에 포함. 같은 인물이 같은 사건에 다른 역할로 여러 번 기록될 수 있는데, 단순 MERGE면 하나로 뭉개져 원본 기록이 유실됨 |
-| `RELATED_TO` | Person → Person | 184,056 | 인물 간 관계. 의미는 `normalized_relation_type`, `relation_group`, `is_symmetric` 등 속성으로 보존 | type을 HAS_FATHER처럼 쪼개면 스키마가 raw 품질에 끌려다니고 관계명 추가 때마다 쿼리 수정 필요. type은 하나로 고정하고 의미는 속성으로 두면 import가 안정적이고 정제는 seed 수정만으로 가능. 대칭 관계(교유·형제)는 원본에 양방향 중복이라 한 방향만 저장 → 무방향 패턴 `(a)-[r]-(b)`로 조회 |
-| `REFERS_TO` | Term → Person / Event | 3,720 / 13 | 용어가 가리키는 실제 인물/사건 | 용어 세계(시소러스)와 인물·사건 세계(ITKC)를 잇는 유일한 다리. 잘못 연결되면 두 세계가 통째로 오염되므로 이름(+한자) 유일 매칭 + 수동 검수라는 가장 보수적인 기준 적용 |
+| `INVOLVED_IN` | Person → Event | 6,918 | 인물이 사건에 참여/관련됨 | 원본 참여 기록의 식별자를 MERGE 키에 포함. 같은 인물이 같은 사건에 다른 역할로 여러 번 기록될 수 있는데, 단순 MERGE면 하나로 뭉개져 원본 기록이 유실됨 |
+| `RELATED_TO` | Person → Person | 184,056 | 인물 간 관계. 의미와 근거 URL은 `normalized_relation_type`, `relation_group`, `is_symmetric`, `evidence_url` 등 속성으로 보존 | type을 HAS_FATHER처럼 쪼개면 스키마가 raw 품질에 끌려다니고 관계명 추가 때마다 쿼리 수정 필요. type은 하나로 고정하고 의미는 속성으로 두면 import가 안정적이고 정제는 seed 수정만으로 가능. 대칭 관계(교유·형제)는 원본에 양방향 중복이라 한 방향만 저장 → 무방향 패턴 `(a)-[r]-(b)`로 조회 |
+| `REFERS_TO` | Term → Person / Event | 2,971 / 13 | 용어가 가리키는 실제 인물/사건 | 용어 세계(시소러스)와 인물·사건 세계(ITKC)를 잇는 유일한 다리. 잘못 연결되면 두 세계가 통째로 오염되므로 이름(+한자) 유일 매칭 + 수동 검수라는 가장 보수적인 기준 적용 |
+| `MENTIONS_PERSON` | Term → Person | 3,114 | 용어 설명문에서 인물이 언급됨 | 직접 동일 실체를 뜻하는 `REFERS_TO`와 분리한다. 설명문 맥락 확장, 관련 인물 후보 탐색에는 유용하지만 정답 실체 연결로 쓰지는 않는다 |
 
 ### 8.2 분류·시대·유형 축 관계
 
@@ -228,13 +230,13 @@ URL을 각 행의 속성으로 두지 않고 `SourceUrl` 노드(79,693건, 중�
 |---|---|---:|---|---|
 | `HAS_CATEGORY` | Term/Event → CanonicalCategory | 61,697 / 692 | 표준 카테고리 소속 | Term은 leaf에만 직접 연결. 모든 상위 카테고리에 엣지를 중복 생성하면 관계 수가 폭증하고, 상위 탐색은 SUBCATEGORY_OF 계층으로 충분 |
 | `SUBCATEGORY_OF` | Category → Category | 335 | 카테고리 자식 → 부모 | 계층을 엣지로 표현하면 "하위 전부 포함 검색"이 가변 깊이 그래프 탐색 한 줄이 됨. 국가/지역으로 분리한 경로는 의미가 다르므로 계층에서 제외 |
-| `HAS_EVENT_CATEGORY` | Event → SourceEventCategory | 1,165 | 사건의 원본 분류 | 원형 보존 원칙. 표준 분류가 틀려도 원본 연결은 불변 |
+| `HAS_EVENT_CATEGORY` | Event → SourceEventCategory | 713 | 사건의 원본 분류 | 원형 보존 원칙. 표준 분류가 틀려도 원본 연결은 불변 |
 | `MAPPED_TO_CATEGORY` | SourceEventCategory → Category | 45 | 원본 분류-표준 카테고리 crosswalk | 두 분류 체계를 잇는 통로를 이 관계 하나로 단일화. 매핑 오류 시 seed만 고치면 이 엣지만 재생성됨 |
 | `HAS_EVENT_FACET` | Event → EventFacet | 713 | 사건의 의미 facet | 원본 분류와 별도로 "사건의 성격" 축을 확보. 원본을 건드리지 않는 재분류 레이어 |
 | `IN_PERIOD` | Term/Event → Period | 65,358 / 600 | 원본 시대 표기 소속. `match_type`으로 직접(DIRECT)/범위 확장(RANGE_*) 구분 | 범위 표현(삼국시대-조선시대)을 전처리에서 확장하되 match_type을 남겨 "직접 표기인지 추론인지"를 사후 검증 가능하게 함 |
 | `PART_OF_ERA` | Period → Era | 23 | 변형 시대 → 표준 시대 통합 | 표기 변형 흡수를 데이터(엣지)로 표현. 새 변형이 나와도 seed 한 줄 추가로 해결 |
 | `IN_ERA` | Term/Event/Person → Era | 54,125 / 600 / 23,214 | 표준 시대 직통 연결(파생) | 서비스 핵심 쿼리("고려 시대 후보 전부")를 3-hop이 아닌 1-hop으로. 원천 경로는 남겨 근거 추적 가능. Person은 생몰년 우선, 없으면 참여 사건으로 보조 추론(match_source로 구분) |
-| `HAS_THEME` | Term/Event/Person/Category → Theme | 48,624 / 1,405 / 60,712 / 30 | 서비스 주제 연결 | Category→Theme이 원천 매핑, 나머지는 조회용 직통 엣지. Person은 "인물" 주제는 라벨로 확정하고 내용 주제(군사 등)는 사건 참여·인명 카테고리라는 근거가 있을 때만 상속 — 근거 없는 주제를 억지로 붙이지 않음 |
+| `HAS_THEME` | Term/Event/Person/Category → Theme | 58,605 / 1,405 / 60,553 / 32 | 서비스 주제 연결 | Category→Theme이 원천 매핑, 나머지는 조회용 직통 엣지. Person은 "인물" 주제는 라벨로 확정하고 내용 주제(군사 등)는 사건 참여·인명 카테고리라는 근거가 있을 때만 상속 — 근거 없는 주제를 억지로 붙이지 않음 |
 | `HAS_ENTITY_TYPE` | Term → EntityType | 20,662 | 용어의 실체 유형 | 주제(Theme)와 직교하는 "무엇인가" 질문 전용 축. 오답 선지 생성 시 같은 유형끼리 묶는 데 사용 |
 
 ### 8.3 의미 축 관계
@@ -254,7 +256,8 @@ URL을 각 행의 속성으로 두지 않고 `SourceUrl` 노드(79,693건, 중�
 | `HAS_SEARCH_TAG` | Event → SearchTag | 2,811 | 사건의 통합 검색 태그 | 7개 축 OR 검색을 한 줄로. 비정규화의 대가로 태그 출처(`source_node_type` 등)를 속성에 보존해 정밀 검증 시 원래 축으로 회귀 가능. 같은 이름 태그가 여러 원천에서 오는 게 정상이므로 조회 시 DISTINCT 필요 |
 | `PART_OF_EVENT_GROUP` | Event → EventGroup | 224 | 사건이 사건군에 속함 | "이 전쟁의 전후 사건" 같은 흐름 질문을 그룹 경유 2-hop으로 해결 |
 | `HAS_SOURCE_URL` | Event/Person → SourceUrl | 2,382 / 56,212 | 노드의 출처 URL | 출처를 노드로 승격했기에 성립하는 관계. 답변 근거 표시와 RAG 수집 경로를 겸함 |
-| `HAS_EVIDENCE_URL` | Person → SourceUrl | 326,699 | 인물 관계의 근거 URL | 원래 RELATED_TO의 속성으로만 있던 URL은 SourceUrl 노드와 연결되지 않은 고립 상태였음. 관계 양쪽 인물 모두에 연결해 어느 쪽에서든 근거 탐색 가능. 가장 무거운 관계이므로 RAG 수집·출처 표시 전용으로 쓰고 인물 관계 탐색은 RELATED_TO 사용 |
+
+인물 관계의 근거 URL은 별도 관계 타입으로 만들지 않는다. `RELATED_TO.evidence_url` 속성으로 보존해 관계 근거를 잃지 않으면서도 범용 URL 허브가 생기지 않게 한다.
 
 ---
 

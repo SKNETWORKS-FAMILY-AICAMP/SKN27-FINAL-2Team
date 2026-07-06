@@ -14,7 +14,7 @@ import re
 from pathlib import Path
 from typing import Iterable
 
-from rag_metadata import build_category_tags, build_chronology
+from rag_metadata import build_category_tags, build_chronology, normalize_heading, normalize_periods, split_category_path
 
 
 SOURCE_NAME = "한국사 이미지 자료"
@@ -49,7 +49,7 @@ def split_keywords(value: str) -> list[str]:
 
 
 def split_category(value: str) -> tuple[str, str]:
-    parts = [part.strip() for part in clean_text(value).split(">") if part.strip()]
+    parts = split_category_path(value)
     main = parts[0] if parts else ""
     sub = " > ".join(parts[1:]) if len(parts) > 1 else ""
     return main, sub
@@ -66,7 +66,7 @@ def iter_csv_rows(input_dir: Path) -> Iterable[dict[str, str]]:
 
 def build_document(row: dict[str, str]) -> dict:
     image_id = clean_text(row.get("이미지ID"))
-    title = clean_text(row.get("제목"))
+    title = normalize_heading(clean_text(row.get("제목")))
     description = clean_text(row.get("설명"))
     content_body = description
     periods = split_comma_values(clean_text(row.get("시대")))
@@ -75,8 +75,9 @@ def build_document(row: dict[str, str]) -> dict:
     keywords = split_keywords(clean_text(row.get("키워드")))
     thumbnail_url = clean_text(row.get("썸네일URL"))
     original_image_url = clean_text(row.get("원본이미지URL"))
-    period = ", ".join(periods)
-    category = clean_text(row.get("유형"))
+    period, periods = normalize_periods("", periods)
+    category = " > ".join(split_category_path(clean_text(row.get("유형"))))
+    category_path = split_category_path(category)
     category_tags = build_category_tags(
         title=title,
         period=period,
@@ -119,9 +120,11 @@ def build_document(row: dict[str, str]) -> dict:
         "image_path": None,
         "metadata": {
             "sequence": clean_text(row.get("순번")),
+            "period": period,
             "periods": periods,
             "category_main": category_main,
             "category_sub": category_sub,
+            "category_path": category_path,
             "image_source": image_source,
             "image": {"source": image_source},
             "list_category": clean_text(row.get("목록분류")),
@@ -148,12 +151,12 @@ def build_chunk(document: dict) -> dict:
         "metadata": {
             **document["metadata"],
             "period": document["period"],
+            "periods": document["metadata"].get("periods") or [],
             "field": document["field"],
             "category": document["category"],
+            "category_path": document["metadata"].get("category_path") or [],
             "keywords": document["keywords"],
             "source_url": document["source_url"],
-            "thumbnail_url": document["metadata"].get("thumbnail_url"),
-            "original_image_url": document["metadata"].get("original_image_url"),
         },
     }
 

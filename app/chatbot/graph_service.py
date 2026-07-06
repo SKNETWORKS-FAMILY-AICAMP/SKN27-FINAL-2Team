@@ -64,7 +64,7 @@ def unique_values(values: list[str]) -> list[str]:
 def normalize_token(token: str) -> str:
     value = (token or "").strip()
     for suffix in TOKEN_SUFFIXES:
-        if len(value) > len(suffix) + 1 and value.endswith(suffix):
+        if len(value) > len(suffix) and value.endswith(suffix):
             value = value[: -len(suffix)]
             break
     return value
@@ -82,6 +82,8 @@ def extract_query_tokens(question: str) -> list[str]:
     tokens = [normalize_token(token) for token in TOKEN_RE.findall(question or "") if len(token) >= 2]
     filtered = []
     for token in tokens:
+        if len(token) < 2:
+            continue
         if token in STOPWORDS:
             continue
         filtered.extend(token_variants(token))
@@ -109,39 +111,91 @@ def disabled_context(reason: str) -> dict[str, Any]:
 
 
 GRAPH_QUERY = """
-MATCH (t:TermName)
-WITH t,
-     reduce(score = 0, token IN $tokens |
-        score
-        + CASE WHEN t.term_name = token THEN 10 ELSE 0 END
-        + CASE WHEN t.term_name CONTAINS token THEN 5 ELSE 0 END
-        + CASE WHEN t.term_desc CONTAINS token THEN 1 ELSE 0 END
-        + CASE WHEN t.term_times CONTAINS token THEN 1 ELSE 0 END
-     ) AS match_score
-WHERE match_score > 0
-OPTIONAL MATCH (t)-[:IN_PERIOD]->(period:TermTimes)
-OPTIONAL MATCH (path:TermLink)-[:HAS_TERM]->(t)
-OPTIONAL MATCH (path)-[:HAS_TERM]->(related:TermName)
-WHERE related <> t
-WITH t,
-     match_score,
-     collect(DISTINCT period.name) AS periods,
-     collect(DISTINCT path.name) AS categories,
-     collect(DISTINCT path.value) AS paths,
-     collect(DISTINCT related.term_name)[0..10] AS related_terms
-RETURN
-    t.term_name AS term_name,
-    t.term_ch AS term_ch,
-    t.term_year AS term_year,
-    t.term_times AS term_times,
-    t.term_desc AS term_desc,
-    periods,
-    categories,
-    paths,
-    related_terms,
-    match_score
+CALL () {
+    WITH $tokens AS tokens
+    MATCH (t:Term)
+    WITH t,
+         reduce(score = 0, token IN tokens |
+            score
+            + CASE WHEN t.name = token THEN 10 ELSE 0 END
+            + CASE WHEN t.name CONTAINS token THEN 5 ELSE 0 END
+            + CASE WHEN t.description CONTAINS token THEN 1 ELSE 0 END
+            + CASE WHEN t.period_text CONTAINS token THEN 1 ELSE 0 END
+            + CASE WHEN t.category_text CONTAINS token THEN 1 ELSE 0 END
+         ) AS match_score
+    WHERE match_score > 0
+    OPTIONAL MATCH (t)-[:IN_PERIOD]->(period:Period)
+    OPTIONAL MATCH (t)-[:RELATED_TO|REFERS_TO]-(related:Term)
+    RETURN t.name AS term_name,
+           t.hanja AS term_ch,
+           t.year_text AS term_year,
+           t.period_text AS term_times,
+           t.description AS term_desc,
+           collect(DISTINCT period.name) AS periods,
+           collect(DISTINCT t.category_text) AS categories,
+           [] AS paths,
+           collect(DISTINCT related.name)[0..10] AS related_terms,
+           match_score
+    UNION ALL
+    WITH $tokens AS tokens
+    MATCH (p:Person)
+    WITH p,
+         reduce(score = 0, token IN tokens |
+            score
+            + CASE WHEN p.name CONTAINS token THEN 8 ELSE 0 END
+            + CASE WHEN p.name_candidates CONTAINS token THEN 4 ELSE 0 END
+         ) AS match_score
+    WHERE match_score > 0
+    OPTIONAL MATCH (p)-[:RELATED_TO]-(related:Person)
+    RETURN p.name AS term_name,
+           "" AS term_ch,
+           "" AS term_year,
+           "" AS term_times,
+           "" AS term_desc,
+           [] AS periods,
+           ["인물"] AS categories,
+           [] AS paths,
+           collect(DISTINCT related.name)[0..10] AS related_terms,
+           match_score
+    UNION ALL
+    WITH $tokens AS tokens
+    MATCH (e:Event)
+    WITH e,
+         reduce(score = 0, token IN tokens |
+            score
+            + CASE WHEN e.name CONTAINS token THEN 8 ELSE 0 END
+            + CASE WHEN e.related_event_name CONTAINS token THEN 4 ELSE 0 END
+            + CASE WHEN e.period_text CONTAINS token THEN 1 ELSE 0 END
+            + CASE WHEN e.subject_category CONTAINS token THEN 1 ELSE 0 END
+         ) AS match_score
+    WHERE match_score > 0
+    OPTIONAL MATCH (e)-[:INVOLVED_IN]-(person:Person)
+    OPTIONAL MATCH (e)-[:REFERS_TO]-(term:Term)
+    OPTIONAL MATCH (e)-[:IN_ERA]-(era:Era)
+    RETURN e.name AS term_name,
+           "" AS term_ch,
+           e.event_date AS term_year,
+           e.period_text AS term_times,
+           e.related_event_name AS term_desc,
+           collect(DISTINCT era.name) AS periods,
+           collect(DISTINCT e.subject_category) AS categories,
+           [] AS paths,
+           (collect(DISTINCT person.name) + collect(DISTINCT term.name))[0..10] AS related_terms,
+           match_score
+}
+WITH *
 ORDER BY match_score DESC, size(related_terms) DESC, term_name ASC
 LIMIT $limit
+RETURN term_name,
+       term_ch,
+       term_year,
+       term_times,
+       term_desc,
+       periods,
+       categories,
+       paths,
+       related_terms,
+       match_score
 """
 
 
@@ -201,6 +255,7 @@ def build_graph_context(question: str, limit: int = 6) -> dict[str, Any]:
                 item["term_year"],
                 item["term_times"],
                 *item["periods"],
+                *item["related_terms"],
             ]
         )
 
