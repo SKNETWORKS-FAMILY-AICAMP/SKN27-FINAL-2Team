@@ -22,6 +22,7 @@ FOLLOW_UP_MIN_COMBINED_SCORE = 0.50
 FOLLOW_UP_TERMS = ("그거", "이거", "저거", "그럼", "좀더", "자세", "설명", "의의", "역사적", "왜", "어떻게", "차이", "비교", "누가", "누구", "발명", "만든", "만들", "했는데", "인데")
 CONTEXT_ONLY_TERMS = ("업적", "정책", "활동", "과학적", "문화적", "정치적", "경제적")
 CONTEXT_ONLY_FOCUS_TERMS = {"과학적", "문화적", "정치적", "경제적"}
+VAGUE_FOCUS_TERMS = {"뭐가있어", "뭐가있나요", "뭐있어", "뭐있나요"}
 FOLLOW_UP_FOCUS_ONLY_TERMS = CONTEXT_ONLY_FOCUS_TERMS | {"왕"}
 KEYWORD_BLOCK_TERMS = ("업적", "정책", "정리", "요약", "설명", "설명해줘", "알려", "누구", "무엇", "뭐", "조회", "역사적", "의미", "어떤", "있는지")
 PERIOD_ONLY_SUFFIXES = ("시대", "전기", "후기")
@@ -42,6 +43,8 @@ INSUFFICIENT_ANSWER_TERMS = (
     "직접 제시되어 있지",
 )
 IMAGE_REQUEST_TERMS_PATTERN = r"(사진|이미지|그림|도판|자료|조회|보여줘|보여달라|보여줄래|찾아줘|가져와|띄워줘|좀|의|에|대한|관련)"
+SHORT_FACT_TERMS = ("이름", "본명", "시호")
+SHORT_FACT_QUESTION_TERMS = ("뭐야", "무엇", "누구", "알려")
 
 
 def normalize_intent(intent: str | None, answer_format: str) -> str:
@@ -51,6 +54,12 @@ def normalize_intent(intent: str | None, answer_format: str) -> str:
     if answer_format == "structured":
         return "concept"
     return "question"
+
+
+def is_short_fact_question(question: str) -> bool:
+    return any(term in question for term in SHORT_FACT_TERMS) and any(
+        term in question for term in SHORT_FACT_QUESTION_TERMS
+    )
 
 
 def no_rag_answer(question: str, intent: str) -> dict[str, Any]:
@@ -182,11 +191,17 @@ def build_search_question(question: str, history: list[dict[str, str]]) -> str:
         return question
     needs_context = any(term in question for term in FOLLOW_UP_TERMS)
     focus_terms = overview_focus_terms(question)
+    effective_focus_terms = tuple(term for term in focus_terms if term not in VAGUE_FOCUS_TERMS)
     needs_context = needs_context or (
         any(term in question for term in CONTEXT_ONLY_TERMS)
-        and (not focus_terms or all(term in CONTEXT_ONLY_FOCUS_TERMS for term in focus_terms))
+        and (
+            not effective_focus_terms
+            or all(term in CONTEXT_ONLY_FOCUS_TERMS for term in effective_focus_terms)
+        )
     )
-    needs_context = needs_context or bool(focus_terms and all(term in FOLLOW_UP_FOCUS_ONLY_TERMS for term in focus_terms))
+    needs_context = needs_context or bool(
+        effective_focus_terms and all(term in FOLLOW_UP_FOCUS_ONLY_TERMS for term in effective_focus_terms)
+    )
     if not needs_context:
         return question
     recent_user_text = recent_topic_from_history(history, question)
@@ -271,10 +286,11 @@ def build_history_rag_answer(
 ) -> dict[str, Any]:
     intent = normalize_intent(intent, answer_format)
     conversation_history = normalize_history(history)
+    short_fact = is_short_fact_question(question)
     if intent in {"chat", "casual"}:
         return no_rag_answer(question, intent)
 
-    if intent in {"question", "image"}:
+    if intent in {"question", "image"} or short_fact:
         answer_format = "text"
     elif intent == "concept":
         answer_format = "structured"
@@ -327,8 +343,8 @@ def build_history_rag_answer(
         structured_answer = generator.generate_structured(
             generation_question,
             sources,
-            follow_up=follow_up or mode == "question",
-            history=[],
+            follow_up=follow_up or mode == "question" or is_contextual_follow_up,
+            history=conversation_history,
         )
         if is_insufficient_structured_answer(structured_answer):
             return not_found_answer(question, intent, graph_context)
@@ -338,10 +354,10 @@ def build_history_rag_answer(
         answer = generator.generate(
             generation_question,
             sources,
-            style="textbook",
-            follow_up=follow_up or mode == "question",
-            history=[],
-            include_source_summary=intent not in {"question", "image"},
+            style="short" if short_fact else "textbook",
+            follow_up=follow_up or mode == "question" or is_contextual_follow_up,
+            history=conversation_history,
+            include_source_summary=not short_fact and intent not in {"question", "image"},
         )
         if is_insufficient_text_answer(answer):
             return not_found_answer(question, intent, graph_context)

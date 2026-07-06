@@ -57,7 +57,7 @@ etl/history/embedding/golden_questions.jsonl
 | GQ032 | 훈민정음 해례본 이미지 자료 찾아줘 | image | 조선 전기 | image_material | 훈민정음, 해례본, 세종 |
 | GQ033 | 독립협회 활동 정리해줘 | concept | 근대 | historical_overview | 독립협회, 독립문, 만민공동회 |
 | GQ034 | 갑오개혁 내용 요약해줘 | summary | 근대 | historical_overview | 갑오개혁, 군국기무처, 신분제 폐지 |
-| GQ035 | 을사늑약이 왜 중요한 사건이야 | concept | 근대 | historical_overview | 을사늑약, 외교권, 통감부 |
+| GQ035 | 을사조약이 왜 중요한 사건이야 | concept | 근대 | historical_overview | 을사늑약, 외교권, 통감부 |
 | GQ036 | 3.1 운동 배경과 영향 알려줘 | summary | 근대 | historical_overview | 3.1 운동, 민족 자결주의, 대한민국 임시정부 |
 | GQ037 | 대한민국 임시정부의 활동 설명해줘 | concept | 근대 | historical_overview | 임시정부, 상하이, 한인 애국단 |
 | GQ038 | 광복 이후 좌우 합작 운동 설명해줘 | concept | 현대 | historical_overview | 좌우 합작, 여운형, 김규식 |

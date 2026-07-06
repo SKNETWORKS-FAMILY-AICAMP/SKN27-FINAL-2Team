@@ -161,3 +161,33 @@
 2026-07-06T09:10:01,feature-chatbot,91b365173,Y,MCP 연동 성공률,외부 도구 호출 및 데이터 수신,N/A,90% 이상,N/A,API 성공/실패 로그 분석
 2026-07-06T09:10:01,feature-chatbot,91b365173,Y,RAGAS Faithfulness,답변이 검색 근거에 충실한지 평가,0.92,0.80 이상,PASS,RAGAS Framework (Faithfulness)
 2026-07-06T09:10:01,feature-chatbot,91b365173,Y,RAGAS Answer Relevance,답변이 질문 의도에 적합한지 평가,0.72,0.80 이상,FAIL,RAGAS Framework (Answer Relevance)
+2026-07-06T11:05:16,feature-chatbot,017d810ff,Y,연결성(Graph),노드 간 탐색 성공률,100.0%,95% 이상,PASS,Cypher Query 성능 테스트 및 접속 조사
+2026-07-06T11:05:16,feature-chatbot,017d810ff,Y,응답 속도,쿼리 당 평균 소요 시간,5.31s,2.0s 이내,FAIL,LangSmith Latency Tracking
+2026-07-06T11:05:16,feature-chatbot,017d810ff,Y,MCP 연동 성공률,외부 도구 호출 및 데이터 수신,N/A,90% 이상,N/A,API 성공/실패 로그 분석
+2026-07-06T11:05:16,feature-chatbot,017d810ff,Y,RAGAS Faithfulness,답변이 검색 근거에 충실한지 평가,0.87,0.80 이상,PASS,RAGAS Framework (Faithfulness)
+2026-07-06T11:05:16,feature-chatbot,017d810ff,Y,RAGAS Answer Relevance,답변이 질문 의도에 적합한지 평가,0.72,0.80 이상,FAIL,RAGAS Framework (Answer Relevance)
+2026-07-06T12:55:50,feature-chatbot,017d810ff,Y,연결성(Graph),노드 간 탐색 성공률,100.0%,95% 이상,PASS,Cypher Query 성능 테스트 및 접속 조사
+2026-07-06T12:55:50,feature-chatbot,017d810ff,Y,응답 속도,쿼리 당 평균 소요 시간,4.96s,2.0s 이내,FAIL,LangSmith Latency Tracking
+2026-07-06T12:55:50,feature-chatbot,017d810ff,Y,MCP 연동 성공률,외부 도구 호출 및 데이터 수신,N/A,90% 이상,N/A,API 성공/실패 로그 분석
+2026-07-06T12:55:50,feature-chatbot,017d810ff,Y,RAGAS Faithfulness,답변이 검색 근거에 충실한지 평가,0.88,0.80 이상,PASS,RAGAS Framework (Faithfulness)
+2026-07-06T12:55:50,feature-chatbot,017d810ff,Y,RAGAS Answer Relevance,답변이 질문 의도에 적합한지 평가,0.78,0.80 이상,FAIL,RAGAS Framework (Answer Relevance)
+2026-07-06T12:56:23,feature-chatbot,017d810ff,Y,연결성(Graph),노드 간 탐색 성공률,100.0%,95% 이상,PASS,Cypher Query 성능 테스트 및 접속 조사
+2026-07-06T12:56:23,feature-chatbot,017d810ff,Y,응답 속도,쿼리 당 평균 소요 시간,4.84s,2.0s 이내,FAIL,LangSmith Latency Tracking
+2026-07-06T12:56:23,feature-chatbot,017d810ff,Y,MCP 연동 성공률,외부 도구 호출 및 데이터 수신,N/A,90% 이상,N/A,API 성공/실패 로그 분석
+2026-07-06T12:56:23,feature-chatbot,017d810ff,Y,RAGAS Faithfulness,답변이 검색 근거에 충실한지 평가,0.87,0.80 이상,PASS,RAGAS Framework (Faithfulness)
+2026-07-06T12:56:23,feature-chatbot,017d810ff,Y,RAGAS Answer Relevance,답변이 질문 의도에 적합한지 평가,0.79,0.80 이상,FAIL,RAGAS Framework (Answer Relevance)
+2026-07-06T14:27:28,feature-chatbot,017d810ff,Y,연결성(Graph),노드 간 탐색 성공률,100.0%,95% 이상,PASS,Cypher Query 성능 테스트 및 접속 조사
+2026-07-06T14:27:28,feature-chatbot,017d810ff,Y,응답 속도,쿼리 당 평균 소요 시간,5.96s,2.0s 이내,FAIL,LangSmith Latency Tracking
+2026-07-06T14:27:28,feature-chatbot,017d810ff,Y,MCP 연동 성공률,외부 도구 호출 및 데이터 수신,N/A,90% 이상,N/A,API 성공/실패 로그 분석
+2026-07-06T14:27:28,feature-chatbot,017d810ff,Y,RAGAS Faithfulness,답변이 검색 근거에 충실한지 평가,0.90,0.80 이상,PASS,RAGAS Framework (Faithfulness)
+2026-07-06T14:27:28,feature-chatbot,017d810ff,Y,RAGAS Answer Relevance,답변이 질문 의도에 적합한지 평가,0.70,0.80 이상,FAIL,RAGAS Framework (Answer Relevance)
+2026-07-06T14:52:14,feature-chatbot,017d810ff,Y,연결성(Graph),노드 간 탐색 성공률,100.0%,95% 이상,PASS,Cypher Query 성능 테스트 및 접속 조사
+2026-07-06T14:52:14,feature-chatbot,017d810ff,Y,응답 속도,쿼리 당 평균 소요 시간,4.93s,2.0s 이내,FAIL,LangSmith Latency Tracking
+2026-07-06T14:52:14,feature-chatbot,017d810ff,Y,MCP 연동 성공률,외부 도구 호출 및 데이터 수신,N/A,90% 이상,N/A,API 성공/실패 로그 분석
+2026-07-06T14:52:14,feature-chatbot,017d810ff,Y,RAGAS Faithfulness,답변이 검색 근거에 충실한지 평가,0.89,0.80 이상,PASS,RAGAS Framework (Faithfulness)
+2026-07-06T14:52:14,feature-chatbot,017d810ff,Y,RAGAS Answer Relevance,답변이 질문 의도에 적합한지 평가,0.70,0.80 이상,FAIL,RAGAS Framework (Answer Relevance)
+2026-07-06T15:24:48,feature-chatbot,017d810ff,Y,연결성(Graph),노드 간 탐색 성공률,100.0%,95% 이상,PASS,Cypher Query 성능 테스트 및 접속 조사
+2026-07-06T15:24:48,feature-chatbot,017d810ff,Y,응답 속도,쿼리 당 평균 소요 시간,6.54s,2.0s 이내,FAIL,LangSmith Latency Tracking
+2026-07-06T15:24:48,feature-chatbot,017d810ff,Y,MCP 연동 성공률,외부 도구 호출 및 데이터 수신,N/A,90% 이상,N/A,API 성공/실패 로그 분석
+2026-07-06T15:24:48,feature-chatbot,017d810ff,Y,RAGAS Faithfulness,답변이 검색 근거에 충실한지 평가,0.92,0.80 이상,PASS,RAGAS Framework (Faithfulness)
+2026-07-06T15:24:48,feature-chatbot,017d810ff,Y,RAGAS Answer Relevance,답변이 질문 의도에 적합한지 평가,0.82,0.80 이상,PASS,RAGAS Framework (Answer Relevance)

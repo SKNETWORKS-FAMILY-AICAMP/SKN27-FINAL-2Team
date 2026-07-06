@@ -21,7 +21,7 @@ TIMELINE_ERAS = ("고대", "고려", "조선", "근대", "현대")
 TIMELINE_FIELDS = ("인물", "사건", "조직·단체", "조직", "단체", "유물·유적", "유물", "유적")
 IMAGE_QUERY_TERMS = ("이미지", "사진", "그림", "유물", "유적", "자료", "찾아줘", "보여줘", "조회")
 IMAGE_TITLE_IGNORE_TERMS = set(IMAGE_QUERY_TERMS) | {"시대", "대표", "관련", "설명"}
-OVERVIEW_TERMS = ("정리", "요약", "흐름", "개념", "설명", "알려", "누구", "업적", "정책", "대해", "대한", "대해서")
+OVERVIEW_TERMS = ("정리", "요약", "흐름", "개념", "설명", "알려", "누구", "뭐야", "무엇", "내용", "왜", "이유", "중요", "중요한", "중요성", "업적", "정책", "대해", "대한", "대해서")
 REQUEST_SUFFIX_TERMS = tuple(
     sorted(
         {
@@ -59,8 +59,24 @@ OVERVIEW_IGNORE_TERMS = {
     "역사적",
     "역사적으로",
     "의미",
+    "의의",
+    "이유",
+    "왜",
     "어떤",
     "있는지",
+    "중요",
+    "중요성",
+    "중요한",
+    "중요한지",
+    "차이",
+    "비교",
+    "대비",
+    "특징",
+    "내용",
+    "보여주",
+    "보여주는",
+    "사건",
+    "사건이야",
     "유명한",
     "대표",
     "대표적",
@@ -466,15 +482,34 @@ class PgVectorHybridRetriever:
         use_reranker = os.getenv("RAG_RERANKER_ENABLED", "").lower() in {"1", "true", "yes"}
         final_limit = max(top_k * 5, top_k) if generic_overview_query or use_reranker else top_k
 
-        where_parts = ["embedding IS NOT NULL"]
-        params: list[Any] = []
-        if generic_overview_query and focus_terms:
+        def build_where(relaxed: bool = False) -> tuple[str, list[Any]]:
+            where_parts = ["embedding IS NOT NULL"]
+            params: list[Any] = []
+            if not generic_overview_query or not focus_terms:
+                return " AND ".join(where_parts), params
+
             term_sql = "(title ILIKE %s OR chunk_text ILIKE %s)"
-            # Always connect focus terms using OR to prevent strict filtering of comparison/complex queries
-            where_parts.append("(" + " OR ".join(term_sql for _ in focus_terms) + ")")
-            for term in focus_terms:
-                params.extend([f"%{term}%", f"%{term}%"])
-        where_sql = " AND ".join(where_parts)
+            scope_term_sql = "title ILIKE %s"
+            honorific_alias_query = (
+                len(focus_terms) == 2
+                and any(
+                    focus_terms[0].endswith(suffix)
+                    and focus_terms[1] == focus_terms[0][: -len(suffix)]
+                    for suffix in HONORIFIC_SUFFIXES
+                )
+            )
+            if len(focus_terms) > 1 and not honorific_alias_query and not relaxed:
+                where_parts.append(f"({scope_term_sql} AND (" + " OR ".join(term_sql for _ in focus_terms[1:]) + "))")
+                params.append(f"%{focus_terms[0]}%")
+                for term in focus_terms[1:]:
+                    params.extend([f"%{term}%", f"%{term}%"])
+            else:
+                where_parts.append("(" + " OR ".join(term_sql for _ in focus_terms) + ")")
+                for term in focus_terms:
+                    params.extend([f"%{term}%", f"%{term}%"])
+            return " AND ".join(where_parts), params
+
+        where_sql, params = build_where()
 
         focus_match_sql = "FALSE"
         focus_match_params: list[Any] = []
@@ -496,7 +531,7 @@ class PgVectorHybridRetriever:
                 0.0::float AS keyword_score,
                 CASE WHEN %s AND ({focus_match_sql}) THEN 1 ELSE 0 END AS focus_hit
             FROM rag.document_chunks
-            WHERE {where_sql}
+            WHERE embedding IS NOT NULL
             ORDER BY embedding <=> %s::vector
             LIMIT %s
         ),
@@ -584,33 +619,33 @@ class PgVectorHybridRetriever:
         ORDER BY ranked.score DESC
         """
 
-        query_params: list[Any] = [
-            embedding,
-            generic_overview_query,
-            *focus_match_params,
-            *params,
-            embedding,
-            self.candidate_pool,
-            keyword_question,
-            keyword_question,
-            f"%{question}%",
-            f"%{question}%",
-            generic_overview_query,
-            *focus_match_params,
-            *params,
-            keyword_filter,
-            keyword_filter,
-            f"%{keyword_filter}%",
-            f"%{keyword_filter}%",
-            self.candidate_pool,
-            image_query,
-            image_query,
-            overview_query,
-            overview_query,
-            generic_overview_query,
-            generic_overview_query,
-            final_limit,
-        ]
+        def query_params(where_params: list[Any]) -> list[Any]:
+            return [
+                embedding,
+                generic_overview_query,
+                *focus_match_params,
+                embedding,
+                self.candidate_pool,
+                keyword_question,
+                keyword_question,
+                f"%{question}%",
+                f"%{question}%",
+                generic_overview_query,
+                *focus_match_params,
+                *where_params,
+                keyword_filter,
+                keyword_filter,
+                f"%{keyword_filter}%",
+                f"%{keyword_filter}%",
+                self.candidate_pool,
+                image_query,
+                image_query,
+                overview_query,
+                overview_query,
+                generic_overview_query,
+                generic_overview_query,
+                final_limit,
+            ]
 
         conn = connect_db()
         try:
@@ -618,8 +653,13 @@ class PgVectorHybridRetriever:
                 with conn.cursor(cursor_factory=RealDictCursor) as cur:
                     cur.execute("SET LOCAL hnsw.ef_search = 120")
                     cur.execute("SET LOCAL pg_trgm.similarity_threshold = 0.18")
-                    cur.execute(sql, query_params)
+                    cur.execute(sql, query_params(params))
                     rows = cur.fetchall()
+                    if not rows and generic_overview_query and len(focus_terms) > 1:
+                        relaxed_where_sql, relaxed_params = build_where(relaxed=True)
+                        relaxed_sql = sql.replace(f"WHERE {where_sql}", f"WHERE {relaxed_where_sql}")
+                        cur.execute(relaxed_sql, query_params(relaxed_params))
+                        rows = cur.fetchall()
         finally:
             conn.close()
 

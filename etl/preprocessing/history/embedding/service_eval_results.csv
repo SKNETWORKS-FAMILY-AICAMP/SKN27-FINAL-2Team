@@ -1,6 +1,6 @@
 ﻿평가 항목,지표 정의,측정 결과,통과 기준,통과 여부,검증 방법
 연결성(Graph),노드 간 탐색 성공률,100.0%,95% 이상,PASS,Cypher Query 성능 테스트 및 접속 조사
-응답 속도,쿼리 당 평균 소요 시간,7.05s,2.0s 이내,FAIL,LangSmith Latency Tracking
+응답 속도,쿼리 당 평균 소요 시간,6.54s,2.0s 이내,FAIL,LangSmith Latency Tracking
 MCP 연동 성공률,외부 도구 호출 및 데이터 수신,N/A,90% 이상,N/A,API 성공/실패 로그 분석
 RAGAS Faithfulness,답변이 검색 근거에 충실한지 평가,0.92,0.80 이상,PASS,RAGAS Framework (Faithfulness)
-RAGAS Answer Relevance,답변이 질문 의도에 적합한지 평가,0.72,0.80 이상,FAIL,RAGAS Framework (Answer Relevance)
+RAGAS Answer Relevance,답변이 질문 의도에 적합한지 평가,0.82,0.80 이상,PASS,RAGAS Framework (Answer Relevance)
