@@ -18,6 +18,7 @@ from neo4j_common import (
     print_summary,
     read_csv,
     resolve_neo4j_dir,
+    resolve_project_root,
     save_csv,
     split_period_tokens,
     split_pipe_values,
@@ -403,20 +404,22 @@ def build_period_nodes(period_dictionary):
     ]
 
 
+def build_source_url_node_columns():
+    return [
+        "source_url_id",
+        "url",
+        "source_tables",
+        "source_columns",
+        "source_types",
+        "source_count",
+        "use_for_rag",
+        "fetch_status",
+        "note",
+    ]
+
+
 def build_source_url_nodes(source_url_dictionary):
-    return source_url_dictionary[
-        [
-            "source_url_id",
-            "url",
-            "source_tables",
-            "source_columns",
-            "source_types",
-            "source_count",
-            "use_for_rag",
-            "fetch_status",
-            "note",
-        ]
-    ].copy()
+    return source_url_dictionary[build_source_url_node_columns()].copy()
 
 
 def build_event_facet_nodes(event_facet_dictionary):
@@ -1963,18 +1966,68 @@ def build_person_involved_in_event(event_relations_data):
     ]
 
 
-def split_person_name_columns(person_nodes):
-    # Person name은 "이름(한자)" 형태라 base 이름과 한자를 분리한다.
-    person_data = person_nodes[["person_id", "name"]].copy()
-    name_series = person_data["name"].fillna("")
-    person_data["base_name"] = (
-        name_series.str.replace(r"\(.*?\)", "", regex=True).str.strip()
-    )
-    person_data["hanja"] = (
-        name_series.str.extract(r"\(([^)]*)\)", expand=False).fillna("").str.strip()
-    )
+def split_person_alias_values(row):
+    aliases = []
 
-    return person_data
+    for column_name in ["name", "name_candidates"]:
+        if column_name not in row.index:
+            continue
+
+        for candidate in split_pipe_values(row[column_name]):
+            normalized_candidate = (
+                str(candidate)
+                .replace("\r\n", "\n")
+                .replace("\r", "\n")
+            )
+
+            for alias in normalized_candidate.split("\n"):
+                clean_alias = clean_value(alias)
+
+                if pd.isna(clean_alias):
+                    continue
+
+                if clean_alias in aliases:
+                    continue
+
+                aliases.append(clean_alias)
+
+    return aliases
+
+
+def split_person_name_columns(person_nodes):
+    # Person name/name_candidates can hold aliases like "이도(李祹)\n세종(世宗)".
+    person_rows = []
+    source_columns = ["person_id", "name"]
+
+    if "name_candidates" in person_nodes.columns:
+        source_columns.append("name_candidates")
+
+    for _, row in person_nodes[source_columns].iterrows():
+        for alias_index, alias in enumerate(split_person_alias_values(row)):
+            base_name = re.sub(r"\(.*?\)", "", alias).strip()
+
+            if base_name == "":
+                continue
+
+            hanja_match = re.search(r"\(([^)]*)\)", alias)
+            hanja = ""
+
+            if hanja_match:
+                hanja = hanja_match.group(1).strip()
+
+            person_rows.append(
+                {
+                    "person_id": row["person_id"],
+                    "base_name": base_name,
+                    "hanja": hanja,
+                    "is_primary_alias": alias_index == 0,
+                }
+            )
+
+    return pd.DataFrame(
+        person_rows,
+        columns=["person_id", "base_name", "hanja", "is_primary_alias"],
+    ).drop_duplicates()
 
 
 def find_unique_names(left_names, right_names):
@@ -2047,6 +2100,355 @@ def build_manual_term_person_links(
     return link_data[build_term_person_relation_columns()]
 
 
+def build_term_mentions_person_columns():
+    return [
+        "start_term_id",
+        "end_person_id",
+        "relation_type",
+        "match_type",
+        "matched_name",
+        "matched_hanja",
+        "source_field",
+        "match_context",
+        "context_rule",
+        "confidence",
+    ]
+
+
+def empty_term_mentions_person_relations():
+    return pd.DataFrame(columns=build_term_mentions_person_columns())
+
+
+def build_person_mention_suffixes():
+    return [
+        "대왕",
+        "입니다",
+        "이었다",
+        "였다",
+        "이다",
+        "인가",
+        "이야",
+        "께서",
+        "시대",
+        "연간",
+        "원년",
+        "에게",
+        "에서",
+        "으로",
+        "부터",
+        "까지",
+        "하고",
+        "이랑",
+        "야",
+        "왕",
+        "대",
+        "때",
+        "년",
+        "조",
+        "의",
+        "은",
+        "는",
+        "이",
+        "가",
+        "을",
+        "를",
+        "에",
+        "와",
+        "과",
+    ]
+
+
+def build_person_mention_token_variants(token, suffixes):
+    values = []
+    value = str(token or "").strip()
+
+    while value:
+        if value not in values:
+            values.append(value)
+
+        stripped = False
+        for suffix in suffixes:
+            if len(value) > len(suffix) + 1 and value.endswith(suffix):
+                value = value[: -len(suffix)]
+                stripped = True
+                break
+
+        if stripped:
+            continue
+
+        break
+
+    return values
+
+
+def build_strong_person_mention_suffixes():
+    return [
+        "대왕",
+        "왕",
+        "시대",
+        "연간",
+        "원년",
+        "께서",
+        "때",
+    ]
+
+
+def should_require_person_mention_context(alias_name):
+    alias_text = str(alias_name or "").strip()
+
+    if len(alias_text) <= 2:
+        return True
+
+    if len(alias_text) <= 3 and alias_text.endswith(("조", "종")):
+        return True
+
+    return False
+
+
+def extract_person_mention_context(text, start_index, end_index, window_size=32):
+    text_value = str(text)
+    context_start = max(0, start_index - window_size)
+    context_end = min(len(text_value), end_index + window_size)
+
+    return re.sub(r"\s+", " ", text_value[context_start:context_end]).strip()
+
+
+def has_person_hanja_context(context, alias_name, matched_hanja):
+    hanja_text = str(matched_hanja or "").strip()
+
+    if hanja_text == "":
+        return False
+
+    compact_context = re.sub(r"\s+", "", str(context))
+    compact_alias_hanja = f"{alias_name}({hanja_text})"
+
+    if compact_alias_hanja in compact_context:
+        return True
+
+    if hanja_text in compact_context:
+        return True
+
+    return False
+
+
+def has_reign_year_context(context, alias_name):
+    escaped_alias = re.escape(str(alias_name))
+    patterns = [
+        rf"\d+\s*년\s*\(\s*{escaped_alias}\s*\d+",
+        rf"\(\s*{escaped_alias}\s*\d+\s*\)",
+    ]
+
+    for pattern in patterns:
+        if re.search(pattern, str(context)):
+            return True
+
+    return False
+
+
+def has_strong_person_suffix_context(token, alias_name):
+    token_text = str(token or "")
+    alias_text = str(alias_name or "")
+
+    for suffix in build_strong_person_mention_suffixes():
+        if token_text.startswith(f"{alias_text}{suffix}"):
+            return True
+
+    return False
+
+
+def decide_person_mention_context_rule(
+    text,
+    token,
+    matched_name,
+    matched_hanja,
+    match_start,
+    match_end,
+    requires_context,
+):
+    context = extract_person_mention_context(text, match_start, match_end)
+
+    if has_person_hanja_context(context, matched_name, matched_hanja):
+        return "HANJA_CONTEXT", context
+
+    if has_reign_year_context(context, matched_name):
+        return "REIGN_YEAR_CONTEXT", context
+
+    if has_strong_person_suffix_context(token, matched_name):
+        return "TITLE_SUFFIX_CONTEXT", context
+
+    if not requires_context:
+        return "TOKEN_MATCH", context
+
+    return None, context
+
+
+def build_person_mention_confidence(context_rule):
+    if context_rule in [
+        "HANJA_CONTEXT",
+        "REIGN_YEAR_CONTEXT",
+        "TITLE_SUFFIX_CONTEXT",
+    ]:
+        return "HIGH"
+
+    return "MEDIUM"
+
+
+def build_mention_person_alias_lookup(person_nodes, term_refers_to_person):
+    if term_refers_to_person.empty:
+        return {}
+
+    person_alias_data = split_person_name_columns(person_nodes)
+
+    if person_alias_data.empty:
+        return {}
+
+    person_alias_data = person_alias_data[
+        person_alias_data["base_name"].str.len().ge(2)
+        & ~person_alias_data["is_primary_alias"]
+    ].copy()
+
+    if person_alias_data.empty:
+        return {}
+
+    alias_person_counts = person_alias_data.groupby("base_name")["person_id"].nunique()
+    unique_aliases = set(alias_person_counts[alias_person_counts == 1].index)
+    unique_alias_data = person_alias_data[
+        person_alias_data["base_name"].isin(unique_aliases)
+    ].copy()
+    reliable_link_data = term_refers_to_person[
+        [
+            "end_person_id",
+            "matched_name",
+            "matched_hanja",
+        ]
+    ].drop_duplicates()
+    reliable_alias_data = unique_alias_data.merge(
+        reliable_link_data,
+        left_on=["person_id", "base_name"],
+        right_on=["end_person_id", "matched_name"],
+        how="inner",
+    )
+
+    if reliable_alias_data.empty:
+        return {}
+
+    alias_hanja = reliable_alias_data["hanja"].fillna("")
+    matched_hanja = reliable_alias_data["matched_hanja"].fillna("")
+    hanja_compatible = (
+        alias_hanja.eq("")
+        | matched_hanja.eq("")
+        | alias_hanja.eq(matched_hanja)
+    )
+    reliable_alias_data = reliable_alias_data[hanja_compatible].copy()
+
+    alias_lookup = {}
+    for base_name, alias_rows in reliable_alias_data.groupby("base_name"):
+        alias_lookup[base_name] = {
+            "person_id": first_value(alias_rows["person_id"]),
+            "hanja": first_value(alias_rows["hanja"]),
+            "requires_context": should_require_person_mention_context(base_name),
+        }
+
+    return alias_lookup
+
+
+def collect_person_mentions(text, alias_lookup, suffixes):
+    if pd.isna(text):
+        return []
+
+    mentions = []
+    seen_mentions = set()
+    text_value = str(text)
+
+    for token_match in re.finditer(r"[가-힣A-Za-z0-9]+", text_value):
+        token = token_match.group(0)
+        token_variants = build_person_mention_token_variants(token, suffixes)
+
+        for token_variant in token_variants:
+            if token_variant not in alias_lookup:
+                continue
+
+            if token_variant in seen_mentions:
+                continue
+
+            alias_data = alias_lookup[token_variant]
+            context_rule, context = decide_person_mention_context_rule(
+                text_value,
+                token,
+                token_variant,
+                alias_data["hanja"],
+                token_match.start(),
+                token_match.end(),
+                alias_data["requires_context"],
+            )
+
+            if context_rule is None:
+                continue
+
+            seen_mentions.add(token_variant)
+            mentions.append(
+                {
+                    "matched_name": token_variant,
+                    "person_id": alias_data["person_id"],
+                    "matched_hanja": alias_data["hanja"],
+                    "match_context": context,
+                    "context_rule": context_rule,
+                    "confidence": build_person_mention_confidence(context_rule),
+                }
+            )
+
+    return mentions
+
+
+def build_term_mentions_person(term_nodes, person_nodes, term_refers_to_person):
+    alias_lookup = build_mention_person_alias_lookup(
+        person_nodes,
+        term_refers_to_person,
+    )
+
+    if not alias_lookup:
+        return empty_term_mentions_person_relations()
+
+    relation_rows = []
+    suffixes = build_person_mention_suffixes()
+    source_fields = ["name", "remark", "description"]
+    term_columns = ["term_id", "category_text", *source_fields]
+    term_data = term_nodes[term_columns].copy()
+
+    for row in term_data.itertuples(index=False):
+        if row.category_text == "인명":
+            continue
+
+        for source_field in source_fields:
+            text = getattr(row, source_field)
+            mentions = collect_person_mentions(text, alias_lookup, suffixes)
+
+            for mention in mentions:
+                relation_rows.append(
+                    {
+                        "start_term_id": row.term_id,
+                        "end_person_id": mention["person_id"],
+                        "relation_type": "MENTIONS_PERSON",
+                        "match_type": "UNIQUE_ALIAS",
+                        "matched_name": mention["matched_name"],
+                        "matched_hanja": mention["matched_hanja"],
+                        "source_field": source_field,
+                        "match_context": mention["match_context"],
+                        "context_rule": mention["context_rule"],
+                        "confidence": mention["confidence"],
+                    }
+                )
+
+    relation_data = pd.DataFrame(
+        relation_rows,
+        columns=build_term_mentions_person_columns(),
+    ).drop_duplicates(
+        subset=["start_term_id", "end_person_id", "source_field"]
+    )
+
+    return relation_data[build_term_mentions_person_columns()]
+
+
 def build_term_refers_to_person(
     term_nodes,
     person_nodes,
@@ -2060,13 +2462,22 @@ def build_term_refers_to_person(
     term_data["hanja"] = term_data["hanja"].fillna("").str.strip()
     person_data = split_person_name_columns(person_nodes)
 
-    auto_names = find_unique_names(term_data["name"], person_data["base_name"])
+    person_name_data = person_data.drop_duplicates(subset=["person_id", "base_name"])
+    auto_names = find_unique_names(term_data["name"], person_name_data["base_name"])
     auto_links = term_data[term_data["name"].isin(auto_names)].merge(
-        person_data,
+        person_name_data,
         left_on="name",
         right_on="base_name",
         suffixes=("", "_person"),
     )
+    term_hanja = auto_links["hanja"].fillna("")
+    person_hanja = auto_links["hanja_person"].fillna("")
+    hanja_compatible = (
+        term_hanja.eq("")
+        | person_hanja.eq("")
+        | term_hanja.eq(person_hanja)
+    )
+    auto_links = auto_links[hanja_compatible].copy()
     auto_links["match_type"] = "EXACT_NAME"
 
     remaining_terms = term_data[
@@ -2294,86 +2705,14 @@ def build_person_has_source_url(person_relations_data, source_url_nodes):
         ["start_person_id", "end_source_url_id", "relation_type", "source_column", "url"]
     ]
 
-
-def append_person_evidence_url_rows(
-    relation_rows,
-    person_id,
-    evidence_url,
-    url_lookup,
-    evidence_role,
-    raw_relation_type,
-):
-    for url in split_pipe_values(evidence_url):
-        source_url_id = url_lookup.get(url)
-
-        if pd.notna(source_url_id):
-            relation_rows.append(
-                {
-                    "start_person_id": person_id,
-                    "end_source_url_id": source_url_id,
-                    "relation_type": "HAS_EVIDENCE_URL",
-                    "source_column": "person_relations.evidence_url",
-                    "evidence_role": evidence_role,
-                    "raw_relation_type": raw_relation_type,
-                    "url": url,
-                }
-            )
-
-
-def build_person_has_evidence_url(person_relations_data, source_url_nodes):
-    # 인물 관계의 근거 URL은 관계 속성만으로 두지 않고 양쪽 인물에서 탐색 가능한 URL 노드로도 연결한다.
-    url_lookup = build_url_lookup(source_url_nodes)
-    relation_rows = []
-    target_columns = [
-        "person_id",
-        "related_person_id",
-        "relation_type",
-        "evidence_url",
-    ]
-    target_data = person_relations_data[target_columns].dropna(
-        subset=["evidence_url"]
-    )
-
-    for row in target_data.itertuples(index=False):
-        append_person_evidence_url_rows(
-            relation_rows,
-            row.person_id,
-            row.evidence_url,
-            url_lookup,
-            "START_PERSON",
-            row.relation_type,
-        )
-        append_person_evidence_url_rows(
-            relation_rows,
-            row.related_person_id,
-            row.evidence_url,
-            url_lookup,
-            "RELATED_PERSON",
-            row.relation_type,
-        )
-
-    relation_data = pd.DataFrame(relation_rows).drop_duplicates()
-
-    return relation_data[
-        [
-            "start_person_id",
-            "end_source_url_id",
-            "relation_type",
-            "source_column",
-            "evidence_role",
-            "raw_relation_type",
-            "url",
-        ]
-    ]
-
-
 def build_default_paths(script_path):
     base_dir = resolve_neo4j_dir(script_path)
+    project_root = resolve_project_root(script_path)
+    import_dir = project_root / "storage" / "neo4j" / "neo4j_import"
     normalized_dir = base_dir / "normalized"
     dictionary_dir = base_dir / "dictionary"
     mapping_dir = base_dir / "mapping"
     staging_dir = base_dir / "staging"
-    graph_dir = base_dir / "graph"
     seed_dir = base_dir / "seed"
 
     return {
@@ -2413,8 +2752,8 @@ def build_default_paths(script_path):
         "term_year_parse": staging_dir / "term_year_parse.csv",
         "keyword_era_seed": seed_dir / "keyword_era_seed.csv",
         "term_person_review_approved": seed_dir / "term_person_review_approved.csv",
-        "nodes_dir": graph_dir / "nodes",
-        "relations_dir": graph_dir / "relations",
+        "nodes_dir": import_dir / "nodes",
+        "relations_dir": import_dir / "relations",
     }
 
 
@@ -2588,6 +2927,11 @@ def build_relation_outputs(inputs, node_outputs):
         term_has_canonical_category,
         inputs["canonical_category_taxonomy_facet_crosswalk"],
     )
+    term_refers_to_person = build_term_refers_to_person(
+        node_outputs["terms"],
+        node_outputs["people"],
+        inputs["term_person_review_approved"],
+    )
     event_about_country = build_event_about_country(
         event_has_canonical_category,
         inputs["canonical_category_country_crosswalk"],
@@ -2656,10 +3000,11 @@ def build_relation_outputs(inputs, node_outputs):
             inputs["person_relations"],
             inputs["relation_type_dictionary"],
         ),
-        "term_refers_to_person": build_term_refers_to_person(
+        "term_refers_to_person": term_refers_to_person,
+        "term_mentions_person": build_term_mentions_person(
             node_outputs["terms"],
             node_outputs["people"],
-            inputs["term_person_review_approved"],
+            term_refers_to_person,
         ),
         "term_refers_to_event": build_term_refers_to_event(
             node_outputs["terms"],
@@ -2674,10 +3019,6 @@ def build_relation_outputs(inputs, node_outputs):
             inputs["person_relations"],
             node_outputs["source_urls"],
         ),
-        "person_has_evidence_url": build_person_has_evidence_url(
-            inputs["person_relations"],
-            node_outputs["source_urls"],
-        ),
     }
 
 
@@ -2685,6 +3026,12 @@ def build_optional_empty_relation_output_names():
     return {
         "event_about_region",
         "event_about_economic_domain",
+    }
+
+
+def build_discontinued_relation_output_names():
+    return {
+        "person_has_evidence_url",
     }
 
 
@@ -2724,6 +3071,15 @@ def build_output_files(args, node_outputs, relation_outputs):
 
         if not skip_output:
             output_files.append(output_file)
+
+    for output_name in build_discontinued_relation_output_names():
+        skipped_output_files.append(
+            (
+                f"{output_name}.csv",
+                pd.DataFrame(),
+                args.relations_dir / f"{output_name}.csv",
+            )
+        )
 
     return output_files, skipped_output_files
 

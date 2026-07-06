@@ -106,15 +106,13 @@ def build_review_candidates(terms, people):
     if candidates.empty:
         return empty_review_candidates()
 
-    candidates["name"] = candidates["name_term"]
+    candidates["person_name"] = candidates["base_name"]
     candidates["term_desc_preview"] = candidates["description"].str.slice(0, 50)
     candidates["review_status"] = "PENDING"
     candidates["note"] = ""
     candidates = candidates.rename(
         columns={
             "hanja_term": "term_hanja",
-            "person_id": "person_id",
-            "name_person": "person_name",
             "hanja_person": "person_hanja",
         }
     )

@@ -69,6 +69,8 @@ def build_optional_import_csv_paths():
     return {
         "relations/event_about_region.csv",
         "relations/event_about_economic_domain.csv",
+        "relations/person_has_evidence_url.csv",
+        "relations/term_mentions_person.csv",
     }
 
 
