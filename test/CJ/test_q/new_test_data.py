@@ -615,6 +615,26 @@ def build_seed_record(
 # 회차 필터링, 짧은해설 추출, 선택적 OpenAI 재분류, DB seed 저장을
 # 한 번에 처리하고 결과 파일 경로를 반환한다.
 def run(args: argparse.Namespace) -> dict[str, Path]:
+    if args.seed_file:
+        seed_path = Path(args.seed_file)
+        seed_records = read_json(seed_path)
+        summary_path = OUT_DIR / f"summary_{seed_path.stem}.json"
+        summary = {
+            "seed_file": str(seed_path),
+            "count": len(seed_records),
+            "era_counts": count_by(seed_records, "era"),
+            "topic_counts": count_by(seed_records, "topic"),
+            "question_type_counts": count_by(seed_records, "question_type"),
+            "question_subtype_counts": count_by(seed_records, "question_subtype"),
+        }
+        if args.import_db:
+            summary["import_db"] = import_seed_records_to_db(seed_records)
+        write_json(summary_path, summary)
+        return {
+            "seed": seed_path,
+            "summary": summary_path,
+        }
+
     rounds = args.rounds
     rows = load_ml_rows(rounds)
     explanations = load_short_explanations(rounds, refresh=args.refresh_explanations)
@@ -782,6 +802,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--sleep-sec", type=float, default=0.2, help="OpenAI 배치 호출 사이 대기 시간")
     parser.add_argument("--refresh-explanations", action="store_true", help="짧은해설 PDF 캐시를 새로 추출")
     parser.add_argument("--refresh-answers", action="store_true", help="정답표 PDF/JSON 캐시를 새로 추출")
+    parser.add_argument("--seed-file", type=Path, help="전처리 대신 지정한 seed JSON 파일을 사용")
     parser.add_argument("--import-db", action="store_true", help="기존 문제 데이터를 삭제하고 생성한 seed를 DB에 적재")
     return parser.parse_args()
 
