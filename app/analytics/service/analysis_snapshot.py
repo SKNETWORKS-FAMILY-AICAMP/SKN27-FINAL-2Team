@@ -1,10 +1,14 @@
 from datetime import date, timedelta
 from uuid import uuid4
 
-from django.db.models import Avg, Count, Q
+from django.db.models import Avg, Count, Q, Sum
 from django.utils import timezone
 
 from analytics.models import Analytics
+from analytics.service.classification import (
+    normalize_classification_value,
+    should_normalize_classification,
+)
 from question.models import SolveRecords, SolveSessions
 
 
@@ -372,13 +376,14 @@ def build_group_analysis_rows(
         .annotate(
             total_count=Count("record_id"),
             correct_count=Count("record_id", filter=Q(is_correct=True)),
-            average_time_ms=Avg("time_spent_ms"),
+            total_time_ms=Sum("time_spent_ms"),
+            time_count=Count("time_spent_ms"),
         )
         .order_by(field_name)
     )
 
     analytics_rows = []
-    for row in rows:
+    for summary in build_group_analysis_summaries(rows, field_name, config):
         analytics_rows.append(
             build_analysis_row(
                 user_id=user_id,
@@ -386,10 +391,10 @@ def build_group_analysis_rows(
                 analysis_run_id=analysis_run_id,
                 analysis_unit=analysis_unit,
                 classification=classification,
-                key_concept=row[field_name] or config["unclassified_label"],
-                total_count=row["total_count"] or 0,
-                correct_count=row["correct_count"] or 0,
-                average_time_ms=row["average_time_ms"],
+                key_concept=summary["label"],
+                total_count=summary["total_count"],
+                correct_count=summary["correct_count"],
+                average_time_ms=get_summary_average_time_ms(summary),
                 session_id=session_id,
                 study_plan_id=study_plan_id,
                 period_start=period_start,
@@ -399,6 +404,43 @@ def build_group_analysis_rows(
         )
 
     return analytics_rows
+
+
+def build_group_analysis_summaries(rows, field_name, config):
+    summary_map = {}
+    for row in rows:
+        label = get_group_analysis_label(row[field_name], field_name, config)
+        if label not in summary_map:
+            summary_map[label] = {
+                "label": label,
+                "total_count": 0,
+                "correct_count": 0,
+                "total_time_ms": 0,
+                "time_count": 0,
+            }
+        summary_map[label]["total_count"] += row["total_count"] or 0
+        summary_map[label]["correct_count"] += row["correct_count"] or 0
+        summary_map[label]["total_time_ms"] += row["total_time_ms"] or 0
+        summary_map[label]["time_count"] += row["time_count"] or 0
+
+    return sorted(summary_map.values(), key=lambda item: item["label"])
+
+
+def get_group_analysis_label(value, field_name, config):
+    normalized_value = normalize_classification_value(field_name, value)
+    if normalized_value:
+        return normalized_value
+    elif should_normalize_classification(field_name):
+        return config["unclassified_label"]
+
+    return value or config["unclassified_label"]
+
+
+def get_summary_average_time_ms(summary):
+    if summary["time_count"]:
+        return summary["total_time_ms"] / summary["time_count"]
+
+    return None
 
 
 def build_analysis_row(

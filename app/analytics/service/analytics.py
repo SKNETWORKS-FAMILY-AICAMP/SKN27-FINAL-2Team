@@ -1,10 +1,14 @@
 from datetime import date, timedelta
 
 from django.db import DatabaseError
-from django.db.models import Avg, Count, Max, Min, Q
+from django.db.models import Avg, Count, Max, Min, Q, Sum
 from django.utils import timezone
 from analytics.models import Analytics, StudyPlanMypage
 from analytics.serializers import parse_study_plan_items
+from analytics.service.classification import (
+    normalize_classification_value,
+    should_normalize_classification,
+)
 from question.models import QuestionOptions, SolveRecords, SolveSessions
 
 
@@ -1241,27 +1245,23 @@ def build_group_stats(records, field_name, response_key):
         .annotate(
             total_count=Count("record_id"),
             correct_count=Count("record_id", filter=Q(is_correct=True)),
-            average_time_ms=Avg("time_spent_ms"),
+            wrong_count=Count("record_id", filter=Q(is_correct=False)),
+            total_time_ms=Sum("time_spent_ms"),
+            time_count=Count("time_spent_ms"),
         )
         .order_by(field_name)
     )
 
-    stats = []
-    for row in rows:
-        total_count = row["total_count"] or 0
-        correct_count = row["correct_count"] or 0
-        wrong_count = total_count - correct_count
-        stats.append(
-            {
-                response_key: row[field_name] or get_unclassified_label(),
-                "totalCount": total_count,
-                "answerRate": calculate_rate(correct_count, total_count),
-                "wrongRate": calculate_rate(wrong_count, total_count),
-                "averageTimeSec": ms_to_sec(row["average_time_ms"]),
-            }
-        )
-
-    return stats
+    return [
+        {
+            response_key: summary["label"],
+            "totalCount": summary["totalCount"],
+            "answerRate": calculate_rate(summary["correctCount"], summary["totalCount"]),
+            "wrongRate": calculate_rate(summary["wrongCount"], summary["totalCount"]),
+            "averageTimeSec": get_group_average_time_from_summary(summary),
+        }
+        for summary in build_classification_group_summaries(rows, field_name)
+    ]
 
 
 def build_score_trend(sessions):
@@ -1333,31 +1333,36 @@ def build_composite_weak_targets(records):
         .annotate(
             total_count=Count("record_id"),
             wrong_count=Count("record_id", filter=Q(is_correct=False)),
-            average_time_ms=Avg("time_spent_ms"),
+            total_time_ms=Sum("time_spent_ms"),
+            time_count=Count("time_spent_ms"),
         )
         .filter(wrong_count__gt=0)
         .order_by("era", "topic", "q_type")
     )
 
-    weak_targets = []
+    target_map = {}
     for row in rows:
-        era = row["era"]
-        topic = row["topic"]
+        era = normalize_classification_value("era", row["era"])
+        topic = normalize_classification_value("topic", row["topic"])
         q_type = row["q_type"]
         if era and topic and q_type:
-            total_count = row["total_count"] or 0
-            wrong_count = row["wrong_count"] or 0
-            weak_targets.append(
-                {
-                    "classification": "복합",
-                    "label": build_composite_target_label(era, topic, q_type),
-                    "era": era,
-                    "topic": topic,
-                    "qType": q_type,
-                    "wrongRate": calculate_rate(wrong_count, total_count),
-                    "averageTimeSec": ms_to_sec(row["average_time_ms"]) or 0,
-                }
-            )
+            key = (era, topic, q_type)
+            if key not in target_map:
+                target_map[key] = build_composite_group_seed(era, topic, q_type)
+            update_composite_group_summary(target_map[key], row)
+
+    weak_targets = [
+        {
+            "classification": "복합",
+            "label": build_composite_target_label(era, topic, q_type),
+            "era": era,
+            "topic": topic,
+            "qType": q_type,
+            "wrongRate": calculate_rate(summary["wrongCount"], summary["totalCount"]),
+            "averageTimeSec": get_group_average_time_from_summary(summary) or 0,
+        }
+        for (era, topic, q_type), summary in target_map.items()
+    ]
 
     return sorted(
         weak_targets,
@@ -1395,12 +1400,38 @@ def build_recommended_study_targets(records):
         .order_by("-wrong_count", "-total_count", "era", "topic")
     )
 
+    target_map = {}
+    for row in rows:
+        era = normalize_classification_value("era", row["era"])
+        topic = normalize_classification_value("topic", row["topic"])
+        if era and topic:
+            key = (era, topic)
+            if key not in target_map:
+                target_map[key] = {
+                    "era": era,
+                    "topic": topic,
+                    "total_count": 0,
+                    "wrong_count": 0,
+                }
+            target_map[key]["total_count"] += row["total_count"] or 0
+            target_map[key]["wrong_count"] += row["wrong_count"] or 0
+
+    sorted_targets = sorted(
+        target_map.values(),
+        key=lambda item: (
+            -item["wrong_count"],
+            -item["total_count"],
+            item["era"],
+            item["topic"],
+        ),
+    )
+
     targets = []
-    for priority, row in enumerate(rows, start=1):
+    for priority, row in enumerate(sorted_targets, start=1):
         targets.append(
             {
-                "era": row["era"] or get_unclassified_label(),
-                "topic": row["topic"] or get_unclassified_label(),
+                "era": row["era"],
+                "topic": row["topic"],
                 "reason": make_recommendation_reason(row),
                 "priority": priority,
                 "recommendedQuestionCount": row["wrong_count"] or 0,
@@ -1430,28 +1461,25 @@ def get_wrong_rate_group_stats(user, field_name, start_date=None, end_date=None)
         queryset
         .values(field_name)
         .annotate(
-            total=Count("record_id"),
-            wrong=Count("record_id", filter=Q(is_correct=False)),
-            average_time_ms=Avg("time_spent_ms"),
+            total_count=Count("record_id"),
+            correct_count=Count("record_id", filter=Q(is_correct=True)),
+            wrong_count=Count("record_id", filter=Q(is_correct=False)),
+            total_time_ms=Sum("time_spent_ms"),
+            time_count=Count("time_spent_ms"),
         )
         .order_by(field_name)
     )
 
-    stats = []
-    for row in rows:
-        total = row["total"] or 0
-        wrong = row["wrong"] or 0
-        stats.append(
-            {
-                "label": row[field_name],
-                "total": total,
-                "wrong": wrong,
-                "rate": calculate_percent_rate(wrong, total),
-                "averageTimeSec": ms_to_sec(row["average_time_ms"]),
-            }
-        )
-
-    return stats
+    return [
+        {
+            "label": summary["label"],
+            "total": summary["totalCount"],
+            "wrong": summary["wrongCount"],
+            "rate": calculate_percent_rate(summary["wrongCount"], summary["totalCount"]),
+            "averageTimeSec": get_group_average_time_from_summary(summary),
+        }
+        for summary in build_classification_group_summaries(rows, field_name)
+    ]
 
 
 def get_wrong_rate_item_session_details(user, category, label):
@@ -1882,13 +1910,14 @@ def build_session_group_analysis(records, field_name, classification_label, cate
             total_count=Count("record_id"),
             correct_count=Count("record_id", filter=Q(is_correct=True)),
             wrong_count=Count("record_id", filter=Q(is_correct=False)),
-            average_time_ms=Avg("time_spent_ms"),
+            total_time_ms=Sum("time_spent_ms"),
+            time_count=Count("time_spent_ms"),
         )
         .order_by(field_name)
     )
     items = [
-        build_session_group_analysis_item(row, field_name, classification_label, category)
-        for row in rows
+        build_session_group_analysis_item(summary, classification_label, category)
+        for summary in build_classification_group_summaries(rows, field_name)
     ]
     return sorted(
         items,
@@ -1900,24 +1929,24 @@ def build_session_group_analysis(records, field_name, classification_label, cate
     )
 
 
-def build_session_group_analysis_item(row, field_name, classification_label, category):
+def build_session_group_analysis_item(summary, classification_label, category):
     """
     세션별 분류 집계 row를 모달 표시용 dict로 변환한다.
     """
-    total_count = row["total_count"] or 0
-    correct_count = row["correct_count"] or 0
-    wrong_count = row["wrong_count"] or 0
+    total_count = summary["totalCount"]
+    correct_count = summary["correctCount"]
+    wrong_count = summary["wrongCount"]
     wrong_rate = calculate_percent_rate(wrong_count, total_count)
     return {
         "category": category,
         "classification": classification_label,
-        "label": row[field_name] or get_unclassified_label(),
+        "label": summary["label"],
         "totalCount": total_count,
         "correctCount": correct_count,
         "wrongCount": wrong_count,
         "answerRate": calculate_percent_rate(correct_count, total_count),
         "wrongRate": wrong_rate,
-        "averageTimeLabel": format_seconds(ms_to_sec(row["average_time_ms"])),
+        "averageTimeLabel": format_seconds(get_group_average_time_from_summary(summary)),
         "statusClass": get_scope_status_class(total_count, wrong_rate),
     }
 
@@ -1993,7 +2022,9 @@ def filter_records_by_classification_label(queryset, field_name, label):
     화면 분류 라벨을 기준으로 풀이 기록 queryset을 필터링한다.
     """
     display_label = label or get_unclassified_label()
-    if display_label == get_unclassified_label():
+    if should_normalize_classification(field_name):
+        return filter_records_by_normalized_label(queryset, field_name, display_label)
+    elif display_label == get_unclassified_label():
         return queryset.filter(
             Q(**{f"{field_name}__isnull": True})
             | Q(**{field_name: ""})
@@ -2002,6 +2033,25 @@ def filter_records_by_classification_label(queryset, field_name, label):
         return queryset.filter(**{field_name: display_label})
 
     return queryset
+
+
+def filter_records_by_normalized_label(queryset, field_name, display_label):
+    condition = Q(pk__in=[])
+    for raw_value in queryset.values_list(field_name, flat=True).distinct():
+        value_label = get_classification_display_label(field_name, raw_value)
+        if value_label == display_label:
+            condition |= build_raw_value_filter(field_name, raw_value)
+
+    return queryset.filter(condition)
+
+
+def build_raw_value_filter(field_name, raw_value):
+    if raw_value is None:
+        return Q(**{f"{field_name}__isnull": True})
+    elif raw_value == "":
+        return Q(**{field_name: ""})
+
+    return Q(**{field_name: raw_value})
 
 
 def get_question_option_content_map(records):
@@ -2033,8 +2083,8 @@ def build_wrong_rate_question_detail(record, option_content_map):
         "content": question.content,
         "passage": question.passage or "",
         "imageCaption": question.image_caption or "",
-        "era": record.era or get_unclassified_label(),
-        "topic": record.topic or get_unclassified_label(),
+        "era": get_classification_display_label("era", record.era),
+        "topic": get_classification_display_label("topic", record.topic),
         "questionType": record.q_type or get_unclassified_label(),
         "questionSubtype": question.question_subtype or "",
         "score": record.q_score,
@@ -2179,6 +2229,68 @@ def make_recommendation_reason(row):
     topic = row["topic"] or get_unclassified_label()
     wrong_count = row["wrong_count"] or 0
     return f"{era} / {topic}에서 오답 {wrong_count}건이 발생했습니다."
+
+
+def build_classification_group_summaries(rows, field_name):
+    summary_map = {}
+    for row in rows:
+        label = get_classification_display_label(field_name, row[field_name])
+        if label not in summary_map:
+            summary_map[label] = build_group_summary_seed(label)
+        update_group_summary(summary_map[label], row)
+
+    return sorted(summary_map.values(), key=lambda item: item["label"])
+
+
+def build_group_summary_seed(label):
+    return {
+        "label": label,
+        "totalCount": 0,
+        "correctCount": 0,
+        "wrongCount": 0,
+        "totalTimeMs": 0,
+        "timeCount": 0,
+    }
+
+
+def update_group_summary(summary, row):
+    summary["totalCount"] += row["total_count"] or 0
+    summary["correctCount"] += row["correct_count"] or 0
+    summary["wrongCount"] += row["wrong_count"] or 0
+    summary["totalTimeMs"] += row["total_time_ms"] or 0
+    summary["timeCount"] += row["time_count"] or 0
+
+
+def build_composite_group_seed(era, topic, q_type):
+    seed = build_group_summary_seed(build_composite_target_label(era, topic, q_type))
+    seed["era"] = era
+    seed["topic"] = topic
+    seed["qType"] = q_type
+    return seed
+
+
+def update_composite_group_summary(summary, row):
+    summary["totalCount"] += row["total_count"] or 0
+    summary["wrongCount"] += row["wrong_count"] or 0
+    summary["totalTimeMs"] += row["total_time_ms"] or 0
+    summary["timeCount"] += row["time_count"] or 0
+
+
+def get_group_average_time_from_summary(summary):
+    if summary["timeCount"]:
+        return ms_to_sec(summary["totalTimeMs"] / summary["timeCount"])
+
+    return None
+
+
+def get_classification_display_label(field_name, value):
+    normalized_value = normalize_classification_value(field_name, value)
+    if normalized_value:
+        return normalized_value
+    elif should_normalize_classification(field_name):
+        return get_unclassified_label()
+
+    return value or get_unclassified_label()
 
 
 def get_classification_fields():
