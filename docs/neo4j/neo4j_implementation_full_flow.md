@@ -852,6 +852,11 @@ staging 파일의 `review_status`와 `note`를 수정해도 graph 반영 기준�
 `PERSON_DUPLICATE`는 같은 Term 설명에 여러 Person 후보가 붙어 추가 선택이 필요하다는 표시이다.
 공식 graph 생성 흐름에서는 Person ID 병합 seed를 사용하지 않는다.
 따라서 `person_duplicate_review_approved.csv`를 만들거나 수정하지 않고, Term이 특정 Person을 가리킨다고 확정한 경우만 `term_person_review_approved.csv`에 기록한다.
+`PERSON_DUPLICATE`에서 설명을 붙일 Person을 결정했을 때도 seed 작성 형식은 동일하다.
+선택한 후보의 `term_id`, `person_id`, `APPROVED`, 판단 근거 `note`만 `term_person_review_approved.csv`에 1행으로 쓴다.
+선택하지 않은 Person 후보는 쓰지 않는다.
+`TERM_PERSON`인데 `person_id`만 다른 후보가 보이는 경우도 Person 병합으로 처리하지 않고, 해당 `term_id`가 가리키는 Person으로 확정한 `person_id`만 같은 형식으로 기록한다.
+애매하거나 틀린 후보는 seed에 남기지 않는다.
 
 ### 15.8 Import 변경
 

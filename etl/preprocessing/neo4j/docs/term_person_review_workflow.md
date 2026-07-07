@@ -200,6 +200,35 @@ term_id,person_id,review_status,note
 `review_status`는 `APPROVED` 또는 `AUTO_APPROVED`만 그래프 생성에 반영된다.
 `PENDING`, `REJECTED`, 빈 값은 반영되지 않는다.
 
+review type이 달라도 승인 seed에 쓰는 형식은 같다.
+차이는 "무엇을 결정했는가"뿐이다.
+
+| `term_person_review.csv`의 `review_type` | 검수자가 결정할 것 | `term_person_review_approved.csv`에 쓰는 행 |
+| --- | --- | --- |
+| `PERSON_DUPLICATE` | 같은 `term_id`, `name`, `term_hanja`, `term_desc_preview`에 붙은 여러 `person_id` 중 이 Term 설명이 실제로 가리키는 Person을 고른다. | 고른 후보의 `term_id`, `person_id`, `APPROVED`, 판단 근거 `note`를 1행으로 쓴다. 고르지 않은 후보는 쓰지 않는다. |
+| `TERM_PERSON` | 같은 이름이나 같은 Person이 다른 Term 후보에도 반복될 때, 해당 `term_id`가 이 `person_id`를 가리키는 연결이 맞는지 판단한다. | 연결이 맞는 후보의 `term_id`, `person_id`, `APPROVED`, 판단 근거 `note`를 1행으로 쓴다. 틀리거나 애매한 후보는 쓰지 않는다. |
+
+`PERSON_DUPLICATE`는 Person ID를 병합하라는 뜻이 아니다.
+같은 Term 설명에 여러 Person 후보가 붙었으니, 그 Term 설명을 어느 Person에 붙일지만 고르는 검토 유형이다.
+예를 들어 `term_person_review.csv`에 같은 `term_id=12345`와 같은 설명으로 `P000001`, `P000002`가 함께 나오고, 설명/한자/생몰년상 `P000002`가 맞다면 승인 seed에는 선택한 한 행만 쓴다.
+
+```csv
+term_id,person_id,review_status,note
+12345,P000002,APPROVED,설명이 P000002의 한자와 활동 시기와 일치
+```
+
+`TERM_PERSON`인데 `person_id`만 다른 후보들이 보일 때도 승인 seed 작성법은 같다.
+각 후보를 Person 병합 대상으로 보지 않고, Term과 Person의 연결 후보로 본다.
+해당 `term_id`가 가리키는 Person이 `P000010`이라고 확정되면 그 연결만 쓴다.
+
+```csv
+term_id,person_id,review_status,note
+67890,P000010,APPROVED,동명 인물 중 설명의 관직과 생몰년이 P000010과 일치
+```
+
+반대로 어떤 Person에 붙여야 할지 확정할 수 없으면 `term_person_review_approved.csv`에 아무 행도 추가하지 않는다.
+`person_duplicate_review_approved.csv`에는 기록하지 않는다.
+
 `term_person_review_approved.csv` 컬럼 값:
 
 | 컬럼 | 들어갈 수 있는 값 | 의미 |

@@ -232,6 +232,8 @@ Term 설명의 재위 연도는 후보 필터링에만 쓰고 생몰년 컬럼�
 
 공식 graph 생성 흐름에서는 Person ID 병합 seed를 사용하지 않는다.
 동명이인 중 특정 Person이 Term 대상이라고 확정한 경우만 `term_person_review_approved.csv`에 기록한다.
+`review_type=PERSON_DUPLICATE`에서 설명을 붙일 Person을 결정한 경우와 `review_type=TERM_PERSON`에서 특정 `person_id` 연결을 승인한 경우 모두 같은 형식으로 쓴다.
+필요한 컬럼은 `term_id`, `person_id`, `review_status`, `note`뿐이며, 선택하지 않은 후보나 판단 불가 후보는 seed에 쓰지 않는다.
 
 `theme_seed.csv`, `era_seed.csv`, `entity_type_seed.csv`는 명시 ID 컬럼을 가진다. 이 ID는 Neo4j 노드의 primary key로 쓰이며, seed 행을 재정렬하거나 중간에 새 행을 넣어도 기존 ID가 밀리지 않게 하기 위한 안정 장치다.
 
