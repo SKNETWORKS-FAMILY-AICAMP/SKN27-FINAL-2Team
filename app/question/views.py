@@ -952,7 +952,18 @@ def _wrong_note_record_queryset(user_id, source):
     if session_id:
         qs = qs.filter(session_id=session_id)
     if session_type:
-        qs = qs.filter(session__session_type=session_type)
+        if session_type == "study_plan":
+            qs = qs.filter(session__session_type=PRACTICE_SESSION_TYPE).filter(
+                models.Q(studyplan_id__isnull=False)
+                | models.Q(study_plan_block_id__isnull=False)
+            )
+        elif session_type == PRACTICE_SESSION_TYPE:
+            qs = qs.filter(session__session_type=PRACTICE_SESSION_TYPE).filter(
+                studyplan_id__isnull=True,
+                study_plan_block_id__isnull=True,
+            )
+        else:
+            qs = qs.filter(session__session_type=session_type)
     if era:
         qs = qs.filter(era=era)
     if topic:
