@@ -6,12 +6,15 @@ Term-Person 동명이인 수동 검수 후보 CSV를 만든다.
 """
 
 import argparse
-import re
 from pathlib import Path
 
 import pandas as pd
 
-from make_graph_csv import find_unique_names, split_person_name_columns
+from make_graph_csv import (
+    build_unique_exact_term_person_year_group_mask,
+    merge_person_life_year_columns,
+    split_person_name_columns,
+)
 from neo4j_common import print_summary, read_csv, resolve_project_root, save_csv
 
 
@@ -50,6 +53,9 @@ def build_review_columns():
         "term_id",
         "term_hanja",
         "term_desc_preview",
+        "term_year_text",
+        "term_start_year",
+        "term_end_year",
         "person_id",
         "person_name",
         "person_hanja",
@@ -66,6 +72,14 @@ def empty_review_candidates():
 
 def build_term_review_data(terms):
     term_data = terms[["term_id", "name", "hanja", "description"]].copy()
+
+    for column_name in ["year_text", "start_year", "end_year"]:
+        if column_name in terms.columns:
+            term_data[column_name] = terms[column_name]
+
+        if column_name not in term_data.columns:
+            term_data[column_name] = pd.NA
+
     term_data["name"] = term_data["name"].fillna("").str.strip()
     term_data["hanja"] = term_data["hanja"].fillna("").str.strip()
     term_data["description"] = term_data["description"].fillna("").astype(str)
@@ -75,106 +89,7 @@ def build_term_review_data(terms):
 
 def build_person_review_data(people):
     person_data = split_person_name_columns(people)
-
-    for column_name in ["birth_year", "death_year"]:
-        if column_name in people.columns:
-            person_data = person_data.merge(
-                people[["person_id", column_name]],
-                on="person_id",
-                how="left",
-            )
-
-        if column_name not in person_data.columns:
-            person_data[column_name] = pd.NA
-
-    return person_data
-
-
-def extract_reign_year_range(description):
-    match = re.search(
-        r"재위\s*(\d{2,4})\s*[-~∼－–—]\s*(\d{2,4})\s*년",
-        str(description or ""),
-    )
-
-    if not match:
-        return pd.Series([pd.NA, pd.NA])
-
-    start_year = int(match.group(1))
-    end_year = int(match.group(2))
-
-    if start_year <= end_year:
-        return pd.Series([start_year, end_year])
-
-    return pd.Series([end_year, start_year])
-
-
-def filter_candidates_by_reign_year(candidates):
-    year_range_data = candidates["description"].apply(extract_reign_year_range)
-    year_range_data.columns = ["term_reign_start", "term_reign_end"]
-    candidates = candidates.join(year_range_data)
-    candidates["term_reign_start_number"] = pd.to_numeric(
-        candidates["term_reign_start"],
-        errors="coerce",
-    )
-    candidates["term_reign_end_number"] = pd.to_numeric(
-        candidates["term_reign_end"],
-        errors="coerce",
-    )
-    candidates["birth_year_number"] = pd.to_numeric(
-        candidates["birth_year"],
-        errors="coerce",
-    )
-    candidates["death_year_number"] = pd.to_numeric(
-        candidates["death_year"],
-        errors="coerce",
-    )
-    has_reign_year = (
-        candidates["term_reign_start_number"].notna()
-        & candidates["term_reign_end_number"].notna()
-    )
-    has_person_year = (
-        candidates["birth_year_number"].notna()
-        & candidates["death_year_number"].notna()
-    )
-    overlaps_reign_year = (
-        candidates["term_reign_start_number"].le(candidates["death_year_number"])
-        & candidates["term_reign_end_number"].ge(candidates["birth_year_number"])
-    )
-    filtered_candidates = candidates[
-        ~has_reign_year | (has_person_year & overlaps_reign_year)
-    ].copy()
-
-    return filtered_candidates.drop(
-        columns=[
-            "term_reign_start",
-            "term_reign_end",
-            "term_reign_start_number",
-            "term_reign_end_number",
-            "birth_year_number",
-            "death_year_number",
-        ],
-    )
-
-
-def filter_single_name_candidates(candidates):
-    name_counts = candidates.groupby("name")["person_id"].transform("nunique")
-
-    return candidates[name_counts.gt(1)].copy()
-
-
-def filter_empty_year_candidates_with_complete_group_candidate(candidates):
-    group_columns = ["term_id", "name", "hanja_term", "description"]
-    has_complete_person_year = (
-        candidates["birth_year"].fillna("").astype(str).str.strip().ne("")
-        & candidates["death_year"].fillna("").astype(str).str.strip().ne("")
-    )
-    group_has_complete_person_year = has_complete_person_year.groupby(
-        [candidates[column_name] for column_name in group_columns]
-    ).transform("any")
-
-    return candidates[
-        has_complete_person_year | ~group_has_complete_person_year
-    ].copy()
+    return merge_person_life_year_columns(person_data, people)
 
 
 def add_review_type(candidates):
@@ -193,12 +108,9 @@ def add_review_type(candidates):
 def build_review_candidates(terms, people):
     term_data = build_term_review_data(terms)
     person_data = build_person_review_data(people)
-    auto_names = find_unique_names(term_data["name"], person_data["base_name"])
 
-    candidate_terms = term_data[~term_data["name"].isin(auto_names)].copy()
-    candidate_people = person_data[~person_data["base_name"].isin(auto_names)].copy()
-    candidates = candidate_terms.merge(
-        candidate_people,
+    candidates = term_data.merge(
+        person_data,
         left_on="name",
         right_on="base_name",
         how="inner",
@@ -219,17 +131,8 @@ def build_review_candidates(terms, people):
     if candidates.empty:
         return empty_review_candidates()
 
-    candidates = filter_candidates_by_reign_year(candidates)
-
-    if candidates.empty:
-        return empty_review_candidates()
-
-    candidates = filter_empty_year_candidates_with_complete_group_candidate(candidates)
-
-    if candidates.empty:
-        return empty_review_candidates()
-
-    candidates = filter_single_name_candidates(candidates)
+    auto_term_mask = build_unique_exact_term_person_year_group_mask(candidates)
+    candidates = candidates[~auto_term_mask].copy()
 
     if candidates.empty:
         return empty_review_candidates()
@@ -243,6 +146,9 @@ def build_review_candidates(terms, people):
         columns={
             "hanja_term": "term_hanja",
             "hanja_person": "person_hanja",
+            "year_text": "term_year_text",
+            "start_year": "term_start_year",
+            "end_year": "term_end_year",
         }
     )
 

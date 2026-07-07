@@ -651,6 +651,9 @@
         sessionStorage.removeItem("questionGenerationCondition");
         localStorage.removeItem("questionGenerationCondition");
         localStorage.removeItem("questionInProgress");
+        if (payload.adjustment_message) {
+          alert(payload.adjustment_message);
+        }
         window.location.href = `/question/exam/?resume=1&session_id=${payload.session_id}`;
       } catch (error) {
         button.disabled = false;

@@ -290,8 +290,8 @@ flowchart LR
     Term -->|"HAS_ENTITY_TYPE · 실체 유형 (20,662)"| EntityType
     Term -->|"HAS_CATEGORY · 카테고리 (61,697)"| Category
     Term -->|"IN_PERIOD · 원본 시대 (65,358)"| Period
-    Term -->|"REFERS_TO · 가리키는 인물 (2,971)"| Person
-    Term -->|"MENTIONS_PERSON · 설명문 언급 (3,114)"| Person
+    Term -->|"REFERS_TO · 가리키는 인물 (2,243)"| Person
+    Term -->|"MENTIONS_PERSON · 설명문 언급 (3,293)"| Person
     Term -->|"REFERS_TO · 가리키는 사건 (13)"| Event
     Term -->|"ABOUT_COUNTRY (1,620)"| Country
     Term -->|"ABOUT_REGION (82)"| Region
@@ -341,8 +341,8 @@ flowchart LR
 | `term_about_region.csv` | `ABOUT_REGION` | 82 | `Term -> Region` | 용어의 category가 region crosswalk에 걸리면 연결 |
 | `term_about_economic_domain.csv` | `ABOUT_ECONOMIC_DOMAIN` | 2,894 | `Term -> EconomicDomain` | 용어의 category가 경제 분야 crosswalk에 걸리면 연결 |
 | `term_about_taxonomy_facet.csv` | `ABOUT_TAXONOMY_FACET` | 22,962 | `Term -> TaxonomyFacet` | 용어의 category가 중간 taxonomy facet에 속하면 연결 |
-| `term_refers_to_person.csv` | `REFERS_TO` | 2,971 | `Term -> Person` | 이름이 양쪽에서 유일하면 `EXACT_NAME`, 동명이 있으면 이름+한자 조합이 유일할 때만 `NAME_HANJA`로 연결. 그 외 동명 케이스는 관계를 만들지 않음 |
-| `term_mentions_person.csv` | `MENTIONS_PERSON` | 3,114 | `Term -> Person` | 용어 설명문에서 인물명이 언급된 경우 연결. `REFERS_TO`보다 약한 보조 맥락 관계 |
+| `term_refers_to_person.csv` | `REFERS_TO` | 2,243 | `Term -> Person` | Term 연도와 Person 생몰년이 숫자로 완전히 같고 해당 Term에서 그런 후보가 1명뿐일 때 자동 연결. 승인 seed는 `MANUAL`로 합류 |
+| `term_mentions_person.csv` | `MENTIONS_PERSON` | 3,293 | `Term -> Person` | 용어 설명문에서 인물명이 언급된 경우 연결. `REFERS_TO`보다 약한 보조 맥락 관계 |
 | `term_refers_to_event.csv` | `REFERS_TO` | 13 | `Term -> Event` | 용어명과 사건명이 양쪽에서 유일하게 일치하는 경우만 연결 |
 | `event_has_source_category.csv` | `HAS_EVENT_CATEGORY` | 713 | `Event -> SourceEventCategory` | 이벤트 원천 분류를 원형 그대로 보존 |
 | `event_has_canonical_category.csv` | `HAS_CATEGORY` | 692 | `Event -> CanonicalCategory` | `taxonomy_crosswalk.csv`에서 표준 카테고리 매핑이 있는 이벤트만 연결 |
@@ -826,7 +826,7 @@ RETURN DISTINCT e
 
 ### 15.7 Term-Person 수동 검수 흐름
 
-자동 `Term - REFERS_TO - Person`은 이름이 양쪽에서 유일하거나 이름+한자 조합이 유일할 때만 만든다. 동명이인은 자동 연결하지 않는다.
+자동 `Term - REFERS_TO - Person`은 Term 연도와 Person 생몰년이 숫자로 완전히 같고, 해당 Term에서 그런 후보가 1명뿐일 때만 만든다.
 
 검수가 필요한 경우 `make_term_person_review.py`를 수동 실행한다.
 
@@ -837,13 +837,17 @@ RETURN DISTINCT e
 이 스크립트는 `staging/term_person_review.csv` 후보를 만든다.
 검수 후보 파일은 이 파일 하나이며, `review_type`으로 `TERM_PERSON`과 `PERSON_DUPLICATE`를 구분한다.
 별도 `staging/person_duplicate_review.csv`는 공식 검수 후보 파일로 사용하지 않는다.
+이 staging 파일이 과거 실행 결과로 남아 있어도 graph 생성은 읽지 않으며, 남아 있으면 삭제해도 된다.
+Term의 `start_year`, `end_year`와 Person의 `birth_year`, `death_year`가 숫자로 완전히 같은 후보가 해당 Term에서 1명뿐이면 자동 `REFERS_TO` 관계로 붙이고, 같은 `term_id`의 다른 후보도 검토 대상에서 제외한다.
+정확히 일치하는 후보가 없거나 2명 이상이면 자동 연결하지 않고 이름/한자 후보를 `term_person_review.csv`에 `PENDING` 검토 후보로 남긴다.
 `birth_year`, `death_year`는 원천 Person 데이터의 연도 문자열을 그대로 표시한다.
 원천이 비어 있으면 빈 값으로 두고, `14??`, `?`, `1745(1730)`처럼 부분/불확실 연도도 원천값이면 그대로 둔다.
 Term 설명의 재위 연도에서 생몰년을 추론해 채우지 않는다.
 
 승인 결과 seed는 목적별로 분리한다.
-`TERM_PERSON`은 "이 Term이 이 Person을 가리킨다"는 수동 연결 승인이고, `seed/term_person_review_approved.csv`에 `term_id`, `person_id`, `review_status`, `note`만 기록한다.
+Term이 특정 Person을 가리킨다고 사람이 확정한 경우에는 `seed/term_person_review_approved.csv`에 `term_id`, `person_id`, `review_status`, `note`만 기록한다.
 runner를 다시 실행하면 승인 행은 `term_refers_to_person.csv`에 `match_type=MANUAL`로 합류한다.
+staging 파일의 `review_status`와 `note`를 수정해도 graph 반영 기준이 되지 않는다. 검수 결과는 seed 파일에 기록한다.
 
 `PERSON_DUPLICATE`는 "서로 다른 Person ID가 같은 인물이다"라는 동일인 병합 확정이다.
 4컬럼짜리 `term_person_review_approved.csv`로는 `duplicate_person_id -> canonical_person_id` 치환을 표현할 수 없으므로, 동일인으로 확정한 경우에만 `seed/person_duplicate_review_approved.csv`에 `duplicate_person_id`, `canonical_person_id`를 포함해 기록한다.
