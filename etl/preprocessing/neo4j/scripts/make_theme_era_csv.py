@@ -20,11 +20,13 @@ import pandas as pd
 
 from neo4j_common import (
     build_discontinued_relation_output_names,
+    clean_value,
     normalize_keyword_series,
     print_summary,
     read_csv,
     read_optional_csv,
     remove_stale_output_file,
+    resolve_import_dir,
     resolve_project_root,
     save_csv,
     unique_join,
@@ -34,7 +36,7 @@ from neo4j_common import (
 def build_default_paths(script_path):
     neo4j_dir = script_path.parents[1]
     project_root = resolve_project_root(script_path)
-    import_dir = project_root / "storage" / "neo4j" / "neo4j_import"
+    import_dir = resolve_import_dir(project_root)
 
     return {
         "theme_seed": neo4j_dir / "seed" / "theme_seed.csv",
@@ -50,6 +52,7 @@ def build_default_paths(script_path):
         "people": import_dir / "nodes" / "people.csv",
         "periods": import_dir / "nodes" / "periods.csv",
         "source_urls": import_dir / "nodes" / "source_urls.csv",
+        "search_tags": import_dir / "nodes" / "search_tags.csv",
         "person_involved_in_event": (
             import_dir / "relations" / "person_involved_in_event.csv"
         ),
@@ -65,6 +68,9 @@ def build_default_paths(script_path):
         ),
         "term_in_period": import_dir / "relations" / "term_in_period.csv",
         "event_in_period": import_dir / "relations" / "event_in_period.csv",
+        "term_has_search_tag": import_dir / "relations" / "term_has_search_tag.csv",
+        "event_has_search_tag": import_dir / "relations" / "event_has_search_tag.csv",
+        "person_has_search_tag": import_dir / "relations" / "person_has_search_tag.csv",
         "nodes_dir": import_dir / "nodes",
         "relations_dir": import_dir / "relations",
     }
@@ -114,6 +120,9 @@ def parse_args(default_paths):
         "--source-urls-path", type=Path, default=default_paths["source_urls"]
     )
     parser.add_argument(
+        "--search-tags-path", type=Path, default=default_paths["search_tags"]
+    )
+    parser.add_argument(
         "--person-involved-in-event-path",
         type=Path,
         default=default_paths["person_involved_in_event"],
@@ -147,6 +156,21 @@ def parse_args(default_paths):
         "--event-in-period-path",
         type=Path,
         default=default_paths["event_in_period"],
+    )
+    parser.add_argument(
+        "--term-has-search-tag-path",
+        type=Path,
+        default=default_paths["term_has_search_tag"],
+    )
+    parser.add_argument(
+        "--event-has-search-tag-path",
+        type=Path,
+        default=default_paths["event_has_search_tag"],
+    )
+    parser.add_argument(
+        "--person-has-search-tag-path",
+        type=Path,
+        default=default_paths["person_has_search_tag"],
     )
     parser.add_argument("--nodes-dir", type=Path, default=default_paths["nodes_dir"])
     parser.add_argument(
@@ -182,6 +206,7 @@ def read_inputs(args):
         "people": read_csv(args.people_path, "people"),
         "periods": read_csv(args.periods_path, "periods"),
         "source_urls": read_csv(args.source_urls_path, "source_urls"),
+        "search_tags": read_csv(args.search_tags_path, "search_tags"),
         "person_involved_in_event": read_csv(
             args.person_involved_in_event_path, "person_involved_in_event"
         ),
@@ -199,6 +224,15 @@ def read_inputs(args):
         ),
         "term_in_period": read_csv(args.term_in_period_path, "term_in_period"),
         "event_in_period": read_csv(args.event_in_period_path, "event_in_period"),
+        "term_has_search_tag": read_optional_csv(
+            args.term_has_search_tag_path, "term_has_search_tag"
+        ),
+        "event_has_search_tag": read_optional_csv(
+            args.event_has_search_tag_path, "event_has_search_tag"
+        ),
+        "person_has_search_tag": read_optional_csv(
+            args.person_has_search_tag_path, "person_has_search_tag"
+        ),
     }
 
 
@@ -224,17 +258,33 @@ def build_theme_nodes(theme_seed):
     theme_nodes = theme_seed.copy()
     require_columns(
         theme_nodes,
-        ["theme_id", "theme_name", "theme_order", "note"],
+        ["theme_id", "theme_key", "theme_name", "theme_order", "note"],
         "theme_seed",
     )
-    validate_unique_columns(theme_nodes, ["theme_id", "theme_name"], "theme_seed")
+    validate_unique_columns(
+        theme_nodes,
+        ["theme_id", "theme_key", "theme_name"],
+        "theme_seed",
+    )
     theme_nodes = theme_nodes.rename(columns={"theme_name": "name"})
 
-    return theme_nodes[["theme_id", "name", "theme_order", "note"]]
+    return theme_nodes[["theme_id", "theme_key", "name", "theme_order", "note"]]
 
 
 def build_theme_id_lookup(theme_nodes):
     return dict(zip(theme_nodes["name"], theme_nodes["theme_id"]))
+
+
+def get_theme_by_key(theme_nodes, theme_key):
+    # 테마명은 seed에서 바뀔 수 있으므로 코드는 안정 키(theme_key)로만 참조한다.
+    matched_rows = theme_nodes[theme_nodes["theme_key"].eq(theme_key)]
+
+    if len(matched_rows) == 0:
+        raise ValueError(f"theme_seed에 theme_key={theme_key} 행이 없습니다.")
+
+    matched_row = matched_rows.iloc[0]
+
+    return {"theme_id": matched_row["theme_id"], "theme_name": matched_row["name"]}
 
 
 def build_theme_path_rules(category_theme_seed, theme_nodes):
@@ -346,15 +396,15 @@ def build_term_theme_relations(term_has_canonical_category, category_theme_seed,
 def build_event_theme_relations(
     events, event_has_canonical_category, canonical_categories, category_theme_seed, theme_nodes
 ):
-    # 직통 엣지: 모든 Event는 '사건' 주제에 연결하고,
+    # 직통 엣지: 모든 Event는 EVENT 테마에 연결하고,
     # 표준 카테고리 매핑이 있는 Event는 해당 주제에도 연결한다.
-    theme_id_lookup = build_theme_id_lookup(theme_nodes)
+    event_theme = get_theme_by_key(theme_nodes, "EVENT")
     theme_path_rules = build_theme_path_rules(category_theme_seed, theme_nodes)
 
     event_theme_rows = events[["event_id"]].copy()
     event_theme_rows = event_theme_rows.rename(columns={"event_id": "start_event_id"})
-    event_theme_rows["theme_name"] = "사건"
-    event_theme_rows["end_theme_id"] = theme_id_lookup["사건"]
+    event_theme_rows["theme_name"] = event_theme["theme_name"]
+    event_theme_rows["end_theme_id"] = event_theme["theme_id"]
     event_theme_rows["match_source"] = "EVENT_LABEL"
 
     category_rows = event_has_canonical_category.merge(
@@ -404,34 +454,38 @@ def empty_person_theme_relations():
     return pd.DataFrame(columns=build_person_theme_relation_columns())
 
 
-def build_non_inherited_theme_names():
-    return {"사건", "인물"}
+def build_non_inherited_theme_names(theme_nodes):
+    # EVENT/PERSON 테마는 라벨 기반 연결이라 사건·용어 경유로는 상속하지 않는다.
+    return {
+        get_theme_by_key(theme_nodes, "EVENT")["theme_name"],
+        get_theme_by_key(theme_nodes, "PERSON")["theme_name"],
+    }
 
 
 def build_person_theme_rows_from_label(people, theme_nodes):
-    theme_id_lookup = build_theme_id_lookup(theme_nodes)
-    person_theme_id = theme_id_lookup.get("인물")
-
-    if person_theme_id is None:
-        return empty_person_theme_relations()
+    person_theme = get_theme_by_key(theme_nodes, "PERSON")
 
     relation_data = people[["person_id"]].copy()
     relation_data = relation_data.rename(columns={"person_id": "start_person_id"})
-    relation_data["end_theme_id"] = person_theme_id
+    relation_data["end_theme_id"] = person_theme["theme_id"]
     relation_data["relation_type"] = "HAS_THEME"
-    relation_data["theme_name"] = "인물"
+    relation_data["theme_name"] = person_theme["theme_name"]
     relation_data["match_source"] = "PERSON_LABEL"
     relation_data["source_detail"] = "Person"
 
     return relation_data[build_person_theme_relation_columns()]
 
 
-def build_person_theme_rows_from_events(person_involved_in_event, event_has_theme):
+def build_person_theme_rows_from_events(
+    person_involved_in_event,
+    event_has_theme,
+    theme_nodes,
+):
     if person_involved_in_event.empty:
         return empty_person_theme_relations()
 
     inherited_theme_data = event_has_theme[
-        ~event_has_theme["theme_name"].isin(build_non_inherited_theme_names())
+        ~event_has_theme["theme_name"].isin(build_non_inherited_theme_names(theme_nodes))
     ].copy()
 
     if inherited_theme_data.empty:
@@ -454,12 +508,16 @@ def build_person_theme_rows_from_events(person_involved_in_event, event_has_them
     return relation_data[build_person_theme_relation_columns()]
 
 
-def build_person_theme_rows_from_name_category(term_refers_to_person, term_has_theme):
+def build_person_theme_rows_from_name_category(
+    term_refers_to_person,
+    term_has_theme,
+    theme_nodes,
+):
     if term_refers_to_person.empty:
         return empty_person_theme_relations()
 
     inherited_theme_data = term_has_theme[
-        ~term_has_theme["theme_name"].isin(build_non_inherited_theme_names())
+        ~term_has_theme["theme_name"].isin(build_non_inherited_theme_names(theme_nodes))
     ].copy()
 
     if inherited_theme_data.empty:
@@ -517,8 +575,16 @@ def build_person_theme_relations(
 ):
     relation_parts = [
         build_person_theme_rows_from_label(people, theme_nodes),
-        build_person_theme_rows_from_events(person_involved_in_event, event_has_theme),
-        build_person_theme_rows_from_name_category(term_refers_to_person, term_has_theme),
+        build_person_theme_rows_from_events(
+            person_involved_in_event,
+            event_has_theme,
+            theme_nodes,
+        ),
+        build_person_theme_rows_from_name_category(
+            term_refers_to_person,
+            term_has_theme,
+            theme_nodes,
+        ),
     ]
     relation_data = pd.concat(relation_parts, ignore_index=True)
 
@@ -676,6 +742,74 @@ def build_event_era_relations(event_in_period, period_era_seed, era_nodes):
     return relation_data
 
 
+def add_lifespan_era_overlap_columns(relation_data):
+    overlap_data = relation_data.copy()
+    overlap_data["era_start_for_overlap"] = overlap_data["era_start"].fillna(
+        overlap_data["lifespan_start"]
+    )
+    overlap_data["era_end_for_overlap"] = overlap_data["era_end"].fillna(
+        overlap_data["lifespan_end"]
+    )
+    overlap_data["overlap_start"] = overlap_data[
+        ["lifespan_start", "era_start_for_overlap"]
+    ].max(axis=1)
+    overlap_data["overlap_end"] = overlap_data[
+        ["lifespan_end", "era_end_for_overlap"]
+    ].min(axis=1)
+
+    return overlap_data
+
+
+def is_redundant_broader_era(current_row, peer_rows):
+    if pd.isna(current_row.era_start) or pd.isna(current_row.era_end):
+        return False
+
+    for peer_row in peer_rows.itertuples():
+        if current_row.Index == peer_row.Index:
+            continue
+
+        if pd.isna(peer_row.era_start) or pd.isna(peer_row.era_end):
+            continue
+
+        contains_peer_era = (
+            current_row.era_start <= peer_row.era_start
+            and current_row.era_end >= peer_row.era_end
+        )
+        peer_covers_overlap = (
+            peer_row.overlap_start <= current_row.overlap_start
+            and peer_row.overlap_end >= current_row.overlap_end
+        )
+
+        if contains_peer_era and peer_covers_overlap:
+            return True
+
+    return False
+
+
+def filter_redundant_broader_person_era_rows(relation_data):
+    if relation_data.empty:
+        return relation_data
+
+    overlap_data = add_lifespan_era_overlap_columns(relation_data)
+    drop_indexes = set()
+
+    for _, person_rows in overlap_data.groupby("person_id"):
+        for current_row in person_rows.itertuples():
+            if is_redundant_broader_era(current_row, person_rows):
+                drop_indexes.add(current_row.Index)
+
+    filtered_data = overlap_data[~overlap_data.index.isin(drop_indexes)].copy()
+
+    return filtered_data.drop(
+        columns=[
+            "era_start_for_overlap",
+            "era_end_for_overlap",
+            "overlap_start",
+            "overlap_end",
+        ]
+    )
+
+
 def build_person_era_relations(people, person_involved_in_event, event_in_era, era_nodes):
     # 1차(BIRTH_YEAR): 생몰년이 Era 연도 범위와 겹치면 연결. 몰년이 없으면 출생 연도만 사용.
     # 2차(EVENT_INFERRED): 생년이 없는 인물은 참여 사건의 Era를 따라 보조 추론.
@@ -702,6 +836,7 @@ def build_person_era_relations(people, person_involved_in_event, event_in_era, e
         | (birth_rows["era_end"] >= birth_rows["lifespan_start"])
     )
     birth_rows = birth_rows[overlap_mask].copy()
+    birth_rows = filter_redundant_broader_person_era_rows(birth_rows)
     birth_rows["match_source"] = "BIRTH_YEAR"
     birth_rows["source_event_ids"] = ""
 
@@ -838,11 +973,341 @@ def build_term_entity_type_relations(
     ]
 
 
+def build_search_tag_columns():
+    return [
+        "search_tag_id",
+        "tag_type",
+        "tag_name",
+        "tag_value",
+        "source_node_type",
+        "source_node_id",
+        "source",
+        "review_status",
+    ]
+
+
+def build_search_tag_relation_columns(start_id_column):
+    return [
+        start_id_column,
+        "end_search_tag_id",
+        "relation_type",
+        "source_node_type",
+        "source_node_id",
+        "source_relation",
+        "source_detail",
+    ]
+
+
+def build_axis_search_tag_rows(
+    node_data,
+    id_column,
+    name_column,
+    tag_type,
+    source_node_type,
+    source,
+):
+    tag_rows = []
+
+    for row in node_data[[id_column, name_column]].drop_duplicates().itertuples(index=False):
+        source_node_id = clean_value(getattr(row, id_column))
+        tag_name = clean_value(getattr(row, name_column))
+
+        if pd.notna(source_node_id) and pd.notna(tag_name):
+            tag_rows.append(
+                {
+                    "tag_type": tag_type,
+                    "tag_name": tag_name,
+                    "tag_value": tag_name,
+                    "source_node_type": source_node_type,
+                    "source_node_id": source_node_id,
+                    "source": source,
+                    "review_status": "APPROVED",
+                }
+            )
+
+    return tag_rows
+
+
+def build_theme_era_entity_search_tag_rows(theme_nodes, era_nodes, entity_type_nodes):
+    tag_rows = []
+    tag_rows.extend(
+        build_axis_search_tag_rows(
+            theme_nodes,
+            "theme_id",
+            "name",
+            "THEME",
+            "Theme",
+            "theme_seed",
+        )
+    )
+    tag_rows.extend(
+        build_axis_search_tag_rows(
+            era_nodes,
+            "era_id",
+            "name",
+            "ERA",
+            "Era",
+            "era_seed",
+        )
+    )
+    tag_rows.extend(
+        build_axis_search_tag_rows(
+            entity_type_nodes,
+            "entity_type_id",
+            "name",
+            "ENTITY_TYPE",
+            "EntityType",
+            "entity_type_seed",
+        )
+    )
+
+    return tag_rows
+
+
+def next_search_tag_number(search_tag_nodes):
+    if search_tag_nodes.empty or "search_tag_id" not in search_tag_nodes.columns:
+        return 1
+
+    tag_numbers = (
+        search_tag_nodes["search_tag_id"]
+        .astype(str)
+        .str.extract(r"SEARCH_TAG_(\d+)")[0]
+    )
+    tag_numbers = pd.to_numeric(tag_numbers, errors="coerce").dropna()
+
+    if tag_numbers.empty:
+        return 1
+
+    return int(tag_numbers.max()) + 1
+
+
+def build_search_tag_ids(start_number, row_count):
+    return [
+        f"SEARCH_TAG_{tag_number:06d}"
+        for tag_number in range(start_number, start_number + row_count)
+    ]
+
+
+def append_search_tag_nodes(search_tag_nodes, tag_rows):
+    search_tag_columns = build_search_tag_columns()
+    existing_nodes = search_tag_nodes.copy()
+
+    if existing_nodes.empty:
+        existing_nodes = pd.DataFrame(columns=search_tag_columns)
+
+    if len(tag_rows) == 0:
+        return existing_nodes[search_tag_columns]
+
+    new_nodes = pd.DataFrame(tag_rows).drop_duplicates(
+        subset=["source_node_type", "source_node_id"]
+    )
+    existing_keys = set(
+        zip(
+            existing_nodes["source_node_type"].fillna(""),
+            existing_nodes["source_node_id"].fillna(""),
+        )
+    )
+    new_nodes["source_key"] = list(
+        zip(new_nodes["source_node_type"], new_nodes["source_node_id"])
+    )
+    new_nodes = new_nodes[~new_nodes["source_key"].isin(existing_keys)].copy()
+    new_nodes = new_nodes.drop(columns=["source_key"])
+
+    if new_nodes.empty:
+        return existing_nodes[search_tag_columns]
+
+    new_nodes = new_nodes.sort_values(
+        ["tag_type", "tag_name", "tag_value", "source_node_type", "source_node_id"]
+    ).reset_index(drop=True)
+    new_nodes.insert(
+        0,
+        "search_tag_id",
+        build_search_tag_ids(next_search_tag_number(existing_nodes), len(new_nodes)),
+    )
+
+    return pd.concat(
+        [existing_nodes[search_tag_columns], new_nodes[search_tag_columns]],
+        ignore_index=True,
+    )
+
+
+def build_search_tag_lookup(search_tag_nodes):
+    if search_tag_nodes.empty:
+        return {}
+
+    return {
+        (row.source_node_type, row.source_node_id): row.search_tag_id
+        for row in search_tag_nodes.itertuples(index=False)
+    }
+
+
+def build_axis_search_tag_relations(
+    relation_data,
+    start_id_column,
+    source_node_type,
+    source_id_column,
+    source_relation,
+    search_tag_lookup,
+):
+    relation_columns = build_search_tag_relation_columns(start_id_column)
+    required_columns = [start_id_column, source_id_column]
+
+    if relation_data.empty:
+        return pd.DataFrame(columns=relation_columns)
+
+    if any(column_name not in relation_data.columns for column_name in required_columns):
+        return pd.DataFrame(columns=relation_columns)
+
+    relation_rows = []
+    for row in relation_data[required_columns].drop_duplicates().itertuples(index=False):
+        source_node_id = getattr(row, source_id_column)
+        search_tag_id = search_tag_lookup.get((source_node_type, source_node_id))
+
+        if pd.notna(search_tag_id):
+            relation_rows.append(
+                {
+                    start_id_column: getattr(row, start_id_column),
+                    "end_search_tag_id": search_tag_id,
+                    "relation_type": "HAS_SEARCH_TAG",
+                    "source_node_type": source_node_type,
+                    "source_node_id": source_node_id,
+                    "source_relation": source_relation,
+                    "source_detail": "",
+                }
+            )
+
+    if len(relation_rows) == 0:
+        return pd.DataFrame(columns=relation_columns)
+
+    return pd.DataFrame(relation_rows).drop_duplicates()[relation_columns]
+
+
+def merge_search_tag_relations(existing_relations, relation_parts, start_id_column):
+    relation_columns = build_search_tag_relation_columns(start_id_column)
+    relation_data = pd.concat(
+        [existing_relations, *relation_parts],
+        ignore_index=True,
+    )
+
+    for column_name in relation_columns:
+        if column_name not in relation_data.columns:
+            relation_data[column_name] = ""
+
+    if relation_data.empty:
+        return pd.DataFrame(columns=relation_columns)
+
+    return relation_data.drop_duplicates().reset_index(drop=True)[relation_columns]
+
+
+def build_theme_era_entity_search_tag_outputs(
+    inputs,
+    theme_nodes,
+    era_nodes,
+    entity_type_nodes,
+    term_has_theme,
+    event_has_theme,
+    person_has_theme,
+    term_in_era,
+    event_in_era,
+    person_in_era,
+    term_has_entity_type,
+):
+    search_tag_nodes = append_search_tag_nodes(
+        inputs["search_tags"],
+        build_theme_era_entity_search_tag_rows(
+            theme_nodes,
+            era_nodes,
+            entity_type_nodes,
+        ),
+    )
+    search_tag_lookup = build_search_tag_lookup(search_tag_nodes)
+    term_parts = [
+        build_axis_search_tag_relations(
+            term_has_theme,
+            "start_term_id",
+            "Theme",
+            "end_theme_id",
+            "term_has_theme",
+            search_tag_lookup,
+        ),
+        build_axis_search_tag_relations(
+            term_in_era,
+            "start_term_id",
+            "Era",
+            "end_era_id",
+            "term_in_era",
+            search_tag_lookup,
+        ),
+        build_axis_search_tag_relations(
+            term_has_entity_type,
+            "start_term_id",
+            "EntityType",
+            "end_entity_type_id",
+            "term_has_entity_type",
+            search_tag_lookup,
+        ),
+    ]
+    event_parts = [
+        build_axis_search_tag_relations(
+            event_has_theme,
+            "start_event_id",
+            "Theme",
+            "end_theme_id",
+            "event_has_theme",
+            search_tag_lookup,
+        ),
+        build_axis_search_tag_relations(
+            event_in_era,
+            "start_event_id",
+            "Era",
+            "end_era_id",
+            "event_in_era",
+            search_tag_lookup,
+        ),
+    ]
+    person_parts = [
+        build_axis_search_tag_relations(
+            person_has_theme,
+            "start_person_id",
+            "Theme",
+            "end_theme_id",
+            "person_has_theme",
+            search_tag_lookup,
+        ),
+        build_axis_search_tag_relations(
+            person_in_era,
+            "start_person_id",
+            "Era",
+            "end_era_id",
+            "person_in_era",
+            search_tag_lookup,
+        ),
+    ]
+
+    return {
+        "search_tags": search_tag_nodes,
+        "term_has_search_tag": merge_search_tag_relations(
+            inputs["term_has_search_tag"],
+            term_parts,
+            "start_term_id",
+        ),
+        "event_has_search_tag": merge_search_tag_relations(
+            inputs["event_has_search_tag"],
+            event_parts,
+            "start_event_id",
+        ),
+        "person_has_search_tag": merge_search_tag_relations(
+            inputs["person_has_search_tag"],
+            person_parts,
+            "start_person_id",
+        ),
+    }
+
+
 def build_outputs(inputs):
     theme_nodes = build_theme_nodes(inputs["theme_seed"])
     era_nodes = build_era_nodes(inputs["era_seed"])
     entity_type_nodes = build_entity_type_nodes(inputs["entity_type_seed"])
-
     event_in_era = build_event_era_relations(
         inputs["event_in_period"],
         inputs["period_era_seed"],
@@ -860,8 +1325,49 @@ def build_outputs(inputs):
         inputs["category_theme_seed"],
         theme_nodes,
     )
+    person_has_theme = build_person_theme_relations(
+        inputs["people"],
+        inputs["person_involved_in_event"],
+        inputs["term_refers_to_person"],
+        term_has_theme,
+        event_has_theme,
+        theme_nodes,
+    )
+    term_in_era = build_term_era_relations(
+        inputs["terms"],
+        inputs["term_in_period"],
+        inputs["keyword_era_seed"],
+        inputs["term_era_candidate"],
+        inputs["period_era_seed"],
+        era_nodes,
+    )
+    person_in_era = build_person_era_relations(
+        inputs["people"],
+        inputs["person_involved_in_event"],
+        event_in_era,
+        era_nodes,
+    )
+    term_has_entity_type = build_term_entity_type_relations(
+        inputs["term_has_canonical_category"],
+        inputs["entity_type_seed"],
+        entity_type_nodes,
+    )
+    search_tag_outputs = build_theme_era_entity_search_tag_outputs(
+        inputs,
+        theme_nodes,
+        era_nodes,
+        entity_type_nodes,
+        term_has_theme,
+        event_has_theme,
+        person_has_theme,
+        term_in_era,
+        event_in_era,
+        person_in_era,
+        term_has_entity_type,
+    )
 
     node_outputs = {
+        "search_tags": search_tag_outputs["search_tags"],
         "themes": theme_nodes,
         "eras": era_nodes,
         "entity_types": entity_type_nodes,
@@ -874,39 +1380,19 @@ def build_outputs(inputs):
         ),
         "term_has_theme": term_has_theme,
         "event_has_theme": event_has_theme,
-        "person_has_theme": build_person_theme_relations(
-            inputs["people"],
-            inputs["person_involved_in_event"],
-            inputs["term_refers_to_person"],
-            term_has_theme,
-            event_has_theme,
-            theme_nodes,
-        ),
+        "person_has_theme": person_has_theme,
+        "term_has_search_tag": search_tag_outputs["term_has_search_tag"],
+        "event_has_search_tag": search_tag_outputs["event_has_search_tag"],
+        "person_has_search_tag": search_tag_outputs["person_has_search_tag"],
         "period_part_of_era": build_period_era_relations(
             inputs["periods"],
             inputs["period_era_seed"],
             era_nodes,
         ),
-        "term_in_era": build_term_era_relations(
-            inputs["terms"],
-            inputs["term_in_period"],
-            inputs["keyword_era_seed"],
-            inputs["term_era_candidate"],
-            inputs["period_era_seed"],
-            era_nodes,
-        ),
+        "term_in_era": term_in_era,
         "event_in_era": event_in_era,
-        "person_in_era": build_person_era_relations(
-            inputs["people"],
-            inputs["person_involved_in_event"],
-            event_in_era,
-            era_nodes,
-        ),
-        "term_has_entity_type": build_term_entity_type_relations(
-            inputs["term_has_canonical_category"],
-            inputs["entity_type_seed"],
-            entity_type_nodes,
-        ),
+        "person_in_era": person_in_era,
+        "term_has_entity_type": term_has_entity_type,
     }
 
     return node_outputs, relation_outputs

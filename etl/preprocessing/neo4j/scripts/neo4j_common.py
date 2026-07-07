@@ -147,8 +147,14 @@ def split_period_tokens(period_text):
     for raw_token in re.split(r"-|,|~|∼", str(period_text)):
         clean_token = clean_value(raw_token)
 
-        if pd.notna(clean_token):
-            tokens.append(clean_token)
+        if pd.isna(clean_token):
+            continue
+
+        # "?"는 미상 표기라 시대명이 아니다. Period 노드로 만들지 않는다.
+        if clean_token == "?":
+            continue
+
+        tokens.append(clean_token)
 
     return tokens
 
@@ -205,6 +211,11 @@ def resolve_neo4j_dir(script_path):
         neo4j_dir = script_dir.parent
 
     return neo4j_dir
+
+
+def resolve_import_dir(project_root):
+    # Neo4j 적재용 최종 CSV가 모이는 폴더. 경로 규칙은 여기 한 곳에서만 관리한다.
+    return project_root / "storage" / "neo4j" / "neo4j_import"
 
 
 def resolve_project_root(start_path):
