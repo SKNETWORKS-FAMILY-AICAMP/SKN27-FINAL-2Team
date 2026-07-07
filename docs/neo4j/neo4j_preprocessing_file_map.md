@@ -127,7 +127,7 @@ Term 설명의 재위 연도는 후보 필터링에만 쓰고 생몰년 컬럼�
 | `make_graph_csv.py` | `neo4j/scripts/` | 최종 Neo4j node/relation CSV 생성 |
 | `make_theme_era_csv.py` | `neo4j/scripts/` | graph CSV와 seed를 읽어 Theme/Era/EntityType 상위 레이어 CSV 생성 |
 | `make_term_era_candidates.py` | `neo4j/scripts/` | 고조선/초기 국가 시대 후보 용어를 이름/설명문에서 추출해 검수 시트 생성. runner 미포함, 수동 실행 |
-| `make_term_person_review.py` | `neo4j/scripts/` | Term 연도와 Person 생몰년이 완전히 같아 자동 확정된 Term 그룹과 고립 `TERM_PERSON` 후보를 제외하고, 남은 이름/한자 Term-Person 후보를 수동 검수 CSV로 생성. runner 미포함, 수동 실행 |
+| `make_term_person_review.py` | `neo4j/scripts/` | 이름/한자 1차 후보 중 Term 설명에 Person 관계망 단서가 있고 시대 범위와 생몰년이 명백히 충돌하지 않는 Term-Person 후보를 수동 검수 CSV로 생성. runner 미포함, 수동 실행 |
 
 각 스크립트는 단독 실행도 가능하지만, 일반적으로는 runner만 실행한다.
 
@@ -479,8 +479,8 @@ events.subject_category
 | `term_about_region.csv` | 82 | `Term - ABOUT_REGION - Region` |
 | `term_about_economic_domain.csv` | 2,894 | `Term - ABOUT_ECONOMIC_DOMAIN - EconomicDomain` |
 | `term_about_taxonomy_facet.csv` | 22,962 | `Term - ABOUT_TAXONOMY_FACET - TaxonomyFacet` |
-| `term_refers_to_person.csv` | 2,243 | `Term - REFERS_TO - Person` (Term 연도와 Person 생몰년이 완전히 같은 단일 후보만 자동 연결) |
-| `term_mentions_person.csv` | 3,293 | `Term - MENTIONS_PERSON - Person` (설명문 안 인물명 언급. 직접 지시 관계보다 약함) |
+| `term_refers_to_person.csv` | 291 | `Term - REFERS_TO - Person` (Term 연도와 Person 생몰년이 완전히 같고 설명에 Person 관계망 단서가 있는 단일 후보만 자동 연결) |
+| `term_mentions_person.csv` | 2,758 | `Term - MENTIONS_PERSON - Person` (설명문 안 인물명 언급. 직접 지시 관계보다 약함) |
 | `term_refers_to_event.csv` | 13 | `Term - REFERS_TO - Event` (이름 유일 매칭만 연결) |
 
 `term_in_period.csv`에는 `match_type`이 있다.
