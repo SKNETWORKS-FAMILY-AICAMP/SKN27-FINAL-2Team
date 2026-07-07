@@ -126,7 +126,6 @@
 
         const data = await res.json();
         data.startedAt = Date.now();
-        localStorage.removeItem("diagnosisInProgress");
         sessionStorage.setItem("diagnosisSession", JSON.stringify(data));
         window.location.href = "/diagnosis/exam/";
       } catch (e) {

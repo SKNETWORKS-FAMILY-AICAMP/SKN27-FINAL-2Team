@@ -358,6 +358,19 @@ def _apply_study_plan_block_filter(qs, block):
     return qs.filter(**{field_name: label})
 
 
+def _question_generation_context_label(data, study_plan_block):
+    if study_plan_block:
+        label = study_plan_block.get("label")
+        if label:
+            return str(label)
+
+    labels = []
+    for key in ("eras", "topics", "question_types", "question_subtypes"):
+        values = data.get(key) or []
+        labels.extend(str(value) for value in values if value)
+    return " · ".join(labels[:3]) if labels else "선택한 조건"
+
+
 # 비로그인 사용자에게 제공할 오늘의 10문항을 결정한다.
 # 같은 날짜에서 항상 같은 문제 세트가 나오고, 날짜가 바뀌면 다른 세트가 나온다.
 def _daily_guest_question_ids(question_ids):
@@ -431,6 +444,7 @@ def _sample_questions_by_score(qs, count, selected_scores):
 # 점수별 목표 개수가 직접 지정된 경우 해당 개수에 맞춰 문제 ID를 추출한다.
 def _sample_questions_by_score_counts(qs, score_counts):
     selected_ids = []
+    adjustment_messages = []
 
     for score, score_count in score_counts.items():
         if score_count <= 0:
@@ -438,17 +452,31 @@ def _sample_questions_by_score_counts(qs, score_counts):
         score_ids = list(
             qs.filter(q_score=score).values_list("question_id", flat=True)
         )
-        if len(score_ids) < score_count:
-            return None, {
-                "error": "선택한 난이도 구성에 맞는 문제가 부족합니다.",
-                "score": score,
-                "available_count": len(score_ids),
-                "requested_count": score_count,
-            }
-        selected_ids.extend(random.sample(score_ids, score_count))
+        sample_count = min(len(score_ids), score_count)
+        if sample_count < score_count:
+            adjustment_messages.append(
+                f"{score}점 문제가 부족하여 다른 난이도에서 {score_count - sample_count}문항을 보충합니다."
+            )
+        if sample_count:
+            selected_ids.extend(random.sample(score_ids, sample_count))
+
+    requested_count = sum(score_counts.values())
+    if len(selected_ids) < requested_count:
+        remaining_count = requested_count - len(selected_ids)
+        remaining_ids = list(
+            qs.exclude(question_id__in=selected_ids)
+            .values_list("question_id", flat=True)
+        )
+        if len(remaining_ids) < remaining_count:
+            return selected_ids, {
+                "error": "조건에 맞는 문제가 부족합니다.",
+                "available_count": len(selected_ids) + len(remaining_ids),
+                "requested_count": requested_count,
+            }, adjustment_messages
+        selected_ids.extend(random.sample(remaining_ids, remaining_count))
 
     random.shuffle(selected_ids)
-    return selected_ids, None
+    return selected_ids, None, adjustment_messages
 
 
 def _score_counts_for_generation_mode(data):
@@ -535,6 +563,7 @@ def question_start(request):
         )
         if study_plan_error:
             return Response(study_plan_error, status=status.HTTP_400_BAD_REQUEST)
+    generation_context_label = _question_generation_context_label(data, study_plan_block)
 
     qs = _base_question_queryset()
     qs = _apply_study_plan_block_filter(qs, study_plan_block)
@@ -576,22 +605,48 @@ def question_start(request):
         qs = qs.filter(q_score__in=selected_scores)
 
     question_ids = list(qs.order_by("question_id").values_list("question_id", flat=True))
-    if len(question_ids) < count:
-        return Response(
-            {
-                "error": "조건에 맞는 문제가 부족합니다.",
-                "available_count": len(question_ids),
-                "requested_count": count,
-            },
-            status=status.HTTP_400_BAD_REQUEST,
-        )
+    fallback_messages = []
 
     if user_id is None:
         selected_ids = _daily_guest_question_ids(question_ids)
     else:
-        selected_ids, score_error = _sample_questions_by_score_counts(qs, score_counts)
+        selected_ids, score_error, score_adjustments = _sample_questions_by_score_counts(qs, score_counts)
         if score_error:
-            return Response(score_error, status=status.HTTP_400_BAD_REQUEST)
+            remaining_count = count - len(selected_ids or [])
+            fallback_qs = (
+                _base_question_queryset()
+                .exclude(question_id__in=selected_ids or [])
+            )
+            fallback_ids = list(fallback_qs.values_list("question_id", flat=True))
+            if len(fallback_ids) < remaining_count:
+                return Response(score_error, status=status.HTTP_400_BAD_REQUEST)
+            selected_ids = (selected_ids or []) + random.sample(fallback_ids, remaining_count)
+            fallback_messages.append(
+                f"{generation_context_label} 문제 생성에 문제 수가 부족하여 랜덤 시대/주제에서 문제를 보충했습니다."
+            )
+        fallback_messages.extend(score_adjustments)
+
+    if len(selected_ids) < count:
+        remaining_count = count - len(selected_ids)
+        fallback_ids = list(
+            _base_question_queryset()
+            .exclude(question_id__in=selected_ids)
+            .values_list("question_id", flat=True)
+        )
+        if len(fallback_ids) < remaining_count:
+            return Response(
+                {
+                    "error": "조건에 맞는 문제가 부족합니다.",
+                    "available_count": len(selected_ids) + len(fallback_ids),
+                    "requested_count": count,
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        selected_ids.extend(random.sample(fallback_ids, remaining_count))
+        fallback_messages.append(
+            f"{generation_context_label} 문제 생성에 문제 수가 부족하여 랜덤 시대/주제에서 문제를 보충했습니다."
+        )
+
     questions = list(Questions.objects.filter(question_id__in=selected_ids))
     questions.sort(key=lambda question: selected_ids.index(question.question_id))
 
@@ -624,10 +679,18 @@ def question_start(request):
             ])
 
     choice_seed_key = session.session_id if session else f"guest:{timezone.localdate().isoformat()}"
+    adjustment_messages = []
+    if fallback_messages:
+        adjustment_messages.append(
+            f"{generation_context_label} 문제 생성에 일부 난이도 문제가 부족하여 다른 난이도에서 문제를 사용했습니다."
+        )
+        adjustment_messages.extend(fallback_messages)
     start_question_response = StartQuestionsResponse({
         "session_id": session.session_id if session else None,
         "total_count": count,
         "is_saved": session is not None,
+        "adjustment_message": " ".join(dict.fromkeys(adjustment_messages)),
+        "adjustment_messages": list(dict.fromkeys(adjustment_messages)),
         "questions": _serialize_questions(questions, choice_seed_key),
     })
     return Response(start_question_response.data, status=status.HTTP_201_CREATED)
@@ -952,7 +1015,18 @@ def _wrong_note_record_queryset(user_id, source):
     if session_id:
         qs = qs.filter(session_id=session_id)
     if session_type:
-        qs = qs.filter(session__session_type=session_type)
+        if session_type == "study_plan":
+            qs = qs.filter(session__session_type=PRACTICE_SESSION_TYPE).filter(
+                models.Q(studyplan_id__isnull=False)
+                | models.Q(study_plan_block_id__isnull=False)
+            )
+        elif session_type == PRACTICE_SESSION_TYPE:
+            qs = qs.filter(session__session_type=PRACTICE_SESSION_TYPE).filter(
+                studyplan_id__isnull=True,
+                study_plan_block_id__isnull=True,
+            )
+        else:
+            qs = qs.filter(session__session_type=session_type)
     if era:
         qs = qs.filter(era=era)
     if topic:

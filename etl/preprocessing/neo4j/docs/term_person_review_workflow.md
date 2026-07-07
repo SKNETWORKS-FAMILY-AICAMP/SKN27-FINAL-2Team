@@ -1,7 +1,13 @@
 # Term-Person 동명이인 검수 흐름
 
-`term_person_review_approved.csv`는 검수 후보 목록이 아니라 검수 완료된 수동 승인 seed이다.
-파일이 비어 있으면 아직 수동 승인된 Term-Person 연결이 없다는 뜻이다.
+검수 후보 CSV는 `etl/preprocessing/neo4j/staging/term_person_review.csv` 하나만 사용한다.
+Term-Person 연결 후보와 Person ID 병합 후보는 같은 파일 안에서 `review_type` 값으로 구분한다.
+별도 `staging/person_duplicate_review.csv`는 공식 검수 산출물이 아니다.
+
+승인 결과 seed는 검수 목적에 따라 분리한다.
+`term_person_review_approved.csv`는 Term-Person 연결 승인만 기록하고, `person_duplicate_review_approved.csv`는 Person ID 동일인 병합 확정만 기록한다.
+두 seed는 의미와 필요한 컬럼이 다르므로 한 파일에 섞어 쓰지 않는다.
+`term_person_review_approved.csv`가 비어 있으면 아직 수동 승인된 Term-Person 연결이 없다는 뜻이고, `person_duplicate_review_approved.csv`는 확정된 동일인 병합이 없으면 없거나 비어 있을 수 있다.
 
 ## Seed 파일의 역할
 
@@ -32,7 +38,7 @@ Seed 파일을 만드는 이유는 다음과 같다.
 | `keyword_era_seed.csv` | period 정보만으로 안 잡히는 용어의 Era override | 시험 키워드나 대표 용어를 특정 시대에 직접 보정하기 위해 필요 |
 | `entity_type_seed.csv` | category root를 entity type으로 매핑 | Term/Person/Event 외에 문화재, 지명, 문헌 같은 타입 필터를 만들기 위해 필요 |
 | `term_person_review_approved.csv` | 검수 완료된 Term-Person 수동 승인 연결 | 동명이인은 자동 연결이 위험하므로 승인된 `term_id`, `person_id`만 반영하기 위해 필요 |
-| `person_duplicate_review_approved.csv` | 검수 완료된 Person ID 병합 seed | 같은 인물이 여러 `person_id`로 나뉜 경우 canonical ID로 병합하기 위해 필요 |
+| `person_duplicate_review_approved.csv` | 검수 완료된 Person ID 병합 seed | 후보 검수 파일이 아니라, `term_person_review.csv`에서 동일인으로 확정한 Person ID를 canonical ID로 치환하기 위한 최종 seed |
 
 Seed 파일을 수정한 뒤에는 해당 seed를 읽는 전처리 스크립트를 다시 실행해야 한다.
 예를 들어 `term_person_review_approved.csv` 또는 `person_duplicate_review_approved.csv`를 수정하면 `make_graph_csv.py --save`를 다시 실행해야 하고,
@@ -72,6 +78,8 @@ LLM은 문맥을 그럴듯하게 추론할 수 있지만 원천 데이터의 한
 
 같은 이름과 한자를 가진 Person ID가 여러 개일 때는 `term_person_review.csv` 안의 `review_type`으로 검수 유형을 나눠서 본다.
 별도 `person_duplicate_review.csv` 후보 파일을 만들지 않는다.
+과거 보조 스크립트나 수동 실행으로 `staging/person_duplicate_review.csv`가 생겨도 공식 검수 대상은 아니다.
+검수는 `make_term_person_review.py --save`로 다시 만든 `staging/term_person_review.csv`에서 진행한다.
 
 - `TERM_PERSON`: 같은 이름을 가진 여러 Person 중 특정 Term이 어느 Person을 가리키는지 고르는 후보
 - `PERSON_DUPLICATE`: 같은 `term_id`, `name`, `term_hanja`, `term_desc_preview`에 서로 다른 `person_id`가 붙은 후보
@@ -79,7 +87,9 @@ LLM은 문맥을 그럴듯하게 추론할 수 있지만 원천 데이터의 한
 예를 들어 같은 `강로(姜㳣)` Term 설명에 `P000159`, `P000160`이 모두 붙으면 `PERSON_DUPLICATE`로 표시된다.
 이 경우에는 Term-Person 연결보다 Person ID 병합 여부를 먼저 검수한다.
 
-동일인이 확실하면 아래 seed에 수동으로 기록한다.
+동일인이 확실하면 검수 판단 근거는 `term_person_review.csv`의 `PERSON_DUPLICATE` 행에서 확인하고, graph 생성에 필요한 최종 canonical 치환값만 아래 seed에 수동으로 기록한다.
+즉 검수 후보는 한 파일(`term_person_review.csv`)이고, 병합 seed는 확정 결과를 재생성에 반영하기 위한 입력값이다.
+`term_person_review_approved.csv`에는 `PERSON_DUPLICATE` 결과를 쓰지 않는다.
 
 ```text
 etl/preprocessing/neo4j/seed/person_duplicate_review_approved.csv
@@ -129,7 +139,10 @@ etl/preprocessing/neo4j/staging/term_person_review.csv
 후보 생성 단계에서는 `person_hanja`와 `term_hanja`가 모두 있고 두 값이 같은 행만 남긴다.
 한자가 없는 후보나 한자가 서로 다른 후보는 검수 CSV에 포함하지 않는다.
 또한 Term 설명에 `재위 975-981년`처럼 강한 재위 연도 단서가 있으면 Person의 `birth_year`, `death_year`와 겹치는 후보만 남긴다.
-이때 원본의 빈 생몰년 셀을 임의로 채우지 않고, 필터 계산용 임시 값만 사용한다.
+이때 Term 설명이나 재위 연도에서 생몰년을 추론해 채우지 않는다.
+원천 Person 생몰년이 비어 있으면 `birth_year`, `death_year` 출력값은 빈 값으로 둔다.
+원천에 `14??`, `?`, `1745(1730)`처럼 부분/불확실 연도가 들어 있으면 임의로 고치거나 지우지 않고 그대로 표시한다.
+재위 연도는 후보를 줄이는 필터 계산에만 사용하고 최종 검수 CSV 컬럼에는 남기지 않는다.
 같은 `term_id`, `name`, `term_hanja`, 설명 그룹 안에 생몰년이 모두 있는 후보가 하나라도 있으면, 생몰년이 비어 있는 후보는 제외한다.
 그룹 안의 모든 후보가 생몰년이 비어 있으면 정보 부족 후보로 유지한다.
 이 필터를 거친 뒤 `name` 기준 distinct `person_id`가 하나뿐인 후보는 동명이인 검수 대상이 아니므로 `term_person_review.csv`에서 제외한다.
@@ -147,8 +160,8 @@ etl/preprocessing/neo4j/staging/term_person_review.csv
 | `person_id` | Person 식별자 | `people.csv`의 `person_id` 값이다. 승인 seed 또는 병합 seed에 사용한다. |
 | `person_name` | 한글 이름 문자열 | Person 이름에서 추출한 기본 이름이다. 보통 `name`과 같다. |
 | `person_hanja` | 한자 문자열 | Person의 한자 값이다. 생성 후보에서는 비어 있지 않고 `term_hanja`와 같은 행만 남긴다. |
-| `birth_year` | 연도 값, 또는 빈 값 | 원천 Person의 출생 연도이다. 스크립트가 빈 값을 임의로 채우지 않는다. |
-| `death_year` | 연도 값, 또는 빈 값 | 원천 Person의 사망 연도이다. 스크립트가 빈 값을 임의로 채우지 않는다. |
+| `birth_year` | 원천 연도 문자열, 또는 빈 값 | 원천 Person의 출생 연도이다. 원천이 비어 있으면 빈 값으로 두고, `14??` 같은 부분 연도는 그대로 표시한다. |
+| `death_year` | 원천 연도 문자열, 또는 빈 값 | 원천 Person의 사망 연도이다. 원천이 비어 있으면 빈 값으로 두고, `?` 같은 불확실 표기도 원천값이면 그대로 표시한다. |
 | `review_status` | 생성 직후 `PENDING` | staging 후보의 기본 상태이다. graph 반영 여부는 approved seed 파일의 `review_status`가 결정한다. |
 | `note` | 빈 값, 또는 검수 메모 | 생성 직후에는 빈 값이다. 보류/승인 판단 근거를 남길 때 사용한다. |
 
@@ -162,14 +175,24 @@ etl/preprocessing/neo4j/staging/term_person_review.csv
 - `term_hanja`, `person_hanja`: 둘 다 있으면 한자 일치 여부를 우선 확인
 - `term_desc_preview`: Term 설명이 해당 인물을 가리키는지 확인
 - `birth_year`, `death_year`: 설명의 시대와 생몰년이 맞는지 확인
-- `term_id`, `person_id`: 승인 결과를 기록하기 위한 식별자
+- `term_id`, `person_id`: `TERM_PERSON` 승인 또는 `PERSON_DUPLICATE` 병합 판단에 필요한 식별자
 
 한자가 다르면 연결하지 않는다.
 설명이나 생몰년으로도 같은 인물인지 판단할 수 없으면 승인하지 않는다.
 
 ## 4. 승인 seed 작성
 
-검수 후 맞는 연결만 아래 파일에 기록한다.
+`term_person_review.csv`에서 검수하더라도 승인 결과는 `review_type`에 따라 다른 seed에 기록한다.
+4컬럼짜리 `term_person_review_approved.csv`로는 `duplicate_person_id -> canonical_person_id` 병합을 표현할 수 없다.
+
+| `review_type` | 사람이 판단하는 내용 | 기록할 seed | 필요한 컬럼 |
+| --- | --- | --- | --- |
+| `TERM_PERSON` | 이 Term이 이 Person을 가리키는가 | `term_person_review_approved.csv` | `term_id`, `person_id`, `review_status`, `note` |
+| `PERSON_DUPLICATE` | 서로 다른 Person ID가 같은 인물인가 | `person_duplicate_review_approved.csv` | `name`, `hanja`, `duplicate_person_id`, `canonical_person_id`, `review_status`, `note` |
+
+### 4.1 Term-Person 연결 승인
+
+`TERM_PERSON` 검수 후 맞는 연결만 아래 파일에 기록한다.
 
 ```text
 etl/preprocessing/neo4j/seed/term_person_review_approved.csv
@@ -199,6 +222,28 @@ term_id,person_id,review_status,note
 | `person_id` | 승인할 Person 식별자 | `term_person_review.csv`의 `person_id`에서 가져온다. |
 | `review_status` | `APPROVED`, `AUTO_APPROVED` | 두 값만 graph 생성에 반영된다. |
 | `note` | 검수 메모 | 한자/설명/생몰년 등 승인 근거를 남긴다. |
+
+### 4.2 Person ID 동일인 병합 확정
+
+`PERSON_DUPLICATE` 검수 후 같은 인물이라고 확정한 경우만 아래 파일에 기록한다.
+이 seed는 Term-Person 연결 승인이 아니라, graph 생성 전에 Person ID를 canonical ID로 치환하기 위한 병합 결정이다.
+
+```text
+etl/preprocessing/neo4j/seed/person_duplicate_review_approved.csv
+```
+
+필수 컬럼:
+
+```csv
+name,hanja,duplicate_person_id,canonical_person_id,review_status,note
+```
+
+예시:
+
+```csv
+name,hanja,duplicate_person_id,canonical_person_id,review_status,note
+강로,姜㳣,P000160,P000159,APPROVED,동일인. P000159가 본관/부친/관계 정보가 더 풍부함
+```
 
 `person_duplicate_review_approved.csv` 컬럼 값:
 
