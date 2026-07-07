@@ -209,7 +209,7 @@ def evaluate_ragas_metrics(questions: list[dict], limit: int, debug_path: Path |
                 "user_input": question["query"],
                 "response": answer,
                 "retrieved_contexts": contexts,
-                "reference": ", ".join(question.get("expected_keywords") or []),
+                "reference": question.get("reference_answer") or ", ".join(question.get("expected_keywords") or []),
             }
         )
 
