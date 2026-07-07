@@ -352,6 +352,10 @@
           throw new Error(`${payload.error || "문제 생성에 실패했습니다."}${details.length ? ` (${details.join(" / ")})` : ""}`);
         }
 
+        if (payload.adjustment_message) {
+          alert(payload.adjustment_message);
+        }
+
         sessionId = payload.session_id;
         questions = payload.questions.map(toExamQuestion);
         answers = Array(questions.length).fill(null);
