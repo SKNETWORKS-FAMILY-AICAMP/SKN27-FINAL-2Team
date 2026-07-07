@@ -41,8 +41,16 @@ def request_json(path: str, api_key: str, params: dict[str, Any] | None = None, 
             "Accept": "application/json",
         },
     )
-    with urllib.request.urlopen(request, timeout=timeout) as response:
-        return json.loads(response.read().decode("utf-8"))
+    last_error: Exception | None = None
+    for attempt in range(1, 4):
+        try:
+            with urllib.request.urlopen(request, timeout=timeout) as response:
+                return json.loads(response.read().decode("utf-8"))
+        except (TimeoutError, urllib.error.URLError) as error:
+            last_error = error
+            print(f"retry {attempt}/3: {url} ({error})")
+            time.sleep(attempt)
+    raise last_error or RuntimeError(f"request failed: {url}")
 
 
 def extract_items(data: Any) -> list[dict[str, Any]]:
@@ -84,8 +92,12 @@ def collect_list(kind: str, api_key: str, page_size: int, limit: int, sleep: flo
     path = "/articles" if kind == "articles" else "/medias"
     id_key = "eid" if kind == "articles" else "mid"
     output_path = OUTPUT_DIR / f"{kind}_list.jsonl"
-    seen_ids: list[str] = []
-    page = 1
+    seen_ids = list(dict.fromkeys(str(row.get(id_key)) for row in read_jsonl(output_path) if row.get(id_key)))
+    if limit and len(seen_ids) >= limit:
+        return seen_ids[:limit]
+    page = (len(seen_ids) // page_size) + 1
+    if seen_ids:
+        print(f"{kind} list resume ids={len(seen_ids)} page={page}")
 
     while True:
         data = request_json(path, api_key, {"p": page, "ps": page_size}, timeout)
@@ -134,6 +146,7 @@ def main() -> None:
     parser.add_argument("--api-key", default=os.getenv("AKS_API_KEY"), help="OpenAPI key. 기본값: AKS_API_KEY")
     parser.add_argument("--kind", choices=("articles", "medias", "both"), default="articles")
     parser.add_argument("--details", action="store_true", help="목록 수집 후 상세 데이터도 수집")
+    parser.add_argument("--skip-list", action="store_true", help="기존 목록 JSONL만 사용")
     parser.add_argument("--page-size", type=int, default=100)
     parser.add_argument("--limit", type=int, default=0, help="0이면 끝까지 수집")
     parser.add_argument("--sleep", type=float, default=0.2)
@@ -145,11 +158,9 @@ def main() -> None:
 
     kinds = ("articles", "medias") if args.kind == "both" else (args.kind,)
     for kind in kinds:
-        id_key = "eid" if kind == "articles" else "mid"
-        list_path = OUTPUT_DIR / f"{kind}_list.jsonl"
-        existing_rows = read_jsonl(list_path)
-        ids = [str(row.get(id_key)) for row in existing_rows if row.get(id_key)]
-        if ids and not args.limit:
+        if args.skip_list:
+            id_key = "eid" if kind == "articles" else "mid"
+            ids = [str(row.get(id_key)) for row in read_jsonl(OUTPUT_DIR / f"{kind}_list.jsonl") if row.get(id_key)]
             print(f"{kind} list reuse={len(ids)}")
         else:
             ids = collect_list(kind, args.api_key, args.page_size, args.limit, args.sleep, args.timeout)
