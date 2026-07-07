@@ -85,6 +85,11 @@ def compact_history(history: list[dict[str, str]] | None) -> str:
     return "\n".join(lines)
 
 
+def prompt_context(sources: list[dict[str, Any]], history: list[dict[str, str]] | None) -> tuple[str, str]:
+    context = "\n\n".join(compact_source(source, index) for index, source in enumerate(sources, start=1))
+    return context or "검색 근거 없음", compact_history(history) or "이전 대화 없음"
+
+
 def build_user_prompt(
     question: str,
     sources: list[dict[str, Any]],
@@ -93,10 +98,7 @@ def build_user_prompt(
     history: list[dict[str, str]] | None = None,
     include_source_summary: bool = True,
 ) -> str:
-    context = "\n\n".join(compact_source(source, index) for index, source in enumerate(sources, start=1))
-    if not context:
-        context = "검색 근거 없음"
-    history_context = compact_history(history) or "이전 대화 없음"
+    context, history_context = prompt_context(sources, history)
 
     if style == "short":
         output_instruction = "출력 형식: 핵심 답만 1~2문장으로 짧게 답하세요. 제목, 표, 번호 섹션은 쓰지 마세요."
@@ -135,10 +137,7 @@ def build_structured_prompt(
     follow_up: bool,
     history: list[dict[str, str]] | None = None,
 ) -> str:
-    context = "\n\n".join(compact_source(source, index) for index, source in enumerate(sources, start=1))
-    if not context:
-        context = "검색 근거 없음"
-    history_context = compact_history(history) or "이전 대화 없음"
+    context, history_context = prompt_context(sources, history)
 
     mode = "follow_up_explanation" if follow_up else "textbook_note"
     return f"""질문:
@@ -155,11 +154,12 @@ def build_structured_prompt(
 문자열 값 안에서 중요한 키워드는 별도 Markdown 없이 원문 키워드만 쓰세요.
 한자나 한문 원문은 그대로 쓰지 말고, 현대 한국어 한글 표현으로 풀어 쓰세요.
 없는 내용은 만들지 말고 빈 배열로 처리하세요. 근거 부족 안내 문장은 쓰지 마세요.
-개념 정리 답변은 항상 3개 섹션, 각 섹션 2개 항목을 기본으로 작성하세요.
-섹션 heading은 "1. 정치와 제도", "2. 문화와 업적", "3. 시험 핵심 정리"처럼 번호와 제목을 함께 쓰세요.
-각 항목의 설명은 반드시 해당 섹션 제목의 범주와 맞아야 합니다.
-정치와 제도에는 통치, 왕권, 관제, 법, 군사, 영토 확장 내용을 넣고, 문화와 업적에는 불교, 예술, 건축, 편찬, 과학, 문화재 내용을 넣으세요.
-섹션 범주와 맞지 않는 근거는 억지로 넣지 말고 더 맞는 섹션으로 옮기거나 제외하세요.
+질문 의도에 맞게 2~4개 섹션을 직접 구성하세요.
+섹션 heading에는 번호와 질문에 맞는 제목을 함께 쓰세요.
+예: 관계 질문은 "1. 관계 개요", "2. 연결 근거", "3. 시험 포인트"처럼 구성하세요.
+예: 비교 질문은 "1. 공통점", "2. 차이점", "3. 시험 포인트"처럼 구성하세요.
+예: 개념 질문은 검색 근거에 맞는 주제별 제목으로 구성하세요.
+각 항목의 설명은 반드시 해당 섹션 제목과 직접 관련된 내용만 쓰세요.
 
 {{
   "answer_type": "{mode}",

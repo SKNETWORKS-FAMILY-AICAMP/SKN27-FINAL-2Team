@@ -65,6 +65,7 @@ Neo4j가 인물·사건 관계 탐색을 담당한다면, PostgreSQL은 실제 �
 | `document_chunks_source_type_idx` | B-tree | 자료 유형 필터 |
 | `document_chunks_metadata_gin_idx` | GIN JSONB | 메타데이터 필터 |
 | `document_chunks_text_trgm_idx` | GIN trigram | 키워드 검색 |
+| `document_chunks_title_trgm_idx` | GIN trigram | 제목 키워드 검색 |
 | `document_chunks_embedding_cosine_idx` | HNSW | 벡터 유사도 검색 |
 
 HNSW 인덱스는 다음 형태다.
@@ -77,6 +78,14 @@ WHERE embedding IS NOT NULL;
 ```
 
 이미지 자료는 `embedding IS NULL`이므로 HNSW 대상에서 제외된다.
+
+제목 검색도 `title ILIKE`, `title % query` 조건을 사용하므로 `title`에도 trigram GIN 인덱스를 둔다.
+
+```sql
+CREATE INDEX IF NOT EXISTS document_chunks_title_trgm_idx
+ON rag.document_chunks
+USING GIN (title gin_trgm_ops);
+```
 
 ---
 
@@ -120,4 +129,3 @@ WHERE embedding IS NOT NULL;
 ```
 
 이미지 요청은 임베딩을 생략하고 이미지 제목/메타데이터 기반으로 조회한다.
-

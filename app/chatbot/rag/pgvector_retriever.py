@@ -12,7 +12,7 @@ from dotenv import load_dotenv
 from openai import OpenAI
 from psycopg2.extras import RealDictCursor
 
-from .rag_prototype.retriever import expand_query_tokens, tokenize
+from .query_terms import expand_query_tokens, tokenize
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
@@ -109,6 +109,13 @@ ACHIEVEMENT_CONTEXT_TERMS = (
 ACHIEVEMENT_QUERY_TERMS = ("업적", "정책", "활동")
 HONORIFIC_SUFFIXES = ("대왕",)
 SINGLE_CHAR_FOCUS_TERMS = {"왕"}
+
+HISTORY_STOPWORDS = {
+    "조선", "고려", "신라", "백제", "고구려", "가야", "발해", 
+    "전기", "후기", "중기", "초기", "말기", "시대", "국가", "나라", "역사", "한국", 
+    "인물", "사건", "조직", "단체", "유물", "유적", "정리", "요약", "설명", "개념",
+    "왕", "대왕"
+}
 
 
 def normalize_query_spacing(question: str) -> str:
@@ -476,48 +483,37 @@ class PgVectorHybridRetriever:
             GENERIC_OVERVIEW_CONTEXT_TERMS if generic_overview_query else (),
         )
         keyword_filter = focus_terms[0] if focus_terms else question
-        embedding_question = keyword_question if generic_overview_query else question
+        embedding_question = question  # 임베딩용 벡터 쿼리는 순수 원본 질문 사용하여 희석 방지
         embedding = vector_literal(embed_query(embedding_question, self.model, self.dimensions))
         overview_query = any(term in question for term in OVERVIEW_TERMS)
         use_reranker = os.getenv("RAG_RERANKER_ENABLED", "").lower() in {"1", "true", "yes"}
         final_limit = max(top_k * 5, top_k) if generic_overview_query or use_reranker else top_k
 
+        # 불용어(Stopwords)를 걸러낸 정밀한 focus_terms 추출
+        filtered_focus_terms = tuple(term for term in focus_terms if term not in HISTORY_STOPWORDS)
+
         def build_where(relaxed: bool = False) -> tuple[str, list[Any]]:
             where_parts = ["embedding IS NOT NULL"]
             params: list[Any] = []
-            if not generic_overview_query or not focus_terms:
+            if not generic_overview_query or not filtered_focus_terms:
                 return " AND ".join(where_parts), params
 
             term_sql = "(title ILIKE %s OR chunk_text ILIKE %s)"
-            scope_term_sql = "title ILIKE %s"
-            honorific_alias_query = (
-                len(focus_terms) == 2
-                and any(
-                    focus_terms[0].endswith(suffix)
-                    and focus_terms[1] == focus_terms[0][: -len(suffix)]
-                    for suffix in HONORIFIC_SUFFIXES
-                )
-            )
-            if len(focus_terms) > 1 and not honorific_alias_query and not relaxed:
-                where_parts.append(f"({scope_term_sql} AND (" + " OR ".join(term_sql for _ in focus_terms[1:]) + "))")
-                params.append(f"%{focus_terms[0]}%")
-                for term in focus_terms[1:]:
-                    params.extend([f"%{term}%", f"%{term}%"])
-            else:
-                where_parts.append("(" + " OR ".join(term_sql for _ in focus_terms) + ")")
-                for term in focus_terms:
-                    params.extend([f"%{term}%", f"%{term}%"])
+            # 첫 단어 제목 한정 조건 등 과도한 필터를 완화하여 OR 매칭을 통해 Recall 확보
+            where_parts.append("(" + " OR ".join(term_sql for _ in filtered_focus_terms) + ")")
+            for term in filtered_focus_terms:
+                params.extend([f"%{term}%", f"%{term}%"])
             return " AND ".join(where_parts), params
 
         where_sql, params = build_where()
 
         focus_match_sql = "FALSE"
         focus_match_params: list[Any] = []
-        if generic_overview_query and focus_terms:
+        if generic_overview_query and filtered_focus_terms:
             focus_match_sql = " OR ".join(
-                "(title ILIKE %s OR chunk_text ILIKE %s)" for _ in focus_terms
+                "(title ILIKE %s OR chunk_text ILIKE %s)" for _ in filtered_focus_terms
             )
-            for term in focus_terms:
+            for term in filtered_focus_terms:
                 like_term = f"%{term}%"
                 focus_match_params.extend([like_term, like_term])
 
@@ -542,10 +538,10 @@ class PgVectorHybridRetriever:
                 source_type,
                 0.0::float AS vector_score,
                 (
-                    similarity(title, %s) * 3.0
-                    + similarity(chunk_text, %s)
-                    + CASE WHEN title ILIKE %s THEN 2.0 ELSE 0.0 END
-                    + CASE WHEN chunk_text ILIKE %s THEN 0.8 ELSE 0.0 END
+                    similarity(title, %s) * 1.5
+                    + similarity(chunk_text, %s) * 0.5
+                    + CASE WHEN title ILIKE %s THEN 0.5 ELSE 0.0 END
+                    + CASE WHEN chunk_text ILIKE %s THEN 0.2 ELSE 0.0 END
                 ) AS keyword_score,
                 CASE WHEN %s AND ({focus_match_sql}) THEN 1 ELSE 0 END AS focus_hit
             FROM rag.document_chunks
@@ -581,8 +577,8 @@ class PgVectorHybridRetriever:
                 vector_score,
                 keyword_score,
                 (
-                    vector_score * 0.55
-                    + keyword_score * 0.45
+                    vector_score * 0.65
+                    + keyword_score * 0.35
                     + CASE
                         WHEN %s AND source_type = 'image_material' THEN 1.2
                         WHEN %s AND source_type <> 'image_material' THEN -1.0

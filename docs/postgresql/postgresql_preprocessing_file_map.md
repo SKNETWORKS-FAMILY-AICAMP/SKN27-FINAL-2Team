@@ -27,7 +27,7 @@ etl/raw_data
 | `load_history_timeline_to_postgres.py` | 연표 데이터 PostgreSQL 적재 |
 | `rag_metadata.py` | 공통 메타데이터, 시대, 제목 정규화 함수 |
 | `embedding/embed_chunks_to_pgvector.py` | 청크 upsert, 임베딩, 인덱스 생성 |
-| `embedding/evaluate_golden_questions.py` | golden question 기반 검색 품질 평가 |
+| `embedding/service_eval_results*.csv` | 운영 RAG 평가 결과 |
 
 ---
 
@@ -85,4 +85,3 @@ SELECT COUNT(*) AS image_chunks
 FROM rag.document_chunks
 WHERE source_type = 'image_material';
 ```
-

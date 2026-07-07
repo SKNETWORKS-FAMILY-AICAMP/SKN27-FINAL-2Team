@@ -127,7 +127,6 @@ seed는 자동 생성 결과가 아니라 사람이 관리하는 입력 규칙�
 | `keyword_era_seed.csv` | 120 | 시험 빈출 키워드와 표준 시대의 매핑. `test/CJ/test_ML/ml_keyword_era_overrides.json`에서 변환 후 고조선/초기 국가 키워드 20건 확장 |
 | `reign_seed.csv` | 8 | 왕대/연호 이름과 연도 범위. 연도 파서 보조용. 같은 왕 이름이 여러 시대에 있으면 자동 계산에서 제외 |
 | `term_person_review_approved.csv` | 0 | 사람이 승인한 Term-Person 수동 연결 목록. 승인 행은 `term_refers_to_person.csv`에 `match_type=MANUAL`로 합류 |
-| `person_duplicate_review_approved.csv` | 0 또는 없음 | 사람이 확정한 Person ID 동일인 병합 목록. `duplicate_person_id`를 `canonical_person_id`로 치환하는 데 사용하며, Term-Person 연결 승인 파일이 아님 |
 
 seed가 필요한 이유:
 
@@ -290,8 +289,8 @@ flowchart LR
     Term -->|"HAS_ENTITY_TYPE · 실체 유형 (20,662)"| EntityType
     Term -->|"HAS_CATEGORY · 카테고리 (61,697)"| Category
     Term -->|"IN_PERIOD · 원본 시대 (65,358)"| Period
-    Term -->|"REFERS_TO · 가리키는 인물 (2,243)"| Person
-    Term -->|"MENTIONS_PERSON · 설명문 언급 (3,293)"| Person
+    Term -->|"REFERS_TO · 가리키는 인물 (291)"| Person
+    Term -->|"MENTIONS_PERSON · 설명문 언급 (2,758)"| Person
     Term -->|"REFERS_TO · 가리키는 사건 (13)"| Event
     Term -->|"ABOUT_COUNTRY (1,620)"| Country
     Term -->|"ABOUT_REGION (82)"| Region
@@ -341,8 +340,8 @@ flowchart LR
 | `term_about_region.csv` | `ABOUT_REGION` | 82 | `Term -> Region` | 용어의 category가 region crosswalk에 걸리면 연결 |
 | `term_about_economic_domain.csv` | `ABOUT_ECONOMIC_DOMAIN` | 2,894 | `Term -> EconomicDomain` | 용어의 category가 경제 분야 crosswalk에 걸리면 연결 |
 | `term_about_taxonomy_facet.csv` | `ABOUT_TAXONOMY_FACET` | 22,962 | `Term -> TaxonomyFacet` | 용어의 category가 중간 taxonomy facet에 속하면 연결 |
-| `term_refers_to_person.csv` | `REFERS_TO` | 2,243 | `Term -> Person` | Term 연도와 Person 생몰년이 숫자로 완전히 같고 해당 Term에서 그런 후보가 1명뿐일 때 자동 연결. 승인 seed는 `MANUAL`로 합류 |
-| `term_mentions_person.csv` | `MENTIONS_PERSON` | 3,293 | `Term -> Person` | 용어 설명문에서 인물명이 언급된 경우 연결. `REFERS_TO`보다 약한 보조 맥락 관계 |
+| `term_refers_to_person.csv` | `REFERS_TO` | 291 | `Term -> Person` | Term 연도와 Person 생몰년이 숫자로 완전히 같고, Term 설명에서 Person 관계망 단서가 확인되며, 해당 Term에서 그런 후보가 1명뿐일 때 자동 연결. 승인 seed는 `MANUAL`로 합류 |
+| `term_mentions_person.csv` | `MENTIONS_PERSON` | 2,758 | `Term -> Person` | 용어 설명문에서 인물명이 언급된 경우 연결. `REFERS_TO`보다 약한 보조 맥락 관계 |
 | `term_refers_to_event.csv` | `REFERS_TO` | 13 | `Term -> Event` | 용어명과 사건명이 양쪽에서 유일하게 일치하는 경우만 연결 |
 | `event_has_source_category.csv` | `HAS_EVENT_CATEGORY` | 713 | `Event -> SourceEventCategory` | 이벤트 원천 분류를 원형 그대로 보존 |
 | `event_has_canonical_category.csv` | `HAS_CATEGORY` | 692 | `Event -> CanonicalCategory` | `taxonomy_crosswalk.csv`에서 표준 카테고리 매핑이 있는 이벤트만 연결 |
@@ -826,7 +825,7 @@ RETURN DISTINCT e
 
 ### 15.7 Term-Person 수동 검수 흐름
 
-자동 `Term - REFERS_TO - Person`은 Term 연도와 Person 생몰년이 숫자로 완전히 같고, 해당 Term에서 그런 후보가 1명뿐일 때만 만든다.
+자동 `Term - REFERS_TO - Person`은 Term 연도와 Person 생몰년이 숫자로 완전히 같고, Term 설명에서 Person 관계망 단서가 확인되며, 해당 Term에서 그런 후보가 1명뿐일 때만 만든다.
 
 검수가 필요한 경우 `make_term_person_review.py`를 수동 실행한다.
 
@@ -838,8 +837,9 @@ RETURN DISTINCT e
 검수 후보 파일은 이 파일 하나이며, `review_type`으로 `TERM_PERSON`과 `PERSON_DUPLICATE`를 구분한다.
 별도 `staging/person_duplicate_review.csv`는 공식 검수 후보 파일로 사용하지 않는다.
 이 staging 파일이 과거 실행 결과로 남아 있어도 graph 생성은 읽지 않으며, 남아 있으면 삭제해도 된다.
-Term의 `start_year`, `end_year`와 Person의 `birth_year`, `death_year`가 숫자로 완전히 같은 후보가 해당 Term에서 1명뿐이면 자동 `REFERS_TO` 관계로 붙이고, 같은 `term_id`의 다른 후보도 검토 대상에서 제외한다.
-정확히 일치하는 후보가 없거나 2명 이상이면 자동 연결하지 않고 이름/한자 후보를 `term_person_review.csv`에 `PENDING` 검토 후보로 남긴다.
+이름과 한자가 같아도 그것만으로는 같은 인물로 보지 않는다.
+Person 관계망의 관련 인물 이름/한자 단서가 Term 설명에 등장하고, Term 시대 범위와 Person 생몰년이 명백히 충돌하지 않는 후보만 `term_person_review.csv`에 `PENDING` 검토 후보로 남긴다.
+Term의 `start_year`, `end_year`와 Person의 `birth_year`, `death_year`가 숫자로 완전히 같은 후보가 해당 Term에서 1명뿐이어도, Term 설명에서 Person 관계망 단서가 함께 확인될 때만 자동 `REFERS_TO` 관계로 붙인다.
 `birth_year`, `death_year`는 원천 Person 데이터의 연도 문자열을 그대로 표시한다.
 원천이 비어 있으면 빈 값으로 두고, `14??`, `?`, `1745(1730)`처럼 부분/불확실 연도도 원천값이면 그대로 둔다.
 Term 설명의 재위 연도에서 생몰년을 추론해 채우지 않는다.
@@ -849,9 +849,14 @@ Term이 특정 Person을 가리킨다고 사람이 확정한 경우에는 `seed/
 runner를 다시 실행하면 승인 행은 `term_refers_to_person.csv`에 `match_type=MANUAL`로 합류한다.
 staging 파일의 `review_status`와 `note`를 수정해도 graph 반영 기준이 되지 않는다. 검수 결과는 seed 파일에 기록한다.
 
-`PERSON_DUPLICATE`는 "서로 다른 Person ID가 같은 인물이다"라는 동일인 병합 확정이다.
-4컬럼짜리 `term_person_review_approved.csv`로는 `duplicate_person_id -> canonical_person_id` 치환을 표현할 수 없으므로, 동일인으로 확정한 경우에만 `seed/person_duplicate_review_approved.csv`에 `duplicate_person_id`, `canonical_person_id`를 포함해 기록한다.
-이 seed는 graph 생성 단계에서 Person ID를 canonical ID로 치환하는 데 쓰이며, 확정된 동일인 병합이 없으면 없거나 비어 있을 수 있다.
+`PERSON_DUPLICATE`는 같은 Term 설명에 여러 Person 후보가 붙어 추가 선택이 필요하다는 표시이다.
+공식 graph 생성 흐름에서는 Person ID 병합 seed를 사용하지 않는다.
+따라서 `person_duplicate_review_approved.csv`를 만들거나 수정하지 않고, Term이 특정 Person을 가리킨다고 확정한 경우만 `term_person_review_approved.csv`에 기록한다.
+`PERSON_DUPLICATE`에서 설명을 붙일 Person을 결정했을 때도 seed 작성 형식은 동일하다.
+선택한 후보의 `term_id`, `person_id`, `APPROVED`, 판단 근거 `note`만 `term_person_review_approved.csv`에 1행으로 쓴다.
+선택하지 않은 Person 후보는 쓰지 않는다.
+`TERM_PERSON`인데 `person_id`만 다른 후보가 보이는 경우도 Person 병합으로 처리하지 않고, 해당 `term_id`가 가리키는 Person으로 확정한 `person_id`만 같은 형식으로 기록한다.
+애매하거나 틀린 후보는 seed에 남기지 않는다.
 
 ### 15.8 Import 변경
 
