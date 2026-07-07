@@ -82,6 +82,11 @@ class StartQuestionsResponse(serializers.Serializer):
     session_id = serializers.IntegerField(allow_null=True)
     total_count = serializers.IntegerField()
     is_saved = serializers.BooleanField()
+    adjustment_message = serializers.CharField(required=False, allow_blank=True)
+    adjustment_messages = serializers.ListField(
+        child=serializers.CharField(),
+        required=False,
+    )
     questions = QuestionData(many=True)
 
 
