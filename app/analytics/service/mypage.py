@@ -4,6 +4,7 @@ from django.db.models import Count, Q
 
 from analytics.service.analytics import (
     calculate_percent_rate,
+    get_classification_display_label,
     get_diagnosis_improvement_summary,
     get_completed_records,
     get_completed_sessions,
@@ -195,12 +196,28 @@ def build_weakness_summary(user, today=None):
         .filter(wrong__gt=0)
     )
 
-    items = []
+    item_map = {}
     for row in rows:
-        total = row["total"] or 0
-        wrong = row["wrong"] or 0
+        era = get_classification_display_label("era", row["era"])
+        topic = get_classification_display_label("topic", row["topic"])
+        key = (era, topic)
+        if key not in item_map:
+            item_map[key] = {
+                "era": era,
+                "topic": topic,
+                "total": 0,
+                "wrong": 0,
+            }
 
-        label_parts = [row["era"], row["topic"]]
+        item_map[key]["total"] += row["total"] or 0
+        item_map[key]["wrong"] += row["wrong"] or 0
+
+    items = []
+    for item in item_map.values():
+        total = item["total"] or 0
+        wrong = item["wrong"] or 0
+
+        label_parts = [item["era"], item["topic"]]
         valid_labels = [label for label in label_parts if label]
         label = unclassified_label
         if valid_labels:

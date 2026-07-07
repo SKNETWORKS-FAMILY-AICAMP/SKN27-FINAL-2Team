@@ -1,5 +1,6 @@
 from django.db.models import Count
 
+from analytics.service.classification import normalize_classification_value
 from question.models import Questions
 
 
@@ -20,26 +21,42 @@ def get_predicted_targets(user_id=None):
     if not rows:
         return []
 
-    max_count = max(row["question_count"] or 0 for row in rows)
-    predicted_targets = []
+    target_map = {}
     for row in rows:
-        era = row["era"]
-        topic = row["topic"]
+        era = normalize_classification_value("era", row["era"])
+        topic = normalize_classification_value("topic", row["topic"])
         q_type = row["question_type"]
         question_count = row["question_count"] or 0
-        if era and topic and q_type and max_count:
-            label = " · ".join([era, topic, q_type])
-            prediction_score = round(question_count / max_count, 4)
-            predicted_targets.append(
-                {
-                    "classification": "복합",
-                    "label": label,
-                    "era": era,
-                    "topic": topic,
-                    "qType": q_type,
-                    "predictionScore": prediction_score,
-                    "reason": f"문제은행에서 {label} 조합의 출제 비중이 높습니다.",
-                }
-            )
+        if era and topic and q_type and question_count:
+            key = (era, topic, q_type)
+            target_map[key] = target_map.get(key, 0) + question_count
 
-    return predicted_targets
+    if not target_map:
+        return []
+
+    max_count = max(target_map.values())
+    predicted_targets = []
+    for (era, topic, q_type), question_count in target_map.items():
+        label = " · ".join([era, topic, q_type])
+        prediction_score = round(question_count / max_count, 4)
+        predicted_targets.append(
+            {
+                "classification": "복합",
+                "label": label,
+                "era": era,
+                "topic": topic,
+                "qType": q_type,
+                "predictionScore": prediction_score,
+                "reason": f"문제은행에서 {label} 조합의 출제 비중이 높습니다.",
+            }
+        )
+
+    return sorted(
+        predicted_targets,
+        key=lambda item: (
+            -item["predictionScore"],
+            item["era"],
+            item["topic"],
+            item["qType"],
+        ),
+    )
