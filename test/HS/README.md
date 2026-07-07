@@ -1,17 +1,6 @@
-# HS RAG 프로토타입
+# HS RAG 실행 확인
 
-이 폴더는 챗봇 RAG를 실제 앱에 붙이기 전에 검증하는 개인 작업 공간입니다.
-
-현재 목표:
-
-```text
-개념 질문
-  ↓
-하이브리드 RAG 검색
-  ↓
-첫 질문: 교재 요약 노트형 답변
-이후 질문: 설명형 답변
-```
+이 폴더는 운영 RAG를 로컬에서 확인하는 실행 스크립트만 둡니다.
 
 ## 실행
 
@@ -21,53 +10,30 @@ DB 인프라를 먼저 올릴 때는 프로젝트 루트에서 실행합니다.
 docker compose -f storage\docker-compose.yml up -d
 ```
 
-```powershell
-.\.venv\Scripts\python.exe test\HS\run_concept_chat.py "조선 전기 정치 정리해줘"
-```
-
-이후 대화처럼 설명형 답변을 확인하려면:
-
-```powershell
-.\.venv\Scripts\python.exe test\HS\run_concept_chat.py "6조 직계제가 뭐야?" --follow-up
-```
-
 ## 임베딩 적재
 
-임베딩 ETL 파일은 `etl/history/embedding` 아래로 이동했습니다.
+임베딩 ETL 파일은 `etl/preprocessing/history/embedding` 아래에 있습니다.
 
 처음 테스트:
 
 ```powershell
-.\.venv\Scripts\python.exe etl\history\embedding\embed_chunks_to_pgvector.py --limit 10
+.\.venv\Scripts\python.exe etl\preprocessing\history\embedding\embed_chunks_to_pgvector.py --limit 10
 ```
 
 전체 임베딩:
 
 ```powershell
-.\.venv\Scripts\python.exe etl\history\embedding\embed_chunks_to_pgvector.py --limit 40000 --batch-size 10 --sleep 2 --create-index
+.\.venv\Scripts\python.exe etl\preprocessing\history\embedding\embed_chunks_to_pgvector.py --limit 40000 --batch-size 10 --sleep 2 --create-index
 ```
 
 OpenAI rate limit이 발생하면 스크립트가 자동으로 기다린 뒤 배치 크기를 줄여 이어서 실행합니다. 중간에 중단되어도 다시 실행하면 `embedding IS NULL`인 chunk부터 이어서 처리합니다.
 
 ## 검색 품질평가
 
-골든 질문 세트로 JSONL 기반 retriever의 검색 품질을 평가합니다.
+운영 RAG 평가는 PostgreSQL 기반 서비스 평가 스크립트를 사용합니다.
 
 ```powershell
-.\.venv\Scripts\python.exe etl\history\embedding\evaluate_golden_questions.py --top-k 5
-```
-
-결과 파일:
-
-```text
-etl/history/embedding/eval_results.csv
-etl/history/embedding/eval_results.json
-```
-
-빠르게 일부만 볼 때:
-
-```powershell
-.\.venv\Scripts\python.exe etl\history\embedding\evaluate_golden_questions.py --top-k 5 --limit 10
+.\.venv\Scripts\python.exe test\HS\evaluate_service_metrics.py --ragas --ragas-limit 20
 ```
 
 이미지/사진 조회 질문은 `image_material`만 후보로 사용하고, 질문 핵심어 또는 동의어가 이미지 제목에 들어간 자료만 반환합니다.
@@ -128,27 +94,20 @@ ollama serve
 
 전처리 결과 폴더를 바꾸고 싶으면 `--processed-dir` 옵션을 사용합니다.
 
-```powershell
-.\.venv\Scripts\python.exe test\HS\run_concept_chat.py "전시과 설명해줘" --processed-dir storage\postgre\processed
-```
-
-운영 RAG 모듈은 `app/chatbot/rag`에 있고, 이 폴더에는 실행 확인용 스크립트만 남깁니다. 검색 대상 경로는 `app/chatbot/rag/rag_prototype/config.py`의 `RagPaths`에서 관리합니다.
+운영 RAG 모듈은 `app/chatbot/rag`에 있고, 이 폴더에는 실행 확인용 스크립트만 남깁니다.
 
 ## 구성
 
 ```text
 test/HS/
-  run_concept_chat.py
   run_pgvector_rag.py
+  evaluate_service_metrics.py
+  measure_rag_stage_latency.py
 
 app/chatbot/rag/
   llm_answer_generator.py
   pgvector_retriever.py
-  rag_prototype/
-    config.py
-    retriever.py
-    concept_chat.py
-    prompts.py
+  query_terms.py
 ```
 
 ## 다음 단계

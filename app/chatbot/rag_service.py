@@ -157,7 +157,19 @@ def should_use_graph_context(question: str, intent: str) -> bool:
         return False
     if any(term in question for term in RELATION_QUERY_TERMS):
         return True
-    return any(term in question for term in RELATION_JOIN_TERMS) and len(overview_focus_terms(question)) >= 2
+    if any(term in question for term in RELATION_JOIN_TERMS) and len(overview_focus_terms(question)) >= 2:
+        return True
+    
+    # 인물/왕 또는 대표 역사 개념/제도 질문에 대해 Graph Context 활성화하여 Neo4j 연관 키워드 확보
+    focus_terms = overview_focus_terms(question)
+    if focus_terms:
+        person_patterns = ("대왕", "왕", "태조", "태종", "세종", "세조", "성종", "광해", "영조", "정조", "고종", "순종", "이성계", "왕건", "궁예", "견훤", "김유신", "을지문덕", "장보고")
+        if any(p in question for p in person_patterns):
+            return True
+        if intent == "concept":
+            return True
+            
+    return False
 
 
 def normalize_history(history: list[dict[str, Any]] | None, max_turns: int = 5) -> list[dict[str, str]]:

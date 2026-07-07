@@ -741,6 +741,9 @@
     submitButton.addEventListener("click", async () => {
       if (isTimeOver) return;
       answers[currentIndex] = answers[currentIndex] ?? null;
+      if (IS_DIAGNOSTIC && answers.some((answer) => answer === null || answer === undefined)) {
+        if (!confirm("풀지 않은 문제가 있는데 제출하시겠습니까?")) return;
+      }
       numberButtons[currentIndex].classList.add("answered");
       await submitExam();
     });

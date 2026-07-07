@@ -1292,7 +1292,7 @@ def question_save_note(request, session_id):
         session = SolveSessions.objects.get(
             session_id=session_id,
             user_id=user_id,
-            session_type=PRACTICE_SESSION_TYPE,
+            session_type__in=[PRACTICE_SESSION_TYPE, "diagnostic"],
         )
     except SolveSessions.DoesNotExist:
         return Response(
