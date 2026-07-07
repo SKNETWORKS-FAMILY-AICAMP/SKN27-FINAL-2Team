@@ -576,32 +576,9 @@
       renderPlannerPlanItems(getPlansByDateKey(selectedPlannerKey), "오늘 표시할 일정 없음");
     };
 
-    const hasInProgressDiagnosisSession = async () => {
-      const response = await fetch("/diagnosis/api/sessions/in-progress/", {
-        credentials: "same-origin",
-      });
-      if (!response.ok) {
-        return false;
-      }
-
-      const payload = await response.json();
-      return (payload.sessions || []).length > 0;
-    };
-
     const startWeeklyReviewBlock = async (button) => {
       button.disabled = true;
       try {
-        const hasInProgress = await hasInProgressDiagnosisSession();
-        if (hasInProgress) {
-          const shouldCreateNew = confirm(
-            "풀다 만 진단평가가 있습니다. 새 주간평가를 시작하면 기존 진행 기록은 삭제됩니다. 계속하시겠습니까?"
-          );
-          if (!shouldCreateNew) {
-            button.disabled = false;
-            return;
-          }
-        }
-
         const response = await fetch("/diagnosis/api/start/", {
           method: "POST",
           credentials: "same-origin",
@@ -622,7 +599,6 @@
         }
 
         payload.startedAt = Date.now();
-        localStorage.removeItem("diagnosisInProgress");
         sessionStorage.setItem("diagnosisSession", JSON.stringify(payload));
         window.location.href = "/diagnosis/exam/";
       } catch (error) {
