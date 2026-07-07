@@ -1,7 +1,7 @@
 """
 Term-Person 동명이인 수동 검수 후보 CSV를 만든다.
 
-이 스크립트는 runner 6단계에서 검수 후보를 재생성한다.
+이 스크립트는 graph CSV 생성 이후 필요할 때 단독 실행한다.
 승인 결과는 seed/term_person_review_approved.csv에 남긴다.
 """
 

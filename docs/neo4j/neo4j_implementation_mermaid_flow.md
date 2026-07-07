@@ -5,7 +5,7 @@
 포함 범위:
 
 - raw CSV 입력
-- 전처리 runner와 6개 스크립트
+- 전처리 runner와 기본 실행 스크립트 5개
 - seed CSV 15개
 - normalized CSV 4개
 - dictionary CSV 10개
@@ -30,7 +30,8 @@ flowchart TB
     base_dict["make_base_dictionaries.py<br/>1차 사전 생성"]
     mapping["make_mapping_tables.py<br/>mapping / staging 생성"]
     graph_csv["make_graph_csv.py<br/>Neo4j import CSV 생성"]
-    term_person_review["make_term_person_review.py<br/>Term-Person 검수 후보 생성"]
+    theme_era["make_theme_era_csv.py<br/>Theme/Era/EntityType 생성"]
+    term_person_review["make_term_person_review.py<br/>Term-Person 검수 후보 생성<br/>필요 시 단독 실행"]
     import_dir["storage/neo4j/neo4j_import<br/>최종 import CSV"]
     schema_runner["storage/neo4j/load_schema.py<br/>Cypher 실행"]
     neo4j["Neo4j Graph DB"]
@@ -39,7 +40,7 @@ flowchart TB
     runner --> base_dict
     runner --> mapping
     runner --> graph_csv
-    runner --> term_person_review
+    runner --> theme_era
 
     raw --> normalize
     normalize --> base_dict
@@ -49,7 +50,9 @@ flowchart TB
     base_dict --> graph_csv
     mapping --> graph_csv
     graph_csv --> import_dir
-    import_dir --> term_person_review
+    graph_csv --> theme_era
+    theme_era --> import_dir
+    import_dir -.-> term_person_review
     import_dir --> schema_runner
     schema_runner --> neo4j
 ```

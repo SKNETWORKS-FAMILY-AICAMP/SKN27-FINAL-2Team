@@ -55,9 +55,9 @@ runner 실행 순서:
 | 3 | `scripts/make_mapping_tables.py` | `dictionary/`, `mapping/`, `staging/` | 카테고리/이벤트/국가/지역/경제/중간 facet 매핑 생성 |
 | 4 | `scripts/make_graph_csv.py` | `storage/neo4j/neo4j_import/nodes/`, `storage/neo4j/neo4j_import/relations/` | Neo4j import용 최종 CSV 생성 |
 | 5 | `scripts/make_theme_era_csv.py` | `storage/neo4j/neo4j_import/nodes/`, `storage/neo4j/neo4j_import/relations/` | Theme/Era/EntityType 상위 레이어 노드/관계 CSV 생성 |
-| 6 | `scripts/make_term_person_review.py` | `staging/term_person_review.csv` | graph CSV 기준 Term-Person 수동 검수 후보 생성 |
 
 `make_graph_csv.py`를 단독 실행하면 기본 출력은 `etl/preprocessing/neo4j/graph/nodes/`, `etl/preprocessing/neo4j/graph/relations/`다. 다만 runner의 graph 생성 단계는 `--nodes-dir`, `--relations-dir`를 넘겨 `storage/neo4j/neo4j_import/` 아래로 바로 저장한다.
+`make_term_person_review.py`는 기본 runner에 포함하지 않는다. 이 스크립트는 graph CSV 생성 이후 Term-Person 수동 검수 후보가 필요할 때 단독 실행한다.
 
 노드/관계 설계 판단의 상세 근거는 `docs/neo4j/neo4j_design_decisions_detail.md`에 둔다.
 이 문서는 구현 순서를 설명하고, 상세 설계 판단 문서는 각 노드와 관계가 왜 필요한지, 없으면 어떤 문제가 생기는지, 어떤 대안을 제외했는지 설명한다.
@@ -787,10 +787,10 @@ Tavily 같은 Web RAG 도구를 붙일 경우, 그래프에서 관련 `SourceUrl
 자동 `Term - REFERS_TO - Person`은 이름/한자와 생몰년이 모두 맞는 유일 후보를 우선 연결한다. Term 설명에서 Person 관계망 단서가 확인되는 기존 후보와 수동 승인 seed의 `MANUAL` 후보도 함께 합류한다.
 
 Term-Person 검수의 상세 설계 판단은 `docs/neo4j/neo4j_design_decisions_detail.md`와 `etl/preprocessing/neo4j/docs/term_person_review_workflow.md`로 합쳤다.
-이 문서에는 runner 실행 기준과 graph 반영 규칙만 남긴다.
+이 문서에는 graph 반영 규칙과 별도 후보 생성 명령만 남긴다.
 
-runner는 마지막 6단계에서 `make_term_person_review.py`를 실행해 `staging/term_person_review.csv`를 재생성한다.
-검수 후보만 다시 만들고 싶을 때는 아래 명령을 단독 실행해도 된다.
+검수 후보는 기본 runner가 만들지 않는다.
+후보가 필요할 때는 graph CSV 생성 후 아래 명령을 단독 실행한다.
 
 ```powershell
 .\.venv\Scripts\python.exe etl/preprocessing/neo4j/scripts/make_term_person_review.py --save

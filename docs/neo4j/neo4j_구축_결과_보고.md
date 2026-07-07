@@ -25,7 +25,8 @@
 
 ### 2.1 파이프라인 구조
 
-전체 전처리는 시작 파일 하나(`etl/preprocessing/neo4j/run_neo4j_preprocessing.py`)로 실행되며, 6단계 스크립트가 순서대로 돌아간다.
+전체 전처리는 시작 파일 하나(`etl/preprocessing/neo4j/run_neo4j_preprocessing.py`)로 실행되며, 5단계 스크립트가 순서대로 돌아간다.
+Term-Person 수동 검수 후보는 graph 생성 필수 단계가 아니므로 기본 runner에 포함하지 않고, 필요할 때 `make_term_person_review.py --save`로 별도 생성한다.
 
 ```
 raw CSV → normalized → dictionary → mapping/staging → Neo4j import CSV → Cypher 적재

@@ -38,7 +38,9 @@ raw_data
 | 3 | `scripts/make_mapping_tables.py` | 사전 사이의 crosswalk와 기본 관계 staging 생성 |
 | 4 | `scripts/make_graph_csv.py` | Neo4j import용 최종 node/relation CSV 생성 |
 | 5 | `scripts/make_theme_era_csv.py` | Theme/Era/EntityType 상위 레이어 node/relation CSV 생성 |
-| 6 | `scripts/make_term_person_review.py` | graph CSV 기준 Term-Person 수동 검수 후보 생성 |
+
+`scripts/make_term_person_review.py`는 기본 runner에 포함하지 않는다.
+Term-Person 수동 검수 후보가 필요할 때 graph CSV 생성 후 단독 실행한다.
 
 ---
 
@@ -133,7 +135,7 @@ Term 설명의 재위 연도는 후보 필터링에만 쓰고 생몰년 컬럼�
 | `make_graph_csv.py` | `neo4j/scripts/` | 최종 Neo4j node/relation CSV 생성 |
 | `make_theme_era_csv.py` | `neo4j/scripts/` | graph CSV와 seed를 읽어 Theme/Era/EntityType 상위 레이어 CSV 생성 |
 | `make_term_era_candidates.py` | `neo4j/scripts/` | 고조선/초기 국가 시대 후보 용어를 이름/설명문에서 추출해 검수 시트 생성. runner 미포함, 수동 실행 |
-| `make_term_person_review.py` | `neo4j/scripts/` | 이름/한자 1차 후보 중 Term 설명에 Person 관계망 단서가 있고 시대 범위와 생몰년이 명백히 충돌하지 않는 Term-Person 후보를 수동 검수 CSV로 생성. runner 6단계에서 실행 |
+| `make_term_person_review.py` | `neo4j/scripts/` | 이름/한자 1차 후보 중 Term 설명에 Person 관계망 단서가 있고 시대 범위와 생몰년이 명백히 충돌하지 않는 Term-Person 후보를 수동 검수 CSV로 생성. 기본 runner에는 포함하지 않고 필요할 때 단독 실행 |
 
 각 스크립트는 단독 실행도 가능하지만, 일반적으로는 runner만 실행한다.
 
@@ -395,7 +397,7 @@ events.subject_category
 | `event_source_category_relation.csv` | 713 | 사건과 원본 이벤트 분류 연결 중간 테이블 |
 | `event_date_parse.csv` | 703 | 사건 날짜 원문 parsing 결과 |
 | `term_year_parse.csv` | 61,598 | 용어 연도 원문 parsing 결과. 최종 `nodes/terms.csv`에 병합 |
-| `term_person_review.csv` | 206 | Term-Person 수동 검수 후보. `review_type`으로 검수 유형을 구분하고, 승인 결과는 `seed/term_person_review_approved.csv`에 기록 |
+| `term_person_review.csv` | 206 | Term-Person 수동 검수 후보. 기본 runner 산출물이 아니며, `make_term_person_review.py --save`를 단독 실행할 때 생성된다. `review_type`으로 검수 유형을 구분하고, 승인 결과는 `seed/term_person_review_approved.csv`에 기록 |
 | `term_era_candidate.csv` | (수동 생성) | 고조선/초기 국가 시대 후보 용어 검수 시트. `make_term_era_candidates.py` 수동 실행 시 생성되며 runner는 생성하지 않음(현재 미생성). HIGH 신뢰도는 `AUTO_APPROVED`, 나머지는 `PENDING`으로 사람 검수 대상. 검수 결정은 재실행 시 보존됨. `make_theme_era_csv.py`는 이 파일이 있으면 검수 통과분을 `term_in_era.csv`에 합류 |
 
 ### 8.1 `term_canonical_category_relation.csv`

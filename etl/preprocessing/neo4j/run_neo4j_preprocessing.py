@@ -142,10 +142,6 @@ def build_pipeline_steps(script_dir, project_root):
                 import_output_dirs["relations_dir"],
             ],
         },
-        {
-            "step_name": "6. Term-Person 검수 후보 생성",
-            "script_path": step_dir / "make_term_person_review.py",
-        },
     ]
 
 

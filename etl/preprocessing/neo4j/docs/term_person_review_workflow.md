@@ -112,7 +112,7 @@ Term은 한국역사용어시소러스의 용어이고, Person은 ITKC 인물 �
 같은 이름과 한자를 가진 Person ID가 여러 개일 때도 공식 검수는 `term_person_review.csv` 하나에서 한다.
 별도 `person_duplicate_review.csv` 후보 파일을 만들지 않는다.
 과거 보조 스크립트나 수동 실행으로 `staging/person_duplicate_review.csv`가 생겨도 공식 검수 대상은 아니다.
-검수는 runner 6단계 또는 `make_term_person_review.py --save` 단독 실행으로 다시 만든 `staging/term_person_review.csv`에서 진행한다.
+검수는 전체 graph CSV 생성이 끝난 뒤 `make_term_person_review.py --save`를 단독 실행해 만든 `staging/term_person_review.csv`에서 진행한다.
 
 - `TERM_PERSON`: 같은 이름을 가진 여러 Person 중 특정 Term이 어느 Person을 가리키는지 고르는 후보
 - `PERSON_DUPLICATE`: 같은 `term_id`, `name`, `term_hanja`, `term_description`에 서로 다른 `person_id`가 붙어 있어 추가 판단이 필요한 후보
@@ -124,13 +124,14 @@ Term이 특정 Person을 가리키는 것이 확실할 때만 `term_person_revie
 
 ## 1. 검수 후보 CSV 생성
 
-전체 전처리를 실행하면 runner 6단계에서 동명이인 후보가 생성된다.
+검수 후보는 기본 전체 전처리 runner에서 생성하지 않는다.
+먼저 graph CSV를 최신 상태로 만든다.
 
 ```powershell
 .venv\Scripts\python.exe etl/preprocessing/neo4j/run_neo4j_preprocessing.py
 ```
 
-후보만 다시 만들 때는 아래 명령을 단독 실행한다.
+그 다음 검수 후보가 필요할 때 아래 명령을 단독 실행한다.
 
 ```powershell
 .venv\Scripts\python.exe etl/preprocessing/neo4j/scripts/make_term_person_review.py --save
