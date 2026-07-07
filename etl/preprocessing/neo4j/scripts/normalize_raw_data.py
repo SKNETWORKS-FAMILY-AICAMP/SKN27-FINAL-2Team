@@ -16,6 +16,7 @@ import pandas as pd
 from neo4j_common import (
     join_unique_values,
     print_summary,
+    read_csv,
     resolve_neo4j_dir,
     resolve_project_root,
     save_csv,
@@ -96,7 +97,8 @@ def normalize_terms(term_data):
     normalized_terms = select_existing_columns(term_data, term_columns)
 
     if "term_kind" in normalized_terms.columns:
-        normalized_terms = normalized_terms[normalized_terms["term_kind"].eq(2)].copy()
+        # dtype=str로 읽으므로 문자열 "2"와 비교한다. 결측이 섞여 float화("2.0")되는 사고를 막는다.
+        normalized_terms = normalized_terms[normalized_terms["term_kind"].eq("2")].copy()
 
     if "term_id" in normalized_terms.columns:
         normalized_terms = normalized_terms.drop_duplicates(subset=["term_id"]).copy()
@@ -225,10 +227,10 @@ def main():
     default_paths = build_default_paths(project_root, neo4j_dir)
     args = parse_args(default_paths)
 
-    term_data = pd.read_csv(args.history_terms_path)
-    event_data = pd.read_csv(args.events_path)
-    event_relation_data = pd.read_csv(args.event_relations_path)
-    person_relation_data = pd.read_csv(args.person_relations_path)
+    term_data = read_csv(args.history_terms_path, "history_terms")
+    event_data = read_csv(args.events_path, "events")
+    event_relation_data = read_csv(args.event_relations_path, "event_relations")
+    person_relation_data = read_csv(args.person_relations_path, "person_relations")
 
     normalized_terms = normalize_terms(term_data)
     normalized_events = normalize_events(event_data)

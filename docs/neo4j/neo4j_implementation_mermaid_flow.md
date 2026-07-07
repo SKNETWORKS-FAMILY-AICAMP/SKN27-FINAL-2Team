@@ -5,14 +5,14 @@
 포함 범위:
 
 - raw CSV 입력
-- 전처리 runner와 5개 스크립트
+- 전처리 runner와 6개 스크립트
 - seed CSV 15개
 - normalized CSV 4개
 - dictionary CSV 10개
 - mapping CSV 6개
-- staging CSV 4개
+- staging CSV 5개
 - 최종 node CSV 17개
-- 최종 relationship CSV 37개와 optional relation CSV 2개
+- 최종 relationship CSV 39개와 optional relation CSV 2개
 - Cypher 4개와 내부 reset
 - Neo4j import 경로와 Docker mount
 - 카테고리, 이벤트 분류, 시대 범위, 인물 관계 생성 규칙
@@ -30,6 +30,7 @@ flowchart TB
     base_dict["make_base_dictionaries.py<br/>1차 사전 생성"]
     mapping["make_mapping_tables.py<br/>mapping / staging 생성"]
     graph_csv["make_graph_csv.py<br/>Neo4j import CSV 생성"]
+    term_person_review["make_term_person_review.py<br/>Term-Person 검수 후보 생성"]
     import_dir["storage/neo4j/neo4j_import<br/>최종 import CSV"]
     schema_runner["storage/neo4j/load_schema.py<br/>Cypher 실행"]
     neo4j["Neo4j Graph DB"]
@@ -38,6 +39,7 @@ flowchart TB
     runner --> base_dict
     runner --> mapping
     runner --> graph_csv
+    runner --> term_person_review
 
     raw --> normalize
     normalize --> base_dict
@@ -47,6 +49,7 @@ flowchart TB
     base_dict --> graph_csv
     mapping --> graph_csv
     graph_csv --> import_dir
+    import_dir --> term_person_review
     import_dir --> schema_runner
     schema_runner --> neo4j
 ```
@@ -349,7 +352,7 @@ flowchart TB
         normalized_group["normalized CSV<br/>terms / events / event_relations / person_relations"]
         dictionary_group["dictionary CSV<br/>10개 사전"]
         mapping_group["mapping CSV<br/>6개 crosswalk"]
-        staging_group["staging CSV<br/>3개 중간 산출물"]
+        staging_group["staging CSV<br/>4개 graph 입력"]
         node_group["node outputs<br/>EventGroup / SearchTag lookup 포함"]
     end
 
@@ -367,6 +370,7 @@ flowchart TB
         r10["event_in_period.csv"]
         r11["event_part_of_event_group.csv"]
         r12["event_has_source_url.csv"]
+        r13_term["term_has_search_tag.csv"]
         r13["event_has_search_tag.csv"]
         r14["event_about_country.csv"]
         r15["event_about_taxonomy_facet.csv"]
@@ -374,6 +378,7 @@ flowchart TB
         r16["person_involved_in_event.csv"]
         r17["person_related_to_person.csv"]
         r18["person_has_source_url.csv"]
+        r18_person_tag["person_has_search_tag.csv"]
 
         r19["canonical_category_subcategory_of.csv"]
         r20["source_category_mapped_to_canonical_category.csv"]
@@ -407,12 +412,14 @@ flowchart TB
     graph_script --> r10
     graph_script --> r11
     graph_script --> r12
+    graph_script --> r13_term
     graph_script --> r13
     graph_script --> r14
     graph_script --> r15
     graph_script --> r16
     graph_script --> r17
     graph_script --> r18
+    graph_script --> r18_person_tag
     graph_script --> r19
     graph_script --> r20
     graph_script --> r21
@@ -476,7 +483,7 @@ flowchart LR
     event -->|"HAS_THEME · 주제"| theme
     term -->|"IN_ERA · 시대"| era
     event -->|"IN_ERA · 시대"| era
-    person -->|"IN_ERA · 시대 (생몰년/사건 추론)"| era
+    person -->|"IN_ERA · 시대 (생몰년/사건 보조, 넓은 Era 중복 제거)"| era
     term -->|"HAS_ENTITY_TYPE · 실체 유형"| entity
 
     term -->|"REFERS_TO · 가리키는 실체"| person
@@ -497,6 +504,7 @@ flowchart LR
     subgraph core2["핵심 노드"]
         term2["Term<br/>역사 용어"]
         event2["Event<br/>역사 사건"]
+        person2["Person<br/>인물"]
     end
 
     subgraph classify["분류 체계"]
@@ -504,7 +512,7 @@ flowchart LR
         source_cat["SourceEventCategory<br/>사건 원본 분류 (53)"]
         event_facet["EventFacet<br/>사건 의미 facet (53)"]
         taxonomy_facet["TaxonomyFacet<br/>중간 분류 축 (49)"]
-        search_tag["SearchTag<br/>통합 검색 태그 (583)"]
+        search_tag["SearchTag<br/>통합 검색 태그 (175,714)"]
         theme2["Theme<br/>주제 (원천 매핑)"]
     end
 
@@ -529,6 +537,7 @@ flowchart LR
     term2 -->|"ABOUT_REGION · 관련 권역"| region
     term2 -->|"ABOUT_ECONOMIC_DOMAIN · 경제 분야"| economic
     term2 -->|"ABOUT_TAXONOMY_FACET · 중간 분류"| taxonomy_facet
+    term2 -->|"HAS_SEARCH_TAG · 검색 태그"| search_tag
 
     event2 -->|"HAS_EVENT_CATEGORY · 원본 분류"| source_cat
     event2 -->|"HAS_CATEGORY · 표준 분류"| category
@@ -539,6 +548,7 @@ flowchart LR
     event2 -->|"ABOUT_COUNTRY · 관련 국가"| country
     event2 -->|"ABOUT_TAXONOMY_FACET · 중간 분류"| taxonomy_facet
     event2 -.->|"ABOUT_REGION / ABOUT_ECONOMIC_DOMAIN<br/>optional · 현재 0행이라 미생성"| region
+    person2 -->|"HAS_SEARCH_TAG · 검색 태그"| search_tag
 
     category -->|"SUBCATEGORY_OF · 하위→상위"| category
     category -->|"HAS_THEME · 주제 원천 매핑"| theme2
@@ -604,7 +614,7 @@ flowchart TB
     source_event_facet_crosswalk["source_event_category_facet_crosswalk.csv"]
     event_has_facet["event_has_facet.csv<br/>Event - HAS_EVENT_FACET - EventFacet"]
 
-    search_tag["event_has_search_tag.csv<br/>검색 편의용 통합 태그"]
+    search_tag["*_has_search_tag.csv<br/>검색 편의용 통합 태그"]
 
     event_subject --> split_event_cat --> source_event_dict
     split_event_cat --> event_source_relation --> event_has_source
@@ -789,6 +799,8 @@ flowchart TB
         i_event["Event.name"]
         i_person["Person.name"]
         i_category_path["CanonicalCategory.category_path"]
+        i_search_tag_name["SearchTag.tag_name"]
+        i_search_tag_value["SearchTag.tag_value"]
         i_url["SourceUrl.url"]
     end
 
@@ -822,7 +834,7 @@ flowchart LR
         n17["entity_types.csv"]
     end
 
-    subgraph relation_csv["Relationship CSV 37개"]
+    subgraph relation_csv["Relationship CSV 39개"]
         e1["term_has_canonical_category.csv"]
         e2["term_in_period.csv"]
         e3["term_about_country.csv"]
@@ -835,12 +847,14 @@ flowchart LR
         e10["event_in_period.csv"]
         e11["event_part_of_event_group.csv"]
         e12["event_has_source_url.csv"]
+        e12_term_tag["term_has_search_tag.csv"]
         e13["event_has_search_tag.csv"]
         e14["event_about_country.csv"]
         e15["event_about_taxonomy_facet.csv"]
         e16["person_involved_in_event.csv"]
         e17["person_related_to_person.csv"]
         e18["person_has_source_url.csv"]
+        e18_person_tag["person_has_search_tag.csv"]
         e19["canonical_category_subcategory_of.csv"]
         e20["source_category_mapped_to_canonical_category.csv"]
         e21["canonical_category_about_country.csv"]
@@ -956,4 +970,4 @@ flowchart TB
     related_rel --> import_rel
 ```
 
-이 흐름에서 `IN_ERA`는 원본을 대체하지 않는다. `IN_PERIOD`, `PART_OF_ERA` 같은 원천 경로를 유지한 상태에서 서비스 조회를 빠르게 하기 위해 미리 펼친 관계다. 인물 관계 근거 URL은 별도 `HAS_EVIDENCE_URL` 관계로 만들지 않고 `RELATED_TO.evidence_url` 속성으로만 보존한다.
+이 흐름에서 `IN_ERA`는 원본을 대체하지 않는다. `IN_PERIOD`, `PART_OF_ERA` 같은 원천 경로를 유지한 상태에서 서비스 조회를 빠르게 하기 위해 미리 펼친 관계다. Person의 `IN_ERA`는 생몰년 기반을 우선하고, 생몰년이 없을 때만 참여 사건 Era를 보조로 쓰며, 더 좁은 Era가 같은 생애 겹침 구간을 완전히 설명하면 넓은 Era 중복은 제외한다. 인물 관계 근거 URL은 별도 `HAS_EVIDENCE_URL` 관계로 만들지 않고 `RELATED_TO.evidence_url` 속성으로만 보존한다.

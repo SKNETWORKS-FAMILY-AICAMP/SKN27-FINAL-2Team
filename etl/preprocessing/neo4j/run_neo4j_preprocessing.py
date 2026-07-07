@@ -11,7 +11,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent / "scripts"))
 
-from neo4j_common import resolve_project_root
+from neo4j_common import resolve_import_dir, resolve_project_root
 
 
 def parse_args():
@@ -29,7 +29,7 @@ def parse_args():
 
 
 def build_import_output_dirs(project_root):
-    import_dir = project_root / "storage" / "neo4j" / "neo4j_import"
+    import_dir = resolve_import_dir(project_root)
 
     return {
         "nodes_dir": import_dir / "nodes",
@@ -48,6 +48,21 @@ def build_generated_csv_dirs(script_dir, project_root):
         import_output_dirs["nodes_dir"],
         import_output_dirs["relations_dir"],
     ]
+
+
+def build_preserved_staging_csv_names():
+    return {
+        "term_era_candidate.csv",
+    }
+
+
+def should_preserve_generated_csv(csv_path, generated_csv_dir, script_dir):
+    staging_dir = (script_dir / "staging").resolve()
+
+    if generated_csv_dir.resolve() != staging_dir:
+        return False
+
+    return csv_path.name in build_preserved_staging_csv_names()
 
 
 def resolve_project_path(target_path, project_root):
@@ -78,6 +93,10 @@ def remove_existing_csv_outputs(script_dir, project_root):
             continue
 
         for csv_path in sorted(resolved_dir.glob("*.csv")):
+            if should_preserve_generated_csv(csv_path, generated_csv_dir, script_dir):
+                print(f"preserved: {csv_path.resolve()}", flush=True)
+                continue
+
             resolved_csv_path = resolve_project_path(csv_path, project_root)
             resolved_csv_path.unlink()
             deleted_count += 1
@@ -122,6 +141,10 @@ def build_pipeline_steps(script_dir, project_root):
                 "--relations-dir",
                 import_output_dirs["relations_dir"],
             ],
+        },
+        {
+            "step_name": "6. Term-Person 검수 후보 생성",
+            "script_path": step_dir / "make_term_person_review.py",
         },
     ]
 

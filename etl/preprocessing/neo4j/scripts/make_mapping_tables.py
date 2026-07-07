@@ -12,6 +12,7 @@ import pandas as pd
 from neo4j_common import (
     build_sequential_ids,
     print_summary,
+    read_csv,
     require_file,
     resolve_neo4j_dir,
     save_csv,
@@ -98,7 +99,8 @@ def build_term_relation_rows(terms_data):
     target_data = terms_data.dropna(subset=["term_lk"]).copy()
 
     if "term_kind" in target_data.columns:
-        target_data = target_data[target_data["term_kind"].eq(2)].copy()
+        # dtype=str로 읽으므로 문자열 "2"와 비교한다.
+        target_data = target_data[target_data["term_kind"].eq("2")].copy()
 
     for row in target_data[["term_id", "term_lk"]].itertuples(index=False):
         for path_parts in split_category_paths(row.term_lk):
@@ -1341,8 +1343,14 @@ def read_dictionary_files(dictionary_paths):
     )
 
     return {
-        "category_dictionary": pd.read_csv(dictionary_paths["category_dictionary"]),
-        "event_category_dictionary": pd.read_csv(dictionary_paths["event_category_dictionary"]),
+        "category_dictionary": read_csv(
+            dictionary_paths["category_dictionary"],
+            "category_dictionary",
+        ),
+        "event_category_dictionary": read_csv(
+            dictionary_paths["event_category_dictionary"],
+            "event_category_dictionary",
+        ),
     }
 
 
@@ -1479,8 +1487,8 @@ def main():
     default_paths = build_default_paths(script_path)
     args = parse_args(default_paths)
 
-    terms_data = pd.read_csv(args.terms_path)
-    events_data = pd.read_csv(args.events_path)
+    terms_data = read_csv(args.terms_path, "terms")
+    events_data = read_csv(args.events_path, "events")
     dictionary_paths = build_dictionary_paths(args)
     dictionaries = read_dictionary_files(dictionary_paths)
     taxonomy_crosswalk_seed = read_taxonomy_crosswalk_seed(args.taxonomy_crosswalk_seed_path)

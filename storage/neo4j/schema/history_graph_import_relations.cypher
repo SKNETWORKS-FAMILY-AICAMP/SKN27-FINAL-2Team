@@ -94,9 +94,33 @@ CALL (row) {
     SET r += row
 } IN TRANSACTIONS OF 1000 ROWS;
 
+LOAD CSV WITH HEADERS FROM 'file:///relations/term_has_search_tag.csv' AS row
+CALL (row) {
+    MATCH (start:Term {term_id: row.start_term_id})
+    MATCH (target:SearchTag {search_tag_id: row.end_search_tag_id})
+    MERGE (start)-[r:HAS_SEARCH_TAG {
+        source_node_type: row.source_node_type,
+        source_node_id: row.source_node_id,
+        source_relation: row.source_relation
+    }]->(target)
+    SET r += row
+} IN TRANSACTIONS OF 1000 ROWS;
+
 LOAD CSV WITH HEADERS FROM 'file:///relations/event_has_search_tag.csv' AS row
 CALL (row) {
     MATCH (start:Event {event_id: row.start_event_id})
+    MATCH (target:SearchTag {search_tag_id: row.end_search_tag_id})
+    MERGE (start)-[r:HAS_SEARCH_TAG {
+        source_node_type: row.source_node_type,
+        source_node_id: row.source_node_id,
+        source_relation: row.source_relation
+    }]->(target)
+    SET r += row
+} IN TRANSACTIONS OF 1000 ROWS;
+
+LOAD CSV WITH HEADERS FROM 'file:///relations/person_has_search_tag.csv' AS row
+CALL (row) {
+    MATCH (start:Person {person_id: row.start_person_id})
     MATCH (target:SearchTag {search_tag_id: row.end_search_tag_id})
     MERGE (start)-[r:HAS_SEARCH_TAG {
         source_node_type: row.source_node_type,
