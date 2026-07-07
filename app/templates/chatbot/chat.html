@@ -113,6 +113,7 @@
     saveSessions();
     renderSessionList();
     renderActiveSession();
+    openPendingProblemContext();
 
     newSessionButton.addEventListener("click", () => {
       const session = createSession("새 대화");
@@ -324,7 +325,7 @@
         <article class="problem-picker-item">
           <button type="button" data-record-id="${escapeHtml(problem.record_id)}">
             <span class="problem-picker-meta">
-              Session #${escapeHtml(problem.session_id)} · ${escapeHtml(problem.number)}번 · ${escapeHtml(problem.era || "-")} · ${escapeHtml(problem.topic || "-")}
+              ${escapeHtml(problem.session_label || "풀이 기록")} · ${escapeHtml(problem.number)}번 · ${escapeHtml(problem.era || "-")} · ${escapeHtml(problem.topic || "-")}
             </span>
             <strong>${escapeHtml(problem.content || "문제 내용 없음")}</strong>
             <span class="problem-picker-result ${problem.is_correct ? "correct" : "wrong"}">
@@ -358,6 +359,17 @@
         },
         intent: "chat",
       });
+    }
+
+    function openPendingProblemContext() {
+      const raw = sessionStorage.getItem("chatbotProblemContext");
+      if (!raw) return;
+      sessionStorage.removeItem("chatbotProblemContext");
+      try {
+        selectProblemForChat(JSON.parse(raw));
+      } catch (error) {
+        appendErrorMessage("문제 정보를 불러오지 못했습니다.", error.message);
+      }
     }
 
     function buildProblemContext(problem, prompt) {

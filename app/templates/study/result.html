@@ -522,6 +522,30 @@
       ].filter(Boolean).join("\n");
     }
 
+    function buildChatProblem(question) {
+      return {
+        record_id: question.recordId || question.record_id || question.questionId || question.question_id || Date.now(),
+        session_id: resultPayload?.sessionId || resultPayload?.session_id || "",
+        number: currentIndex + 1,
+        content: question.title || "",
+        passage: question.source || "",
+        question_type: question.questionType || question.type || "",
+        era: question.era || "",
+        topic: question.topic || "",
+        selected_no: question.selectedChoiceNo,
+        answer_no: question.answerNo,
+        is_correct: question.isCorrect,
+        answer_explanation: question.answerExplanation || "",
+        core_concept: question.coreConcept || "",
+        options: (question.choices || []).map((choice) => ({
+          choice_no: choice.choiceNo,
+          content: choice.content,
+          is_answer: choice.choiceNo === question.answerNo,
+          choice_explanation: choice.explanation || "",
+        })),
+      };
+    }
+
     function move(delta) {
       const nextIndex = Math.min(Math.max(currentIndex + delta, 0), questions.length - 1);
       currentIndex = nextIndex;
@@ -531,7 +555,7 @@
     document.getElementById("prevQuestion").addEventListener("click", () => move(-1));
     document.getElementById("nextQuestion").addEventListener("click", () => move(1));
     document.getElementById("askChatbot").addEventListener("click", () => {
-      sessionStorage.setItem("chatbotQuestionContext", buildChatContext(questions[currentIndex]));
+      sessionStorage.setItem("chatbotProblemContext", JSON.stringify(buildChatProblem(questions[currentIndex])));
       window.location.href = `/chatbot/?from=${RESULT_MODE}-result`;
     });
     noteSaveButton?.addEventListener("click", async () => {

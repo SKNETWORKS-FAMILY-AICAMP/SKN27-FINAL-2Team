@@ -14,6 +14,7 @@ from django.views.decorators.http import require_GET
 from django.views.decorators.http import require_POST
 
 from question.models import QuestionOptions, SolveRecords
+from user.views import build_session_display_map
 
 from .models import ChatMessages, ChatSessions
 from .rag_service import build_history_rag_answer
@@ -128,6 +129,8 @@ def solved_problem_options_api(request):
     ):
         option_map.setdefault(option.question_id, []).append(option)
 
+    sessions = list({record.session_id: record.session for record in records}.values())
+    session_display_map = build_session_display_map(request.user, sessions)
     session_numbers = {}
     problems = []
     for record in records:
@@ -150,6 +153,7 @@ def solved_problem_options_api(request):
                 "is_correct": record.is_correct,
                 "answer_explanation": question.answer_explanation,
                 "core_concept": question.core_concept,
+                "session_label": session_display_map.get(session_id, {}).get("full", "풀이 기록"),
                 "solved_url": f"/user/solved-problems/?session_id={session_id}",
                 "options": [
                     {

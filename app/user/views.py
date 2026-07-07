@@ -1,6 +1,7 @@
 import json
 import random
 import smtplib
+from collections import defaultdict
 from datetime import date
 from datetime import timedelta
 
@@ -9,13 +10,13 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import make_password
 from django.core.mail import send_mail
-from django.db.models import Avg, Count, Min, Q, Sum
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
-from analytics.models import Analytics
+from analytics.models import StudyPlanMypage
+from analytics.serializers import parse_study_plan_items
 from chatbot.models import ChatSessions
 from question.models import QuestionOptions, SolveRecords, SolveSessions
 
@@ -59,6 +60,63 @@ def _wrong_note_session_source(session, records):
     if has_study_plan_record:
         return "study_plan", "학습계획 문제 풀이"
     return "practice", "문제풀이"
+
+
+def _iter_plan_blocks(items):
+    for item in items:
+        if not isinstance(item, dict):
+            continue
+        yield item
+        children = item.get("blocks")
+        if isinstance(children, list):
+            yield from _iter_plan_blocks(children)
+
+
+def _weekly_review_session_ids(user, sessions):
+    records = SolveRecords.objects.filter(
+        session__in=sessions,
+        studyplan_id__isnull=False,
+        study_plan_block_id__isnull=False,
+    ).values("session_id", "studyplan_id", "study_plan_block_id")
+    refs = {(row["studyplan_id"], row["study_plan_block_id"]): row["session_id"] for row in records}
+    if not refs:
+        return set()
+
+    weekly_ids = set()
+    plans = StudyPlanMypage.objects.filter(user=user, studyplan_id__in={plan_id for plan_id, _ in refs})
+    for plan in plans:
+        for block in _iter_plan_blocks(parse_study_plan_items(plan.study_plan_items)):
+            block_id = block.get("blockId") or block.get("id")
+            if block.get("blockType") == "weekly_review" and (plan.studyplan_id, block_id) in refs:
+                weekly_ids.add(refs[(plan.studyplan_id, block_id)])
+    return weekly_ids
+
+
+def build_session_display_map(user, sessions):
+    weekly_ids = _weekly_review_session_ids(user, sessions)
+    counters = defaultdict(int)
+    display_map = {}
+
+    for session in sorted(sessions, key=lambda item: (item.recorded_date, item.session_id)):
+        solved_date = session.recorded_date
+        date_text = solved_date.strftime("%Y.%m.%d") if solved_date else ""
+
+        if session.session_id in weekly_ids:
+            title = "주간평가"
+        elif session.session_type == "diagnostic":
+            counters[(solved_date, "diagnostic")] += 1
+            title = f"진단평가 {counters[(solved_date, 'diagnostic')]}회차"
+        else:
+            counters[(solved_date, "practice")] += 1
+            title = f"일반평가 {counters[(solved_date, 'practice')]}회차"
+
+        display_map[session.session_id] = {
+            "date": date_text,
+            "title": title,
+            "full": f"{date_text} {title}".strip(),
+        }
+
+    return display_map
 
 
 def login_page(request):
@@ -399,22 +457,18 @@ def solved_problems(request):
             option_map.setdefault(option.question_id, []).append(option)
 
     session_cards = []
-    analytics_dates = {
-        row["session_id"]: row["first_date"]
-        for row in Analytics.objects.filter(session__in=sessions)
-        .values("session_id")
-        .annotate(first_date=Min("created_at")) 
-    }
+    session_display_map = build_session_display_map(request.user, sessions)
     for session in sessions:
         answer_rate = session.answer_rate or 0
         answer_rate_percent = round(answer_rate * 100 if answer_rate <= 1 else answer_rate)
-        solved_date = analytics_dates.get(session.session_id)
+        display = session_display_map.get(session.session_id, {})
         session_cards.append(
             {
                 "session": session,
                 "answer_rate": max(0, min(100, answer_rate_percent)),
                 "elapsed_time": _format_duration(session.elapsed_sec),
-                "date_label": f"{solved_date.month}월 {solved_date.day}일 푼 문제" if solved_date else f"Session #{session.session_id}",
+                "display_date": display.get("date", ""),
+                "display_title": display.get("title", "풀이 기록"),
                 "is_active": selected_session and session.session_id == selected_session.session_id,
             }
         )
@@ -468,6 +522,7 @@ def solved_problems(request):
         {
             "session_cards": session_cards,
             "selected_session": selected_session,
+            "selected_session_display": session_display_map.get(selected_session.session_id) if selected_session else None,
             "record_cards": record_cards,
             "record_payload": record_payload,
         },
