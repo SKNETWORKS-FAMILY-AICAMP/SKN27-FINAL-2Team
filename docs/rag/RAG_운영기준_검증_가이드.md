@@ -15,23 +15,9 @@ chatbot/views.py
 
 따라서 운영 기준 검증 대상은 `HybridRagRetriever`가 아니라 `PgVectorHybridRetriever`이다.
 
-## 기존 평가와 차이
+## 평가 기준
 
-기존 골든질문세트 평가는 아래 스크립트로 실행한다.
-
-```text
-etl/preprocessing/history/embedding/evaluate_golden_questions.py
-```
-
-이 평가는 JSONL 기반 프로토타입 검색기인 `HybridRagRetriever`를 사용한다.
-
-```text
-평가 대상: app/chatbot/rag/rag_prototype/retriever.py
-검색 데이터: processed JSONL
-평가 목적: 오프라인 검색 품질 확인
-```
-
-운영 기준 평가는 실제 챗봇 검색기와 DB를 사용해야 한다.
+평가는 실제 챗봇 검색기와 DB를 사용해야 한다.
 
 ```text
 평가 대상: app/chatbot/rag/pgvector_retriever.py
