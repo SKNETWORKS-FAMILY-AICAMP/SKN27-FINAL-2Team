@@ -103,13 +103,13 @@ etl/preprocessing/neo4j/staging/term_person_review.csv
 ```
 
 이 파일은 후보 검수용이다. 모든 행을 그대로 승인 seed에 넣으면 안 된다.
-후보 생성 단계에서는 `person_hanja`와 `term_hanja`가 모두 있고 두 값이 같은 행만 남긴다.
-한자가 없는 후보나 한자가 서로 다른 후보는 검수 CSV에 포함하지 않는다.
-Term의 `start_year`, `end_year`와 Person의 `birth_year`, `death_year`가 숫자로 완전히 같은 후보가 해당 Term에서 1명뿐이면 graph 생성 단계에서 자동 `REFERS_TO` 관계로 붙인다.
-이 경우 같은 `term_id`의 다른 이름/한자 후보도 검토 대상에서 제외한다.
-정확히 일치하는 후보가 없거나 2명 이상이면 자동 연결하지 않고 이름/한자 후보를 `term_person_review.csv`에 `PENDING` 검토 후보로 남긴다.
-그 다음 `review_type=TERM_PERSON` 중 `term_id`, `name`, `person_id`가 모두 검토 후보 안에서 1번만 나오는 고립 후보는 제외한다.
-이런 행은 다른 후보와 비교할 대상이 없어 동명이인 검수의 실익이 낮기 때문이다.
+후보 생성 단계에서는 `person_hanja`와 `term_hanja`가 모두 있고 두 값이 같은 행만 1차 후보로 본다.
+단, 이름과 한자만 같다고 같은 인물로 처리하지 않는다.
+Person 관계망의 관련 인물 이름/한자 단서가 Term 설명에 실제로 등장하는 후보만 검토 후보로 남긴다.
+예를 들어 Term 설명에 부, 배우자, 스승, 제자 등 관계 인물이 나오고 그 인물이 해당 Person 관계망에도 있으면 설명 근거가 있는 후보로 본다.
+Term의 시대 범위와 Person 생몰년이 숫자로 명백히 겹치지 않으면 검토 후보에서 제외한다.
+Term의 `start_year`, `end_year`와 Person의 `birth_year`, `death_year`가 숫자로 완전히 같은 후보가 해당 Term에서 1명뿐이어도, Term 설명에서 Person 관계망 단서가 함께 확인될 때만 graph 생성 단계에서 자동 `REFERS_TO` 관계로 붙인다.
+정확한 연도와 설명 근거가 함께 확인되지 않는 후보는 자동 연결하지 않고, 설명 근거가 있는 경우에만 `term_person_review.csv`에 `PENDING` 검토 후보로 남긴다.
 이때 Term 설명이나 연도 단서에서 생몰년을 추론해 채우지 않는다.
 원천 Person 생몰년이 비어 있으면 `birth_year`, `death_year` 출력값은 빈 값으로 둔다.
 원천에 `14??`, `?`, `1745(1730)`처럼 부분/불확실 연도가 들어 있으면 임의로 고치거나 지우지 않고 그대로 표시한다.

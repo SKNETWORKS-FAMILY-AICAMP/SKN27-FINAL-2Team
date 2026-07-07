@@ -2033,6 +2033,138 @@ def split_person_name_columns(person_nodes):
     ).drop_duplicates()
 
 
+def empty_person_description_context_tokens():
+    return pd.DataFrame(columns=["person_id", "base_name", "hanja"])
+
+
+def build_person_description_context_rows(person_relations_data):
+    required_columns = [
+        "person_id",
+        "person_name",
+        "related_person_id",
+        "related_person_name",
+    ]
+    missing_columns = [
+        column_name
+        for column_name in required_columns
+        if column_name not in person_relations_data.columns
+    ]
+
+    if missing_columns:
+        return pd.DataFrame(columns=["person_id", "context_name"])
+
+    person_to_related = person_relations_data[
+        ["person_id", "related_person_name"]
+    ].rename(columns={"related_person_name": "context_name"})
+    related_to_person = person_relations_data[
+        ["related_person_id", "person_name"]
+    ].rename(
+        columns={
+            "related_person_id": "person_id",
+            "person_name": "context_name",
+        }
+    )
+    context_rows = pd.concat(
+        [person_to_related, related_to_person],
+        ignore_index=True,
+    )
+    context_rows["person_id"] = context_rows["person_id"].fillna("").str.strip()
+    context_rows["context_name"] = context_rows["context_name"].fillna("").str.strip()
+    context_rows = context_rows[
+        context_rows["person_id"].ne("") & context_rows["context_name"].ne("")
+    ].copy()
+
+    return context_rows.drop_duplicates()
+
+
+def build_person_description_context_tokens(person_relations_data):
+    context_rows = build_person_description_context_rows(person_relations_data)
+
+    if context_rows.empty:
+        return empty_person_description_context_tokens()
+
+    context_nodes = context_rows.rename(columns={"context_name": "name"})
+    context_tokens = split_person_name_columns(context_nodes)
+
+    if context_tokens.empty:
+        return empty_person_description_context_tokens()
+
+    context_tokens = context_tokens[
+        context_tokens["base_name"].fillna("").str.len().ge(2)
+    ].copy()
+
+    if context_tokens.empty:
+        return empty_person_description_context_tokens()
+
+    return context_tokens[["person_id", "base_name", "hanja"]].drop_duplicates()
+
+
+def build_person_description_context_lookup(person_context_tokens):
+    context_lookup = {}
+
+    if person_context_tokens.empty:
+        return context_lookup
+
+    for person_id, token_rows in person_context_tokens.groupby("person_id"):
+        tokens = []
+
+        for row in token_rows.itertuples(index=False):
+            for token_value in [row.base_name, row.hanja]:
+                token = str(token_value or "").strip()
+
+                if len(token) < 2:
+                    continue
+
+                if token in tokens:
+                    continue
+
+                tokens.append(token)
+
+        context_lookup[person_id] = tokens
+
+    return context_lookup
+
+
+def find_description_context_matches(description, person_id, context_lookup):
+    description_text = str(description or "")
+    matches = []
+
+    for token in context_lookup.get(person_id, []):
+        if token not in description_text:
+            continue
+
+        matches.append(token)
+
+    return "|".join(matches)
+
+
+def add_description_context_match_columns(data_frame, person_relations_data):
+    enriched_data = data_frame.copy()
+    context_tokens = build_person_description_context_tokens(person_relations_data)
+    context_lookup = build_person_description_context_lookup(context_tokens)
+
+    if "description" not in enriched_data.columns:
+        enriched_data["description"] = ""
+
+    if "person_id" not in enriched_data.columns:
+        enriched_data["description_context_matches"] = ""
+        return enriched_data
+
+    enriched_data["description_context_matches"] = [
+        find_description_context_matches(row.description, row.person_id, context_lookup)
+        for row in enriched_data[["description", "person_id"]].itertuples(index=False)
+    ]
+
+    return enriched_data
+
+
+def build_description_context_match_mask(data_frame):
+    if "description_context_matches" not in data_frame.columns:
+        return pd.Series(False, index=data_frame.index)
+
+    return data_frame["description_context_matches"].fillna("").ne("")
+
+
 def find_unique_names(left_names, right_names):
     left_counts = left_names.value_counts()
     right_counts = right_names.value_counts()
@@ -2521,13 +2653,17 @@ def build_term_mentions_person(term_nodes, person_nodes, term_refers_to_person):
 def build_term_refers_to_person(
     term_nodes,
     person_nodes,
+    person_relations_data,
     term_person_review_approved,
 ):
-    # Term year range and Person life years must match exactly for auto links.
-    # Other name/hanja candidates stay in term_person_review.csv for review.
-    term_data = term_nodes[["term_id", "name", "hanja", "start_year", "end_year"]].copy()
+    # Auto links require name/hanja, exact life years, and description context evidence.
+    # Other candidates stay out of graph unless manually approved.
+    term_data = term_nodes[
+        ["term_id", "name", "hanja", "description", "start_year", "end_year"]
+    ].copy()
     term_data["name"] = term_data["name"].fillna("").str.strip()
     term_data["hanja"] = term_data["hanja"].fillna("").str.strip()
+    term_data["description"] = term_data["description"].fillna("").astype(str)
     person_data = split_person_name_columns(person_nodes)
     person_data = merge_person_life_year_columns(person_data, person_nodes)
 
@@ -2547,6 +2683,11 @@ def build_term_refers_to_person(
         | term_hanja.eq(person_hanja)
     )
     auto_links = auto_links[hanja_compatible].copy()
+    auto_links = add_description_context_match_columns(
+        auto_links,
+        person_relations_data,
+    )
+    auto_links = auto_links[build_description_context_match_mask(auto_links)].copy()
     auto_links = auto_links[
         build_unique_exact_term_person_year_mask(auto_links)
     ].copy()
@@ -2562,6 +2703,11 @@ def build_term_refers_to_person(
         right_on=["base_name", "hanja"],
         suffixes=("", "_person"),
     )
+    hanja_links = add_description_context_match_columns(
+        hanja_links,
+        person_relations_data,
+    )
+    hanja_links = hanja_links[build_description_context_match_mask(hanja_links)].copy()
     hanja_links = hanja_links[
         build_unique_exact_term_person_year_mask(hanja_links)
     ].copy()
@@ -2989,6 +3135,7 @@ def build_relation_outputs(inputs, node_outputs):
     term_refers_to_person = build_term_refers_to_person(
         node_outputs["terms"],
         node_outputs["people"],
+        inputs["person_relations"],
         inputs["term_person_review_approved"],
     )
     event_about_country = build_event_about_country(
