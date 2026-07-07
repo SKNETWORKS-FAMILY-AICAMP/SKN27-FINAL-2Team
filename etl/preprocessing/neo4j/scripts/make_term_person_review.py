@@ -105,6 +105,20 @@ def add_review_type(candidates):
     return candidates
 
 
+def filter_isolated_term_person_candidates(candidates):
+    name_counts = candidates.groupby("name")["person_id"].transform("size")
+    person_counts = candidates.groupby("person_id")["term_id"].transform("size")
+    term_counts = candidates.groupby("term_id")["person_id"].transform("size")
+    isolated_term_person = (
+        candidates["review_type"].eq("TERM_PERSON")
+        & name_counts.eq(1)
+        & person_counts.eq(1)
+        & term_counts.eq(1)
+    )
+
+    return candidates[~isolated_term_person].copy()
+
+
 def build_review_candidates(terms, people):
     term_data = build_term_review_data(terms)
     person_data = build_person_review_data(people)
@@ -140,6 +154,11 @@ def build_review_candidates(terms, people):
     candidates["person_name"] = candidates["base_name"]
     candidates["term_desc_preview"] = candidates["description"].str.slice(0, 50)
     candidates = add_review_type(candidates)
+    candidates = filter_isolated_term_person_candidates(candidates)
+
+    if candidates.empty:
+        return empty_review_candidates()
+
     candidates["review_status"] = "PENDING"
     candidates["note"] = ""
     candidates = candidates.rename(

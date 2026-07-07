@@ -88,7 +88,6 @@ raw_data
 - `seed/keyword_era_seed.csv`
 - `seed/reign_seed.csv`
 - `seed/term_person_review_approved.csv`
-- `seed/person_duplicate_review_approved.csv` (필요할 때만 사용하는 Person ID canonical 병합 seed)
 
 이 파일들은 자동 생성 산출물이 아니라 전처리 규칙을 담은 입력 파일이다.
 
@@ -108,7 +107,8 @@ raw_data
 
 Person 중복 검수 후보는 별도 CSV로 분리하지 않는다.
 `staging/person_duplicate_review.csv`가 과거 실행 결과로 남아 있어도 graph 생성 입력이 아니며, 공식 검수 흐름에서는 삭제해도 된다.
-후보는 `staging/term_person_review.csv` 하나에서 보고, 승인 결과만 목적별 seed로 나눠 기록한다.
+이를 만들던 보조 스크립트 `make_person_duplicate_review.py`도 공식 흐름에서 제거했다.
+후보는 `staging/term_person_review.csv` 하나에서 보고, 확정한 Term-Person 연결만 `seed/term_person_review_approved.csv`에 기록한다.
 이 후보 파일의 `birth_year`, `death_year`는 원천 Person 데이터의 연도 문자열을 그대로 표시하며, 원천이 비어 있으면 빈 값으로 둔다.
 `14??`, `?`, `1745(1730)` 같은 부분/불확실 연도도 원천값이면 그대로 둔다.
 Term 설명의 재위 연도는 후보 필터링에만 쓰고 생몰년 컬럼을 채우는 데 사용하지 않는다.
@@ -127,8 +127,7 @@ Term 설명의 재위 연도는 후보 필터링에만 쓰고 생몰년 컬럼�
 | `make_graph_csv.py` | `neo4j/scripts/` | 최종 Neo4j node/relation CSV 생성 |
 | `make_theme_era_csv.py` | `neo4j/scripts/` | graph CSV와 seed를 읽어 Theme/Era/EntityType 상위 레이어 CSV 생성 |
 | `make_term_era_candidates.py` | `neo4j/scripts/` | 고조선/초기 국가 시대 후보 용어를 이름/설명문에서 추출해 검수 시트 생성. runner 미포함, 수동 실행 |
-| `make_term_person_review.py` | `neo4j/scripts/` | Term 연도와 Person 생몰년이 완전히 같아 자동 확정된 Term 그룹을 제외하고, 남은 이름/한자 Term-Person 후보를 수동 검수 CSV로 생성. runner 미포함, 수동 실행 |
-| `make_person_duplicate_review.py` | `neo4j/scripts/` | 예전 Person 중복 후보 보조 스크립트. 공식 검수 흐름에서는 사용하지 않으며 `term_person_review.csv`의 `PERSON_DUPLICATE` 행을 사용 |
+| `make_term_person_review.py` | `neo4j/scripts/` | Term 연도와 Person 생몰년이 완전히 같아 자동 확정된 Term 그룹과 고립 `TERM_PERSON` 후보를 제외하고, 남은 이름/한자 Term-Person 후보를 수동 검수 CSV로 생성. runner 미포함, 수동 실행 |
 
 각 스크립트는 단독 실행도 가능하지만, 일반적으로는 runner만 실행한다.
 
@@ -230,11 +229,9 @@ Term 설명의 재위 연도는 후보 필터링에만 쓰고 생몰년 컬럼�
 | `keyword_era_seed.csv` | 시험 빈출 키워드-시대 매핑 (ml_keyword_era_overrides.json 유래) |
 | `reign_seed.csv` | 왕대/연호 이름과 연도 범위. 연도 파서 보조용 seed |
 | `term_person_review_approved.csv` | 사람이 승인한 Term-Person 수동 연결 목록. 검수 후보의 `review_type`과 무관하게 Term이 특정 Person을 가리킨다고 확정한 행을 기록하며 `REFERS_TO` 관계에 `MANUAL`로 반영 |
-| `person_duplicate_review_approved.csv` | `term_person_review.csv`의 `PERSON_DUPLICATE` 행에서 동일인으로 확정한 Person ID를 canonical ID로 치환하는 seed. Term-Person 연결 승인 파일이 아니며 후보 검수 CSV도 아님 |
 
-`term_person_review_approved.csv`는 `term_id`, `person_id`, `review_status`, `note`만으로 구성되므로 Person ID 병합을 표현하지 않는다.
-Person ID 병합은 `duplicate_person_id`, `canonical_person_id`가 필요한 `person_duplicate_review_approved.csv`에만 기록한다.
-동명이인 중 특정 Person이 Term 대상이라고 확정한 경우는 병합이 아니므로 `term_person_review_approved.csv`에 기록한다.
+공식 graph 생성 흐름에서는 Person ID 병합 seed를 사용하지 않는다.
+동명이인 중 특정 Person이 Term 대상이라고 확정한 경우만 `term_person_review_approved.csv`에 기록한다.
 
 `theme_seed.csv`, `era_seed.csv`, `entity_type_seed.csv`는 명시 ID 컬럼을 가진다. 이 ID는 Neo4j 노드의 primary key로 쓰이며, seed 행을 재정렬하거나 중간에 새 행을 넣어도 기존 ID가 밀리지 않게 하기 위한 안정 장치다.
 

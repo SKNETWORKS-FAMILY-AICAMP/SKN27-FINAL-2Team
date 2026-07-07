@@ -127,7 +127,6 @@ seed는 자동 생성 결과가 아니라 사람이 관리하는 입력 규칙�
 | `keyword_era_seed.csv` | 120 | 시험 빈출 키워드와 표준 시대의 매핑. `test/CJ/test_ML/ml_keyword_era_overrides.json`에서 변환 후 고조선/초기 국가 키워드 20건 확장 |
 | `reign_seed.csv` | 8 | 왕대/연호 이름과 연도 범위. 연도 파서 보조용. 같은 왕 이름이 여러 시대에 있으면 자동 계산에서 제외 |
 | `term_person_review_approved.csv` | 0 | 사람이 승인한 Term-Person 수동 연결 목록. 승인 행은 `term_refers_to_person.csv`에 `match_type=MANUAL`로 합류 |
-| `person_duplicate_review_approved.csv` | 0 또는 없음 | 사람이 확정한 Person ID 동일인 병합 목록. `duplicate_person_id`를 `canonical_person_id`로 치환하는 데 사용하며, Term-Person 연결 승인 파일이 아님 |
 
 seed가 필요한 이유:
 
@@ -840,6 +839,7 @@ RETURN DISTINCT e
 이 staging 파일이 과거 실행 결과로 남아 있어도 graph 생성은 읽지 않으며, 남아 있으면 삭제해도 된다.
 Term의 `start_year`, `end_year`와 Person의 `birth_year`, `death_year`가 숫자로 완전히 같은 후보가 해당 Term에서 1명뿐이면 자동 `REFERS_TO` 관계로 붙이고, 같은 `term_id`의 다른 후보도 검토 대상에서 제외한다.
 정확히 일치하는 후보가 없거나 2명 이상이면 자동 연결하지 않고 이름/한자 후보를 `term_person_review.csv`에 `PENDING` 검토 후보로 남긴다.
+그 뒤 `review_type=TERM_PERSON`이면서 `term_id`, `name`, `person_id`가 모두 검토 후보 안에서 단독인 고립 후보는 제외한다.
 `birth_year`, `death_year`는 원천 Person 데이터의 연도 문자열을 그대로 표시한다.
 원천이 비어 있으면 빈 값으로 두고, `14??`, `?`, `1745(1730)`처럼 부분/불확실 연도도 원천값이면 그대로 둔다.
 Term 설명의 재위 연도에서 생몰년을 추론해 채우지 않는다.
@@ -849,9 +849,9 @@ Term이 특정 Person을 가리킨다고 사람이 확정한 경우에는 `seed/
 runner를 다시 실행하면 승인 행은 `term_refers_to_person.csv`에 `match_type=MANUAL`로 합류한다.
 staging 파일의 `review_status`와 `note`를 수정해도 graph 반영 기준이 되지 않는다. 검수 결과는 seed 파일에 기록한다.
 
-`PERSON_DUPLICATE`는 "서로 다른 Person ID가 같은 인물이다"라는 동일인 병합 확정이다.
-4컬럼짜리 `term_person_review_approved.csv`로는 `duplicate_person_id -> canonical_person_id` 치환을 표현할 수 없으므로, 동일인으로 확정한 경우에만 `seed/person_duplicate_review_approved.csv`에 `duplicate_person_id`, `canonical_person_id`를 포함해 기록한다.
-이 seed는 graph 생성 단계에서 Person ID를 canonical ID로 치환하는 데 쓰이며, 확정된 동일인 병합이 없으면 없거나 비어 있을 수 있다.
+`PERSON_DUPLICATE`는 같은 Term 설명에 여러 Person 후보가 붙어 추가 선택이 필요하다는 표시이다.
+공식 graph 생성 흐름에서는 Person ID 병합 seed를 사용하지 않는다.
+따라서 `person_duplicate_review_approved.csv`를 만들거나 수정하지 않고, Term이 특정 Person을 가리킨다고 확정한 경우만 `term_person_review_approved.csv`에 기록한다.
 
 ### 15.8 Import 변경
 
