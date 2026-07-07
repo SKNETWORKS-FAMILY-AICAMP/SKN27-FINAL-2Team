@@ -104,30 +104,8 @@
       return null;
     }
 
-    async function hasInProgressDiagnosisSession() {
-      try {
-        const response = await fetch("/diagnosis/api/sessions/in-progress/", {
-          credentials: "same-origin",
-        });
-        if (!response.ok) return false;
-        const payload = await response.json();
-        return !!payload.sessions?.length;
-      } catch (error) {
-        console.error(error);
-        return false;
-      }
-    }
-
     document.getElementById("startButton").addEventListener("click", async () => {
       const button = document.getElementById("startButton");
-      const hasInProgress = await hasInProgressDiagnosisSession();
-      if (hasInProgress) {
-        const shouldCreateNew = confirm(
-          "풀다 만 진단평가가 있습니다. 새 진단평가를 시작하면 기존 진행 기록은 삭제됩니다. 계속하시겠습니까?"
-        );
-        if (!shouldCreateNew) return;
-      }
-
       button.disabled = true;
       button.textContent = "준비 중...";
 
@@ -148,7 +126,6 @@
 
         const data = await res.json();
         data.startedAt = Date.now();
-        localStorage.removeItem("diagnosisInProgress");
         sessionStorage.setItem("diagnosisSession", JSON.stringify(data));
         window.location.href = "/diagnosis/exam/";
       } catch (e) {

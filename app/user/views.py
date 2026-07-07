@@ -49,6 +49,18 @@ def _note_choice_display_data(session, question, options, selected_no):
     return choices, answer_no, selected_answer, wrong_explanations
 
 
+def _wrong_note_session_source(session, records):
+    has_study_plan_record = any(
+        record.studyplan_id or record.study_plan_block_id
+        for record in records
+    )
+    if session.session_type == "diagnostic":
+        return "diagnostic", "진단평가"
+    if has_study_plan_record:
+        return "study_plan", "학습계획 문제 풀이"
+    return "practice", "문제풀이"
+
+
 def login_page(request):
     if request.method == "POST":
         email = (request.POST.get("email") or "").strip().lower()
@@ -272,8 +284,8 @@ def wrong_note(request):
         records_by_session.setdefault(record.session_id, []).append(record)
 
     for session in sessions:
-        session_type_label = "진단평가" if session.session_type == "diagnostic" else "문제풀이"
         session_records = records_by_session.get(session.session_id, [])
+        session_source, session_type_label = _wrong_note_session_source(session, session_records)
         answered_records = [record for record in session_records if record.selected_no is not None]
         correct_count = sum(1 for record in answered_records if record.is_correct)
         wrong_count = sum(1 for record in answered_records if not record.is_correct)
@@ -281,7 +293,8 @@ def wrong_note(request):
         total_time_ms = sum(record.time_spent_ms or 0 for record in session_records)
         session_summaries.append({
             "sessionId": session.session_id,
-            "sessionType": session.session_type,
+            "sessionType": session_source,
+            "rawSessionType": session.session_type,
             "sessionTypeLabel": session_type_label,
             "label": f"Session #{session.session_id}",
             "status": session.status,
@@ -303,7 +316,7 @@ def wrong_note(request):
     for record in records:
         question = record.question
         session = session_map[record.session_id]
-        session_type_label = "진단평가" if session.session_type == "diagnostic" else "문제풀이"
+        session_source, session_type_label = _wrong_note_session_source(session, [record])
         options = option_map.get(question.question_id, [])
         choices, answer_no, user_answer, wrong_explanations = _note_choice_display_data(
             session,
@@ -318,7 +331,8 @@ def wrong_note(request):
         note_records.append({
             "id": record.record_id,
             "sessionId": record.session_id,
-            "sessionType": session.session_type,
+            "sessionType": session_source,
+            "rawSessionType": session.session_type,
             "sessionTypeLabel": session_type_label,
             "sessionLabel": session.recorded_date.isoformat()
             if session.recorded_date
