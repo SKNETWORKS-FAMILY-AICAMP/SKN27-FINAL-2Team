@@ -127,6 +127,7 @@ seed는 자동 생성 결과가 아니라 사람이 관리하는 입력 규칙�
 | `keyword_era_seed.csv` | 120 | 시험 빈출 키워드와 표준 시대의 매핑. `test/CJ/test_ML/ml_keyword_era_overrides.json`에서 변환 후 고조선/초기 국가 키워드 20건 확장 |
 | `reign_seed.csv` | 8 | 왕대/연호 이름과 연도 범위. 연도 파서 보조용. 같은 왕 이름이 여러 시대에 있으면 자동 계산에서 제외 |
 | `term_person_review_approved.csv` | 0 | 사람이 승인한 Term-Person 수동 연결 목록. 승인 행은 `term_refers_to_person.csv`에 `match_type=MANUAL`로 합류 |
+| `person_duplicate_review_approved.csv` | 0 또는 없음 | 사람이 확정한 Person ID 동일인 병합 목록. `duplicate_person_id`를 `canonical_person_id`로 치환하는 데 사용하며, Term-Person 연결 승인 파일이 아님 |
 
 seed가 필요한 이유:
 
@@ -833,7 +834,20 @@ RETURN DISTINCT e
 .\.venv\Scripts\python.exe etl/preprocessing/neo4j/scripts/make_term_person_review.py --save
 ```
 
-이 스크립트는 `staging/term_person_review.csv` 후보를 만들고, 사람이 승인한 행만 `seed/term_person_review_approved.csv`에 옮긴다. runner를 다시 실행하면 승인 행은 `term_refers_to_person.csv`에 `match_type=MANUAL`로 합류한다. 검수 결과를 staging이 아니라 seed에 두는 이유는 사람의 판단 결과가 재생성 가능한 규칙이 아니라 보존해야 하는 결정이기 때문이다.
+이 스크립트는 `staging/term_person_review.csv` 후보를 만든다.
+검수 후보 파일은 이 파일 하나이며, `review_type`으로 `TERM_PERSON`과 `PERSON_DUPLICATE`를 구분한다.
+별도 `staging/person_duplicate_review.csv`는 공식 검수 후보 파일로 사용하지 않는다.
+`birth_year`, `death_year`는 원천 Person 데이터의 연도 문자열을 그대로 표시한다.
+원천이 비어 있으면 빈 값으로 두고, `14??`, `?`, `1745(1730)`처럼 부분/불확실 연도도 원천값이면 그대로 둔다.
+Term 설명의 재위 연도에서 생몰년을 추론해 채우지 않는다.
+
+승인 결과 seed는 목적별로 분리한다.
+`TERM_PERSON`은 "이 Term이 이 Person을 가리킨다"는 수동 연결 승인이고, `seed/term_person_review_approved.csv`에 `term_id`, `person_id`, `review_status`, `note`만 기록한다.
+runner를 다시 실행하면 승인 행은 `term_refers_to_person.csv`에 `match_type=MANUAL`로 합류한다.
+
+`PERSON_DUPLICATE`는 "서로 다른 Person ID가 같은 인물이다"라는 동일인 병합 확정이다.
+4컬럼짜리 `term_person_review_approved.csv`로는 `duplicate_person_id -> canonical_person_id` 치환을 표현할 수 없으므로, 동일인으로 확정한 경우에만 `seed/person_duplicate_review_approved.csv`에 `duplicate_person_id`, `canonical_person_id`를 포함해 기록한다.
+이 seed는 graph 생성 단계에서 Person ID를 canonical ID로 치환하는 데 쓰이며, 확정된 동일인 병합이 없으면 없거나 비어 있을 수 있다.
 
 ### 15.8 Import 변경
 
