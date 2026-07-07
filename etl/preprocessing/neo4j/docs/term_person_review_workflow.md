@@ -3,6 +3,7 @@
 검수 후보 CSV는 `etl/preprocessing/neo4j/staging/term_person_review.csv` 하나만 사용한다.
 Term-Person 연결 후보와 Person ID 병합 후보는 같은 파일 안에서 `review_type` 값으로 구분한다.
 별도 `staging/person_duplicate_review.csv`는 공식 검수 산출물이 아니다.
+이 파일이 과거 실행 결과로 남아 있으면 삭제해도 되며, `make_graph_csv.py`는 이 staging 파일을 읽지 않는다.
 
 승인 결과 seed는 검수 목적에 따라 분리한다.
 `term_person_review_approved.csv`는 Term-Person 연결 승인만 기록하고, `person_duplicate_review_approved.csv`는 Person ID 동일인 병합 확정만 기록한다.
@@ -82,14 +83,14 @@ LLM은 문맥을 그럴듯하게 추론할 수 있지만 원천 데이터의 한
 검수는 `make_term_person_review.py --save`로 다시 만든 `staging/term_person_review.csv`에서 진행한다.
 
 - `TERM_PERSON`: 같은 이름을 가진 여러 Person 중 특정 Term이 어느 Person을 가리키는지 고르는 후보
-- `PERSON_DUPLICATE`: 같은 `term_id`, `name`, `term_hanja`, `term_desc_preview`에 서로 다른 `person_id`가 붙은 후보
+- `PERSON_DUPLICATE`: 같은 `term_id`, `name`, `term_hanja`, `term_desc_preview`에 서로 다른 `person_id`가 붙어 있어 추가 판단이 필요한 후보
 
 예를 들어 같은 `강로(姜㳣)` Term 설명에 `P000159`, `P000160`이 모두 붙으면 `PERSON_DUPLICATE`로 표시된다.
-이 경우에는 Term-Person 연결보다 Person ID 병합 여부를 먼저 검수한다.
+이 경우에는 먼저 두 Person ID가 실제 동일인인지, 아니면 동명이인 중 특정 Person만 Term이 가리키는지 판단한다.
 
 동일인이 확실하면 검수 판단 근거는 `term_person_review.csv`의 `PERSON_DUPLICATE` 행에서 확인하고, graph 생성에 필요한 최종 canonical 치환값만 아래 seed에 수동으로 기록한다.
-즉 검수 후보는 한 파일(`term_person_review.csv`)이고, 병합 seed는 확정 결과를 재생성에 반영하기 위한 입력값이다.
-`term_person_review_approved.csv`에는 `PERSON_DUPLICATE` 결과를 쓰지 않는다.
+동명이인이고 Term이 그중 한 Person만 가리키는 것이 확실하면 병합 seed가 아니라 `term_person_review_approved.csv`에 Term-Person 연결 승인으로 기록한다.
+즉 검수 후보는 한 파일(`term_person_review.csv`)이고, 승인 결과는 판단 내용에 따라 다른 seed에 기록한다.
 
 ```text
 etl/preprocessing/neo4j/seed/person_duplicate_review_approved.csv
@@ -138,14 +139,13 @@ etl/preprocessing/neo4j/staging/term_person_review.csv
 이 파일은 후보 검수용이다. 모든 행을 그대로 승인 seed에 넣으면 안 된다.
 후보 생성 단계에서는 `person_hanja`와 `term_hanja`가 모두 있고 두 값이 같은 행만 남긴다.
 한자가 없는 후보나 한자가 서로 다른 후보는 검수 CSV에 포함하지 않는다.
-또한 Term 설명에 `재위 975-981년`처럼 강한 재위 연도 단서가 있으면 Person의 `birth_year`, `death_year`와 겹치는 후보만 남긴다.
-이때 Term 설명이나 재위 연도에서 생몰년을 추론해 채우지 않는다.
+Term의 `start_year`, `end_year`와 Person의 `birth_year`, `death_year`가 숫자로 완전히 같은 후보가 해당 Term에서 1명뿐이면 graph 생성 단계에서 자동 `REFERS_TO` 관계로 붙인다.
+이 경우 같은 `term_id`의 다른 이름/한자 후보도 검토 대상에서 제외한다.
+정확히 일치하는 후보가 없거나 2명 이상이면 자동 연결하지 않고 이름/한자 후보를 `term_person_review.csv`에 `PENDING` 검토 후보로 남긴다.
+이때 Term 설명이나 연도 단서에서 생몰년을 추론해 채우지 않는다.
 원천 Person 생몰년이 비어 있으면 `birth_year`, `death_year` 출력값은 빈 값으로 둔다.
 원천에 `14??`, `?`, `1745(1730)`처럼 부분/불확실 연도가 들어 있으면 임의로 고치거나 지우지 않고 그대로 표시한다.
-재위 연도는 후보를 줄이는 필터 계산에만 사용하고 최종 검수 CSV 컬럼에는 남기지 않는다.
-같은 `term_id`, `name`, `term_hanja`, 설명 그룹 안에 생몰년이 모두 있는 후보가 하나라도 있으면, 생몰년이 비어 있는 후보는 제외한다.
-그룹 안의 모든 후보가 생몰년이 비어 있으면 정보 부족 후보로 유지한다.
-이 필터를 거친 뒤 `name` 기준 distinct `person_id`가 하나뿐인 후보는 동명이인 검수 대상이 아니므로 `term_person_review.csv`에서 제외한다.
+검토자가 비교할 수 있도록 Term의 원천 연도(`term_year_text`, `term_start_year`, `term_end_year`)와 Person 생몰년을 함께 표시한다.
 그래도 연호, 국가명, 작품명처럼 사람이 아닌 Term이 Person 후보와 같은 한자를 갖는 경우가 남을 수 있으므로 직접 검수는 필요하다.
 
 ## 2. `term_person_review.csv` 컬럼 값
@@ -157,6 +157,9 @@ etl/preprocessing/neo4j/staging/term_person_review.csv
 | `term_id` | Term 식별자 | `terms.csv`의 `term_id` 값이다. 승인 seed에 그대로 사용한다. |
 | `term_hanja` | 한자 문자열 | Term의 한자 값이다. 생성 후보에서는 비어 있지 않고 `person_hanja`와 같은 행만 남긴다. |
 | `term_desc_preview` | Term 설명 앞 50자, 또는 빈 값 | 사람이 설명 문맥을 빠르게 확인하기 위한 미리보기이다. 원본 설명이 비어 있으면 빈 값일 수 있다. |
+| `term_year_text` | 원천 Term 연도 문자열, 또는 빈 값 | `terms.csv`의 `year_text` 값이다. Person 생몰년과 비교하기 위한 검수 근거이다. |
+| `term_start_year` | 파싱된 시작 연도, 또는 빈 값 | `terms.csv`의 `start_year` 값이다. 자동 연결은 이 값과 `birth_year`가 숫자로 같을 때만 가능하다. |
+| `term_end_year` | 파싱된 종료 연도, 또는 빈 값 | `terms.csv`의 `end_year` 값이다. 자동 연결은 이 값과 `death_year`가 숫자로 같을 때만 가능하다. |
 | `person_id` | Person 식별자 | `people.csv`의 `person_id` 값이다. 승인 seed 또는 병합 seed에 사용한다. |
 | `person_name` | 한글 이름 문자열 | Person 이름에서 추출한 기본 이름이다. 보통 `name`과 같다. |
 | `person_hanja` | 한자 문자열 | Person의 한자 값이다. 생성 후보에서는 비어 있지 않고 `term_hanja`와 같은 행만 남긴다. |
@@ -182,17 +185,32 @@ etl/preprocessing/neo4j/staging/term_person_review.csv
 
 ## 4. 승인 seed 작성
 
-`term_person_review.csv`에서 검수하더라도 승인 결과는 `review_type`에 따라 다른 seed에 기록한다.
+`term_person_review.csv`는 재생성되는 staging 후보 파일이므로 검수 결과를 여기에 직접 누적하지 않는다.
+staging의 `review_status`와 `note`는 후보 상태와 참고용 컬럼이며, graph 반영 여부는 seed 파일이 결정한다.
+검수 결과는 아래 seed 파일 중 하나에 새 행으로 기록한다.
 4컬럼짜리 `term_person_review_approved.csv`로는 `duplicate_person_id -> canonical_person_id` 병합을 표현할 수 없다.
 
-| `review_type` | 사람이 판단하는 내용 | 기록할 seed | 필요한 컬럼 |
-| --- | --- | --- | --- |
-| `TERM_PERSON` | 이 Term이 이 Person을 가리키는가 | `term_person_review_approved.csv` | `term_id`, `person_id`, `review_status`, `note` |
-| `PERSON_DUPLICATE` | 서로 다른 Person ID가 같은 인물인가 | `person_duplicate_review_approved.csv` | `name`, `hanja`, `duplicate_person_id`, `canonical_person_id`, `review_status`, `note` |
+| 판단 결과 | 기록할 seed | 필요한 컬럼 |
+| --- | --- | --- |
+| 이 Term이 이 Person을 가리키는 것이 확실함 | `term_person_review_approved.csv` | `term_id`, `person_id`, `review_status`, `note` |
+| 서로 다른 Person ID가 실제 같은 인물이라 병합해야 함 | `person_duplicate_review_approved.csv` | `name`, `hanja`, `duplicate_person_id`, `canonical_person_id`, `review_status`, `note` |
+| 동명이인이거나 판단 불가 | 기록하지 않음 | seed에 넣지 않는다. 필요하면 별도 작업 메모에 보류 사유만 남긴다. |
+
+### 4.0 실제 검토 순서
+
+1. `etl/preprocessing/neo4j/staging/term_person_review.csv`를 연다.
+2. `review_status`가 `PENDING`인 행을 본다.
+3. 같은 `term_id`, `name`, `term_hanja`, `term_desc_preview`끼리 묶어서 비교한다.
+4. 먼저 `term_year_text`, `term_start_year`, `term_end_year`와 `birth_year`, `death_year`가 맞는지 본다.
+5. 연도가 비어 있거나 `14??`, `?`, `1745(1730)`처럼 불확실하면 추론해서 채우지 않고 설명/한자/문맥으로만 판단한다.
+6. 연결이 확실하면 `term_person_review_approved.csv`에 `term_id`, `person_id`, `APPROVED`, 근거 `note`를 기록한다.
+7. 여러 `person_id`가 실제 같은 사람이라면 `person_duplicate_review_approved.csv`에 `duplicate_person_id`, `canonical_person_id`, `APPROVED`, 근거 `note`를 기록한다.
+8. 동명이인인데 Term이 누구를 말하는지 모르거나 근거가 부족하면 어떤 seed에도 기록하지 않는다.
 
 ### 4.1 Term-Person 연결 승인
 
-`TERM_PERSON` 검수 후 맞는 연결만 아래 파일에 기록한다.
+검수 후 Term이 특정 Person을 가리키는 것이 확실한 연결만 아래 파일에 기록한다.
+`review_type=TERM_PERSON` 행뿐 아니라, `review_type=PERSON_DUPLICATE` 행에서 동명이인 중 올바른 Person을 고른 경우도 이 seed에 기록할 수 있다.
 
 ```text
 etl/preprocessing/neo4j/seed/term_person_review_approved.csv

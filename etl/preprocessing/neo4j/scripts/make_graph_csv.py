@@ -156,11 +156,6 @@ def parse_args(default_paths):
         type=Path,
     )
     parser.add_argument(
-        "--person-duplicate-review-approved-path",
-        default=default_paths["person_duplicate_review_approved"],
-        type=Path,
-    )
-    parser.add_argument(
         "--nodes-dir",
         default=default_paths["nodes_dir"],
         type=Path,
@@ -2145,6 +2140,72 @@ def find_unique_names(left_names, right_names):
     return unique_left & unique_right
 
 
+def merge_person_life_year_columns(person_data, person_nodes):
+    enriched_data = person_data.copy()
+
+    for column_name in ["birth_year", "death_year"]:
+        if column_name in person_nodes.columns:
+            enriched_data = enriched_data.merge(
+                person_nodes[["person_id", column_name]],
+                on="person_id",
+                how="left",
+            )
+
+        if column_name not in enriched_data.columns:
+            enriched_data[column_name] = pd.NA
+
+    return enriched_data
+
+
+def build_exact_term_person_year_mask(data_frame):
+    required_columns = ["start_year", "end_year", "birth_year", "death_year"]
+    missing_columns = [
+        column_name
+        for column_name in required_columns
+        if column_name not in data_frame.columns
+    ]
+
+    if missing_columns:
+        return pd.Series(False, index=data_frame.index)
+
+    term_start_year = pd.to_numeric(data_frame["start_year"], errors="coerce")
+    term_end_year = pd.to_numeric(data_frame["end_year"], errors="coerce")
+    birth_year = pd.to_numeric(data_frame["birth_year"], errors="coerce")
+    death_year = pd.to_numeric(data_frame["death_year"], errors="coerce")
+    has_complete_years = (
+        term_start_year.notna()
+        & term_end_year.notna()
+        & birth_year.notna()
+        & death_year.notna()
+    )
+
+    return (
+        has_complete_years
+        & term_start_year.eq(birth_year)
+        & term_end_year.eq(death_year)
+    )
+
+
+def build_unique_exact_term_person_year_group_mask(data_frame):
+    exact_year_match = build_exact_term_person_year_mask(data_frame)
+
+    if "term_id" not in data_frame.columns or "person_id" not in data_frame.columns:
+        return exact_year_match
+
+    exact_person_counts = (
+        data_frame[exact_year_match].groupby("term_id")["person_id"].nunique()
+    )
+    mapped_counts = data_frame["term_id"].map(exact_person_counts).fillna(0)
+
+    return mapped_counts.eq(1)
+
+
+def build_unique_exact_term_person_year_mask(data_frame):
+    exact_year_match = build_exact_term_person_year_mask(data_frame)
+
+    return exact_year_match & build_unique_exact_term_person_year_group_mask(data_frame)
+
+
 def build_term_person_relation_columns():
     return [
         "start_term_id",
@@ -2560,13 +2621,13 @@ def build_term_refers_to_person(
     person_nodes,
     term_person_review_approved,
 ):
-    # 이름이 양쪽에서 유일하면 EXACT_NAME으로 연결하고,
-    # 동명이 있으면 이름+한자 조합이 양쪽에서 유일할 때만 NAME_HANJA로 연결한다.
-    # 그 외 동명 케이스는 검수 대상으로 보고 관계를 만들지 않는다.
-    term_data = term_nodes[["term_id", "name", "hanja"]].copy()
+    # Term year range and Person life years must match exactly for auto links.
+    # Other name/hanja candidates stay in term_person_review.csv for review.
+    term_data = term_nodes[["term_id", "name", "hanja", "start_year", "end_year"]].copy()
     term_data["name"] = term_data["name"].fillna("").str.strip()
     term_data["hanja"] = term_data["hanja"].fillna("").str.strip()
     person_data = split_person_name_columns(person_nodes)
+    person_data = merge_person_life_year_columns(person_data, person_nodes)
 
     person_name_data = person_data.drop_duplicates(subset=["person_id", "base_name"])
     auto_names = find_unique_names(term_data["name"], person_name_data["base_name"])
@@ -2584,30 +2645,24 @@ def build_term_refers_to_person(
         | term_hanja.eq(person_hanja)
     )
     auto_links = auto_links[hanja_compatible].copy()
+    auto_links = auto_links[
+        build_unique_exact_term_person_year_mask(auto_links)
+    ].copy()
     auto_links["match_type"] = "EXACT_NAME"
 
     remaining_terms = term_data[
-        ~term_data["name"].isin(auto_names) & term_data["hanja"].ne("")
+        ~term_data["term_id"].isin(auto_links["term_id"]) & term_data["hanja"].ne("")
     ].copy()
-    remaining_persons = person_data[
-        ~person_data["base_name"].isin(auto_names) & person_data["hanja"].ne("")
-    ].copy()
-
-    term_pair_counts = remaining_terms.groupby(["name", "hanja"]).size()
-    person_pair_counts = remaining_persons.groupby(["base_name", "hanja"]).size()
-    unique_term_pairs = set(term_pair_counts[term_pair_counts == 1].index)
-    unique_person_pairs = set(person_pair_counts[person_pair_counts == 1].index)
-    hanja_pairs = unique_term_pairs & unique_person_pairs
-
-    hanja_terms = remaining_terms[
-        remaining_terms[["name", "hanja"]].apply(tuple, axis=1).isin(hanja_pairs)
-    ]
-    hanja_links = hanja_terms.merge(
+    remaining_persons = person_data[person_data["hanja"].ne("")].copy()
+    hanja_links = remaining_terms.merge(
         remaining_persons,
         left_on=["name", "hanja"],
         right_on=["base_name", "hanja"],
         suffixes=("", "_person"),
     )
+    hanja_links = hanja_links[
+        build_unique_exact_term_person_year_mask(hanja_links)
+    ].copy()
     hanja_links["match_type"] = "NAME_HANJA"
 
     auto_link_data = pd.concat([auto_links, hanja_links], ignore_index=True)
