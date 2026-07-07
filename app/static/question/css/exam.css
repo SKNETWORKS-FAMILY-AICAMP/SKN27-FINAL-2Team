@@ -54,6 +54,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 10px;
   margin-bottom: 14px;
 }
@@ -62,14 +63,17 @@ body {
   display: flex;
   align-items: center;
   justify-content: flex-end;
+  flex-wrap: wrap;
   gap: 8px;
   min-width: 0;
+  max-width: 100%;
 }
 
 .question-type-chip {
   display: inline-flex;
   align-items: center;
-  max-width: 260px;
+  width: fit-content;
+  max-width: 100%;
   min-height: 34px;
   padding: 0 14px;
   border: 1px solid var(--line);
@@ -78,9 +82,9 @@ body {
   color: #2f241b;
   font-size: 13px;
   font-weight: 900;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.35;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .question-score {
@@ -293,6 +297,6 @@ body {
   }
 
   .question-type-chip {
-    max-width: min(100%, 260px);
+    max-width: 100%;
   }
 }
