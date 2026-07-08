@@ -19,7 +19,8 @@ NOT_FOUND_ANSWER = "검색 결과가 없습니다."
 MIN_KEYWORD_SCORE = 0.12
 MIN_COMBINED_SCORE = 0.70
 FOLLOW_UP_MIN_COMBINED_SCORE = 0.50
-FOLLOW_UP_TERMS = ("그거", "이거", "저거", "그럼", "좀더", "자세", "설명", "의의", "역사적", "왜", "어떻게", "차이", "비교", "누가", "누구", "발명", "만든", "만들", "했는데", "인데")
+FOLLOW_UP_TERMS = ("그거", "이거", "저거", "방금", "위", "앞에서", "그 정책", "그 왕", "그 인물", "그 사건", "그 제도")
+PROBLEM_CONTEXT_TERMS = ("문제", "문항", "선지", "정답", "해설", "키 포인트", "오답", "보기")
 CONTEXT_ONLY_TERMS = ("업적", "정책", "활동", "과학적", "문화적", "정치적", "경제적")
 CONTEXT_ONLY_FOCUS_TERMS = {"과학적", "문화적", "정치적", "경제적"}
 VAGUE_FOCUS_TERMS = {"뭐가있어", "뭐가있나요", "뭐있어", "뭐있나요"}
@@ -128,6 +129,40 @@ def not_found_answer(question: str, intent: str, graph_context: dict[str, Any] |
     }
 
 
+def build_retrieval_debug(
+    search_seed: str,
+    enriched_question: str,
+    sources: list[dict[str, Any]],
+    graph_context: dict[str, Any] | None,
+) -> dict[str, Any]:
+    graph_terms = []
+    for term in (graph_context or {}).get("terms") or []:
+        graph_terms.append(
+            {
+                "term_name": term.get("term_name"),
+                "score": term.get("score"),
+                "related_terms": (term.get("related_terms") or [])[:5],
+            }
+        )
+    selected_sources = []
+    for source in sources[:8]:
+        selected_sources.append(
+            {
+                "title": source.get("title"),
+                "source_type": source.get("source_type"),
+                "source_name": source.get("source_name"),
+                "score": source.get("score"),
+            }
+        )
+    return {
+        "search_seed": search_seed,
+        "enriched_question": enriched_question,
+        "graph_max_hop": (graph_context or {}).get("max_hop"),
+        "graph_terms": graph_terms,
+        "selected_sources": selected_sources,
+    }
+
+
 def build_enriched_question(question: str, graph_context: dict[str, Any]) -> str:
     keywords = graph_context.get("keywords") or []
     if not keywords:
@@ -157,7 +192,27 @@ def should_use_graph_context(question: str, intent: str) -> bool:
         return False
     if any(term in question for term in RELATION_QUERY_TERMS):
         return True
-    return any(term in question for term in RELATION_JOIN_TERMS) and len(overview_focus_terms(question)) >= 2
+    if any(term in question for term in RELATION_JOIN_TERMS) and len(overview_focus_terms(question)) >= 2:
+        return True
+    
+    # 인물/왕 또는 대표 역사 개념/제도 질문에 대해 Graph Context 활성화하여 Neo4j 연관 키워드 확보
+    focus_terms = overview_focus_terms(question)
+    if focus_terms:
+        person_patterns = ("대왕", "왕", "태조", "태종", "세종", "세조", "성종", "광해", "영조", "정조", "고종", "순종", "이성계", "왕건", "궁예", "견훤", "김유신", "을지문덕", "장보고")
+        if any(p in question for p in person_patterns):
+            return True
+        if intent == "concept":
+            return True
+            
+    return False
+
+
+def graph_hop_for_question(question: str) -> int:
+    return 2 if any(term in question for term in RELATION_QUERY_TERMS) else 1
+
+
+def is_problem_context_question(question: str) -> bool:
+    return bool(re.search(r"\d+\s*번", question)) or any(term in question for term in PROBLEM_CONTEXT_TERMS)
 
 
 def normalize_history(history: list[dict[str, Any]] | None, max_turns: int = 5) -> list[dict[str, str]]:
@@ -186,10 +241,13 @@ def recent_topic_from_history(history: list[dict[str, str]], question: str) -> s
     return ""
 
 
-def build_search_question(question: str, history: list[dict[str, str]]) -> str:
+def build_search_question(question: str, history: list[dict[str, str]], intent: str = "concept") -> str:
     if not history:
         return question
-    needs_context = any(term in question for term in FOLLOW_UP_TERMS)
+    if intent == "question" and not is_problem_context_question(question):
+        return question
+    needs_context = intent == "question" and is_problem_context_question(question)
+    needs_context = needs_context or any(term in question for term in FOLLOW_UP_TERMS)
     focus_terms = overview_focus_terms(question)
     effective_focus_terms = tuple(term for term in focus_terms if term not in VAGUE_FOCUS_TERMS)
     needs_context = needs_context or (
@@ -295,9 +353,13 @@ def build_history_rag_answer(
     elif intent == "concept":
         answer_format = "structured"
 
-    search_seed = build_search_question(question, conversation_history)
+    search_seed = build_search_question(question, conversation_history, intent)
     is_contextual_follow_up = search_seed != question
-    graph_context = build_graph_context(search_seed, limit=8) if should_use_graph_context(search_seed, intent) else None
+    graph_context = (
+        build_graph_context(search_seed, limit=8, max_hop=graph_hop_for_question(search_seed))
+        if should_use_graph_context(search_seed, intent)
+        else None
+    )
     search_question = build_enriched_question(search_seed, graph_context) if graph_context else search_seed
     generation_question = search_seed if is_contextual_follow_up else question
 
@@ -306,9 +368,14 @@ def build_history_rag_answer(
     sources = [result_to_payload(result) for result in results]
     timeline_sources = search_timeline_sources(search_question)
     sources.extend(timeline_sources)
+    retrieval_debug = build_retrieval_debug(search_seed, search_question, sources, graph_context)
 
     if not has_enough_evidence(results, intent, timeline_sources, is_contextual_follow_up):
-        return not_found_answer(question, intent, graph_context)
+        result = not_found_answer(question, intent, graph_context)
+        result["search_seed"] = search_seed
+        result["enriched_question"] = search_question
+        result["retrieval_debug"] = retrieval_debug
+        return result
 
     if intent == "image":
         generator = LLMAnswerGenerator.from_env()
@@ -336,6 +403,9 @@ def build_history_rag_answer(
             },
             "sources": sources,
             "graph_context": graph_context,
+            "search_seed": search_seed,
+            "enriched_question": search_question,
+            "retrieval_debug": retrieval_debug,
         }
 
     generator = LLMAnswerGenerator.from_env()
@@ -347,7 +417,11 @@ def build_history_rag_answer(
             history=conversation_history,
         )
         if is_insufficient_structured_answer(structured_answer):
-            return not_found_answer(question, intent, graph_context)
+            result = not_found_answer(question, intent, graph_context)
+            result["search_seed"] = search_seed
+            result["enriched_question"] = search_question
+            result["retrieval_debug"] = retrieval_debug
+            return result
         answer = None
     else:
         structured_answer = None
@@ -360,7 +434,11 @@ def build_history_rag_answer(
             include_source_summary=not short_fact and intent not in {"question", "image"},
         )
         if is_insufficient_text_answer(answer):
-            return not_found_answer(question, intent, graph_context)
+            result = not_found_answer(question, intent, graph_context)
+            result["search_seed"] = search_seed
+            result["enriched_question"] = search_question
+            result["retrieval_debug"] = retrieval_debug
+            return result
 
     return {
         "question": question,
@@ -377,4 +455,7 @@ def build_history_rag_answer(
         },
         "sources": sources,
         "graph_context": graph_context,
+        "search_seed": search_seed,
+        "enriched_question": search_question,
+        "retrieval_debug": retrieval_debug,
     }

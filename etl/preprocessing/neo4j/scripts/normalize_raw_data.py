@@ -10,12 +10,15 @@ EDA 노트북에서 정리한 기준에 맞춰 raw CSV를 정규화한다.
 
 import argparse
 from pathlib import Path
+from urllib.parse import parse_qs, urlparse
 
 import pandas as pd
 
 from neo4j_common import (
+    clean_value,
     join_unique_values,
     print_summary,
+    read_csv,
     resolve_neo4j_dir,
     resolve_project_root,
     save_csv,
@@ -65,17 +68,72 @@ def parse_args(default_paths):
     return parser.parse_args()
 
 
-def build_source_url_frame(data_frame, key_columns, url_column, output_column):
+def extract_url_query_value(url_text, query_key):
+    parsed_url = urlparse(str(url_text))
+    query_values = parse_qs(parsed_url.query).get(query_key, [])
+
+    if len(query_values) > 0:
+        return query_values[0].strip()
+
+    return ""
+
+
+def join_representative_urls_by_query_key(values, query_key):
+    clean_urls = []
+
+    for value in values:
+        clean_text = clean_value(value)
+
+        if pd.notna(clean_text):
+            clean_urls.append(str(clean_text))
+
+    representative_urls = {}
+
+    for url_text in sorted(set(clean_urls)):
+        query_value = extract_url_query_value(url_text, query_key)
+        url_group_key = url_text
+
+        if query_value != "":
+            url_group_key = query_value
+
+        if url_group_key not in representative_urls:
+            representative_urls[url_group_key] = url_text
+
+    selected_urls = sorted(representative_urls.values())
+
+    if len(selected_urls) == 0:
+        return ""
+
+    return "|".join(selected_urls)
+
+
+def build_source_url_frame(
+    data_frame,
+    key_columns,
+    url_column,
+    output_column,
+    representative_query_key="",
+):
     key_frame = data_frame.loc[:, key_columns].drop_duplicates().reset_index(drop=True)
 
     if url_column not in data_frame.columns:
         key_frame[output_column] = pd.NA
         return key_frame
 
+    source_url_joiner = join_unique_values
+
+    if representative_query_key != "":
+        source_url_joiner = (
+            lambda values: join_representative_urls_by_query_key(
+                values,
+                representative_query_key,
+            )
+        )
+
     return (
         data_frame
         .groupby(key_columns, dropna=False)[url_column]
-        .apply(join_unique_values)
+        .apply(source_url_joiner)
         .reset_index(name=output_column)
     )
 
@@ -96,7 +154,8 @@ def normalize_terms(term_data):
     normalized_terms = select_existing_columns(term_data, term_columns)
 
     if "term_kind" in normalized_terms.columns:
-        normalized_terms = normalized_terms[normalized_terms["term_kind"].eq(2)].copy()
+        # dtype=str로 읽으므로 문자열 "2"와 비교한다. 결측이 섞여 float화("2.0")되는 사고를 막는다.
+        normalized_terms = normalized_terms[normalized_terms["term_kind"].eq("2")].copy()
 
     if "term_id" in normalized_terms.columns:
         normalized_terms = normalized_terms.drop_duplicates(subset=["term_id"]).copy()
@@ -110,6 +169,7 @@ def normalize_events(event_data):
         ["event_id"],
         "detail_url",
         "source_urls",
+        "dataId",
     )
     drop_columns = [
         column
@@ -143,6 +203,7 @@ def normalize_event_relations(event_relation_data):
         key_columns,
         "detail_url",
         "source_urls",
+        "dataId",
     )
     drop_columns = [
         column
@@ -225,10 +286,10 @@ def main():
     default_paths = build_default_paths(project_root, neo4j_dir)
     args = parse_args(default_paths)
 
-    term_data = pd.read_csv(args.history_terms_path)
-    event_data = pd.read_csv(args.events_path)
-    event_relation_data = pd.read_csv(args.event_relations_path)
-    person_relation_data = pd.read_csv(args.person_relations_path)
+    term_data = read_csv(args.history_terms_path, "history_terms")
+    event_data = read_csv(args.events_path, "events")
+    event_relation_data = read_csv(args.event_relations_path, "event_relations")
+    person_relation_data = read_csv(args.person_relations_path, "person_relations")
 
     normalized_terms = normalize_terms(term_data)
     normalized_events = normalize_events(event_data)

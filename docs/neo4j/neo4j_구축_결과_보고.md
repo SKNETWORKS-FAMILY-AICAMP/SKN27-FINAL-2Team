@@ -1,8 +1,8 @@
-﻿# Neo4j GraphDB 구축 결과 보고
+# Neo4j GraphDB 구축 결과 보고
 
 한국사 학습 챗봇의 문제 생성·개념 검색을 위해, 한국사 용어·사건·인물 데이터를 Neo4j 지식 그래프로 구축했다. 이 문서는 전처리를 어떻게 했고, 왜 그렇게 했으며, 그 결과 무엇을 얻었는지, 그리고 노드·엣지를 어떤 기준으로 설계했는지를 정리한 보고 문서다.
 
-**최종 결과: 노드 17종 351,795건, 관계 CSV 39개 1,231,620건, 관계 타입 22종. 전처리 스크립트 1회 실행으로 전체 재현 가능.**
+**최종 결과: 노드 17종 295,920건, 관계 CSV 39개 1,176,708건, 관계 타입 22종. 전처리 스크립트 1회 실행으로 전체 재현 가능.**
 
 ---
 
@@ -46,7 +46,7 @@ raw CSV → normalized → dictionary → mapping/staging → Neo4j import CSV �
 
 ### 2.2 규칙은 코드가 아니라 seed CSV로 관리
 
-자동으로 판단하기 어려운 규칙은 사람이 관리하는 seed CSV 17종으로 분리했다. 시대 순서·범위(period_seed), 인물 관계 정규화(relation_type_seed), 분류 매핑(taxonomy_crosswalk_seed), 주제·시대·유형 정의, 왕대·연호(reign_seed), 인물 언급 판정 규칙(mention_rule_seed), 판정 상수(graph_config_seed), 수동 검수 승인 목록 등이다.
+자동으로 판단하기 어려운 규칙은 사람이 관리하는 seed CSV 15종으로 분리했다. 시대 순서·범위(period_seed), 인물 관계 정규화(relation_type_seed), 분류 매핑(taxonomy_crosswalk_seed), 주제·시대·유형 정의, 왕대·연호(reign_seed), 수동 검수 승인 목록 등이다.
 
 **왜 그렇게 했는가.** raw 분류명은 출처마다 다르고(`국방·군사` vs `전쟁`), 이름이 같은 것만 자동 매핑하면 누락이 생기고, 의미 유사도로 자동 연결하면 그래프가 흐려진다. 이런 판단을 코드에 하드코딩하면 수정할 때마다 개발자가 필요하다.
 
@@ -75,11 +75,11 @@ raw CSV → normalized → dictionary → mapping/staging → Neo4j import CSV �
 |---|---|---|
 | 핵심 데이터 | Term(61,598), Event(600), Person(56,403) | 검색·출제의 실제 대상 |
 | 분류 체계 | CanonicalCategory(400), SourceEventCategory(53) | 표준 카테고리 계층 / 사건 원본 분류 보존 |
-| 시대 축 | Period(29), Era(10) | 원본 시대 표기 / 표준 시대 10개 |
+| 시대 축 | Period(30), Era(10) | 원본 시대 표기 / 표준 시대 10개 |
 | 서비스 축 | Theme(10), EntityType(4) | 고정 주제 10개 / 실체 유형(인물·문헌·문화재·장소) |
 | 의미 축 | Country(5), Region(7), EconomicDomain(16), TaxonomyFacet(49) | 카테고리 경로에서 분리한 국가·권역·경제·중간 분류 |
 | 검색·묶음 | EventFacet(53), EventGroup(32), SearchTag(175,714) | 사건 성격 facet / 관련 사건 묶음 / 통합 검색 태그 |
-| 출처 | SourceUrl(56,812) | 사건 URL과 인물 상세 URL. Web RAG 수집 후보 |
+| 출처 | SourceUrl(57,412) | 사건 URL과 인물 상세 URL. Web RAG 수집 후보 |
 
 ### 3.2 설계 결정 1 — 원본 보존과 표준화의 분리
 
@@ -122,7 +122,7 @@ raw CSV → normalized → dictionary → mapping/staging → Neo4j import CSV �
 | 관계 | 연결 | 행 수 |
 |---|---|---:|
 | HAS_CATEGORY | Term/Event → CanonicalCategory | 61,697 / 692 |
-| IN_PERIOD | Term/Event → Period | 65,356 / 600 |
+| IN_PERIOD | Term/Event → Period | 65,358 / 600 |
 | IN_ERA (직통) | Term/Event/Person → Era | 54,125 / 600 / 23,029 |
 | HAS_THEME (직통) | Term/Event/Person → Theme | 58,605 / 1,405 / 60,512 |
 | HAS_ENTITY_TYPE | Term → EntityType | 20,662 |
@@ -130,7 +130,7 @@ raw CSV → normalized → dictionary → mapping/staging → Neo4j import CSV �
 | INVOLVED_IN | Person → Event | 6,918 |
 | REFERS_TO | Term → Person/Event | 2,243 / 13 |
 | MENTIONS_PERSON | Term → Person | 8,606 |
-| HAS_SOURCE_URL | Event/Person → SourceUrl | 1,191 / 56,212 |
+| HAS_SOURCE_URL | Event/Person → SourceUrl | 2,382 / 56,212 |
 | HAS_SEARCH_TAG | Term/Event/Person → SearchTag | 349,531 / 6,016 / 238,817 |
 | 구조 관계 | SUBCATEGORY_OF 335, MAPPED_TO_CATEGORY 45, PART_OF_ERA 23 등 | - |
 
@@ -160,7 +160,7 @@ raw CSV → normalized → dictionary → mapping/staging → Neo4j import CSV �
 
 ### 4.5 설계 결정 4 — 출처 URL을 관계 속성이 아닌 노드로
 
-`events.source_urls`, `event_relations.source_urls`, `person_relations.detail_url`은 `SourceUrl` 노드(56,812건, 중복 제거)로 분리한 뒤 `HAS_SOURCE_URL`로 연결한다. 반면 `person_relations.evidence_url`은 범용 URL 허브가 되는 것을 막기 위해 `RELATED_TO.evidence_url` 관계 속성으로만 보존한다.
+`events.source_urls`, `event_relations.source_urls`, `person_relations.detail_url`은 `SourceUrl` 노드(57,412건, 중복 제거)로 분리한 뒤 `HAS_SOURCE_URL`로 연결한다. 반면 `person_relations.evidence_url`은 범용 URL 허브가 되는 것을 막기 위해 `RELATED_TO.evidence_url` 관계 속성으로만 보존한다.
 
 **왜.** 사건 URL과 인물 상세 URL은 출처 노드와 RAG 후보로 유용하지만, 인물 관계의 근거 URL은 같은 문헌/목록 URL 하나가 많은 사람에게 붙을 수 있다. 이를 노드 관계로 승격하면 특정 URL이 과도한 허브가 되어 graph view와 탐색 품질을 흐린다.
 
@@ -173,7 +173,7 @@ raw CSV → normalized → dictionary → mapping/staging → Neo4j import CSV �
 - **적재**: `storage/neo4j/load_schema.py` 실행 한 번으로 기존 그래프 reset → 제약조건 → 노드 → 관계 → 검증 순서로 진행. `LOAD CSV + MERGE` 기반 멱등 적재라 재실행해도 안전하다.
 - **무결성**: 17개 label 전부에 ID unique constraint. 다중 근거가 정당한 관계(사건-인물 참여 등)는 MERGE 키에 원본 식별자를 포함해 중복 collapse를 방지했다.
 - **타입**: CSV는 전부 문자열이므로 연도·순서·집계 속성은 import 시점에 `toIntegerOrNull()`로 캐스팅. 덕분에 "1850~1910년 사이 용어" 같은 숫자 범위 검색이 가능하다.
-- **검증**: 적재 직후 `history_graph_verify.cypher`가 label별 노드 수(총 351,795)와 relationship type별 관계 수(총 1,231,620)를 출력해 누락·빈 label을 즉시 확인한다.
+- **검증**: 적재 직후 `history_graph_verify.cypher`가 label별 노드 수(총 295,920)와 relationship type별 관계 수(총 1,176,708)를 출력해 누락·빈 label을 즉시 확인한다.
 
 ---
 
@@ -191,7 +191,7 @@ raw CSV → normalized → dictionary → mapping/staging → Neo4j import CSV �
 ### 6.1 전처리 품질 원칙
 
 이 보고서는 품질 원칙을 요약만 남긴다.
-상세한 설계 판단과 실패 시 영향은 `docs/neo4j/neo4j_설계_근거.md`에 합쳤다.
+상세한 설계 판단과 실패 시 영향은 `docs/neo4j/neo4j_design_decisions_detail.md`에 합쳤다.
 
 핵심 원칙은 다음 네 가지다.
 
@@ -202,232 +202,31 @@ raw CSV → normalized → dictionary → mapping/staging → Neo4j import CSV �
 
 ---
 
-## 7. 부록: 그래프 스키마 다이어그램
+## 7. 부록: 빠른 참조
 
-현재 `storage/neo4j/neo4j_import` 기준 그래프의 노드 17종과 관계 타입 22종을 정리한 문서다. 괄호 안 숫자는 최종 import CSV의 실제 행 수다.
+상세한 노드·관계별 설계 이유는 `docs/neo4j/neo4j_design_decisions_detail.md`로 합쳤다.
+이 보고서에는 최종 import 규모를 확인하기 위한 요약만 남긴다.
 
----
+### 7.1 노드 요약
 
-## 1. 전체 스키마 한눈에 보기
+| 묶음 | 노드 |
+|---|---|
+| 핵심 실체 | `Term` 61,598 / `Event` 600 / `Person` 56,403 |
+| 분류 | `CanonicalCategory` 400 / `SourceEventCategory` 53 / `EventFacet` 53 / `TaxonomyFacet` 49 |
+| 시대·주제·유형 | `Period` 30 / `Era` 10 / `Theme` 10 / `EntityType` 4 |
+| 의미 축 | `Country` 5 / `Region` 7 / `EconomicDomain` 16 |
+| 검색·출처·묶음 | `SearchTag` 175,714 / `SourceUrl` 57,412 / `EventGroup` 32 |
 
-```mermaid
-flowchart TB
-    %% ===== 핵심 노드 =====
-    Term["Term<br/>역사 용어 (61,598)"]
-    Event["Event<br/>역사 사건 (600)"]
-    Person["Person<br/>인물 (56,403)"]
+### 7.2 관계 요약
 
-    %% ===== 서비스 3축 =====
-    Theme["Theme<br/>주제 (10)"]
-    Era["Era<br/>표준 시대 (10)"]
-    EntityType["EntityType<br/>실체 유형 (4)"]
+| 묶음 | 주요 관계 |
+|---|---|
+| 핵심 연결 | `REFERS_TO`, `MENTIONS_PERSON`, `INVOLVED_IN`, `RELATED_TO` |
+| 분류·표준화 | `HAS_CATEGORY`, `HAS_EVENT_CATEGORY`, `MAPPED_TO_CATEGORY`, `HAS_EVENT_FACET`, `SUBCATEGORY_OF` |
+| 시대·주제·유형 | `IN_PERIOD`, `PART_OF_ERA`, `IN_ERA`, `HAS_THEME`, `HAS_ENTITY_TYPE` |
+| 의미 축 | `ABOUT_COUNTRY`, `ABOUT_REGION`, `ABOUT_ECONOMIC_DOMAIN`, `ABOUT_TAXONOMY_FACET`, `SUBREGION_OF` |
+| 검색·출처·묶음 | `HAS_SEARCH_TAG`, `HAS_SOURCE_URL`, `PART_OF_EVENT_GROUP` |
 
-    %% ===== 분류 체계 =====
-    Category["CanonicalCategory<br/>표준 카테고리 (400)"]
-    SourceCat["SourceEventCategory<br/>사건 원본 분류 (53)"]
-    EventFacet["EventFacet<br/>사건 facet (53)"]
-    TaxFacet["TaxonomyFacet<br/>중간 분류 축 (49)"]
-    SearchTag["SearchTag<br/>검색 태그 (175,714)"]
-
-    %% ===== 시대/의미 축 =====
-    Period["Period<br/>원본 시대 (29)"]
-    Country["Country<br/>국가 (5)"]
-    Region["Region<br/>권역 (7)"]
-    Econ["EconomicDomain<br/>경제 분야 (16)"]
-
-    %% ===== 출처/그룹 =====
-    Url["SourceUrl<br/>출처 URL (56,812)"]
-    EventGroup["EventGroup<br/>사건군 (32)"]
-
-    %% ----- Term -----
-    Term -->|"HAS_CATEGORY (61,697)"| Category
-    Term -->|"IN_PERIOD (65,356)"| Period
-    Term -->|"IN_ERA (54,125)"| Era
-    Term -->|"HAS_THEME (58,605)"| Theme
-    Term -->|"HAS_ENTITY_TYPE (20,662)"| EntityType
-    Term -->|"REFERS_TO Person (2,243)"| Person
-    Term -->|"REFERS_TO Event (13)"| Event
-    Term -->|"MENTIONS_PERSON (8,606)"| Person
-    Term -->|"HAS_SEARCH_TAG (349,531)"| SearchTag
-    Term -->|"ABOUT_COUNTRY (1,620)"| Country
-    Term -->|"ABOUT_REGION (82)"| Region
-    Term -->|"ABOUT_ECONOMIC_DOMAIN (2,894)"| Econ
-    Term -->|"ABOUT_TAXONOMY_FACET (22,962)"| TaxFacet
-
-    %% ----- Event -----
-    Event -->|"HAS_EVENT_CATEGORY (713)"| SourceCat
-    Event -->|"HAS_CATEGORY (692)"| Category
-    Event -->|"HAS_EVENT_FACET (713)"| EventFacet
-    Event -->|"IN_PERIOD (600)"| Period
-    Event -->|"IN_ERA (600)"| Era
-    Event -->|"HAS_THEME (1,405)"| Theme
-    Event -->|"PART_OF_EVENT_GROUP (224)"| EventGroup
-    Event -->|"HAS_SOURCE_URL (1,191)"| Url
-    Event -->|"HAS_SEARCH_TAG (6,016)"| SearchTag
-    Event -->|"ABOUT_COUNTRY (2)"| Country
-    Event -->|"ABOUT_TAXONOMY_FACET (714)"| TaxFacet
-
-    %% ----- Person -----
-    Person -->|"INVOLVED_IN (6,918)"| Event
-    Person -->|"RELATED_TO (184,044)<br/>evidence_url은 관계 속성"| Person
-    Person -->|"IN_ERA (23,029)"| Era
-    Person -->|"HAS_THEME (60,512)"| Theme
-    Person -->|"HAS_SOURCE_URL (56,212)"| Url
-    Person -->|"HAS_SEARCH_TAG (238,817)"| SearchTag
-
-    %% ----- 구조 관계 -----
-    Category -->|"SUBCATEGORY_OF (335)"| Category
-    Category -->|"HAS_THEME (32)"| Theme
-    Category -->|"ABOUT_COUNTRY (41)"| Country
-    Category -->|"ABOUT_REGION (13)"| Region
-    Category -->|"ABOUT_ECONOMIC_DOMAIN (51)"| Econ
-    Category -->|"ABOUT_TAXONOMY_FACET (276)"| TaxFacet
-    SourceCat -->|"MAPPED_TO_CATEGORY (45)"| Category
-    Period -->|"PART_OF_ERA (23)"| Era
-    Region -->|"SUBREGION_OF (6)"| Region
-```
-
-`person_relations.evidence_url`은 `SourceUrl` 노드로 만들지 않는다. 현재 설계에서는 `Person -[:RELATED_TO]- Person` 관계의 `evidence_url` 속성으로만 보존한다.
-
----
-
-## 2. 핵심 데이터 관계 (용어·사건·인물)
-
-```mermaid
-flowchart LR
-    Term["Term (61,598)"]
-    Event["Event (600)"]
-    Person["Person (56,403)"]
-    Url["SourceUrl (56,812)"]
-
-    Person -->|"INVOLVED_IN · 사건 참여 (6,918)"| Event
-    Person -->|"RELATED_TO · 인물 관계 (184,044)<br/>의미와 evidence_url은 속성으로 보존"| Person
-    Term -->|"REFERS_TO · 가리키는 인물 (2,243)"| Person
-    Term -->|"MENTIONS_PERSON · 설명문 언급 (8,606)"| Person
-    Term -->|"REFERS_TO · 가리키는 사건 (13)"| Event
-    Event -->|"HAS_SOURCE_URL (1,191)"| Url
-    Person -->|"HAS_SOURCE_URL · 인물 상세 (56,212)"| Url
-```
-
-인물 관계 근거 URL은 `HAS_EVIDENCE_URL` 관계가 아니라 `RELATED_TO.evidence_url` 속성이다. 관계의 출처를 볼 때는 관계 속성을 확인하고, URL 노드 기반 RAG 후보는 사건 URL과 인물 상세 URL만 사용한다.
-
----
-
-## 3. 서비스 3축 (주제·시대·유형) — 직통 관계
-
-```mermaid
-flowchart LR
-    Term["Term"]
-    Event["Event"]
-    Person["Person"]
-    Theme["Theme (10)<br/>사건·인물·정치·제도·문화<br/>사회·군사·경제·사상종교·외교"]
-    Era["Era (10)<br/>선사~현대"]
-    EntityType["EntityType (4)<br/>인물·문헌·문화재·장소"]
-
-    Term -->|"HAS_THEME (58,605)"| Theme
-    Event -->|"HAS_THEME (1,405)"| Theme
-    Person -->|"HAS_THEME (60,512)<br/>인물 라벨 + 근거 기반 상속"| Theme
-    Term -->|"IN_ERA (54,125)"| Era
-    Event -->|"IN_ERA (600)"| Era
-    Person -->|"IN_ERA (23,029)<br/>생몰년 우선, 사건 보조 추론"| Era
-    Term -->|"HAS_ENTITY_TYPE (20,662)"| EntityType
-```
-
-문제 생성·검색 서비스는 이 직통 관계만 타면 시대·주제·유형 필터를 대부분 1-hop으로 처리할 수 있다.
-
----
-
-## 4. 분류 체계 (원본 보존 + 표준화 + 계층)
-
-```mermaid
-flowchart LR
-    Term["Term"]
-    Event["Event"]
-    SourceCat["SourceEventCategory (53)<br/>원본 분류 · 원형 보존"]
-    Category["CanonicalCategory (400)<br/>표준 카테고리"]
-    EventFacet["EventFacet (53)<br/>사건 의미 facet"]
-    Theme["Theme (10)"]
-
-    Event -->|"HAS_EVENT_CATEGORY (713)"| SourceCat
-    SourceCat -->|"MAPPED_TO_CATEGORY (45)<br/>crosswalk 수동 매핑"| Category
-    Event -->|"HAS_CATEGORY (692)<br/>매핑 있는 사건만"| Category
-    Event -->|"HAS_EVENT_FACET (713)"| EventFacet
-    Term -->|"HAS_CATEGORY (61,697)<br/>leaf에만 직접 연결"| Category
-    Category -->|"SUBCATEGORY_OF (335)<br/>자식 → 부모"| Category
-    Category -->|"HAS_THEME (32)<br/>주제 원천 매핑"| Theme
-```
-
----
-
-## 5. 시대 축 (원본 표기 → 표준 시대)
-
-```mermaid
-flowchart LR
-    Term["Term"]
-    Event["Event"]
-    Person["Person"]
-    Period["Period (29)<br/>원본 시대 · 변형 포함"]
-    Era["Era (10)<br/>표준 시대"]
-
-    Term -->|"IN_PERIOD (65,356)<br/>match_type: DIRECT /<br/>RANGE_START·MIDDLE·END"| Period
-    Event -->|"IN_PERIOD (600)"| Period
-    Period -->|"PART_OF_ERA (23)<br/>시기 변형 통합"| Era
-    Term -.->|"IN_ERA (54,125) · 파생 직통"| Era
-    Event -.->|"IN_ERA (600) · 파생 직통"| Era
-    Person -.->|"IN_ERA (23,029) · 생몰년/사건 기반"| Era
-```
-
-점선은 원천 경로(`IN_PERIOD → PART_OF_ERA`)를 전처리에서 미리 펼친 파생 직통 관계다.
-
----
-
-## 6. 의미 축 (카테고리에서 분리한 국가·권역·경제·중간 분류)
-
-```mermaid
-flowchart LR
-    Term["Term"]
-    Event["Event"]
-    Category["CanonicalCategory"]
-    Country["Country (5)"]
-    Region["Region (7)"]
-    Econ["EconomicDomain (16)"]
-    TaxFacet["TaxonomyFacet (49)"]
-
-    Category -->|"ABOUT_COUNTRY (41)"| Country
-    Category -->|"ABOUT_REGION (13)"| Region
-    Category -->|"ABOUT_ECONOMIC_DOMAIN (51)"| Econ
-    Category -->|"ABOUT_TAXONOMY_FACET (276)"| TaxFacet
-    Term -->|"ABOUT_COUNTRY (1,620)"| Country
-    Term -->|"ABOUT_REGION (82)"| Region
-    Term -->|"ABOUT_ECONOMIC_DOMAIN (2,894)"| Econ
-    Term -->|"ABOUT_TAXONOMY_FACET (22,962)"| TaxFacet
-    Event -->|"ABOUT_COUNTRY (2)"| Country
-    Event -->|"ABOUT_TAXONOMY_FACET (714)"| TaxFacet
-    Region -->|"SUBREGION_OF (6)"| Region
-```
-
-국가와 권역은 상하 관계로 두지 않는다. `Event → ABOUT_REGION / ABOUT_ECONOMIC_DOMAIN`은 설계상 가능하나 현재 매핑 결과 0행이라 생성하지 않는다.
-
----
-
-## 7. 검색·묶음 레이어
-
-```mermaid
-flowchart LR
-    Term["Term"]
-    Event["Event"]
-    Person["Person"]
-    SearchTag["SearchTag (175,714)<br/>통합 검색 태그 · 비정규화"]
-    EventGroup["EventGroup (32)<br/>사건군"]
-
-    Term -->|"HAS_SEARCH_TAG (349,531)<br/>용어명·분류·시대·주제"| SearchTag
-    Event -->|"HAS_SEARCH_TAG (6,016)<br/>사건명·분류·시대·주제"| SearchTag
-    Person -->|"HAS_SEARCH_TAG (238,817)<br/>인물명·별칭·사건/용어 상속·주제"| SearchTag
-    Event -->|"PART_OF_EVENT_GROUP (224)"| EventGroup
-```
-
-`SearchTag`는 검색 편의를 위한 보조 노드다. Term/Event/Person에서 공통으로 1-hop 검색 진입점을 제공하지만, 원천 의미 축은 각 관계의 `source_node_type`, `source_node_id`, `source_relation`, `source_detail` 속성으로 따로 보존한다. Person은 줄바꿈 별칭을 `PersonAlias` 태그로도 분리해 대표명과 별칭 검색을 모두 지원한다. 기본 graph view에서는 중복처럼 보일 수 있으므로 필요할 때만 포함하고, 일반 탐색 쿼리에서는 제외하는 것이 좋다.
-
----
-
-노드·엣지별 상세 의미와 설계 이유는 `docs/neo4j/neo4j_설계_근거.md`를 참고한다.
+- 상세 구현 문서: `docs/neo4j/neo4j_implementation_full_flow.md`
+- 파일별 역할 문서: `docs/neo4j/neo4j_preprocessing_file_map.md`
+- 구조도 문서: `docs/neo4j/neo4j_implementation_mermaid_flow.md`, `docs/neo4j/neo4j_그래프_스키마_mermaid.md`

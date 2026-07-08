@@ -90,6 +90,12 @@ def ensure_table(conn, embedding_dimensions: int) -> None:
             ON rag.document_chunks USING GIN (chunk_text gin_trgm_ops)
             """
         )
+        cur.execute(
+            """
+            CREATE INDEX IF NOT EXISTS document_chunks_title_trgm_idx
+            ON rag.document_chunks USING GIN (title gin_trgm_ops)
+            """
+        )
     conn.commit()
 
 

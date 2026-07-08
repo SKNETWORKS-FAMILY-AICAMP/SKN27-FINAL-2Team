@@ -352,6 +352,10 @@
           throw new Error(`${payload.error || "문제 생성에 실패했습니다."}${details.length ? ` (${details.join(" / ")})` : ""}`);
         }
 
+        if (payload.adjustment_message) {
+          alert(payload.adjustment_message);
+        }
+
         sessionId = payload.session_id;
         questions = payload.questions.map(toExamQuestion);
         answers = Array(questions.length).fill(null);
@@ -737,6 +741,9 @@
     submitButton.addEventListener("click", async () => {
       if (isTimeOver) return;
       answers[currentIndex] = answers[currentIndex] ?? null;
+      if (IS_DIAGNOSTIC && answers.some((answer) => answer === null || answer === undefined)) {
+        if (!confirm("풀지 않은 문제가 있는데 제출하시겠습니까?")) return;
+      }
       numberButtons[currentIndex].classList.add("answered");
       await submitExam();
     });

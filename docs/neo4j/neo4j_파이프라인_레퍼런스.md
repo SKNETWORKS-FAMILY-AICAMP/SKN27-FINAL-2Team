@@ -1,50 +1,4 @@
-﻿# Neo4j 파이프라인 레퍼런스
-
-전처리 파이프라인의 구현 흐름과 파일별 상세 명세를 한 문서로 관리한다.
-(구 neo4j_implementation_full_flow.md + neo4j_preprocessing_file_map.md + neo4j_implementation_mermaid_flow.md 통합)
-
-## 0. 전체 실행 흐름 다이어그램
-
-```mermaid
-flowchart TB
-    runner["run_neo4j_preprocessing.py<br/>전체 전처리 시작 파일"]
-
-    raw["Raw CSV<br/>원본 데이터"]
-    normalize["normalize_raw_data.py<br/>raw 정규화"]
-    base_dict["make_base_dictionaries.py<br/>1차 사전 생성"]
-    mapping["make_mapping_tables.py<br/>mapping / staging 생성"]
-    graph_csv["make_graph_csv.py<br/>Neo4j import CSV 생성"]
-    theme_era["make_theme_era_csv.py<br/>Theme/Era/EntityType 생성"]
-    term_person_review["make_term_person_review.py<br/>Term-Person 검수 후보 생성<br/>필요 시 단독 실행"]
-    import_dir["storage/neo4j/neo4j_import<br/>최종 import CSV"]
-    schema_runner["storage/neo4j/load_schema.py<br/>Cypher 실행"]
-    neo4j["Neo4j Graph DB"]
-
-    runner --> normalize
-    runner --> base_dict
-    runner --> mapping
-    runner --> graph_csv
-    runner --> theme_era
-
-    raw --> normalize
-    normalize --> base_dict
-    base_dict --> mapping
-    normalize --> mapping
-    normalize --> graph_csv
-    base_dict --> graph_csv
-    mapping --> graph_csv
-    graph_csv --> import_dir
-    graph_csv --> theme_era
-    theme_era --> import_dir
-    import_dir -.-> term_person_review
-    import_dir --> schema_runner
-    schema_runner --> neo4j
-```
-
----
-
-
----
+# Neo4j 구현 전체 흐름
 
 이 문서는 한국사 Graph DB 구현에서 전처리, CSV 생성 규칙, seed 관리, Neo4j import CSV, Cypher 쿼리까지 전체 흐름을 한 번에 보기 위한 기준 문서다.
 
@@ -102,10 +56,10 @@ runner 실행 순서:
 | 4 | `scripts/make_graph_csv.py` | `storage/neo4j/neo4j_import/nodes/`, `storage/neo4j/neo4j_import/relations/` | Neo4j import용 최종 CSV 생성 |
 | 5 | `scripts/make_theme_era_csv.py` | `storage/neo4j/neo4j_import/nodes/`, `storage/neo4j/neo4j_import/relations/` | Theme/Era/EntityType 상위 레이어 노드/관계 CSV 생성 |
 
-`make_graph_csv.py`는 단독 실행해도 기본 출력이 `storage/neo4j/neo4j_import/nodes/`, `storage/neo4j/neo4j_import/relations/`다. import 경로 규칙은 `neo4j_common.resolve_import_dir()` 한 곳에서 관리하므로 runner와 단독 실행의 출력 위치가 같다.
+`make_graph_csv.py`를 단독 실행하면 기본 출력은 `etl/preprocessing/neo4j/graph/nodes/`, `etl/preprocessing/neo4j/graph/relations/`다. 다만 runner의 graph 생성 단계는 `--nodes-dir`, `--relations-dir`를 넘겨 `storage/neo4j/neo4j_import/` 아래로 바로 저장한다.
 `make_term_person_review.py`는 기본 runner에 포함하지 않는다. 이 스크립트는 graph CSV 생성 이후 Term-Person 수동 검수 후보가 필요할 때 단독 실행한다.
 
-노드/관계 설계 판단의 상세 근거는 `docs/neo4j/neo4j_설계_근거.md`에 둔다.
+노드/관계 설계 판단의 상세 근거는 `docs/neo4j/neo4j_design_decisions_detail.md`에 둔다.
 이 문서는 구현 순서를 설명하고, 상세 설계 판단 문서는 각 노드와 관계가 왜 필요한지, 없으면 어떤 문제가 생기는지, 어떤 대안을 제외했는지 설명한다.
 
 ---
@@ -198,7 +152,7 @@ seed가 필요한 이유:
 | `source_event_category_dictionary.csv` | 53 | `events.subject_category`를 쉼표/줄바꿈 기준으로 분리해 원천 이벤트 분류 사전 생성 |
 | `period_dictionary.csv` | 30 | `terms.term_times`, `events.period`의 시대명을 수집한 뒤 `period_seed.csv`로 순서/기간/범위 확장 가능 여부 보강 |
 | `relation_type_dictionary.csv` | 16 | `person_relations.relation_type` 빈도에 `relation_type_seed.csv`를 merge해서 정규화 관계 사전 생성 |
-| `source_url_dictionary.csv` | 56,812 | events, event_relations의 `source_urls`와 person_relations의 `detail_url`만 모아 중복 제거. RAG 후보 상태값 포함 |
+| `source_url_dictionary.csv` | 57,412 | events, event_relations의 `source_urls`와 person_relations의 `detail_url`만 모아 중복 제거. RAG 후보 상태값 포함 |
 
 ### 5.2 2차 dictionary
 
@@ -278,7 +232,7 @@ flowchart TD
 | `canonical_categories.csv` | `CanonicalCategory` | 400 | `category_id` | `history_terms.term_lk` 기반 표준 카테고리 |
 | `source_event_categories.csv` | `SourceEventCategory` | 53 | `event_category_id` | ITKC 이벤트 원천 분류 |
 | `periods.csv` | `Period` | 30 | `period_id` | 시대/기간 노드. 범위 확장 순서 정보 포함 |
-| `source_urls.csv` | `SourceUrl` | 56,812 | `source_url_id` | 출처 URL. RAG 수집 후보 |
+| `source_urls.csv` | `SourceUrl` | 57,412 | `source_url_id` | 출처 URL. RAG 수집 후보 |
 | `event_groups.csv` | `EventGroup` | 32 | `event_group_id` | `related_event`를 묶은 사건 그룹 |
 | `event_facets.csv` | `EventFacet` | 53 | `event_facet_id` | 전쟁, 정치, 제도 등 이벤트 의미 facet |
 | `countries.csv` | `Country` | 5 | `country_id` | 국가/정치체 의미 축 |
@@ -331,7 +285,7 @@ flowchart LR
     Econ["EconomicDomain<br/>경제 분야 (16)"]
 
     %% ===== 출처/그룹 =====
-    Url["SourceUrl<br/>출처 URL (56,812)"]
+    Url["SourceUrl<br/>출처 URL (57,412)"]
     EventGroup["EventGroup<br/>사건군 (32)"]
 
     %% ----- Term에서 나가는 관계 -----
@@ -339,7 +293,7 @@ flowchart LR
     Term -->|"IN_ERA · 표준 시대 (54,125)"| Era
     Term -->|"HAS_ENTITY_TYPE · 실체 유형 (20,662)"| EntityType
     Term -->|"HAS_CATEGORY · 카테고리 (61,697)"| Category
-    Term -->|"IN_PERIOD · 원본 시대 (65,356)"| Period
+    Term -->|"IN_PERIOD · 원본 시대 (65,358)"| Period
     Term -->|"REFERS_TO · 가리키는 인물 (2,243)"| Person
     Term -->|"MENTIONS_PERSON · 설명문 언급 (8,606)"| Person
     Term -->|"HAS_SEARCH_TAG · 검색 태그 (349,531)"| SearchTag
@@ -357,7 +311,7 @@ flowchart LR
     Event -->|"HAS_EVENT_FACET (713)"| EventFacet
     Event -->|"IN_PERIOD · 원본 시대 (600)"| Period
     Event -->|"PART_OF_EVENT_GROUP · 사건군 (224)"| EventGroup
-    Event -->|"HAS_SOURCE_URL · 출처 (1,191)"| Url
+    Event -->|"HAS_SOURCE_URL · 출처 (2,382)"| Url
     Event -->|"HAS_SEARCH_TAG (6,016)"| SearchTag
     Event -->|"ABOUT_COUNTRY (2)"| Country
     Event -->|"ABOUT_TAXONOMY_FACET (714)"| TaxFacet
@@ -388,7 +342,7 @@ flowchart LR
 | Relationship CSV | Neo4j type | 행 수 | From -> To | 생성 규칙 |
 |---|---|---:|---|---|
 | `term_has_canonical_category.csv` | `HAS_CATEGORY` | 61,697 | `Term -> CanonicalCategory` | `term_canonical_category_relation.csv`에서 용어와 leaf category 연결 |
-| `term_in_period.csv` | `IN_PERIOD` | 65,356 | `Term -> Period` | `term_times`를 period dictionary로 매칭. 범위 표현은 시작/중간/끝으로 확장. `?` 같은 미상 표기는 시대로 만들지 않음 |
+| `term_in_period.csv` | `IN_PERIOD` | 65,358 | `Term -> Period` | `term_times`를 period dictionary로 매칭. 범위 표현은 시작/중간/끝으로 확장 |
 | `term_about_country.csv` | `ABOUT_COUNTRY` | 1,620 | `Term -> Country` | 용어의 category가 국가 crosswalk에 걸리면 연결 |
 | `term_about_region.csv` | `ABOUT_REGION` | 82 | `Term -> Region` | 용어의 category가 region crosswalk에 걸리면 연결 |
 | `term_about_economic_domain.csv` | `ABOUT_ECONOMIC_DOMAIN` | 2,894 | `Term -> EconomicDomain` | 용어의 category가 경제 분야 crosswalk에 걸리면 연결 |
@@ -402,7 +356,7 @@ flowchart LR
 | `event_has_facet.csv` | `HAS_EVENT_FACET` | 713 | `Event -> EventFacet` | source event category를 event facet seed 기준으로 연결 |
 | `event_in_period.csv` | `IN_PERIOD` | 600 | `Event -> Period` | `events.period`를 period dictionary로 매칭 |
 | `event_part_of_event_group.csv` | `PART_OF_EVENT_GROUP` | 224 | `Event -> EventGroup` | `related_event`가 있는 사건을 사건 그룹에 연결 |
-| `event_has_source_url.csv` | `HAS_SOURCE_URL` | 1,191 | `Event -> SourceUrl` | events와 event_relations의 `source_urls`를 연결 |
+| `event_has_source_url.csv` | `HAS_SOURCE_URL` | 2,382 | `Event -> SourceUrl` | events와 event_relations의 `source_urls`를 연결 |
 | `event_has_search_tag.csv` | `HAS_SEARCH_TAG` | 6,016 | `Event -> SearchTag` | 사건명, source category, canonical category, facet, 시대, 주제, 국가/지역/경제/taxonomy facet을 검색 태그로 통합 연결 |
 | `event_about_country.csv` | `ABOUT_COUNTRY` | 2 | `Event -> Country` | 이벤트 표준 카테고리가 국가 crosswalk에 걸리면 연결 |
 | `event_about_taxonomy_facet.csv` | `ABOUT_TAXONOMY_FACET` | 714 | `Event -> TaxonomyFacet` | 이벤트 표준 카테고리가 taxonomy facet에 속하면 연결 |
@@ -727,13 +681,13 @@ Tavily 같은 Web RAG 도구를 붙일 경우, 그래프에서 관련 `SourceUrl
 
 ## 14. 노드와 관계 의미 사전
 
-노드와 관계의 상세 역할, 필요성, 제외한 대안은 `docs/neo4j/neo4j_설계_근거.md`로 합쳤다.
+노드와 관계의 상세 역할, 필요성, 제외한 대안은 `docs/neo4j/neo4j_design_decisions_detail.md`로 합쳤다.
 이 구현 문서에서는 실제 실행과 산출물 위치를 기준으로 본다.
 
 빠른 확인용 구조도는 다음 문서를 사용한다.
 
-- 전체 구현 흐름 다이어그램: 이 문서 0장
-- 최종 그래프 스키마 다이어그램: `docs/neo4j/neo4j_구축_결과_보고.md` 7장 부록
+- 전체 구현 흐름 다이어그램: `docs/neo4j/neo4j_implementation_mermaid_flow.md`
+- 최종 그래프 스키마 다이어그램: `docs/neo4j/neo4j_그래프_스키마_mermaid.md`
 
 조회 규칙 중 구현에 직접 필요한 것만 남긴다.
 
@@ -771,7 +725,7 @@ Tavily 같은 Web RAG 도구를 붙일 경우, 그래프에서 관련 `SourceUrl
 | 컬럼 | 의미 |
 |---|---|
 | `description_length` | 설명문 길이 |
-| `question_ready` | 설명문이 기준 길이(기본 50자, `graph_config_seed.csv`에서 관리) 이상이면 `Y`, 아니면 `N` |
+| `question_ready` | 설명문 50자 이상이면 `Y`, 아니면 `N` |
 | `is_exam_keyword` | `keyword_era_seed.csv`에 있는 시험 키워드와 정규화 이름이 일치하면 `Y` |
 
 설명문이 너무 짧으면 지문형 문제를 만들기 어렵고, 시험 빈출 키워드는 우선 출제 후보로 올릴 필요가 있다. 이 판단을 매번 애플리케이션 코드에서 반복하지 않고 CSV 생성 시점에 속성으로 고정한다.
@@ -832,7 +786,7 @@ Tavily 같은 Web RAG 도구를 붙일 경우, 그래프에서 관련 `SourceUrl
 
 자동 `Term - REFERS_TO - Person`은 이름/한자와 생몰년이 모두 맞는 유일 후보를 우선 연결한다. Term 설명에서 Person 관계망 단서가 확인되는 기존 후보와 수동 승인 seed의 `MANUAL` 후보도 함께 합류한다.
 
-Term-Person 검수의 상세 설계 판단은 `docs/neo4j/neo4j_설계_근거.md`와 `etl/preprocessing/neo4j/docs/term_person_review_workflow.md`로 합쳤다.
+Term-Person 검수의 상세 설계 판단은 `docs/neo4j/neo4j_design_decisions_detail.md`와 `etl/preprocessing/neo4j/docs/term_person_review_workflow.md`로 합쳤다.
 이 문서에는 graph 반영 규칙과 별도 후보 생성 명령만 남긴다.
 
 검수 후보는 기본 runner가 만들지 않는다.
@@ -933,423 +887,4 @@ RETURN DISTINCT n;
 ```
 
 대신 `HAS_SEARCH_TAG` 관계에는 `source_node_type`, `source_node_id`, `source_relation`, `source_detail`을 남긴다. 따라서 빠른 검색은 `SearchTag`로 하고, 정확한 의미 검증은 `EventFacet`, `CanonicalCategory`, `SourceEventCategory`, `Theme`, `Era`, `EntityType` 같은 원래 축으로 되돌아가 확인할 수 있다.
-Person 별칭은 `source_node_type=PersonAlias`, `source_relation=person_alias`로 분리하고, Person이 Event/Ter
-
----
-
-# 부록: 폴더·중간 산출물 상세 명세
-
-아래는 파일 단위 레퍼런스다. 절 번호는 원문(파일 맵) 기준을 유지한다.
-
-## 2. 폴더 역할
-
-| 폴더 | 성격 | 의미 |
-|---|---|---|
-| `etl/preprocessing/neo4j/` | 실행 진입점 | runner와 산출물 폴더를 모아둔 Neo4j 전처리 루트 |
-| `scripts/` | 코드 | CSV 생성 로직이 들어 있는 Python 파일 |
-| `normalized/` | 중간 입력 | raw CSV에서 중복/불필요 컬럼을 정리한 1차 정규화 데이터 |
-| `seed/` | 수동 규칙 | 사람이 검수하거나 직접 정의한 매핑, 분류, 시대 순서 규칙 |
-| `dictionary/` | 기준표 | 그래프 노드 후보를 정의하는 사전 CSV |
-| `mapping/` | 연결 규칙 | 서로 다른 사전이나 분류 체계를 연결하는 crosswalk CSV |
-| `staging/` | 관계 중간 산출물 | 최종 relation CSV를 만들기 전의 중간 관계/파싱 결과 |
-| `__pycache__/` | 실행 캐시 | Python이 자동 생성한 캐시 폴더. import 대상 아님 |
-
-graph 생성 단계는 runner든 단독 실행이든 `storage/neo4j/neo4j_import/` 아래에 바로 CSV를 만든다(경로 규칙은 `neo4j_common.resolve_import_dir()`에서 관리). 과거에 쓰던 `etl/preprocessing/neo4j/graph/` 폴더는 삭제했다. Neo4j import에서는 보통 `storage/neo4j/neo4j_import/nodes/`를 먼저 넣고, 그 다음 `storage/neo4j/neo4j_import/relations/`를 넣는다.
-
-### 2.1 runner가 생성하는 CSV와 생성하지 않는 CSV
-
-`run_neo4j_preprocessing.py`는 다음 폴더의 CSV를 생성하거나 재생성한다.
-
-- `normalized/`
-- `dictionary/`
-- `mapping/`
-- `staging/`
-- `storage/neo4j/neo4j_import/nodes/`
-- `storage/neo4j/neo4j_import/relations/`
-
-단, `staging/term_era_candidate.csv`는 수동 검수 파일이므로 존재하면 삭제하지 않고 보존한다.
-
-반대로 `seed/` 폴더의 CSV는 runner가 생성하지 않는다. `seed/`는 사람이 직접 관리하는 입력 규칙표이기 때문이다.
-
-현재 runner가 생성하지 않는 CSV는 다음 seed 파일들이다.
-
-- `seed/category_axis_seed.csv`
-- `seed/country_seed.csv`
-- `seed/event_facet_seed.csv`
-- `seed/period_seed.csv`
-- `seed/region_seed.csv`
-- `seed/relation_type_seed.csv`
-- `seed/taxonomy_crosswalk_seed.csv`
-- `seed/theme_seed.csv`
-- `seed/category_theme_seed.csv`
-- `seed/era_seed.csv`
-- `seed/period_era_seed.csv`
-- `seed/entity_type_seed.csv`
-- `seed/keyword_era_seed.csv`
-- `seed/reign_seed.csv`
-- `seed/mention_rule_seed.csv`
-- `seed/graph_config_seed.csv`
-- `seed/term_person_review_approved.csv`
-
-이 파일들은 자동 생성 산출물이 아니라 전처리 규칙을 담은 입력 파일이다.
-
-### 2.2 더 이상 생성하지 않는 예전 이름 CSV
-
-현재 구조에서는 다음 예전 이름의 CSV를 더 이상 생성하지 않는다.
-
-| 예전 파일명 | 현재 대체 파일 |
-|---|---|
-| `dictionary/category_dictionary.csv` | `dictionary/canonical_category_dictionary.csv` |
-| `dictionary/event_category_dictionary.csv` | `dictionary/source_event_category_dictionary.csv` |
-| `dictionary/category_mapping.csv` | `mapping/taxonomy_crosswalk.csv` |
-| `relations/person_has_evidence_url.csv` | 없음. `person_relations.evidence_url`은 `person_related_to_person.csv`의 관계 속성으로만 보존 |
-| `staging/term_category_relation.csv` | `staging/term_canonical_category_relation.csv` |
-| `staging/event_category_relation.csv` | `staging/event_source_category_relation.csv` |
-| `staging/person_duplicate_review.csv` | `staging/term_person_review.csv`에서 `review_type=PERSON_DUPLICATE`로 구분 |
-
-Person 중복 검수 후보는 별도 CSV로 분리하지 않는다.
-`staging/person_duplicate_review.csv`가 과거 실행 결과로 남아 있어도 graph 생성 입력이 아니며, 공식 검수 흐름에서는 삭제해도 된다.
-이를 만들던 보조 스크립트 `make_person_duplicate_review.py`도 공식 흐름에서 제거했다.
-후보는 `staging/term_person_review.csv` 하나에서 보고, 확정한 Term-Person 연결만 `seed/term_person_review_approved.csv`에 기록한다.
-이렇게 바꾼 이유는 검수 대상이 Person 노드 병합이 아니라 Term 설명을 어느 Person에 연결할지의 엣지 선택이기 때문이다.
-이름/한자가 같다는 이유로 Person ID를 합치면 서로 다른 인물의 관계, 사건 참여, 생몰년, 출처가 한 노드에 섞일 수 있다.
-반대로 Term-Person 연결은 `term_id`, `person_id` 단위로 승인하면 틀린 후보를 seed에 넣지 않는 방식으로 보수적으로 관리할 수 있다.
-이 후보 파일의 `birth_year`, `death_year`는 원천 Person 데이터의 연도 문자열을 그대로 표시하며, 원천이 비어 있으면 빈 값으로 둔다.
-`14??`, `?`, `1745(1730)` 같은 부분/불확실 연도도 원천값이면 그대로 둔다.
-Term 설명의 재위 연도는 후보 필터링에만 쓰고 생몰년 컬럼을 채우는 데 사용하지 않는다.
-
----
-
-
-## 3. Python 파일 역할
-
-| 파일 | 위치 | 역할 |
-|---|---|---|
-| `run_neo4j_preprocessing.py` | `neo4j/` | 전체 전처리 파이프라인을 순서대로 실행하는 시작 파일 |
-| `neo4j_common.py` | `neo4j/scripts/` | 공통 유틸 함수. CSV 저장, 경로 해석, 값 정리, 토큰 분해 등을 담당 |
-| `normalize_raw_data.py` | `neo4j/scripts/` | raw CSV를 EDA 기준으로 정규화해서 `normalized/` 생성 |
-| `make_base_dictionaries.py` | `neo4j/scripts/` | 표준 카테고리, 이벤트 카테고리, 시대, 관계유형, URL 사전 생성 |
-| `make_mapping_tables.py` | `neo4j/scripts/` | 사전 사이의 매핑표와 기본 staging 관계 생성 |
-| `make_graph_csv.py` | `neo4j/scripts/` | 최종 Neo4j node/relation CSV 생성 |
-| `make_theme_era_csv.py` | `neo4j/scripts/` | graph CSV와 seed를 읽어 Theme/Era/EntityType 상위 레이어 CSV 생성 |
-| `make_term_era_candidates.py` | `neo4j/scripts/` | 고조선/초기 국가 시대 후보 용어를 이름/설명문에서 추출해 검수 시트 생성. runner 미포함, 수동 실행 |
-| `make_term_person_review.py` | `neo4j/scripts/` | 이름/한자 1차 후보 중 Term 설명에 Person 관계망 단서가 있고 시대 범위와 생몰년이 명백히 충돌하지 않는 Term-Person 후보를 수동 검수 CSV로 생성. 기본 runner에는 포함하지 않고 필요할 때 단독 실행 |
-
-각 스크립트는 단독 실행도 가능하지만, 일반적으로는 runner만 실행한다.
-
----
-
-
-## 4. `normalized/` CSV
-
-`normalized/`는 raw CSV를 그대로 쓰지 않고, EDA에서 결정한 기준으로 정리한 1차 입력 데이터다. 이후 모든 사전과 그래프 CSV는 이 폴더의 CSV를 기준으로 만들어진다.
-
-| CSV | 행 수 | 의미 |
-|---|---:|---|
-| `terms.csv` | 61,598 | 역사 용어 원본에서 실제 용어 행만 남긴 정규화 데이터 |
-| `events.csv` | 600 | 사건 데이터에서 `event_id` 기준으로 중복을 정리한 정규화 데이터 |
-| `event_relations.csv` | 6,918 | 사건과 인물의 참여 관계를 정리한 데이터 |
-| `person_relations.csv` | 206,507 | 인물과 인물 사이의 관계를 정리한 데이터 |
-
-### 4.1 `terms.csv`
-
-역사 용어 노드와 카테고리, 시대 관계를 만들기 위한 기본 입력이다.
-
-주요 컬럼:
-
-- `term_id`: 용어 ID
-- `term_name`: 용어명
-- `term_ch`: 한자 표기
-- `term_remark`: 비고
-- `term_year`: 연도 원문
-- `term_times`: 시대 원문
-- `term_lk`: 원본 카테고리 경로
-- `term_desc`: 설명문
-- `topterm_id`: 원본 상위 분류 ID
-
-### 4.2 `events.csv`
-
-사건 노드와 사건 분류, 시대, 사건 그룹, 출처 URL 관계를 만들기 위한 기본 입력이다.
-
-주요 컬럼:
-
-- `event_id`: 사건 ID
-- `event_name`: 사건명
-- `subject_category`: 원본 사건 분류
-- `period`: 사건 시대
-- `event_date`: 사건 날짜 원문
-- `related_event`: 사건 묶음명
-- `source_urls`: 원본 상세 URL 묶음
-
-### 4.3 `event_relations.csv`
-
-`Person - INVOLVED_IN - Event` 관계를 만들기 위한 기본 입력이다.
-
-주요 컬럼:
-
-- `event_id`
-- `event_name`
-- `relation_type`
-- `person_id`
-- `person_name`
-- `source_urls`
-
-### 4.4 `person_relations.csv`
-
-`Person - RELATED_TO - Person` 관계를 만들기 위한 기본 입력이다.
-
-주요 컬럼:
-
-- `person_id`
-- `person_name`
-- `relation_type`
-- `related_person_id`
-- `related_person_name`
-- `related_birth_year`
-- `related_death_year`
-- `related_bonkwan`
-- `related_father`
-- `related_count`
-- `evidence_url`
-- `detail_url`
-
----
-
-
-## 5. `seed/` CSV
-
-`seed/`는 자동으로 판단하기 어려운 규칙을 사람이 관리하는 폴더다. 코드에 하드코딩하지 않고 CSV로 빼둔 기준표다.
-
-| CSV | 의미 |
-|---|---|
-| `category_axis_seed.csv` | 표준 카테고리 경로에서 의미 축을 추출하는 기준 |
-| `country_seed.csv` | 국가/정치체 노드 후보와 원본 카테고리 경로 연결 기준 |
-| `region_seed.csv` | 지역/권역 노드 후보와 계층 기준 |
-| `event_facet_seed.csv` | 원본 이벤트 분류를 사건 facet으로 재분류하는 기준 |
-| `relation_type_seed.csv` | 인물 관계 원문을 표준 관계 의미로 정규화하는 기준 |
-| `taxonomy_crosswalk_seed.csv` | 이벤트 원본 분류와 표준 카테고리의 수동 매핑 기준 |
-| `period_seed.csv` | 시대 순서, 범위 확장, 시대 계층 기준 |
-| `theme_seed.csv` | 서비스 고정 주제 10개 정의. 사건/인물/정치/제도/문화/사회/군사/경제/사상·종교/외교. 코드는 표시명 대신 `theme_key`(EVENT, PERSON 등) 안정 키로 참조 |
-| `category_theme_seed.csv` | 표준 카테고리와 주제의 매핑 기준 |
-| `era_seed.csv` | 표준 시대(Era) 10개 정의 |
-| `period_era_seed.csv` | 기존 Period 표기 변형을 표준 시대로 매핑 |
-| `entity_type_seed.csv` | 실체 유형 카테고리를 유형 축으로 정의 |
-| `keyword_era_seed.csv` | 시험 빈출 키워드-시대 매핑 (ml_keyword_era_overrides.json 유래) |
-| `reign_seed.csv` | 왕대/연호 이름과 연도 범위. 연도 파서 보조용 seed |
-| `mention_rule_seed.csv` | 인물 언급(MENTIONS_PERSON) 판정 규칙. 조사 접미사(GENERAL_SUFFIX), 확신도 HIGH 접미사(STRONG_SUFFIX), 묘호형 별칭 판정(TEMPLE_NAME_SUFFIX) 목록 |
-| `graph_config_seed.csv` | graph CSV 생성 판정 상수. `question_ready_min_description_length`(50), `mention_context_window_size`(32) |
-| `term_person_review_approved.csv` | 사람이 승인한 Term-Person 수동 연결 목록. 검수 후보의 `review_type`과 무관하게 Term이 특정 Person을 가리킨다고 확정한 행을 기록하며 `REFERS_TO` 관계에 `MANUAL`로 반영 |
-
-공식 graph 생성 흐름에서는 Person ID 병합 seed를 사용하지 않는다.
-동명이인 중 특정 Person이 Term 대상이라고 확정한 경우만 `term_person_review_approved.csv`에 기록한다.
-`review_type=PERSON_DUPLICATE`에서 설명을 붙일 Person을 결정한 경우와 `review_type=TERM_PERSON`에서 특정 `person_id` 연결을 승인한 경우 모두 같은 형식으로 쓴다.
-필요한 컬럼은 `term_id`, `person_id`, `review_status`, `note`뿐이며, 선택하지 않은 후보나 판단 불가 후보는 seed에 쓰지 않는다.
-
-`theme_seed.csv`, `era_seed.csv`, `entity_type_seed.csv`는 명시 ID 컬럼을 가진다. 이 ID는 Neo4j 노드의 primary key로 쓰이며, seed 행을 재정렬하거나 중간에 새 행을 넣어도 기존 ID가 밀리지 않게 하기 위한 안정 장치다.
-`theme_seed.csv`는 추가로 `theme_key` 컬럼(EVENT, PERSON, POLITICS 등)을 가진다. 코드가 특정 테마를 참조할 때는 표시명(`theme_name`)이 아니라 이 키를 사용하므로, 테마 표시명을 바꿔도 코드 수정이 필요 없다.
-
-### 5.1 `period_seed.csv`
-
-`삼국시대-조선시대` 같은 범위 표현을 전처리에서 확장하기 위한 기준이다.
-
-예:
-
-```text
-삼국시대-조선시대
-  -> 삼국시대
-  -> 남북국시대
-  -> 후삼국시대
-  -> 고려시대
-  -> 조선시대
-```
-
-중간 시대는 `range_group`, `period_order`, `is_range_expansion_candidate` 기준으로 결정한다.
-
----
-
-
-## 6. `dictionary/` CSV
-
-`dictionary/`는 그래프 노드 후보를 정의하는 기준표다. 여기 있는 파일은 대부분 최종 node CSV로 변환된다. runner 기준 최종 node CSV 위치는 `storage/neo4j/neo4j_import/nodes/`다.
-
-| CSV | 행 수 | 의미 |
-|---|---:|---|
-| `canonical_category_dictionary.csv` | 400 | `history_terms.term_lk`를 분해해 만든 표준 카테고리 사전 |
-| `source_event_category_dictionary.csv` | 53 | `events.subject_category`에서 만든 원본 사건 분류 사전 |
-| `period_dictionary.csv` | 30 | 시대 노드 기준 사전 |
-| `relation_type_dictionary.csv` | 16 | 인물 관계 유형 정규화 사전 |
-| `source_url_dictionary.csv` | 56,812 | URL 출처와 RAG 수집 대상 사전 |
-| `event_facet_dictionary.csv` | 53 | 사건 분류를 의미 facet으로 정리한 사전 |
-| `country_dictionary.csv` | 5 | 국가/정치체 사전 |
-| `region_dictionary.csv` | 7 | 지역/권역 사전 |
-| `economic_domain_dictionary.csv` | 16 | 경제·산업 하위 분야 사전 |
-| `taxonomy_facet_dictionary.csv` | 49 | 표준 카테고리 중간 경로에서 뽑은 일반 taxonomy facet 사전 |
-
-### 6.1 `canonical_category_dictionary.csv`
-
-`term_lk`를 `>>`, `>` 기준으로 분해해서 만든 표준 카테고리 사전이다.
-
-주요 용도:
-
-- `CanonicalCategory` 노드 생성
-- `Term - HAS_CATEGORY - CanonicalCategory` 관계 생성
-- 카테고리 계층 관계 후보 생성
-
-### 6.2 `source_event_category_dictionary.csv`
-
-이벤트 원본 분류를 보존하기 위한 사전이다.
-
-원본 이벤트 분류는 표준 카테고리와 바로 같지 않기 때문에, 원형을 `SourceEventCategory`로 남기고 `taxonomy_crosswalk.csv`로 표준 카테고리와 연결한다.
-
-### 6.3 `period_dictionary.csv`
-
-시대 노드 기준 사전이다.
-
-주요 용도:
-
-- `Period` 노드 생성
-- `Term - IN_PERIOD - Period` 관계 생성
-- `Event - IN_PERIOD - Period` 관계 생성
-- 시대 범위 확장 기준 제공
-
-### 6.4 `relation_type_dictionary.csv`
-
-인물 관계 원문을 그래프에서 쓰기 좋은 관계 의미로 정규화하는 사전이다.
-
-예:
-
-- `부`
-- `자`
-- `형제`
-- `교유`
-- `문인`
-
-이 파일은 관계 방향, 대칭 여부, inverse 관계 검토 기준을 포함한다.
-
-### 6.5 `source_url_dictionary.csv`
-
-URL을 중복 없이 모아둔 출처 사전이다.
-
-주요 용도:
-
-- `SourceUrl` 노드 생성
-- `Event - HAS_SOURCE_URL - SourceUrl`
-- `Person - HAS_SOURCE_URL - SourceUrl`
-- Tavily/Web RAG 수집 대상 관리
-
-`person_relations.evidence_url`은 이 사전에 넣지 않는다. 인물 관계 근거 URL은 `person_related_to_person.csv`의 `evidence_url` 속성으로만 남겨 URL 허브 노드 생성을 피한다.
-
-### 6.6 facet 계열 사전
-
-아래 사전들은 카테고리나 이벤트 분류에서 뽑은 의미 축이다.
-
-- `event_facet_dictionary.csv`
-- `country_dictionary.csv`
-- `region_dictionary.csv`
-- `economic_domain_dictionary.csv`
-- `taxonomy_facet_dictionary.csv`
-
-이들은 지금은 분리되어 있지만, 나중에 파일 수를 줄이고 싶으면 `facet_dictionary.csv` 같은 통합 사전으로 합칠 수 있다.
-
----
-
-
-## 7. `mapping/` CSV
-
-`mapping/`은 사전과 사전 사이를 연결하는 crosswalk 폴더다. 사전 자체가 아니라 연결 규칙이다.
-
-| CSV | 행 수 | 의미 |
-|---|---:|---|
-| `taxonomy_crosswalk.csv` | 53 | 원본 사건 분류와 표준 카테고리 연결 규칙 |
-| `source_event_category_facet_crosswalk.csv` | 53 | 원본 사건 분류와 사건 facet 연결 규칙 |
-| `canonical_category_country_crosswalk.csv` | 41 | 표준 카테고리와 국가 연결 규칙 |
-| `canonical_category_region_crosswalk.csv` | 13 | 표준 카테고리와 지역 연결 규칙 |
-| `canonical_category_economic_domain_crosswalk.csv` | 51 | 표준 카테고리와 경제 분야 연결 규칙 |
-| `canonical_category_taxonomy_facet_crosswalk.csv` | 276 | 표준 카테고리와 taxonomy facet 연결 규칙 |
-
-### 7.1 `taxonomy_crosswalk.csv`
-
-`SourceEventCategory`와 `CanonicalCategory`를 연결한다.
-
-예:
-
-```text
-events.subject_category
-  -> SourceEventCategory
-  -> taxonomy_crosswalk
-  -> CanonicalCategory
-```
-
-### 7.2 `canonical_category_*_crosswalk.csv`
-
-표준 카테고리 경로에서 국가, 지역, 경제 분야, taxonomy facet을 뽑아 연결한다.
-
-중요한 점:
-
-- `러시아`, `미국`, `북한`은 `외교·국제관계`의 하위 카테고리로만 보지 않는다.
-- 그래프에서는 `Country`, `Region` 같은 별도 의미 노드로 연결한다.
-- 원본 경로는 보존하고, 의미 관계는 `ABOUT_COUNTRY`, `ABOUT_REGION`으로 분리한다.
-
----
-
-
-## 8. `staging/` CSV
-
-`staging/`은 최종 relation CSV를 만들기 전의 중간 산출물이다.
-
-| CSV | 행 수 | 의미 |
-|---|---:|---|
-| `term_canonical_category_relation.csv` | 61,697 | 용어와 표준 카테고리 연결 중간 테이블 |
-| `event_source_category_relation.csv` | 713 | 사건과 원본 이벤트 분류 연결 중간 테이블 |
-| `event_date_parse.csv` | 703 | 사건 날짜 원문 parsing 결과 |
-| `term_year_parse.csv` | 61,598 | 용어 연도 원문 parsing 결과. 최종 `nodes/terms.csv`에 병합 |
-| `term_person_review.csv` | 206 | Term-Person 수동 검수 후보. 기본 runner 산출물이 아니며, `make_term_person_review.py --save`를 단독 실행할 때 생성된다. `review_type`으로 검수 유형을 구분하고, 승인 결과는 `seed/term_person_review_approved.csv`에 기록 |
-| `term_era_candidate.csv` | (수동 생성) | 고조선/초기 국가 시대 후보 용어 검수 시트. `make_term_era_candidates.py` 수동 실행 시 생성되며 runner는 생성하지 않음(현재 미생성). HIGH 신뢰도는 `AUTO_APPROVED`, 나머지는 `PENDING`으로 사람 검수 대상. 검수 결정은 재실행 시 보존됨. `make_theme_era_csv.py`는 이 파일이 있으면 검수 통과분을 `term_in_era.csv`에 합류 |
-
-### 8.1 `term_canonical_category_relation.csv`
-
-`Term - HAS_CATEGORY - CanonicalCategory` 최종 관계를 만들기 위한 중간 테이블이다.
-
-`term_lk`에 `>>`가 있으면 하나의 용어가 여러 카테고리 경로에 연결될 수 있다.
-
-### 8.2 `event_source_category_relation.csv`
-
-`Event - HAS_EVENT_CATEGORY - SourceEventCategory` 최종 관계를 만들기 위한 중간 테이블이다.
-
-이벤트 하나가 여러 원본 분류를 가질 수 있으므로 `event_id`, `event_category_id` 기준 관계로 펼쳐둔다.
-
-### 8.3 `event_date_parse.csv`
-
-`event_date` 원문에서 연도, 월, 왕대 표현 등을 보수적으로 추출한 결과다.
-
-이 파일은 `events.csv` 노드 속성 보강과 `Event - IN_PERIOD - Period` 관계 생성에 사용된다.
-
----
-
-
-## 12. 파일을 볼 때의 기준
-
-문제가 생겼을 때는 다음 순서로 추적한다.
-
-| 문제 | 먼저 볼 파일 |
-|---|---|
-| 원본 row가 잘못 줄었는지 확인 | `normalized/*.csv` |
-| 카테고리 목록 자체가 이상함 | `dictionary/canonical_category_dictionary.csv` |
-| 용어와 카테고리 연결이 이상함 | `staging/term_canonical_category_relation.csv` |
-| 이벤트 분류 매핑이 이상함 | `mapping/taxonomy_crosswalk.csv` |
-| 국가/지역/경제 분야 연결이 이상함 | `mapping/canonical_category_*_crosswalk.csv` |
-| 시대 범위가 이상하게 펼쳐짐 | `seed/period_seed.csv`, `dictionary/period_dictionary.csv`, `storage/neo4j/neo4j_import/relations/term_in_period.csv` |
-| 인물 관계 방향/의미가 이상함 | `seed/relation_type_seed.csv`, `dictionary/relation_type_dictionary.csv`, `storage/neo4j/neo4j_import/relations/person_related_to_person.csv` |
-| Neo4j import 대상 확인 | `storage/neo4j/neo4j_import/nodes/*.csv`, `storage/neo4j/neo4j_import/relations/*.csv` |
-
-정리하면, 전처리 단계의 핵심 산출물은 많지만 역할은 분리되어 있다.
-
-- 원본 정리: `normalized/`
-- 기준 정의: `dictionary/`
-- 연결 규칙: `mapping/`
-- 중간 관계: `staging/`
-- 최종 import: `graph/`
-
----
-
-
+Person 별칭은 `source_node_type=PersonAlias`, `source_relation=person_alias`로 분리하고, Person이 Event/Term 태그를 상속받은 경우 `source_detail`에 원천 `event_id` 또는 `term_id` 묶음을 보존한다.

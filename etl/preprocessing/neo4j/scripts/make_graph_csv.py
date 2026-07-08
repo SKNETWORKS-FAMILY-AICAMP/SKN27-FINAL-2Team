@@ -20,9 +20,11 @@ from neo4j_common import (
     read_csv,
     read_optional_csv,
     remove_stale_output_file,
+    resolve_import_dir,
     resolve_neo4j_dir,
     resolve_project_root,
     save_csv,
+    split_category_paths,
     split_period_tokens,
     split_pipe_values,
     unique_join,
@@ -151,13 +153,18 @@ def parse_args(default_paths):
         type=Path,
     )
     parser.add_argument(
-        "--term-person-review-approved-path",
-        default=default_paths["term_person_review_approved"],
+        "--mention-rule-seed-path",
+        default=default_paths["mention_rule_seed"],
         type=Path,
     )
     parser.add_argument(
-        "--person-duplicate-review-approved-path",
-        default=default_paths["person_duplicate_review_approved"],
+        "--graph-config-seed-path",
+        default=default_paths["graph_config_seed"],
+        type=Path,
+    )
+    parser.add_argument(
+        "--term-person-review-approved-path",
+        default=default_paths["term_person_review_approved"],
         type=Path,
     )
     parser.add_argument(
@@ -213,12 +220,21 @@ def merge_term_year_parse_columns(term_nodes, term_year_parse):
     return term_nodes
 
 
-def add_term_question_ready_columns(term_nodes):
+def get_graph_config_number(graph_config_seed, config_key):
+    matched_rows = graph_config_seed[graph_config_seed["config_key"].eq(config_key)]
+
+    if len(matched_rows) == 0:
+        raise ValueError(f"graph_config_seed에 config_key={config_key} 행이 없습니다.")
+
+    return int(matched_rows.iloc[0]["config_value"])
+
+
+def add_term_question_ready_columns(term_nodes, min_description_length):
     description_text = term_nodes["description"].fillna("").astype(str).str.strip()
     term_nodes["description_length"] = description_text.str.len()
     term_nodes["question_ready"] = "N"
     term_nodes.loc[
-        term_nodes["description_length"].ge(50),
+        term_nodes["description_length"].ge(min_description_length),
         "question_ready",
     ] = "Y"
 
@@ -241,7 +257,7 @@ def add_exam_keyword_column(term_nodes, keyword_era_seed):
     return term_nodes
 
 
-def build_term_nodes(terms_data, keyword_era_seed, term_year_parse):
+def build_term_nodes(terms_data, keyword_era_seed, term_year_parse, graph_config_seed):
     target_data = filter_actual_terms(terms_data)
     term_nodes = target_data[
         [
@@ -269,7 +285,10 @@ def build_term_nodes(terms_data, keyword_era_seed, term_year_parse):
     )
     term_nodes["source"] = "history_terms"
     term_nodes = merge_term_year_parse_columns(term_nodes, term_year_parse)
-    term_nodes = add_term_question_ready_columns(term_nodes)
+    term_nodes = add_term_question_ready_columns(
+        term_nodes,
+        get_graph_config_number(graph_config_seed, "question_ready_min_description_length"),
+    )
     term_nodes = add_exam_keyword_column(term_nodes, keyword_era_seed)
 
     return term_nodes[
@@ -668,7 +687,101 @@ def build_taxonomy_facet_tag_rows(taxonomy_facet_dictionary):
     return tag_rows
 
 
+def build_named_node_tag_rows(
+    node_data,
+    id_column,
+    name_column,
+    tag_type,
+    source_node_type,
+    source,
+):
+    tag_rows = []
+    if node_data.empty:
+        return tag_rows
+
+    for row in node_data[[id_column, name_column]].drop_duplicates().itertuples(index=False):
+        tag_name = clean_value(getattr(row, name_column))
+        source_node_id = clean_value(getattr(row, id_column))
+
+        if tag_name and source_node_id:
+            tag_rows.append(
+                {
+                    "tag_type": tag_type,
+                    "tag_name": tag_name,
+                    "tag_value": tag_name,
+                    "source_node_type": source_node_type,
+                    "source_node_id": source_node_id,
+                    "source": source,
+                    "review_status": "APPROVED",
+                }
+            )
+
+    return tag_rows
+
+
+def build_person_alias_search_tag_data(people):
+    alias_data = split_person_name_columns(people)
+    columns = [
+        "person_id",
+        "alias_name",
+        "alias_value",
+        "alias_source_id",
+    ]
+
+    if alias_data.empty:
+        return pd.DataFrame(columns=columns)
+
+    alias_data = alias_data.rename(columns={"base_name": "alias_name"}).copy()
+    alias_data["hanja"] = alias_data["hanja"].fillna("").str.strip()
+    alias_data["alias_value"] = alias_data["alias_name"]
+    hanja_mask = alias_data["hanja"].ne("")
+    alias_data.loc[hanja_mask, "alias_value"] = (
+        alias_data.loc[hanja_mask, "alias_name"]
+        + "("
+        + alias_data.loc[hanja_mask, "hanja"]
+        + ")"
+    )
+    alias_data = (
+        alias_data[["person_id", "alias_name", "alias_value"]]
+        .drop_duplicates()
+        .sort_values(["person_id", "alias_name", "alias_value"])
+        .reset_index(drop=True)
+    )
+    alias_numbers = alias_data.groupby("person_id").cumcount() + 1
+    alias_data["alias_source_id"] = (
+        alias_data["person_id"].astype(str)
+        + "::alias::"
+        + alias_numbers.astype(str)
+    )
+
+    return alias_data[columns]
+
+
+def build_person_alias_tag_rows(people):
+    tag_rows = []
+    alias_data = build_person_alias_search_tag_data(people)
+
+    for row in alias_data.itertuples(index=False):
+        tag_rows.append(
+            {
+                "tag_type": "PERSON_ALIAS",
+                "tag_name": row.alias_name,
+                "tag_value": row.alias_value,
+                "source_node_type": "PersonAlias",
+                "source_node_id": row.alias_source_id,
+                "source": "people.name_candidates",
+                "review_status": "APPROVED",
+            }
+        )
+
+    return tag_rows
+
+
 def build_search_tag_nodes(
+    terms,
+    events,
+    people,
+    period_dictionary,
     category_dictionary,
     event_category_dictionary,
     event_facet_dictionary,
@@ -678,6 +791,47 @@ def build_search_tag_nodes(
     taxonomy_facet_dictionary,
 ):
     tag_rows = []
+    tag_rows.extend(
+        build_named_node_tag_rows(
+            terms,
+            "term_id",
+            "name",
+            "TERM_NAME",
+            "Term",
+            "terms",
+        )
+    )
+    tag_rows.extend(
+        build_named_node_tag_rows(
+            events,
+            "event_id",
+            "event_name",
+            "EVENT_NAME",
+            "Event",
+            "events",
+        )
+    )
+    tag_rows.extend(
+        build_named_node_tag_rows(
+            people,
+            "person_id",
+            "name",
+            "PERSON_NAME",
+            "Person",
+            "people",
+        )
+    )
+    tag_rows.extend(build_person_alias_tag_rows(people))
+    tag_rows.extend(
+        build_named_node_tag_rows(
+            period_dictionary,
+            "period_id",
+            "period_name",
+            "PERIOD",
+            "Period",
+            "period_dictionary",
+        )
+    )
     tag_rows.extend(build_canonical_category_tag_rows(category_dictionary))
     tag_rows.extend(build_source_event_category_tag_rows(event_category_dictionary))
     tag_rows.extend(build_event_facet_tag_rows(event_facet_dictionary))
@@ -858,104 +1012,6 @@ def build_person_degree_lookup(event_relations_data, person_relations_data):
     degree_data = degree_data[degree_data.ne("")]
 
     return degree_data.value_counts().to_dict()
-
-
-def build_person_duplicate_review_lookup(person_duplicate_review_approved):
-    if person_duplicate_review_approved.empty:
-        return {}
-
-    required_columns = {
-        "duplicate_person_id",
-        "canonical_person_id",
-        "review_status",
-    }
-
-    if not required_columns.issubset(person_duplicate_review_approved.columns):
-        return {}
-
-    approved_data = person_duplicate_review_approved[
-        person_duplicate_review_approved["review_status"].isin(
-            ["APPROVED", "AUTO_APPROVED"]
-        )
-    ].copy()
-
-    if approved_data.empty:
-        return {}
-
-    approved_data["duplicate_person_id"] = (
-        approved_data["duplicate_person_id"].fillna("").astype(str).str.strip()
-    )
-    approved_data["canonical_person_id"] = (
-        approved_data["canonical_person_id"].fillna("").astype(str).str.strip()
-    )
-    approved_data = approved_data[
-        approved_data["duplicate_person_id"].ne("")
-        & approved_data["canonical_person_id"].ne("")
-        & approved_data["duplicate_person_id"].ne(approved_data["canonical_person_id"])
-    ].copy()
-
-    if approved_data.empty:
-        return {}
-
-    return dict(
-        zip(
-            approved_data["duplicate_person_id"],
-            approved_data["canonical_person_id"],
-        )
-    )
-
-
-def resolve_canonical_person_id(person_id, person_id_lookup):
-    current_id = str(person_id)
-    seen_ids = set()
-
-    while current_id in person_id_lookup and current_id not in seen_ids:
-        seen_ids.add(current_id)
-        current_id = person_id_lookup[current_id]
-
-    return current_id
-
-
-def apply_person_id_lookup(data_frame, person_id_lookup, target_columns):
-    if not person_id_lookup:
-        return data_frame
-
-    mapped_data = data_frame.copy()
-
-    for column_name in target_columns:
-        if column_name not in mapped_data.columns:
-            continue
-
-        mapped_data[column_name] = mapped_data[column_name].apply(
-            lambda value: resolve_canonical_person_id(value, person_id_lookup)
-            if pd.notna(value)
-            else value
-        )
-
-    return mapped_data
-
-
-def apply_person_duplicate_review(inputs):
-    person_id_lookup = build_person_duplicate_review_lookup(
-        inputs["person_duplicate_review_approved"]
-    )
-
-    if not person_id_lookup:
-        return inputs
-
-    mapped_inputs = inputs.copy()
-    mapped_inputs["event_relations"] = apply_person_id_lookup(
-        mapped_inputs["event_relations"],
-        person_id_lookup,
-        ["person_id"],
-    )
-    mapped_inputs["person_relations"] = apply_person_id_lookup(
-        mapped_inputs["person_relations"],
-        person_id_lookup,
-        ["person_id", "related_person_id"],
-    )
-
-    return mapped_inputs
 
 
 def build_term_has_category(term_category_relation):
@@ -1510,23 +1566,26 @@ def build_search_tag_lookup(search_tag_nodes):
 
 def append_search_tag_relation_rows(
     relation_rows,
-    start_event_id,
+    start_id_column,
+    start_node_id,
     source_node_type,
     source_node_id,
     source_relation,
     search_tag_lookup,
+    source_detail="",
 ):
     search_tag_id = search_tag_lookup.get((source_node_type, source_node_id))
 
     if pd.notna(search_tag_id):
         relation_rows.append(
             {
-                "start_event_id": start_event_id,
+                start_id_column: start_node_id,
                 "end_search_tag_id": search_tag_id,
                 "relation_type": "HAS_SEARCH_TAG",
                 "source_node_type": source_node_type,
                 "source_node_id": source_node_id,
                 "source_relation": source_relation,
+                "source_detail": source_detail,
             }
         )
 
@@ -1539,6 +1598,7 @@ def append_source_category_search_tag_rows(
     for row in event_has_source_category.itertuples(index=False):
         append_search_tag_relation_rows(
             relation_rows,
+            "start_event_id",
             row.start_event_id,
             "SourceEventCategory",
             row.end_event_category_id,
@@ -1555,6 +1615,7 @@ def append_canonical_category_search_tag_rows(
     for row in event_has_canonical_category.itertuples(index=False):
         append_search_tag_relation_rows(
             relation_rows,
+            "start_event_id",
             row.start_event_id,
             "CanonicalCategory",
             row.end_category_id,
@@ -1571,6 +1632,7 @@ def append_event_facet_search_tag_rows(
     for row in event_has_facet.itertuples(index=False):
         append_search_tag_relation_rows(
             relation_rows,
+            "start_event_id",
             row.start_event_id,
             "EventFacet",
             row.end_event_facet_id,
@@ -1587,6 +1649,7 @@ def append_country_search_tag_rows(
     for row in event_about_country.itertuples(index=False):
         append_search_tag_relation_rows(
             relation_rows,
+            "start_event_id",
             row.start_event_id,
             "Country",
             row.end_country_id,
@@ -1603,6 +1666,7 @@ def append_region_search_tag_rows(
     for row in event_about_region.itertuples(index=False):
         append_search_tag_relation_rows(
             relation_rows,
+            "start_event_id",
             row.start_event_id,
             "Region",
             row.end_region_id,
@@ -1619,6 +1683,7 @@ def append_economic_domain_search_tag_rows(
     for row in event_about_economic_domain.itertuples(index=False):
         append_search_tag_relation_rows(
             relation_rows,
+            "start_event_id",
             row.start_event_id,
             "EconomicDomain",
             row.end_economic_domain_id,
@@ -1635,6 +1700,7 @@ def append_taxonomy_facet_search_tag_rows(
     for row in event_about_taxonomy_facet.itertuples(index=False):
         append_search_tag_relation_rows(
             relation_rows,
+            "start_event_id",
             row.start_event_id,
             "TaxonomyFacet",
             row.end_taxonomy_facet_id,
@@ -1643,10 +1709,215 @@ def append_taxonomy_facet_search_tag_rows(
         )
 
 
+def build_search_tag_relation_columns(start_id_column):
+    return [
+        start_id_column,
+        "end_search_tag_id",
+        "relation_type",
+        "source_node_type",
+        "source_node_id",
+        "source_relation",
+        "source_detail",
+    ]
+
+
+def append_node_name_search_tag_rows(
+    relation_rows,
+    node_data,
+    node_id_column,
+    start_id_column,
+    source_node_type,
+    source_relation,
+    search_tag_lookup,
+):
+    if node_data.empty:
+        return
+
+    for row in node_data[[node_id_column]].drop_duplicates().itertuples(index=False):
+        node_id = getattr(row, node_id_column)
+        append_search_tag_relation_rows(
+            relation_rows,
+            start_id_column,
+            node_id,
+            source_node_type,
+            node_id,
+            source_relation,
+            search_tag_lookup,
+        )
+
+
+def append_person_alias_search_tag_rows(
+    relation_rows,
+    person_nodes,
+    search_tag_lookup,
+):
+    alias_data = build_person_alias_search_tag_data(person_nodes)
+
+    for row in alias_data.itertuples(index=False):
+        append_search_tag_relation_rows(
+            relation_rows,
+            "start_person_id",
+            row.person_id,
+            "PersonAlias",
+            row.alias_source_id,
+            "person_alias",
+            search_tag_lookup,
+            row.alias_value,
+        )
+
+
+def append_axis_search_tag_rows(
+    relation_rows,
+    relation_data,
+    start_id_column,
+    source_node_type,
+    source_id_column,
+    source_relation,
+    search_tag_lookup,
+):
+    required_columns = [start_id_column, source_id_column]
+    if relation_data.empty:
+        return
+
+    if any(column_name not in relation_data.columns for column_name in required_columns):
+        return
+
+    for row in relation_data[required_columns].drop_duplicates().itertuples(index=False):
+        append_search_tag_relation_rows(
+            relation_rows,
+            start_id_column,
+            getattr(row, start_id_column),
+            source_node_type,
+            getattr(row, source_id_column),
+            source_relation,
+            search_tag_lookup,
+        )
+
+
+def empty_search_tag_relations(start_id_column):
+    return pd.DataFrame(columns=build_search_tag_relation_columns(start_id_column))
+
+
+def dataframe_from_search_tag_relation_rows(relation_rows, start_id_column):
+    if len(relation_rows) == 0:
+        return empty_search_tag_relations(start_id_column)
+
+    return (
+        pd.DataFrame(relation_rows)
+        .drop_duplicates()
+        .reset_index(drop=True)[build_search_tag_relation_columns(start_id_column)]
+    )
+
+
+def aggregate_search_tag_relation_details(relation_data, start_id_column):
+    relation_columns = build_search_tag_relation_columns(start_id_column)
+
+    if relation_data.empty:
+        return empty_search_tag_relations(start_id_column)
+
+    if "source_detail" not in relation_data.columns:
+        relation_data = relation_data.copy()
+        relation_data["source_detail"] = ""
+
+    group_columns = [
+        column_name
+        for column_name in relation_columns
+        if column_name != "source_detail"
+    ]
+
+    return (
+        relation_data[relation_columns]
+        .groupby(group_columns, dropna=False)
+        .agg(source_detail=("source_detail", unique_join))
+        .reset_index()[relation_columns]
+    )
+
+
+def build_term_has_search_tag(
+    term_nodes,
+    term_has_canonical_category,
+    term_about_country,
+    term_about_region,
+    term_about_economic_domain,
+    term_about_taxonomy_facet,
+    term_in_period,
+    search_tag_nodes,
+):
+    relation_rows = []
+    search_tag_lookup = build_search_tag_lookup(search_tag_nodes)
+    append_node_name_search_tag_rows(
+        relation_rows,
+        term_nodes,
+        "term_id",
+        "start_term_id",
+        "Term",
+        "term_name",
+        search_tag_lookup,
+    )
+    append_axis_search_tag_rows(
+        relation_rows,
+        term_has_canonical_category,
+        "start_term_id",
+        "CanonicalCategory",
+        "end_category_id",
+        "term_has_canonical_category",
+        search_tag_lookup,
+    )
+    append_axis_search_tag_rows(
+        relation_rows,
+        term_about_country,
+        "start_term_id",
+        "Country",
+        "end_country_id",
+        "term_about_country",
+        search_tag_lookup,
+    )
+    append_axis_search_tag_rows(
+        relation_rows,
+        term_about_region,
+        "start_term_id",
+        "Region",
+        "end_region_id",
+        "term_about_region",
+        search_tag_lookup,
+    )
+    append_axis_search_tag_rows(
+        relation_rows,
+        term_about_economic_domain,
+        "start_term_id",
+        "EconomicDomain",
+        "end_economic_domain_id",
+        "term_about_economic_domain",
+        search_tag_lookup,
+    )
+    append_axis_search_tag_rows(
+        relation_rows,
+        term_about_taxonomy_facet,
+        "start_term_id",
+        "TaxonomyFacet",
+        "end_taxonomy_facet_id",
+        "term_about_taxonomy_facet",
+        search_tag_lookup,
+    )
+    append_axis_search_tag_rows(
+        relation_rows,
+        term_in_period,
+        "start_term_id",
+        "Period",
+        "end_period_id",
+        "term_in_period",
+        search_tag_lookup,
+    )
+
+    return dataframe_from_search_tag_relation_rows(relation_rows, "start_term_id")
+
+
 def build_event_has_search_tag(
+    event_nodes,
     event_has_source_category,
     event_has_canonical_category,
     event_has_facet,
+    event_in_period,
     event_about_country,
     event_about_region,
     event_about_economic_domain,
@@ -1655,6 +1926,15 @@ def build_event_has_search_tag(
 ):
     relation_rows = []
     search_tag_lookup = build_search_tag_lookup(search_tag_nodes)
+    append_node_name_search_tag_rows(
+        relation_rows,
+        event_nodes,
+        "event_id",
+        "start_event_id",
+        "Event",
+        "event_name",
+        search_tag_lookup,
+    )
     append_source_category_search_tag_rows(
         relation_rows,
         event_has_source_category,
@@ -1668,6 +1948,15 @@ def build_event_has_search_tag(
     append_event_facet_search_tag_rows(
         relation_rows,
         event_has_facet,
+        search_tag_lookup,
+    )
+    append_axis_search_tag_rows(
+        relation_rows,
+        event_in_period,
+        "start_event_id",
+        "Period",
+        "end_period_id",
+        "event_in_period",
         search_tag_lookup,
     )
     append_country_search_tag_rows(
@@ -1691,19 +1980,95 @@ def build_event_has_search_tag(
         search_tag_lookup,
     )
 
-    if len(relation_rows) == 0:
-        return pd.DataFrame(
-            columns=[
-                "start_event_id",
-                "end_search_tag_id",
-                "relation_type",
-                "source_node_type",
-                "source_node_id",
-                "source_relation",
-            ]
-        )
+    return dataframe_from_search_tag_relation_rows(relation_rows, "start_event_id")
 
-    return pd.DataFrame(relation_rows).drop_duplicates().reset_index(drop=True)
+
+def build_person_has_search_tag_from_event_tags(
+    person_involved_in_event,
+    event_has_search_tag,
+):
+    if person_involved_in_event.empty or event_has_search_tag.empty:
+        return empty_search_tag_relations("start_person_id")
+
+    relation_data = person_involved_in_event[
+        ["start_person_id", "end_event_id"]
+    ].merge(
+        event_has_search_tag,
+        left_on="end_event_id",
+        right_on="start_event_id",
+        how="inner",
+    )
+    relation_data["relation_type"] = "HAS_SEARCH_TAG"
+    relation_data["source_relation"] = "person_involved_in_event"
+    relation_data["source_detail"] = relation_data["end_event_id"]
+
+    return aggregate_search_tag_relation_details(relation_data, "start_person_id")
+
+
+def build_person_has_search_tag_from_term_tags(
+    term_refers_to_person,
+    term_has_search_tag,
+):
+    if term_refers_to_person.empty or term_has_search_tag.empty:
+        return empty_search_tag_relations("start_person_id")
+
+    relation_data = term_refers_to_person[
+        ["start_term_id", "end_person_id"]
+    ].merge(
+        term_has_search_tag,
+        on="start_term_id",
+        how="inner",
+    )
+    relation_data = relation_data.rename(columns={"end_person_id": "start_person_id"})
+    relation_data["relation_type"] = "HAS_SEARCH_TAG"
+    relation_data["source_relation"] = "term_refers_to_person"
+    relation_data["source_detail"] = relation_data["start_term_id"]
+
+    return aggregate_search_tag_relation_details(relation_data, "start_person_id")
+
+
+def build_person_has_search_tag(
+    person_nodes,
+    person_involved_in_event,
+    term_refers_to_person,
+    term_has_search_tag,
+    event_has_search_tag,
+    search_tag_nodes,
+):
+    relation_rows = []
+    search_tag_lookup = build_search_tag_lookup(search_tag_nodes)
+    append_node_name_search_tag_rows(
+        relation_rows,
+        person_nodes,
+        "person_id",
+        "start_person_id",
+        "Person",
+        "person_name",
+        search_tag_lookup,
+    )
+    append_person_alias_search_tag_rows(
+        relation_rows,
+        person_nodes,
+        search_tag_lookup,
+    )
+    name_relations = dataframe_from_search_tag_relation_rows(
+        relation_rows,
+        "start_person_id",
+    )
+    event_relations = build_person_has_search_tag_from_event_tags(
+        person_involved_in_event,
+        event_has_search_tag,
+    )
+    term_relations = build_person_has_search_tag_from_term_tags(
+        term_refers_to_person,
+        term_has_search_tag,
+    )
+
+    return (
+        pd.concat([name_relations, event_relations, term_relations], ignore_index=True)
+        .drop_duplicates()
+        .reset_index(drop=True)[build_search_tag_relation_columns("start_person_id")]
+    )
 
 
 def build_period_lookup(period_dictionary):
@@ -2136,6 +2501,138 @@ def split_person_name_columns(person_nodes):
     ).drop_duplicates()
 
 
+def empty_person_description_context_tokens():
+    return pd.DataFrame(columns=["person_id", "base_name", "hanja"])
+
+
+def build_person_description_context_rows(person_relations_data):
+    required_columns = [
+        "person_id",
+        "person_name",
+        "related_person_id",
+        "related_person_name",
+    ]
+    missing_columns = [
+        column_name
+        for column_name in required_columns
+        if column_name not in person_relations_data.columns
+    ]
+
+    if missing_columns:
+        return pd.DataFrame(columns=["person_id", "context_name"])
+
+    person_to_related = person_relations_data[
+        ["person_id", "related_person_name"]
+    ].rename(columns={"related_person_name": "context_name"})
+    related_to_person = person_relations_data[
+        ["related_person_id", "person_name"]
+    ].rename(
+        columns={
+            "related_person_id": "person_id",
+            "person_name": "context_name",
+        }
+    )
+    context_rows = pd.concat(
+        [person_to_related, related_to_person],
+        ignore_index=True,
+    )
+    context_rows["person_id"] = context_rows["person_id"].fillna("").str.strip()
+    context_rows["context_name"] = context_rows["context_name"].fillna("").str.strip()
+    context_rows = context_rows[
+        context_rows["person_id"].ne("") & context_rows["context_name"].ne("")
+    ].copy()
+
+    return context_rows.drop_duplicates()
+
+
+def build_person_description_context_tokens(person_relations_data):
+    context_rows = build_person_description_context_rows(person_relations_data)
+
+    if context_rows.empty:
+        return empty_person_description_context_tokens()
+
+    context_nodes = context_rows.rename(columns={"context_name": "name"})
+    context_tokens = split_person_name_columns(context_nodes)
+
+    if context_tokens.empty:
+        return empty_person_description_context_tokens()
+
+    context_tokens = context_tokens[
+        context_tokens["base_name"].fillna("").str.len().ge(2)
+    ].copy()
+
+    if context_tokens.empty:
+        return empty_person_description_context_tokens()
+
+    return context_tokens[["person_id", "base_name", "hanja"]].drop_duplicates()
+
+
+def build_person_description_context_lookup(person_context_tokens):
+    context_lookup = {}
+
+    if person_context_tokens.empty:
+        return context_lookup
+
+    for person_id, token_rows in person_context_tokens.groupby("person_id"):
+        tokens = []
+
+        for row in token_rows.itertuples(index=False):
+            for token_value in [row.base_name, row.hanja]:
+                token = str(token_value or "").strip()
+
+                if len(token) < 2:
+                    continue
+
+                if token in tokens:
+                    continue
+
+                tokens.append(token)
+
+        context_lookup[person_id] = tokens
+
+    return context_lookup
+
+
+def find_description_context_matches(description, person_id, context_lookup):
+    description_text = str(description or "")
+    matches = []
+
+    for token in context_lookup.get(person_id, []):
+        if token not in description_text:
+            continue
+
+        matches.append(token)
+
+    return "|".join(matches)
+
+
+def add_description_context_match_columns(data_frame, person_relations_data):
+    enriched_data = data_frame.copy()
+    context_tokens = build_person_description_context_tokens(person_relations_data)
+    context_lookup = build_person_description_context_lookup(context_tokens)
+
+    if "description" not in enriched_data.columns:
+        enriched_data["description"] = ""
+
+    if "person_id" not in enriched_data.columns:
+        enriched_data["description_context_matches"] = ""
+        return enriched_data
+
+    enriched_data["description_context_matches"] = [
+        find_description_context_matches(row.description, row.person_id, context_lookup)
+        for row in enriched_data[["description", "person_id"]].itertuples(index=False)
+    ]
+
+    return enriched_data
+
+
+def build_description_context_match_mask(data_frame):
+    if "description_context_matches" not in data_frame.columns:
+        return pd.Series(False, index=data_frame.index)
+
+    return data_frame["description_context_matches"].fillna("").ne("")
+
+
 def find_unique_names(left_names, right_names):
     left_counts = left_names.value_counts()
     right_counts = right_names.value_counts()
@@ -2143,6 +2640,72 @@ def find_unique_names(left_names, right_names):
     unique_right = set(right_counts[right_counts == 1].index)
 
     return unique_left & unique_right
+
+
+def merge_person_life_year_columns(person_data, person_nodes):
+    enriched_data = person_data.copy()
+
+    for column_name in ["birth_year", "death_year"]:
+        if column_name in person_nodes.columns:
+            enriched_data = enriched_data.merge(
+                person_nodes[["person_id", column_name]],
+                on="person_id",
+                how="left",
+            )
+
+        if column_name not in enriched_data.columns:
+            enriched_data[column_name] = pd.NA
+
+    return enriched_data
+
+
+def build_exact_term_person_year_mask(data_frame):
+    required_columns = ["start_year", "end_year", "birth_year", "death_year"]
+    missing_columns = [
+        column_name
+        for column_name in required_columns
+        if column_name not in data_frame.columns
+    ]
+
+    if missing_columns:
+        return pd.Series(False, index=data_frame.index)
+
+    term_start_year = pd.to_numeric(data_frame["start_year"], errors="coerce")
+    term_end_year = pd.to_numeric(data_frame["end_year"], errors="coerce")
+    birth_year = pd.to_numeric(data_frame["birth_year"], errors="coerce")
+    death_year = pd.to_numeric(data_frame["death_year"], errors="coerce")
+    has_complete_years = (
+        term_start_year.notna()
+        & term_end_year.notna()
+        & birth_year.notna()
+        & death_year.notna()
+    )
+
+    return (
+        has_complete_years
+        & term_start_year.eq(birth_year)
+        & term_end_year.eq(death_year)
+    )
+
+
+def build_unique_exact_term_person_year_group_mask(data_frame):
+    exact_year_match = build_exact_term_person_year_mask(data_frame)
+
+    if "term_id" not in data_frame.columns or "person_id" not in data_frame.columns:
+        return exact_year_match
+
+    exact_person_counts = (
+        data_frame[exact_year_match].groupby("term_id")["person_id"].nunique()
+    )
+    mapped_counts = data_frame["term_id"].map(exact_person_counts).fillna(0)
+
+    return mapped_counts.eq(1)
+
+
+def build_unique_exact_term_person_year_mask(data_frame):
+    exact_year_match = build_exact_term_person_year_mask(data_frame)
+
+    return exact_year_match & build_unique_exact_term_person_year_group_mask(data_frame)
 
 
 def build_term_person_relation_columns():
@@ -2225,43 +2788,30 @@ def empty_term_mentions_person_relations():
     return pd.DataFrame(columns=build_term_mentions_person_columns())
 
 
-def build_person_mention_suffixes():
-    return [
-        "대왕",
-        "입니다",
-        "이었다",
-        "였다",
-        "이다",
-        "인가",
-        "이야",
-        "께서",
-        "시대",
-        "연간",
-        "원년",
-        "에게",
-        "에서",
-        "으로",
-        "부터",
-        "까지",
-        "하고",
-        "이랑",
-        "야",
-        "왕",
-        "대",
-        "때",
-        "년",
-        "조",
-        "의",
-        "은",
-        "는",
-        "이",
-        "가",
-        "을",
-        "를",
-        "에",
-        "와",
-        "과",
+def build_mention_rules(mention_rule_seed, graph_config_seed):
+    # 인물 언급 판정 규칙(접미사 목록, 문맥 창 크기)은 seed에서 관리한다.
+    rule_data = mention_rule_seed.dropna(subset=["rule_type", "value"])
+    rule_specs = [
+        ("general_suffixes", "GENERAL_SUFFIX"),
+        ("strong_suffixes", "STRONG_SUFFIX"),
+        ("temple_name_suffixes", "TEMPLE_NAME_SUFFIX"),
     ]
+    mention_rules = {}
+
+    for rule_key, rule_type in rule_specs:
+        values = rule_data[rule_data["rule_type"].eq(rule_type)]["value"].tolist()
+
+        if len(values) == 0:
+            raise ValueError(f"mention_rule_seed에 rule_type={rule_type} 행이 없습니다.")
+
+        mention_rules[rule_key] = values
+
+    mention_rules["context_window_size"] = get_graph_config_number(
+        graph_config_seed,
+        "mention_context_window_size",
+    )
+
+    return mention_rules
 
 
 def build_person_mention_token_variants(token, suffixes):
@@ -2287,31 +2837,19 @@ def build_person_mention_token_variants(token, suffixes):
     return values
 
 
-def build_strong_person_mention_suffixes():
-    return [
-        "대왕",
-        "왕",
-        "시대",
-        "연간",
-        "원년",
-        "께서",
-        "때",
-    ]
-
-
-def should_require_person_mention_context(alias_name):
+def should_require_person_mention_context(alias_name, temple_name_suffixes):
     alias_text = str(alias_name or "").strip()
 
     if len(alias_text) <= 2:
         return True
 
-    if len(alias_text) <= 3 and alias_text.endswith(("조", "종")):
+    if len(alias_text) <= 3 and alias_text.endswith(tuple(temple_name_suffixes)):
         return True
 
     return False
 
 
-def extract_person_mention_context(text, start_index, end_index, window_size=32):
+def extract_person_mention_context(text, start_index, end_index, window_size):
     text_value = str(text)
     context_start = max(0, start_index - window_size)
     context_end = min(len(text_value), end_index + window_size)
@@ -2351,11 +2889,11 @@ def has_reign_year_context(context, alias_name):
     return False
 
 
-def has_strong_person_suffix_context(token, alias_name):
+def has_strong_person_suffix_context(token, alias_name, strong_suffixes):
     token_text = str(token or "")
     alias_text = str(alias_name or "")
 
-    for suffix in build_strong_person_mention_suffixes():
+    for suffix in strong_suffixes:
         if token_text.startswith(f"{alias_text}{suffix}"):
             return True
 
@@ -2370,8 +2908,14 @@ def decide_person_mention_context_rule(
     match_start,
     match_end,
     requires_context,
+    mention_rules,
 ):
-    context = extract_person_mention_context(text, match_start, match_end)
+    context = extract_person_mention_context(
+        text,
+        match_start,
+        match_end,
+        mention_rules["context_window_size"],
+    )
 
     if has_person_hanja_context(context, matched_name, matched_hanja):
         return "HANJA_CONTEXT", context
@@ -2379,7 +2923,7 @@ def decide_person_mention_context_rule(
     if has_reign_year_context(context, matched_name):
         return "REIGN_YEAR_CONTEXT", context
 
-    if has_strong_person_suffix_context(token, matched_name):
+    if has_strong_person_suffix_context(token, matched_name, mention_rules["strong_suffixes"]):
         return "TITLE_SUFFIX_CONTEXT", context
 
     if not requires_context:
@@ -2399,28 +2943,10 @@ def build_person_mention_confidence(context_rule):
     return "MEDIUM"
 
 
-def build_mention_person_alias_lookup(person_nodes, term_refers_to_person):
+def build_mention_person_alias_lookup(person_nodes, term_refers_to_person, mention_rules):
     if term_refers_to_person.empty:
         return {}
 
-    person_alias_data = split_person_name_columns(person_nodes)
-
-    if person_alias_data.empty:
-        return {}
-
-    person_alias_data = person_alias_data[
-        person_alias_data["base_name"].str.len().ge(2)
-        & ~person_alias_data["is_primary_alias"]
-    ].copy()
-
-    if person_alias_data.empty:
-        return {}
-
-    alias_person_counts = person_alias_data.groupby("base_name")["person_id"].nunique()
-    unique_aliases = set(alias_person_counts[alias_person_counts == 1].index)
-    unique_alias_data = person_alias_data[
-        person_alias_data["base_name"].isin(unique_aliases)
-    ].copy()
     reliable_link_data = term_refers_to_person[
         [
             "end_person_id",
@@ -2428,37 +2954,110 @@ def build_mention_person_alias_lookup(person_nodes, term_refers_to_person):
             "matched_hanja",
         ]
     ].drop_duplicates()
-    reliable_alias_data = unique_alias_data.merge(
-        reliable_link_data,
-        left_on=["person_id", "base_name"],
-        right_on=["end_person_id", "matched_name"],
-        how="inner",
+    reliable_matched_alias_data = reliable_link_data.rename(
+        columns={
+            "end_person_id": "person_id",
+            "matched_name": "base_name",
+            "matched_hanja": "hanja",
+        }
     )
+    reliable_matched_alias_data["base_name"] = (
+        reliable_matched_alias_data["base_name"].fillna("").str.strip()
+    )
+    reliable_matched_alias_data["hanja"] = (
+        reliable_matched_alias_data["hanja"].fillna("").str.strip()
+    )
+    reliable_matched_alias_data = reliable_matched_alias_data[
+        reliable_matched_alias_data["base_name"].str.len().ge(2)
+    ].copy()
 
-    if reliable_alias_data.empty:
+    if not reliable_matched_alias_data.empty:
+        reliable_name_counts = reliable_matched_alias_data.groupby("base_name")[
+            "person_id"
+        ].nunique()
+        reliable_unique_names = set(
+            reliable_name_counts[reliable_name_counts == 1].index
+        )
+        reliable_matched_alias_data = reliable_matched_alias_data[
+            reliable_matched_alias_data["base_name"].isin(reliable_unique_names)
+        ].copy()
+
+    person_alias_data = split_person_name_columns(person_nodes)
+    reliable_alias_data = pd.DataFrame(columns=["person_id", "base_name", "hanja"])
+
+    if not person_alias_data.empty:
+        person_alias_data = person_alias_data[
+            person_alias_data["base_name"].str.len().ge(2)
+            & ~person_alias_data["is_primary_alias"]
+        ].copy()
+
+    if not person_alias_data.empty:
+        alias_person_counts = person_alias_data.groupby("base_name")[
+            "person_id"
+        ].nunique()
+        unique_aliases = set(alias_person_counts[alias_person_counts == 1].index)
+        unique_alias_data = person_alias_data[
+            person_alias_data["base_name"].isin(unique_aliases)
+        ].copy()
+        reliable_alias_data = unique_alias_data.merge(
+            reliable_link_data,
+            left_on=["person_id", "base_name"],
+            right_on=["end_person_id", "matched_name"],
+            how="inner",
+        )
+
+    if not reliable_alias_data.empty:
+        alias_hanja = reliable_alias_data["hanja"].fillna("")
+        matched_hanja = reliable_alias_data["matched_hanja"].fillna("")
+        hanja_compatible = (
+            alias_hanja.eq("")
+            | matched_hanja.eq("")
+            | alias_hanja.eq(matched_hanja)
+        )
+        reliable_alias_data = reliable_alias_data[hanja_compatible].copy()
+        reliable_alias_data = reliable_alias_data[["person_id", "base_name", "hanja"]]
+
+    alias_source_data = pd.concat(
+        [
+            reliable_alias_data,
+            reliable_matched_alias_data[["person_id", "base_name", "hanja"]],
+        ],
+        ignore_index=True,
+    ).drop_duplicates()
+
+    if alias_source_data.empty:
         return {}
 
-    alias_hanja = reliable_alias_data["hanja"].fillna("")
-    matched_hanja = reliable_alias_data["matched_hanja"].fillna("")
-    hanja_compatible = (
-        alias_hanja.eq("")
-        | matched_hanja.eq("")
-        | alias_hanja.eq(matched_hanja)
+    alias_source_counts = alias_source_data.groupby("base_name")[
+        "person_id"
+    ].nunique()
+    alias_unique_names = set(alias_source_counts[alias_source_counts == 1].index)
+    alias_source_data = alias_source_data[
+        alias_source_data["base_name"].isin(alias_unique_names)
+    ].copy()
+
+    if alias_source_data.empty:
+        return {}
+
+    alias_source_data = alias_source_data.sort_values(
+        ["base_name", "person_id", "hanja"]
     )
-    reliable_alias_data = reliable_alias_data[hanja_compatible].copy()
 
     alias_lookup = {}
-    for base_name, alias_rows in reliable_alias_data.groupby("base_name"):
+    for base_name, alias_rows in alias_source_data.groupby("base_name"):
         alias_lookup[base_name] = {
             "person_id": first_value(alias_rows["person_id"]),
             "hanja": first_value(alias_rows["hanja"]),
-            "requires_context": should_require_person_mention_context(base_name),
+            "requires_context": should_require_person_mention_context(
+                base_name,
+                mention_rules["temple_name_suffixes"],
+            ),
         }
 
     return alias_lookup
 
 
-def collect_person_mentions(text, alias_lookup, suffixes):
+def collect_person_mentions(text, alias_lookup, mention_rules):
     if pd.isna(text):
         return []
 
@@ -2468,7 +3067,10 @@ def collect_person_mentions(text, alias_lookup, suffixes):
 
     for token_match in re.finditer(r"[가-힣A-Za-z0-9]+", text_value):
         token = token_match.group(0)
-        token_variants = build_person_mention_token_variants(token, suffixes)
+        token_variants = build_person_mention_token_variants(
+            token,
+            mention_rules["general_suffixes"],
+        )
 
         for token_variant in token_variants:
             if token_variant not in alias_lookup:
@@ -2486,6 +3088,7 @@ def collect_person_mentions(text, alias_lookup, suffixes):
                 token_match.start(),
                 token_match.end(),
                 alias_data["requires_context"],
+                mention_rules,
             )
 
             if context_rule is None:
@@ -2506,28 +3109,45 @@ def collect_person_mentions(text, alias_lookup, suffixes):
     return mentions
 
 
-def build_term_mentions_person(term_nodes, person_nodes, term_refers_to_person):
+def is_person_category_term(category_text):
+    # 인물 term은 REFERS_TO로 정밀 연결하므로 MENTIONS_PERSON 추출에서 제외한다.
+    # category_text는 "인명" 단일 값 또는 "인명>성격별>..." 하위경로(">>"로 복수 경로 가능)다.
+    for path_parts in split_category_paths(category_text):
+        if path_parts[0] == "인명":
+            return True
+
+    return False
+
+
+def build_term_mentions_person(
+    term_nodes,
+    person_nodes,
+    term_refers_to_person,
+    mention_rule_seed,
+    graph_config_seed,
+):
+    mention_rules = build_mention_rules(mention_rule_seed, graph_config_seed)
     alias_lookup = build_mention_person_alias_lookup(
         person_nodes,
         term_refers_to_person,
+        mention_rules,
     )
 
     if not alias_lookup:
         return empty_term_mentions_person_relations()
 
     relation_rows = []
-    suffixes = build_person_mention_suffixes()
     source_fields = ["name", "remark", "description"]
     term_columns = ["term_id", "category_text", *source_fields]
     term_data = term_nodes[term_columns].copy()
 
     for row in term_data.itertuples(index=False):
-        if row.category_text == "인명":
+        if is_person_category_term(row.category_text):
             continue
 
         for source_field in source_fields:
             text = getattr(row, source_field)
-            mentions = collect_person_mentions(text, alias_lookup, suffixes)
+            mentions = collect_person_mentions(text, alias_lookup, mention_rules)
 
             for mention in mentions:
                 relation_rows.append(
@@ -2558,15 +3178,21 @@ def build_term_mentions_person(term_nodes, person_nodes, term_refers_to_person):
 def build_term_refers_to_person(
     term_nodes,
     person_nodes,
+    person_relations_data,
     term_person_review_approved,
 ):
-    # 이름이 양쪽에서 유일하면 EXACT_NAME으로 연결하고,
-    # 동명이 있으면 이름+한자 조합이 양쪽에서 유일할 때만 NAME_HANJA로 연결한다.
-    # 그 외 동명 케이스는 검수 대상으로 보고 관계를 만들지 않는다.
-    term_data = term_nodes[["term_id", "name", "hanja"]].copy()
+    # Context links use relation clues from descriptions. Life-year links rescue cases
+    # where name, hanja, and complete years identify exactly one person for the term.
+    term_data = term_nodes[
+        ["term_id", "name", "hanja", "description", "start_year", "end_year"]
+    ].copy()
     term_data["name"] = term_data["name"].fillna("").str.strip()
     term_data["hanja"] = term_data["hanja"].fillna("").str.strip()
+    term_data["description"] = term_data["description"].fillna("").astype(str)
     person_data = split_person_name_columns(person_nodes)
+    person_data = merge_person_life_year_columns(person_data, person_nodes)
+    person_data["base_name"] = person_data["base_name"].fillna("").str.strip()
+    person_data["hanja"] = person_data["hanja"].fillna("").str.strip()
 
     person_name_data = person_data.drop_duplicates(subset=["person_id", "base_name"])
     auto_names = find_unique_names(term_data["name"], person_name_data["base_name"])
@@ -2584,33 +3210,55 @@ def build_term_refers_to_person(
         | term_hanja.eq(person_hanja)
     )
     auto_links = auto_links[hanja_compatible].copy()
+    auto_links = add_description_context_match_columns(
+        auto_links,
+        person_relations_data,
+    )
+    auto_links = auto_links[build_description_context_match_mask(auto_links)].copy()
+    auto_links = auto_links[
+        build_unique_exact_term_person_year_mask(auto_links)
+    ].copy()
     auto_links["match_type"] = "EXACT_NAME"
 
     remaining_terms = term_data[
-        ~term_data["name"].isin(auto_names) & term_data["hanja"].ne("")
+        ~term_data["term_id"].isin(auto_links["term_id"]) & term_data["hanja"].ne("")
     ].copy()
-    remaining_persons = person_data[
-        ~person_data["base_name"].isin(auto_names) & person_data["hanja"].ne("")
-    ].copy()
-
-    term_pair_counts = remaining_terms.groupby(["name", "hanja"]).size()
-    person_pair_counts = remaining_persons.groupby(["base_name", "hanja"]).size()
-    unique_term_pairs = set(term_pair_counts[term_pair_counts == 1].index)
-    unique_person_pairs = set(person_pair_counts[person_pair_counts == 1].index)
-    hanja_pairs = unique_term_pairs & unique_person_pairs
-
-    hanja_terms = remaining_terms[
-        remaining_terms[["name", "hanja"]].apply(tuple, axis=1).isin(hanja_pairs)
-    ]
-    hanja_links = hanja_terms.merge(
+    remaining_persons = person_data[person_data["hanja"].ne("")].copy()
+    hanja_links = remaining_terms.merge(
         remaining_persons,
         left_on=["name", "hanja"],
         right_on=["base_name", "hanja"],
         suffixes=("", "_person"),
     )
+    hanja_links = add_description_context_match_columns(
+        hanja_links,
+        person_relations_data,
+    )
+    hanja_links = hanja_links[build_description_context_match_mask(hanja_links)].copy()
+    hanja_links = hanja_links[
+        build_unique_exact_term_person_year_mask(hanja_links)
+    ].copy()
     hanja_links["match_type"] = "NAME_HANJA"
 
-    auto_link_data = pd.concat([auto_links, hanja_links], ignore_index=True)
+    life_year_terms = term_data[term_data["name"].ne("") & term_data["hanja"].ne("")]
+    life_year_persons = person_data[
+        person_data["base_name"].ne("") & person_data["hanja"].ne("")
+    ].drop_duplicates(subset=["person_id", "base_name", "hanja"])
+    life_year_links = life_year_terms.merge(
+        life_year_persons,
+        left_on=["name", "hanja"],
+        right_on=["base_name", "hanja"],
+        suffixes=("", "_person"),
+    )
+    life_year_links = life_year_links[
+        build_unique_exact_term_person_year_mask(life_year_links)
+    ].copy()
+    life_year_links["match_type"] = "EXACT_NAME_HANJA_LIFE_YEAR"
+
+    auto_link_data = pd.concat(
+        [auto_links, hanja_links, life_year_links],
+        ignore_index=True,
+    )
     auto_link_data["relation_type"] = "REFERS_TO"
     auto_link_data = auto_link_data.rename(
         columns={
@@ -2817,7 +3465,7 @@ def build_person_has_source_url(person_relations_data, source_url_nodes):
 def build_default_paths(script_path):
     base_dir = resolve_neo4j_dir(script_path)
     project_root = resolve_project_root(script_path)
-    import_dir = project_root / "storage" / "neo4j" / "neo4j_import"
+    import_dir = resolve_import_dir(project_root)
     normalized_dir = base_dir / "normalized"
     dictionary_dir = base_dir / "dictionary"
     mapping_dir = base_dir / "mapping"
@@ -2860,10 +3508,9 @@ def build_default_paths(script_path):
         "event_date_parse": staging_dir / "event_date_parse.csv",
         "term_year_parse": staging_dir / "term_year_parse.csv",
         "keyword_era_seed": seed_dir / "keyword_era_seed.csv",
+        "mention_rule_seed": seed_dir / "mention_rule_seed.csv",
+        "graph_config_seed": seed_dir / "graph_config_seed.csv",
         "term_person_review_approved": seed_dir / "term_person_review_approved.csv",
-        "person_duplicate_review_approved": (
-            seed_dir / "person_duplicate_review_approved.csv"
-        ),
         "nodes_dir": import_dir / "nodes",
         "relations_dir": import_dir / "relations",
     }
@@ -2938,20 +3585,33 @@ def read_inputs(args):
         "event_date_parse": read_csv(args.event_date_parse_path, "event_date_parse"),
         "term_year_parse": read_csv(args.term_year_parse_path, "term_year_parse"),
         "keyword_era_seed": read_csv(args.keyword_era_seed_path, "keyword_era_seed"),
+        "mention_rule_seed": read_csv(args.mention_rule_seed_path, "mention_rule_seed"),
+        "graph_config_seed": read_csv(args.graph_config_seed_path, "graph_config_seed"),
         "term_person_review_approved": read_optional_csv(
             args.term_person_review_approved_path,
             "term_person_review_approved",
-        ),
-        "person_duplicate_review_approved": read_optional_csv(
-            args.person_duplicate_review_approved_path,
-            "person_duplicate_review_approved",
         ),
     }
 
 
 def build_node_outputs(inputs):
     event_group_nodes = build_event_group_nodes(inputs["events"])
+    term_nodes = build_term_nodes(
+        inputs["terms"],
+        inputs["keyword_era_seed"],
+        inputs["term_year_parse"],
+        inputs["graph_config_seed"],
+    )
+    event_nodes = build_event_nodes(inputs["events"], inputs["event_date_parse"])
+    people_nodes = build_person_nodes(
+        inputs["event_relations"],
+        inputs["person_relations"],
+    )
     search_tag_nodes = build_search_tag_nodes(
+        term_nodes,
+        inputs["events"],
+        people_nodes,
+        inputs["period_dictionary"],
         inputs["canonical_category_dictionary"],
         inputs["source_event_category_dictionary"],
         inputs["event_facet_dictionary"],
@@ -2962,11 +3622,7 @@ def build_node_outputs(inputs):
     )
 
     return {
-        "terms": build_term_nodes(
-            inputs["terms"],
-            inputs["keyword_era_seed"],
-            inputs["term_year_parse"],
-        ),
+        "terms": term_nodes,
         "canonical_categories": build_category_nodes(inputs["canonical_category_dictionary"]),
         "source_event_categories": build_event_category_nodes(
             inputs["source_event_category_dictionary"]
@@ -2981,9 +3637,9 @@ def build_node_outputs(inputs):
             inputs["taxonomy_facet_dictionary"]
         ),
         "search_tags": search_tag_nodes,
-        "events": build_event_nodes(inputs["events"], inputs["event_date_parse"]),
+        "events": event_nodes,
         "event_groups": event_group_nodes,
-        "people": build_person_nodes(inputs["event_relations"], inputs["person_relations"]),
+        "people": people_nodes,
         "periods": build_period_nodes(inputs["period_dictionary"]),
         "source_urls": build_source_url_nodes(inputs["source_url_dictionary"]),
     }
@@ -3039,6 +3695,7 @@ def build_relation_outputs(inputs, node_outputs):
     term_refers_to_person = build_term_refers_to_person(
         node_outputs["terms"],
         node_outputs["people"],
+        inputs["person_relations"],
         inputs["term_person_review_approved"],
     )
     event_about_country = build_event_about_country(
@@ -3056,6 +3713,59 @@ def build_relation_outputs(inputs, node_outputs):
     event_about_taxonomy_facet = build_event_about_taxonomy_facet(
         event_has_canonical_category,
         inputs["canonical_category_taxonomy_facet_crosswalk"],
+    )
+    term_in_period = build_term_in_period(inputs["terms"], inputs["period_dictionary"])
+    event_in_period = build_event_in_period(
+        inputs["events"],
+        inputs["period_dictionary"],
+    )
+    term_has_search_tag = build_term_has_search_tag(
+        node_outputs["terms"],
+        term_has_canonical_category,
+        term_about_country,
+        term_about_region,
+        term_about_economic_domain,
+        term_about_taxonomy_facet,
+        term_in_period,
+        node_outputs["search_tags"],
+    )
+    event_has_search_tag = build_event_has_search_tag(
+        node_outputs["events"],
+        event_has_source_category,
+        event_has_canonical_category,
+        event_has_facet,
+        event_in_period,
+        event_about_country,
+        event_about_region,
+        event_about_economic_domain,
+        event_about_taxonomy_facet,
+        node_outputs["search_tags"],
+    )
+    person_involved_in_event = build_person_involved_in_event(
+        inputs["event_relations"]
+    )
+    person_related_to_person = build_person_related_to_person(
+        inputs["person_relations"],
+        inputs["relation_type_dictionary"],
+    )
+    term_mentions_person = build_term_mentions_person(
+        node_outputs["terms"],
+        node_outputs["people"],
+        term_refers_to_person,
+        inputs["mention_rule_seed"],
+        inputs["graph_config_seed"],
+    )
+    term_refers_to_event = build_term_refers_to_event(
+        node_outputs["terms"],
+        node_outputs["events"],
+    )
+    person_has_search_tag = build_person_has_search_tag(
+        node_outputs["people"],
+        person_involved_in_event,
+        term_refers_to_person,
+        term_has_search_tag,
+        event_has_search_tag,
+        node_outputs["search_tags"],
     )
 
     return {
@@ -3083,42 +3793,20 @@ def build_relation_outputs(inputs, node_outputs):
         "event_about_economic_domain": event_about_economic_domain,
         "term_about_taxonomy_facet": term_about_taxonomy_facet,
         "event_about_taxonomy_facet": event_about_taxonomy_facet,
-        "event_has_search_tag": build_event_has_search_tag(
-            event_has_source_category,
-            event_has_canonical_category,
-            event_has_facet,
-            event_about_country,
-            event_about_region,
-            event_about_economic_domain,
-            event_about_taxonomy_facet,
-            node_outputs["search_tags"],
-        ),
-        "term_in_period": build_term_in_period(inputs["terms"], inputs["period_dictionary"]),
-        "event_in_period": build_event_in_period(
-            inputs["events"],
-            inputs["period_dictionary"],
-        ),
+        "term_has_search_tag": term_has_search_tag,
+        "event_has_search_tag": event_has_search_tag,
+        "person_has_search_tag": person_has_search_tag,
+        "term_in_period": term_in_period,
+        "event_in_period": event_in_period,
         "event_part_of_event_group": build_event_part_of_group(
             inputs["events"],
             node_outputs["event_groups"],
         ),
-        "person_involved_in_event": build_person_involved_in_event(
-            inputs["event_relations"]
-        ),
-        "person_related_to_person": build_person_related_to_person(
-            inputs["person_relations"],
-            inputs["relation_type_dictionary"],
-        ),
+        "person_involved_in_event": person_involved_in_event,
+        "person_related_to_person": person_related_to_person,
         "term_refers_to_person": term_refers_to_person,
-        "term_mentions_person": build_term_mentions_person(
-            node_outputs["terms"],
-            node_outputs["people"],
-            term_refers_to_person,
-        ),
-        "term_refers_to_event": build_term_refers_to_event(
-            node_outputs["terms"],
-            node_outputs["events"],
-        ),
+        "term_mentions_person": term_mentions_person,
+        "term_refers_to_event": term_refers_to_event,
         "event_has_source_url": build_event_has_source_url(
             inputs["events"],
             inputs["event_relations"],
@@ -3212,7 +3900,7 @@ def main():
     script_path = Path(__file__).resolve()
     default_paths = build_default_paths(script_path)
     args = parse_args(default_paths)
-    inputs = apply_person_duplicate_review(read_inputs(args))
+    inputs = read_inputs(args)
     node_outputs = build_node_outputs(inputs)
     relation_outputs = build_relation_outputs(inputs, node_outputs)
     output_files, skipped_output_files = build_output_files(
@@ -3224,5 +3912,5 @@ def main():
     write_or_print_outputs(args, output_files, skipped_output_files)
 
 
-if __name__ == "__main__":  # entry point
+if __name__ == "__main__":
     main()

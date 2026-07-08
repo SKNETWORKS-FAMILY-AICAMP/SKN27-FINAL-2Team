@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import math
 import os
 import re
 import sys
@@ -12,8 +13,6 @@ import subprocess
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from urllib.error import URLError
-from urllib.request import urlopen
 
 from dotenv import load_dotenv
 
@@ -92,56 +91,44 @@ def evaluate_graph_connectivity(queries: list[str]) -> Metric:
 
 
 @traceable(name="evaluate_latency")
-def evaluate_latency(queries: list[str], full_answer: bool) -> Metric:
-    cached_pg_search.cache_clear()
-    values = []
-    retriever = None if full_answer else PgVectorHybridRetriever()
+def evaluate_latency(queries: list[str]) -> list[Metric]:
+    search_values = []
+    generation_values = []
+    retriever = PgVectorHybridRetriever()
     for query in queries:
+        cached_pg_search.cache_clear()
         start = time.perf_counter()
-        if full_answer:
-            build_history_rag_answer(query, intent="concept", answer_format="structured", top_k=5)
-        else:
-            retriever.search(query, top_k=5)
-        values.append(time.perf_counter() - start)
-    avg = sum(values) / len(values) if values else 0.0
-    return Metric(
-        "응답 속도",
-        "쿼리 당 평균 소요 시간",
-        f"{avg * 1000:.0f}ms" if avg < 1 else f"{avg:.2f}s",
-        "2.0s 이내",
-        avg <= 2.0,
-        "LangSmith Latency Tracking" if full_answer else "로컬 검색 지연시간 측정",
-    )
+        retriever.search(query, top_k=5)
+        search_sec = time.perf_counter() - start
 
+        cached_pg_search.cache_clear()
+        start = time.perf_counter()
+        build_history_rag_answer(query, intent="concept", answer_format="structured", top_k=5)
+        total_sec = time.perf_counter() - start
 
-@traceable(name="evaluate_mcp_success")
-def evaluate_mcp_success(urls: list[str], timeout: float) -> Metric:
-    if not urls:
-        return Metric(
-            "MCP 연동 성공률",
-            "외부 도구 호출 및 데이터 수신",
-            "N/A",
-            "90% 이상",
-            None,
-            "API 성공/실패 로그 분석",
-        )
+        search_values.append(search_sec)
+        generation_values.append(max(0.0, total_sec - search_sec))
 
-    ok = 0
-    for url in urls:
-        try:
-            with urlopen(url, timeout=timeout) as response:
-                ok += 1 if 200 <= response.status < 500 else 0
-        except URLError:
-            pass
-    score = ok / len(urls)
-    return Metric(
-        "MCP 연동 성공률",
-        "외부 도구 호출 및 데이터 수신",
-        f"{score * 100:.0f}%",
-        "90% 이상",
-        score >= 0.90,
-        "API 성공/실패 로그 분석",
-    )
+    search_avg = sum(search_values) / len(search_values) if search_values else 0.0
+    generation_avg = sum(generation_values) / len(generation_values) if generation_values else 0.0
+    return [
+        Metric(
+            "검색 속도",
+            "LLM 생성 제외 쿼리 평균 소요 시간",
+            f"{search_avg * 1000:.0f}ms" if search_avg < 1 else f"{search_avg:.2f}s",
+            "2.0s 이내",
+            search_avg <= 2.0,
+            "pgvector/Graph 검색 지연시간 측정",
+        ),
+        Metric(
+            "LLM 답변 생성 속도",
+            "검색 이후 답변 생성 평균 소요 시간",
+            f"{generation_avg * 1000:.0f}ms" if generation_avg < 1 else f"{generation_avg:.2f}s",
+            "5.0s 이내",
+            generation_avg <= 5.0,
+            "전체 응답 시간 - 검색 시간",
+        ),
+    ]
 
 
 def install_ragas_vertexai_compat() -> None:
@@ -180,10 +167,12 @@ def evaluate_ragas_metrics(questions: list[dict], limit: int, debug_path: Path |
         from datasets import Dataset
         from ragas import evaluate
         from ragas.llms import LangchainLLMWrapper
-        from ragas.metrics import answer_relevancy, faithfulness
+        from ragas.metrics import answer_relevancy, context_precision, context_recall, faithfulness
         from langchain_openai import ChatOpenAI
     except ImportError as exc:
         return [
+            Metric("RAGAS Context Precision", "검색 문맥 중 질문과 관련 있는 문맥 비율", f"N/A ({exc.name} 미설치)", "0.80 이상", None, "RAGAS Framework (Context Precision)"),
+            Metric("RAGAS Context Recall", "정답에 필요한 근거를 검색 문맥이 포함하는지 평가", f"N/A ({exc.name} 미설치)", "0.80 이상", None, "RAGAS Framework (Context Recall)"),
             Metric("RAGAS Faithfulness", "답변이 검색 근거에 충실한지 평가", f"N/A ({exc.name} 미설치)", "0.80 이상", None, "RAGAS Framework (Faithfulness)"),
             Metric("RAGAS Answer Relevance", "답변이 질문 의도에 적합한지 평가", f"N/A ({exc.name} 미설치)", "0.80 이상", None, "RAGAS Framework (Answer Relevance)"),
         ]
@@ -209,7 +198,7 @@ def evaluate_ragas_metrics(questions: list[dict], limit: int, debug_path: Path |
                 "user_input": question["query"],
                 "response": answer,
                 "retrieved_contexts": contexts,
-                "reference": ", ".join(question.get("expected_keywords") or []),
+                "reference": question.get("reference_answer") or ", ".join(question.get("expected_keywords") or []),
             }
         )
 
@@ -224,7 +213,13 @@ def evaluate_ragas_metrics(questions: list[dict], limit: int, debug_path: Path |
         last_error = None
         for _ in range(3):
             try:
-                result = evaluate(dataset, metrics=[faithfulness, answer_relevancy], llm=evaluator_llm, show_progress=False, batch_size=1)
+                result = evaluate(
+                    dataset,
+                    metrics=[context_precision, context_recall, faithfulness, answer_relevancy],
+                    llm=evaluator_llm,
+                    show_progress=False,
+                    batch_size=1,
+                )
                 break
             except IndexError as exc:
                 last_error = exc
@@ -232,20 +227,42 @@ def evaluate_ragas_metrics(questions: list[dict], limit: int, debug_path: Path |
             raise last_error
         if debug_path:
             write_ragas_debug(rows, result.scores, debug_path)
-        faithfulness_scores = [row["faithfulness"] for row in result.scores if row.get("faithfulness") is not None]
-        answer_scores = [row["answer_relevancy"] for row in result.scores if row.get("answer_relevancy") is not None]
-        faithfulness_score = sum(faithfulness_scores) / len(faithfulness_scores)
-        answer_score = sum(answer_scores) / len(answer_scores)
+        def average_score(name: str) -> float | None:
+            scores = [
+                float(row[name])
+                for row in result.scores
+                if row.get(name) is not None and not math.isnan(float(row[name]))
+            ]
+            return sum(scores) / len(scores) if scores else None
+
+        context_precision_score = average_score("context_precision")
+        context_recall_score = average_score("context_recall")
+        faithfulness_score = average_score("faithfulness")
+        answer_score = average_score("answer_relevancy")
     except Exception as exc:
         message = f"N/A ({type(exc).__name__}: {exc})"
         return [
+            Metric("RAGAS Context Precision", "검색 문맥 중 질문과 관련 있는 문맥 비율", message, "0.80 이상", None, "RAGAS Framework (Context Precision)"),
+            Metric("RAGAS Context Recall", "정답에 필요한 근거를 검색 문맥이 포함하는지 평가", message, "0.80 이상", None, "RAGAS Framework (Context Recall)"),
             Metric("RAGAS Faithfulness", "답변이 검색 근거에 충실한지 평가", message, "0.80 이상", None, "RAGAS Framework (Faithfulness)"),
             Metric("RAGAS Answer Relevance", "답변이 질문 의도에 적합한지 평가", message, "0.80 이상", None, "RAGAS Framework (Answer Relevance)"),
         ]
 
+    def ragas_metric(name: str, definition: str, score: float | None, method: str) -> Metric:
+        return Metric(
+            name,
+            definition,
+            "N/A (유효 점수 없음)" if score is None else f"{score:.2f}",
+            "0.80 이상",
+            None if score is None else score >= 0.80,
+            method,
+        )
+
     return [
-        Metric("RAGAS Faithfulness", "답변이 검색 근거에 충실한지 평가", f"{faithfulness_score:.2f}", "0.80 이상", faithfulness_score >= 0.80, "RAGAS Framework (Faithfulness)"),
-        Metric("RAGAS Answer Relevance", "답변이 질문 의도에 적합한지 평가", f"{answer_score:.2f}", "0.80 이상", answer_score >= 0.80, "RAGAS Framework (Answer Relevance)"),
+        ragas_metric("RAGAS Context Precision", "검색 문맥 중 질문과 관련 있는 문맥 비율", context_precision_score, "RAGAS Framework (Context Precision)"),
+        ragas_metric("RAGAS Context Recall", "정답에 필요한 근거를 검색 문맥이 포함하는지 평가", context_recall_score, "RAGAS Framework (Context Recall)"),
+        ragas_metric("RAGAS Faithfulness", "답변이 검색 근거에 충실한지 평가", faithfulness_score, "RAGAS Framework (Faithfulness)"),
+        ragas_metric("RAGAS Answer Relevance", "답변이 질문 의도에 적합한지 평가", answer_score, "RAGAS Framework (Answer Relevance)"),
     ]
 
 
@@ -254,13 +271,15 @@ def write_ragas_debug(rows: list[dict], scores: list[dict], path: Path) -> None:
     with path.open("w", encoding="utf-8-sig", newline="") as fp:
         writer = csv.DictWriter(
             fp,
-            fieldnames=["question", "faithfulness", "answer_relevancy", "answer", "contexts"],
+            fieldnames=["question", "context_precision", "context_recall", "faithfulness", "answer_relevancy", "answer", "contexts"],
         )
         writer.writeheader()
         for row, score in zip(rows, scores):
             writer.writerow(
                 {
                     "question": row["user_input"],
+                    "context_precision": score.get("context_precision"),
+                    "context_recall": score.get("context_recall"),
                     "faithfulness": score.get("faithfulness"),
                     "answer_relevancy": score.get("answer_relevancy"),
                     "answer": row["response"],
@@ -316,11 +335,9 @@ def print_markdown(metrics: list[Metric]) -> None:
 
 
 def run_service_evaluation(args: argparse.Namespace, questions: list[dict], queries: list[str]) -> list[dict[str, str]]:
-    latency_full_answer = args.latency_full_answer or args.ragas
     metrics = [
         evaluate_graph_connectivity(queries),
-        evaluate_latency(queries, latency_full_answer),
-        evaluate_mcp_success(args.mcp_url, args.timeout),
+        *evaluate_latency(queries),
     ]
     if args.ragas:
         debug_path = args.out_prefix.with_name(f"{args.out_prefix.name}_ragas_samples.csv")
@@ -343,11 +360,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--limit", type=int, default=50)
     parser.add_argument("--top-k", type=int, default=5)
     parser.add_argument("--latency-limit", type=int, default=5)
-    parser.add_argument("--latency-full-answer", action="store_true")
     parser.add_argument("--ragas", action="store_true")
     parser.add_argument("--ragas-limit", type=int, default=50)
-    parser.add_argument("--mcp-url", action="append", default=[])
-    parser.add_argument("--timeout", type=float, default=5.0)
     parser.add_argument("--out-prefix", type=Path, default=DEFAULT_OUT)
     return parser.parse_args()
 

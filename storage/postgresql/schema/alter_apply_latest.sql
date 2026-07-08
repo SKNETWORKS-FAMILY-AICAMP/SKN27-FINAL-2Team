@@ -1,6 +1,39 @@
 -- Apply this file once after pulling the latest question/solve schema changes.
 -- It is safe to run multiple times.
 
+-- exam_data: source table for preprocessed past exam question data.
+-- Initial import source is ML_han_v1.json; later imports should use data extracted
+-- again from original past exam files in the same table shape.
+CREATE TABLE IF NOT EXISTS exam_data (
+    id                         BIGSERIAL       PRIMARY KEY,
+    round_no                   INT             NOT NULL,
+    question_no                INT             NOT NULL,
+    question_text              TEXT            NOT NULL,
+    material_text              TEXT            NULL,
+    choices_json               JSONB           NOT NULL DEFAULT '[]'::jsonb,
+    distractor_choices_json    JSONB           NOT NULL DEFAULT '[]'::jsonb,
+    answer_choice              TEXT            NULL,
+    answer_no                  INT             NULL,
+    era                        VARCHAR(50)     NULL,
+    topic                      VARCHAR(50)     NULL,
+    question_type              VARCHAR(50)     NULL,
+    question_subtype           VARCHAR(50)     NULL,
+    q_score                    INT             NULL,
+    has_image                  BOOLEAN         NOT NULL DEFAULT FALSE,
+    image_meta_json            JSONB           NOT NULL DEFAULT '{}'::jsonb,
+    created_at                 TIMESTAMP       NOT NULL DEFAULT NOW(),
+    updated_at                 TIMESTAMP       NOT NULL DEFAULT NOW(),
+    answer_explanation         TEXT            NULL,
+    choice_explanations_json   JSONB           NOT NULL DEFAULT '{}'::jsonb,
+    explanation_source         VARCHAR(50)     NULL
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS exam_data_round_question_uidx
+    ON exam_data(round_no, question_no);
+
+CREATE INDEX IF NOT EXISTS exam_data_classification_idx
+    ON exam_data(era, topic, question_type, question_subtype);
+
 -- questions: columns used by question filtering and exam rendering.
 ALTER TABLE questions
     ADD COLUMN IF NOT EXISTS question_no INT NULL;

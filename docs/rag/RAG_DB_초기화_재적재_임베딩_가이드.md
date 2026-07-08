@@ -160,3 +160,19 @@ WHERE schemaname = 'rag'
 ORDER BY indexname;
 ```
 
+키워드 검색 인덱스는 아래 항목이 있으면 된다.
+
+```text
+document_chunks_text_trgm_idx
+document_chunks_title_trgm_idx
+```
+
+기존 DB에 제목 trigram 인덱스만 수동 추가할 때:
+
+```sql
+CREATE INDEX IF NOT EXISTS document_chunks_title_trgm_idx
+ON rag.document_chunks
+USING GIN (title gin_trgm_ops);
+
+ANALYZE rag.document_chunks;
+```

@@ -12,7 +12,11 @@ from rest_framework.response import Response
 
 from analytics.service.analysis_snapshot import create_session_snapshot
 from analytics.service.display import build_planner_summary
-from analytics.service.studyplan import get_study_plan_info
+from analytics.service.studyplan import (
+    complete_study_plan_block_by_id,
+    get_study_plan_info,
+    is_weekly_review_plan_block,
+)
 from .models import QuestionOptions, Questions, SolveRecords, SolveSessions
 from .serializers import (
     FilterOptionsResponse,
@@ -60,11 +64,6 @@ DETAIL_DIFFICULTY_RATIOS = {
     "중": {3: 1, 2: 3, 1: 1},
     "하": {3: 0, 2: 2, 1: 3},
 }
-DIFFICULTY_TO_SCORE = {
-    "상": 3,
-    "중": 2,
-    "하": 1,
-}
 PLACEHOLDER_CONTENT = "문항 이미지를 보고 정답을 선택하세요."
 ERA_REFERENCE_PATH = (
     Path(__file__).resolve().parents[2]
@@ -84,7 +83,6 @@ ERA_FILTER_VALUES = [
     "개항기",
     "일제 강점기",
     "현대",
-    "통합 주제",
 ]
 ML_QUESTION_TYPE_FILTER_VALUES = [
     "역사 지식의 이해",
@@ -346,16 +344,110 @@ def _find_study_plan_block(user_id, studyplan_id, block_id):
     return None, {"error": "학습계획 블록을 찾을 수 없습니다."}
 
 
-def _apply_study_plan_block_filter(qs, block):
+def _first_study_plan_block_value(block, *keys):
+    for key in keys:
+        value = block.get(key)
+        if value not in (None, ""):
+            return value
+    return None
+
+
+def _study_plan_block_filters(block):
     if block is None:
-        return qs
+        return {}
+
+    filters = {
+        "era": _first_study_plan_block_value(block, "era"),
+        "topic": _first_study_plan_block_value(block, "topic"),
+        "question_type": _first_study_plan_block_value(
+            block,
+            "qType",
+            "q_type",
+            "questionType",
+        ),
+        "question_subtype": _first_study_plan_block_value(
+            block,
+            "qSubtype",
+            "questionSubtype",
+        ),
+    }
+    filters = {
+        field_name: value
+        for field_name, value in filters.items()
+        if value
+    }
+    if filters:
+        return filters
 
     field_name = STUDY_PLAN_BLOCK_FIELDS.get(block.get("classification"))
     label = block.get("label")
     if not field_name or not label:
-        return qs
+        return {}
 
-    return qs.filter(**{field_name: label})
+    return {field_name: label}
+
+
+def _apply_study_plan_block_filter(qs, block):
+    for field_name, value in _study_plan_block_filters(block).items():
+        qs = qs.filter(**{field_name: value})
+    return qs
+
+
+def _study_plan_score_counts(block, total_count):
+    difficulty = _first_study_plan_block_value(block, "difficulty")
+    if difficulty in DETAIL_DIFFICULTY_RATIOS:
+        return _score_counts_by_ratio(total_count, DETAIL_DIFFICULTY_RATIOS[difficulty])
+    return _score_counts(total_count, [3, 2, 1])
+
+
+def _study_plan_shortage_error(qs, requested_count, block):
+    return {
+        "error": "학습계획 조건에 맞는 문제가 부족합니다.",
+        "available_count": qs.count(),
+        "requested_count": requested_count,
+        "filters": _study_plan_block_filters(block),
+    }
+
+
+def _complete_practice_study_plan_block(session, user_id):
+    if session.session_type != PRACTICE_SESSION_TYPE:
+        return None
+    if session.status != COMPLETED_SESSION_STATUS:
+        return None
+
+    study_plan_record = (
+        SolveRecords.objects.filter(
+            session=session,
+            studyplan_id__isnull=False,
+            study_plan_block_id__isnull=False,
+        )
+        .exclude(study_plan_block_id="")
+        .values("studyplan_id", "study_plan_block_id")
+        .first()
+    )
+    if study_plan_record is None:
+        return None
+
+    study_plan_id = study_plan_record["studyplan_id"]
+    block_id = study_plan_record["study_plan_block_id"]
+    block, _block_error = _find_study_plan_block(user_id, study_plan_id, block_id)
+    if block is None or is_weekly_review_plan_block(block):
+        return None
+
+    return complete_study_plan_block_by_id(user_id, study_plan_id, block_id, True)
+
+
+def _question_generation_context_label(data, study_plan_block):
+    if study_plan_block:
+        label = study_plan_block.get("label")
+        if label:
+            return str(label)
+
+    labels = []
+    for key in ("eras", "topics", "question_types", "question_subtypes"):
+        values = data.get(key) or []
+        labels.extend(str(value) for value in values if value)
+    return " · ".join(labels[:3]) if labels else "선택한 조건"
 
 
 # 비로그인 사용자에게 제공할 오늘의 10문항을 결정한다.
@@ -431,6 +523,43 @@ def _sample_questions_by_score(qs, count, selected_scores):
 # 점수별 목표 개수가 직접 지정된 경우 해당 개수에 맞춰 문제 ID를 추출한다.
 def _sample_questions_by_score_counts(qs, score_counts):
     selected_ids = []
+    adjustment_messages = []
+
+    for score, score_count in score_counts.items():
+        if score_count <= 0:
+            continue
+        score_ids = list(
+            qs.filter(q_score=score).values_list("question_id", flat=True)
+        )
+        sample_count = min(len(score_ids), score_count)
+        if sample_count < score_count:
+            adjustment_messages.append(
+                f"{score}점 문제가 부족하여 다른 난이도에서 {score_count - sample_count}문항을 보충합니다."
+            )
+        if sample_count:
+            selected_ids.extend(random.sample(score_ids, sample_count))
+
+    requested_count = sum(score_counts.values())
+    if len(selected_ids) < requested_count:
+        remaining_count = requested_count - len(selected_ids)
+        remaining_ids = list(
+            qs.exclude(question_id__in=selected_ids)
+            .values_list("question_id", flat=True)
+        )
+        if len(remaining_ids) < remaining_count:
+            return selected_ids, {
+                "error": "조건에 맞는 문제가 부족합니다.",
+                "available_count": len(selected_ids) + len(remaining_ids),
+                "requested_count": requested_count,
+            }, adjustment_messages
+        selected_ids.extend(random.sample(remaining_ids, remaining_count))
+
+    random.shuffle(selected_ids)
+    return selected_ids, None, adjustment_messages
+
+
+def _sample_questions_by_score_counts_strict(qs, score_counts):
+    selected_ids = []
 
     for score, score_count in score_counts.items():
         if score_count <= 0:
@@ -440,7 +569,6 @@ def _sample_questions_by_score_counts(qs, score_counts):
         )
         if len(score_ids) < score_count:
             return None, {
-                "error": "선택한 난이도 구성에 맞는 문제가 부족합니다.",
                 "score": score,
                 "available_count": len(score_ids),
                 "requested_count": score_count,
@@ -492,16 +620,16 @@ def _score_counts_for_generation_mode(data):
 # 문제 생성 화면에서 사용할 필터 조건 목록을 제공한다.
 def question_filters(request):
     qs = _base_question_queryset()
-    era_values = _reference_filter_values("era_keywords") or ERA_FILTER_VALUES
+    era_values = ERA_FILTER_VALUES
     topic_values = _reference_filter_values("topic_keywords")
 
     q_filters = FilterOptionsResponse({
-        "eras": _ordered_existing_values(qs, "era", era_values),
+        "eras": era_values,
         "topics": (
             _ordered_existing_values(qs, "topic", topic_values)
             if topic_values else _distinct_values(qs, "topic")
         ),
-        "difficulties": ["상", "중", "하"],
+        "difficulties": list(DETAIL_DIFFICULTY_RATIOS.keys()),
         "question_types": ML_QUESTION_TYPE_FILTER_VALUES,
         "question_subtypes": ML_QUESTION_SUBTYPE_FILTER_VALUES,
         "counts": [10, 20, 30, 40, 50],
@@ -535,6 +663,16 @@ def question_start(request):
         )
         if study_plan_error:
             return Response(study_plan_error, status=status.HTTP_400_BAD_REQUEST)
+        if (
+            data["generation_mode"] == "study_plan"
+            and study_plan_block is not None
+            and is_weekly_review_plan_block(study_plan_block)
+        ):
+            return Response(
+                {"error": "weekly_review 블록은 진단평가 API로 시작해야 합니다."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+    generation_context_label = _question_generation_context_label(data, study_plan_block)
 
     qs = _base_question_queryset()
     qs = _apply_study_plan_block_filter(qs, study_plan_block)
@@ -543,17 +681,17 @@ def question_start(request):
     if user_id is not None:
         if study_plan_block is not None:
             data["count"] = int(study_plan_block.get("questionCount") or data["count"])
-            score_counts = _score_counts(data["count"], [3, 2, 1])
+            score_counts = _study_plan_score_counts(study_plan_block, data["count"])
         else:
             score_counts, score_counts_error = _score_counts_for_generation_mode(data)
         if score_counts_error:
             return Response(score_counts_error, status=status.HTTP_400_BAD_REQUEST)
 
-    if user_id is not None and data["eras"]:
+    if user_id is not None and study_plan_block is None and data["eras"]:
         qs = qs.filter(era__in=data["eras"])
-    if user_id is not None and data["topics"]:
+    if user_id is not None and study_plan_block is None and data["topics"]:
         qs = qs.filter(topic__in=data["topics"])
-    if user_id is not None and data["question_types"]:
+    if user_id is not None and study_plan_block is None and data["question_types"]:
         selected_question_types = _selected_existing_values(
             qs,
             "question_type",
@@ -561,7 +699,7 @@ def question_start(request):
         )
         if selected_question_types:
             qs = qs.filter(question_type__in=selected_question_types)
-    if user_id is not None and data["question_subtypes"]:
+    if user_id is not None and study_plan_block is None and data["question_subtypes"]:
         selected_question_subtypes = _selected_existing_values(
             qs,
             "question_subtype",
@@ -576,22 +714,64 @@ def question_start(request):
         qs = qs.filter(q_score__in=selected_scores)
 
     question_ids = list(qs.order_by("question_id").values_list("question_id", flat=True))
-    if len(question_ids) < count:
-        return Response(
-            {
-                "error": "조건에 맞는 문제가 부족합니다.",
-                "available_count": len(question_ids),
-                "requested_count": count,
-            },
-            status=status.HTTP_400_BAD_REQUEST,
-        )
+    fallback_messages = []
 
     if user_id is None:
         selected_ids = _daily_guest_question_ids(question_ids)
-    else:
-        selected_ids, score_error = _sample_questions_by_score_counts(qs, score_counts)
+    elif study_plan_block is not None:
+        if len(question_ids) < count:
+            return Response(
+                _study_plan_shortage_error(qs, count, study_plan_block),
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        selected_ids, score_error = _sample_questions_by_score_counts_strict(qs, score_counts)
         if score_error:
-            return Response(score_error, status=status.HTTP_400_BAD_REQUEST)
+            shortage_error = _study_plan_shortage_error(qs, count, study_plan_block)
+            shortage_error["score"] = score_error["score"]
+            shortage_error["score_available_count"] = score_error["available_count"]
+            shortage_error["score_requested_count"] = score_error["requested_count"]
+            return Response(
+                shortage_error,
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+    else:
+        selected_ids, score_error, score_adjustments = _sample_questions_by_score_counts(qs, score_counts)
+        if score_error:
+            remaining_count = count - len(selected_ids or [])
+            fallback_qs = (
+                _base_question_queryset()
+                .exclude(question_id__in=selected_ids or [])
+            )
+            fallback_ids = list(fallback_qs.values_list("question_id", flat=True))
+            if len(fallback_ids) < remaining_count:
+                return Response(score_error, status=status.HTTP_400_BAD_REQUEST)
+            selected_ids = (selected_ids or []) + random.sample(fallback_ids, remaining_count)
+            fallback_messages.append(
+                f"{generation_context_label} 문제 생성에 문제 수가 부족하여 랜덤 시대/주제에서 문제를 보충했습니다."
+            )
+        fallback_messages.extend(score_adjustments)
+
+    if len(selected_ids) < count:
+        remaining_count = count - len(selected_ids)
+        fallback_ids = list(
+            _base_question_queryset()
+            .exclude(question_id__in=selected_ids)
+            .values_list("question_id", flat=True)
+        )
+        if len(fallback_ids) < remaining_count:
+            return Response(
+                {
+                    "error": "조건에 맞는 문제가 부족합니다.",
+                    "available_count": len(selected_ids) + len(fallback_ids),
+                    "requested_count": count,
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        selected_ids.extend(random.sample(fallback_ids, remaining_count))
+        fallback_messages.append(
+            f"{generation_context_label} 문제 생성에 문제 수가 부족하여 랜덤 시대/주제에서 문제를 보충했습니다."
+        )
+
     questions = list(Questions.objects.filter(question_id__in=selected_ids))
     questions.sort(key=lambda question: selected_ids.index(question.question_id))
 
@@ -624,10 +804,18 @@ def question_start(request):
             ])
 
     choice_seed_key = session.session_id if session else f"guest:{timezone.localdate().isoformat()}"
+    adjustment_messages = []
+    if fallback_messages:
+        adjustment_messages.append(
+            f"{generation_context_label} 문제 생성에 일부 난이도 문제가 부족하여 다른 난이도에서 문제를 사용했습니다."
+        )
+        adjustment_messages.extend(fallback_messages)
     start_question_response = StartQuestionsResponse({
         "session_id": session.session_id if session else None,
         "total_count": count,
         "is_saved": session is not None,
+        "adjustment_message": " ".join(dict.fromkeys(adjustment_messages)),
+        "adjustment_messages": list(dict.fromkeys(adjustment_messages)),
         "questions": _serialize_questions(questions, choice_seed_key),
     })
     return Response(start_question_response.data, status=status.HTTP_201_CREATED)
@@ -1229,7 +1417,7 @@ def question_save_note(request, session_id):
         session = SolveSessions.objects.get(
             session_id=session_id,
             user_id=user_id,
-            session_type=PRACTICE_SESSION_TYPE,
+            session_type__in=[PRACTICE_SESSION_TYPE, "diagnostic"],
         )
     except SolveSessions.DoesNotExist:
         return Response(
@@ -1449,6 +1637,7 @@ def question_submit_session(request, session_id):
             session.answer_rate = answer_rate
             session.total_score = total_score
             session.save(update_fields=["status", "elapsed_sec", "answer_rate", "total_score"])
+            _complete_practice_study_plan_block(session, user_id)
             create_session_snapshot(session.session_id)
     except SolveSessions.DoesNotExist:
         return Response(

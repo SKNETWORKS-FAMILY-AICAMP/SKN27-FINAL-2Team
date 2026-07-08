@@ -54,6 +54,14 @@ CREATE CONSTRAINT search_tag_id_unique IF NOT EXISTS
 FOR (n:SearchTag)
 REQUIRE n.search_tag_id IS UNIQUE;
 
+CREATE INDEX search_tag_name_index IF NOT EXISTS
+FOR (n:SearchTag)
+ON (n.tag_name);
+
+CREATE INDEX search_tag_value_index IF NOT EXISTS
+FOR (n:SearchTag)
+ON (n.tag_value);
+
 CREATE CONSTRAINT theme_id_unique IF NOT EXISTS
 FOR (n:Theme)
 REQUIRE n.theme_id IS UNIQUE;
