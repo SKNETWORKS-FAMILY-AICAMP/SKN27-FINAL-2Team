@@ -22,7 +22,7 @@ class StudyPlanBlockDeleteLimitExceeded(Exception):
     pass
 
 
-class StudyPlanMoveDateOutOfRange(Exception):
+class StudyPlanDateOutOfRange(Exception):
     pass
 
 
@@ -812,14 +812,14 @@ def add_extra_study_plan_block(user_id, target_date):
     target_date_key = target_plan_date.isoformat()
     today = timezone.localdate()
     if target_plan_date != today:
-        raise StudyPlanMoveDateOutOfRange
+        raise StudyPlanDateOutOfRange
 
     with transaction.atomic():
         study_plan = get_active_study_plans(user_id, lock=True).first()
         if study_plan is None:
             return None
-        if not is_study_plan_move_date_allowed(study_plan, target_plan_date):
-            raise StudyPlanMoveDateOutOfRange
+        if not is_study_plan_date_in_period(study_plan, target_plan_date):
+            raise StudyPlanDateOutOfRange
 
         plan_items = prepare_study_plan_items(study_plan.study_plan_items)
         config = get_study_plan_config()
@@ -1026,82 +1026,7 @@ def set_study_plan_block_completion(block, is_completed):
         block["completedAt"] = timezone.now().isoformat()
 
 
-def move_study_plan_blocks(user_id, move_items, target_date):
-    """
-    선택한 학습 블록들을 지정 날짜로 이동한다.
-
-    학습일 변경 모달에서 체크한 항목 목록을 받아 같은 study_plan_mypage
-    row 안의 기존 날짜 blocks에서 제거하고 target_date 날짜 blocks로 옮긴다.
-    """
-    if not move_items:
-        return []
-
-    target_plan_date = date.fromisoformat(str(target_date)[:10])
-    target_date_key = target_plan_date.isoformat()
-    study_plan_ids = sorted({item["studyPlanId"] for item in move_items})
-    updated_plans = []
-
-    with transaction.atomic():
-        for study_plan_id in study_plan_ids:
-            study_plan = (
-                StudyPlanMypage.objects.select_for_update()
-                .filter(user_id=user_id, studyplan_id=study_plan_id)
-                .first()
-            )
-            if study_plan is not None:
-                if not is_study_plan_move_date_allowed(study_plan, target_plan_date):
-                    raise StudyPlanMoveDateOutOfRange
-
-                plan_items = parse_study_plan_items(study_plan.study_plan_items)
-                selected_indexes_by_day = {}
-                for item in move_items:
-                    if item["studyPlanId"] == study_plan_id:
-                        selected_indexes_by_day.setdefault(item["dayIndex"], set()).add(
-                            item["blockIndex"],
-                        )
-
-                blocks_to_move = []
-                for day_index in sorted(selected_indexes_by_day):
-                    if 0 <= day_index < len(plan_items):
-                        blocks = plan_items[day_index].get("blocks", [])
-                        for block_index in sorted(selected_indexes_by_day[day_index], reverse=True):
-                            if 0 <= block_index < len(blocks):
-                                blocks_to_move.insert(0, blocks.pop(block_index))
-
-                if blocks_to_move:
-                    target_day_plan = None
-                    for day_plan in plan_items:
-                        raw_date = str(day_plan.get("date", ""))[:10]
-                        if raw_date == target_date_key:
-                            target_day_plan = day_plan
-
-                    if target_day_plan is None:
-                        target_day_plan = {
-                            "date": target_date_key,
-                            "blocks": [],
-                        }
-                        plan_items.append(target_day_plan)
-
-                    target_day_plan.setdefault("blocks", []).extend(blocks_to_move)
-                    plan_items = keep_study_plan_period_boundary_days(
-                        plan_items,
-                        study_plan.start_date,
-                        study_plan.end_date,
-                    )
-                    plan_items = sorted(plan_items, key=lambda plan: str(plan.get("date", ""))[:10])
-                    updated_plans.append(
-                        update_study_plan(
-                            user_id,
-                            study_plan_id,
-                            study_plan.study_plans,
-                            plan_items,
-                        )
-                    )
-
-    return updated_plans
-
-
-def is_study_plan_move_date_allowed(study_plan, target_date):
+def is_study_plan_date_in_period(study_plan, target_date):
     if study_plan.start_date and target_date < study_plan.start_date:
         return False
     if study_plan.end_date and target_date > study_plan.end_date:

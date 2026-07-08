@@ -1,4 +1,4 @@
-from datetime import date, datetime, timedelta
+from datetime import date, datetime
 
 from analytics.service.analytics import (
     get_wrong_rate_stable_threshold,
@@ -242,14 +242,12 @@ def build_planner_summary(study_plans, today):
         "progress": build_planner_progress_summary(study_plans),
         "today_key": today_key,
         "selected_key": selected_key,
-        "next_date_key": (today + timedelta(days=1)).isoformat(),
         "today_items": plans_by_date.get(today_key, []),
         "selected_items": plans_by_date.get(selected_key, []),
         "has_active_plan": has_active_plan,
         "can_create_plan": can_create_plan,
         "show_add_extra_study": show_add_extra_study,
         "can_add_extra_study": can_add_extra_study,
-        "can_move_plan": has_active_plan and not can_create_plan,
         "create_plan_label": create_plan_label,
         "create_plan_confirm": create_plan_confirm,
         "data": {
@@ -380,7 +378,7 @@ def build_calendar_progress_by_date(plans_by_date, today):
             label = f"{progress_percent}%"
         elif date_key == today_key:
             state = "today"
-            label = "오늘"
+            label = f"{progress_percent}%"
 
         progress_by_date[date_key] = {
             "percent": progress_percent,

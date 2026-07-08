@@ -43,11 +43,6 @@ urlpatterns = [
         name="study_plan_block_complete",
     ),
     path(
-        "study-plan/block/move/",
-        views.move_study_plan_blocks_view,
-        name="study_plan_block_move",
-    ),
-    path(
         "study-plan/block/add/",
         views.add_extra_study_plan_block_view,
         name="study_plan_block_add",

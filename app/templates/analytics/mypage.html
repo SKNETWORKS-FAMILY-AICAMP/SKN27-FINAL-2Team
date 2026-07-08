@@ -173,15 +173,14 @@
                 <strong id="plannerDayLabel">{{ planner_summary.day_label }}</strong>
               </div>
               <div class="planner-day-actions">
-                {% if planner_summary.can_move_plan %}
-                  <button class="planner-change" id="openPlanModal" type="button">학습일 변경</button>
-                {% endif %}
                 {% if planner_summary.show_add_extra_study %}
                   <button
                     class="planner-extra"
                     id="addExtraStudy"
                     type="button"
                     data-can-add="{{ planner_summary.can_add_extra_study|yesno:'true,false' }}"
+                    data-disabled-message="{% if not planner_summary.can_add_extra_study %}학습계획 완료 후 이용 가능합니다.{% endif %}"
+                    title="{% if not planner_summary.can_add_extra_study %}학습계획 완료 후 이용 가능합니다.{% endif %}"
                     {% if not planner_summary.can_add_extra_study %}disabled{% endif %}
                   >추가학습</button>
                 {% endif %}
@@ -240,62 +239,15 @@
       </section>
     </section>
 
-    <div class="planner-modal" id="plannerModal" hidden>
-      <section class="planner-dialog" role="dialog" aria-modal="true" aria-labelledby="plannerDialogTitle">
-        <button class="planner-close" id="closePlanModal" type="button" aria-label="닫기">×</button>
-        <header>
-          <h2 id="plannerDialogTitle">학습일 변경</h2>
-          <p>선택된 날짜의 학습일을 다른 날짜로 옮길 수 있습니다.</p>
-        </header>
-        <div class="planner-dialog-grid">
-          <article>
-            <span>STEP 1</span>
-            <strong>변경할 학습을 선택해 주세요</strong>
-            <div class="planner-move-items" id="plannerMoveItems">
-              {% for item in planner_summary.selected_items %}
-                <label>
-                  <input
-                    class="planner-move-item"
-                    type="checkbox"
-                    data-study-plan-id="{{ item.studyPlanId }}"
-                    data-plan-start-date="{{ item.planStartDate }}"
-                    data-plan-end-date="{{ item.planEndDate }}"
-                    data-day-index="{{ item.dayIndex }}"
-                    data-block-index="{{ item.blockIndex }}"
-                  />
-                  {{ item.title }}
-                </label>
-              {% empty %}
-                <p>변경할 학습이 없습니다.</p>
-              {% endfor %}
-            </div>
-          </article>
-          <article>
-            <span>STEP 2</span>
-            <strong>변경할 날짜를 선택해 주세요</strong>
-            <input id="planTargetDate" type="date" value="{{ planner_summary.next_date_key }}" />
-          </article>
-        </div>
-        <footer>
-          <button class="outline-button" id="cancelPlanModal" type="button">취소</button>
-          <button class="primary-button" id="savePlanModal" type="button">저장</button>
-        </footer>
-      </section>
-    </div>
   </main>
 
   {{ planner_data|json_script:"planner-data" }}
   <script>
-    const plannerModal = document.getElementById("plannerModal");
-    const openPlanModal = document.getElementById("openPlanModal");
     const addExtraStudy = document.getElementById("addExtraStudy");
     const canAddExtraStudy = addExtraStudy?.dataset.canAdd === "true";
+    const extraStudyCompletionMessage = "학습계획 완료 후 이용 가능합니다.";
+    const extraStudyTodayMessage = "추가학습은 오늘 계획에서만 만들 수 있습니다.";
     const createPlanForm = document.getElementById("createPlanForm");
-    const closePlanModal = document.getElementById("closePlanModal");
-    const cancelPlanModal = document.getElementById("cancelPlanModal");
-    const savePlanModal = document.getElementById("savePlanModal");
-    const planTargetDate = document.getElementById("planTargetDate");
-    const plannerMoveItems = document.getElementById("plannerMoveItems");
     const plannerCalendarGrid = document.getElementById("plannerCalendarGrid");
     const plannerMonthLabel = document.getElementById("plannerMonthLabel");
     const prevPlannerMonth = document.getElementById("prevPlannerMonth");
@@ -361,81 +313,6 @@
       dateKey,
       planIndex: index,
     }));
-
-    const renderPlannerMoveItems = () => {
-      const plans = getPlansByDateKey(selectedPlannerKey);
-      if (!plans.length) {
-        plannerMoveItems.innerHTML = "<p>변경할 학습이 없습니다.</p>";
-        updatePlanTargetDateBounds();
-        return;
-      }
-
-      plannerMoveItems.innerHTML = plans.map((plan) => `
-        <label>
-          <input
-            class="planner-move-item"
-            type="checkbox"
-            data-study-plan-id="${plan.studyPlanId || ""}"
-            data-plan-start-date="${escapeHtml(plan.planStartDate || "")}"
-            data-plan-end-date="${escapeHtml(plan.planEndDate || "")}"
-            data-day-index="${plan.dayIndex}"
-            data-block-index="${plan.blockIndex}"
-          />
-          ${escapeHtml(plan.title)}
-        </label>
-      `).join("");
-      updatePlanTargetDateBounds();
-    };
-
-    const getPlanMoveInputs = () => Array.from(plannerMoveItems.querySelectorAll(".planner-move-item"));
-
-    const getPlanMoveRangeSourceInputs = () => {
-      const checkedInputs = getPlanMoveInputs().filter((input) => input.checked);
-      if (checkedInputs.length) {
-        return checkedInputs;
-      }
-
-      return getPlanMoveInputs();
-    };
-
-    const updatePlanTargetDateBounds = () => {
-      const inputs = getPlanMoveRangeSourceInputs();
-      let minDate = "";
-      let maxDate = "";
-      inputs.forEach((input) => {
-        const planStartDate = input.dataset.planStartDate || "";
-        const planEndDate = input.dataset.planEndDate || "";
-        if (planStartDate && (!minDate || planStartDate > minDate)) {
-          minDate = planStartDate;
-        }
-        if (planEndDate && (!maxDate || planEndDate < maxDate)) {
-          maxDate = planEndDate;
-        }
-      });
-
-      planTargetDate.min = minDate;
-      planTargetDate.max = maxDate;
-      if (!planTargetDate.value) {
-        planTargetDate.value = selectedPlannerKey;
-      }
-      if (minDate && planTargetDate.value < minDate) {
-        planTargetDate.value = minDate;
-      }
-      if (maxDate && planTargetDate.value > maxDate) {
-        planTargetDate.value = maxDate;
-      }
-    };
-
-    const isPlanTargetDateWithinBounds = () => {
-      if (planTargetDate.min && planTargetDate.value < planTargetDate.min) {
-        return false;
-      }
-      if (planTargetDate.max && planTargetDate.value > planTargetDate.max) {
-        return false;
-      }
-
-      return true;
-    };
 
     const renderPlanProgress = (plan) => {
       return `
@@ -563,11 +440,11 @@
           }
 
           let label = "";
-          if (key === todayKey) {
-            label = "<em>오늘</em>";
-          }
-          if (progress && progress.state !== "future" && progress.state !== "today") {
+          if (progress && progress.state !== "future") {
             label = `<em>${escapeHtml(progress.label)}</em>`;
+          }
+          if (!label && key === todayKey) {
+            label = "<em>오늘</em>";
           }
           if (!label && plannedKeys.has(key)) {
             label = "<em>예정</em>";
@@ -603,6 +480,15 @@
       plannerDayLabel.textContent = `${String(monthValue).padStart(2, "0")}월 ${String(dayValue).padStart(2, "0")}일`;
       if (addExtraStudy) {
         addExtraStudy.disabled = !canAddExtraStudy || selectedPlannerKey !== todayKey;
+        let disabledMessage = "";
+        if (!canAddExtraStudy) {
+          disabledMessage = extraStudyCompletionMessage;
+        }
+        if (canAddExtraStudy && selectedPlannerKey !== todayKey) {
+          disabledMessage = extraStudyTodayMessage;
+        }
+        addExtraStudy.dataset.disabledMessage = disabledMessage;
+        addExtraStudy.title = disabledMessage;
       }
       renderPlannerPlanItems(getPlansByDateKey(selectedPlannerKey), "오늘 표시할 일정 없음");
     };
@@ -727,10 +613,6 @@
       }
     };
 
-    const setPlannerModal = (isOpen) => {
-      plannerModal.hidden = !isOpen;
-      document.body.classList.toggle("modal-open", isOpen);
-    };
     prevPlannerMonth.addEventListener("click", () => {
       plannerDate = new Date(plannerDate.getFullYear(), plannerDate.getMonth() - 1, 1);
       renderPlannerCalendar();
@@ -749,53 +631,12 @@
         }
       });
     }
-    if (openPlanModal) {
-      openPlanModal.addEventListener("click", () => {
-        renderPlannerMoveItems();
-        setPlannerModal(true);
-      });
-    }
     if (addExtraStudy) {
       addExtraStudy.addEventListener("click", () => {
         if (addExtraStudy.disabled) return;
         addExtraStudyBlock(addExtraStudy);
       });
     }
-    closePlanModal.addEventListener("click", () => setPlannerModal(false));
-    cancelPlanModal.addEventListener("click", () => setPlannerModal(false));
-    plannerMoveItems.addEventListener("change", updatePlanTargetDateBounds);
-    savePlanModal.addEventListener("click", async () => {
-      const items = Array.from(document.querySelectorAll(".planner-move-item:checked")).map((item) => ({
-        studyPlanId: item.dataset.studyPlanId,
-        dayIndex: item.dataset.dayIndex,
-        blockIndex: item.dataset.blockIndex,
-      }));
-      if (!items.length || !planTargetDate.value) {
-        return;
-      }
-      if (!isPlanTargetDateWithinBounds()) {
-        alert("학습일 변경은 해당 학습계획 기간 안에서만 가능합니다.");
-        return;
-      }
-
-      savePlanModal.disabled = true;
-      try {
-        await postPlannerJson(
-          "{% url 'analytics:study_plan_block_move' %}",
-          {
-            items,
-            targetDate: planTargetDate.value,
-          },
-        );
-        window.location.reload();
-      } catch (error) {
-        savePlanModal.disabled = false;
-        alert(error.message);
-      }
-    });
-    plannerModal.addEventListener("click", (event) => {
-      if (event.target === plannerModal) setPlannerModal(false);
-    });
     plannerLessons.addEventListener("click", (event) => {
       const deleteButton = event.target.closest(".plan-delete-button");
       if (deleteButton) {

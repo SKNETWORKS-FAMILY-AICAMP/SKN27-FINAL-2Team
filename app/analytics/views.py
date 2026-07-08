@@ -36,16 +36,15 @@ from analytics.service.mypage import (
 )
 from analytics.service.studyplan import (
     StudyPlanBlockDeleteLimitExceeded,
+    StudyPlanDateOutOfRange,
     StudyPlanExtraBlockCompletionRequired,
     StudyPlanExtraBlockUnavailable,
-    StudyPlanMoveDateOutOfRange,
     add_extra_study_plan_block,
     complete_study_plan_block,
     create_study_plan,
     delete_study_plan_block,
     ensure_today_study_plan,
     get_study_plan_info,
-    move_study_plan_blocks,
 )
 
 
@@ -295,48 +294,6 @@ def complete_study_plan_block_view(request):
 
 @login_required
 @require_POST
-def move_study_plan_blocks_view(request):
-    data = get_json_request_data(request)
-    move_items = data.get("items") or []
-    target_date = data.get("targetDate")
-    if not move_items or not target_date:
-        return JsonResponse({"ok": False}, status=400)
-
-    try:
-        target_date_key = date.fromisoformat(target_date[:10]).isoformat()
-        normalized_items = [
-            {
-                "studyPlanId": int(item["studyPlanId"]),
-                "dayIndex": int(item["dayIndex"]),
-                "blockIndex": int(item["blockIndex"]),
-            }
-            for item in move_items
-        ]
-    except (KeyError, TypeError, ValueError):
-        return JsonResponse({"ok": False}, status=400)
-
-    try:
-        updated_plans = move_study_plan_blocks(
-            request.user.user_id,
-            normalized_items,
-            target_date_key,
-        )
-    except StudyPlanMoveDateOutOfRange:
-        return JsonResponse(
-            {
-                "ok": False,
-                "error": "학습일 변경은 해당 학습계획 기간 안에서만 가능합니다.",
-            },
-            status=400,
-        )
-    if not updated_plans:
-        return JsonResponse({"ok": False}, status=404)
-
-    return JsonResponse({"ok": True})
-
-
-@login_required
-@require_POST
 def add_extra_study_plan_block_view(request):
     data = get_json_request_data(request)
     target_date = data.get("targetDate") or timezone.localdate().isoformat()
@@ -350,7 +307,7 @@ def add_extra_study_plan_block_view(request):
             request.user.user_id,
             target_date_key,
         )
-    except StudyPlanMoveDateOutOfRange:
+    except StudyPlanDateOutOfRange:
         return JsonResponse(
             {
                 "ok": False,

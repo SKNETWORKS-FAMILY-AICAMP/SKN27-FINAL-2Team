@@ -840,7 +840,6 @@ a {
   height: 12px;
 }
 
-.planner-change,
 .planner-extra,
 .planner-create {
   min-height: 38px;
@@ -854,16 +853,41 @@ a {
 }
 
 .planner-extra {
+  position: relative;
   border-color: var(--accent);
   background: var(--accent);
   color: #fff;
 }
 
-.planner-change:disabled,
 .planner-extra:disabled,
 .planner-create:disabled {
   cursor: wait;
   opacity: 0.68;
+}
+
+.planner-extra:disabled {
+  cursor: not-allowed;
+}
+
+.planner-extra:disabled:hover::after,
+.planner-extra:disabled:focus-visible::after {
+  content: attr(data-disabled-message);
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  z-index: 10;
+  width: max-content;
+  max-width: 220px;
+  transform: translateX(-50%);
+  border-radius: 6px;
+  padding: 7px 9px;
+  background: #24301f;
+  color: #fff;
+  font-size: 12px;
+  line-height: 1.35;
+  white-space: normal;
+  box-shadow: 0 10px 24px rgba(14, 15, 12, 0.18);
+  pointer-events: none;
 }
 
 .planner-create {
@@ -917,7 +941,6 @@ a {
   flex-shrink: 0;
 }
 
-.planner-day-top .planner-change,
 .planner-day-top .planner-extra {
   flex-shrink: 0;
 }
@@ -1099,108 +1122,6 @@ a {
   background: #ffece8;
 }
 
-.planner-modal[hidden] {
-  display: none;
-}
-
-.planner-modal {
-  position: fixed;
-  inset: 0;
-  z-index: 30;
-  display: grid;
-  place-items: center;
-  padding: 24px;
-  background: rgba(18, 36, 8, 0.34);
-}
-
-.planner-dialog {
-  width: min(680px, 100%);
-  position: relative;
-  padding: 24px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: #fff;
-  box-shadow: 0 26px 70px rgba(22, 51, 0, 0.24);
-}
-
-.planner-close {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  width: 36px;
-  height: 36px;
-  border: 1px solid var(--line);
-  border-radius: 50%;
-  background: #fff;
-  color: var(--accent);
-  font-size: 24px;
-  line-height: 1;
-  cursor: pointer;
-}
-
-.planner-dialog h2 {
-  margin: 0 0 6px;
-  color: var(--ink);
-  font-size: 28px;
-  font-weight: 950;
-}
-
-.planner-dialog p {
-  margin: 0 0 18px;
-  color: var(--muted);
-  font-weight: 800;
-}
-
-.planner-dialog-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-  margin-bottom: 18px;
-}
-
-.planner-dialog-grid article {
-  display: grid;
-  align-content: start;
-  gap: 10px;
-  min-height: 172px;
-  padding: 16px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: #f4f8ef;
-}
-
-.planner-dialog-grid span {
-  color: var(--green);
-  font-size: 13px;
-  font-weight: 950;
-}
-
-.planner-dialog-grid strong {
-  color: var(--accent);
-  font-size: 15px;
-  font-weight: 950;
-}
-
-.planner-dialog-grid label {
-  color: var(--ink);
-  font-weight: 850;
-}
-
-.planner-dialog-grid input[type="date"] {
-  height: 42px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 0 12px;
-  color: var(--ink);
-  font-weight: 900;
-}
-
-.planner-dialog footer {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-
 body.modal-open {
   overflow: hidden;
 }
@@ -1233,9 +1154,6 @@ body.modal-open {
     grid-template-columns: 1fr;
   }
 
-  .planner-dialog-grid {
-    grid-template-columns: 1fr;
-  }
 }
 
 @media (max-width: 700px) {.brand {
@@ -1832,26 +1750,21 @@ body.modal-open {
 }
 
 .planner-panel .calendar-week button.today.progress-tracked {
-  border-color: hsl(var(--day-progress-hue) 68% 38% / 0.46);
-  background:
-    linear-gradient(
-      180deg,
-      hsl(var(--day-progress-hue) 78% 94%),
-      hsl(var(--day-progress-hue) 74% 88%)
-    );
-  color: #24301f;
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
 }
 
 .planner-panel .calendar-week button.today.progress-complete {
-  border-color: rgba(44, 143, 72, 0.48);
-  background: #eefeeb;
-  color: #185a2e;
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
 }
 
 .planner-panel .calendar-week button.today.progress-empty {
-  border-color: rgba(190, 52, 42, 0.48);
-  background: #fff0ee;
-  color: #8f241d;
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
 }
 
 .planner-panel .calendar-week button.selected {
