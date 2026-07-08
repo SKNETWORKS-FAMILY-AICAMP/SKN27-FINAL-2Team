@@ -1,10 +1,7 @@
 from datetime import date, datetime
 
-from analytics.service.analytics import (
-    get_wrong_rate_stable_threshold,
-    get_wrong_rate_weak_threshold,
-)
 from analytics.service.studyplan import get_study_plan_config
+from analytics.service.weakness import get_status_class, get_weakness_config
 
 
 def parse_display_date(raw_date):
@@ -187,10 +184,11 @@ def build_planner_summary(study_plans, today):
                     )
 
     plans_by_date = apply_overdue_plan_display(plans_by_date, today)
+    visible_plans_by_date = build_visible_plans_by_date(plans_by_date, today)
 
     completed_keys = []
     planned_keys = []
-    for date_key, plan_items in plans_by_date.items():
+    for date_key, plan_items in visible_plans_by_date.items():
         plan_date = date.fromisoformat(date_key)
         is_achieved_date = bool(plan_items) and all(item["done"] for item in plan_items)
         if is_achieved_date:
@@ -199,8 +197,8 @@ def build_planner_summary(study_plans, today):
             planned_keys.append(date_key)
 
     today_key = today.isoformat()
-    progress_by_date = build_calendar_progress_by_date(plans_by_date, today)
-    selected_key = get_default_planner_selected_key(plans_by_date, today)
+    progress_by_date = build_calendar_progress_by_date(visible_plans_by_date, today)
+    selected_key = get_default_planner_selected_key(visible_plans_by_date, today)
     selected_date = date.fromisoformat(selected_key)
     has_active_plan = bool(study_plans)
     weekly_review_done = has_completed_weekly_review(plans_by_date)
@@ -242,8 +240,8 @@ def build_planner_summary(study_plans, today):
         "progress": build_planner_progress_summary(study_plans),
         "today_key": today_key,
         "selected_key": selected_key,
-        "today_items": plans_by_date.get(today_key, []),
-        "selected_items": plans_by_date.get(selected_key, []),
+        "today_items": visible_plans_by_date.get(today_key, []),
+        "selected_items": visible_plans_by_date.get(selected_key, []),
         "has_active_plan": has_active_plan,
         "can_create_plan": can_create_plan,
         "show_add_extra_study": show_add_extra_study,
@@ -251,7 +249,7 @@ def build_planner_summary(study_plans, today):
         "create_plan_label": create_plan_label,
         "create_plan_confirm": create_plan_confirm,
         "data": {
-            "plansByDate": plans_by_date,
+            "plansByDate": visible_plans_by_date,
             "completedKeys": sorted(completed_keys),
             "plannedKeys": sorted(planned_keys),
             "progressByDate": progress_by_date,
@@ -341,6 +339,15 @@ def apply_overdue_plan_display(plans_by_date, today):
     ]
     updated_plans_by_date[today_key] = overdue_items + preserved_today_items
     return updated_plans_by_date
+
+
+def build_visible_plans_by_date(plans_by_date, today):
+    today_key = today.isoformat()
+    return {
+        date_key: plan_items
+        for date_key, plan_items in plans_by_date.items()
+        if date_key <= today_key
+    }
 
 
 def find_earliest_overdue_plan_key(plans_by_date, today_key):
@@ -504,15 +511,16 @@ def build_planner_progress_summary(study_plans):
     }
 
 
-def build_wrong_rate_display(stats):
+def build_wrong_rate_display(stats, weakness_rows=None):
     """
     오답률 통계를 상세 화면의 막대 그래프 카드 데이터로 변환한다.
 
-    평균 풀이시간은 MM:SS 문자열로 바꾸고, 오답률 기준으로
-    취약/안정/데이터 부족 상태 라벨과 CSS 클래스를 부여한다.
+    평균 풀이시간은 MM:SS 문자열로 바꾸고, 판정 배지는 공용 취약 점수 결과를 사용한다.
     """
-    stable_rate_threshold = get_wrong_rate_stable_threshold()
-    weak_rate_threshold = get_wrong_rate_weak_threshold()
+    weakness_map = {
+        row["groupKeyId"]: row
+        for row in weakness_rows or []
+    }
     display_items = []
     for stat in stats:
         total = stat["total"] or 0
@@ -524,36 +532,92 @@ def build_wrong_rate_display(stats):
             minutes, seconds = divmod(total_seconds, 60)
             average_time_label = f"{minutes:02d}:{seconds:02d}"
 
-        status_label = ""
-        status_class = "neutral"
-        if not total:
-            status_label = "데이터 부족"
-            status_class = "empty"
-        elif rate >= weak_rate_threshold:
-            status_label = "취약"
-            status_class = "weak"
-        elif rate <= stable_rate_threshold:
-            status_label = "안정"
-            status_class = "stable"
+        weakness_row = weakness_map.get(stat.get("groupKeyId"))
+        status_display = build_wrong_rate_status_display(weakness_row, total)
 
         display_items.append(
             {
                 "label": stat["label"] or "미분류",
+                "groupKeyId": stat.get("groupKeyId", ""),
+                "groupKey": stat.get("groupKey", []),
                 "total": total,
                 "wrong": stat["wrong"] or 0,
                 "rate": rate,
                 "average_time_label": average_time_label,
-                "status_label": status_label,
-                "status_class": status_class,
+                "status": status_display["status"],
+                "status_label": status_display["label"],
+                "status_class": status_display["class"],
+                "weaknessScore": status_display["weaknessScore"],
+                "trend": status_display["trend"],
+                "trend_label": status_display["trendLabel"],
             }
         )
 
-    # TODO: ML 기반 출제가능성 점수가 연결되면 오답률 동률 시 출제가능성을
-    # wrong/total보다 먼저 비교해 시험에 더 나올 법한 항목을 우선 노출한다.
     return sorted(
         display_items,
-        key=lambda item: (-item["rate"], -item["total"], item["label"]),
+        key=lambda item: (
+            -item["weaknessScore"],
+            -item["wrong"],
+            -item["rate"],
+            item["label"],
+        ),
     )
+
+
+def build_wrong_rate_status_display(weakness_row, total):
+    config = get_weakness_config()
+    if weakness_row is None:
+        if not total:
+            return {
+                "status": "",
+                "label": "기록 없음",
+                "class": "empty",
+                "weaknessScore": 0.0,
+                "trend": {"value": config["trend_unknown"]},
+                "trendLabel": "",
+            }
+        return {
+            "status": config["status_neutral"],
+            "label": "",
+            "class": "neutral",
+            "weaknessScore": 0.0,
+            "trend": {"value": config["trend_unknown"]},
+            "trendLabel": "",
+        }
+
+    status = weakness_row["status"]
+    trend = weakness_row["trend"]
+    return {
+        "status": status,
+        "label": get_weakness_status_label(status, config),
+        "class": get_status_class(status),
+        "weaknessScore": weakness_row["weaknessScore"],
+        "trend": trend,
+        "trendLabel": get_weakness_trend_label(status, trend, config),
+    }
+
+
+def get_weakness_status_label(status, config):
+    if status == config["status_weak"]:
+        return "취약"
+    elif status == config["status_stable"]:
+        return "안정"
+    elif status == config["status_insufficient"]:
+        return "판단 보류"
+    elif status == config["status_neutral"]:
+        return "중립"
+
+    return ""
+
+
+def get_weakness_trend_label(status, trend, config):
+    trend_value = trend.get("value")
+    if status == config["status_weak"] and trend_value == config["trend_worsening"]:
+        return "악화"
+    elif trend_value == config["trend_improving"]:
+        return "개선 중"
+
+    return ""
 
 
 def build_wrong_rate_donut_summary(items):
@@ -604,6 +668,7 @@ def build_wrong_rate_donut_segments(items, total_wrong, chart_config):
                 wrong_count,
                 total_wrong,
                 colors[index % len(colors)],
+                item,
             )
         )
 
@@ -620,18 +685,29 @@ def build_wrong_rate_donut_segments(items, total_wrong, chart_config):
     return segments
 
 
-def build_wrong_rate_donut_segment(label, wrong_count, total_wrong, color):
+def build_wrong_rate_donut_segment(label, wrong_count, total_wrong, color, item=None):
     """
     도넛 차트의 단일 구간을 만든다.
     """
     share_value = round((wrong_count / total_wrong) * 100, 2)
-    return {
+    segment = {
         "label": label,
         "wrong": wrong_count,
         "share": round(share_value),
         "shareValue": share_value,
         "color": color,
     }
+    if item:
+        segment.update(
+            {
+                "status_label": item.get("status_label", ""),
+                "status_class": item.get("status_class", ""),
+                "weaknessScore": item.get("weaknessScore", 0.0),
+                "trend_label": item.get("trend_label", ""),
+            }
+        )
+
+    return segment
 
 
 def build_wrong_rate_donut_gradient(segments):

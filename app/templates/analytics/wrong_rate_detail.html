@@ -52,7 +52,15 @@
               <article>
                 <i style="background: {{ item.color }}"></i>
                 <strong>{{ item.label }}</strong>
-                <span>{{ item.share }}% · {{ item.wrong }}개</span>
+                <span>
+                  {{ item.share }}% · {{ item.wrong }}개
+                  {% if item.status_label %}
+                    <b class="donut-status {{ item.status_class }}">{{ item.status_label }}</b>
+                  {% endif %}
+                  {% if item.trend_label %}
+                    <b class="donut-status trend">{{ item.trend_label }}</b>
+                  {% endif %}
+                </span>
               </article>
             {% empty %}
               <article>
@@ -76,7 +84,15 @@
               <article>
                 <i style="background: {{ item.color }}"></i>
                 <strong>{{ item.label }}</strong>
-                <span>{{ item.share }}% · {{ item.wrong }}개</span>
+                <span>
+                  {{ item.share }}% · {{ item.wrong }}개
+                  {% if item.status_label %}
+                    <b class="donut-status {{ item.status_class }}">{{ item.status_label }}</b>
+                  {% endif %}
+                  {% if item.trend_label %}
+                    <b class="donut-status trend">{{ item.trend_label }}</b>
+                  {% endif %}
+                </span>
               </article>
             {% empty %}
               <article>
@@ -100,7 +116,15 @@
               <article>
                 <i style="background: {{ item.color }}"></i>
                 <strong>{{ item.label }}</strong>
-                <span>{{ item.share }}% · {{ item.wrong }}개</span>
+                <span>
+                  {{ item.share }}% · {{ item.wrong }}개
+                  {% if item.status_label %}
+                    <b class="donut-status {{ item.status_class }}">{{ item.status_label }}</b>
+                  {% endif %}
+                  {% if item.trend_label %}
+                    <b class="donut-status trend">{{ item.trend_label }}</b>
+                  {% endif %}
+                </span>
               </article>
             {% empty %}
               <article>
@@ -110,6 +134,63 @@
               </article>
             {% endfor %}
           </div>
+        </div>
+      </article>
+    </section>
+
+    <section class="wrong-rate-stats" aria-label="분류별 취약 판정">
+      <article class="rate-section">
+        <div class="section-heading">
+          <div>
+            <h2>시대별 판정</h2>
+            <span>정렬·취약 판정은 최근 학습 가중 기준</span>
+          </div>
+        </div>
+        <div class="rate-bars">
+          {% for item in era_stats %}
+            {% include "analytics/partials/wrong_rate_stat_card.html" with item=item category="era" %}
+          {% empty %}
+            <article class="detail-empty compact">
+              <strong>기록 없음</strong>
+              <span>최근 7일 풀이 기록이 없습니다.</span>
+            </article>
+          {% endfor %}
+        </div>
+      </article>
+      <article class="rate-section">
+        <div class="section-heading">
+          <div>
+            <h2>유형별 판정</h2>
+            <span>정렬·취약 판정은 최근 학습 가중 기준</span>
+          </div>
+        </div>
+        <div class="rate-bars">
+          {% for item in type_stats %}
+            {% include "analytics/partials/wrong_rate_stat_card.html" with item=item category="type" %}
+          {% empty %}
+            <article class="detail-empty compact">
+              <strong>기록 없음</strong>
+              <span>최근 7일 풀이 기록이 없습니다.</span>
+            </article>
+          {% endfor %}
+        </div>
+      </article>
+      <article class="rate-section">
+        <div class="section-heading">
+          <div>
+            <h2>주제별 판정</h2>
+            <span>정렬·취약 판정은 최근 학습 가중 기준</span>
+          </div>
+        </div>
+        <div class="rate-bars">
+          {% for item in topic_stats %}
+            {% include "analytics/partials/wrong_rate_stat_card.html" with item=item category="topic" %}
+          {% empty %}
+            <article class="detail-empty compact">
+              <strong>기록 없음</strong>
+              <span>최근 7일 풀이 기록이 없습니다.</span>
+            </article>
+          {% endfor %}
         </div>
       </article>
     </section>
@@ -168,7 +249,7 @@
                   <div class="scope-line-points" data-scope-points="{{ group.scope }}">
                   {% for bar in group.bars %}
                     <article
-                      class="scope-line-point {{ bar.statusClass }}{% if bar.sessionId or bar.dateKey %} clickable{% endif %}"
+                      class="scope-line-point {{ bar.rawRateClass }}{% if bar.sessionId or bar.dateKey %} clickable{% endif %}"
                       data-line-point
                       data-rate="{{ bar.chartValue }}"
                       {% if bar.dateKey %}
@@ -350,8 +431,8 @@
         .replaceAll("'", "&#39;");
 
       const statusLabels = {
-        weak: "취약",
-        stable: "안정",
+        weak: "오답률 높음",
+        stable: "오답률 낮음",
         empty: "기록 없음",
       };
 
@@ -598,7 +679,7 @@
         `;
       };
 
-      const renderDetailSessions = (sessions) => {
+      const renderDetailSessions = (sessions, category, itemLabel) => {
         if (!sessions.length) {
           return `
             <article class="detail-empty">
@@ -608,7 +689,14 @@
           `;
         }
         return sessions.map((session) => `
-          <button class="detail-session-card" type="button" data-session-id="${escapeHtml(session.sessionId)}">
+          <button
+            class="detail-session-card"
+            type="button"
+            data-session-item-question
+            data-session-id="${escapeHtml(session.sessionId)}"
+            data-category="${escapeHtml(category)}"
+            data-label="${escapeHtml(itemLabel)}"
+          >
             <header>
               <div>
                 <strong>${escapeHtml(session.title)}</strong>
@@ -661,11 +749,11 @@
         ${renderStackLegend(stack)}
       `;
 
-      const renderTopWeakness = (items) => {
+      const renderTopWeakness = (items, title = "오답 TOP") => {
         if (!items.length) {
           return `
             <section class="session-top-weak">
-              <h3>TOP 취약 항목</h3>
+              <h3>${escapeHtml(title)}</h3>
               <article class="detail-empty compact">
                 <strong>오답 항목 없음</strong>
                 <span>이 세션에서 집계된 오답 항목이 없습니다.</span>
@@ -675,7 +763,7 @@
         }
         return `
           <section class="session-top-weak">
-            <h3>TOP 취약 항목</h3>
+            <h3>${escapeHtml(title)}</h3>
             <div class="session-top-list">
               ${items.map((item, index) => `
                 <article>
@@ -734,7 +822,7 @@
             </p>
             ${renderSessionStack(overview.stack || {})}
           </article>
-          ${renderTopWeakness(detail.topWeakItems || [])}
+          ${renderTopWeakness(detail.topWeakItems || [], detail.topWeakTitle || "세션 오답 TOP")}
           <div class="session-analysis-grid">
             ${groups.map((group) => renderSessionGroup(group)).join("")}
           </div>
@@ -1195,7 +1283,7 @@
             ${renderSessionStack(overview.stack || {})}
           </article>
           ${renderPeriodChange(detail.change || {})}
-          ${renderTopWeakness(detail.topWeakItems || [])}
+          ${renderTopWeakness(detail.topWeakItems || [], detail.topWeakTitle || "기간 오답 TOP")}
           ${groups.map((group) => renderPeriodAnalysisGroup(group, period)).join("")}
         `;
         showInlineBreakdown(breakdown, "period", activeInlineSelections.period);
@@ -1316,7 +1404,11 @@
           const payload = await response.json();
           detailCategory.textContent = payload.detail.categoryLabel;
           detailTitle.textContent = payload.detail.itemLabel;
-          detailBody.innerHTML = renderDetailSessions(payload.detail.sessions || []);
+          detailBody.innerHTML = renderDetailSessions(
+            payload.detail.sessions || [],
+            button.dataset.detailCategory,
+            payload.detail.itemLabel || button.dataset.detailLabel,
+          );
         } catch (error) {
           renderDetailError();
         } finally {
@@ -1394,6 +1486,9 @@
       document.addEventListener("click", (event) => {
         const sessionElement = event.target.closest("[data-session-id]");
         if (!sessionElement) {
+          return;
+        }
+        if (sessionElement.closest("[data-session-item-question]")) {
           return;
         }
         openSessionDetail(sessionElement.dataset.sessionId);

@@ -20,6 +20,7 @@ from analytics.service.analytics import (
     get_wrong_rate_session_analysis_detail,
     get_wrong_rate_session_item_questions,
     get_wrong_rate_group_stats,
+    get_wrong_rate_weakness_rows,
 )
 from analytics.service.display import (
     build_planner_summary,
@@ -107,9 +108,12 @@ def wrong_rate_detail(request):
         donut_period["startDate"],
         donut_period["endDate"],
     )
-    era_display = build_wrong_rate_display(era_stats)
-    type_display = build_wrong_rate_display(type_stats)
-    topic_display = build_wrong_rate_display(topic_stats)
+    era_weakness_rows = get_wrong_rate_weakness_rows(request.user, "era", today)
+    type_weakness_rows = get_wrong_rate_weakness_rows(request.user, "q_type", today)
+    topic_weakness_rows = get_wrong_rate_weakness_rows(request.user, "topic", today)
+    era_display = build_wrong_rate_display(era_stats, era_weakness_rows)
+    type_display = build_wrong_rate_display(type_stats, type_weakness_rows)
+    topic_display = build_wrong_rate_display(topic_stats, topic_weakness_rows)
     era_donut = build_wrong_rate_donut_summary(era_display)
     type_donut = build_wrong_rate_donut_summary(type_display)
     topic_donut = build_wrong_rate_donut_summary(topic_display)

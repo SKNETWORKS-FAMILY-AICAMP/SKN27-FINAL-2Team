@@ -5,7 +5,6 @@ from django.utils import timezone
 
 from analytics.service.analytics import (
     calculate_percent_rate,
-    get_classification_display_label,
     get_diagnosis_improvement_summary,
     get_completed_records,
     get_completed_sessions,
@@ -13,6 +12,7 @@ from analytics.service.analytics import (
     get_weekly_practice_summary,
 )
 from analytics.service.studyplan import get_user_study_info
+from analytics.service.weakness import build_weakness_rows, get_status_class, get_weakness_config
 
 
 def build_learning_summary(user, today=None):
@@ -190,71 +190,51 @@ def build_weakness_summary(user, today=None):
     """
     시대와 주제 조합 기준의 취약점 목록을 만든다.
 
-    오답이 1건 이상 발생한 era/topic 조합만 추려서
-    오답률과 오답 수 기준으로 정렬한다.
+    공용 취약 판정 기준에서 WEAK로 판단된 era/topic 조합만 노출한다.
     """
-    unclassified_label = "미분류"
-    period = get_recent_wrong_rate_period(today)
-    rows = (
-        get_completed_records(user.user_id)
-        .filter(
-            session__recorded_date__gte=period["startDate"],
-            session__recorded_date__lte=period["endDate"],
-        )
-        .values("era", "topic")
-        .annotate(
-            total=Count("record_id"),
-            wrong=Count("record_id", filter=Q(is_correct=False)),
-        )
-        .filter(wrong__gt=0)
-    )
-
-    item_map = {}
-    for row in rows:
-        era = get_classification_display_label("era", row["era"])
-        topic = get_classification_display_label("topic", row["topic"])
-        key = (era, topic)
-        if key not in item_map:
-            item_map[key] = {
-                "era": era,
-                "topic": topic,
-                "total": 0,
-                "wrong": 0,
-            }
-
-        item_map[key]["total"] += row["total"] or 0
-        item_map[key]["wrong"] += row["wrong"] or 0
-
+    config = get_weakness_config()
+    records = get_completed_records(user.user_id)
     items = []
-    for item in item_map.values():
-        total = item["total"] or 0
-        wrong = item["wrong"] or 0
-
-        label_parts = [item["era"], item["topic"]]
-        valid_labels = [label for label in label_parts if label]
-        label = unclassified_label
-        if valid_labels:
-            label = " / ".join(valid_labels)
-
-        items.append(
-            {
-                "label": label,
-                "total": total,
-                "wrong": wrong,
-                "rate": calculate_percent_rate(wrong, total),
-            }
-        )
+    for row in build_weakness_rows(records, ["era", "topic"], today):
+        if row["status"] == config["status_weak"]:
+            group = row["group"]
+            label = " / ".join([group["era"], group["topic"]])
+            items.append(
+                {
+                    "label": label,
+                    "total": row["raw"]["total"],
+                    "wrong": row["raw"]["wrong"],
+                    "rate": round(row["raw"]["wrongRate"] * 100),
+                    "weakness_score": row["weaknessScore"],
+                    "status": row["status"],
+                    "status_class": get_status_class(row["status"]),
+                    "trend": row["trend"],
+                    "trend_label": build_weakness_trend_label(row["trend"], config),
+                }
+            )
 
     display_limit = 10
     sorted_items = sorted(
         items,
-        key=lambda item: (-item["rate"], -item["wrong"], item["label"]),
+        key=lambda item: (-item["weakness_score"], -item["wrong"], item["label"]),
     )
     return {
         "items": sorted_items[:display_limit],
         "has_records": bool(items),
-        "period_label": period["label"],
+        "period_label": "최근 학습 기준",
+        "empty_title": "아직 취약으로 판단할 데이터가 부족해요",
+        "empty_description": "문제를 더 풀면 분석이 정확해져요.",
     }
+
+
+def build_weakness_trend_label(trend, config):
+    trend_value = trend.get("value")
+    if trend_value == config["trend_worsening"]:
+        return "악화"
+    elif trend_value == config["trend_improving"]:
+        return "개선 중"
+
+    return ""
 
 
 def build_mypage_summary_validation(
@@ -287,9 +267,6 @@ def build_mypage_summary_validation(
 
     if total_count > 0 and not wrong_type_has_records:
         issues.append("recent_records_exist_but_wrong_type_empty")
-    if wrong_count > 0 and not weakness_has_records:
-        issues.append("recent_wrong_records_exist_but_weakness_empty")
-
     return {
         "userId": user.user_id,
         "periodStart": period["startDate"],

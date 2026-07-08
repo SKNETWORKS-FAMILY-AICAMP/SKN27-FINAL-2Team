@@ -14,6 +14,7 @@ from analytics.service.analysis_snapshot import (
 )
 from analytics.service.analytics import get_classification_fields, get_composite_weak_targets
 from analytics.service.prediction import get_predicted_targets
+from analytics.service.weakness import get_trend_bonus, get_weakness_config
 from question.models import SolveRecords
 from user.models import UserAccounts
 
@@ -1282,9 +1283,14 @@ def build_priority_target_seed(identity):
         "topic": identity["topic"],
         "qType": identity["qType"],
         "wrongRate": 0.0,
+        "weaknessScore": 0.0,
+        "weaknessStatus": "",
+        "trend": {},
+        "trendBonus": 0.0,
         "predictionScore": 0.0,
         "averageTimeSec": 0,
         "predictionReason": "",
+        "planSource": "normal",
     }
 
 
@@ -1306,7 +1312,9 @@ def build_priority_targets(weak_targets, predicted_targets, remaining_days, conf
     남은 기간 전략에 따른 가중치로 priorityScore를 산출한다.
     """
     target_map = {}
-    for weak_target in weak_targets:
+    weakness_config = get_weakness_config()
+    selected_weak_targets = select_priority_weak_targets(weak_targets, weakness_config)
+    for weak_target in selected_weak_targets:
         key, identity = get_priority_target_identity(weak_target)
         if key and identity:
             target = target_map.setdefault(
@@ -1316,11 +1324,22 @@ def build_priority_targets(weak_targets, predicted_targets, remaining_days, conf
             wrong_rate = weak_target.get("wrongRate")
             if wrong_rate is None:
                 wrong_rate = weak_target.get("wrong_rate") or 0.0
+            weakness_score = weak_target.get("weaknessScore")
+            if weakness_score is None:
+                weakness_score = wrong_rate or 0.0
             average_time_sec = weak_target.get("averageTimeSec")
             if average_time_sec is None:
                 average_time_sec = weak_target.get("average_time_sec") or 0
             target["wrongRate"] = float(wrong_rate)
+            target["weaknessScore"] = float(weakness_score)
+            target["weaknessStatus"] = weak_target.get("weaknessStatus") or ""
+            target["trend"] = weak_target.get("trend") or {}
+            target["trendBonus"] = get_trend_bonus(
+                target["trend"].get("value"),
+                weakness_config,
+            )
             target["averageTimeSec"] = average_time_sec or 0
+            target["planSource"] = weak_target.get("planSource") or "normal"
 
     for predicted_target in predicted_targets:
         key, identity = get_priority_target_identity(predicted_target)
@@ -1329,6 +1348,8 @@ def build_priority_targets(weak_targets, predicted_targets, remaining_days, conf
                 key,
                 build_priority_target_seed(identity),
             )
+            if not target["weaknessScore"]:
+                target["planSource"] = "fallback_prediction_only"
             prediction_score = predicted_target.get("predictionScore")
             if prediction_score is None:
                 prediction_score = predicted_target.get("prediction_score") or 0.0
@@ -1347,9 +1368,10 @@ def build_priority_targets(weak_targets, predicted_targets, remaining_days, conf
                 time_burden_score = 1
 
         priority_score = (
-            target["wrongRate"] * weights["weakness"]
+            target["weaknessScore"] * weights["weakness"]
             + target["predictionScore"] * weights["prediction"]
             + time_burden_score * weights["time_burden"]
+            + target["trendBonus"]
         )
         if priority_score >= config["minimum_priority_score"]:
             target["priorityScore"] = round(priority_score, 4)
@@ -1360,7 +1382,7 @@ def build_priority_targets(weak_targets, predicted_targets, remaining_days, conf
         priority_targets,
         key=lambda item: (
             -item["priorityScore"],
-            -item["wrongRate"],
+            -item["weaknessScore"],
             -item["predictionScore"],
             item["classification"],
             item["label"],
@@ -1369,6 +1391,27 @@ def build_priority_targets(weak_targets, predicted_targets, remaining_days, conf
             item["qType"],
         ),
     )
+
+
+def select_priority_weak_targets(weak_targets, weakness_config):
+    normal_targets = []
+    fallback_wrong_targets = []
+    for target in weak_targets:
+        status = target.get("weaknessStatus")
+        weakness_score = target.get("weaknessScore") or 0.0
+        if (
+            status != weakness_config["status_insufficient"]
+            and weakness_score > weakness_config["stable_threshold"]
+        ):
+            target["planSource"] = "normal"
+            normal_targets.append(target)
+        elif target.get("wrongCount", 0) > 0:
+            target["planSource"] = "fallback_any_wrong"
+            fallback_wrong_targets.append(target)
+
+    if normal_targets:
+        return normal_targets
+    return fallback_wrong_targets
 
 
 def build_daily_plan_items(priority_targets, daily_available_minutes, remaining_days, today, config):
@@ -1443,6 +1486,7 @@ def build_weekly_review_block(config):
         "estimatedMinutes": config["weekly_review_minutes"],
         "priorityScore": 0,
         "reason": "6일 학습 후 전체 범위 평가",
+        "planSource": "normal",
         "isCompleted": False,
         "completedAt": None,
     }
@@ -1480,6 +1524,7 @@ def build_study_block(target, block_type, estimated_minutes, config):
         "estimatedMinutes": estimated_minutes,
         "priorityScore": target["priorityScore"],
         "reason": target["reason"],
+        "planSource": target.get("planSource", "normal"),
         "isCompleted": False,
         "completedAt": None,
     }
@@ -1496,6 +1541,13 @@ def build_priority_reason(target):
     if target["wrongRate"]:
         wrong_rate = round(target["wrongRate"] * 100)
         reasons.append(f"오답률 {wrong_rate}%")
+    if target["weaknessScore"]:
+        weakness_score = round(target["weaknessScore"] * 100)
+        reasons.append(f"취약 점수 {weakness_score}%")
+    if target["trendBonus"] > 0:
+        reasons.append("최근 악화")
+    elif target["trendBonus"] < 0:
+        reasons.append("최근 개선")
     if target["predictionScore"]:
         prediction_rate = round(target["predictionScore"] * 100)
         reasons.append(f"출제 예상도 {prediction_rate}%")
@@ -1600,7 +1652,7 @@ def get_target_block_type(target):
     그 외에는 새 취약점 보완 블록인 newWeakness로 분류한다.
     """
     block_type = "newWeakness"
-    if target["predictionScore"] > target["wrongRate"]:
+    if target["predictionScore"] > target["weaknessScore"]:
         block_type = "predictionFocus"
 
     return block_type

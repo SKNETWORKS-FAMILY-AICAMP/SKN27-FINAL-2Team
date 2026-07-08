@@ -9,6 +9,11 @@ from analytics.service.classification import (
     normalize_classification_value,
     should_normalize_classification,
 )
+from analytics.service.weakness import (
+    build_group_key_id,
+    build_weakness_rows,
+    get_weakness_config,
+)
 from question.models import QuestionOptions, SolveRecords, SolveSessions
 
 
@@ -582,7 +587,7 @@ def build_record_chart_bar(
         "createdLabel": created_label,
         "detailLine": f"{total_count}문제 · 문제당 {format_seconds(average_time_sec)}",
         "subDetailLine": f"{period_label} · {created_label}",
-        "statusClass": get_scope_status_class(total_count, wrong_rate),
+        "rawRateClass": get_raw_rate_class(total_count, wrong_rate),
     }
     if extra_data:
         chart_bar.update(extra_data)
@@ -694,7 +699,7 @@ def build_analysis_scope_overview_item(user_id, scope_config):
         "average_time_label": format_seconds(summary["average_time_sec"]),
         "period_label": format_period_label(period_start, period_end),
         "created_label": format_datetime_label(created_at),
-        "status_class": get_scope_status_class(summary["total_count"], summary["wrong_rate"]),
+        "status_class": get_raw_rate_class(summary["total_count"], summary["wrong_rate"]),
     }
 
 
@@ -774,9 +779,9 @@ def calculate_scope_row_summary(rows):
     }
 
 
-def get_scope_status_class(total_count, wrong_rate):
+def get_raw_rate_class(total_count, wrong_rate):
     """
-    분석 요약 카드의 상태 클래스를 정한다.
+    raw 오답률 표시용 상태 클래스를 정한다.
     """
     stable_rate_threshold = get_wrong_rate_stable_threshold()
     weak_rate_threshold = get_wrong_rate_weak_threshold()
@@ -789,6 +794,10 @@ def get_scope_status_class(total_count, wrong_rate):
         status_class = "stable"
 
     return status_class
+
+
+def get_scope_status_class(total_count, wrong_rate):
+    return get_raw_rate_class(total_count, wrong_rate)
 
 
 def get_wrong_rate_stable_threshold():
@@ -1439,48 +1448,41 @@ def build_composite_weak_targets(records):
     시대, 주제, 유형 조합별 취약 항목 목록을 만든다.
 
     단일 분류가 아니라 실제 학습계획에서 사용할 복합 조건을 기준으로
-    오답률과 평균 풀이시간을 계산한다.
+    보정 취약 점수와 평균 풀이시간을 계산한다.
     """
-    rows = (
-        records.values("era", "topic", "q_type")
-        .annotate(
-            total_count=Count("record_id"),
-            wrong_count=Count("record_id", filter=Q(is_correct=False)),
-            total_time_ms=Sum("time_spent_ms"),
-            time_count=Count("time_spent_ms"),
+    config = get_weakness_config()
+    weakness_rows = build_weakness_rows(records, ["era", "topic", "q_type"])
+    weak_targets = []
+    for row in weakness_rows:
+        group = row["group"]
+        era = group.get("era") or ""
+        topic = group.get("topic") or ""
+        q_type = group.get("qType") or ""
+        if config["unclassified_label"] in (era, topic, q_type):
+            continue
+
+        weak_targets.append(
+            {
+                "classification": "복합",
+                "label": build_composite_target_label(era, topic, q_type),
+                "era": era,
+                "topic": topic,
+                "qType": q_type,
+                "wrongRate": row["raw"]["wrongRate"],
+                "wrongCount": row["raw"]["wrong"],
+                "totalCount": row["raw"]["total"],
+                "weaknessScore": row["weaknessScore"],
+                "weaknessStatus": row["status"],
+                "trend": row["trend"],
+                "averageTimeSec": row["raw"]["avgTimeSec"] or 0,
+            }
         )
-        .filter(wrong_count__gt=0)
-        .order_by("era", "topic", "q_type")
-    )
-
-    target_map = {}
-    for row in rows:
-        era = normalize_classification_value("era", row["era"])
-        topic = normalize_classification_value("topic", row["topic"])
-        q_type = row["q_type"]
-        if era and topic and q_type:
-            key = (era, topic, q_type)
-            if key not in target_map:
-                target_map[key] = build_composite_group_seed(era, topic, q_type)
-            update_composite_group_summary(target_map[key], row)
-
-    weak_targets = [
-        {
-            "classification": "복합",
-            "label": build_composite_target_label(era, topic, q_type),
-            "era": era,
-            "topic": topic,
-            "qType": q_type,
-            "wrongRate": calculate_rate(summary["wrongCount"], summary["totalCount"]),
-            "averageTimeSec": get_group_average_time_from_summary(summary) or 0,
-        }
-        for (era, topic, q_type), summary in target_map.items()
-    ]
 
     return sorted(
         weak_targets,
         key=lambda item: (
-            -item["wrongRate"],
+            -item["weaknessScore"],
+            -item["wrongCount"],
             -item["averageTimeSec"],
             item["era"],
             item["topic"],
@@ -1586,6 +1588,8 @@ def get_wrong_rate_group_stats(user, field_name, start_date=None, end_date=None)
     return [
         {
             "label": summary["label"],
+            "groupKeyId": build_group_key_id([field_name], [summary["label"]]),
+            "groupKey": [[field_name, summary["label"]]],
             "total": summary["totalCount"],
             "wrong": summary["wrongCount"],
             "rate": calculate_percent_rate(summary["wrongCount"], summary["totalCount"]),
@@ -1593,6 +1597,17 @@ def get_wrong_rate_group_stats(user, field_name, start_date=None, end_date=None)
         }
         for summary in build_classification_group_summaries(rows, field_name)
     ]
+
+
+def get_wrong_rate_weakness_rows(user, field_name, today=None):
+    """
+    오답률 상세 페이지의 배지·정렬에 사용할 공용 취약 판정 row를 만든다.
+    """
+    queryset = SolveRecords.objects.filter(
+        session__user=user,
+        session__status="completed",
+    )
+    return build_weakness_rows(queryset, [field_name], today)
 
 
 def get_wrong_rate_item_session_details(user, category, label):
@@ -1655,6 +1670,7 @@ def get_wrong_rate_session_analysis_detail(user, session_id):
         "categoryLabel": "세션 상세 분석",
         "title": format_session_analysis_title(session, session_type_label),
         "overview": build_session_analysis_overview(session, records, session_type_label),
+        "topWeakTitle": "세션 오답 TOP",
         "topWeakItems": build_session_top_weak_items(groups),
         "groups": groups,
     }
@@ -1742,6 +1758,7 @@ def get_wrong_rate_period_analysis_detail(user, start_date, end_date):
         },
         "overview": build_period_analysis_overview(records, start_date, end_date),
         "change": build_period_change_summary(records),
+        "topWeakTitle": "기간 오답 TOP",
         "topWeakItems": build_session_top_weak_items(groups),
         "groups": groups,
     }
@@ -2060,7 +2077,7 @@ def build_session_group_analysis_item(summary, classification_label, category):
         "answerRate": calculate_percent_rate(correct_count, total_count),
         "wrongRate": wrong_rate,
         "averageTimeLabel": format_seconds(get_group_average_time_from_summary(summary)),
-        "statusClass": get_scope_status_class(total_count, wrong_rate),
+        "statusClass": get_raw_rate_class(total_count, wrong_rate),
     }
 
 
