@@ -81,10 +81,13 @@ def read_jsonl(path: Path) -> list[dict[str, Any]]:
         return []
     rows = []
     with path.open("r", encoding="utf-8") as fp:
-        for line in fp:
+        for line_no, line in enumerate(fp, start=1):
             line = line.strip()
             if line:
-                rows.append(json.loads(line))
+                try:
+                    rows.append(json.loads(line))
+                except json.JSONDecodeError:
+                    print(f"skip invalid jsonl: {path} line={line_no}")
     return rows
 
 
@@ -93,6 +96,7 @@ def collect_list(kind: str, api_key: str, page_size: int, limit: int, sleep: flo
     id_key = "eid" if kind == "articles" else "mid"
     output_path = OUTPUT_DIR / f"{kind}_list.jsonl"
     seen_ids = list(dict.fromkeys(str(row.get(id_key)) for row in read_jsonl(output_path) if row.get(id_key)))
+    seen = set(seen_ids)
     if limit and len(seen_ids) >= limit:
         return seen_ids[:limit]
     page = (len(seen_ids) // page_size) + 1
@@ -105,13 +109,16 @@ def collect_list(kind: str, api_key: str, page_size: int, limit: int, sleep: flo
         if not items:
             break
 
-        append_jsonl(output_path, items)
+        new_items = []
         for item in items:
             item_id = item.get(id_key)
-            if item_id:
+            if item_id and str(item_id) not in seen:
+                seen.add(str(item_id))
                 seen_ids.append(str(item_id))
+                new_items.append(item)
+        append_jsonl(output_path, new_items)
 
-        print(f"{kind} page={page} rows={len(items)} total={len(seen_ids)}")
+        print(f"{kind} page={page} rows={len(items)} new={len(new_items)} total={len(seen_ids)}")
         if limit and len(seen_ids) >= limit:
             return seen_ids[:limit]
 
@@ -160,7 +167,7 @@ def main() -> None:
     for kind in kinds:
         if args.skip_list:
             id_key = "eid" if kind == "articles" else "mid"
-            ids = [str(row.get(id_key)) for row in read_jsonl(OUTPUT_DIR / f"{kind}_list.jsonl") if row.get(id_key)]
+            ids = list(dict.fromkeys(str(row.get(id_key)) for row in read_jsonl(OUTPUT_DIR / f"{kind}_list.jsonl") if row.get(id_key)))
             print(f"{kind} list reuse={len(ids)}")
         else:
             ids = collect_list(kind, args.api_key, args.page_size, args.limit, args.sleep, args.timeout)
