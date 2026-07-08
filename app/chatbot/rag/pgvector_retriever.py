@@ -488,6 +488,7 @@ class PgVectorHybridRetriever:
         overview_query = any(term in question for term in OVERVIEW_TERMS)
         use_reranker = os.getenv("RAG_RERANKER_ENABLED", "").lower() in {"1", "true", "yes"}
         final_limit = max(top_k * 5, top_k) if generic_overview_query or use_reranker else top_k
+        keyword_candidate_pool = min(self.candidate_pool, 30)
 
         # 불용어(Stopwords)를 걸러낸 정밀한 focus_terms 추출
         filtered_focus_terms = tuple(term for term in focus_terms if term not in HISTORY_STOPWORDS)
@@ -546,7 +547,7 @@ class PgVectorHybridRetriever:
                 CASE WHEN %s AND ({focus_match_sql}) THEN 1 ELSE 0 END AS focus_hit
             FROM rag.document_chunks
             WHERE {where_sql}
-              AND (title %% %s OR chunk_text %% %s OR title ILIKE %s OR chunk_text ILIKE %s)
+              AND (title %% %s OR chunk_text %% %s)
             ORDER BY keyword_score DESC
             LIMIT %s
         ),
@@ -631,9 +632,7 @@ class PgVectorHybridRetriever:
                 *where_params,
                 keyword_filter,
                 keyword_filter,
-                f"%{keyword_filter}%",
-                f"%{keyword_filter}%",
-                self.candidate_pool,
+                keyword_candidate_pool,
                 image_query,
                 image_query,
                 overview_query,

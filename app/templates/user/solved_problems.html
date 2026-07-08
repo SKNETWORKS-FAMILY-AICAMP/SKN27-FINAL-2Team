@@ -31,8 +31,8 @@
       <section class="review-shell" aria-label="세션별 문제 결과">
         <header class="review-top">
           <div>
-            <span class="page-kicker">Session #{{ selected_session.session_id }}</span>
-            <h1>문제별 결과 확인</h1>
+            <span class="page-kicker">{{ selected_session_display.date }}</span>
+            <h1>{{ selected_session_display.title }}</h1>
           </div>
           <div class="question-jump" id="questionJump" aria-label="문제 번호 이동"></div>
         </header>
@@ -177,8 +177,8 @@
           {% for item in session_cards %}
             <a class="bundle-card" href="/user/solved-problems/?session_id={{ item.session.session_id }}">
               <div>
-                <span>Session #{{ item.session.session_id }}</span>
-                <h3>{{ item.date_label }}</h3>
+                <span>{{ item.display_date }}</span>
+                <h3>{{ item.display_title }}</h3>
               </div>
               <dl>
                 <div><dt>문항 수</dt><dd>{{ item.session.total_count }}문항</dd></div>
