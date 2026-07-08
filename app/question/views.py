@@ -88,7 +88,6 @@ ERA_FILTER_VALUES = [
     "개항기",
     "일제 강점기",
     "현대",
-    "통합 주제",
 ]
 ML_QUESTION_TYPE_FILTER_VALUES = [
     "역사 지식의 이해",
@@ -626,11 +625,11 @@ def _score_counts_for_generation_mode(data):
 # 문제 생성 화면에서 사용할 필터 조건 목록을 제공한다.
 def question_filters(request):
     qs = _base_question_queryset()
-    era_values = _reference_filter_values("era_keywords") or ERA_FILTER_VALUES
+    era_values = ERA_FILTER_VALUES
     topic_values = _reference_filter_values("topic_keywords")
 
     q_filters = FilterOptionsResponse({
-        "eras": _ordered_existing_values(qs, "era", era_values),
+        "eras": era_values,
         "topics": (
             _ordered_existing_values(qs, "topic", topic_values)
             if topic_values else _distinct_values(qs, "topic")
