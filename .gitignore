@@ -302,3 +302,7 @@ etl/preprocessing/neo4j/**/*.csv
 # Neo4j import generated CSV files
 storage/neo4j/neo4j_import/*.csv
 storage/neo4j/neo4j_import/**/*.csv
+
+# AKS encyclopedia API outputs
+etl/raw_data/한국민족문화대백과사전/articles_list.jsonl
+etl/raw_data/한국민족문화대백과사전/articles_detail.jsonl
