@@ -26,6 +26,14 @@ class StudyPlanMoveDateOutOfRange(Exception):
     pass
 
 
+class StudyPlanExtraBlockUnavailable(Exception):
+    pass
+
+
+class StudyPlanExtraBlockCompletionRequired(Exception):
+    pass
+
+
 def get_user_study_info(user_id):
     """
     사용자의 학습 설정 프로필을 조회한다.
@@ -797,6 +805,132 @@ def build_replacement_plan_block(user_id, plan_items, deleted_block):
         return build_study_block(target, block_type, estimated_minutes, config)
 
     return None
+
+
+def add_extra_study_plan_block(user_id, target_date):
+    target_plan_date = date.fromisoformat(str(target_date)[:10])
+    target_date_key = target_plan_date.isoformat()
+    today = timezone.localdate()
+    if target_plan_date != today:
+        raise StudyPlanMoveDateOutOfRange
+
+    with transaction.atomic():
+        study_plan = get_active_study_plans(user_id, lock=True).first()
+        if study_plan is None:
+            return None
+        if not is_study_plan_move_date_allowed(study_plan, target_plan_date):
+            raise StudyPlanMoveDateOutOfRange
+
+        plan_items = prepare_study_plan_items(study_plan.study_plan_items)
+        config = get_study_plan_config()
+        if not is_extra_study_available_for_today(
+            plan_items,
+            today,
+            config["weekly_review_block_type"],
+        ):
+            raise StudyPlanExtraBlockCompletionRequired
+
+        extra_block = build_extra_study_plan_block(user_id, plan_items)
+        if extra_block is None:
+            raise StudyPlanExtraBlockUnavailable
+
+        target_day_plan = get_or_create_study_plan_day(plan_items, target_date_key)
+        insert_extra_study_block(target_day_plan, extra_block)
+        plan_items = keep_study_plan_period_boundary_days(
+            plan_items,
+            study_plan.start_date,
+            study_plan.end_date,
+        )
+        plan_items = sorted(plan_items, key=lambda plan: str(plan.get("date", ""))[:10])
+        return update_study_plan(
+            user_id,
+            study_plan.studyplan_id,
+            study_plan.study_plans,
+            plan_items,
+        )
+
+
+def build_extra_study_plan_block(user_id, plan_items):
+    config = get_study_plan_config()
+    base_date = timezone.localdate()
+    profile = get_user_study_info(user_id)
+    remaining_days = get_remaining_days(user_id, base_date, profile)
+    priority_targets = build_priority_targets(
+        get_composite_weak_targets(user_id),
+        get_predicted_targets(user_id),
+        remaining_days,
+        config,
+    )
+    if not priority_targets:
+        return None
+
+    planned_keys = get_planned_target_keys(plan_items)
+    selected_target = priority_targets[0]
+    for target in priority_targets:
+        target_key = get_optional_priority_target_key(target)
+        if target_key is not None and target_key not in planned_keys:
+            selected_target = target
+            break
+
+    estimated_minutes = get_extra_study_estimated_minutes(user_id, profile, config)
+    block_type = get_target_block_type(selected_target)
+    return build_study_block(selected_target, block_type, estimated_minutes, config)
+
+
+def get_extra_study_estimated_minutes(user_id, profile, config):
+    daily_available_minutes = get_daily_available_minutes(user_id, profile)
+    if daily_available_minutes <= 0:
+        daily_available_minutes = config["fallback_daily_available_minutes"]
+
+    blocks_per_day = get_blocks_per_day(daily_available_minutes, config)
+    return get_block_minutes(daily_available_minutes, blocks_per_day, 0, config)
+
+
+def insert_extra_study_block(day_plan, extra_block):
+    config = get_study_plan_config()
+    weekly_review_type = config["weekly_review_block_type"]
+    blocks = day_plan.setdefault("blocks", [])
+    for index, block in enumerate(blocks):
+        if block.get("blockType") == weekly_review_type:
+            blocks.insert(index, extra_block)
+            return
+
+    blocks.append(extra_block)
+
+
+def is_extra_study_available_for_today(plan_items, today, weekly_review_block_type):
+    learning_blocks = []
+    for day_plan in plan_items:
+        plan_date = parse_study_plan_day_date(day_plan)
+        if plan_date is None:
+            continue
+        if plan_date > today:
+            continue
+
+        for block in day_plan.get("blocks", []):
+            if not is_extra_study_learning_block(block, weekly_review_block_type):
+                continue
+
+            learning_blocks.append(block)
+
+    return bool(learning_blocks) and all(
+        is_study_plan_block_completed(block)
+        for block in learning_blocks
+    )
+
+
+def is_extra_study_learning_block(block, weekly_review_block_type):
+    block_type = block.get("blockType")
+    if block_type == weekly_review_block_type:
+        return False
+    if block_type == "review":
+        return False
+
+    return True
+
+
+def is_study_plan_block_completed(block):
+    return bool(block.get("isAchieved") or block.get("isCompleted"))
 
 
 def get_planned_target_keys(plan_items):

@@ -36,7 +36,10 @@ from analytics.service.mypage import (
 )
 from analytics.service.studyplan import (
     StudyPlanBlockDeleteLimitExceeded,
+    StudyPlanExtraBlockCompletionRequired,
+    StudyPlanExtraBlockUnavailable,
     StudyPlanMoveDateOutOfRange,
+    add_extra_study_plan_block,
     complete_study_plan_block,
     create_study_plan,
     delete_study_plan_block,
@@ -327,6 +330,52 @@ def move_study_plan_blocks_view(request):
             status=400,
         )
     if not updated_plans:
+        return JsonResponse({"ok": False}, status=404)
+
+    return JsonResponse({"ok": True})
+
+
+@login_required
+@require_POST
+def add_extra_study_plan_block_view(request):
+    data = get_json_request_data(request)
+    target_date = data.get("targetDate") or timezone.localdate().isoformat()
+    try:
+        target_date_key = date.fromisoformat(str(target_date)[:10]).isoformat()
+    except (TypeError, ValueError):
+        return JsonResponse({"ok": False}, status=400)
+
+    try:
+        updated_plan = add_extra_study_plan_block(
+            request.user.user_id,
+            target_date_key,
+        )
+    except StudyPlanMoveDateOutOfRange:
+        return JsonResponse(
+            {
+                "ok": False,
+                "error": "추가학습은 오늘 계획에만 만들 수 있습니다.",
+            },
+            status=400,
+        )
+    except StudyPlanExtraBlockUnavailable:
+        return JsonResponse(
+            {
+                "ok": False,
+                "error": "추가학습을 만들 취약점 데이터가 부족합니다.",
+            },
+            status=400,
+        )
+    except StudyPlanExtraBlockCompletionRequired:
+        return JsonResponse(
+            {
+                "ok": False,
+                "error": "오늘의 학습 문제를 모두 푼 뒤 추가학습을 만들 수 있습니다.",
+            },
+            status=400,
+        )
+
+    if updated_plan is None:
         return JsonResponse({"ok": False}, status=404)
 
     return JsonResponse({"ok": True})

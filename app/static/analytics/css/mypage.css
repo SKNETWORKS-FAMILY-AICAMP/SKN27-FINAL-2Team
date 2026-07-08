@@ -841,6 +841,7 @@ a {
 }
 
 .planner-change,
+.planner-extra,
 .planner-create {
   min-height: 38px;
   padding: 0 18px;
@@ -850,6 +851,19 @@ a {
   color: var(--accent);
   font-weight: 950;
   cursor: pointer;
+}
+
+.planner-extra {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
+
+.planner-change:disabled,
+.planner-extra:disabled,
+.planner-create:disabled {
+  cursor: wait;
+  opacity: 0.68;
 }
 
 .planner-create {
@@ -895,7 +909,16 @@ a {
   min-width: 0;
 }
 
-.planner-day-top .planner-change {
+.planner-day-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.planner-day-top .planner-change,
+.planner-day-top .planner-extra {
   flex-shrink: 0;
 }
 

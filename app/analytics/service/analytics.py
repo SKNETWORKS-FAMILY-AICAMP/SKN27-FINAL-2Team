@@ -778,18 +778,25 @@ def get_scope_status_class(total_count, wrong_rate):
     """
     분석 요약 카드의 상태 클래스를 정한다.
     """
+    stable_rate_threshold = get_wrong_rate_stable_threshold()
     weak_rate_threshold = get_wrong_rate_weak_threshold()
-    status_class = "stable"
+    status_class = "neutral"
     if not total_count:
         status_class = "empty"
     elif wrong_rate >= weak_rate_threshold:
         status_class = "weak"
+    elif wrong_rate <= stable_rate_threshold:
+        status_class = "stable"
 
     return status_class
 
 
-def get_wrong_rate_weak_threshold():
+def get_wrong_rate_stable_threshold():
     return 30
+
+
+def get_wrong_rate_weak_threshold():
+    return 70
 
 
 def format_period_label(period_start, period_end):
@@ -2085,12 +2092,15 @@ def build_session_top_weak_items(groups):
     세션 안의 시대/유형/주제 취약 항목을 한 목록으로 합쳐 상위 항목만 반환한다.
     """
     display_limit = 5
+    weak_rate_threshold = get_wrong_rate_weak_threshold()
     weak_items = []
     for group in groups:
         for item in group["items"]:
-            if item["wrongCount"] > 0:
+            if item["wrongRate"] >= weak_rate_threshold:
                 weak_items.append(item)
 
+    # TODO: ML 기반 출제가능성 점수가 연결되면 오답률 동률 시 출제가능성을
+    # wrongCount/totalCount보다 먼저 비교해 TOP 취약 항목을 정렬한다.
     return sorted(
         weak_items,
         key=lambda item: (

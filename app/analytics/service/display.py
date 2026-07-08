@@ -1,6 +1,9 @@
 from datetime import date, datetime, timedelta
 
-from analytics.service.analytics import get_wrong_rate_weak_threshold
+from analytics.service.analytics import (
+    get_wrong_rate_stable_threshold,
+    get_wrong_rate_weak_threshold,
+)
 from analytics.service.studyplan import get_study_plan_config
 
 
@@ -39,6 +42,10 @@ def build_planner_summary(study_plans, today):
     daily_delete_count_key = config["daily_delete_count_key"]
     daily_delete_count_date_key = config["daily_delete_count_date_key"]
     plans_by_date = {}
+    plan_learning_completion = build_plan_learning_completion_lookup(
+        study_plans,
+        weekly_review_block_type,
+    )
 
     for study_plan in study_plans:
         study_plan_id = study_plan.get("studyPlanId")
@@ -89,6 +96,11 @@ def build_planner_summary(study_plans, today):
                     is_future_plan = plan_date > today
                     show_start = not is_past_plan
                     can_start = plan_date == today and not is_achieved
+                    if is_weekly_review:
+                        can_start = (
+                            can_start
+                            and plan_learning_completion.get(study_plan_id, False)
+                        )
                     if is_weekly_review and is_achieved:
                         can_start = False
                         start_label = "주간 평가 완료"
@@ -207,6 +219,15 @@ def build_planner_summary(study_plans, today):
         or is_finished_legacy_plan
         or is_empty_active_plan
     )
+    show_add_extra_study = has_active_plan and not can_create_plan
+    can_add_extra_study = (
+        show_add_extra_study
+        and is_due_learning_plan_completed(
+            study_plans,
+            today,
+            weekly_review_block_type,
+        )
+    )
     create_plan_label = ""
     if not has_active_plan or is_empty_active_plan:
         create_plan_label = "7일 계획 만들기"
@@ -226,6 +247,8 @@ def build_planner_summary(study_plans, today):
         "selected_items": plans_by_date.get(selected_key, []),
         "has_active_plan": has_active_plan,
         "can_create_plan": can_create_plan,
+        "show_add_extra_study": show_add_extra_study,
+        "can_add_extra_study": can_add_extra_study,
         "can_move_plan": has_active_plan and not can_create_plan,
         "create_plan_label": create_plan_label,
         "create_plan_confirm": create_plan_confirm,
@@ -236,6 +259,54 @@ def build_planner_summary(study_plans, today):
             "progressByDate": progress_by_date,
         },
     }
+
+
+def build_plan_learning_completion_lookup(study_plans, weekly_review_block_type):
+    completion_lookup = {}
+    for study_plan in study_plans:
+        study_plan_id = study_plan.get("studyPlanId")
+        learning_blocks = []
+        for day_plan in study_plan.get("plans", []):
+            for block in day_plan.get("blocks", []):
+                if is_learning_plan_block(block, weekly_review_block_type):
+                    learning_blocks.append(block)
+
+        completion_lookup[study_plan_id] = bool(learning_blocks) and all(
+            bool(block.get("isAchieved") or block.get("isCompleted"))
+            for block in learning_blocks
+        )
+
+    return completion_lookup
+
+
+def is_learning_plan_block(block, weekly_review_block_type):
+    block_type = block.get("blockType")
+    if block_type == weekly_review_block_type:
+        return False
+    if block_type == "review":
+        return False
+
+    return True
+
+
+def is_due_learning_plan_completed(study_plans, today, weekly_review_block_type):
+    learning_blocks = []
+    for study_plan in study_plans:
+        for day_plan in study_plan.get("plans", []):
+            plan_date = parse_display_date(day_plan.get("date"))
+            if plan_date is None:
+                continue
+            if plan_date > today:
+                continue
+
+            for block in day_plan.get("blocks", []):
+                if is_learning_plan_block(block, weekly_review_block_type):
+                    learning_blocks.append(block)
+
+    return bool(learning_blocks) and all(
+        bool(block.get("isAchieved") or block.get("isCompleted"))
+        for block in learning_blocks
+    )
 
 
 def apply_overdue_plan_display(plans_by_date, today):
@@ -442,6 +513,7 @@ def build_wrong_rate_display(stats):
     평균 풀이시간은 MM:SS 문자열로 바꾸고, 오답률 기준으로
     취약/안정/데이터 부족 상태 라벨과 CSS 클래스를 부여한다.
     """
+    stable_rate_threshold = get_wrong_rate_stable_threshold()
     weak_rate_threshold = get_wrong_rate_weak_threshold()
     display_items = []
     for stat in stats:
@@ -454,13 +526,15 @@ def build_wrong_rate_display(stats):
             minutes, seconds = divmod(total_seconds, 60)
             average_time_label = f"{minutes:02d}:{seconds:02d}"
 
+        status_label = ""
+        status_class = "neutral"
         if not total:
             status_label = "데이터 부족"
             status_class = "empty"
         elif rate >= weak_rate_threshold:
             status_label = "취약"
             status_class = "weak"
-        elif rate < weak_rate_threshold:
+        elif rate <= stable_rate_threshold:
             status_label = "안정"
             status_class = "stable"
 
@@ -476,6 +550,8 @@ def build_wrong_rate_display(stats):
             }
         )
 
+    # TODO: ML 기반 출제가능성 점수가 연결되면 오답률 동률 시 출제가능성을
+    # wrong/total보다 먼저 비교해 시험에 더 나올 법한 항목을 우선 노출한다.
     return sorted(
         display_items,
         key=lambda item: (-item["rate"], -item["total"], item["label"]),

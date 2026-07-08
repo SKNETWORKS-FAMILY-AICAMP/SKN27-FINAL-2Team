@@ -172,9 +172,20 @@
                 <span id="plannerDayKicker">오늘의 계획</span>
                 <strong id="plannerDayLabel">{{ planner_summary.day_label }}</strong>
               </div>
-              {% if planner_summary.can_move_plan %}
-                <button class="planner-change" id="openPlanModal" type="button">학습일 변경</button>
-              {% endif %}
+              <div class="planner-day-actions">
+                {% if planner_summary.can_move_plan %}
+                  <button class="planner-change" id="openPlanModal" type="button">학습일 변경</button>
+                {% endif %}
+                {% if planner_summary.show_add_extra_study %}
+                  <button
+                    class="planner-extra"
+                    id="addExtraStudy"
+                    type="button"
+                    data-can-add="{{ planner_summary.can_add_extra_study|yesno:'true,false' }}"
+                    {% if not planner_summary.can_add_extra_study %}disabled{% endif %}
+                  >추가학습</button>
+                {% endif %}
+              </div>
             </div>
 
             <div class="plan-list planner-lessons" id="plannerLessons">
@@ -277,6 +288,8 @@
   <script>
     const plannerModal = document.getElementById("plannerModal");
     const openPlanModal = document.getElementById("openPlanModal");
+    const addExtraStudy = document.getElementById("addExtraStudy");
+    const canAddExtraStudy = addExtraStudy?.dataset.canAdd === "true";
     const createPlanForm = document.getElementById("createPlanForm");
     const closePlanModal = document.getElementById("closePlanModal");
     const cancelPlanModal = document.getElementById("cancelPlanModal");
@@ -588,6 +601,9 @@
         plannerDayKicker.textContent = "예정된 계획";
       }
       plannerDayLabel.textContent = `${String(monthValue).padStart(2, "0")}월 ${String(dayValue).padStart(2, "0")}일`;
+      if (addExtraStudy) {
+        addExtraStudy.disabled = !canAddExtraStudy || selectedPlannerKey !== todayKey;
+      }
       renderPlannerPlanItems(getPlansByDateKey(selectedPlannerKey), "오늘 표시할 일정 없음");
     };
 
@@ -695,6 +711,22 @@
       }
     };
 
+    const addExtraStudyBlock = async (button) => {
+      button.disabled = true;
+      try {
+        await postPlannerJson(
+          "{% url 'analytics:study_plan_block_add' %}",
+          {
+            targetDate: selectedPlannerKey,
+          },
+        );
+        window.location.reload();
+      } catch (error) {
+        button.disabled = false;
+        alert(error.message);
+      }
+    };
+
     const setPlannerModal = (isOpen) => {
       plannerModal.hidden = !isOpen;
       document.body.classList.toggle("modal-open", isOpen);
@@ -721,6 +753,12 @@
       openPlanModal.addEventListener("click", () => {
         renderPlannerMoveItems();
         setPlannerModal(true);
+      });
+    }
+    if (addExtraStudy) {
+      addExtraStudy.addEventListener("click", () => {
+        if (addExtraStudy.disabled) return;
+        addExtraStudyBlock(addExtraStudy);
       });
     }
     closePlanModal.addEventListener("click", () => setPlannerModal(false));
