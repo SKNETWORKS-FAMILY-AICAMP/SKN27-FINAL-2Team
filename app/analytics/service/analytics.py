@@ -778,7 +778,7 @@ def get_scope_status_class(total_count, wrong_rate):
     """
     분석 요약 카드의 상태 클래스를 정한다.
     """
-    weak_rate_threshold = 20
+    weak_rate_threshold = get_wrong_rate_weak_threshold()
     status_class = "stable"
     if not total_count:
         status_class = "empty"
@@ -786,6 +786,10 @@ def get_scope_status_class(total_count, wrong_rate):
         status_class = "weak"
 
     return status_class
+
+
+def get_wrong_rate_weak_threshold():
+    return 30
 
 
 def format_period_label(period_start, period_end):
@@ -936,15 +940,14 @@ def get_first_diagnosis_summary(user_id):
 
 def get_diagnosis_improvement_summary(user_id, today=None):
     """
-    첫 진단평가 기준의 개선 정도를 계산한다.
+    최신 진단평가 두 회차 사이의 개선 정도를 계산한다.
 
-    진단평가 이후 완료한 주간평가를 첫 진단평가 대비 향상도로 비교한다.
+    completed diagnostic 세션을 시간순으로 보고, 1회차-2회차 또는
+    직전 회차-최신 회차처럼 인접한 두 진단평가의 정답률과 풀이시간을 비교한다.
     """
-    diagnosis_summary = get_first_diagnosis_summary(user_id)
-    post_diagnosis_summary = get_post_diagnosis_weekly_review_summary(
-        user_id,
-        diagnosis_summary,
-    )
+    diagnosis_pair = get_diagnosis_comparison_pair(user_id)
+    diagnosis_summary = diagnosis_pair["diagnosis"]
+    post_diagnosis_summary = diagnosis_pair["current"]
     has_comparison = (
         diagnosis_summary["hasRecords"]
         and post_diagnosis_summary["hasRecords"]
@@ -971,13 +974,80 @@ def get_diagnosis_improvement_summary(user_id, today=None):
         "averageQuestionTimeChangeSec": average_question_time_change_sec,
         "hasComparison": has_comparison,
         "hasDiagnosis": diagnosis_summary["hasRecords"],
-        "hasWeeklyReviewPlan": post_diagnosis_summary["hasWeeklyReviewPlan"],
+        "hasWeeklyReviewPlan": bool(get_weekly_review_block_refs(user_id)),
         "hasPostDiagnosisPractice": has_post_diagnosis_practice_records(
             user_id,
             diagnosis_summary,
             today,
         ),
+        "diagnosisSessionCount": diagnosis_pair["diagnosisSessionCount"],
     }
+
+
+def get_diagnosis_comparison_pair(user_id):
+    sessions = list(get_completed_diagnostic_sessions(user_id))
+    if len(sessions) >= 2:
+        previous_session = sessions[-2]
+        current_session = sessions[-1]
+        return {
+            "diagnosis": build_diagnosis_session_summary(
+                previous_session,
+                len(sessions) - 1,
+            ),
+            "current": build_diagnosis_session_summary(
+                current_session,
+                len(sessions),
+            ),
+            "diagnosisSessionCount": len(sessions),
+        }
+
+    if sessions:
+        return {
+            "diagnosis": build_diagnosis_session_summary(sessions[0], 1),
+            "current": build_empty_diagnosis_session_summary(),
+            "diagnosisSessionCount": 1,
+        }
+
+    return {
+        "diagnosis": build_empty_diagnosis_session_summary(),
+        "current": build_empty_diagnosis_session_summary(),
+        "diagnosisSessionCount": 0,
+    }
+
+
+def get_completed_diagnostic_sessions(user_id):
+    completed_status = "completed"
+    diagnostic_type = "diagnostic"
+    return SolveSessions.objects.filter(
+        user_id=user_id,
+        status=completed_status,
+        session_type=diagnostic_type,
+    ).order_by("recorded_date", "session_id")
+
+
+def build_diagnosis_session_summary(session, session_number):
+    records = SolveRecords.objects.filter(session=session)
+    summary = build_record_summary(records)
+    summary["recordedDate"] = session.recorded_date
+    summary["sessionId"] = session.session_id
+    summary["sessionNumber"] = session_number
+    summary["sessionLabel"] = f"{session_number}회차 진단평가"
+    summary["averageSessionTimeSec"] = session.elapsed_sec
+    summary["periodStart"] = session.recorded_date
+    summary["periodEnd"] = session.recorded_date
+    return summary
+
+
+def build_empty_diagnosis_session_summary():
+    summary = build_record_summary(SolveRecords.objects.none())
+    summary["recordedDate"] = None
+    summary["sessionId"] = None
+    summary["sessionNumber"] = None
+    summary["sessionLabel"] = "진단평가"
+    summary["averageSessionTimeSec"] = None
+    summary["periodStart"] = None
+    summary["periodEnd"] = None
+    return summary
 
 
 def get_post_diagnosis_weekly_review_summary(user_id, diagnosis_summary):
@@ -991,7 +1061,15 @@ def get_post_diagnosis_weekly_review_summary(user_id, diagnosis_summary):
     summary["periodStart"] = None
     summary["periodEnd"] = None
     if not block_refs:
-        return summary
+        fallback_sessions = get_post_diagnosis_diagnostic_sessions(
+            user_id,
+            diagnosis_summary,
+        )
+        records = SolveRecords.objects.filter(session__in=fallback_sessions)
+        if not records.exists():
+            return summary
+
+        return build_post_diagnosis_review_summary(records, bool(block_refs))
 
     records = get_weekly_review_records(user_id, block_refs)
     if diagnosis_summary["recordedDate"] is not None:
@@ -1000,7 +1078,17 @@ def get_post_diagnosis_weekly_review_summary(user_id, diagnosis_summary):
             diagnosis_summary["recordedDate"],
             diagnosis_summary["sessionId"],
         )
+    if not records.exists():
+        fallback_sessions = get_post_diagnosis_diagnostic_sessions(
+            user_id,
+            diagnosis_summary,
+        )
+        records = SolveRecords.objects.filter(session__in=fallback_sessions)
 
+    return build_post_diagnosis_review_summary(records, bool(block_refs))
+
+
+def build_post_diagnosis_review_summary(records, has_weekly_review_plan):
     sessions = SolveSessions.objects.filter(
         session_id__in=records.values_list("session_id", flat=True).distinct(),
     )
@@ -1019,8 +1107,26 @@ def get_post_diagnosis_weekly_review_summary(user_id, diagnosis_summary):
     summary["averageSessionTimeSec"] = average_session_time_sec
     summary["periodStart"] = period_bounds["period_start"]
     summary["periodEnd"] = period_bounds["period_end"]
-    summary["hasWeeklyReviewPlan"] = bool(block_refs)
+    summary["hasWeeklyReviewPlan"] = has_weekly_review_plan
     return summary
+
+
+def get_post_diagnosis_diagnostic_sessions(user_id, diagnosis_summary):
+    completed_status = "completed"
+    diagnostic_type = "diagnostic"
+    sessions = SolveSessions.objects.filter(
+        user_id=user_id,
+        status=completed_status,
+        session_type=diagnostic_type,
+    )
+    if diagnosis_summary["recordedDate"] is not None:
+        sessions = filter_sessions_after(
+            sessions,
+            diagnosis_summary["recordedDate"],
+            diagnosis_summary["sessionId"],
+        )
+
+    return sessions
 
 
 def get_weekly_review_block_refs(user_id):

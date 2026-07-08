@@ -47,14 +47,14 @@
     <section class="improvement-grid" aria-label="진단평가 비교">
       {% if diagnosis_comparison.has_records %}
         <article class="improvement-card {{ diagnosis_comparison.answer.tone }}">
-          <span>첫 진단평가 대비 정답률</span>
+          <span>이전 진단평가 대비 정답률</span>
           <strong>{{ diagnosis_comparison.answer.change_label }}</strong>
-          <p>진단평가 {{ diagnosis_comparison.answer.diagnosis_rate }}% → 주간평가 {{ diagnosis_comparison.answer.current_rate }}%</p>
+          <p>{{ diagnosis_comparison.answer.diagnosis_label }} {{ diagnosis_comparison.answer.diagnosis_rate }}% → {{ diagnosis_comparison.answer.current_label }} {{ diagnosis_comparison.answer.current_rate }}%</p>
         </article>
         <article class="improvement-card {{ diagnosis_comparison.time.tone }}">
-          <span>첫 진단평가 대비 문제당 평균 풀이시간</span>
+          <span>이전 진단평가 대비 문제당 평균 풀이시간</span>
           <strong>{{ diagnosis_comparison.time.change_label }}</strong>
-          <p>진단평가 문제당 {{ diagnosis_comparison.time.diagnosis_time }} → 주간평가 문제당 {{ diagnosis_comparison.time.current_time }}</p>
+          <p>{{ diagnosis_comparison.time.diagnosis_label }} 문제당 {{ diagnosis_comparison.time.diagnosis_time }} → {{ diagnosis_comparison.time.current_label }} 문제당 {{ diagnosis_comparison.time.current_time }}</p>
         </article>
       {% endif %}
       {% if not diagnosis_comparison.has_records %}
@@ -101,8 +101,14 @@
               {% for item in wrong_type_summary.items %}
                 <li style="--type-rate: {{ item.rate }}%;">
                   <i class="donut-type-chart"></i>
-                  <span>{{ item.label }}</span>
+                  <span class="donut-type-label">
+                    {{ item.label }}
+                    <small>{{ item.wrong }}/{{ item.total }} 오답</small>
+                  </span>
                   <strong>{{ item.rate }}%</strong>
+                  <div class="donut-rate-bar" aria-hidden="true">
+                    <b style="width: {{ item.rate }}%"></b>
+                  </div>
                 </li>
               {% endfor %}
             {% endif %}
@@ -184,20 +190,22 @@
                   </div>
                   <em class="plan-progress-count">{{ item.achievedCount }}/{{ item.questionCount }}</em>
                   <div class="plan-actions">
-                    <button
-                      class="plan-start-button"
-                      type="button"
-                      data-study-plan-id="{{ item.studyPlanId }}"
-                      data-block-id="{{ item.blockId }}"
-                      data-classification="{{ item.classification }}"
-                      data-label="{{ item.label }}"
-                      data-era="{{ item.era }}"
-                      data-topic="{{ item.topic }}"
-                      data-q-type="{{ item.qType }}"
-                      data-question-count="{{ item.questionCount|default:10 }}"
-                      data-is-weekly-review="{% if item.isWeeklyReview %}true{% else %}false{% endif %}"
-                      {% if not item.canStart %}disabled aria-disabled="true"{% endif %}
-                    >{{ item.startLabel }}</button>
+                    {% if item.showStart %}
+                      <button
+                        class="plan-start-button"
+                        type="button"
+                        data-study-plan-id="{{ item.studyPlanId }}"
+                        data-block-id="{{ item.blockId }}"
+                        data-classification="{{ item.classification }}"
+                        data-label="{{ item.label }}"
+                        data-era="{{ item.era }}"
+                        data-topic="{{ item.topic }}"
+                        data-q-type="{{ item.qType }}"
+                        data-question-count="{{ item.questionCount|default:10 }}"
+                        data-is-weekly-review="{% if item.isWeeklyReview %}true{% else %}false{% endif %}"
+                        {% if not item.canStart %}disabled aria-disabled="true"{% endif %}
+                      >{{ item.startLabel }}</button>
+                    {% endif %}
                     {% if item.canDelete %}
                       <button
                         class="plan-delete-button"
@@ -448,6 +456,29 @@
       return "";
     };
 
+    const renderPlanStartButton = (plan) => {
+      if (plan.showStart === false) {
+        return "";
+      }
+
+      return `
+        <button
+          class="plan-start-button"
+          type="button"
+          data-study-plan-id="${plan.studyPlanId || ""}"
+          data-block-id="${escapeHtml(plan.blockId || "")}"
+          data-classification="${escapeHtml(plan.classification || "")}"
+          data-label="${escapeHtml(plan.label || "")}"
+          data-era="${escapeHtml(plan.era || "")}"
+          data-topic="${escapeHtml(plan.topic || "")}"
+          data-q-type="${escapeHtml(plan.qType || "")}"
+          data-question-count="${plan.questionCount || 10}"
+          data-is-weekly-review="${plan.isWeeklyReview ? "true" : "false"}"
+          ${renderDisabledAttribute(plan.canStart)}
+        >${escapeHtml(plan.startLabel || "문제 풀기")}</button>
+      `;
+    };
+
     const renderPlanItem = (plan) => `
       <article class="plan-item${plan.done ? " done" : ""}" data-date-key="${plan.dateKey}" data-plan-index="${plan.planIndex}">
         <i></i>
@@ -458,20 +489,7 @@
         </div>
         <em class="plan-progress-count">${plan.achievedCount || 0}/${plan.questionCount || 0}</em>
         <div class="plan-actions">
-          <button
-            class="plan-start-button"
-            type="button"
-            data-study-plan-id="${plan.studyPlanId || ""}"
-            data-block-id="${escapeHtml(plan.blockId || "")}"
-            data-classification="${escapeHtml(plan.classification || "")}"
-            data-label="${escapeHtml(plan.label || "")}"
-            data-era="${escapeHtml(plan.era || "")}"
-            data-topic="${escapeHtml(plan.topic || "")}"
-            data-q-type="${escapeHtml(plan.qType || "")}"
-            data-question-count="${plan.questionCount || 10}"
-            data-is-weekly-review="${plan.isWeeklyReview ? "true" : "false"}"
-            ${renderDisabledAttribute(plan.canStart)}
-          >${escapeHtml(plan.startLabel || "문제 풀기")}</button>
+          ${renderPlanStartButton(plan)}
           ${renderPlanDeleteButton(plan)}
         </div>
       </article>
@@ -501,9 +519,6 @@
       if (progress.state === "future") {
         return "";
       }
-      if (progress.state === "today") {
-        return "";
-      }
 
       return ` style="--day-progress-hue: ${progress.hue}; --day-progress-percent: ${progress.percent}%;"`;
     };
@@ -530,7 +545,7 @@
           if (key === selectedPlannerKey) classes.push("selected");
           if (completedKeys.has(key)) classes.push("done");
           if (plannedKeys.has(key)) classes.push("planned");
-          if (progress && progress.state !== "future" && progress.state !== "today") {
+          if (progress && progress.state !== "future") {
             classes.push("progress-tracked", `progress-${progress.state}`);
           }
 

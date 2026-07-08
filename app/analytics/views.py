@@ -40,6 +40,7 @@ from analytics.service.studyplan import (
     complete_study_plan_block,
     create_study_plan,
     delete_study_plan_block,
+    ensure_today_study_plan,
     get_study_plan_info,
     move_study_plan_blocks,
 )
@@ -49,6 +50,7 @@ from analytics.service.studyplan import (
 def mypage(request):
     user_id = request.user.user_id
     today = timezone.localdate()
+    ensure_today_study_plan(user_id, today)
     study_plan = get_study_plan_info(user_id)
     planner_summary = build_planner_summary(study_plan, today)
     wrong_type_summary = build_wrong_type_summary(request.user, today)

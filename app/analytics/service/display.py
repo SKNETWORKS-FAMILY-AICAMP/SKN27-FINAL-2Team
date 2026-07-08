@@ -1,5 +1,6 @@
 from datetime import date, datetime, timedelta
 
+from analytics.service.analytics import get_wrong_rate_weak_threshold
 from analytics.service.studyplan import get_study_plan_config
 
 
@@ -84,12 +85,19 @@ def build_planner_summary(study_plans, today):
                     elif plan_date == today:
                         status_label = today_label
 
+                    is_past_plan = plan_date < today
                     is_future_plan = plan_date > today
-                    can_start = not is_future_plan
+                    show_start = not is_past_plan
+                    can_start = plan_date == today and not is_achieved
                     if is_weekly_review and is_achieved:
                         can_start = False
                         start_label = "주간 평가 완료"
-                    can_delete = not is_weekly_review and can_start and can_delete_more
+                    can_delete = (
+                        not is_weekly_review
+                        and plan_date == today
+                        and not is_achieved
+                        and can_delete_more
+                    )
                     meta_parts = [status_label]
                     classification = block.get("classification")
                     label = block.get("label")
@@ -157,6 +165,7 @@ def build_planner_summary(study_plans, today):
                             "statusLabel": block_status_label,
                             "canConfirm": progress_mode == "review" and not is_achieved,
                             "isWeeklyReview": is_weekly_review,
+                            "showStart": show_start,
                             "canStart": can_start,
                             "canDelete": can_delete,
                             "deleteCount": today_delete_count,
@@ -164,6 +173,8 @@ def build_planner_summary(study_plans, today):
                             "startLabel": start_label,
                         }
                     )
+
+    plans_by_date = apply_overdue_plan_display(plans_by_date, today)
 
     completed_keys = []
     planned_keys = []
@@ -225,6 +236,65 @@ def build_planner_summary(study_plans, today):
             "progressByDate": progress_by_date,
         },
     }
+
+
+def apply_overdue_plan_display(plans_by_date, today):
+    today_key = today.isoformat()
+    overdue_key = find_earliest_overdue_plan_key(plans_by_date, today_key)
+    if not overdue_key:
+        return plans_by_date
+
+    overdue_items = []
+    remaining_overdue_items = []
+    for item in plans_by_date.get(overdue_key, []):
+        if is_overdue_plan_item(item):
+            overdue_items.append(build_today_overdue_plan_item(item))
+        elif not is_overdue_plan_item(item):
+            remaining_overdue_items.append(item)
+
+    if not overdue_items:
+        return plans_by_date
+
+    updated_plans_by_date = {
+        date_key: list(plan_items)
+        for date_key, plan_items in plans_by_date.items()
+    }
+    if remaining_overdue_items:
+        updated_plans_by_date[overdue_key] = remaining_overdue_items
+    elif not remaining_overdue_items:
+        updated_plans_by_date.pop(overdue_key, None)
+
+    today_items = updated_plans_by_date.get(today_key, [])
+    preserved_today_items = [
+        item
+        for item in today_items
+        if item.get("isWeeklyReview") or item.get("done")
+    ]
+    updated_plans_by_date[today_key] = overdue_items + preserved_today_items
+    return updated_plans_by_date
+
+
+def find_earliest_overdue_plan_key(plans_by_date, today_key):
+    for date_key in sorted(plans_by_date):
+        if date_key >= today_key:
+            continue
+        if any(is_overdue_plan_item(item) for item in plans_by_date[date_key]):
+            return date_key
+
+    return ""
+
+
+def is_overdue_plan_item(item):
+    return not item.get("done") and not item.get("isWeeklyReview")
+
+
+def build_today_overdue_plan_item(item):
+    overdue_item = item.copy()
+    overdue_item["showStart"] = True
+    overdue_item["canStart"] = True
+    overdue_item["canDelete"] = False
+    overdue_item["meta"] = f"오늘 · 이월 · {item.get('meta', '')}".strip(" ·")
+    return overdue_item
 
 
 def build_calendar_progress_by_date(plans_by_date, today):
@@ -372,7 +442,7 @@ def build_wrong_rate_display(stats):
     평균 풀이시간은 MM:SS 문자열로 바꾸고, 오답률 기준으로
     취약/안정/데이터 부족 상태 라벨과 CSS 클래스를 부여한다.
     """
-    weak_rate_threshold = 20
+    weak_rate_threshold = get_wrong_rate_weak_threshold()
     display_items = []
     for stat in stats:
         total = stat["total"] or 0

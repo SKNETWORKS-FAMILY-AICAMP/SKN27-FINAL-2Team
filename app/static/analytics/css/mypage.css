@@ -454,11 +454,16 @@ a {
 .donut-layout li {
   display: grid;
   grid-template-columns: 32px minmax(0, 1fr) auto;
+  grid-template-areas:
+    "chart label rate"
+    "chart bar bar";
   gap: 8px;
   align-items: center;
+  padding: 2px 0;
 }
 
 .donut-layout .donut-type-chart {
+  grid-area: chart;
   position: relative;
   width: 32px;
   height: 32px;
@@ -486,12 +491,41 @@ a {
   white-space: nowrap;
 }
 
+.donut-layout .donut-type-label {
+  grid-area: label;
+  display: grid;
+  gap: 3px;
+}
+
+.donut-layout .donut-type-label small {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+}
+
 .donut-layout li strong {
+  grid-area: rate;
   color: var(--ink);
   font-size: 13px;
   line-height: 1;
   font-weight: 950;
   white-space: nowrap;
+}
+
+.donut-rate-bar {
+  grid-area: bar;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--donut-empty);
+}
+
+.donut-rate-bar b {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--type-color);
 }
 
 .donut-layout li:nth-child(1) { --type-color: var(--donut-segment-1); }
@@ -1772,6 +1806,29 @@ body.modal-open {
   background: var(--accent);
   color: #fff;
   box-shadow: 0 12px 24px rgba(22, 51, 0, 0.18);
+}
+
+.planner-panel .calendar-week button.today.progress-tracked {
+  border-color: hsl(var(--day-progress-hue) 68% 38% / 0.46);
+  background:
+    linear-gradient(
+      180deg,
+      hsl(var(--day-progress-hue) 78% 94%),
+      hsl(var(--day-progress-hue) 74% 88%)
+    );
+  color: #24301f;
+}
+
+.planner-panel .calendar-week button.today.progress-complete {
+  border-color: rgba(44, 143, 72, 0.48);
+  background: #eefeeb;
+  color: #185a2e;
+}
+
+.planner-panel .calendar-week button.today.progress-empty {
+  border-color: rgba(190, 52, 42, 0.48);
+  background: #fff0ee;
+  color: #8f241d;
 }
 
 .planner-panel .calendar-week button.selected {

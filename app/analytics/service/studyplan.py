@@ -108,6 +108,145 @@ def get_study_plan_info(user_id):
     return serialize_study_plans_with_progress(user_id, study_plans, daily_available_minutes)
 
 
+def ensure_today_study_plan(user_id, today=None):
+    should_create_plan = False
+
+    with transaction.atomic():
+        study_plan = get_active_study_plans(user_id, lock=True).first()
+        if study_plan is None:
+            should_create_plan = True
+
+    if should_create_plan:
+        return create_study_plan(user_id)
+
+    return None
+
+
+def save_study_plan_items(user_id, study_plan, plan_items):
+    start_date, end_date = get_plan_date_range(plan_items)
+    completion_stats = calculate_plan_completion(plan_items)
+    study_plan.study_plan_items = format_plan_items(plan_items)
+    study_plan.start_date = start_date
+    study_plan.end_date = end_date
+    study_plan.completion_rate = completion_stats["completion_rate"]
+    study_plan.modified_at = timezone.now()
+    study_plan.save(
+        update_fields=[
+            "study_plan_items",
+            "start_date",
+            "end_date",
+            "completion_rate",
+            "modified_at",
+        ],
+    )
+    daily_available_minutes = get_daily_available_minutes(user_id)
+    return serialize_study_plan(study_plan, daily_available_minutes)
+
+
+def carry_over_incomplete_past_blocks_to_today(plan_items, today):
+    today_key = today.isoformat()
+    target_day_plan = get_or_create_study_plan_day(plan_items, today_key)
+    moved_blocks = []
+    changed = False
+
+    for day_plan in plan_items:
+        plan_date = parse_study_plan_day_date(day_plan)
+        if plan_date is None:
+            continue
+        if plan_date >= today:
+            continue
+
+        blocks = day_plan.get("blocks", [])
+        remaining_blocks = []
+        for block in blocks:
+            if block.get("isCompleted"):
+                remaining_blocks.append(block)
+            elif not block.get("isCompleted"):
+                moved_blocks.append(block)
+
+        if len(remaining_blocks) != len(blocks):
+            day_plan["blocks"] = remaining_blocks
+            changed = True
+
+    if moved_blocks:
+        target_day_plan.setdefault("blocks", []).extend(moved_blocks)
+        changed = True
+
+    if changed:
+        plan_items = prune_empty_study_plan_days(plan_items)
+        plan_items = sorted(plan_items, key=lambda plan: str(plan.get("date", ""))[:10])
+
+    return {
+        "items": plan_items,
+        "changed": changed,
+    }
+
+
+def parse_study_plan_day_date(day_plan):
+    raw_date = str(day_plan.get("date", ""))[:10]
+    try:
+        return date.fromisoformat(raw_date)
+    except ValueError:
+        return None
+
+
+def get_or_create_study_plan_day(plan_items, date_key):
+    for day_plan in plan_items:
+        raw_date = str(day_plan.get("date", ""))[:10]
+        if raw_date == date_key:
+            return day_plan
+
+    day_plan = {"date": date_key, "blocks": []}
+    plan_items.append(day_plan)
+    return day_plan
+
+
+def prune_empty_study_plan_days(plan_items):
+    return [
+        day_plan
+        for day_plan in plan_items
+        if day_plan.get("blocks") or has_study_plan_day_delete_history(day_plan)
+    ]
+
+
+def has_study_plan_day_delete_history(day_plan):
+    config = get_study_plan_config()
+    delete_count_key = config["daily_delete_count_key"]
+    try:
+        return int(day_plan.get(delete_count_key) or 0) > 0
+    except (TypeError, ValueError):
+        return False
+
+
+def should_create_plan_for_today(study_plan, plan_items, today):
+    if has_study_plan_blocks_on_date(plan_items, today):
+        return False
+    if was_study_plan_touched_today(study_plan, today):
+        return False
+
+    return True
+
+
+def has_study_plan_blocks_on_date(plan_items, target_date):
+    target_key = target_date.isoformat()
+    for day_plan in plan_items:
+        raw_date = str(day_plan.get("date", ""))[:10]
+        if raw_date == target_key and day_plan.get("blocks"):
+            return True
+
+    return False
+
+
+def was_study_plan_touched_today(study_plan, today):
+    touched_at = study_plan.modified_at or study_plan.created_at
+    if touched_at is None:
+        return False
+    if timezone.is_naive(touched_at):
+        touched_at = timezone.make_aware(touched_at, timezone.get_current_timezone())
+
+    return timezone.localtime(touched_at).date() == today
+
+
 def get_previous_study_plan_info(user_id):
     """
     이전에 보관된 학습계획을 최신순으로 조회하고 풀이 기록 기반 달성률을 붙인다.

@@ -1,6 +1,7 @@
 from datetime import timedelta
 
 from django.db.models import Count, Q
+from django.utils import timezone
 
 from analytics.service.analytics import (
     calculate_percent_rate,
@@ -14,7 +15,7 @@ from analytics.service.analytics import (
 from analytics.service.studyplan import get_user_study_info
 
 
-def build_learning_summary(user):
+def build_learning_summary(user, today=None):
     """
     마이페이지 상단 학습 요약 카드에 필요한 데이터를 만든다.
 
@@ -23,21 +24,11 @@ def build_learning_summary(user):
     """
     completed_sessions = get_completed_sessions(user.user_id)
     weekly_summary = get_weekly_practice_summary(user.user_id)
-
-    solved_dates = completed_sessions.values_list("recorded_date", flat=True)
-    ordered_dates = sorted(
-        {study_date for study_date in solved_dates if study_date},
-        reverse=True,
+    base_date = today or timezone.localdate()
+    study_streak_days = calculate_current_study_streak(
+        completed_sessions,
+        base_date,
     )
-    study_streak_days = 0
-    if ordered_dates:
-        expected_date = ordered_dates[0]
-        for study_date in ordered_dates:
-            if study_date == expected_date:
-                study_streak_days += 1
-                expected_date -= timedelta(days=1)
-            elif study_date != expected_date:
-                break
 
     return {
         "answer_rate": weekly_summary["answerRate"],
@@ -48,11 +39,29 @@ def build_learning_summary(user):
     }
 
 
+def calculate_current_study_streak(completed_sessions, today):
+    solved_dates = {
+        study_date
+        for study_date in completed_sessions.values_list("recorded_date", flat=True)
+        if study_date
+    }
+    if today not in solved_dates:
+        return 0
+
+    study_streak_days = 0
+    expected_date = today
+    while expected_date in solved_dates:
+        study_streak_days += 1
+        expected_date -= timedelta(days=1)
+
+    return study_streak_days
+
+
 def build_diagnosis_comparison_summary(user):
     """
-    첫 진단평가 기준의 비교 요약을 만든다.
+    진단평가 회차 간 비교 요약을 만든다.
 
-    진단 이후 주간평가와의 비교를 화면 표시용 데이터로 변환한다.
+    최신 두 진단평가의 비교 결과를 화면 표시용 데이터로 변환한다.
     """
     comparison = get_diagnosis_improvement_summary(user.user_id)
     answer_display = _build_rate_change_display(comparison["answerRateChange"])
@@ -71,10 +80,14 @@ def build_diagnosis_comparison_summary(user):
         "answer": {
             "diagnosis_rate": comparison["diagnosis"]["answerRate"],
             "current_rate": comparison["current"]["answerRate"],
+            "diagnosis_label": comparison["diagnosis"]["sessionLabel"],
+            "current_label": comparison["current"]["sessionLabel"],
             "change_label": answer_display["label"],
             "tone": answer_display["tone"],
         },
         "time": {
+            "diagnosis_label": comparison["diagnosis"]["sessionLabel"],
+            "current_label": comparison["current"]["sessionLabel"],
             "diagnosis_time": _format_seconds(
                 comparison["diagnosis"]["averageQuestionTimeSec"],
             ),
@@ -94,24 +107,24 @@ def _build_diagnosis_comparison_empty_display(comparison):
     if not comparison["hasDiagnosis"]:
         return {
             "title": "진단평가 필요",
-            "description": "첫 진단평가를 완료하면 이후 주간평가와 비교할 수 있습니다.",
+            "description": "첫 진단평가를 완료하면 다음 진단평가와 비교할 수 있습니다.",
         }
 
     if comparison["hasPostDiagnosisPractice"]:
         return {
-            "title": "주간 평가 후 비교 가능",
-            "description": "일반 문제풀이 기록은 쌓였고, 7일차 주간평가 완료 후 진단평가와 비교됩니다.",
+            "title": "다음 진단평가 대기",
+            "description": "학습 기록은 쌓였고, 다음 진단평가를 완료하면 이전 진단평가와 비교됩니다.",
         }
 
     if comparison["hasWeeklyReviewPlan"]:
         return {
             "title": "비교 기준 준비 중",
-            "description": "7일 계획의 주간평가를 완료하면 진단평가 대비 개선도가 표시됩니다.",
+            "description": "7일차 진단평가를 완료하면 직전 진단평가 대비 개선도가 표시됩니다.",
         }
 
     return {
-        "title": "주간 계획 준비 중",
-        "description": "7일 학습계획을 생성하고 주간평가를 완료하면 진단평가와 비교됩니다.",
+        "title": "다음 진단평가 대기",
+        "description": "학습계획을 진행하고 다음 진단평가를 완료하면 정답률 변화를 볼 수 있습니다.",
     }
 
 
