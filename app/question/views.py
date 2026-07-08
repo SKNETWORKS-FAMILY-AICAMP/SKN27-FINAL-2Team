@@ -64,11 +64,6 @@ DETAIL_DIFFICULTY_RATIOS = {
     "중": {3: 1, 2: 3, 1: 1},
     "하": {3: 0, 2: 2, 1: 3},
 }
-DIFFICULTY_TO_SCORE = {
-    "상": 3,
-    "중": 2,
-    "하": 1,
-}
 PLACEHOLDER_CONTENT = "문항 이미지를 보고 정답을 선택하세요."
 ERA_REFERENCE_PATH = (
     Path(__file__).resolve().parents[2]
@@ -634,7 +629,7 @@ def question_filters(request):
             _ordered_existing_values(qs, "topic", topic_values)
             if topic_values else _distinct_values(qs, "topic")
         ),
-        "difficulties": ["상", "중", "하"],
+        "difficulties": list(DETAIL_DIFFICULTY_RATIOS.keys()),
         "question_types": ML_QUESTION_TYPE_FILTER_VALUES,
         "question_subtypes": ML_QUESTION_SUBTYPE_FILTER_VALUES,
         "counts": [10, 20, 30, 40, 50],
