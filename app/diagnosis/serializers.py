@@ -5,7 +5,13 @@ from rest_framework import serializers
 
 class DiagnosisStartRequestSerializer(serializers.Serializer):
     """POST /api/diagnosis/start/"""
-    pass  # 인증 연동 전까지 body 불필요 (user_id는 서버에서 하드코딩)
+    studyplan_id = serializers.IntegerField(required=False, allow_null=True, default=None)
+    study_plan_block_id = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        allow_null=True,
+        default=None,
+    )
 
 
 class ChoiceSerializer(serializers.Serializer):
