@@ -183,7 +183,6 @@ def build_planner_summary(study_plans, today):
                         }
                     )
 
-    plans_by_date = apply_overdue_plan_display(plans_by_date, today)
     visible_plans_by_date = build_visible_plans_by_date(plans_by_date, today)
 
     completed_keys = []
@@ -305,42 +304,6 @@ def is_due_learning_plan_completed(study_plans, today, weekly_review_block_type)
     )
 
 
-def apply_overdue_plan_display(plans_by_date, today):
-    today_key = today.isoformat()
-    overdue_key = find_earliest_overdue_plan_key(plans_by_date, today_key)
-    if not overdue_key:
-        return plans_by_date
-
-    overdue_items = []
-    remaining_overdue_items = []
-    for item in plans_by_date.get(overdue_key, []):
-        if is_overdue_plan_item(item):
-            overdue_items.append(build_today_overdue_plan_item(item))
-        elif not is_overdue_plan_item(item):
-            remaining_overdue_items.append(item)
-
-    if not overdue_items:
-        return plans_by_date
-
-    updated_plans_by_date = {
-        date_key: list(plan_items)
-        for date_key, plan_items in plans_by_date.items()
-    }
-    if remaining_overdue_items:
-        updated_plans_by_date[overdue_key] = remaining_overdue_items
-    elif not remaining_overdue_items:
-        updated_plans_by_date.pop(overdue_key, None)
-
-    today_items = updated_plans_by_date.get(today_key, [])
-    preserved_today_items = [
-        item
-        for item in today_items
-        if item.get("isWeeklyReview") or item.get("done")
-    ]
-    updated_plans_by_date[today_key] = overdue_items + preserved_today_items
-    return updated_plans_by_date
-
-
 def build_visible_plans_by_date(plans_by_date, today):
     today_key = today.isoformat()
     return {
@@ -350,46 +313,26 @@ def build_visible_plans_by_date(plans_by_date, today):
     }
 
 
-def find_earliest_overdue_plan_key(plans_by_date, today_key):
-    for date_key in sorted(plans_by_date):
-        if date_key >= today_key:
-            continue
-        if any(is_overdue_plan_item(item) for item in plans_by_date[date_key]):
-            return date_key
-
-    return ""
-
-
-def is_overdue_plan_item(item):
-    return not item.get("done") and not item.get("isWeeklyReview")
-
-
-def build_today_overdue_plan_item(item):
-    overdue_item = item.copy()
-    overdue_item["showStart"] = True
-    overdue_item["canStart"] = True
-    overdue_item["canDelete"] = False
-    overdue_item["meta"] = f"오늘 · 이월 · {item.get('meta', '')}".strip(" ·")
-    return overdue_item
-
-
 def build_calendar_progress_by_date(plans_by_date, today):
     progress_by_date = {}
     today_key = today.isoformat()
     for date_key, plan_items in plans_by_date.items():
         progress_percent = calculate_date_progress_percent(plan_items)
+        hue = get_progress_hue(progress_percent)
         state = "future"
         label = "예정"
         if date_key < today_key:
             state = get_past_progress_state(progress_percent)
             label = f"{progress_percent}%"
+            if state != "complete":
+                hue = get_progress_hue(0)
         elif date_key == today_key:
             state = "today"
             label = f"{progress_percent}%"
 
         progress_by_date[date_key] = {
             "percent": progress_percent,
-            "hue": get_progress_hue(progress_percent),
+            "hue": hue,
             "state": state,
             "label": label,
         }
