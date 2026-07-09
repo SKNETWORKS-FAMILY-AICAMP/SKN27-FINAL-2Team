@@ -142,8 +142,9 @@ def collect_details(kind: str, api_key: str, item_ids: list[str], sleep: float, 
             data = request_json(f"{path_prefix}/{urllib.parse.quote(item_id)}", api_key, timeout=timeout)
             append_jsonl(output_path, [data])
             print(f"{kind} detail {index}/{len(todo_ids)} id={item_id}")
-        except urllib.error.HTTPError as error:
+        except Exception as error:
             append_jsonl(OUTPUT_DIR / f"{kind}_errors.jsonl", [{"id": item_id, "error": str(error)}])
+            print(f"{kind} detail error {index}/{len(todo_ids)} id={item_id} ({error})")
         time.sleep(sleep)
 
 

@@ -239,3 +239,17 @@
 2026-07-08T11:15:57,feature-chatbot,53f36e0,Y,RAGAS Context Recall,정답에 필요한 근거를 검색 문맥이 포함하는지 평가,0.80,0.80 이상,PASS,RAGAS Framework (Context Recall)
 2026-07-08T11:15:57,feature-chatbot,53f36e0,Y,RAGAS Faithfulness,답변이 검색 근거에 충실한지 평가,0.93,0.80 이상,PASS,RAGAS Framework (Faithfulness)
 2026-07-08T11:15:57,feature-chatbot,53f36e0,Y,RAGAS Answer Relevance,답변이 질문 의도에 적합한지 평가,0.80,0.80 이상,PASS,RAGAS Framework (Answer Relevance)
+2026-07-08T21:58:57,feature-chatbot,a00421c,Y,연결성(Graph),노드 간 탐색 성공률,100.0%,95% 이상,PASS,Cypher Query 성능 테스트 및 접속 조사
+2026-07-08T21:58:57,feature-chatbot,a00421c,Y,검색 속도,LLM 생성 제외 쿼리 평균 소요 시간,3.66s,2.0s 이내,FAIL,pgvector/Graph 검색 지연시간 측정
+2026-07-08T21:58:57,feature-chatbot,a00421c,Y,LLM 답변 생성 속도,검색 이후 답변 생성 평균 소요 시간,4.90s,5.0s 이내,PASS,전체 응답 시간 - 검색 시간
+2026-07-08T21:58:57,feature-chatbot,a00421c,Y,RAGAS Context Precision,검색 문맥 중 질문과 관련 있는 문맥 비율,0.64,0.80 이상,FAIL,RAGAS Framework (Context Precision)
+2026-07-08T21:58:57,feature-chatbot,a00421c,Y,RAGAS Context Recall,정답에 필요한 근거를 검색 문맥이 포함하는지 평가,0.84,0.80 이상,PASS,RAGAS Framework (Context Recall)
+2026-07-08T21:58:57,feature-chatbot,a00421c,Y,RAGAS Faithfulness,답변이 검색 근거에 충실한지 평가,0.87,0.80 이상,PASS,RAGAS Framework (Faithfulness)
+2026-07-08T21:58:57,feature-chatbot,a00421c,Y,RAGAS Answer Relevance,답변이 질문 의도에 적합한지 평가,0.79,0.80 이상,FAIL,RAGAS Framework (Answer Relevance)
+2026-07-08T23:03:20,feature-chatbot,a00421c,Y,연결성(Graph),노드 간 탐색 성공률,100.0%,95% 이상,PASS,Cypher Query 성능 테스트 및 접속 조사
+2026-07-08T23:03:20,feature-chatbot,a00421c,Y,검색 속도,LLM 생성 제외 쿼리 평균 소요 시간,9.86s,2.0s 이내,FAIL,pgvector/Graph 검색 지연시간 측정
+2026-07-08T23:03:20,feature-chatbot,a00421c,Y,LLM 답변 생성 속도,검색 이후 답변 생성 평균 소요 시간,7.45s,5.0s 이내,FAIL,전체 응답 시간 - 검색 시간
+2026-07-08T23:03:20,feature-chatbot,a00421c,Y,RAGAS Context Precision,검색 문맥 중 질문과 관련 있는 문맥 비율,0.63,0.80 이상,FAIL,RAGAS Framework (Context Precision)
+2026-07-08T23:03:20,feature-chatbot,a00421c,Y,RAGAS Context Recall,정답에 필요한 근거를 검색 문맥이 포함하는지 평가,0.81,0.80 이상,PASS,RAGAS Framework (Context Recall)
+2026-07-08T23:03:20,feature-chatbot,a00421c,Y,RAGAS Faithfulness,답변이 검색 근거에 충실한지 평가,0.88,0.80 이상,PASS,RAGAS Framework (Faithfulness)
+2026-07-08T23:03:20,feature-chatbot,a00421c,Y,RAGAS Answer Relevance,답변이 질문 의도에 적합한지 평가,0.82,0.80 이상,PASS,RAGAS Framework (Answer Relevance)
