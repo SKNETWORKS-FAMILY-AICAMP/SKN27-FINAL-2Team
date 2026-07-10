@@ -80,10 +80,11 @@
         </div>
         <div class="weak-list">
           {% for item in weakness_summary.items %}
-            <div class="{{ item.status_class }}">
+            <div class="weak-item {{ item.status_class }}">
               <span>{{ forloop.counter }}</span>
               <strong>{{ item.label }}{% if item.trend_label %} · {{ item.trend_label }}{% endif %}</strong>
-              <em>{{ item.rate }}%</em>
+              <div class="weak-bar"><i style="width: {{ item.bar_ratio }}%;"></i></div>
+              <em>최근 {{ item.total }}문제 중 {{ item.wrong }}오답</em>
             </div>
           {% empty %}
             <div class="empty">

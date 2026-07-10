@@ -218,8 +218,17 @@ def build_weakness_summary(user, today=None):
         items,
         key=lambda item: (-item["weakness_score"], -item["wrong"], item["label"]),
     )
+    visible_items = sorted_items[:display_limit]
+    max_weakness_score = max(
+        (item["weakness_score"] for item in visible_items),
+        default=0,
+    )
+    for item in visible_items:
+        item["bar_ratio"] = 0
+        if max_weakness_score > 0:
+            item["bar_ratio"] = round(item["weakness_score"] / max_weakness_score * 100)
     return {
-        "items": sorted_items[:display_limit],
+        "items": visible_items,
         "has_records": bool(items),
         "period_label": "최근 학습 기준",
         "empty_title": "아직 취약으로 판단할 데이터가 부족해요",

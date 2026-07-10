@@ -84,7 +84,7 @@
 - `weekly_review_minutes`: 80
 - `daily_delete_limit`: 2
 - `min_question_count`: 3
-- `max_question_count`: 20
+- `max_question_count`: 5
 
 ## 블록 유형 정책
 
@@ -368,19 +368,4 @@ canStart = plan_date == today and not done
 ### 이월 후 진행률
 
 1. 이월된 블록에서 문제풀이를 시작한다.
-2. 생성된 `SolveRecords.study_plan_block_id`가 기존 blockId와 같은지 확인한다.
-3. 문제를 제출한다.
-4. 해당 블록 진행률이 정상 반영되는지 확인한다.
-5. 과거 날짜와 오늘 날짜에 같은 블록이 중복 표시되지 않는지 확인한다.
-
-### 주간평가
-
-1. 주간평가 블록은 자동 이월 대상에서 제외되는지 확인한다.
-2. 주간평가는 `/diagnosis/api/start/`로 시작되는지 확인한다.
-3. 제출 완료 시 `weekly_review` 블록이 완료 처리되는지 확인한다.
-
-### 삭제/이동
-
-1. 자동 이월은 삭제 횟수를 증가시키지 않는지 확인한다.
-2. 사용자가 직접 삭제할 때만 삭제 횟수가 증가하는지 확인한다.
-3. 수동 학습일 변경 시 blockId가 유지되는지 확인한다.
+2. 생성된 `SolveRecords.study_plan_block_id

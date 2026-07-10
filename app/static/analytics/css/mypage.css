@@ -381,6 +381,29 @@ a {
   text-align: right;
 }
 
+
+.weak-list .weak-item {
+  grid-template-columns: 24px minmax(0, 1fr) 64px auto;
+}
+
+.weak-list .weak-item em {
+  white-space: nowrap;
+}
+
+.weak-list .weak-bar {
+  height: 6px;
+  border-radius: 999px;
+  background: #f0e2d6;
+  overflow: hidden;
+}
+
+.weak-list .weak-bar i {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: #f05f68;
+}
+
 .donut-layout {
   --donut-empty: #dfe8d7;
   --donut-overall: #f05f68;

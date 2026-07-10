@@ -1704,7 +1704,7 @@ def get_study_plan_config():
         "default_average_time_sec": 60,
         "review_time_sec": 90,
         "min_question_count": 3,
-        "max_question_count": 20,
+        "max_question_count": 5,
         "minimum_priority_score": 0.01,
         "short_term_days": 7,
         "medium_term_days": 21,
