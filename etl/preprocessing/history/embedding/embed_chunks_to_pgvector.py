@@ -50,6 +50,7 @@ def ensure_table(conn, embedding_dimensions: int) -> None:
 
     with conn.cursor() as cur:
         cur.execute("CREATE EXTENSION IF NOT EXISTS vector")
+        cur.execute("CREATE EXTENSION IF NOT EXISTS pg_trgm")
         cur.execute("CREATE SCHEMA IF NOT EXISTS rag")
         cur.execute(
             f"""
@@ -94,6 +95,21 @@ def ensure_table(conn, embedding_dimensions: int) -> None:
             """
             CREATE INDEX IF NOT EXISTS document_chunks_title_trgm_idx
             ON rag.document_chunks USING GIN (title gin_trgm_ops)
+            """
+        )
+        cur.execute(
+            """
+            ALTER TABLE rag.document_chunks
+            ADD COLUMN IF NOT EXISTS search_vector tsvector GENERATED ALWAYS AS (
+                setweight(to_tsvector('simple', coalesce(title, '')), 'A')
+                || setweight(to_tsvector('simple', coalesce(chunk_text, '')), 'B')
+            ) STORED
+            """
+        )
+        cur.execute(
+            """
+            CREATE INDEX IF NOT EXISTS document_chunks_search_vector_idx
+            ON rag.document_chunks USING GIN (search_vector)
             """
         )
     conn.commit()
