@@ -2357,3 +2357,115 @@ body {
     grid-template-columns: 1fr !important;
   }
 }
+
+/* PDF-inspired chat skin: chat.css is loaded after the shared stylesheet. */
+.chat-page {
+  background-color: #f4efe5 !important;
+  background-image: radial-gradient(rgba(80, 57, 34, .055) .7px, transparent .8px), radial-gradient(rgba(255, 255, 255, .8) .7px, transparent .8px) !important;
+  background-position: 0 0, 7px 9px !important;
+  background-size: 12px 12px, 15px 15px !important;
+  color: #201b17 !important;
+  font-family: "Noto Serif KR", "Nanum Myeongjo", Batang, serif !important;
+}
+
+.chat-page .chat-layout,
+.chat-page .left-sidebar,
+.chat-page .right-sidebar,
+.chat-page .chat-panel,
+.chat-page .composer-box {
+  border-color: #b73225 !important;
+  border-radius: 3px !important;
+  background-color: rgba(255, 253, 248, .92) !important;
+  box-shadow: inset 0 0 0 3px rgba(197, 166, 119, .62), 0 14px 30px rgba(64, 43, 20, .10) !important;
+}
+
+.chat-page .chat-panel {
+  background-image: radial-gradient(rgba(80, 57, 34, .05) .7px, transparent .8px) !important;
+  background-size: 12px 12px !important;
+}
+
+.chat-page .left-sidebar,
+.chat-page .right-sidebar { border-right-color: #c5a677 !important; }
+
+.chat-page .side-title,
+.chat-page .mode-name,
+.chat-page .guide-name,
+.chat-page .section-title,
+.chat-page .section-number,
+.chat-page .guide-note strong,
+.chat-page .guide-note b,
+.chat-page .bot-label { color: #b73225 !important; }
+
+.chat-page .session-search span,
+.chat-page .empty-session,
+.chat-page .mode-desc,
+.chat-page .guide-desc,
+.chat-page .guide-note p,
+.chat-page .summary { color: #665b4d !important; }
+
+.chat-page .session-search input,
+.chat-page .mode-card,
+.chat-page .guide-card,
+.chat-page .session-item:not(.active),
+.chat-page .bot .bubble,
+.chat-page .guide-note article,
+.chat-page .image-gallery,
+.chat-page .image-card,
+.chat-page .image-card a {
+  border-color: #c5a677 !important;
+  border-radius: 3px !important;
+  background: #fffdf8 !important;
+  color: #201b17 !important;
+}
+
+.chat-page .mode-card.active,
+.chat-page .guide-card.active,
+.chat-page .session-item.active,
+.chat-page .user .bubble {
+  border-color: #173f36 !important;
+  background: #173f36 !important;
+  color: #fffdf8 !important;
+}
+.chat-page .mode-card.active .mode-name,
+.chat-page .mode-card.active .mode-desc { color: #fffdf8 !important; }
+
+.chat-page .bot-label,
+.chat-page th,
+.chat-page .summary,
+.chat-page .composer-plus { background: #f8f2e6 !important; }
+.chat-page .bot-dot,
+.chat-page .guide-note span { background: #b73225 !important; color: #fffdf8 !important; box-shadow: none !important; }
+
+.chat-page .send,
+.chat-page .new-session-button {
+  border: 2px solid #b73225 !important;
+  border-radius: 3px !important;
+  background: #b73225 !important;
+  color: #fffdf8 !important;
+  box-shadow: inset 0 0 0 2px rgba(255, 253, 248, .5) !important;
+}
+.chat-page .new-session-button:hover,
+.chat-page .send:hover { background: #8d211a !important; }
+
+.chat-page .typing-bubble span { background: #b73225 !important; }
+
+/* Keep destructive action visible against both normal and selected sessions. */
+.chat-page .session-delete {
+  border: 1px solid #b73225 !important;
+  border-radius: 3px !important;
+  background: #fffdf8 !important;
+  color: #8d211a !important;
+  opacity: 1 !important;
+}
+.chat-page .session-item.active .session-delete { background: #fffdf8 !important; color: #8d211a !important; }
+.chat-page .session-delete:hover { background: #b73225 !important; color: #fffdf8 !important; }
+
+/* Composer's problem picker uses the same red seal treatment as the rest of the chat. */
+.chat-page .problem-picker-trigger {
+  border: 2px solid #b73225 !important;
+  border-radius: 3px !important;
+  background: #b73225 !important;
+  color: #fffdf8 !important;
+  box-shadow: inset 0 0 0 2px rgba(255, 253, 248, .5) !important;
+}
+.chat-page .problem-picker-trigger:hover { background: #8d211a !important; }

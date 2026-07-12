@@ -46,7 +46,7 @@
           <h2>시대별</h2>
         </header>
         <div class="rate-donut-overview">
-          <div class="rate-donut-chart{% if not era_donut.hasRecords %} empty{% endif %}" style="background: {{ era_donut.gradient }};" aria-label="시대별 오답 비중"></div>
+          <div class="rate-donut-chart{% if not era_donut.hasRecords %} empty{% endif %}" style="--donut-gradient: {{ era_donut.gradient }};" aria-label="시대별 오답 비중"></div>
           <div class="rate-donut-list">
             {% for item in era_donut.items %}
               <article>
@@ -70,7 +70,7 @@
           <h2>유형별</h2>
         </header>
         <div class="rate-donut-overview">
-          <div class="rate-donut-chart{% if not type_donut.hasRecords %} empty{% endif %}" style="background: {{ type_donut.gradient }};" aria-label="유형별 오답 비중"></div>
+          <div class="rate-donut-chart{% if not type_donut.hasRecords %} empty{% endif %}" style="--donut-gradient: {{ type_donut.gradient }};" aria-label="유형별 오답 비중"></div>
           <div class="rate-donut-list">
             {% for item in type_donut.items %}
               <article>
@@ -94,7 +94,7 @@
           <h2>주제별</h2>
         </header>
         <div class="rate-donut-overview">
-          <div class="rate-donut-chart{% if not topic_donut.hasRecords %} empty{% endif %}" style="background: {{ topic_donut.gradient }};" aria-label="주제별 오답 비중"></div>
+          <div class="rate-donut-chart{% if not topic_donut.hasRecords %} empty{% endif %}" style="--donut-gradient: {{ topic_donut.gradient }};" aria-label="주제별 오답 비중"></div>
           <div class="rate-donut-list">
             {% for item in topic_donut.items %}
               <article>

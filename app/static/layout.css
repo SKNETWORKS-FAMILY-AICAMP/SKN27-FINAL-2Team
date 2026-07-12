@@ -1,126 +1,693 @@
-.exam-page,
-.result-page,
-.intro-page,
-.mypage,
-.wrong-note-page,
-.create-page,
-.chat-page,
-.login-page,
-.auth-page {
-  background: transparent !important;
+/* ponytail: one shared skin keeps every existing screen and interaction intact. */
+:root {
+  --hm-ink: #201b17;
+  --hm-muted: #665b4d;
+  --hm-line: #c5a677;
+  --hm-soft: #fff;
+  --hm-lime: #e0c38c;
+  --hm-green: #173f36;
+  --hm-red: #b73225;
+  --hm-white: #fffdf8;
+  --hm-shadow: 0 14px 30px rgba(64, 43, 20, .10);
+  --bg: #fff;
+  --panel: #fff;
+  --ink: var(--hm-ink);
+  --muted: var(--hm-muted);
+  --line: var(--hm-line);
+  --label: #fff;
+  --accent: var(--hm-red);
+  --accent-strong: #8d211a;
+  --accent-soft: #fff;
+  --user: var(--hm-green);
+  --soft: #fff;
+  --point: #f9edc8;
+  --point-line: #c5a677;
+  --danger: #a4261c;
+  --green: var(--hm-green);
+  --green-soft: #fff;
+  --lime-dark: var(--hm-green);
+  --shadow: var(--hm-shadow);
 }
 
-.exam-shell,
-.review-shell,
-.diagnosis-summary,
-.intro-card,
-.page-title,
-.summary-strip,
-.panel,
-.login-card,
-.auth-card,
-.condition-panel,
-.note-workspace,
-.chat-layout,
-.composer-shell {
-  border-color: var(--hm-green) !important;
-  border-radius: 22px !important;
-  background: rgba(255, 255, 255, 0.86) !important;
-  box-shadow: var(--hm-shadow) !important;
+body {
+  color: var(--hm-ink) !important;
+  background-color: var(--bg) !important;
+  background-image: none !important;
+  font-family: "Noto Serif KR", "Nanum Myeongjo", Batang, serif !important;
 }
 
-.condition-panel,
-.note-workspace {
-  border-width: 2px !important;
+button, input, textarea, select { font-family: inherit !important; }
+
+.site-header, .chat-header {
+  min-height: 76px !important;
+  border-bottom: 3px double var(--hm-line) !important;
+  background: rgba(255, 253, 248, .96) !important;
+  box-shadow: 0 4px 14px rgba(64, 43, 20, .07) !important;
 }
 
-input,
-textarea,
-select {
-  border-color: var(--hm-line) !important;
-  border-radius: 14px !important;
+.site-header .brand, .chat-header .brand, .site-brand { color: var(--hm-red) !important; }
+.site-header .brand::after, .chat-header .brand::after, .site-brand::after {
+  content: "HIMATE" !important;
+  font-family: Georgia, "Times New Roman", serif !important;
+  font-size: 27px !important;
+  letter-spacing: .06em !important;
 }
+.site-header .brand::before, .chat-header .brand::before, .site-brand::before { display: none !important; }
+.main-nav a { color: var(--hm-ink) !important; font-family: "Noto Serif KR", serif !important; }
+.main-nav a:hover, .main-nav a.active { color: var(--hm-red) !important; }
 
-.mypage .analytics-grid .panel {
-  border: 0 !important;
+.pill-button, .primary-button, .start-button, .login-button, .submit-button,
+.ghost-button, .secondary-button, .signup-button, .outline-button, .action-button,
+.dark-button, button[type="submit"] {
+  min-height: 44px !important;
+  border: 2px solid var(--hm-red) !important;
+  border-radius: 3px !important;
+  background: var(--hm-red) !important;
+  color: #fffdf8 !important;
+  box-shadow: inset 0 0 0 2px rgba(255, 253, 248, .5) !important;
+  font-weight: 800 !important;
 }
-
-.mypage .analytics-grid .metric-panel,
-.mypage .analytics-grid .weakness-panel,
-.mypage .analytics-grid .donut-panel,
-.mypage .analytics-grid .chatbot-panel {
-  outline: 0 !important;
+.ghost-button, .secondary-button, .signup-button, .outline-button, .action-button {
+  background: var(--hm-white) !important;
+  color: var(--hm-red) !important;
 }
+.pill-button:hover, .primary-button:hover, .start-button:hover, .login-button:hover,
+.submit-button:hover, .dark-button:hover, button[type="submit"]:hover { background: #8d211a !important; }
 
-.diagnosis-page,
-.create-page {
+.exam-page, .result-page, .intro-page, .mypage, .wrong-note-page, .create-page,
+.chat-page, .login-page, .auth-page, .diagnosis-page { background: transparent !important; }
+
+/* Keep the existing shared page geometry; this file only changes its finish. */
+.diagnosis-page, .create-page {
   min-height: calc(100vh - 72px) !important;
   display: block !important;
   padding: 64px 5vw 34px !important;
 }
+.intro-layout, .create-shell { width: min(1320px, 100%) !important; margin: 0 auto !important; }
+.intro-card { padding-top: 24px !important; }
+.intro-hero { min-height: auto !important; align-items: start !important; }
+.intro-heading h1, .create-title h1 { margin-top: 0 !important; font-size: clamp(42px, 5vw, 64px) !important; line-height: .98 !important; }
+.intro-heading p, .create-title p { margin-top: 10px !important; }
 
-.intro-layout,
-.create-shell {
-  width: min(1320px, 100%) !important;
+.exam-shell, .review-shell, .diagnosis-summary, .intro-card, .page-title,
+.summary-strip, .panel, .login-card, .auth-card, .condition-panel, .note-workspace,
+.chat-layout, .composer-shell, .feature-visual, .improvement-card, .d-day-box,
+.save-card, .mode-card, .guide-card, .side-hero, .question-card, .number-card,
+.side-panel, .summary-card, .result-card {
+  border: 2px solid var(--hm-red) !important;
+  border-radius: 3px !important;
+  background: rgba(255, 253, 248, .91) !important;
+  box-shadow: inset 0 0 0 3px rgba(197, 166, 119, .62), var(--hm-shadow) !important;
+}
+
+.summary-strip { overflow: hidden; }
+.summary-strip article { border-color: var(--hm-line) !important; }
+.mypage .analytics-grid .panel { border: 2px solid var(--hm-red) !important; }
+
+input, textarea, select {
+  border: 1px solid var(--hm-line) !important;
+  border-radius: 2px !important;
+  background: #fffdf8 !important;
+  color: var(--hm-ink) !important;
+  box-shadow: inset 0 1px 4px rgba(64, 43, 20, .06) !important;
+}
+input:focus, textarea:focus, select:focus { outline: 2px solid rgba(183, 50, 37, .38) !important; outline-offset: 1px; }
+
+.page-title h1, .intro-heading h1, .create-title h1, .feature-copy h2,
+.hero h1, .cta-panel h2, .question-title, h1, h2, h3 {
+  color: var(--hm-ink) !important;
+  font-family: "Noto Serif KR", "Nanum Myeongjo", Batang, serif !important;
+  font-weight: 900 !important;
+}
+.hero h1 strong, .feature-number, .question-badge, .page-kicker, .section-mark,
+.d-day-box strong, .improvement-card strong { color: var(--hm-red) !important; }
+
+.hero, .feature-section, .cta-section { background: transparent !important; }
+.hero h1 strong { font-family: Georgia, "Times New Roman", serif !important; letter-spacing: .04em; }
+.hero-actions .primary-button { border-color: var(--hm-red) !important; background: var(--hm-red) !important; color: #fffdf8 !important; }
+.cta-section { color: var(--hm-ink) !important; }
+.cta-panel h2, .cta-panel p, .cta-panel span { color: inherit !important; }
+
+.chat-page {
+  background-color: transparent !important;
+  background-image: none !important;
+  border-color: var(--hm-line) !important;
+}
+.left-sidebar, .right-sidebar { background: rgba(248, 242, 230, .72) !important; border-color: var(--hm-line) !important; }
+.mode-card.active, .guide-card.active { border-color: var(--hm-red) !important; background: #f8e9d9 !important; }
+.user .bubble, .chat-bubble.user { background: var(--hm-green) !important; color: #fffdf8 !important; }
+.bot .bubble, .chat-bubble.bot { background: #fffdf8 !important; color: var(--hm-ink) !important; border: 1px solid var(--hm-line); }
+
+.progress-track span, .mini-progress span, .bar-track i { background: var(--hm-red) !important; }
+.question-type-chip, .question-score, .filter-row span { border-color: var(--hm-line) !important; background: #f8f2e6 !important; color: var(--hm-ink) !important; }
+
+/* Question selection states stay distinct without changing their click behavior. */
+.choice {
+  border: 1px solid var(--hm-line) !important;
+  border-radius: 3px !important;
+  background: #fffdf8 !important;
+  color: var(--hm-ink) !important;
+}
+.choice span { border-radius: 2px !important; background: #f8f2e6 !important; color: var(--hm-red) !important; }
+.choice.selected { border-color: var(--hm-red) !important; background: #f8e9d9 !important; box-shadow: inset 0 0 0 2px rgba(183, 50, 37, .18) !important; }
+.choice.selected span { background: var(--hm-red) !important; color: #fffdf8 !important; }
+.number-grid button {
+  border: 1px solid var(--hm-line) !important;
+  border-radius: 3px !important;
+  background: #fffdf8 !important;
+  color: var(--hm-ink) !important;
+}
+.number-grid button.active { border-color: var(--hm-red) !important; background: var(--hm-red) !important; color: #fffdf8 !important; }
+.number-grid button.answered:not(.active) { border-color: var(--hm-green) !important; background: #e3ede7 !important; color: var(--hm-green) !important; }
+
+.auth-messages, .verification-message { display: grid; gap: 8px; margin: 0 0 14px; }
+.auth-message, .verification-message { border: 1px solid var(--hm-line); border-radius: 2px; padding: 10px 12px; background: var(--hm-soft); color: var(--hm-green); font-size: 14px; font-weight: 800; }
+.auth-message.error, .verification-message.error { border-color: #c67467; background: #fbecea; color: #8d211a; }
+.auth-message.success, .verification-message.success { border-color: #8eaa98; background: #e9f0ea; color: var(--hm-green); }
+
+@media (max-width: 900px) {
+  .site-header, .chat-header { min-height: 70px !important; }
+  .main-nav a { font-size: 14px !important; }
+}
+
+/* My page: one continuous dashboard surface instead of a collection of cards. */
+.mypage {
+  position: relative;
+  width: min(1180px, 100%) !important;
   margin: 0 auto !important;
+  padding: 0 clamp(18px, 4vw, 42px) 54px !important;
+  background: #fffdf8 !important;
+}
+.mypage::before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 186px;
+  background: #173f36;
+}
+.mypage > * { position: relative; z-index: 1; }
+.mypage .page-title {
+  min-height: 176px;
+  margin: 0 -42px 0 !important;
+  padding: 40px 42px 28px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+.mypage .page-title p, .mypage .page-title h1 { color: #fffdf8 !important; }
+.mypage .page-title h1 { font-size: clamp(38px, 5vw, 58px) !important; }
+.mypage .d-day-box {
+  min-width: 150px;
+  min-height: 76px;
+  border: 1px solid rgba(255, 253, 248, .56) !important;
+  border-radius: 0 !important;
+  background: rgba(255, 253, 248, .12) !important;
+  box-shadow: none !important;
+}
+.mypage .d-day-box span { color: rgba(255, 253, 248, .8) !important; }
+.mypage .d-day-box strong { color: #fffdf8 !important; }
+
+.mypage .summary-strip {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  margin: -28px 0 0 !important;
+  border: 1px solid #e4d5bf !important;
+  border-radius: 0 !important;
+  background: #fffdf8 !important;
+  box-shadow: 0 12px 24px rgba(64, 43, 20, .10) !important;
+}
+.mypage .summary-strip article { min-height: 96px; border-color: #e4d5bf !important; }
+.mypage .summary-strip strong { color: #b73225 !important; }
+
+.mypage .improvement-grid,
+.mypage .quick-actions,
+.mypage .analytics-grid,
+.mypage .bottom-grid { margin: 0 !important; }
+.mypage .improvement-grid { gap: 0 !important; border-bottom: 1px solid #e4d5bf; }
+.mypage .improvement-card {
+  min-height: 112px;
+  padding: 24px 18px !important;
+  border: 0 !important;
+  border-top: 1px solid #e4d5bf !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+.mypage .improvement-card + .improvement-card { border-left: 1px solid #e4d5bf !important; }
+.mypage .quick-actions { gap: 0 !important; border-bottom: 1px solid #e4d5bf; }
+.mypage .quick-actions a {
+  min-height: 62px;
+  display: grid;
+  place-items: center;
+  border: 0 !important;
+  border-radius: 0 !important;
+  border-right: 1px solid #e4d5bf !important;
+  background: transparent !important;
+  color: #173f36 !important;
+  box-shadow: none !important;
+}
+.mypage .quick-actions a:last-child { border-right: 0 !important; }
+.mypage .quick-actions a:hover { background: #f8f2e6 !important; color: #b73225 !important; }
+
+.mypage .analytics-grid { gap: 0 !important; }
+.mypage .analytics-grid .panel,
+.mypage .panel,
+.mypage .planner-panel {
+  border: 0 !important;
+  border-bottom: 1px solid #e4d5bf !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  outline: 0 !important;
+}
+.mypage .analytics-grid .panel { padding: 30px 24px !important; }
+.mypage .analytics-grid .panel:nth-child(odd) { border-right: 1px solid #e4d5bf !important; }
+.mypage .panel-heading { border-bottom: 2px solid #173f36; padding-bottom: 12px; }
+.mypage .time-metric, .mypage .plan-item, .mypage .calendar,
+.mypage .planner-progress-summary, .mypage .planner-board {
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+.mypage .planner-board { border-color: #e4d5bf !important; background: #fffdf8 !important; }
+.mypage .planner-calendar, .mypage .planner-day { background: transparent !important; }
+
+@media (max-width: 700px) {
+  .mypage { padding: 0 18px 36px !important; }
+  .mypage::before { height: 172px; }
+  .mypage .page-title { min-height: 164px; margin: 0 -18px !important; padding: 34px 18px 26px !important; }
+  .mypage .summary-strip { grid-template-columns: 1fr; margin-top: -20px !important; }
+  .mypage .summary-strip article { border-right: 0 !important; }
+  .mypage .improvement-card + .improvement-card { border-left: 0 !important; }
+  .mypage .quick-actions a { border-right: 0 !important; border-bottom: 1px solid #e4d5bf !important; }
+  .mypage .quick-actions a:last-child { border-bottom: 0 !important; }
+  .mypage .analytics-grid .panel:nth-child(odd) { border-right: 0 !important; }
 }
 
-.intro-card {
-  padding-top: 24px !important;
+/* My page title banner: sky, tiled eaves, and paper title field. */
+.mypage::before { display: none; }
+.mypage .page-title {
+  min-height: 380px;
+  align-items: flex-end;
+  padding-bottom: 36px !important;
+  background:
+    url("/static/images/mypage-clouds.png") -64px 14px / 300px auto no-repeat,
+    url("/static/images/mypage-clouds.png") calc(100% + 44px) 10px / 250px auto no-repeat,
+    repeating-linear-gradient(90deg, rgba(44, 47, 48, .48) 0 2px, transparent 2px 42px) 0 157px / 100% 48px no-repeat,
+    linear-gradient(180deg, transparent 0 155px, #505456 155px 203px, #333637 203px 218px, transparent 218px),
+    linear-gradient(180deg, #b9e2e8 0 57%, #faeee3 57% 100%) !important;
+}
+.mypage .page-title::before {
+  content: "";
+  position: absolute;
+  right: 3%;
+  top: 34px;
+  width: 470px;
+  height: 150px;
+  background: url("/static/images/mypage-building.png") center -100px / 450px auto no-repeat;
+}
+.mypage .page-title::after {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  top: 155px;
+  right: 0;
+  left: 0;
+  height: 63px;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(90deg, rgba(44, 47, 48, .48) 0 2px, transparent 2px 42px) top / 100% 48px no-repeat,
+    linear-gradient(180deg, #505456 0 48px, #333637 48px 63px);
+}
+.mypage .page-title p,
+.mypage .page-title h1 { color: #201b17 !important; text-shadow: none !important; }
+.mypage .page-title p { color: #665b4d !important; }
+.mypage .page-title h1 { font-size: clamp(40px, 5vw, 62px) !important; }
+.mypage .d-day-box {
+  border-color: #b73225 !important;
+  background: rgba(255, 253, 248, .82) !important;
+}
+.mypage .d-day-box span { color: #665b4d !important; }
+.mypage .d-day-box strong { color: #b73225 !important; }
+.mypage .summary-strip { margin-top: -18px !important; }
+
+@media (max-width: 700px) {
+  .mypage .page-title { min-height: 330px; padding-bottom: 28px !important; }
+  .mypage .page-title::before { right: -12%; transform: scale(.72); transform-origin: top right; }
+  .mypage .summary-strip { margin-top: -14px !important; }
 }
 
-.intro-hero {
-  min-height: auto !important;
+/* Flat obangsaek palette: no gradient fills anywhere in the application. */
+:root {
+  --hm-ink: #26211d;
+  --hm-muted: #6e6152;
+  --hm-line: #b79a68;
+  --hm-soft: #fff;
+  --hm-lime: #d5b46e;
+  --hm-green: #1f5549;
+  --hm-red: #ae3d31;
+  --hm-white: #fff;
+  --bg: #fff;
+  --panel: #fff;
+  --accent: var(--hm-red);
+  --accent-soft: #fff;
+  --user: var(--hm-green);
+  --green: var(--hm-green);
+}
+
+*, *::before, *::after { background-image: none !important; }
+body { background: var(--bg) !important; }
+
+/* Decorative illustrations remain images; their surrounding colors are solid. */
+.mypage .page-title {
+  background-color: #b9e2e8 !important;
+  background-image:
+    url("/static/images/mypage-clouds.png"),
+    url("/static/images/mypage-clouds.png") !important;
+  background-position: -64px 14px, calc(100% + 44px) 10px !important;
+  background-size: 300px auto, 250px auto !important;
+  background-repeat: no-repeat, no-repeat !important;
+  box-shadow: none !important;
+}
+.mypage .page-title::before {
+  z-index: 0;
+  background-image: url("/static/images/mypage-building.png") !important;
+  background-position: center -100px !important;
+  background-size: 450px auto !important;
+  background-repeat: no-repeat !important;
+}
+.mypage .page-title::after {
+  display: block;
+  z-index: 1;
+  top: 125px;
+  height: 255px;
+  background-image: url("/static/images/mypage-wall.png") !important;
+  background-position: center top !important;
+  background-size: 100% auto !important;
+  background-repeat: no-repeat !important;
+  box-shadow: none !important;
+}
+.mypage .page-title > * { position: relative; z-index: 2; }
+
+/* Data charts keep their segmented value encoding; this is not decorative shading. */
+.mypage .donut-layout {
+  --donut-empty: #eadfce;
+  --donut-overall: #ae3d31;
+  --donut-segment-1: #ae3d31;
+  --donut-segment-2: #d5b46e;
+  --donut-segment-3: #1f5549;
+  --donut-segment-4: #52758a;
+  --donut-segment-5: #72536c;
+  --donut-segment-6: #6e6152;
+}
+.mypage .donut-chart {
+  background-image: conic-gradient(var(--donut-overall) 0 var(--overall-rate), var(--donut-empty) var(--overall-rate) 100%) !important;
+}
+.mypage .donut-layout .donut-type-chart {
+  background-image: conic-gradient(var(--type-color) 0 var(--type-rate), var(--donut-empty) var(--type-rate) 100%) !important;
+}
+.mypage .donut-chart.is-empty { background-image: conic-gradient(#eadfce 0 100%) !important; }
+
+/* Number markers need a single high-contrast color, not red text on green. */
+.mypage .weak-list span,
+.diagnosis-page .step-flow span {
+  border: 2px solid #f2dfbd !important;
+  background: #ae3d31 !important;
+  color: #fffdf7 !important;
+  box-shadow: none !important;
+}
+.mypage .weak-list strong,
+.mypage .weak-list em { color: #26211d !important; }
+
+/* Diagnostic overview: keep every label readable in ink, except step numbers. */
+.diagnosis-page .intro-heading h1,
+.diagnosis-page .intro-heading p,
+.diagnosis-page .step-flow strong,
+.diagnosis-page .step-flow p,
+.diagnosis-page .guide-copy strong,
+.diagnosis-page .guide-copy p,
+.diagnosis-page .info-table span,
+.diagnosis-page .info-table strong {
+  color: #26211d !important;
+}
+
+/* Exam sidebar: one continuous rail with dividers, not stacked cards. */
+.exam-page .side-panel {
+  grid-template-rows: auto auto minmax(0, 1fr) !important;
+  gap: 0 !important;
+  padding-left: 18px !important;
+  border: 0 !important;
+  border-left: 1px solid #b79a68 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+.exam-page .side-panel > .save-card,
+.exam-page .side-panel > .timer-card,
+.exam-page .side-panel > .number-card {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+.exam-page .side-panel > .save-card {
+  padding: 0 0 14px !important;
+  border-bottom: 1px solid #b79a68 !important;
+  order: 2;
+}
+.exam-page .side-panel > .timer-card {
+  padding: 12px 0 !important;
+  border-bottom: 1px solid #b79a68 !important;
+  order: 1;
+}
+.exam-page .side-panel > .number-card {
+  padding: 14px 0 0 !important;
+  overflow: hidden !important;
+  order: 3;
+}
+.exam-page .side-panel .number-grid {
+  max-height: 276px !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: 6px !important;
+  padding-right: 4px !important;
+}
+.exam-page .side-panel .number-grid button {
+  min-height: 36px !important;
+  height: 36px !important;
+  aspect-ratio: auto !important;
+  font-size: 15px !important;
+}
+.exam-page .side-action-buttons { gap: 6px !important; }
+.exam-page .side-action-buttons button {
+  min-height: 36px !important;
+  height: 36px !important;
+  padding: 0 10px !important;
+  font-size: 14px !important;
+}
+.exam-page .timer-card strong { margin-top: 4px !important; font-size: 30px !important; }
+
+/* Header uses a compact title and a text-only question counter. */
+.exam-page .exam-header { grid-template-columns: minmax(0, 1fr) auto !important; }
+.exam-page .exam-title { text-align: left !important; }
+.exam-page .exam-title h1 { font-size: clamp(28px, 4vw, 42px) !important; }
+.exam-page .progress-box {
+  display: inline-flex !important;
+  align-items: baseline;
+  gap: 8px;
+  padding: 0 0 0 14px !important;
+  border: 0 !important;
+  border-left: 1px solid #b79a68 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+.exam-page .progress-box .progress-track { display: none !important; }
+.exam-page .progress-box strong {
+  display: inline !important;
+  color: #6e6152 !important;
+  font-size: 13px !important;
+  font-weight: 900;
+}
+.exam-page .progress-box em {
+  display: block;
+  color: #26211d !important;
+  font-size: 18px !important;
+  font-style: normal;
+  font-weight: 900;
+}
+
+/* Keep timer, count, and exit together in the header; sidebar is list-only. */
+.exam-page .exam-header {
+  grid-template-columns: minmax(0, 1fr) auto auto auto !important;
+  gap: 14px !important;
+}
+.exam-page .header-timer,
+.exam-page .header-exit {
+  min-height: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+.exam-page .header-timer {
+  display: inline-flex !important;
+  align-items: baseline;
+  gap: 7px;
+  padding-left: 14px !important;
+  border-left: 1px solid #b79a68 !important;
+  text-align: left !important;
+}
+.exam-page .header-timer span { display: inline !important; color: #6e6152 !important; font-size: 13px !important; }
+.exam-page .header-timer strong { display: inline !important; margin: 0 !important; color: #26211d !important; font-size: 20px !important; }
+.exam-page .header-exit .side-action-buttons { display: flex !important; gap: 6px !important; }
+.exam-page .header-exit { padding-left: 14px !important; border-left: 1px solid #b79a68 !important; }
+.exam-page .header-exit .side-action-buttons button { min-width: 94px !important; }
+.exam-page .header-exit #saveStatus { display: none; }
+.exam-page .side-panel {
+  grid-template-rows: minmax(0, 1fr) !important;
+  padding-top: 0 !important;
+}
+.exam-page .side-panel > .number-card {
+  order: initial;
+  padding-top: 0 !important;
+}
+
+@media (max-width: 700px) {
+  .exam-page .exam-header { grid-template-columns: minmax(0, 1fr) auto auto !important; gap: 8px !important; }
+  .exam-page .header-timer span { display: none !important; }
+  .exam-page .header-timer strong { font-size: 17px !important; }
+  .exam-page .header-exit .side-action-buttons button { min-width: 88px !important; }
+}
+
+.exam-page .header-timer span,
+.exam-page .header-timer strong,
+.exam-page .progress-box strong,
+.exam-page .progress-box em,
+.exam-page .header-exit .side-action-buttons button {
+  font-family: inherit !important;
+  font-size: 16px !important;
+  font-weight: 900 !important;
+}
+
+/* Landing-page examples are live, scaled service screens rather than mock data. */
+.project-preview-shell {
+  position: relative;
+  min-height: 0 !important;
+  display: block !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+  background: #fffdf7 !important;
+}
+.project-preview {
+  width: 100%;
+  height: auto;
+  display: block;
+  border: 0;
+  object-fit: contain;
+  object-position: center;
+  background: #fff !important;
+}
+.feature-05 .project-preview-shell {
+  width: 78% !important;
+  justify-self: center;
+}
+
+/* White base surfaces; selected and status states keep their semantic color. */
+body, .site-header, .chat-header, .exam-page, .result-page, .intro-page, .mypage,
+.wrong-note-page, .create-page, .chat-page, .login-page, .auth-page,
+.diagnosis-page, .hero, .feature-section, .cta-section, .left-sidebar,
+.right-sidebar, .planner-board, .planner-calendar, .planner-day {
+  background-color: #fff !important;
+}
+.exam-shell, .review-shell, .diagnosis-summary, .intro-card, .summary-strip,
+.panel, .login-card, .auth-card, .condition-panel, .note-workspace,
+.chat-layout, .composer-shell, .improvement-card, .d-day-box, .save-card,
+.mode-card, .guide-card, .side-hero, .question-card, .number-card,
+.side-panel, .summary-card, .result-card, .project-preview-shell {
+  background: #fff !important;
+}
+.mode-card.active, .mode-card.selected, .guide-card.active, .choice.selected {
+  background: #f8e9d9 !important;
+}
+@media (max-width: 640px) {
+  .project-preview-shell { min-height: 0 !important; }
+  .project-preview { height: auto; }
+  .feature-05 .project-preview-shell { width: 100% !important; }
+}
+.exam-page .question-badge,
+.exam-page .number-grid button.active,
+.exam-page .progress-track span {
+  border-color: #ae3d31 !important;
+  background: #ae3d31 !important;
+  color: #fffdf7 !important;
+}
+
+/* Keep analysis charts visible and reserve space for readable labels. */
+.wrong-rate-page .rate-donut-chart {
+  width: 92px !important;
+  height: 92px !important;
+  background-image: var(--donut-gradient) !important;
+}
+.wrong-rate-page .rate-donut-chart::after { inset: 17px !important; }
+.wrong-rate-page .rate-donut-overview {
+  grid-template-columns: 92px minmax(0, 1fr) !important;
+  gap: 12px !important;
   align-items: start !important;
 }
+.wrong-rate-page .rate-donut-list article {
+  align-items: start !important;
+  grid-template-columns: 10px minmax(0, 1fr) auto !important;
+  gap: 7px !important;
+}
+.wrong-rate-page .rate-donut-list strong {
+  overflow: visible !important;
+  white-space: normal !important;
+  text-overflow: clip !important;
+}
+.wrong-rate-page .rate-donut-list span { padding-top: 2px; }
 
-.intro-heading h1,
-.create-title h1 {
-  margin-top: 0 !important;
-  font-size: clamp(42px, 5vw, 64px) !important;
-  line-height: 0.98 !important;
+/* ponytail: desktop-only compact layout keeps the generator in one viewport. */
+@media (min-width: 861px) and (min-height: 720px) {
+  .create-page {
+    height: calc(100svh - 76px) !important;
+    min-height: 0 !important;
+    display: grid !important;
+    align-items: center !important;
+    padding: 14px 5vw 10px !important;
+    overflow: hidden !important;
+  }
+  .create-shell {
+    width: min(1480px, 100%) !important;
+    gap: 10px !important;
+  }
+  .create-page .mode-card {
+    min-height: 128px !important;
+    padding: 20px 24px !important;
+  }
+  .create-page .condition-row {
+    grid-template-columns: 130px minmax(0, 1fr) !important;
+    gap: 16px !important;
+    padding: 10px 24px !important;
+  }
+  .create-page .option-list { gap: 7px !important; }
+  .create-page .option-list button {
+    min-height: 40px !important;
+    padding: 0 16px !important;
+  }
+  .create-page .create-actions { min-height: 44px; }
 }
 
-.intro-heading p,
-.create-title p {
-  margin-top: 10px !important;
-}
-
-#createButton {
-  border-color: rgb(125, 93, 255) !important;
-  background: rgb(125, 93, 255) !important;
-  color: #ffffff !important;
-  box-shadow: 0 16px 34px rgba(47, 67, 183, 0.3) !important;
-}
-
-.auth-messages,
-.verification-message {
-  display: grid;
-  gap: 8px;
-  margin: 0 0 14px;
-}
-
-.auth-message,
-.verification-message {
-  border: 1px solid var(--hm-line);
-  border-radius: 14px;
-  padding: 10px 12px;
-  background: var(--hm-soft);
-  color: var(--hm-green);
-  font-size: 14px;
-  font-weight: 800;
-}
-
-.auth-message.error,
-.verification-message.error {
-  border-color: #ffc4c4;
-  background: #fff1f1;
-  color: #b42318;
-}
-
-.auth-message.success,
-.verification-message.success {
-  border-color: var(--hm-lime);
-  background: #f2ffe8;
-  color: var(--hm-green);
+@media (max-width: 900px) {
+  .exam-page .side-panel {
+    padding: 18px 0 0 !important;
+    border-top: 1px solid #b79a68 !important;
+    border-left: 0 !important;
+  }
 }

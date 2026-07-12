@@ -35,11 +35,30 @@
         <div class="exam-title">
           <h1>{% if exam_mode == 'diagnostic' %}진단 평가{% else %}문제 풀이{% endif %}</h1>
         </div>
+        <section class="timer-card header-timer" aria-label="남은 시간">
+          <span>남은 시간</span>
+          <strong id="timerText">20:00</strong>
+        </section>
         <div class="progress-box" aria-label="문항 진행률">
-          <strong>문항 수</strong>
+          <strong>문제 진행률</strong>
           <div class="progress-track"><span id="progressFill" style="width: 5%"></span></div>
           <em id="progressText">1 / 20</em>
         </div>
+        <section class="save-card action-card header-exit">
+          <div class="side-action-buttons">
+            {% if exam_mode != 'diagnostic' %}
+            {% if request.user.is_authenticated %}
+            <button id="saveProgressButton" type="button">문제 저장</button>
+            {% endif %}
+            {% endif %}
+            <button class="exit-top-button" id="exitButton" type="button">나가기</button>
+          </div>
+          {% if exam_mode != 'diagnostic' %}
+          {% if request.user.is_authenticated %}
+          <p id="saveStatus">답안 선택, 이동, 나가기 시 진행 상황이 자동 저장됩니다.</p>
+          {% endif %}
+          {% endif %}
+        </section>
       </header>
 
       <div class="exam-layout">
@@ -69,26 +88,6 @@
         </section>
 
         <aside class="side-panel" aria-label="문제풀이 상태">
-          <section class="save-card action-card">
-            <div class="side-action-buttons">
-              <button class="exit-top-button" id="exitButton" type="button">나가기</button>
-              {% if exam_mode != 'diagnostic' %}
-              {% if request.user.is_authenticated %}
-              <button id="saveProgressButton" type="button">진행 저장</button>
-              {% endif %}
-              {% endif %}
-            </div>
-            {% if exam_mode != 'diagnostic' %}
-            {% if request.user.is_authenticated %}
-            <p id="saveStatus">답안 선택, 이동, 나가기 시 진행 상황이 자동 저장됩니다.</p>
-            {% endif %}
-            {% endif %}
-          </section>
-          <section class="timer-card">
-            <span>남은 시간</span>
-            <strong id="timerText">20:00</strong>
-          </section>
-
           <section class="number-card">
             <h2>문항 목록</h2>
             <div class="number-grid" id="numberGrid" aria-label="문항 번호"></div>
