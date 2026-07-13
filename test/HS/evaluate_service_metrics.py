@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import math
 import os
 import re
 import sys
@@ -226,9 +227,13 @@ def evaluate_ragas_metrics(questions: list[dict], limit: int, debug_path: Path |
             raise last_error
         if debug_path:
             write_ragas_debug(rows, result.scores, debug_path)
-        def average_score(name: str) -> float:
-            scores = [row[name] for row in result.scores if row.get(name) is not None]
-            return sum(scores) / len(scores)
+        def average_score(name: str) -> float | None:
+            scores = [
+                float(row[name])
+                for row in result.scores
+                if row.get(name) is not None and not math.isnan(float(row[name]))
+            ]
+            return sum(scores) / len(scores) if scores else None
 
         context_precision_score = average_score("context_precision")
         context_recall_score = average_score("context_recall")
@@ -243,11 +248,21 @@ def evaluate_ragas_metrics(questions: list[dict], limit: int, debug_path: Path |
             Metric("RAGAS Answer Relevance", "답변이 질문 의도에 적합한지 평가", message, "0.80 이상", None, "RAGAS Framework (Answer Relevance)"),
         ]
 
+    def ragas_metric(name: str, definition: str, score: float | None, method: str) -> Metric:
+        return Metric(
+            name,
+            definition,
+            "N/A (유효 점수 없음)" if score is None else f"{score:.2f}",
+            "0.80 이상",
+            None if score is None else score >= 0.80,
+            method,
+        )
+
     return [
-        Metric("RAGAS Context Precision", "검색 문맥 중 질문과 관련 있는 문맥 비율", f"{context_precision_score:.2f}", "0.80 이상", context_precision_score >= 0.80, "RAGAS Framework (Context Precision)"),
-        Metric("RAGAS Context Recall", "정답에 필요한 근거를 검색 문맥이 포함하는지 평가", f"{context_recall_score:.2f}", "0.80 이상", context_recall_score >= 0.80, "RAGAS Framework (Context Recall)"),
-        Metric("RAGAS Faithfulness", "답변이 검색 근거에 충실한지 평가", f"{faithfulness_score:.2f}", "0.80 이상", faithfulness_score >= 0.80, "RAGAS Framework (Faithfulness)"),
-        Metric("RAGAS Answer Relevance", "답변이 질문 의도에 적합한지 평가", f"{answer_score:.2f}", "0.80 이상", answer_score >= 0.80, "RAGAS Framework (Answer Relevance)"),
+        ragas_metric("RAGAS Context Precision", "검색 문맥 중 질문과 관련 있는 문맥 비율", context_precision_score, "RAGAS Framework (Context Precision)"),
+        ragas_metric("RAGAS Context Recall", "정답에 필요한 근거를 검색 문맥이 포함하는지 평가", context_recall_score, "RAGAS Framework (Context Recall)"),
+        ragas_metric("RAGAS Faithfulness", "답변이 검색 근거에 충실한지 평가", faithfulness_score, "RAGAS Framework (Faithfulness)"),
+        ragas_metric("RAGAS Answer Relevance", "답변이 질문 의도에 적합한지 평가", answer_score, "RAGAS Framework (Answer Relevance)"),
     ]
 
 

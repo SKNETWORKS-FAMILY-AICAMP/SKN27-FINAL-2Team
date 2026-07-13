@@ -39,6 +39,9 @@ raw_data
 | 4 | `scripts/make_graph_csv.py` | Neo4j import용 최종 node/relation CSV 생성 |
 | 5 | `scripts/make_theme_era_csv.py` | Theme/Era/EntityType 상위 레이어 node/relation CSV 생성 |
 
+`scripts/make_term_person_review.py`는 기본 runner에 포함하지 않는다.
+Term-Person 수동 검수 후보가 필요할 때 graph CSV 생성 후 단독 실행한다.
+
 ---
 
 ## 2. 폴더 역할
@@ -56,7 +59,7 @@ raw_data
 | `graph/relations/` | 수동 실행 산출물 | `make_graph_csv.py`를 단독 실행할 때의 기본 relationship CSV 저장 위치 |
 | `__pycache__/` | 실행 캐시 | Python이 자동 생성한 캐시 폴더. import 대상 아님 |
 
-`run_neo4j_preprocessing.py`로 실행하면 마지막 graph 생성 단계는 `graph/`가 아니라 `storage/neo4j/neo4j_import/` 아래에 바로 CSV를 만든다. Neo4j import에서는 보통 `storage/neo4j/neo4j_import/nodes/`를 먼저 넣고, 그 다음 `storage/neo4j/neo4j_import/relations/`를 넣는다.
+`run_neo4j_preprocessing.py`로 실행하면 graph 생성 단계는 `graph/`가 아니라 `storage/neo4j/neo4j_import/` 아래에 바로 CSV를 만든다. Neo4j import에서는 보통 `storage/neo4j/neo4j_import/nodes/`를 먼저 넣고, 그 다음 `storage/neo4j/neo4j_import/relations/`를 넣는다.
 
 ### 2.1 runner가 생성하는 CSV와 생성하지 않는 CSV
 
@@ -68,6 +71,8 @@ raw_data
 - `staging/`
 - `storage/neo4j/neo4j_import/nodes/`
 - `storage/neo4j/neo4j_import/relations/`
+
+단, `staging/term_era_candidate.csv`는 수동 검수 파일이므로 존재하면 삭제하지 않고 보존한다.
 
 반대로 `seed/` 폴더의 CSV는 runner가 생성하지 않는다. `seed/`는 사람이 직접 관리하는 입력 규칙표이기 때문이다.
 
@@ -109,6 +114,9 @@ Person 중복 검수 후보는 별도 CSV로 분리하지 않는다.
 `staging/person_duplicate_review.csv`가 과거 실행 결과로 남아 있어도 graph 생성 입력이 아니며, 공식 검수 흐름에서는 삭제해도 된다.
 이를 만들던 보조 스크립트 `make_person_duplicate_review.py`도 공식 흐름에서 제거했다.
 후보는 `staging/term_person_review.csv` 하나에서 보고, 확정한 Term-Person 연결만 `seed/term_person_review_approved.csv`에 기록한다.
+이렇게 바꾼 이유는 검수 대상이 Person 노드 병합이 아니라 Term 설명을 어느 Person에 연결할지의 엣지 선택이기 때문이다.
+이름/한자가 같다는 이유로 Person ID를 합치면 서로 다른 인물의 관계, 사건 참여, 생몰년, 출처가 한 노드에 섞일 수 있다.
+반대로 Term-Person 연결은 `term_id`, `person_id` 단위로 승인하면 틀린 후보를 seed에 넣지 않는 방식으로 보수적으로 관리할 수 있다.
 이 후보 파일의 `birth_year`, `death_year`는 원천 Person 데이터의 연도 문자열을 그대로 표시하며, 원천이 비어 있으면 빈 값으로 둔다.
 `14??`, `?`, `1745(1730)` 같은 부분/불확실 연도도 원천값이면 그대로 둔다.
 Term 설명의 재위 연도는 후보 필터링에만 쓰고 생몰년 컬럼을 채우는 데 사용하지 않는다.
@@ -127,7 +135,7 @@ Term 설명의 재위 연도는 후보 필터링에만 쓰고 생몰년 컬럼�
 | `make_graph_csv.py` | `neo4j/scripts/` | 최종 Neo4j node/relation CSV 생성 |
 | `make_theme_era_csv.py` | `neo4j/scripts/` | graph CSV와 seed를 읽어 Theme/Era/EntityType 상위 레이어 CSV 생성 |
 | `make_term_era_candidates.py` | `neo4j/scripts/` | 고조선/초기 국가 시대 후보 용어를 이름/설명문에서 추출해 검수 시트 생성. runner 미포함, 수동 실행 |
-| `make_term_person_review.py` | `neo4j/scripts/` | 이름/한자 1차 후보 중 Term 설명에 Person 관계망 단서가 있고 시대 범위와 생몰년이 명백히 충돌하지 않는 Term-Person 후보를 수동 검수 CSV로 생성. runner 미포함, 수동 실행 |
+| `make_term_person_review.py` | `neo4j/scripts/` | 이름/한자 1차 후보 중 Term 설명에 Person 관계망 단서가 있고 시대 범위와 생몰년이 명백히 충돌하지 않는 Term-Person 후보를 수동 검수 CSV로 생성. 기본 runner에는 포함하지 않고 필요할 때 단독 실행 |
 
 각 스크립트는 단독 실행도 가능하지만, 일반적으로는 runner만 실행한다.
 
@@ -389,6 +397,7 @@ events.subject_category
 | `event_source_category_relation.csv` | 713 | 사건과 원본 이벤트 분류 연결 중간 테이블 |
 | `event_date_parse.csv` | 703 | 사건 날짜 원문 parsing 결과 |
 | `term_year_parse.csv` | 61,598 | 용어 연도 원문 parsing 결과. 최종 `nodes/terms.csv`에 병합 |
+| `term_person_review.csv` | 206 | Term-Person 수동 검수 후보. 기본 runner 산출물이 아니며, `make_term_person_review.py --save`를 단독 실행할 때 생성된다. `review_type`으로 검수 유형을 구분하고, 승인 결과는 `seed/term_person_review_approved.csv`에 기록 |
 | `term_era_candidate.csv` | (수동 생성) | 고조선/초기 국가 시대 후보 용어 검수 시트. `make_term_era_candidates.py` 수동 실행 시 생성되며 runner는 생성하지 않음(현재 미생성). HIGH 신뢰도는 `AUTO_APPROVED`, 나머지는 `PENDING`으로 사람 검수 대상. 검수 결정은 재실행 시 보존됨. `make_theme_era_csv.py`는 이 파일이 있으면 검수 통과분을 `term_in_era.csv`에 합류 |
 
 ### 8.1 `term_canonical_category_relation.csv`
@@ -432,7 +441,7 @@ events.subject_category
 | `regions.csv` | 7 | 지역/권역 노드 |
 | `economic_domains.csv` | 16 | 경제 분야 노드 |
 | `taxonomy_facets.csv` | 49 | 중간 taxonomy facet 노드 |
-| `search_tags.csv` | 583 | 검색 편의용 통합 tag 노드 |
+| `search_tags.csv` | 175,714 | Term/Event/Person 검색 편의용 통합 tag 노드. Person 별칭은 `PersonAlias` 태그로 분리 |
 | `themes.csv` | 10 | 서비스 고정 주제 축 노드 |
 | `eras.csv` | 10 | 표준 시대 축 노드 |
 | `entity_types.csv` | 4 | 실체 유형 축 노드 (인물/문헌/문화재/장소) |
@@ -479,8 +488,9 @@ events.subject_category
 | `term_about_region.csv` | 82 | `Term - ABOUT_REGION - Region` |
 | `term_about_economic_domain.csv` | 2,894 | `Term - ABOUT_ECONOMIC_DOMAIN - EconomicDomain` |
 | `term_about_taxonomy_facet.csv` | 22,962 | `Term - ABOUT_TAXONOMY_FACET - TaxonomyFacet` |
-| `term_refers_to_person.csv` | 291 | `Term - REFERS_TO - Person` (Term 연도와 Person 생몰년이 완전히 같고 설명에 Person 관계망 단서가 있는 단일 후보만 자동 연결) |
-| `term_mentions_person.csv` | 2,758 | `Term - MENTIONS_PERSON - Person` (설명문 안 인물명 언급. 직접 지시 관계보다 약함) |
+| `term_refers_to_person.csv` | 2,243 | `Term - REFERS_TO - Person` (이름/한자와 Term 연도/Person 생몰년이 모두 일치하는 유일 후보, 관계망 단서 기반 후보, 수동 승인 후보를 연결) |
+| `term_mentions_person.csv` | 8,606 | `Term - MENTIONS_PERSON - Person` (설명문 안 신뢰된 인물명 언급. 직접 지시 관계보다 약함) |
+| `term_has_search_tag.csv` | 349,531 | `Term - HAS_SEARCH_TAG - SearchTag` |
 | `term_refers_to_event.csv` | 13 | `Term - REFERS_TO - Event` (이름 유일 매칭만 연결) |
 
 `term_in_period.csv`에는 `match_type`이 있다.
@@ -502,7 +512,7 @@ events.subject_category
 | `event_in_period.csv` | 600 | `Event - IN_PERIOD - Period` |
 | `event_part_of_event_group.csv` | 224 | `Event - PART_OF_EVENT_GROUP - EventGroup` |
 | `event_has_source_url.csv` | 2,382 | `Event - HAS_SOURCE_URL - SourceUrl` |
-| `event_has_search_tag.csv` | 2,811 | `Event - HAS_SEARCH_TAG - SearchTag` |
+| `event_has_search_tag.csv` | 6,016 | `Event - HAS_SEARCH_TAG - SearchTag` |
 | `event_about_country.csv` | 2 | `Event - ABOUT_COUNTRY - Country` |
 | `event_about_taxonomy_facet.csv` | 714 | `Event - ABOUT_TAXONOMY_FACET - TaxonomyFacet` |
 
@@ -517,8 +527,9 @@ events.subject_category
 | CSV | 행 수 | 의미 |
 |---|---:|---|
 | `person_involved_in_event.csv` | 6,918 | `Person - INVOLVED_IN - Event` |
-| `person_related_to_person.csv` | 184,056 | `Person - RELATED_TO - Person` (대칭 관계는 한 방향만 저장) |
+| `person_related_to_person.csv` | 184,044 | `Person - RELATED_TO - Person` (대칭 관계는 한 방향만 저장) |
 | `person_has_source_url.csv` | 56,212 | `Person - HAS_SOURCE_URL - SourceUrl` |
+| `person_has_search_tag.csv` | 238,817 | `Person - HAS_SEARCH_TAG - SearchTag` |
 
 `person_related_to_person.csv`는 `relation_type_dictionary.csv`를 적용한 결과다.
 
@@ -548,8 +559,8 @@ events.subject_category
 | `term_has_entity_type.csv` | 20,662 | `Term - HAS_ENTITY_TYPE - EntityType` |
 | `term_in_era.csv` | 54,125 | `Term - IN_ERA - Era` (`IN_PERIOD -> PART_OF_ERA` 파생 + 키워드 override + 설명문 검수 통과분) |
 | `event_in_era.csv` | 600 | `Event - IN_ERA - Era` (`IN_PERIOD -> PART_OF_ERA` 파생) |
-| `person_in_era.csv` | 23,214 | `Person - IN_ERA - Era` (생몰년 기반 + 사건 기반 보조 추론) |
-| `person_has_theme.csv` | 60,553 | `Person - HAS_THEME - Theme` (인물 라벨 + 사건 참여/인명 세부 카테고리 주제 상속) |
+| `person_in_era.csv` | 23,029 | `Person - IN_ERA - Era` (생몰년 기반 + 사건 기반 보조 추론, 더 좁은 Era가 있으면 넓은 Era 중복 제거) |
+| `person_has_theme.csv` | 60,512 | `Person - HAS_THEME - Theme` (인물 라벨 + 사건 참여/인명 세부 카테고리 주제 상속) |
 
 `canonical_category_subcategory_of.csv`에서는 국가/지역 facet으로 분리된 경로를 제외했다. 따라서 `러시아`, `미국`, `기타지역` 같은 값이 `외교·국제관계`의 의미상 하위 카테고리처럼 붙지 않는다.
 
@@ -663,7 +674,7 @@ history_graph_verify.cypher
 
 `start_year`, `end_year`, `year_precision`, `year_parse_status`는 `make_graph_csv.py`에서 즉석 계산하지 않는다. `make_base_dictionaries.py`가 먼저 `staging/term_year_parse.csv`를 만들고, 최종 graph 단계가 이 staging CSV를 `Term` 노드에 병합한다. 이렇게 분리한 이유는 파싱 결과를 EDA/검수 산출물로 직접 확인할 수 있게 하기 위해서다.
 
-`term_year_parse.csv`의 현재 분포는 `PARSED` 33,465건, `UNKNOWN` 28,133건이다. precision은 `YEAR_RANGE`, `EXACT_YEAR`, `PARTIAL`, `MULTI`, `DECADE`, `UNKNOWN`을 사용한다. `reign_seed.csv`는 왕대/연호 표현을 숫자 연도로 보강하기 위한 seed이며, 같은 왕 이름이 여러 시대에 있으면 자동 계산에서 제외한다.
+`term_year_parse.csv`의 현재 분포는 `PARSED` 33,458건, `UNKNOWN` 28,140건이다. precision은 `YEAR_RANGE`, `EXACT_YEAR`, `PARTIAL`, `MULTI`, `DECADE`, `UNKNOWN`을 사용한다. `reign_seed.csv`는 왕대/연호 표현을 숫자 연도로 보강하기 위한 seed이며, 같은 왕 이름이 여러 시대에 있으면 자동 계산에서 제외한다.
 
 ### 13.2 `nodes/people.csv`
 
@@ -679,8 +690,8 @@ history_graph_verify.cypher
 |---|---:|---|
 | `term_in_era.csv` | 54,125 | `Term - IN_ERA - Era`. `Term - IN_PERIOD - Period - PART_OF_ERA - Era`를 미리 펼친 관계이며, 키워드 override와 설명문 기반 검수 통과분(DESC_KEYWORD)을 합류한다. |
 | `event_in_era.csv` | 600 | `Event - IN_ERA - Era`. 사건의 period를 Era로 펼친 관계다. |
-| `person_in_era.csv` | 23,214 | `Person - IN_ERA - Era`. 생몰년 기반 연결을 우선하고, 생몰년이 없는 인물은 참여 사건 Era로 보조 추론한다. |
-| `person_has_theme.csv` | 60,553 | `Person - HAS_THEME - Theme`. 모든 Person은 `인물` 주제에 연결하고, 참여 사건과 인명 세부 카테고리에서 얻은 내용 주제를 보조 상속한다. |
+| `person_in_era.csv` | 23,029 | `Person - IN_ERA - Era`. 생몰년 기반 연결을 우선하고, 생몰년이 없는 인물은 참여 사건 Era로 보조 추론한다. 더 좁은 Era가 같은 생애 겹침 구간을 완전히 설명하면 넓은 Era 중복은 제외한다. |
+| `person_has_theme.csv` | 60,512 | `Person - HAS_THEME - Theme`. 모든 Person은 `인물` 주제에 연결하고, 참여 사건과 인명 세부 카테고리에서 얻은 내용 주제를 보조 상속한다. |
 
 ### 13.5 왜 직접 관계를 만들었는가
 
@@ -702,8 +713,10 @@ history_graph_verify.cypher
 | `dictionary/canonical_category_dictionary.csv` | `term_lk`를 분해해 만든 표준 카테고리 400개 |
 | `mapping/taxonomy_crosswalk.csv` | 이벤트 원본 분류를 표준 카테고리로 연결 |
 | `dictionary/event_facet_dictionary.csv` | 이벤트 분류를 사건 의미 facet으로 정리 |
-| `storage/neo4j/neo4j_import/nodes/search_tags.csv` | 이벤트 검색용 통합 태그 |
-| `storage/neo4j/neo4j_import/relations/event_has_search_tag.csv` | 이벤트가 가진 여러 축을 한 검색 관계로 모은 관계 |
+| `storage/neo4j/neo4j_import/nodes/search_tags.csv` | Term/Event/Person 검색용 통합 태그 |
+| `storage/neo4j/neo4j_import/relations/term_has_search_tag.csv` | 용어가 가진 이름·분류·시대·주제·유형 축을 한 검색 관계로 모은 관계 |
+| `storage/neo4j/neo4j_import/relations/event_has_search_tag.csv` | 사건이 가진 이름·분류·시대·주제 축을 한 검색 관계로 모은 관계 |
+| `storage/neo4j/neo4j_import/relations/person_has_search_tag.csv` | 인물이 가진 이름·별칭·참여 사건·지시 용어·주제·시대 축을 한 검색 관계로 모은 관계 |
 
 `EventFacet`과 `SearchTag`는 일부 값이 겹친다. 하지만 `EventFacet`은 의미 축이고, `SearchTag`는 빠른 검색을 위한 비정규화 축이다.
 
@@ -716,8 +729,10 @@ history_graph_verify.cypher
 키워드 기반 빠른 검색은 다음 축을 사용한다.
 
 ```cypher
-MATCH (e:Event)-[:HAS_SEARCH_TAG]->(:SearchTag {name: "전쟁"})
-RETURN e;
+MATCH (n)-[:HAS_SEARCH_TAG]->(:SearchTag {tag_name: "전쟁"})
+RETURN DISTINCT n;
 ```
 
-`SearchTag`는 쿼리를 쉽게 만들기 위한 중복 레이어이므로, 태그의 출처를 잃지 않도록 `HAS_SEARCH_TAG` 관계에 `source_node_type`, `source_node_id`, `source_relation` 속성을 남긴다.
+`SearchTag`는 쿼리를 쉽게 만들기 위한 중복 레이어이므로, 태그의 출처를 잃지 않도록 `HAS_SEARCH_TAG` 관계에 `source_node_type`, `source_node_id`, `source_relation`, `source_detail` 속성을 남긴다.
+Person 이름 별칭은 `source_node_type=PersonAlias`, `source_relation=person_alias`로 별도 태그를 만든다.
+Person이 Event/Term에서 SearchTag를 상속받은 경우 `source_detail`에는 원천 `event_id` 또는 `term_id` 묶음이 들어가므로, 빠른 검색 뒤에도 어떤 원천 연결에서 온 태그인지 되짚을 수 있다.

@@ -1,11 +1,11 @@
-theme_id,theme_name,theme_order,note
-THEME_0001,사건,10,Event 노드 전체가 이 주제에 연결
-THEME_0002,인물,20,인명 카테고리 용어가 이 주제에 연결
-THEME_0003,정치,30,정치 활동·사상·선거·입법
-THEME_0004,제도,40,행정·인사·법제·사법·교통 통신
-THEME_0005,문화,50,예술·교육·학술·과학기술
-THEME_0006,사회,60,사회 생활·독립운동·사회운동
-THEME_0007,군사,70,국방·군사
-THEME_0008,경제,80,산업·재정·금융
-THEME_0009,사상·종교,90,전통사상과 종교
-THEME_0010,외교,100,외교·국제관계
+theme_id,theme_key,theme_name,theme_order,note
+THEME_0001,EVENT,사건,10,Event 노드 전체가 이 주제에 연결
+THEME_0002,PERSON,인물,20,인명 카테고리 용어가 이 주제에 연결
+THEME_0003,POLITICS,정치,30,정치 활동·사상·선거·입법
+THEME_0004,INSTITUTION,제도,40,행정·인사·법제·사법·교통 통신
+THEME_0005,CULTURE,문화,50,예술·교육·학술·과학기술
+THEME_0006,SOCIETY,사회,60,사회 생활·독립운동·사회운동
+THEME_0007,MILITARY,군사,70,국방·군사
+THEME_0008,ECONOMY,경제,80,산업·재정·금융
+THEME_0009,THOUGHT_RELIGION,사상·종교,90,전통사상과 종교
+THEME_0010,DIPLOMACY,외교,100,외교·국제관계

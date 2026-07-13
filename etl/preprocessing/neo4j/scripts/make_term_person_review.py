@@ -1,8 +1,8 @@
 """
 Term-Person 동명이인 수동 검수 후보 CSV를 만든다.
 
-이 스크립트는 기본 runner에 포함하지 않는다. 사람이 검수해야 하는 후보를
-필요할 때만 생성하고, 승인 결과는 seed/term_person_review_approved.csv에 남긴다.
+이 스크립트는 graph CSV 생성 이후 필요할 때 단독 실행한다.
+승인 결과는 seed/term_person_review_approved.csv에 남긴다.
 """
 
 import argparse
@@ -17,12 +17,19 @@ from make_graph_csv import (
     merge_person_life_year_columns,
     split_person_name_columns,
 )
-from neo4j_common import print_summary, read_csv, resolve_project_root, save_csv
+from neo4j_common import (
+    print_summary,
+    read_csv,
+    read_optional_csv,
+    resolve_import_dir,
+    resolve_project_root,
+    save_csv,
+)
 
 
 def build_default_paths(script_path):
     project_root = resolve_project_root(script_path)
-    import_dir = project_root / "storage" / "neo4j" / "neo4j_import"
+    import_dir = resolve_import_dir(project_root)
     neo4j_dir = script_path.parents[1]
 
     return {
@@ -31,6 +38,9 @@ def build_default_paths(script_path):
         "person_relations": neo4j_dir / "normalized" / "person_relations.csv",
         "term_in_period": import_dir / "relations" / "term_in_period.csv",
         "periods": import_dir / "nodes" / "periods.csv",
+        "term_person_review_approved": (
+            neo4j_dir / "seed" / "term_person_review_approved.csv"
+        ),
         "output": neo4j_dir / "staging" / "term_person_review.csv",
     }
 
@@ -52,6 +62,11 @@ def parse_args(default_paths):
         default=default_paths["term_in_period"],
     )
     parser.add_argument("--periods-path", type=Path, default=default_paths["periods"])
+    parser.add_argument(
+        "--term-person-review-approved-path",
+        type=Path,
+        default=default_paths["term_person_review_approved"],
+    )
     parser.add_argument("--output-path", type=Path, default=default_paths["output"])
     parser.add_argument(
         "--save",
@@ -68,7 +83,7 @@ def build_review_columns():
         "name",
         "term_id",
         "term_hanja",
-        "term_desc_preview",
+        "term_description",
         "term_year_text",
         "term_start_year",
         "term_end_year",
@@ -211,15 +226,50 @@ def build_period_life_conflict_mask(candidates):
     )
 
 
+def build_term_life_conflict_mask(candidates):
+    required_columns = [
+        "start_year",
+        "end_year",
+        "birth_year",
+        "death_year",
+    ]
+    missing_columns = [
+        column_name
+        for column_name in required_columns
+        if column_name not in candidates.columns
+    ]
+
+    if missing_columns:
+        return pd.Series(False, index=candidates.index)
+
+    term_start_year = pd.to_numeric(candidates["start_year"], errors="coerce")
+    term_end_year = pd.to_numeric(candidates["end_year"], errors="coerce")
+    birth_year = pd.to_numeric(candidates["birth_year"], errors="coerce")
+    death_year = pd.to_numeric(candidates["death_year"], errors="coerce")
+    has_complete_years = (
+        term_start_year.notna()
+        & term_end_year.notna()
+        & birth_year.notna()
+        & death_year.notna()
+    )
+
+    return has_complete_years & (
+        death_year.lt(term_start_year) | birth_year.gt(term_end_year)
+    )
+
+
 def filter_supported_identity_candidates(candidates):
     description_match = build_description_context_match_mask(candidates)
     period_life_conflict = build_period_life_conflict_mask(candidates)
+    term_life_conflict = build_term_life_conflict_mask(candidates)
 
-    return candidates[description_match & ~period_life_conflict].copy()
+    return candidates[
+        description_match & ~period_life_conflict & ~term_life_conflict
+    ].copy()
 
 
 def add_review_type(candidates):
-    group_columns = ["term_id", "name", "hanja_term", "term_desc_preview"]
+    group_columns = ["term_id", "name", "hanja_term", "term_description"]
     group_person_counts = candidates.groupby(group_columns)["person_id"].transform(
         "nunique"
     )
@@ -229,6 +279,41 @@ def add_review_type(candidates):
     candidates.loc[group_person_counts.gt(1), "review_type"] = "PERSON_DUPLICATE"
 
     return candidates
+
+
+def filter_approved_review_candidates(candidates, approved_links):
+    if candidates.empty or approved_links.empty:
+        return candidates
+
+    required_columns = ["term_id", "person_id", "review_status"]
+    missing_columns = [
+        column_name
+        for column_name in required_columns
+        if column_name not in approved_links.columns
+    ]
+
+    if missing_columns:
+        return candidates
+
+    approved_data = approved_links[
+        approved_links["review_status"].isin(["APPROVED", "AUTO_APPROVED"])
+    ][["term_id", "person_id"]].drop_duplicates()
+
+    if approved_data.empty:
+        return candidates
+
+    filtered_candidates = candidates.merge(
+        approved_data,
+        on=["term_id", "person_id"],
+        how="left",
+        indicator=True,
+    )
+    filtered_candidates = filtered_candidates[
+        filtered_candidates["_merge"].eq("left_only")
+    ].copy()
+    filtered_candidates = filtered_candidates.drop(columns=["_merge"])
+
+    return filtered_candidates
 
 
 def build_review_candidates(terms, people, person_relations, term_in_period, periods):
@@ -271,7 +356,7 @@ def build_review_candidates(terms, people, person_relations, term_in_period, per
         return empty_review_candidates()
 
     candidates["person_name"] = candidates["base_name"]
-    candidates["term_desc_preview"] = candidates["description"].str.slice(0, 50)
+    candidates["term_description"] = candidates["description"]
     candidates = add_review_type(candidates)
 
     if candidates.empty:
@@ -315,12 +400,20 @@ def main():
     person_relations = read_csv(args.person_relations_path, "person_relations")
     term_in_period = read_csv(args.term_in_period_path, "term_in_period")
     periods = read_csv(args.periods_path, "periods")
+    approved_links = read_optional_csv(
+        args.term_person_review_approved_path,
+        "term_person_review_approved",
+    )
     review_candidates = build_review_candidates(
         terms,
         people,
         person_relations,
         term_in_period,
         periods,
+    )
+    review_candidates = filter_approved_review_candidates(
+        review_candidates,
+        approved_links,
     )
 
     write_or_print_output(args, review_candidates)

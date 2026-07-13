@@ -116,6 +116,8 @@ HISTORY_STOPWORDS = {
     "인물", "사건", "조직", "단체", "유물", "유적", "정리", "요약", "설명", "개념",
     "왕", "대왕"
 }
+BM25_IGNORE_TERMS = HISTORY_STOPWORDS | OVERVIEW_IGNORE_TERMS
+COMPARISON_JOIN_TERMS = ("와", "과", "이랑", "하고", "및")
 
 
 def normalize_query_spacing(question: str) -> str:
@@ -180,6 +182,20 @@ def build_keyword_question(
     if any(term in question for term in ACHIEVEMENT_QUERY_TERMS):
         terms.extend(ACHIEVEMENT_CONTEXT_TERMS)
     return " ".join(dict.fromkeys(term for term in terms if term))
+
+
+def build_bm25_query(focus_terms: tuple[str, ...], fallback: str) -> str:
+    terms: list[str] = []
+    for term in focus_terms:
+        variants = [term]
+        for suffix in HONORIFIC_SUFFIXES:
+            if len(term) > len(suffix) + 1 and term.endswith(suffix):
+                variants.insert(0, term[: -len(suffix)])
+        for candidate in variants:
+            if len(candidate) >= 2 and candidate not in BM25_IGNORE_TERMS:
+                terms.append(candidate)
+                break
+    return " ".join(dict.fromkeys(terms)) or fallback
 
 
 @dataclass(frozen=True)
@@ -544,10 +560,16 @@ class PgVectorHybridRetriever:
         embedding = vector_literal(embed_query(embedding_question, self.model, self.dimensions))
         overview_query = any(term in question for term in OVERVIEW_TERMS)
         use_reranker = os.getenv("RAG_RERANKER_ENABLED", "").lower() in {"1", "true", "yes"}
+        use_bm25 = os.getenv("RAG_BM25_ENABLED", "true").lower() in {"1", "true", "yes"}
         final_limit = max(top_k * 5, top_k) if generic_overview_query or use_reranker else top_k
+        keyword_candidate_pool = min(self.candidate_pool, 30)
+        bm25_candidate_pool = min(self.candidate_pool, 30)
 
         # 불용어(Stopwords)를 걸러낸 정밀한 focus_terms 추출
         filtered_focus_terms = tuple(term for term in focus_terms if term not in HISTORY_STOPWORDS)
+        comparison_query = any(term in question for term in COMPARISON_JOIN_TERMS) and len(focus_terms) >= 2
+        use_bm25 = use_bm25 and not comparison_query
+        bm25_query = build_bm25_query(filtered_focus_terms or focus_terms, keyword_filter)
 
         def build_where(relaxed: bool = False) -> tuple[str, list[Any]]:
             where_parts = ["embedding IS NOT NULL"]
@@ -573,6 +595,30 @@ class PgVectorHybridRetriever:
             for term in filtered_focus_terms:
                 like_term = f"%{term}%"
                 focus_match_params.extend([like_term, like_term])
+        bm25_cte_sql = ""
+        bm25_union_sql = ""
+        if use_bm25:
+            bm25_cte_sql = f"""
+        ,
+        bm25_candidates AS (
+            SELECT
+                id,
+                chunk_id,
+                source_type,
+                0.0::float AS vector_score,
+                ts_rank_cd(search_vector, plainto_tsquery('simple', %s)) * 2.0 AS keyword_score,
+                CASE WHEN %s AND ({focus_match_sql}) THEN 1 ELSE 0 END AS focus_hit
+            FROM rag.document_chunks
+            WHERE {where_sql}
+              AND search_vector @@ plainto_tsquery('simple', %s)
+            ORDER BY keyword_score DESC
+            LIMIT %s
+        )
+            """
+            bm25_union_sql = """
+            UNION ALL
+            SELECT * FROM bm25_candidates
+            """
 
         sql = f"""
         WITH vector_candidates AS (
@@ -603,14 +649,16 @@ class PgVectorHybridRetriever:
                 CASE WHEN %s AND ({focus_match_sql}) THEN 1 ELSE 0 END AS focus_hit
             FROM rag.document_chunks
             WHERE {where_sql}
-              AND (title %% %s OR chunk_text %% %s OR title ILIKE %s OR chunk_text ILIKE %s)
+              AND (title %% %s OR chunk_text %% %s)
             ORDER BY keyword_score DESC
             LIMIT %s
-        ),
+        )
+        {bm25_cte_sql},
         merged_candidates AS (
             SELECT * FROM vector_candidates
             UNION ALL
             SELECT * FROM keyword_candidates
+            {bm25_union_sql}
         ),
         candidates AS (
             SELECT DISTINCT ON (chunk_id) *
@@ -688,9 +736,19 @@ class PgVectorHybridRetriever:
                 *where_params,
                 keyword_filter,
                 keyword_filter,
-                f"%{keyword_filter}%",
-                f"%{keyword_filter}%",
-                self.candidate_pool,
+                keyword_candidate_pool,
+                *(
+                    [
+                        bm25_query,
+                        generic_overview_query,
+                        *focus_match_params,
+                        *where_params,
+                        bm25_query,
+                        bm25_candidate_pool,
+                    ]
+                    if use_bm25
+                    else []
+                ),
                 image_query,
                 image_query,
                 overview_query,

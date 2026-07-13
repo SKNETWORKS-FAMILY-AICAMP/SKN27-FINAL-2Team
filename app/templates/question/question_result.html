@@ -7,7 +7,8 @@
   <link rel="stylesheet" href="/static/question/css/result.css" />
   <link rel="stylesheet" href="../../static/question/css/result.css" />
   <link rel="stylesheet" href="/static/himate.css" />
-  <link rel="stylesheet" href="/static/layout.css" />
+  <link rel="stylesheet" href="/static/layout.css?v=result-reference-1" />
+  <style>html, body { background: #fbfcfa !important; }</style>
 </head>
 <body>
   <header class="site-header" aria-label="문제풀이 결과 메뉴">
@@ -34,7 +35,13 @@
           <span class="page-kicker">문제풀이 해설</span>
           <h1>문제별 결과 확인</h1>
         </div>
-        <div class="question-jump" id="questionJump" aria-label="문제 번호 이동"></div>
+        <section class="question-jump-panel" aria-label="문항 선택">
+          <div class="question-jump-heading">
+            <strong>문항 선택</strong>
+            <button class="question-jump-toggle" id="questionJumpToggle" type="button" aria-expanded="true" aria-label="문항 선택 접기"><img src="/static/diagnosis/assets/hide.png" alt="" /></button>
+          </div>
+          <div class="question-jump" id="questionJump" aria-label="문제 번호 이동"></div>
+        </section>
       </header>
 
       <section class="answer-summary" aria-label="답안 요약">
@@ -145,6 +152,7 @@
     const wrongExplanation = document.getElementById("wrongExplanation");
     const coreConcept = document.getElementById("coreConcept");
     const questionJump = document.getElementById("questionJump");
+    const questionJumpToggle = document.getElementById("questionJumpToggle");
     const accuracyText = document.getElementById("accuracyText");
     const accuracyCount = document.getElementById("accuracyCount");
     const levelText = document.getElementById("levelText");
@@ -152,6 +160,16 @@
     const weakTopics = document.getElementById("weakTopics");
     const saveButton = document.getElementById("pdfSave");
     const noteSaveStatus = document.getElementById("noteSaveStatus");
+
+    questionJumpToggle.addEventListener("click", () => {
+      const expanded = questionJump.hidden;
+      questionJump.hidden = !expanded;
+      questionJumpToggle.setAttribute("aria-expanded", String(expanded));
+      questionJumpToggle.setAttribute("aria-label", expanded ? "문항 선택 접기" : "문항 선택 펼치기");
+      questionJumpToggle.querySelector("img").src = expanded
+        ? "/static/diagnosis/assets/hide.png"
+        : "/static/diagnosis/assets/eye.png";
+    });
 
     function escapeHtml(value) {
       return String(value || "")
@@ -224,6 +242,32 @@
         `[키워드] ${question.coreConcept || question.core_concept || "-"}`,
         `[해설] ${question.answerExplanation || question.answer_explanation || ""}`,
       ].filter(Boolean).join("\n");
+    }
+
+    function buildChatProblem(index) {
+      const question = questions[index];
+      const correct = correctOf(index);
+      return {
+        record_id: questionIdOf(index) || Date.now(),
+        session_id: saved?.sessionId || saved?.session_id || "",
+        number: index + 1,
+        content: question.title || question.content || "",
+        passage: question.source || question.passage || "",
+        question_type: question.questionType || question.type || "",
+        era: question.era || "",
+        topic: question.topic || "",
+        selected_no: answers[index],
+        answer_no: correct,
+        is_correct: isCorrect(index),
+        answer_explanation: question.answerExplanation || question.answer_explanation || "",
+        core_concept: question.coreConcept || question.core_concept || "",
+        options: (question.choices || []).map((choice, choiceIndex) => ({
+          choice_no: choiceIndex + 1,
+          content: choiceText(choice),
+          is_answer: choiceIndex + 1 === correct,
+          choice_explanation: choiceExplanation(choice),
+        })),
+      };
     }
 
     function renderJump() {
@@ -319,7 +363,7 @@
     document.getElementById("prevQuestion").addEventListener("click", () => move(-1));
     document.getElementById("nextQuestion").addEventListener("click", () => move(1));
     document.getElementById("askChatbot").addEventListener("click", () => {
-      sessionStorage.setItem("chatbotQuestionContext", buildChatContext(currentIndex));
+      sessionStorage.setItem("chatbotProblemContext", JSON.stringify(buildChatProblem(currentIndex)));
       window.location.href = "/chatbot/?from=question-result";
     });
     document.getElementById("pdfSave").addEventListener("click", async () => {

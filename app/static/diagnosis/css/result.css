@@ -404,9 +404,10 @@ button {
 
 .summary-grid ul {
   display: grid;
+  grid-template-rows: repeat(3, minmax(20px, auto));
   align-content: center;
-  justify-items: center;
-  gap: 8px;
+  justify-items: stretch;
+  gap: 4px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -419,17 +420,18 @@ button {
 }
 
 .summary-grid li {
-  min-height: 30px;
-  width: min(220px, 100%);
+  min-height: 20px;
+  width: 100%;
   display: flex;
   align-items: center;
-  justify-content: center;
-  border-radius: 999px;
-  padding: 0 12px;
-  background: #fff;
+  justify-content: flex-start;
+  padding: 0;
+  background: transparent;
   color: var(--lime-dark);
-  font-size: 13px;
+  font-size: clamp(10px, 1vw, 13px);
+  letter-spacing: -.04em;
   font-weight: 900;
+  white-space: nowrap;
 }
 
 @media (max-width: 900px) {.review-top,
@@ -459,3 +461,13 @@ button {
     border-bottom: 0;
   }
 }
+
+/* Compact, native disclosure for the question navigator. */
+.question-jump-panel { display: grid; justify-self: end; gap: 8px; }
+.question-jump-heading { display: flex; align-items: center; justify-content: flex-end; gap: 7px; color: var(--ink); font-size: 13px; font-weight: 900; }
+.question-jump-toggle { width: 26px; height: 26px; display: grid; place-items: center; padding: 0; border: 0 !important; border-radius: 0 !important; background: transparent !important; box-shadow: none !important; cursor: pointer; }
+.question-jump-toggle img { width: 21px; height: 21px; object-fit: contain; filter: invert(43%) sepia(19%) saturate(1175%) hue-rotate(104deg) brightness(93%) contrast(86%); }
+.question-jump button { background: transparent !important; }
+.question-jump button.correct { border-color: var(--lime) !important; background: transparent !important; color: var(--lime-dark) !important; }
+.question-jump button.wrong { border-color: #d96666 !important; background: transparent !important; color: #b44747 !important; }
+.question-jump button.active { background: #eaf1f5 !important; color: #405b6b !important; }

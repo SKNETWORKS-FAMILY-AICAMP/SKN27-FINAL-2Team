@@ -23,7 +23,7 @@ flowchart TB
     SourceCat["SourceEventCategory<br/>사건 원본 분류 (53)"]
     EventFacet["EventFacet<br/>사건 facet (53)"]
     TaxFacet["TaxonomyFacet<br/>중간 분류 축 (49)"]
-    SearchTag["SearchTag<br/>검색 태그 (583)"]
+    SearchTag["SearchTag<br/>검색 태그 (175,714)"]
 
     %% ===== 시대/의미 축 =====
     Period["Period<br/>원본 시대 (30)"]
@@ -41,9 +41,10 @@ flowchart TB
     Term -->|"IN_ERA (54,125)"| Era
     Term -->|"HAS_THEME (58,605)"| Theme
     Term -->|"HAS_ENTITY_TYPE (20,662)"| EntityType
-    Term -->|"REFERS_TO Person (2,971)"| Person
+    Term -->|"REFERS_TO Person (2,243)"| Person
     Term -->|"REFERS_TO Event (13)"| Event
-    Term -->|"MENTIONS_PERSON (3,114)"| Person
+    Term -->|"MENTIONS_PERSON (8,606)"| Person
+    Term -->|"HAS_SEARCH_TAG (349,531)"| SearchTag
     Term -->|"ABOUT_COUNTRY (1,620)"| Country
     Term -->|"ABOUT_REGION (82)"| Region
     Term -->|"ABOUT_ECONOMIC_DOMAIN (2,894)"| Econ
@@ -58,16 +59,17 @@ flowchart TB
     Event -->|"HAS_THEME (1,405)"| Theme
     Event -->|"PART_OF_EVENT_GROUP (224)"| EventGroup
     Event -->|"HAS_SOURCE_URL (2,382)"| Url
-    Event -->|"HAS_SEARCH_TAG (2,811)"| SearchTag
+    Event -->|"HAS_SEARCH_TAG (6,016)"| SearchTag
     Event -->|"ABOUT_COUNTRY (2)"| Country
     Event -->|"ABOUT_TAXONOMY_FACET (714)"| TaxFacet
 
     %% ----- Person -----
     Person -->|"INVOLVED_IN (6,918)"| Event
-    Person -->|"RELATED_TO (184,056)<br/>evidence_url은 관계 속성"| Person
-    Person -->|"IN_ERA (23,214)"| Era
-    Person -->|"HAS_THEME (60,553)"| Theme
+    Person -->|"RELATED_TO (184,044)<br/>evidence_url은 관계 속성"| Person
+    Person -->|"IN_ERA (23,029)"| Era
+    Person -->|"HAS_THEME (60,512)"| Theme
     Person -->|"HAS_SOURCE_URL (56,212)"| Url
+    Person -->|"HAS_SEARCH_TAG (238,817)"| SearchTag
 
     %% ----- 구조 관계 -----
     Category -->|"SUBCATEGORY_OF (335)"| Category
@@ -95,9 +97,9 @@ flowchart LR
     Url["SourceUrl (57,412)"]
 
     Person -->|"INVOLVED_IN · 사건 참여 (6,918)"| Event
-    Person -->|"RELATED_TO · 인물 관계 (184,056)<br/>의미와 evidence_url은 속성으로 보존"| Person
-    Term -->|"REFERS_TO · 가리키는 인물 (2,971)"| Person
-    Term -->|"MENTIONS_PERSON · 설명문 언급 (3,114)"| Person
+    Person -->|"RELATED_TO · 인물 관계 (184,044)<br/>의미와 evidence_url은 속성으로 보존"| Person
+    Term -->|"REFERS_TO · 가리키는 인물 (2,243)"| Person
+    Term -->|"MENTIONS_PERSON · 설명문 언급 (8,606)"| Person
     Term -->|"REFERS_TO · 가리키는 사건 (13)"| Event
     Event -->|"HAS_SOURCE_URL (2,382)"| Url
     Person -->|"HAS_SOURCE_URL · 인물 상세 (56,212)"| Url
@@ -120,10 +122,10 @@ flowchart LR
 
     Term -->|"HAS_THEME (58,605)"| Theme
     Event -->|"HAS_THEME (1,405)"| Theme
-    Person -->|"HAS_THEME (60,553)<br/>인물 라벨 + 근거 기반 상속"| Theme
+    Person -->|"HAS_THEME (60,512)<br/>인물 라벨 + 근거 기반 상속"| Theme
     Term -->|"IN_ERA (54,125)"| Era
     Event -->|"IN_ERA (600)"| Era
-    Person -->|"IN_ERA (23,214)<br/>생몰년 우선, 사건 보조 추론"| Era
+    Person -->|"IN_ERA (23,029)<br/>생몰년 우선, 사건 보조 추론"| Era
     Term -->|"HAS_ENTITY_TYPE (20,662)"| EntityType
 ```
 
@@ -168,7 +170,7 @@ flowchart LR
     Period -->|"PART_OF_ERA (23)<br/>시기 변형 통합"| Era
     Term -.->|"IN_ERA (54,125) · 파생 직통"| Era
     Event -.->|"IN_ERA (600) · 파생 직통"| Era
-    Person -.->|"IN_ERA (23,214) · 생몰년/사건 기반"| Era
+    Person -.->|"IN_ERA (23,029) · 생몰년/사건 기반"| Era
 ```
 
 점선은 원천 경로(`IN_PERIOD → PART_OF_ERA`)를 전처리에서 미리 펼친 파생 직통 관계다.
@@ -208,16 +210,20 @@ flowchart LR
 
 ```mermaid
 flowchart LR
+    Term["Term"]
     Event["Event"]
-    SearchTag["SearchTag (583)<br/>통합 검색 태그 · 비정규화"]
+    Person["Person"]
+    SearchTag["SearchTag (175,714)<br/>통합 검색 태그 · 비정규화"]
     EventGroup["EventGroup (32)<br/>사건군"]
 
-    Event -->|"HAS_SEARCH_TAG (2,811)<br/>검색 진입점 · 조회 시 DISTINCT"| SearchTag
+    Term -->|"HAS_SEARCH_TAG (349,531)<br/>용어명·분류·시대·주제"| SearchTag
+    Event -->|"HAS_SEARCH_TAG (6,016)<br/>사건명·분류·시대·주제"| SearchTag
+    Person -->|"HAS_SEARCH_TAG (238,817)<br/>인물명·별칭·사건/용어 상속·주제"| SearchTag
     Event -->|"PART_OF_EVENT_GROUP (224)"| EventGroup
 ```
 
-`SearchTag`는 검색 편의를 위한 보조 노드다. 기본 graph view에서는 중복처럼 보일 수 있으므로 필요할 때만 포함하고, 일반 탐색 쿼리에서는 제외하는 것이 좋다.
+`SearchTag`는 검색 편의를 위한 보조 노드다. Term/Event/Person에서 공통으로 1-hop 검색 진입점을 제공하지만, 원천 의미 축은 각 관계의 `source_node_type`, `source_node_id`, `source_relation`, `source_detail` 속성으로 따로 보존한다. Person은 줄바꿈 별칭을 `PersonAlias` 태그로도 분리해 대표명과 별칭 검색을 모두 지원한다. 기본 graph view에서는 중복처럼 보일 수 있으므로 필요할 때만 포함하고, 일반 탐색 쿼리에서는 제외하는 것이 좋다.
 
 ---
 
-노드·엣지별 상세 의미와 설계 이유는 `docs/neo4j/neo4j_구축_결과_보고.md` 부록 A·B를 참고한다.
+노드·엣지별 상세 의미와 설계 이유는 `docs/neo4j/neo4j_설계_근거.md`를 참고한다.

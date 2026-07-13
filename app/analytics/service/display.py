@@ -1,6 +1,7 @@
-from datetime import date, datetime, timedelta
+from datetime import date, datetime
 
 from analytics.service.studyplan import get_study_plan_config
+from analytics.service.weakness import get_status_class, get_weakness_config
 
 
 def parse_display_date(raw_date):
@@ -38,6 +39,10 @@ def build_planner_summary(study_plans, today):
     daily_delete_count_key = config["daily_delete_count_key"]
     daily_delete_count_date_key = config["daily_delete_count_date_key"]
     plans_by_date = {}
+    plan_learning_completion = build_plan_learning_completion_lookup(
+        study_plans,
+        weekly_review_block_type,
+    )
 
     for study_plan in study_plans:
         study_plan_id = study_plan.get("studyPlanId")
@@ -84,12 +89,24 @@ def build_planner_summary(study_plans, today):
                     elif plan_date == today:
                         status_label = today_label
 
+                    is_past_plan = plan_date < today
                     is_future_plan = plan_date > today
-                    can_start = not is_future_plan
+                    show_start = not is_past_plan
+                    can_start = plan_date == today and not is_achieved
+                    if is_weekly_review:
+                        can_start = (
+                            can_start
+                            and plan_learning_completion.get(study_plan_id, False)
+                        )
                     if is_weekly_review and is_achieved:
                         can_start = False
                         start_label = "주간 평가 완료"
-                    can_delete = not is_weekly_review and can_start and can_delete_more
+                    can_delete = (
+                        not is_weekly_review
+                        and plan_date == today
+                        and not is_achieved
+                        and can_delete_more
+                    )
                     meta_parts = [status_label]
                     classification = block.get("classification")
                     label = block.get("label")
@@ -157,6 +174,7 @@ def build_planner_summary(study_plans, today):
                             "statusLabel": block_status_label,
                             "canConfirm": progress_mode == "review" and not is_achieved,
                             "isWeeklyReview": is_weekly_review,
+                            "showStart": show_start,
                             "canStart": can_start,
                             "canDelete": can_delete,
                             "deleteCount": today_delete_count,
@@ -165,9 +183,11 @@ def build_planner_summary(study_plans, today):
                         }
                     )
 
+    visible_plans_by_date = build_visible_plans_by_date(plans_by_date, today)
+
     completed_keys = []
     planned_keys = []
-    for date_key, plan_items in plans_by_date.items():
+    for date_key, plan_items in visible_plans_by_date.items():
         plan_date = date.fromisoformat(date_key)
         is_achieved_date = bool(plan_items) and all(item["done"] for item in plan_items)
         if is_achieved_date:
@@ -176,8 +196,8 @@ def build_planner_summary(study_plans, today):
             planned_keys.append(date_key)
 
     today_key = today.isoformat()
-    progress_by_date = build_calendar_progress_by_date(plans_by_date, today)
-    selected_key = get_default_planner_selected_key(plans_by_date, today)
+    progress_by_date = build_calendar_progress_by_date(visible_plans_by_date, today)
+    selected_key = get_default_planner_selected_key(visible_plans_by_date, today)
     selected_date = date.fromisoformat(selected_key)
     has_active_plan = bool(study_plans)
     weekly_review_done = has_completed_weekly_review(plans_by_date)
@@ -196,6 +216,15 @@ def build_planner_summary(study_plans, today):
         or is_finished_legacy_plan
         or is_empty_active_plan
     )
+    show_add_extra_study = has_active_plan and not can_create_plan
+    can_add_extra_study = (
+        show_add_extra_study
+        and is_due_learning_plan_completed(
+            study_plans,
+            today,
+            weekly_review_block_type,
+        )
+    )
     create_plan_label = ""
     if not has_active_plan or is_empty_active_plan:
         create_plan_label = "7일 계획 만들기"
@@ -210,20 +239,77 @@ def build_planner_summary(study_plans, today):
         "progress": build_planner_progress_summary(study_plans),
         "today_key": today_key,
         "selected_key": selected_key,
-        "next_date_key": (today + timedelta(days=1)).isoformat(),
-        "today_items": plans_by_date.get(today_key, []),
-        "selected_items": plans_by_date.get(selected_key, []),
+        "today_items": visible_plans_by_date.get(today_key, []),
+        "selected_items": visible_plans_by_date.get(selected_key, []),
         "has_active_plan": has_active_plan,
         "can_create_plan": can_create_plan,
-        "can_move_plan": has_active_plan and not can_create_plan,
+        "show_add_extra_study": show_add_extra_study,
+        "can_add_extra_study": can_add_extra_study,
         "create_plan_label": create_plan_label,
         "create_plan_confirm": create_plan_confirm,
         "data": {
-            "plansByDate": plans_by_date,
+            "plansByDate": visible_plans_by_date,
             "completedKeys": sorted(completed_keys),
             "plannedKeys": sorted(planned_keys),
             "progressByDate": progress_by_date,
         },
+    }
+
+
+def build_plan_learning_completion_lookup(study_plans, weekly_review_block_type):
+    completion_lookup = {}
+    for study_plan in study_plans:
+        study_plan_id = study_plan.get("studyPlanId")
+        learning_blocks = []
+        for day_plan in study_plan.get("plans", []):
+            for block in day_plan.get("blocks", []):
+                if is_learning_plan_block(block, weekly_review_block_type):
+                    learning_blocks.append(block)
+
+        completion_lookup[study_plan_id] = bool(learning_blocks) and all(
+            bool(block.get("isAchieved") or block.get("isCompleted"))
+            for block in learning_blocks
+        )
+
+    return completion_lookup
+
+
+def is_learning_plan_block(block, weekly_review_block_type):
+    block_type = block.get("blockType")
+    if block_type == weekly_review_block_type:
+        return False
+    if block_type == "review":
+        return False
+
+    return True
+
+
+def is_due_learning_plan_completed(study_plans, today, weekly_review_block_type):
+    learning_blocks = []
+    for study_plan in study_plans:
+        for day_plan in study_plan.get("plans", []):
+            plan_date = parse_display_date(day_plan.get("date"))
+            if plan_date is None:
+                continue
+            if plan_date > today:
+                continue
+
+            for block in day_plan.get("blocks", []):
+                if is_learning_plan_block(block, weekly_review_block_type):
+                    learning_blocks.append(block)
+
+    return bool(learning_blocks) and all(
+        bool(block.get("isAchieved") or block.get("isCompleted"))
+        for block in learning_blocks
+    )
+
+
+def build_visible_plans_by_date(plans_by_date, today):
+    today_key = today.isoformat()
+    return {
+        date_key: plan_items
+        for date_key, plan_items in plans_by_date.items()
+        if date_key <= today_key
     }
 
 
@@ -232,18 +318,21 @@ def build_calendar_progress_by_date(plans_by_date, today):
     today_key = today.isoformat()
     for date_key, plan_items in plans_by_date.items():
         progress_percent = calculate_date_progress_percent(plan_items)
+        hue = get_progress_hue(progress_percent)
         state = "future"
         label = "예정"
         if date_key < today_key:
             state = get_past_progress_state(progress_percent)
             label = f"{progress_percent}%"
+            if state != "complete":
+                hue = get_progress_hue(0)
         elif date_key == today_key:
             state = "today"
-            label = "오늘"
+            label = f"{progress_percent}%"
 
         progress_by_date[date_key] = {
             "percent": progress_percent,
-            "hue": get_progress_hue(progress_percent),
+            "hue": hue,
             "state": state,
             "label": label,
         }
@@ -365,14 +454,16 @@ def build_planner_progress_summary(study_plans):
     }
 
 
-def build_wrong_rate_display(stats):
+def build_wrong_rate_display(stats, weakness_rows=None):
     """
     오답률 통계를 상세 화면의 막대 그래프 카드 데이터로 변환한다.
 
-    평균 풀이시간은 MM:SS 문자열로 바꾸고, 오답률 기준으로
-    취약/안정/데이터 부족 상태 라벨과 CSS 클래스를 부여한다.
+    평균 풀이시간은 MM:SS 문자열로 바꾸고, 판정 배지는 공용 취약 점수 결과를 사용한다.
     """
-    weak_rate_threshold = 20
+    weakness_map = {
+        row["groupKeyId"]: row
+        for row in weakness_rows or []
+    }
     display_items = []
     for stat in stats:
         total = stat["total"] or 0
@@ -384,32 +475,92 @@ def build_wrong_rate_display(stats):
             minutes, seconds = divmod(total_seconds, 60)
             average_time_label = f"{minutes:02d}:{seconds:02d}"
 
-        if not total:
-            status_label = "데이터 부족"
-            status_class = "empty"
-        elif rate >= weak_rate_threshold:
-            status_label = "취약"
-            status_class = "weak"
-        elif rate < weak_rate_threshold:
-            status_label = "안정"
-            status_class = "stable"
+        weakness_row = weakness_map.get(stat.get("groupKeyId"))
+        status_display = build_wrong_rate_status_display(weakness_row, total)
 
         display_items.append(
             {
                 "label": stat["label"] or "미분류",
+                "groupKeyId": stat.get("groupKeyId", ""),
+                "groupKey": stat.get("groupKey", []),
                 "total": total,
                 "wrong": stat["wrong"] or 0,
                 "rate": rate,
                 "average_time_label": average_time_label,
-                "status_label": status_label,
-                "status_class": status_class,
+                "status": status_display["status"],
+                "status_label": status_display["label"],
+                "status_class": status_display["class"],
+                "weaknessScore": status_display["weaknessScore"],
+                "trend": status_display["trend"],
+                "trend_label": status_display["trendLabel"],
             }
         )
 
     return sorted(
         display_items,
-        key=lambda item: (-item["rate"], -item["total"], item["label"]),
+        key=lambda item: (
+            -item["weaknessScore"],
+            -item["wrong"],
+            -item["rate"],
+            item["label"],
+        ),
     )
+
+
+def build_wrong_rate_status_display(weakness_row, total):
+    config = get_weakness_config()
+    if weakness_row is None:
+        if not total:
+            return {
+                "status": "",
+                "label": "기록 없음",
+                "class": "empty",
+                "weaknessScore": 0.0,
+                "trend": {"value": config["trend_unknown"]},
+                "trendLabel": "",
+            }
+        return {
+            "status": config["status_neutral"],
+            "label": "",
+            "class": "neutral",
+            "weaknessScore": 0.0,
+            "trend": {"value": config["trend_unknown"]},
+            "trendLabel": "",
+        }
+
+    status = weakness_row["status"]
+    trend = weakness_row["trend"]
+    return {
+        "status": status,
+        "label": get_weakness_status_label(status, config),
+        "class": get_status_class(status),
+        "weaknessScore": weakness_row["weaknessScore"],
+        "trend": trend,
+        "trendLabel": get_weakness_trend_label(status, trend, config),
+    }
+
+
+def get_weakness_status_label(status, config):
+    if status == config["status_weak"]:
+        return "취약"
+    elif status == config["status_stable"]:
+        return "안정"
+    elif status == config["status_insufficient"]:
+        return "판단 보류"
+    elif status == config["status_neutral"]:
+        return "중립"
+
+    return ""
+
+
+def get_weakness_trend_label(status, trend, config):
+    trend_value = trend.get("value")
+    if status == config["status_weak"] and trend_value == config["trend_worsening"]:
+        return "악화"
+    elif trend_value == config["trend_improving"]:
+        return "개선 중"
+
+    return ""
 
 
 def build_wrong_rate_donut_summary(items):
@@ -460,6 +611,7 @@ def build_wrong_rate_donut_segments(items, total_wrong, chart_config):
                 wrong_count,
                 total_wrong,
                 colors[index % len(colors)],
+                item,
             )
         )
 
@@ -476,18 +628,29 @@ def build_wrong_rate_donut_segments(items, total_wrong, chart_config):
     return segments
 
 
-def build_wrong_rate_donut_segment(label, wrong_count, total_wrong, color):
+def build_wrong_rate_donut_segment(label, wrong_count, total_wrong, color, item=None):
     """
     도넛 차트의 단일 구간을 만든다.
     """
     share_value = round((wrong_count / total_wrong) * 100, 2)
-    return {
+    segment = {
         "label": label,
         "wrong": wrong_count,
         "share": round(share_value),
         "shareValue": share_value,
         "color": color,
     }
+    if item:
+        segment.update(
+            {
+                "status_label": item.get("status_label", ""),
+                "status_class": item.get("status_class", ""),
+                "weaknessScore": item.get("weaknessScore", 0.0),
+                "trend_label": item.get("trend_label", ""),
+            }
+        )
+
+    return segment
 
 
 def build_wrong_rate_donut_gradient(segments):
@@ -500,6 +663,9 @@ def build_wrong_rate_donut_gradient(segments):
         end = start + segment["shareValue"]
         if index == len(segments) - 1:
             end = 100
+        angle = round((start + end) * 1.8, 2)
+        segment["labelAngle"] = angle
+        segment["labelReverseAngle"] = -angle
         gradient_parts.append(f"{segment['color']} {start}% {end}%")
         start = end
 

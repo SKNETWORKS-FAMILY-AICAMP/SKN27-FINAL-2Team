@@ -14,6 +14,7 @@ from neo4j_common import (
     build_sequential_ids,
     clean_value,
     print_summary,
+    read_csv,
     resolve_neo4j_dir,
     save_csv,
     split_category_paths,
@@ -96,7 +97,8 @@ def build_category_rows(terms_data):
 
     if "term_kind" in target_data.columns:
         # term_kind=2가 실제 용어 행이다. 카테고리 행은 term_lk에서 다시 만든다.
-        target_data = target_data[target_data["term_kind"].eq(2)].copy()
+        # dtype=str로 읽으므로 문자열 "2"와 비교한다.
+        target_data = target_data[target_data["term_kind"].eq("2")].copy()
 
     for row in target_data[["term_id", "term_lk"]].itertuples(index=False):
         for path_parts in split_category_paths(row.term_lk):
@@ -546,7 +548,7 @@ def parse_bc_term_year(term_id, year_text, clean_text):
 
 
 def parse_reign_term_year(term_id, year_text, clean_text, reign_start_year_lookup):
-    reign_match = re.search(r"([가-힣A-Za-z·]+)\s*(\d{1,2})\s*년?", clean_text)
+    reign_match = re.search(r"([가-힣A-Za-z·]+)\s*((?<!\d)\d{1,2}(?!\d))\s*년?", clean_text)
 
     if reign_match and len(reign_start_year_lookup) > 0:
         reign_name = reign_match.group(1)
@@ -601,7 +603,10 @@ def parse_decade_term_year(term_id, year_text, clean_text):
 
 
 def parse_open_range_term_year(term_id, year_text, clean_text):
-    unknown_start_match = re.search(r"^\s*\?\s*[-~∼～]\s*(\d{1,4})", clean_text)
+    unknown_start_match = re.search(
+        r"^\s*\?\s*[-~∼～]\s*((?<!\d)\d{1,4}(?!\d))",
+        clean_text,
+    )
 
     if unknown_start_match:
         return build_parsed_term_year_parse(
@@ -612,7 +617,10 @@ def parse_open_range_term_year(term_id, year_text, clean_text):
             "PARTIAL",
         )
 
-    unknown_end_match = re.search(r"(\d{1,4})\s*[-~∼～]\s*\?\s*$", clean_text)
+    unknown_end_match = re.search(
+        r"((?<!\d)\d{1,4}(?!\d))\s*[-~∼～]\s*\?\s*$",
+        clean_text,
+    )
 
     if unknown_end_match:
         return build_parsed_term_year_parse(
@@ -626,23 +634,40 @@ def parse_open_range_term_year(term_id, year_text, clean_text):
     return None
 
 
+def has_long_digit_sequence(clean_text):
+    return re.search(r"\d{5,}", clean_text) is not None
+
+
 def parse_range_term_year(term_id, year_text, clean_text):
-    range_match = re.search(r"(\d{1,4})\s*[-~∼～]\s*(\d{1,4})", clean_text)
+    range_match = re.search(
+        r"((?<!\d)\d{1,4}(?!\d))\s*[-~∼～]\s*((?<!\d)\d{1,4}(?!\d))",
+        clean_text,
+    )
 
     if range_match:
+        start_year = int(range_match.group(1))
+        end_year = int(range_match.group(2))
+
+        if start_year > end_year:
+            return build_unknown_term_year_parse(term_id, year_text)
+
         return build_parsed_term_year_parse(
             term_id,
             year_text,
-            int(range_match.group(1)),
-            int(range_match.group(2)),
+            start_year,
+            end_year,
             "YEAR_RANGE",
         )
 
     return None
 
 
+def find_standalone_year_values(clean_text):
+    return [int(value) for value in re.findall(r"(?<!\d)\d{3,4}(?!\d)", clean_text)]
+
+
 def parse_multi_term_year(term_id, year_text, clean_text):
-    year_values = [int(value) for value in re.findall(r"\d{3,4}", clean_text)]
+    year_values = find_standalone_year_values(clean_text)
     has_multi_separator = bool(re.search(r"[,/]|(?<!B)\.", clean_text))
 
     if len(year_values) > 0 and has_multi_separator:
@@ -659,7 +684,7 @@ def parse_multi_term_year(term_id, year_text, clean_text):
 
 
 def parse_single_term_year(term_id, year_text, clean_text):
-    year_match = re.search(r"\d{3,4}", clean_text)
+    year_match = re.search(r"(?<!\d)\d{3,4}(?!\d)", clean_text)
 
     if year_match:
         parsed_year = int(year_match.group(0))
@@ -683,6 +708,9 @@ def parse_term_year(term_id, year_text, reign_start_year_lookup):
     clean_text = str(clean_text).strip()
 
     if re.fullmatch(r"[?\s\-~∼～]+", clean_text):
+        return build_unknown_term_year_parse(term_id, year_text)
+
+    if has_long_digit_sequence(clean_text):
         return build_unknown_term_year_parse(term_id, year_text)
 
     parser_results = [
@@ -1097,10 +1125,10 @@ def main():
     default_paths = build_default_paths(script_path)
     args = parse_args(default_paths)
 
-    terms_data = pd.read_csv(args.terms_path)
-    events_data = pd.read_csv(args.events_path)
-    event_relations_data = pd.read_csv(args.event_relations_path)
-    person_relations_data = pd.read_csv(args.person_relations_path)
+    terms_data = read_csv(args.terms_path, "terms")
+    events_data = read_csv(args.events_path, "events")
+    event_relations_data = read_csv(args.event_relations_path, "event_relations")
+    person_relations_data = read_csv(args.person_relations_path, "person_relations")
     relation_type_seed = read_relation_type_seed(args.relation_type_seed_path)
     period_seed = read_period_seed(args.period_seed_path)
     reign_seed = read_reign_seed(args.reign_seed_path)
@@ -1132,5 +1160,5 @@ def main():
         print("dry_run: no files saved. Use --save to write CSV files.")
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # entry point
     main()
