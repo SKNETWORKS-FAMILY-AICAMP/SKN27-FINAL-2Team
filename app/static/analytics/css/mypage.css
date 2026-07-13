@@ -2029,9 +2029,10 @@ body.modal-open {
 .mypage .planner-lessons .plan-progress-count { font-size: 14px !important; }
 .mypage .planner-lessons .plan-actions { margin-top: 8px; }
 .mypage .planner-lessons .plan-item button { min-height: 28px; padding: 0 8px; font-size: 11px; }
-.mypage .planner-note { display: grid; gap: 7px; min-height: 100px; margin-top: 20px; padding: 23px 30px; border-top: 1px solid #dfcbb7; background: #f9f6ef; color: #617760; }
+.mypage .planner-note { position: relative; display: grid; gap: 7px; min-height: 100px; margin-top: 20px; padding: 23px 130px 23px 30px; border-top: 1px solid #dfcbb7; background: #f9f6ef; color: #617760; overflow: hidden; }
 .mypage .planner-note strong { font-size: 15px; }
 .mypage .planner-note span { color: #59574f; font-size: 14px; }
+.mypage .planner-turtle { position: absolute; right: 10px; bottom: -2px; width: 108px; height: 108px; object-fit: contain; }
 
 @media (max-width: 900px) {
   .mypage .planner-board { height: auto; grid-template-columns: 1fr; }
