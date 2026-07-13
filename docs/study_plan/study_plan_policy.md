@@ -1,5 +1,9 @@
 # 학습계획 정책 정리
 
+> **ℹ️ 부분 갱신 안내 (2026-07 기준)**
+> 이 문서의 대부분(블록 유형·진행률·이월·삭제·과거날짜 차단)은 현행 정책이다.
+> 단, 아래 "주간평가 판단 기준"은 최신 설계에서 `SolveSessions.review_type='weekly_review'`를 1차 식별 기준으로 바꿨다. 자세한 흐름은 `docs/study_plan/weekly_review_ai_report_plan.md`를 따른다.
+
 ## 목적
 
 학습계획은 사용자의 취약점, 출제 예상, 남은 기간, 하루 학습 가능 시간을 기준으로 7일 단위 학습 블록을 만들고, 실제 풀이 기록과 블록 완료 상태를 기준으로 진행률을 보여주는 기능이다.
@@ -80,7 +84,7 @@
 - `weekly_review_minutes`: 80
 - `daily_delete_limit`: 2
 - `min_question_count`: 3
-- `max_question_count`: 20
+- `max_question_count`: 5
 
 ## 블록 유형 정책
 
@@ -117,10 +121,13 @@
 
 주간평가 판단 기준:
 
+> 갱신: 최신 설계는 `SolveSessions.review_type = "weekly_review"`를 1차 식별 기준으로 쓴다. 아래 record 연결값(`studyplan_id`, `study_plan_block_id`)은 블록 연결·진행률 계산용 보조 기준으로 유지한다. (`weekly_review_ai_report_plan.md` 참조)
+
 - `SolveSessions.session_type = "diagnostic"`
+- `SolveSessions.review_type = "weekly_review"` (1차 기준)
 - `SolveSessions.status = "completed"`
-- `SolveRecords.studyplan_id` 존재
-- `SolveRecords.study_plan_block_id` 존재
+- `SolveRecords.studyplan_id` 존재 (보조)
+- `SolveRecords.study_plan_block_id` 존재 (보조)
 - 연결된 block의 `blockType = "weekly_review"`
 
 ## 진행률 계산 정책
@@ -361,19 +368,4 @@ canStart = plan_date == today and not done
 ### 이월 후 진행률
 
 1. 이월된 블록에서 문제풀이를 시작한다.
-2. 생성된 `SolveRecords.study_plan_block_id`가 기존 blockId와 같은지 확인한다.
-3. 문제를 제출한다.
-4. 해당 블록 진행률이 정상 반영되는지 확인한다.
-5. 과거 날짜와 오늘 날짜에 같은 블록이 중복 표시되지 않는지 확인한다.
-
-### 주간평가
-
-1. 주간평가 블록은 자동 이월 대상에서 제외되는지 확인한다.
-2. 주간평가는 `/diagnosis/api/start/`로 시작되는지 확인한다.
-3. 제출 완료 시 `weekly_review` 블록이 완료 처리되는지 확인한다.
-
-### 삭제/이동
-
-1. 자동 이월은 삭제 횟수를 증가시키지 않는지 확인한다.
-2. 사용자가 직접 삭제할 때만 삭제 횟수가 증가하는지 확인한다.
-3. 수동 학습일 변경 시 blockId가 유지되는지 확인한다.
+2. 생성된 `SolveRecords.study_plan_block_id

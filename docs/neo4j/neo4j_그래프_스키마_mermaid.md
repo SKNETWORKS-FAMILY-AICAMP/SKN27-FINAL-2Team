@@ -226,4 +226,4 @@ flowchart LR
 
 ---
 
-노드·엣지별 상세 의미와 설계 이유는 `docs/neo4j/neo4j_design_decisions_detail.md`를 참고한다.
+노드·엣지별 상세 의미와 설계 이유는 `docs/neo4j/neo4j_설계_근거.md`를 참고한다.

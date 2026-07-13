@@ -45,6 +45,7 @@ Get-Content storage/postgresql/schema/alter_apply_latest.sql | docker exec -i sk
 `alter_apply_latest.sql` applies:
 
 ```text
+exam_data table for preprocessed past exam source data
 questions.question_no
 questions.passage
 questions.image_caption
@@ -58,6 +59,82 @@ drop questions.parse_status
 solve_sessions.recorded_date
 solve_records.time_spent_ms
 drop solve_records.time_spent_sec
+```
+
+## Past Exam Source Table
+
+`exam_data` stores preprocessed past exam question data before it is converted
+for service tables, ML features, or RAG chunks.
+
+Initial import source:
+
+```text
+C:\dev\project\SKN27-FINAL-2Team\ai\ml\ML_han_v1.json
+C:\dev\project\SKN27-FINAL-2Team\ai\ml\output\ml_han_features_v1.csv
+```
+
+Current initial data uses the already-preprocessed `ML_han_v1.json` for the
+question text, material text, choices, answer choice, and answer number.
+
+The classification labels below are matched by `round_no + question_no` from
+`ml_han_features_v1.csv`, so `exam_data` follows the same labels used by the
+current ML feature dataset:
+
+```text
+era, topic, question_type, question_subtype
+```
+
+Later versions should replace this with data extracted again from the original
+past exam files, while keeping the same `exam_data` table shape.
+
+Main columns:
+
+```text
+round_no, question_no
+question_text, material_text
+choices_json, distractor_choices_json
+answer_choice, answer_no
+era, topic, question_type, question_subtype, q_score
+has_image, image_meta_json
+answer_explanation, choice_explanations_json, explanation_source
+```
+
+Create/update the table schema first:
+
+```powershell
+Get-Content storage/postgresql/schema/alter_apply_latest.sql | docker exec -i skn27-postgres psql -U himate -d history_rag
+```
+
+Check conversion without writing to DB:
+
+```powershell
+python storage/postgresql/import_exam_data.py --dry-run
+```
+
+Use a different feature CSV if needed:
+
+```powershell
+python storage/postgresql/import_exam_data.py --features-csv ai/ml/output/ml_han_features_v1.csv --dry-run
+```
+
+Import all `ML_han_v1.json` rows into `exam_data`:
+
+```powershell
+python storage/postgresql/import_exam_data.py --truncate
+```
+
+Import only specific rounds:
+
+```powershell
+python storage/postgresql/import_exam_data.py --rounds 74 75 76 77 --truncate
+```
+
+Notes:
+
+```text
+--truncate clears exam_data only.
+questions, question_options, solve_records are not touched.
+Rows are upserted by round_no + question_no.
 ```
 
 ## Import 78th test questions

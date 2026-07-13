@@ -59,7 +59,7 @@ runner 실행 순서:
 `make_graph_csv.py`를 단독 실행하면 기본 출력은 `etl/preprocessing/neo4j/graph/nodes/`, `etl/preprocessing/neo4j/graph/relations/`다. 다만 runner의 graph 생성 단계는 `--nodes-dir`, `--relations-dir`를 넘겨 `storage/neo4j/neo4j_import/` 아래로 바로 저장한다.
 `make_term_person_review.py`는 기본 runner에 포함하지 않는다. 이 스크립트는 graph CSV 생성 이후 Term-Person 수동 검수 후보가 필요할 때 단독 실행한다.
 
-노드/관계 설계 판단의 상세 근거는 `docs/neo4j/neo4j_design_decisions_detail.md`에 둔다.
+노드/관계 설계 판단의 상세 근거는 `docs/neo4j/neo4j_설계_근거.md`에 둔다.
 이 문서는 구현 순서를 설명하고, 상세 설계 판단 문서는 각 노드와 관계가 왜 필요한지, 없으면 어떤 문제가 생기는지, 어떤 대안을 제외했는지 설명한다.
 
 ---
@@ -681,7 +681,7 @@ Tavily 같은 Web RAG 도구를 붙일 경우, 그래프에서 관련 `SourceUrl
 
 ## 14. 노드와 관계 의미 사전
 
-노드와 관계의 상세 역할, 필요성, 제외한 대안은 `docs/neo4j/neo4j_design_decisions_detail.md`로 합쳤다.
+노드와 관계의 상세 역할, 필요성, 제외한 대안은 `docs/neo4j/neo4j_설계_근거.md`로 합쳤다.
 이 구현 문서에서는 실제 실행과 산출물 위치를 기준으로 본다.
 
 빠른 확인용 구조도는 다음 문서를 사용한다.
@@ -786,7 +786,7 @@ Tavily 같은 Web RAG 도구를 붙일 경우, 그래프에서 관련 `SourceUrl
 
 자동 `Term - REFERS_TO - Person`은 이름/한자와 생몰년이 모두 맞는 유일 후보를 우선 연결한다. Term 설명에서 Person 관계망 단서가 확인되는 기존 후보와 수동 승인 seed의 `MANUAL` 후보도 함께 합류한다.
 
-Term-Person 검수의 상세 설계 판단은 `docs/neo4j/neo4j_design_decisions_detail.md`와 `etl/preprocessing/neo4j/docs/term_person_review_workflow.md`로 합쳤다.
+Term-Person 검수의 상세 설계 판단은 `docs/neo4j/neo4j_설계_근거.md`와 `etl/preprocessing/neo4j/docs/term_person_review_workflow.md`로 합쳤다.
 이 문서에는 graph 반영 규칙과 별도 후보 생성 명령만 남긴다.
 
 검수 후보는 기본 runner가 만들지 않는다.

@@ -20,6 +20,7 @@ from analytics.service.analytics import (
     get_wrong_rate_session_analysis_detail,
     get_wrong_rate_session_item_questions,
     get_wrong_rate_group_stats,
+    get_wrong_rate_weakness_rows,
 )
 from analytics.service.display import (
     build_planner_summary,
@@ -37,12 +38,15 @@ from analytics.service.mypage import (
 )
 from analytics.service.studyplan import (
     StudyPlanBlockDeleteLimitExceeded,
-    StudyPlanMoveDateOutOfRange,
+    StudyPlanDateOutOfRange,
+    StudyPlanExtraBlockCompletionRequired,
+    StudyPlanExtraBlockUnavailable,
+    add_extra_study_plan_block,
     complete_study_plan_block,
     create_study_plan,
     delete_study_plan_block,
+    ensure_today_study_plan,
     get_study_plan_info,
-    move_study_plan_blocks,
 )
 
 
@@ -50,6 +54,7 @@ from analytics.service.studyplan import (
 def mypage(request):
     user_id = request.user.user_id
     today = timezone.localdate()
+    ensure_today_study_plan(user_id, today)
     study_plan = get_study_plan_info(user_id)
     planner_summary = build_planner_summary(study_plan, today)
     wrong_type_summary = build_wrong_type_summary(request.user, today)
@@ -110,9 +115,12 @@ def wrong_rate_detail(request):
         donut_period["startDate"],
         donut_period["endDate"],
     )
-    era_display = build_wrong_rate_display(era_stats)
-    type_display = build_wrong_rate_display(type_stats)
-    topic_display = build_wrong_rate_display(topic_stats)
+    era_weakness_rows = get_wrong_rate_weakness_rows(request.user, "era", today)
+    type_weakness_rows = get_wrong_rate_weakness_rows(request.user, "q_type", today)
+    topic_weakness_rows = get_wrong_rate_weakness_rows(request.user, "topic", today)
+    era_display = build_wrong_rate_display(era_stats, era_weakness_rows)
+    type_display = build_wrong_rate_display(type_stats, type_weakness_rows)
+    topic_display = build_wrong_rate_display(topic_stats, topic_weakness_rows)
     era_donut = build_wrong_rate_donut_summary(era_display)
     type_donut = build_wrong_rate_donut_summary(type_display)
     topic_donut = build_wrong_rate_donut_summary(topic_display)
@@ -297,41 +305,45 @@ def complete_study_plan_block_view(request):
 
 @login_required
 @require_POST
-def move_study_plan_blocks_view(request):
+def add_extra_study_plan_block_view(request):
     data = get_json_request_data(request)
-    move_items = data.get("items") or []
-    target_date = data.get("targetDate")
-    if not move_items or not target_date:
+    target_date = data.get("targetDate") or timezone.localdate().isoformat()
+    try:
+        target_date_key = date.fromisoformat(str(target_date)[:10]).isoformat()
+    except (TypeError, ValueError):
         return JsonResponse({"ok": False}, status=400)
 
     try:
-        target_date_key = date.fromisoformat(target_date[:10]).isoformat()
-        normalized_items = [
-            {
-                "studyPlanId": int(item["studyPlanId"]),
-                "dayIndex": int(item["dayIndex"]),
-                "blockIndex": int(item["blockIndex"]),
-            }
-            for item in move_items
-        ]
-    except (KeyError, TypeError, ValueError):
-        return JsonResponse({"ok": False}, status=400)
-
-    try:
-        updated_plans = move_study_plan_blocks(
+        updated_plan = add_extra_study_plan_block(
             request.user.user_id,
-            normalized_items,
             target_date_key,
         )
-    except StudyPlanMoveDateOutOfRange:
+    except StudyPlanDateOutOfRange:
         return JsonResponse(
             {
                 "ok": False,
-                "error": "학습일 변경은 해당 학습계획 기간 안에서만 가능합니다.",
+                "error": "추가학습은 오늘 계획에만 만들 수 있습니다.",
             },
             status=400,
         )
-    if not updated_plans:
+    except StudyPlanExtraBlockUnavailable:
+        return JsonResponse(
+            {
+                "ok": False,
+                "error": "추가학습을 만들 취약점 데이터가 부족합니다.",
+            },
+            status=400,
+        )
+    except StudyPlanExtraBlockCompletionRequired:
+        return JsonResponse(
+            {
+                "ok": False,
+                "error": "오늘의 학습 문제를 모두 푼 뒤 추가학습을 만들 수 있습니다.",
+            },
+            status=400,
+        )
+
+    if updated_plan is None:
         return JsonResponse({"ok": False}, status=404)
 
     return JsonResponse({"ok": True})

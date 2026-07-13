@@ -1,10 +1,10 @@
 from datetime import timedelta
 
 from django.db.models import Count, Q
+from django.utils import timezone
 
 from analytics.service.analytics import (
     calculate_percent_rate,
-    get_classification_display_label,
     get_diagnosis_improvement_summary,
     get_completed_records,
     get_completed_sessions,
@@ -12,9 +12,10 @@ from analytics.service.analytics import (
     get_weekly_practice_summary,
 )
 from analytics.service.studyplan import get_user_study_info
+from analytics.service.weakness import build_weakness_rows, get_status_class, get_weakness_config
 
 
-def build_learning_summary(user):
+def build_learning_summary(user, today=None):
     """
     마이페이지 상단 학습 요약 카드에 필요한 데이터를 만든다.
 
@@ -23,21 +24,11 @@ def build_learning_summary(user):
     """
     completed_sessions = get_completed_sessions(user.user_id)
     weekly_summary = get_weekly_practice_summary(user.user_id)
-
-    solved_dates = completed_sessions.values_list("recorded_date", flat=True)
-    ordered_dates = sorted(
-        {study_date for study_date in solved_dates if study_date},
-        reverse=True,
+    base_date = today or timezone.localdate()
+    study_streak_days = calculate_current_study_streak(
+        completed_sessions,
+        base_date,
     )
-    study_streak_days = 0
-    if ordered_dates:
-        expected_date = ordered_dates[0]
-        for study_date in ordered_dates:
-            if study_date == expected_date:
-                study_streak_days += 1
-                expected_date -= timedelta(days=1)
-            elif study_date != expected_date:
-                break
 
     return {
         "answer_rate": weekly_summary["answerRate"],
@@ -48,11 +39,29 @@ def build_learning_summary(user):
     }
 
 
+def calculate_current_study_streak(completed_sessions, today):
+    solved_dates = {
+        study_date
+        for study_date in completed_sessions.values_list("recorded_date", flat=True)
+        if study_date
+    }
+    if today not in solved_dates:
+        return 0
+
+    study_streak_days = 0
+    expected_date = today
+    while expected_date in solved_dates:
+        study_streak_days += 1
+        expected_date -= timedelta(days=1)
+
+    return study_streak_days
+
+
 def build_diagnosis_comparison_summary(user):
     """
-    첫 진단평가 기준의 비교 요약을 만든다.
+    진단평가 회차 간 비교 요약을 만든다.
 
-    진단 이후 주간평가와의 비교를 화면 표시용 데이터로 변환한다.
+    최신 두 진단평가의 비교 결과를 화면 표시용 데이터로 변환한다.
     """
     comparison = get_diagnosis_improvement_summary(user.user_id)
     answer_display = _build_rate_change_display(comparison["answerRateChange"])
@@ -71,10 +80,14 @@ def build_diagnosis_comparison_summary(user):
         "answer": {
             "diagnosis_rate": comparison["diagnosis"]["answerRate"],
             "current_rate": comparison["current"]["answerRate"],
+            "diagnosis_label": comparison["diagnosis"]["sessionLabel"],
+            "current_label": comparison["current"]["sessionLabel"],
             "change_label": answer_display["label"],
             "tone": answer_display["tone"],
         },
         "time": {
+            "diagnosis_label": comparison["diagnosis"]["sessionLabel"],
+            "current_label": comparison["current"]["sessionLabel"],
             "diagnosis_time": _format_seconds(
                 comparison["diagnosis"]["averageQuestionTimeSec"],
             ),
@@ -94,24 +107,24 @@ def _build_diagnosis_comparison_empty_display(comparison):
     if not comparison["hasDiagnosis"]:
         return {
             "title": "진단평가 필요",
-            "description": "첫 진단평가를 완료하면 이후 주간평가와 비교할 수 있습니다.",
+            "description": "첫 진단평가를 완료하면 다음 진단평가와 비교할 수 있습니다.",
         }
 
     if comparison["hasPostDiagnosisPractice"]:
         return {
-            "title": "주간 평가 후 비교 가능",
-            "description": "일반 문제풀이 기록은 쌓였고, 7일차 주간평가 완료 후 진단평가와 비교됩니다.",
+            "title": "다음 진단평가 대기",
+            "description": "학습 기록은 쌓였고, 다음 진단평가를 완료하면 이전 진단평가와 비교됩니다.",
         }
 
     if comparison["hasWeeklyReviewPlan"]:
         return {
             "title": "비교 기준 준비 중",
-            "description": "7일 계획의 주간평가를 완료하면 진단평가 대비 개선도가 표시됩니다.",
+            "description": "7일차 진단평가를 완료하면 직전 진단평가 대비 개선도가 표시됩니다.",
         }
 
     return {
-        "title": "주간 계획 준비 중",
-        "description": "7일 학습계획을 생성하고 주간평가를 완료하면 진단평가와 비교됩니다.",
+        "title": "다음 진단평가 대기",
+        "description": "학습계획을 진행하고 다음 진단평가를 완료하면 정답률 변화를 볼 수 있습니다.",
     }
 
 
@@ -186,71 +199,60 @@ def build_weakness_summary(user, today=None):
     """
     시대와 주제 조합 기준의 취약점 목록을 만든다.
 
-    오답이 1건 이상 발생한 era/topic 조합만 추려서
-    오답률과 오답 수 기준으로 정렬한다.
+    공용 취약 판정 기준에서 WEAK로 판단된 era/topic 조합만 노출한다.
     """
-    unclassified_label = "미분류"
-    period = get_recent_wrong_rate_period(today)
-    rows = (
-        get_completed_records(user.user_id)
-        .filter(
-            session__recorded_date__gte=period["startDate"],
-            session__recorded_date__lte=period["endDate"],
-        )
-        .values("era", "topic")
-        .annotate(
-            total=Count("record_id"),
-            wrong=Count("record_id", filter=Q(is_correct=False)),
-        )
-        .filter(wrong__gt=0)
-    )
-
-    item_map = {}
-    for row in rows:
-        era = get_classification_display_label("era", row["era"])
-        topic = get_classification_display_label("topic", row["topic"])
-        key = (era, topic)
-        if key not in item_map:
-            item_map[key] = {
-                "era": era,
-                "topic": topic,
-                "total": 0,
-                "wrong": 0,
-            }
-
-        item_map[key]["total"] += row["total"] or 0
-        item_map[key]["wrong"] += row["wrong"] or 0
-
+    config = get_weakness_config()
+    records = get_completed_records(user.user_id)
     items = []
-    for item in item_map.values():
-        total = item["total"] or 0
-        wrong = item["wrong"] or 0
-
-        label_parts = [item["era"], item["topic"]]
-        valid_labels = [label for label in label_parts if label]
-        label = unclassified_label
-        if valid_labels:
-            label = " / ".join(valid_labels)
-
-        items.append(
-            {
-                "label": label,
-                "total": total,
-                "wrong": wrong,
-                "rate": calculate_percent_rate(wrong, total),
-            }
-        )
+    for row in build_weakness_rows(records, ["era", "topic"], today):
+        if row["status"] == config["status_weak"]:
+            group = row["group"]
+            label = " / ".join([group["era"], group["topic"]])
+            items.append(
+                {
+                    "label": label,
+                    "total": row["raw"]["total"],
+                    "wrong": row["raw"]["wrong"],
+                    "rate": round(row["raw"]["wrongRate"] * 100),
+                    "weakness_score": row["weaknessScore"],
+                    "status": row["status"],
+                    "status_class": get_status_class(row["status"]),
+                    "trend": row["trend"],
+                    "trend_label": build_weakness_trend_label(row["trend"], config),
+                }
+            )
 
     display_limit = 10
     sorted_items = sorted(
         items,
-        key=lambda item: (-item["rate"], -item["wrong"], item["label"]),
+        key=lambda item: (-item["weakness_score"], -item["wrong"], item["label"]),
     )
+    visible_items = sorted_items[:display_limit]
+    max_weakness_score = max(
+        (item["weakness_score"] for item in visible_items),
+        default=0,
+    )
+    for item in visible_items:
+        item["bar_ratio"] = 0
+        if max_weakness_score > 0:
+            item["bar_ratio"] = round(item["weakness_score"] / max_weakness_score * 100)
     return {
-        "items": sorted_items[:display_limit],
+        "items": visible_items,
         "has_records": bool(items),
-        "period_label": period["label"],
+        "period_label": "최근 학습 기준",
+        "empty_title": "아직 취약으로 판단할 데이터가 부족해요",
+        "empty_description": "문제를 더 풀면 분석이 정확해져요.",
     }
+
+
+def build_weakness_trend_label(trend, config):
+    trend_value = trend.get("value")
+    if trend_value == config["trend_worsening"]:
+        return "악화"
+    elif trend_value == config["trend_improving"]:
+        return "개선 중"
+
+    return ""
 
 
 def build_mypage_summary_validation(
@@ -283,9 +285,6 @@ def build_mypage_summary_validation(
 
     if total_count > 0 and not wrong_type_has_records:
         issues.append("recent_records_exist_but_wrong_type_empty")
-    if wrong_count > 0 and not weakness_has_records:
-        issues.append("recent_wrong_records_exist_but_weakness_empty")
-
     return {
         "userId": user.user_id,
         "periodStart": period["startDate"],

@@ -1,0 +1,25 @@
+<button
+  class="rate-bar-card {{ item.status_class }}"
+  type="button"
+  data-detail-category="{{ category }}"
+  data-detail-label="{{ item.label }}"
+>
+  <div class="bar-label">
+    <strong>{{ item.label }}</strong>
+  </div>
+  <div class="bar-body">
+    <div class="bar-meta">
+      <span>전체 {{ item.total }}문제 · 오답 {{ item.wrong }}개 · 문제당 {{ item.average_time_label }}</span>
+      <strong>{{ item.rate }}%</strong>
+    </div>
+    <div class="bar-track"><i style="width: {{ item.rate }}%"></i></div>
+  </div>
+  <div class="bar-status">
+    {% if item.status_label %}
+      <span class="status-badge {{ item.status_class }}">{{ item.status_label }}</span>
+    {% endif %}
+    {% if item.trend_label %}
+      <span class="status-badge trend">{{ item.trend_label }}</span>
+    {% endif %}
+  </div>
+</button>
