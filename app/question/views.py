@@ -64,11 +64,6 @@ DETAIL_DIFFICULTY_RATIOS = {
     "중": {3: 1, 2: 3, 1: 1},
     "하": {3: 0, 2: 2, 1: 3},
 }
-DIFFICULTY_TO_SCORE = {
-    "상": 3,
-    "중": 2,
-    "하": 1,
-}
 PLACEHOLDER_CONTENT = "문항 이미지를 보고 정답을 선택하세요."
 ERA_REFERENCE_PATH = (
     Path(__file__).resolve().parents[2]
@@ -88,7 +83,6 @@ ERA_FILTER_VALUES = [
     "개항기",
     "일제 강점기",
     "현대",
-    "통합 주제",
 ]
 ML_QUESTION_TYPE_FILTER_VALUES = [
     "역사 지식의 이해",
@@ -626,16 +620,16 @@ def _score_counts_for_generation_mode(data):
 # 문제 생성 화면에서 사용할 필터 조건 목록을 제공한다.
 def question_filters(request):
     qs = _base_question_queryset()
-    era_values = _reference_filter_values("era_keywords") or ERA_FILTER_VALUES
+    era_values = ERA_FILTER_VALUES
     topic_values = _reference_filter_values("topic_keywords")
 
     q_filters = FilterOptionsResponse({
-        "eras": _ordered_existing_values(qs, "era", era_values),
+        "eras": era_values,
         "topics": (
             _ordered_existing_values(qs, "topic", topic_values)
             if topic_values else _distinct_values(qs, "topic")
         ),
-        "difficulties": ["상", "중", "하"],
+        "difficulties": list(DETAIL_DIFFICULTY_RATIOS.keys()),
         "question_types": ML_QUESTION_TYPE_FILTER_VALUES,
         "question_subtypes": ML_QUESTION_SUBTYPE_FILTER_VALUES,
         "counts": [10, 20, 30, 40, 50],

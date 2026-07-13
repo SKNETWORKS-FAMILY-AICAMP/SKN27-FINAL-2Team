@@ -14,6 +14,7 @@ from analytics.service.analysis_snapshot import (
 )
 from analytics.service.analytics import get_classification_fields, get_composite_weak_targets
 from analytics.service.prediction import get_predicted_targets
+from analytics.service.weakness import get_trend_bonus, get_weakness_config
 from question.models import SolveRecords
 from user.models import UserAccounts
 
@@ -22,7 +23,15 @@ class StudyPlanBlockDeleteLimitExceeded(Exception):
     pass
 
 
-class StudyPlanMoveDateOutOfRange(Exception):
+class StudyPlanDateOutOfRange(Exception):
+    pass
+
+
+class StudyPlanExtraBlockUnavailable(Exception):
+    pass
+
+
+class StudyPlanExtraBlockCompletionRequired(Exception):
     pass
 
 
@@ -106,6 +115,145 @@ def get_study_plan_info(user_id):
         .order_by("-plan_version", "-modified_at")[:display_plan_count]
     )
     return serialize_study_plans_with_progress(user_id, study_plans, daily_available_minutes)
+
+
+def ensure_today_study_plan(user_id, today=None):
+    should_create_plan = False
+
+    with transaction.atomic():
+        study_plan = get_active_study_plans(user_id, lock=True).first()
+        if study_plan is None:
+            should_create_plan = True
+
+    if should_create_plan:
+        return create_study_plan(user_id)
+
+    return None
+
+
+def save_study_plan_items(user_id, study_plan, plan_items):
+    start_date, end_date = get_plan_date_range(plan_items)
+    completion_stats = calculate_plan_completion(plan_items)
+    study_plan.study_plan_items = format_plan_items(plan_items)
+    study_plan.start_date = start_date
+    study_plan.end_date = end_date
+    study_plan.completion_rate = completion_stats["completion_rate"]
+    study_plan.modified_at = timezone.now()
+    study_plan.save(
+        update_fields=[
+            "study_plan_items",
+            "start_date",
+            "end_date",
+            "completion_rate",
+            "modified_at",
+        ],
+    )
+    daily_available_minutes = get_daily_available_minutes(user_id)
+    return serialize_study_plan(study_plan, daily_available_minutes)
+
+
+def carry_over_incomplete_past_blocks_to_today(plan_items, today):
+    today_key = today.isoformat()
+    target_day_plan = get_or_create_study_plan_day(plan_items, today_key)
+    moved_blocks = []
+    changed = False
+
+    for day_plan in plan_items:
+        plan_date = parse_study_plan_day_date(day_plan)
+        if plan_date is None:
+            continue
+        if plan_date >= today:
+            continue
+
+        blocks = day_plan.get("blocks", [])
+        remaining_blocks = []
+        for block in blocks:
+            if block.get("isCompleted"):
+                remaining_blocks.append(block)
+            elif not block.get("isCompleted"):
+                moved_blocks.append(block)
+
+        if len(remaining_blocks) != len(blocks):
+            day_plan["blocks"] = remaining_blocks
+            changed = True
+
+    if moved_blocks:
+        target_day_plan.setdefault("blocks", []).extend(moved_blocks)
+        changed = True
+
+    if changed:
+        plan_items = prune_empty_study_plan_days(plan_items)
+        plan_items = sorted(plan_items, key=lambda plan: str(plan.get("date", ""))[:10])
+
+    return {
+        "items": plan_items,
+        "changed": changed,
+    }
+
+
+def parse_study_plan_day_date(day_plan):
+    raw_date = str(day_plan.get("date", ""))[:10]
+    try:
+        return date.fromisoformat(raw_date)
+    except ValueError:
+        return None
+
+
+def get_or_create_study_plan_day(plan_items, date_key):
+    for day_plan in plan_items:
+        raw_date = str(day_plan.get("date", ""))[:10]
+        if raw_date == date_key:
+            return day_plan
+
+    day_plan = {"date": date_key, "blocks": []}
+    plan_items.append(day_plan)
+    return day_plan
+
+
+def prune_empty_study_plan_days(plan_items):
+    return [
+        day_plan
+        for day_plan in plan_items
+        if day_plan.get("blocks") or has_study_plan_day_delete_history(day_plan)
+    ]
+
+
+def has_study_plan_day_delete_history(day_plan):
+    config = get_study_plan_config()
+    delete_count_key = config["daily_delete_count_key"]
+    try:
+        return int(day_plan.get(delete_count_key) or 0) > 0
+    except (TypeError, ValueError):
+        return False
+
+
+def should_create_plan_for_today(study_plan, plan_items, today):
+    if has_study_plan_blocks_on_date(plan_items, today):
+        return False
+    if was_study_plan_touched_today(study_plan, today):
+        return False
+
+    return True
+
+
+def has_study_plan_blocks_on_date(plan_items, target_date):
+    target_key = target_date.isoformat()
+    for day_plan in plan_items:
+        raw_date = str(day_plan.get("date", ""))[:10]
+        if raw_date == target_key and day_plan.get("blocks"):
+            return True
+
+    return False
+
+
+def was_study_plan_touched_today(study_plan, today):
+    touched_at = study_plan.modified_at or study_plan.created_at
+    if touched_at is None:
+        return False
+    if timezone.is_naive(touched_at):
+        touched_at = timezone.make_aware(touched_at, timezone.get_current_timezone())
+
+    return timezone.localtime(touched_at).date() == today
 
 
 def get_previous_study_plan_info(user_id):
@@ -660,6 +808,132 @@ def build_replacement_plan_block(user_id, plan_items, deleted_block):
     return None
 
 
+def add_extra_study_plan_block(user_id, target_date):
+    target_plan_date = date.fromisoformat(str(target_date)[:10])
+    target_date_key = target_plan_date.isoformat()
+    today = timezone.localdate()
+    if target_plan_date != today:
+        raise StudyPlanDateOutOfRange
+
+    with transaction.atomic():
+        study_plan = get_active_study_plans(user_id, lock=True).first()
+        if study_plan is None:
+            return None
+        if not is_study_plan_date_in_period(study_plan, target_plan_date):
+            raise StudyPlanDateOutOfRange
+
+        plan_items = prepare_study_plan_items(study_plan.study_plan_items)
+        config = get_study_plan_config()
+        if not is_extra_study_available_for_today(
+            plan_items,
+            today,
+            config["weekly_review_block_type"],
+        ):
+            raise StudyPlanExtraBlockCompletionRequired
+
+        extra_block = build_extra_study_plan_block(user_id, plan_items)
+        if extra_block is None:
+            raise StudyPlanExtraBlockUnavailable
+
+        target_day_plan = get_or_create_study_plan_day(plan_items, target_date_key)
+        insert_extra_study_block(target_day_plan, extra_block)
+        plan_items = keep_study_plan_period_boundary_days(
+            plan_items,
+            study_plan.start_date,
+            study_plan.end_date,
+        )
+        plan_items = sorted(plan_items, key=lambda plan: str(plan.get("date", ""))[:10])
+        return update_study_plan(
+            user_id,
+            study_plan.studyplan_id,
+            study_plan.study_plans,
+            plan_items,
+        )
+
+
+def build_extra_study_plan_block(user_id, plan_items):
+    config = get_study_plan_config()
+    base_date = timezone.localdate()
+    profile = get_user_study_info(user_id)
+    remaining_days = get_remaining_days(user_id, base_date, profile)
+    priority_targets = build_priority_targets(
+        get_composite_weak_targets(user_id),
+        get_predicted_targets(user_id),
+        remaining_days,
+        config,
+    )
+    if not priority_targets:
+        return None
+
+    planned_keys = get_planned_target_keys(plan_items)
+    selected_target = priority_targets[0]
+    for target in priority_targets:
+        target_key = get_optional_priority_target_key(target)
+        if target_key is not None and target_key not in planned_keys:
+            selected_target = target
+            break
+
+    estimated_minutes = get_extra_study_estimated_minutes(user_id, profile, config)
+    block_type = get_target_block_type(selected_target)
+    return build_study_block(selected_target, block_type, estimated_minutes, config)
+
+
+def get_extra_study_estimated_minutes(user_id, profile, config):
+    daily_available_minutes = get_daily_available_minutes(user_id, profile)
+    if daily_available_minutes <= 0:
+        daily_available_minutes = config["fallback_daily_available_minutes"]
+
+    blocks_per_day = get_blocks_per_day(daily_available_minutes, config)
+    return get_block_minutes(daily_available_minutes, blocks_per_day, 0, config)
+
+
+def insert_extra_study_block(day_plan, extra_block):
+    config = get_study_plan_config()
+    weekly_review_type = config["weekly_review_block_type"]
+    blocks = day_plan.setdefault("blocks", [])
+    for index, block in enumerate(blocks):
+        if block.get("blockType") == weekly_review_type:
+            blocks.insert(index, extra_block)
+            return
+
+    blocks.append(extra_block)
+
+
+def is_extra_study_available_for_today(plan_items, today, weekly_review_block_type):
+    learning_blocks = []
+    for day_plan in plan_items:
+        plan_date = parse_study_plan_day_date(day_plan)
+        if plan_date is None:
+            continue
+        if plan_date > today:
+            continue
+
+        for block in day_plan.get("blocks", []):
+            if not is_extra_study_learning_block(block, weekly_review_block_type):
+                continue
+
+            learning_blocks.append(block)
+
+    return bool(learning_blocks) and all(
+        is_study_plan_block_completed(block)
+        for block in learning_blocks
+    )
+
+
+def is_extra_study_learning_block(block, weekly_review_block_type):
+    block_type = block.get("blockType")
+    if block_type == weekly_review_block_type:
+        return False
+    if block_type == "review":
+        return False
+
+    return True
+
+
+def is_study_plan_block_completed(block):
+    return bool(block.get("isAchieved") or block.get("isCompleted"))
+
+
 def get_planned_target_keys(plan_items):
     target_keys = set()
     for day_plan in plan_items:
@@ -753,82 +1027,7 @@ def set_study_plan_block_completion(block, is_completed):
         block["completedAt"] = timezone.now().isoformat()
 
 
-def move_study_plan_blocks(user_id, move_items, target_date):
-    """
-    선택한 학습 블록들을 지정 날짜로 이동한다.
-
-    학습일 변경 모달에서 체크한 항목 목록을 받아 같은 study_plan_mypage
-    row 안의 기존 날짜 blocks에서 제거하고 target_date 날짜 blocks로 옮긴다.
-    """
-    if not move_items:
-        return []
-
-    target_plan_date = date.fromisoformat(str(target_date)[:10])
-    target_date_key = target_plan_date.isoformat()
-    study_plan_ids = sorted({item["studyPlanId"] for item in move_items})
-    updated_plans = []
-
-    with transaction.atomic():
-        for study_plan_id in study_plan_ids:
-            study_plan = (
-                StudyPlanMypage.objects.select_for_update()
-                .filter(user_id=user_id, studyplan_id=study_plan_id)
-                .first()
-            )
-            if study_plan is not None:
-                if not is_study_plan_move_date_allowed(study_plan, target_plan_date):
-                    raise StudyPlanMoveDateOutOfRange
-
-                plan_items = parse_study_plan_items(study_plan.study_plan_items)
-                selected_indexes_by_day = {}
-                for item in move_items:
-                    if item["studyPlanId"] == study_plan_id:
-                        selected_indexes_by_day.setdefault(item["dayIndex"], set()).add(
-                            item["blockIndex"],
-                        )
-
-                blocks_to_move = []
-                for day_index in sorted(selected_indexes_by_day):
-                    if 0 <= day_index < len(plan_items):
-                        blocks = plan_items[day_index].get("blocks", [])
-                        for block_index in sorted(selected_indexes_by_day[day_index], reverse=True):
-                            if 0 <= block_index < len(blocks):
-                                blocks_to_move.insert(0, blocks.pop(block_index))
-
-                if blocks_to_move:
-                    target_day_plan = None
-                    for day_plan in plan_items:
-                        raw_date = str(day_plan.get("date", ""))[:10]
-                        if raw_date == target_date_key:
-                            target_day_plan = day_plan
-
-                    if target_day_plan is None:
-                        target_day_plan = {
-                            "date": target_date_key,
-                            "blocks": [],
-                        }
-                        plan_items.append(target_day_plan)
-
-                    target_day_plan.setdefault("blocks", []).extend(blocks_to_move)
-                    plan_items = keep_study_plan_period_boundary_days(
-                        plan_items,
-                        study_plan.start_date,
-                        study_plan.end_date,
-                    )
-                    plan_items = sorted(plan_items, key=lambda plan: str(plan.get("date", ""))[:10])
-                    updated_plans.append(
-                        update_study_plan(
-                            user_id,
-                            study_plan_id,
-                            study_plan.study_plans,
-                            plan_items,
-                        )
-                    )
-
-    return updated_plans
-
-
-def is_study_plan_move_date_allowed(study_plan, target_date):
+def is_study_plan_date_in_period(study_plan, target_date):
     if study_plan.start_date and target_date < study_plan.start_date:
         return False
     if study_plan.end_date and target_date > study_plan.end_date:
@@ -1084,9 +1283,14 @@ def build_priority_target_seed(identity):
         "topic": identity["topic"],
         "qType": identity["qType"],
         "wrongRate": 0.0,
+        "weaknessScore": 0.0,
+        "weaknessStatus": "",
+        "trend": {},
+        "trendBonus": 0.0,
         "predictionScore": 0.0,
         "averageTimeSec": 0,
         "predictionReason": "",
+        "planSource": "normal",
     }
 
 
@@ -1108,7 +1312,9 @@ def build_priority_targets(weak_targets, predicted_targets, remaining_days, conf
     남은 기간 전략에 따른 가중치로 priorityScore를 산출한다.
     """
     target_map = {}
-    for weak_target in weak_targets:
+    weakness_config = get_weakness_config()
+    selected_weak_targets = select_priority_weak_targets(weak_targets, weakness_config)
+    for weak_target in selected_weak_targets:
         key, identity = get_priority_target_identity(weak_target)
         if key and identity:
             target = target_map.setdefault(
@@ -1118,11 +1324,22 @@ def build_priority_targets(weak_targets, predicted_targets, remaining_days, conf
             wrong_rate = weak_target.get("wrongRate")
             if wrong_rate is None:
                 wrong_rate = weak_target.get("wrong_rate") or 0.0
+            weakness_score = weak_target.get("weaknessScore")
+            if weakness_score is None:
+                weakness_score = wrong_rate or 0.0
             average_time_sec = weak_target.get("averageTimeSec")
             if average_time_sec is None:
                 average_time_sec = weak_target.get("average_time_sec") or 0
             target["wrongRate"] = float(wrong_rate)
+            target["weaknessScore"] = float(weakness_score)
+            target["weaknessStatus"] = weak_target.get("weaknessStatus") or ""
+            target["trend"] = weak_target.get("trend") or {}
+            target["trendBonus"] = get_trend_bonus(
+                target["trend"].get("value"),
+                weakness_config,
+            )
             target["averageTimeSec"] = average_time_sec or 0
+            target["planSource"] = weak_target.get("planSource") or "normal"
 
     for predicted_target in predicted_targets:
         key, identity = get_priority_target_identity(predicted_target)
@@ -1131,6 +1348,8 @@ def build_priority_targets(weak_targets, predicted_targets, remaining_days, conf
                 key,
                 build_priority_target_seed(identity),
             )
+            if not target["weaknessScore"]:
+                target["planSource"] = "fallback_prediction_only"
             prediction_score = predicted_target.get("predictionScore")
             if prediction_score is None:
                 prediction_score = predicted_target.get("prediction_score") or 0.0
@@ -1149,9 +1368,10 @@ def build_priority_targets(weak_targets, predicted_targets, remaining_days, conf
                 time_burden_score = 1
 
         priority_score = (
-            target["wrongRate"] * weights["weakness"]
+            target["weaknessScore"] * weights["weakness"]
             + target["predictionScore"] * weights["prediction"]
             + time_burden_score * weights["time_burden"]
+            + target["trendBonus"]
         )
         if priority_score >= config["minimum_priority_score"]:
             target["priorityScore"] = round(priority_score, 4)
@@ -1162,7 +1382,7 @@ def build_priority_targets(weak_targets, predicted_targets, remaining_days, conf
         priority_targets,
         key=lambda item: (
             -item["priorityScore"],
-            -item["wrongRate"],
+            -item["weaknessScore"],
             -item["predictionScore"],
             item["classification"],
             item["label"],
@@ -1171,6 +1391,27 @@ def build_priority_targets(weak_targets, predicted_targets, remaining_days, conf
             item["qType"],
         ),
     )
+
+
+def select_priority_weak_targets(weak_targets, weakness_config):
+    normal_targets = []
+    fallback_wrong_targets = []
+    for target in weak_targets:
+        status = target.get("weaknessStatus")
+        weakness_score = target.get("weaknessScore") or 0.0
+        if (
+            status != weakness_config["status_insufficient"]
+            and weakness_score > weakness_config["stable_threshold"]
+        ):
+            target["planSource"] = "normal"
+            normal_targets.append(target)
+        elif target.get("wrongCount", 0) > 0:
+            target["planSource"] = "fallback_any_wrong"
+            fallback_wrong_targets.append(target)
+
+    if normal_targets:
+        return normal_targets
+    return fallback_wrong_targets
 
 
 def build_daily_plan_items(priority_targets, daily_available_minutes, remaining_days, today, config):
@@ -1245,6 +1486,7 @@ def build_weekly_review_block(config):
         "estimatedMinutes": config["weekly_review_minutes"],
         "priorityScore": 0,
         "reason": "6일 학습 후 전체 범위 평가",
+        "planSource": "normal",
         "isCompleted": False,
         "completedAt": None,
     }
@@ -1282,6 +1524,7 @@ def build_study_block(target, block_type, estimated_minutes, config):
         "estimatedMinutes": estimated_minutes,
         "priorityScore": target["priorityScore"],
         "reason": target["reason"],
+        "planSource": target.get("planSource", "normal"),
         "isCompleted": False,
         "completedAt": None,
     }
@@ -1298,6 +1541,13 @@ def build_priority_reason(target):
     if target["wrongRate"]:
         wrong_rate = round(target["wrongRate"] * 100)
         reasons.append(f"오답률 {wrong_rate}%")
+    if target["weaknessScore"]:
+        weakness_score = round(target["weaknessScore"] * 100)
+        reasons.append(f"취약 점수 {weakness_score}%")
+    if target["trendBonus"] > 0:
+        reasons.append("최근 악화")
+    elif target["trendBonus"] < 0:
+        reasons.append("최근 개선")
     if target["predictionScore"]:
         prediction_rate = round(target["predictionScore"] * 100)
         reasons.append(f"출제 예상도 {prediction_rate}%")
@@ -1402,7 +1652,7 @@ def get_target_block_type(target):
     그 외에는 새 취약점 보완 블록인 newWeakness로 분류한다.
     """
     block_type = "newWeakness"
-    if target["predictionScore"] > target["wrongRate"]:
+    if target["predictionScore"] > target["weaknessScore"]:
         block_type = "predictionFocus"
 
     return block_type
@@ -1454,7 +1704,7 @@ def get_study_plan_config():
         "default_average_time_sec": 60,
         "review_time_sec": 90,
         "min_question_count": 3,
-        "max_question_count": 20,
+        "max_question_count": 5,
         "minimum_priority_score": 0.01,
         "short_term_days": 7,
         "medium_term_days": 21,
