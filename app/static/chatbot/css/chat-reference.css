@@ -30,6 +30,14 @@ body:has(.chat-page) { overflow: hidden; background: #fbfaf5 !important; }
 .chat-page .chat-layout.is-sidebar-collapsed .chat-sidebar-toggle::before { transform: rotate(180deg); }
 .chat-page .chat-layout.is-sidebar-collapsed .chat-panel::after { padding-left: 76px !important; }
 
+.chat-page .chat-panel::before {
+  padding-right: 30px !important;
+  background-image: url("/static/chatbot/assets/chat-floral.png") !important;
+  background-position: right center !important;
+  background-repeat: no-repeat !important;
+  background-size: 24px 24px !important;
+}
+
 .chat-page .chat-stream > .message.bot { max-width: 980px !important; }
 .chat-page .chat-stream > .message.bot > .bot-bubble { max-width: 880px !important; }
 
