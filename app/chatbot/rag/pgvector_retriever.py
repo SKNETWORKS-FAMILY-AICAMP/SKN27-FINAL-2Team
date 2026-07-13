@@ -466,6 +466,63 @@ class PgVectorHybridRetriever:
             )
         )
 
+    def search_owner_facts(self, question: str, owner: str, top_k: int = 5) -> list[PgSearchResult]:
+        """Rank by fact semantics while using the owner only as a corpus filter."""
+        question = normalize_query_spacing(question.strip())
+        owner = owner.strip()
+        if not question or not owner:
+            return []
+        embedding = vector_literal(embed_query(question, self.model, self.dimensions))
+        owner_pattern = f"%{re.sub(r'\s+', '', owner)}%"
+        sql = """
+        SELECT
+            chunk_id,
+            document_id,
+            source_type,
+            source_name,
+            title,
+            chunk_text,
+            metadata,
+            1 - (embedding <=> %s::vector) AS vector_score
+        FROM rag.document_chunks
+        WHERE embedding IS NOT NULL
+          AND (
+              regexp_replace(title, '\\s+', '', 'g') ILIKE %s
+              OR regexp_replace(chunk_text, '\\s+', '', 'g') ILIKE %s
+          )
+        ORDER BY
+          CASE
+            WHEN regexp_replace(title, '\\s+', '', 'g') ILIKE %s THEN 0
+            ELSE 1
+          END,
+          embedding <=> %s::vector
+        LIMIT %s
+        """
+        conn = connect_db()
+        try:
+            with conn:
+                with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                    cur.execute("SET LOCAL hnsw.ef_search = 120")
+                    cur.execute(sql, [embedding, owner_pattern, owner_pattern, owner_pattern, embedding, top_k])
+                    rows = cur.fetchall()
+        finally:
+            conn.close()
+        return [
+            PgSearchResult(
+                chunk_id=row["chunk_id"],
+                document_id=row["document_id"],
+                source_type=row["source_type"],
+                source_name=row["source_name"],
+                title=row["title"],
+                chunk_text=row["chunk_text"],
+                metadata=row["metadata"] or {},
+                vector_score=float(row["vector_score"] or 0.0),
+                keyword_score=0.0,
+                score=float(row["vector_score"] or 0.0),
+            )
+            for row in rows
+        ]
+
     def _search_uncached(self, question: str, top_k: int = 5) -> list[PgSearchResult]:
         question = normalize_query_spacing(question.strip())
         if not question:
