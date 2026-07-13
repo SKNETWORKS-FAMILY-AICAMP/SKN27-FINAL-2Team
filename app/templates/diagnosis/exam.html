@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="/static/question/css/exam.css" />
   <link rel="stylesheet" href="../../static/question/css/exam.css" />
   <link rel="stylesheet" href="/static/himate.css" />
-  <link rel="stylesheet" href="/static/layout.css" />
+  <link rel="stylesheet" href="/static/layout.css?v=exam-card-align-4" />
 </head>
 <body>
   <header class="site-header" aria-label="진단평가 메뉴">
@@ -33,13 +33,18 @@
     <section class="exam-shell" aria-label="진단평가 문제 풀이">
       <header class="exam-header">
         <div class="exam-title">
-          <h1>문제 풀이</h1>
+          <h1>진단 평가</h1>
         </div>
+        <section class="timer-card header-timer" aria-label="남은 시간">
+          <span>남은 시간</span>
+          <strong id="timerText">80:00</strong>
+        </section>
         <div class="progress-box" aria-label="문항 진행률">
-          <strong>문항 수</strong>
+          <strong>문제 진행률</strong>
           <div class="progress-track"><span id="progressFill" style="width: 5%"></span></div>
           <em id="progressText">1 / 50</em>
         </div>
+        <a class="exit-top-button header-exit" href="/diagnosis/">나가기</a>
       </header>
 
       <div class="exam-layout">
@@ -65,11 +70,6 @@
         </section>
 
         <aside class="side-panel" aria-label="진단평가 상태">
-          <section class="timer-card">
-            <span>남은 시간</span>
-            <strong id="timerText">80:00</strong>
-          </section>
-
           <section class="number-card">
             <h2>문항 목록</h2>
             <div class="number-grid" id="numberGrid" aria-label="문항 번호"></div>

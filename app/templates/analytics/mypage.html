@@ -28,20 +28,18 @@
 
   <main class="mypage">
     <section class="page-title">
+      <img class="hanok-children" src="/static/images/mypage-hanok-children.png" alt="" aria-hidden="true">
       <div>
         <p>{{ request.user.nickname }}님의 마이페이지</p>
         <h1>나의 학습실</h1>
       </div>
-      <aside class="d-day-box" aria-label="시험까지 남은 기간">
-        <span>D-day</span>
-        <strong>{{ d_day_label }}</strong>
-      </aside>
     </section>
 
     <section class="summary-strip" aria-label="학습 요약">
       <article><span>이번 주 정답률</span><strong>{{ learning_summary.answer_rate }}%</strong></article>
       <article><span>이번 주 풀이 수</span><strong>{{ learning_summary.solved_count }}문제</strong></article>
       <article><span>연속 학습일수</span><strong>{{ learning_summary.study_streak_days }}일</strong></article>
+      <article class="d-day-box" aria-label="시험까지 남은 기간"><span>시험까지</span><strong>{{ d_day_label }}</strong></article>
     </section>
 
     <section class="improvement-grid" aria-label="진단평가 비교">
@@ -88,17 +86,16 @@
       </article>
 
       <article class="panel donut-panel">
-        <div class="panel-heading compact">
-          <h2>유형별 오답률 <span>{{ wrong_type_summary.period_label }}</span></h2>
+        <div class="panel-heading compact wrong-rate-heading">
+          <button class="wrong-rate-arrow" id="wrongRatePrev" type="button" aria-label="이전 오답률 분류">‹</button>
+          <h2 id="wrongRateTitle">{{ wrong_rate_summaries.0.title }} <span id="wrongRatePeriod">{{ wrong_rate_summaries.0.period_label }}</span></h2>
+          <button class="wrong-rate-arrow" id="wrongRateNext" type="button" aria-label="다음 오답률 분류">›</button>
         </div>
-        <div class="donut-layout" style="--overall-rate: {{ wrong_type_summary.overall_rate }}%;">
-          <div class="donut-chart{% if not wrong_type_summary.has_records %} is-empty{% endif %}">
-            <strong>{{ wrong_type_summary.overall_rate }}%</strong>
-            <span>{{ wrong_type_summary.status_label }}</span>
-          </div>
+        {% for summary in wrong_rate_summaries %}
+        <div class="donut-layout wrong-rate-slide" data-title="{{ summary.title }}" data-period="{{ summary.period_label }}"{% if not forloop.first %} hidden{% endif %}>
           <ul>
-            {% if wrong_type_summary.has_records %}
-              {% for item in wrong_type_summary.items %}
+            {% if summary.has_records %}
+              {% for item in summary.items %}
                 <li style="--type-rate: {{ item.rate }}%;">
                   <i class="donut-type-chart"></i>
                   <span>{{ item.label }}</span>
@@ -106,11 +103,12 @@
                 </li>
               {% endfor %}
             {% endif %}
-            {% if not wrong_type_summary.has_records %}
+            {% if not summary.has_records %}
               <li class="empty-state">풀이 기록 없음</li>
             {% endif %}
           </ul>
         </div>
+        {% endfor %}
       </article>
 
     </section>
@@ -759,6 +757,19 @@
       if (startButton.disabled) return;
       startStudyPlanBlock(startButton);
     });
+    const wrongRateSlides = Array.from(document.querySelectorAll(".wrong-rate-slide"));
+    const wrongRateTitle = document.getElementById("wrongRateTitle");
+    const wrongRatePeriod = document.getElementById("wrongRatePeriod");
+    let wrongRateIndex = 0;
+    const showWrongRateSlide = (step) => {
+      wrongRateIndex = (wrongRateIndex + step + wrongRateSlides.length) % wrongRateSlides.length;
+      wrongRateSlides.forEach((slide, index) => { slide.hidden = index !== wrongRateIndex; });
+      const activeSlide = wrongRateSlides[wrongRateIndex];
+      wrongRateTitle.firstChild.nodeValue = `${activeSlide.dataset.title} `;
+      wrongRatePeriod.textContent = activeSlide.dataset.period;
+    };
+    document.getElementById("wrongRatePrev")?.addEventListener("click", () => showWrongRateSlide(-1));
+    document.getElementById("wrongRateNext")?.addEventListener("click", () => showWrongRateSlide(1));
     renderPlannerCalendar();
     renderPlannerLessons();
   </script>

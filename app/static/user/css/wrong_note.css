@@ -240,6 +240,71 @@ select {
   overflow: hidden;
 }
 
+.note-sidebar {
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  gap: 10px;
+}
+
+.note-sidebar-toggle {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  justify-self: end;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.note-sidebar-toggle::before {
+  content: "";
+  width: 24px;
+  height: 24px;
+  background: #000;
+  mask: url("/static/images/sidebar-toggle.png") center / contain no-repeat;
+}
+
+.note-sidebar-toggle.is-active::before { background: var(--green); }
+
+.note-sidebar .note-tabs {
+  display: grid;
+  justify-items: stretch;
+  gap: 4px;
+}
+
+.note-sidebar .note-tabs button {
+  min-height: 32px;
+  padding: 0 8px;
+  border: 0;
+  border-left: 3px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  color: #000;
+  text-align: left;
+}
+
+.note-sidebar .note-tabs button.active {
+  border-color: var(--green);
+  background: var(--soft);
+  color: #000;
+}
+
+.note-layout.is-sidebar-collapsed .note-sidebar .note-tabs,
+.note-layout.is-sidebar-collapsed .note-sidebar .filter-menu,
+.note-layout.is-sidebar-collapsed .note-list-panel {
+  display: none;
+}
+
+@media (min-width: 901px) {
+  .note-layout.is-sidebar-collapsed {
+    grid-template-columns: 44px minmax(460px, 3fr) minmax(340px, 2fr);
+  }
+}
+
 .question-note,
 .explain-note,
 .note-list-panel {
@@ -750,5 +815,65 @@ select {
 
   .note-list-panel {
     min-height: 280px;
+  }
+}
+
+/* Flat note workspace: hierarchy comes from dividers, not cards. */
+.wrong-note-page .note-workspace {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.wrong-note-page .note-list-panel,
+.wrong-note-page .question-note,
+.wrong-note-page .explain-note {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.wrong-note-page .note-list-panel,
+.wrong-note-page .question-note {
+  border-right: 1px solid var(--line);
+}
+
+.wrong-note-page .note-list-panel { padding: 0 14px 0 0; }
+.wrong-note-page .question-note { padding: 0 18px; }
+.wrong-note-page .explain-note { padding-left: 18px; }
+
+.wrong-note-page .question-card,
+.wrong-note-page .explain-body {
+  margin: 0;
+  padding: 12px 0;
+  border-radius: 0;
+  background: transparent;
+  border-bottom: 1px solid var(--line);
+}
+
+.wrong-note-page .choice-list li,
+.wrong-note-page .wrong-explain-list li,
+.wrong-note-page .note-list button {
+  border-width: 0 0 1px;
+  border-radius: 0;
+  background: transparent;
+}
+
+.wrong-note-page .note-list button.active {
+  border-color: var(--green);
+  background: var(--soft);
+}
+
+@media (min-width: 981px) {
+  .wrong-note-page {
+    width: 100%;
+    padding-right: 0;
+    padding-left: 0;
+  }
+
+  .wrong-note-page .note-title {
+    padding: 0 3vw;
   }
 }

@@ -2457,8 +2457,71 @@ body {
   color: #8d211a !important;
   opacity: 1 !important;
 }
-.chat-page .session-item.active .session-delete { background: #fffdf8 !important; color: #8d211a !important; }
+.chat-page .session-item.active {
+  border-color: #4A6B5D !important;
+  background: #F4F6F6 !important;
+  color: #000 !important;
+}
+.chat-page .session-item.active .session-copy,
+.chat-page .session-item.active .session-copy :is(strong, span) {
+  --content-text: #000;
+  color: #000 !important;
+}
+.chat-page .session-item.active .session-delete { background: #E4ECD4 !important; color: #1E3A4C !important; }
 .chat-page .session-delete:hover { background: #4A6B5D !important; color: #fff !important; }
+
+/* Conversation sidebar uses the same transparent toggle as the note sidebar. */
+.chat-page .chat-layout { position: relative; }
+.chat-page .chat-sidebar-toggle {
+  position: absolute;
+  z-index: 5;
+  top: 5px;
+  left: 252px;
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.chat-page .chat-sidebar-toggle::before {
+  content: "";
+  width: 20px;
+  height: 20px;
+  background: #000;
+  mask: url("/static/images/sidebar-toggle.png") center / contain no-repeat;
+}
+.chat-page .chat-sidebar-toggle.is-active::before { background: #4A6B5D; }
+.chat-page .session-sidebar .new-session-button {
+  width: 100% !important;
+  margin: 42px 0 0;
+  padding: 0 10px !important;
+}
+.chat-page .chat-layout.is-sidebar-collapsed {
+  grid-template-columns: 0 minmax(0, 1fr) !important;
+}
+.chat-page .chat-layout.is-sidebar-collapsed .left-sidebar { display: none !important; }
+.chat-page .chat-layout.is-sidebar-collapsed .chat-panel { grid-column: 2 !important; }
+.chat-page .chat-layout.is-sidebar-collapsed .chat-sidebar-toggle { left: 10px; }
+
+.chat-page .composer-box {
+  min-height: 58px !important;
+  grid-template-columns: auto minmax(0, 1fr) 42px !important;
+  align-items: center !important;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+.chat-page .question-input { min-width: 0; }
+.chat-page .problem-picker-trigger,
+.chat-page .send {
+  height: 42px !important;
+}
+.chat-page .send { width: 42px !important; }
+
+@media (max-width: 900px) {
+  .chat-page .chat-sidebar-toggle { display: none; }
+}
 
 /* Composer's problem picker uses the same red seal treatment as the rest of the chat. */
 .chat-page .problem-picker-trigger {
@@ -2469,3 +2532,54 @@ body {
   box-shadow: inset 0 0 0 2px rgba(255, 253, 248, .5) !important;
 }
 .chat-page .problem-picker-trigger:hover { background: #8d211a !important; }
+
+/* Hanok chat workspace reference layout. Existing chat behavior and avatar stay intact. */
+body:has(.chat-page) { overflow: hidden; }
+.chat-page { height: 100vh; background-color: #fcfaf4 !important; background-image: radial-gradient(rgba(136, 109, 75, .11) .65px, transparent .75px) !important; background-size: 10px 10px !important; font-family: "Noto Serif KR", "Nanum Myeongjo", serif !important; }
+.chat-page .chat-header { display: none !important; }
+.chat-page .messages { height: 100vh !important; padding: 0 !important; }
+.chat-page .chat-layout { grid-template-columns: 358px minmax(0, 1fr) !important; border: 1px solid #c9b69e !important; border-radius: 8px !important; background: #fcfaf4 !important; box-shadow: none !important; }
+.chat-page .left-sidebar { position: relative; display: grid !important; grid-template-rows: auto auto auto 1fr; gap: 22px; padding: 96px 23px 26px !important; border: 0 !important; border-right: 1px solid #d7c7b1 !important; border-radius: 0 !important; background: rgba(255,253,248,.76) !important; box-shadow: none !important; }
+.chat-page .left-sidebar::before { content: "✾  한국사 학습 챗봇"; position: absolute; top: 31px; left: 25px; color: #334838; font-size: 20px; font-weight: 900; }
+.chat-page .chat-sidebar-toggle { top: 28px; left: 292px; width: 42px; height: 42px; border: 1px solid #d9c9b4; border-radius: 50%; background: #fffdf8; }
+.chat-page .chat-sidebar-toggle::before { content: "«"; width: auto; height: auto; background: none; mask: none; color: #7a6c5a; font-size: 23px; line-height: 1; }
+.chat-page .chat-sidebar-toggle.is-active::before { background: none; color: #7a6c5a; }
+.chat-page .session-sidebar .new-session-button { min-height: 60px; margin: 0; border: 0 !important; border-radius: 7px !important; background: #416f60 !important; color: #fff !important; box-shadow: none !important; font-size: 17px; }
+.chat-page .session-search { gap: 11px; }.chat-page .session-search span, .chat-page .side-title { color: #252b27 !important; font-size: 16px; }
+.chat-page .session-search input { height: 51px; border: 1px solid #d6c4ad !important; border-radius: 8px !important; background: rgba(255,255,255,.68) !important; color: #56534e !important; }
+.chat-page .session-top { min-height: 20px; }.chat-page .session-list { gap: 12px; padding: 0; }
+.chat-page .session-item, .chat-page .session-item.active { min-height: 82px; padding: 14px 14px; border: 1px solid #dacbb8 !important; border-radius: 8px !important; background: rgba(255,255,255,.52) !important; color: #30332f !important; box-shadow: none !important; }
+.chat-page .session-item.active { border-color: #4f7f70 !important; background: rgba(248,248,241,.9) !important; }.chat-page .session-item-title { font-size: 15px; }.chat-page .session-item-meta { color: #6d6b65 !important; }.chat-page .session-delete { min-width: 36px; height: 36px; border-color: #d3c5b1 !important; background: #fffdf8 !important; color: #716e67 !important; }
+.chat-page .chat-panel { display: grid !important; grid-template-rows: minmax(0,1fr) auto; position: relative; padding-top: 87px; border: 0 !important; border-radius: 0 !important; background: transparent !important; box-shadow: none !important; }
+.chat-page .chat-panel::after { content: "⌂  한국사 학습 챗봇                                      역사를 배우는 즐거운 대화  ✧"; position: absolute; z-index: 3; top: 0; right: 0; left: 0; height: 87px; display: flex; align-items: center; padding: 0 40px; border-bottom: 1px solid #dfcdb8; color: #344837; font-size: 20px; font-weight: 900; white-space: pre; }
+.chat-page .chat-panel::before { background: none !important; }
+.chat-page .chat-stream { gap: 16px; padding: 37px 46px 16px !important; }.chat-page .chat-stream > .message.bot { max-width: 730px !important; gap: 18px !important; }.chat-page .chat-stream > .message.bot > .avatar { width: 66px !important; height: 66px !important; min-width: 66px !important; flex-basis: 66px !important; border: 1px solid #e5dccf !important; border-radius: 50% !important; background: #fff !important; }.chat-page .chat-stream > .message.bot > .bot-bubble { width: auto !important; max-width: 630px !important; min-width: 0 !important; flex: 1 1 auto !important; padding: 0 !important; border: 1px solid #e0d4c4 !important; border-radius: 20px !important; background: #fffdf9 !important; box-shadow: 0 4px 13px rgba(89,68,47,.08) !important; }.chat-page .markdown-answer { padding: 25px 38px !important; color: #33312e !important; font-size: 17px; font-weight: 650; line-height: 1.55; }
+.chat-page .composer { padding: 18px 52px 28px !important; background: transparent !important; }.chat-page .composer-box { max-width: none !important; min-height: 108px !important; grid-template-columns: 158px minmax(0,1fr) 60px !important; gap: 18px; padding: 16px 18px !important; border: 1px solid #c9ab8b !important; border-radius: 17px !important; background: #fffdf9 !important; box-shadow: 0 4px 12px rgba(89,68,47,.07) !important; }.chat-page .problem-picker-trigger { height: 62px !important; border: 1px solid #a8c0b4 !important; border-radius: 8px !important; background: #fffdf9 !important; color: #416f60 !important; box-shadow: none !important; font-size: 16px; }.chat-page .question-input { min-height: 62px; border: 1px solid #9eb8ac !important; border-radius: 8px !important; background: #fff !important; color: #5c5c58 !important; font-size: 16px; }.chat-page .send { width: 60px !important; height: 62px !important; border: 0 !important; border-radius: 8px !important; background: #416f60 !important; color: #fff !important; box-shadow: none !important; font-size: 28px; }
+@media (max-width: 900px) { body:has(.chat-page) { overflow: auto; }.chat-page .chat-layout { grid-template-columns: 1fr !important; }.chat-page .left-sidebar { display: none !important; }.chat-page .chat-panel { min-height: 100vh; }.chat-page .composer { padding: 12px 16px 18px !important; }.chat-page .composer-box { grid-template-columns: 1fr 52px !important; min-height: auto !important; }.chat-page .problem-picker-trigger { grid-column: 1 / -1; grid-row: 2; height: 45px !important; }.chat-page .chat-panel::after { padding: 0 20px; font-size: 16px; }.chat-page .chat-stream { padding: 28px 18px 12px !important; } }
+
+/* Reference refinements: restore the existing sidebar control and split the title bar. */
+.chat-page .chat-sidebar-toggle { top: 5px; left: 252px; width: 42px; height: 42px; border: 0; border-radius: 0; background: transparent; }
+.chat-page .chat-sidebar-toggle::before { content: ""; width: 20px; height: 20px; background: #000; mask: url("/static/images/sidebar-toggle.png") center / contain no-repeat; color: transparent; font-size: 0; }
+.chat-page .chat-sidebar-toggle.is-active::before { background: #4A6B5D; }
+.chat-page .left-sidebar::after { content: ""; position: absolute; right: 0; bottom: 0; left: 0; height: 210px; pointer-events: none; opacity: .2; background: url("/static/images/mypage-hanok.png") right bottom / 320px auto no-repeat; }
+.chat-page .chat-panel::after { content: "♜  한국사 학습 챗봇"; justify-content: flex-start; letter-spacing: -.03em; }
+.chat-page .chat-panel::before { content: "역사를 배우는 즐거운 대화  ✧"; position: absolute; z-index: 4; top: 0; right: 38px; left: auto; width: auto; height: 87px; display: flex; align-items: center; color: #8b857d; font-size: 14px; font-weight: 650; background: none !important; mask: none; }
+
+/* The shared site navigation remains visible above the chat workspace. */
+.chat-page .chat-header { display: flex !important; }
+.chat-page .messages { height: calc(100svh - 76px) !important; }
+
+/* ponytail: one compact row prevents the submit control from leaving the viewport. */
+.chat-page .composer { padding: 8px 52px 12px !important; }
+.chat-page .composer-box { min-height: 58px !important; grid-template-columns: 132px minmax(0, 1fr) 46px !important; gap: 10px !important; padding: 8px 10px !important; }
+.chat-page .problem-picker-trigger,
+.chat-page .question-input,
+.chat-page .send { height: 40px !important; min-height: 40px !important; }
+.chat-page .question-input { min-width: 0; resize: none; }
+.chat-page .send { width: 46px !important; min-width: 46px !important; font-size: 22px !important; }
+
+@media (max-width: 900px) {
+  .chat-page .composer { padding: 8px 12px 12px !important; }
+  .chat-page .composer-box { grid-template-columns: minmax(0, 1fr) 46px !important; }
+  .chat-page .problem-picker-trigger { height: 36px !important; min-height: 36px !important; }
+}
