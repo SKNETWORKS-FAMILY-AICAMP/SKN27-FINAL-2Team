@@ -8,6 +8,7 @@ from analytics.service.analytics import (
     get_diagnosis_improvement_summary,
     get_completed_records,
     get_completed_sessions,
+    get_completed_weekly_review_sessions,
     get_recent_wrong_rate_period,
     get_weekly_practice_summary,
 )
@@ -22,9 +23,9 @@ def build_learning_summary(user, today=None):
     이번 주 practice 기준 정답률과 풀이 수를 가져오고,
     완료 세션 날짜를 이용해 현재 연속 학습일을 계산한다.
     """
-    completed_sessions = get_completed_sessions(user.user_id)
-    weekly_summary = get_weekly_practice_summary(user.user_id)
     base_date = today or timezone.localdate()
+    completed_sessions = get_completed_sessions(user.user_id)
+    weekly_summary = get_weekly_practice_summary(user.user_id, base_date)
     study_streak_days = calculate_current_study_streak(
         completed_sessions,
         base_date,
@@ -59,9 +60,9 @@ def calculate_current_study_streak(completed_sessions, today):
 
 def build_diagnosis_comparison_summary(user):
     """
-    진단평가 회차 간 비교 요약을 만든다.
+    일반 진단평가와 주간평가 간 비교 요약을 만든다.
 
-    최신 두 진단평가의 비교 결과를 화면 표시용 데이터로 변환한다.
+    첫 주는 직전 진단평가와 주간평가를, 이후에는 연속 주간평가를 비교한다.
     """
     comparison = get_diagnosis_improvement_summary(user.user_id)
     answer_display = _build_rate_change_display(comparison["answerRateChange"])
@@ -112,19 +113,19 @@ def _build_diagnosis_comparison_empty_display(comparison):
 
     if comparison["hasPostDiagnosisPractice"]:
         return {
-            "title": "다음 진단평가 대기",
-            "description": "학습 기록은 쌓였고, 다음 진단평가를 완료하면 이전 진단평가와 비교됩니다.",
+            "title": "주간평가 대기",
+            "description": "학습 기록은 쌓였고, 주간평가를 완료하면 직전 평가와 비교됩니다.",
         }
 
     if comparison["hasWeeklyReviewPlan"]:
         return {
             "title": "비교 기준 준비 중",
-            "description": "7일차 진단평가를 완료하면 직전 진단평가 대비 개선도가 표시됩니다.",
+            "description": "7일차 주간평가를 완료하면 직전 평가 대비 개선도가 표시됩니다.",
         }
 
     return {
-        "title": "다음 진단평가 대기",
-        "description": "학습계획을 진행하고 다음 진단평가를 완료하면 정답률 변화를 볼 수 있습니다.",
+        "title": "주간평가 대기",
+        "description": "학습계획을 진행하고 주간평가를 완료하면 정답률 변화를 볼 수 있습니다.",
     }
 
 
@@ -132,17 +133,28 @@ def build_wrong_type_summary(user, today=None):
     """
     유형별 오답률 요약 카드에 필요한 데이터를 만든다.
 
-    완료된 풀이 기록을 q_type 기준으로 묶어 오답률을 계산하고,
-    오답률이 높은 상위 항목에 강조용 CSS 클래스를 부여한다.
+    최신 주간평가 기록을 우선해 q_type별 오답률을 계산하고,
+    주간평가가 없을 때만 최근 7일 완료 기록을 사용한다.
     """
     unclassified_label = "미분류"
     period = get_recent_wrong_rate_period(today)
-    rows = (
-        get_completed_records(user.user_id)
-        .filter(
+    completed_records = get_completed_records(user.user_id)
+    latest_weekly_review = get_completed_weekly_review_sessions(user.user_id).last()
+    record_scope = completed_records
+    period_label = period["label"]
+    source = "recent_learning"
+    if latest_weekly_review is not None:
+        record_scope = completed_records.filter(session=latest_weekly_review)
+        period_label = f"{latest_weekly_review.recorded_date.strftime('%m.%d')} 주간평가"
+        source = "weekly_review"
+    elif latest_weekly_review is None:
+        record_scope = completed_records.filter(
             session__recorded_date__gte=period["startDate"],
             session__recorded_date__lte=period["endDate"],
         )
+
+    rows = (
+        record_scope
         .values("q_type")
         .annotate(
             total=Count("record_id"),
@@ -182,7 +194,8 @@ def build_wrong_type_summary(user, today=None):
         "items": sorted_items,
         "has_records": total_count > 0,
         "status_label": status_label,
-        "period_label": period["label"],
+        "period_label": period_label,
+        "source": source,
     }
 
 
@@ -197,11 +210,9 @@ def build_weakness_summary(user, today=None):
     items = []
     for row in build_weakness_rows(records, ["era", "topic"], today):
         if row["status"] == config["status_weak"]:
-            group = row["group"]
-            label = " / ".join([group["era"], group["topic"]])
             items.append(
                 {
-                    "label": label,
+                    "label": row["label"],
                     "total": row["raw"]["total"],
                     "wrong": row["raw"]["wrong"],
                     "rate": round(row["raw"]["wrongRate"] * 100),
@@ -244,49 +255,6 @@ def build_weakness_trend_label(trend, config):
         return "개선 중"
 
     return ""
-
-
-def build_mypage_summary_validation(
-    user,
-    today=None,
-    weakness_summary=None,
-    wrong_type_summary=None,
-):
-    """
-    임시 진단용 검증이다.
-
-    사용자 입력 검증이 아니라, 최근 풀이 기록이 있는데 마이페이지 카드가
-    비어 보이는 불일치를 확인하기 위한 안전망이다. 원인 확인 후 테스트로
-    대체하고 제거할 수 있다.
-    """
-    period = get_recent_wrong_rate_period(today)
-    records = get_completed_records(user.user_id).filter(
-        session__recorded_date__gte=period["startDate"],
-        session__recorded_date__lte=period["endDate"],
-    )
-    stats = records.aggregate(
-        total=Count("record_id"),
-        wrong=Count("record_id", filter=Q(is_correct=False)),
-    )
-    total_count = stats["total"] or 0
-    wrong_count = stats["wrong"] or 0
-    wrong_type_has_records = bool((wrong_type_summary or {}).get("has_records"))
-    weakness_has_records = bool((weakness_summary or {}).get("has_records"))
-    issues = []
-
-    if total_count > 0 and not wrong_type_has_records:
-        issues.append("recent_records_exist_but_wrong_type_empty")
-    return {
-        "userId": user.user_id,
-        "periodStart": period["startDate"],
-        "periodEnd": period["endDate"],
-        "recentRecordCount": total_count,
-        "recentWrongRecordCount": wrong_count,
-        "wrongTypeHasRecords": wrong_type_has_records,
-        "weaknessHasRecords": weakness_has_records,
-        "issues": issues,
-        "isValid": not issues,
-    }
 
 
 def build_d_day_label(user, today):

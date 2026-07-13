@@ -5,6 +5,7 @@ from rest_framework import serializers
 
 class StudyPlanBlockData(serializers.Serializer):
     blockId = serializers.CharField(required=False)
+    groupKeyId = serializers.CharField(required=False, allow_blank=True)
     blockType = serializers.CharField()
     classification = serializers.CharField()
     label = serializers.CharField()
