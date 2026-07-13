@@ -1,5 +1,8 @@
 # 학습계획 달성률 계산 연동 가이드
 
+> 문서 상태: V1 INTEGRATION REFERENCE
+> 기존 SolveRecords 연결을 설명한다. v2 계약과 전환 규칙은 [study_plan/CONTRACTS.md](study_plan/CONTRACTS.md), [study_plan/CUTOVER.md](study_plan/CUTOVER.md)를 따른다.
+
 ## 목적
 
 학습계획 달성률은 더 이상 날짜, 시대, 유형, 주제를 추정 매칭해서 계산하지 않습니다.
@@ -27,7 +30,7 @@ POST /question/api/start/
 
 ```json
 {
-  "generation_mode": "detail",
+  "generation_mode": "study_plan",
   "studyplan_id": 1,
   "study_plan_block_id": "block-uuid",
   "count": 10
@@ -44,7 +47,7 @@ POST /question/api/session/{session_id}/submit/
 
 제출 완료 시 해당 세션이 `completed`가 되고, 그 세션의 `solve_records`가 학습계획 달성률 계산 대상이 됩니다.
 
-제출 API 상세는 [practice_submit_api.md](./practice_submit_api.md)를 참고하면 됩니다.
+제출 API 상세는 현재 `app/question/views.py`의 session submit 구현을 기준으로 확인합니다.
 
 ### 3. 마이페이지 조회
 

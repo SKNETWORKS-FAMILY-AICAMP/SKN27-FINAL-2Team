@@ -1,5 +1,9 @@
 # 학습계획 상세 흐름도
 
+> 문서 상태: V1 REFERENCE
+> 현재 함수 흐름과 아직 구현되지 않은 worker 흐름이 섞여 있다.
+> 목표 흐름은 [study_plan/SPEC.md](study_plan/SPEC.md), [study_plan/AI_WORKFLOW.md](study_plan/AI_WORKFLOW.md), [study_plan/CUTOVER.md](study_plan/CUTOVER.md)를 따른다.
+
 `app/analytics/service/studyplan.py`의 학습계획 생성·보장·진행률·블록 조작과 `display.py`의 표시 가공을 세부 함수 단위로 정리했다. 각 노드는 `함수명 — 한글 설명` 형식으로 표기했다. 마이페이지 전체 흐름은 `mypage_service_flow.md`를 참조한다.
 
 ## 1. 오늘 계획 보장 (마이페이지 진입 시)
