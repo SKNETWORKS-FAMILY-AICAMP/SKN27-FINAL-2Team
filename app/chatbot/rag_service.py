@@ -165,7 +165,8 @@ def build_retrieval_debug(
 
 def build_enriched_question(question: str, graph_context: dict[str, Any]) -> str:
     keywords = graph_context.get("keywords") or []
-    if not keywords:
+    relation_summary = graph_context.get("relation_summary") or ""
+    if not keywords and not relation_summary:
         return question
     selected = []
     for keyword in keywords:
@@ -184,7 +185,7 @@ def build_enriched_question(question: str, graph_context: dict[str, Any]) -> str
         if len(selected) >= 4:
             break
     keyword_text = " ".join(selected)
-    return f"{question} {keyword_text}".strip()
+    return f"{question} {keyword_text} {relation_summary}".strip()
 
 
 def should_use_graph_context(question: str, intent: str) -> bool:
@@ -208,7 +209,8 @@ def should_use_graph_context(question: str, intent: str) -> bool:
 
 
 def graph_hop_for_question(question: str) -> int:
-    return 2 if any(term in question for term in RELATION_QUERY_TERMS) else 1
+    is_comparison = any(term in question for term in RELATION_JOIN_TERMS) and len(overview_focus_terms(question)) >= 2
+    return 2 if any(term in question for term in RELATION_QUERY_TERMS) or is_comparison else 1
 
 
 def is_problem_context_question(question: str) -> bool:
