@@ -1,28 +1,28 @@
 /* ponytail: one shared skin keeps every existing screen and interaction intact. */
 :root {
-  --hm-ink: #201b17;
-  --hm-muted: #665b4d;
-  --hm-line: #c5a677;
-  --hm-soft: #fff;
-  --hm-lime: #e0c38c;
-  --hm-green: #173f36;
-  --hm-red: #b73225;
-  --hm-white: #fffdf8;
+  --hm-ink: #1E3A4C;
+  --hm-muted: #516A77;
+  --hm-line: #A3704C;
+  --hm-soft: #F4F6F6;
+  --hm-lime: #A3704C;
+  --hm-green: #4A6B5D;
+  --hm-red: #4A6B5D;
+  --hm-white: #fff;
   --hm-shadow: 0 14px 30px rgba(64, 43, 20, .10);
-  --bg: #fff;
+  --bg: #F4F6F6;
   --panel: #fff;
   --ink: var(--hm-ink);
   --muted: var(--hm-muted);
   --line: var(--hm-line);
   --label: #fff;
   --accent: var(--hm-red);
-  --accent-strong: #8d211a;
+  --accent-strong: #365548;
   --accent-soft: #fff;
   --user: var(--hm-green);
   --soft: #fff;
   --point: #f9edc8;
-  --point-line: #c5a677;
-  --danger: #a4261c;
+  --point-line: #A3704C;
+  --danger: #4A6B5D;
   --green: var(--hm-green);
   --green-soft: #fff;
   --lime-dark: var(--hm-green);
@@ -186,7 +186,7 @@ input:focus, textarea:focus, select:focus { outline: 2px solid rgba(183, 50, 37,
   right: 0;
   left: 0;
   height: 186px;
-  background: #173f36;
+  background: #4A6B5D;
 }
 .mypage > * { position: relative; z-index: 1; }
 .mypage .page-title {
@@ -222,7 +222,7 @@ input:focus, textarea:focus, select:focus { outline: 2px solid rgba(183, 50, 37,
   box-shadow: 0 12px 24px rgba(64, 43, 20, .10) !important;
 }
 .mypage .summary-strip article { min-height: 96px; border-color: #e4d5bf !important; }
-.mypage .summary-strip strong { color: #b73225 !important; }
+.mypage .summary-strip strong { color: #4A6B5D !important; }
 
 .mypage .improvement-grid,
 .mypage .quick-actions,
@@ -248,11 +248,11 @@ input:focus, textarea:focus, select:focus { outline: 2px solid rgba(183, 50, 37,
   border-radius: 0 !important;
   border-right: 1px solid #e4d5bf !important;
   background: transparent !important;
-  color: #173f36 !important;
+  color: #1E3A4C !important;
   box-shadow: none !important;
 }
 .mypage .quick-actions a:last-child { border-right: 0 !important; }
-.mypage .quick-actions a:hover { background: #f8f2e6 !important; color: #b73225 !important; }
+.mypage .quick-actions a:hover { background: #fff !important; color: #4A6B5D !important; }
 
 .mypage .analytics-grid { gap: 0 !important; }
 .mypage .analytics-grid .panel,
@@ -267,7 +267,7 @@ input:focus, textarea:focus, select:focus { outline: 2px solid rgba(183, 50, 37,
 }
 .mypage .analytics-grid .panel { padding: 30px 24px !important; }
 .mypage .analytics-grid .panel:nth-child(odd) { border-right: 1px solid #e4d5bf !important; }
-.mypage .panel-heading { border-bottom: 2px solid #173f36; padding-bottom: 12px; }
+.mypage .panel-heading { border-bottom: 2px solid #1E3A4C; padding-bottom: 12px; }
 .mypage .time-metric, .mypage .plan-item, .mypage .calendar,
 .mypage .planner-progress-summary, .mypage .planner-board {
   border-radius: 0 !important;
@@ -308,7 +308,7 @@ input:focus, textarea:focus, select:focus { outline: 2px solid rgba(183, 50, 37,
   top: 34px;
   width: 470px;
   height: 150px;
-  background: url("/static/images/mypage-building.png") center -100px / 450px auto no-repeat;
+  background: url("/static/images/mypage-hanok.png") center -100px / 450px auto no-repeat;
 }
 .mypage .page-title::after {
   content: "";
@@ -324,15 +324,15 @@ input:focus, textarea:focus, select:focus { outline: 2px solid rgba(183, 50, 37,
     linear-gradient(180deg, #505456 0 48px, #333637 48px 63px);
 }
 .mypage .page-title p,
-.mypage .page-title h1 { color: #201b17 !important; text-shadow: none !important; }
-.mypage .page-title p { color: #665b4d !important; }
+.mypage .page-title h1 { color: #1E3A4C !important; text-shadow: none !important; }
+.mypage .page-title p { color: #516A77 !important; }
 .mypage .page-title h1 { font-size: clamp(40px, 5vw, 62px) !important; }
 .mypage .d-day-box {
-  border-color: #b73225 !important;
+  border-color: #4A6B5D !important;
   background: rgba(255, 253, 248, .82) !important;
 }
-.mypage .d-day-box span { color: #665b4d !important; }
-.mypage .d-day-box strong { color: #b73225 !important; }
+.mypage .d-day-box span { color: #516A77 !important; }
+.mypage .d-day-box strong { color: #4A6B5D !important; }
 .mypage .summary-strip { margin-top: -18px !important; }
 
 @media (max-width: 700px) {
@@ -343,15 +343,15 @@ input:focus, textarea:focus, select:focus { outline: 2px solid rgba(183, 50, 37,
 
 /* Flat obangsaek palette: no gradient fills anywhere in the application. */
 :root {
-  --hm-ink: #26211d;
-  --hm-muted: #6e6152;
-  --hm-line: #b79a68;
-  --hm-soft: #fff;
-  --hm-lime: #d5b46e;
-  --hm-green: #1f5549;
-  --hm-red: #ae3d31;
+  --hm-ink: #1E3A4C;
+  --hm-muted: #516A77;
+  --hm-line: #A3704C;
+  --hm-soft: #F4F6F6;
+  --hm-lime: #A3704C;
+  --hm-green: #4A6B5D;
+  --hm-red: #4A6B5D;
   --hm-white: #fff;
-  --bg: #fff;
+  --bg: #F4F6F6;
   --panel: #fff;
   --accent: var(--hm-red);
   --accent-soft: #fff;
@@ -375,9 +375,9 @@ body { background: var(--bg) !important; }
 }
 .mypage .page-title::before {
   z-index: 0;
-  background-image: url("/static/images/mypage-building.png") !important;
-  background-position: center -100px !important;
-  background-size: 450px auto !important;
+  background-image: url("/static/images/mypage-hanok.png") !important;
+  background-position: center -120px !important;
+  background-size: 380px auto !important;
   background-repeat: no-repeat !important;
 }
 .mypage .page-title::after {
@@ -396,13 +396,13 @@ body { background: var(--bg) !important; }
 /* Data charts keep their segmented value encoding; this is not decorative shading. */
 .mypage .donut-layout {
   --donut-empty: #eadfce;
-  --donut-overall: #ae3d31;
-  --donut-segment-1: #ae3d31;
-  --donut-segment-2: #d5b46e;
-  --donut-segment-3: #1f5549;
+  --donut-overall: #4A6B5D;
+  --donut-segment-1: #4A6B5D;
+  --donut-segment-2: #A3704C;
+  --donut-segment-3: #1E3A4C;
   --donut-segment-4: #52758a;
   --donut-segment-5: #72536c;
-  --donut-segment-6: #6e6152;
+  --donut-segment-6: #516A77;
 }
 .mypage .donut-chart {
   background-image: conic-gradient(var(--donut-overall) 0 var(--overall-rate), var(--donut-empty) var(--overall-rate) 100%) !important;
@@ -416,12 +416,12 @@ body { background: var(--bg) !important; }
 .mypage .weak-list span,
 .diagnosis-page .step-flow span {
   border: 2px solid #f2dfbd !important;
-  background: #ae3d31 !important;
+  background: #4A6B5D !important;
   color: #fffdf7 !important;
   box-shadow: none !important;
 }
 .mypage .weak-list strong,
-.mypage .weak-list em { color: #26211d !important; }
+.mypage .weak-list em { color: #1E3A4C !important; }
 
 /* Diagnostic overview: keep every label readable in ink, except step numbers. */
 .diagnosis-page .intro-heading h1,
@@ -432,7 +432,7 @@ body { background: var(--bg) !important; }
 .diagnosis-page .guide-copy p,
 .diagnosis-page .info-table span,
 .diagnosis-page .info-table strong {
-  color: #26211d !important;
+  color: #1E3A4C !important;
 }
 
 /* Exam sidebar: one continuous rail with dividers, not stacked cards. */
@@ -441,7 +441,7 @@ body { background: var(--bg) !important; }
   gap: 0 !important;
   padding-left: 18px !important;
   border: 0 !important;
-  border-left: 1px solid #b79a68 !important;
+  border-left: 1px solid #A3704C !important;
   border-radius: 0 !important;
   background: transparent !important;
   box-shadow: none !important;
@@ -456,12 +456,12 @@ body { background: var(--bg) !important; }
 }
 .exam-page .side-panel > .save-card {
   padding: 0 0 14px !important;
-  border-bottom: 1px solid #b79a68 !important;
+  border-bottom: 1px solid #A3704C !important;
   order: 2;
 }
 .exam-page .side-panel > .timer-card {
   padding: 12px 0 !important;
-  border-bottom: 1px solid #b79a68 !important;
+  border-bottom: 1px solid #A3704C !important;
   order: 1;
 }
 .exam-page .side-panel > .number-card {
@@ -502,7 +502,7 @@ body { background: var(--bg) !important; }
   gap: 8px;
   padding: 0 0 0 14px !important;
   border: 0 !important;
-  border-left: 1px solid #b79a68 !important;
+  border-left: 1px solid #A3704C !important;
   border-radius: 0 !important;
   background: transparent !important;
   box-shadow: none !important;
@@ -510,13 +510,13 @@ body { background: var(--bg) !important; }
 .exam-page .progress-box .progress-track { display: none !important; }
 .exam-page .progress-box strong {
   display: inline !important;
-  color: #6e6152 !important;
+  color: #516A77 !important;
   font-size: 13px !important;
   font-weight: 900;
 }
 .exam-page .progress-box em {
   display: block;
-  color: #26211d !important;
+  color: #1E3A4C !important;
   font-size: 18px !important;
   font-style: normal;
   font-weight: 900;
@@ -541,13 +541,13 @@ body { background: var(--bg) !important; }
   align-items: baseline;
   gap: 7px;
   padding-left: 14px !important;
-  border-left: 1px solid #b79a68 !important;
+  border-left: 1px solid #A3704C !important;
   text-align: left !important;
 }
-.exam-page .header-timer span { display: inline !important; color: #6e6152 !important; font-size: 13px !important; }
-.exam-page .header-timer strong { display: inline !important; margin: 0 !important; color: #26211d !important; font-size: 20px !important; }
+.exam-page .header-timer span { display: inline !important; color: #516A77 !important; font-size: 13px !important; }
+.exam-page .header-timer strong { display: inline !important; margin: 0 !important; color: #1E3A4C !important; font-size: 20px !important; }
 .exam-page .header-exit .side-action-buttons { display: flex !important; gap: 6px !important; }
-.exam-page .header-exit { padding-left: 14px !important; border-left: 1px solid #b79a68 !important; }
+.exam-page .header-exit { padding-left: 14px !important; border-left: 1px solid #A3704C !important; }
 .exam-page .header-exit .side-action-buttons button { min-width: 94px !important; }
 .exam-page .header-exit #saveStatus { display: none; }
 .exam-page .side-panel {
@@ -599,11 +599,14 @@ body { background: var(--bg) !important; }
   justify-self: center;
 }
 
-/* White base surfaces; selected and status states keep their semantic color. */
-body, .site-header, .chat-header, .exam-page, .result-page, .intro-page, .mypage,
-.wrong-note-page, .create-page, .chat-page, .login-page, .auth-page,
-.diagnosis-page, .hero, .feature-section, .cta-section, .left-sidebar,
-.right-sidebar, .planner-board, .planner-calendar, .planner-day {
+/* Cool light gray is the shared canvas; content surfaces remain white. */
+body, .exam-page, .result-page, .intro-page, .wrong-note-page, .create-page,
+.chat-page, .login-page, .auth-page, .diagnosis-page, .hero, .feature-section,
+.cta-section {
+  background-color: #F4F6F6 !important;
+}
+.site-header, .chat-header, .mypage, .left-sidebar, .right-sidebar,
+.planner-board, .planner-calendar, .planner-day {
   background-color: #fff !important;
 }
 .exam-shell, .review-shell, .diagnosis-summary, .intro-card, .summary-strip,
@@ -614,8 +617,63 @@ body, .site-header, .chat-header, .exam-page, .result-page, .intro-page, .mypage
   background: #fff !important;
 }
 .mode-card.active, .mode-card.selected, .guide-card.active, .choice.selected {
-  background: #f8e9d9 !important;
+  background: #E5ECE8 !important;
 }
+.create-page .option-list button.selected {
+  color: #fff !important;
+}
+input, textarea, select {
+  background: #fff !important;
+  color: #1E3A4C !important;
+}
+
+/* Semantic color roles for the Oxford Trust palette. */
+.site-header .brand, .chat-header .brand, .site-brand,
+.main-nav a, h1, h2, h3 {
+  color: #1E3A4C !important;
+}
+.primary-button, .start-button, .submit-button, .dark-button,
+button[type="submit"] {
+  border-color: #4A6B5D !important;
+  background: #4A6B5D !important;
+  color: #fff !important;
+}
+.outline-button, .secondary-button, .ghost-button {
+  border-color: #A3704C !important;
+  background: #fff !important;
+  color: #A3704C !important;
+}
+.result-page .outline-button, .result-page .secondary-button,
+.result-page .ghost-button, .result-page .nav-button {
+  border-color: #1E3A4C !important;
+  color: #1E3A4C !important;
+}
+.auth-message.error, .verification-message.error, .error, .error-message,
+.result-state.wrong, .question-jump button.wrong, .answer-summary .is-wrong,
+.save-card p.is-error, .problem-picker-result.wrong {
+  border-color: #9E2A2B !important;
+  color: #9E2A2B !important;
+}
+.result-state.wrong, .question-jump button.wrong {
+  background: #9E2A2B !important;
+  color: #fff !important;
+}
+
+html, body {
+  background: #F4F6F6 !important;
+}
+.result-page {
+  background-color: #F4F6F6 !important;
+}
+
+/* Body copy stays black; navigation and banner copy keep their own treatment. */
+main > *:not(.page-title):not(.hero):not(.cta-section)
+  :is(h1, h2, h3, h4, p, span, strong, em, li, label, dt, dd) {
+  color: #000 !important;
+}
+.mypage .page-title h1 { color: #1E3A4C !important; }
+.mypage .page-title p { color: #516A77 !important; }
+
 @media (max-width: 640px) {
   .project-preview-shell { min-height: 0 !important; }
   .project-preview { height: auto; }
@@ -624,8 +682,8 @@ body, .site-header, .chat-header, .exam-page, .result-page, .intro-page, .mypage
 .exam-page .question-badge,
 .exam-page .number-grid button.active,
 .exam-page .progress-track span {
-  border-color: #ae3d31 !important;
-  background: #ae3d31 !important;
+  border-color: #4A6B5D !important;
+  background: #4A6B5D !important;
   color: #fffdf7 !important;
 }
 
@@ -687,7 +745,7 @@ body, .site-header, .chat-header, .exam-page, .result-page, .intro-page, .mypage
 @media (max-width: 900px) {
   .exam-page .side-panel {
     padding: 18px 0 0 !important;
-    border-top: 1px solid #b79a68 !important;
+    border-top: 1px solid #A3704C !important;
     border-left: 0 !important;
   }
 }

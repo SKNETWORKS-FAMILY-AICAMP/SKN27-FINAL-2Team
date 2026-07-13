@@ -38,7 +38,7 @@
 body {
   margin: 0;
   color: var(--hm-ink) !important;
-  background: linear-gradient(180deg, #fbfcfa 0 72px, var(--hm-lime) 72px 100%) !important;
+  background: #F4F6F6 !important;
   font-family: Pretendard, "Noto Sans KR", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
   line-height: 1.5;
 }
