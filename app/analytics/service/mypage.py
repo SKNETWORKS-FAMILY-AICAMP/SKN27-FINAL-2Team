@@ -5,6 +5,7 @@ from django.utils import timezone
 
 from analytics.service.analytics import (
     calculate_percent_rate,
+    get_classification_display_label,
     get_diagnosis_improvement_summary,
     get_completed_records,
     get_completed_sessions,

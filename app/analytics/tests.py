@@ -12,6 +12,7 @@ from analytics.service.display import build_planner_summary, build_wrong_rate_di
 from analytics.service.mypage import (
     build_d_day_label,
     build_learning_summary,
+    build_wrong_rate_summary,
     build_wrong_type_summary,
 )
 from analytics.service.studyplan import (
@@ -142,6 +143,39 @@ class MypageServiceTests(SimpleTestCase):
         self.assertEqual(summary["period_label"], "07.13 주간평가")
         self.assertEqual(summary["source"], "weekly_review")
         self.assertEqual(summary["overall_rate"], 40)
+
+    @patch("analytics.service.mypage.get_completed_weekly_review_sessions")
+    @patch("analytics.service.mypage.get_recent_wrong_rate_period")
+    @patch("analytics.service.mypage.get_completed_records")
+    def test_wrong_rate_summary_uses_classification_display_label(
+        self,
+        get_completed_records_mock,
+        get_recent_wrong_rate_period_mock,
+        get_completed_weekly_review_sessions_mock,
+    ):
+        today = date(2026, 7, 13)
+        get_recent_wrong_rate_period_mock.return_value = {
+            "startDate": date(2026, 7, 7),
+            "endDate": today,
+            "label": "recent period",
+        }
+        completed_records = Mock()
+        grouped_records = completed_records.filter.return_value.values.return_value
+        grouped_records.annotate.return_value = [
+            {"era": "\uc870\uc120\uc2dc\ub300", "total": 2, "wrong": 1},
+        ]
+        get_completed_records_mock.return_value = completed_records
+        get_completed_weekly_review_sessions_mock.return_value.last.return_value = None
+
+        summary = build_wrong_rate_summary(
+            SimpleNamespace(user_id=7),
+            "era",
+            today,
+        )
+
+        self.assertTrue(summary["has_records"])
+        self.assertEqual(summary["items"][0]["label"], "\uc870\uc120")
+        self.assertEqual(summary["items"][0]["rate"], 50)
 
     @patch("analytics.service.mypage.get_user_study_info")
     def test_d_day_label_uses_exam_date(self, get_user_study_info_mock):
