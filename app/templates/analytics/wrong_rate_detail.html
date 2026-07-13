@@ -4,15 +4,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>himate | 취약점 분석 상세</title>
+  <title>himate | 상세 취약점 분석</title>
   <link rel="stylesheet" href="{% static 'analytics/css/wrong_rate_detail.css' %}" />
   <link rel="stylesheet" href="{% static 'himate.css' %}" />
   <link rel="stylesheet" href="{% static 'layout.css' %}" />
 </head>
 <body>
   <header class="site-header" aria-label="취약점 분석 상세 메뉴">
-    <a class="brand" href="{% url 'pages:index' %}" aria-label="himate 홈">
-      <img src="{% static 'chatbot/assets/logo.png' %}" alt="himate" />
+    <a class="brand brand-no-logo" href="{% url 'pages:index' %}" aria-label="himate 홈">
     </a>
     <nav class="main-nav" aria-label="학습 메뉴">
       <a href="{% url 'diagnosis:intro' %}">진단 평가</a>
@@ -21,32 +20,25 @@
       <a class="active" href="{% url 'analytics:mypage' %}">나의 학습실</a>
     </nav>
     <nav class="header-actions" aria-label="계정 메뉴">
-      <a class="outline-button" href="{% url 'analytics:mypage' %}">마이페이지</a>
       <a class="ghost-button" href="{% url 'user:logout' %}">로그아웃</a>
     </nav>
   </header>
 
   <main class="wrong-rate-page">
     <section class="wrong-rate-title">
-      <p>{{ request.user.nickname }}님의 취약점 분석</p>
-      <h1>취약점 분석 상세</h1>
+      <p>{{ request.user.nickname }}님의</p>
+      <h1>상세 취약점 분석</h1>
     </section>
 
     <section class="top-donut-summary" aria-label="오답 비중 요약">
-      <div class="top-donut-heading">
-        <div>
-          <p>최근 {{ donut_period.dayCount }}일 기준</p>
-          <h2>오답 비중</h2>
-        </div>
-        <span>{{ donut_period.label }} · 오답 {{ donut_total_wrong }}개</span>
-      </div>
       <article class="top-donut-card">
         <header>
-          <span>분류별 비중</span>
           <h2>시대별</h2>
         </header>
         <div class="rate-donut-overview">
-          <div class="rate-donut-chart{% if not era_donut.hasRecords %} empty{% endif %}" style="--donut-gradient: {{ era_donut.gradient }};" aria-label="시대별 오답 비중"></div>
+          <div class="rate-donut-chart{% if not era_donut.hasRecords %} empty{% endif %}" style="--donut-gradient: {{ era_donut.gradient }};" aria-label="시대별 오답 비중">
+            <div class="rate-donut-values">{% for item in era_donut.items %}<span style="--angle: {{ item.labelAngle }}deg; --reverse-angle: {{ item.labelReverseAngle }}deg;">{{ item.share }}%</span>{% empty %}<span>0%</span>{% endfor %}</div>
+          </div>
           <div class="rate-donut-list">
             {% for item in era_donut.items %}
               <article>
@@ -66,7 +58,6 @@
               <article>
                 <i></i>
                 <strong>기록 없음</strong>
-                <span>오답 비중 없음</span>
               </article>
             {% endfor %}
           </div>
@@ -74,11 +65,12 @@
       </article>
       <article class="top-donut-card">
         <header>
-          <span>분류별 비중</span>
           <h2>유형별</h2>
         </header>
         <div class="rate-donut-overview">
-          <div class="rate-donut-chart{% if not type_donut.hasRecords %} empty{% endif %}" style="--donut-gradient: {{ type_donut.gradient }};" aria-label="유형별 오답 비중"></div>
+          <div class="rate-donut-chart{% if not type_donut.hasRecords %} empty{% endif %}" style="--donut-gradient: {{ type_donut.gradient }};" aria-label="유형별 오답 비중">
+            <div class="rate-donut-values">{% for item in type_donut.items %}<span style="--angle: {{ item.labelAngle }}deg; --reverse-angle: {{ item.labelReverseAngle }}deg;">{{ item.share }}%</span>{% empty %}<span>0%</span>{% endfor %}</div>
+          </div>
           <div class="rate-donut-list">
             {% for item in type_donut.items %}
               <article>
@@ -98,7 +90,6 @@
               <article>
                 <i></i>
                 <strong>기록 없음</strong>
-                <span>오답 비중 없음</span>
               </article>
             {% endfor %}
           </div>
@@ -106,11 +97,12 @@
       </article>
       <article class="top-donut-card">
         <header>
-          <span>분류별 비중</span>
           <h2>주제별</h2>
         </header>
         <div class="rate-donut-overview">
-          <div class="rate-donut-chart{% if not topic_donut.hasRecords %} empty{% endif %}" style="--donut-gradient: {{ topic_donut.gradient }};" aria-label="주제별 오답 비중"></div>
+          <div class="rate-donut-chart{% if not topic_donut.hasRecords %} empty{% endif %}" style="--donut-gradient: {{ topic_donut.gradient }};" aria-label="주제별 오답 비중">
+            <div class="rate-donut-values">{% for item in topic_donut.items %}<span style="--angle: {{ item.labelAngle }}deg; --reverse-angle: {{ item.labelReverseAngle }}deg;">{{ item.share }}%</span>{% empty %}<span>0%</span>{% endfor %}</div>
+          </div>
           <div class="rate-donut-list">
             {% for item in topic_donut.items %}
               <article>
@@ -130,7 +122,6 @@
               <article>
                 <i></i>
                 <strong>기록 없음</strong>
-                <span>오답 비중 없음</span>
               </article>
             {% endfor %}
           </div>
@@ -391,6 +382,7 @@
         </div>
       </section>
     {% endwith %}
+
   </main>
 
   <div class="detail-modal" id="wrongRateDetailModal" hidden>
@@ -1251,10 +1243,45 @@
         `;
       };
 
-      const renderInlinePeriodDetail = (detail) => {
+      const renderPeriodDonut = (group) => {
+        const colors = ["#b8cfb4", "#bde4e9", "#c9daf1", "#e4cceb", "#f9beb5", "#f6d093"];
+        const items = (group?.items || []).filter((item) => item.wrongCount > 0).slice(0, 6);
+        const total = items.reduce((sum, item) => sum + item.wrongCount, 0);
+        let start = 0;
+        const segments = items.map((item, index) => {
+          const share = total ? Math.round(item.wrongCount / total * 100) : 0;
+          const end = index === items.length - 1 ? 100 : start + share;
+          const segment = `${colors[index]} ${start}% ${end}%`;
+          start = end;
+          return segment;
+        });
+        return `
+          <article class="period-report-donut">
+            <h3>${escapeHtml(group?.title?.replace("오답률", "") || "분류")}</h3>
+            <div class="period-report-donut-body">
+              <ul>${items.map((item, index) => `<li><i style="background:${colors[index]}"></i><span>${escapeHtml(item.label)}</span><b>${total ? Math.round(item.wrongCount / total * 100) : 0}%</b></li>`).join("") || "<li>기록 없음</li>"}</ul>
+              <div class="period-report-ring" style="background:conic-gradient(${segments.join(",") || "#e7ece5 0 100%"})"></div>
+            </div>
+          </article>`;
+      };
+
+      const renderPeriodReferenceReport = (detail) => {
         const overview = detail.overview || {};
         const groups = detail.groups || [];
-        const period = detail.period || {};
+        const top = detail.topWeakItems || [];
+        const era = groups.find((group) => group.title === "시대별 오답률") || {};
+        return `
+          <section class="period-reference-report" aria-label="기간별 상세 취약점 분석">
+            <header><h2>상세 취약점 분석</h2><p>오답 유형 / 분석 대시보드</p></header>
+            <div class="period-report-donuts">${groups.map(renderPeriodDonut).join("")}</div>
+            <section class="period-report-summary"><div><strong>${escapeHtml(overview.periodLabel || detail.period?.label || "선택 기간")} 분석 요약</strong><span>선택한 기간의 분석 결과를 반영한 데이터입니다.</span></div><b>오답률 ${escapeHtml(overview.wrongRate)}%</b></section>
+            <section class="period-report-insights"><h3>주요 인사이트</h3><div>${top.slice(0, 4).map((item, index) => `<article><i>${["⌂", "♧", "▤", "⌁"][index]}</i><span>${escapeHtml(item.classification)}</span><strong>${escapeHtml(item.label)}</strong><small>오답률 ${escapeHtml(item.wrongRate)}%</small></article>`).join("")}</div></section>
+            <section class="period-report-ranking"><h3>TOP 취약 분야</h3><div class="period-ranking-head"><span>순위</span><span>분야</span><span>세부 취약 영역</span><span>오답률</span></div>${top.map((item, index) => `<button type="button" data-period-item-question data-start-date="${escapeHtml(detail.period?.startDate)}" data-end-date="${escapeHtml(detail.period?.endDate)}" data-category="${escapeHtml(item.category)}" data-label="${escapeHtml(item.label)}"><b>${index + 1}</b><strong>${escapeHtml(item.label)}</strong><span>${escapeHtml(item.classification)} · 오답 ${escapeHtml(item.wrongCount)}개</span><em>${escapeHtml(item.wrongRate)}%</em></button>`).join("")}</section>
+            <section class="period-report-era"><h3>시대별 오답률</h3><div>${(era.items || []).map((item) => `<button type="button" data-period-item-question data-start-date="${escapeHtml(detail.period?.startDate)}" data-end-date="${escapeHtml(detail.period?.endDate)}" data-category="${escapeHtml(item.category)}" data-label="${escapeHtml(item.label)}"><i>♜</i><strong>${escapeHtml(item.label)}</strong><b>${escapeHtml(item.wrongRate)}%</b><span>오답 ${escapeHtml(item.wrongCount)}문항</span><small><em style="width:${Number(item.wrongRate) || 0}%"></em></small></button>`).join("")}</div></section>
+          </section>`;
+      };
+
+      const renderInlinePeriodDetail = (detail) => {
         const breakdown = getInlineBreakdown("period");
         if (!breakdown?.body) {
           return;
@@ -1269,22 +1296,7 @@
         );
 
         breakdown.body.innerHTML = `
-          <article class="session-overview-card">
-            <div>
-              <span>${escapeHtml(overview.periodLabel)} · ${escapeHtml(overview.sessionCount)}개 세션</span>
-              <strong>오답률 ${escapeHtml(overview.wrongRate)}%</strong>
-            </div>
-            <div class="session-overview-meter" aria-label="기간 오답률 ${escapeHtml(overview.wrongRate)}%">
-              <i style="width: ${Number(overview.wrongRate) || 0}%"></i>
-            </div>
-            <p>
-              ${escapeHtml(overview.totalCount)}문제 · 오답 ${escapeHtml(overview.wrongCount)}개 · 정답률 ${escapeHtml(overview.answerRate)}% · 문제당 ${escapeHtml(overview.averageTimeLabel)}
-            </p>
-            ${renderSessionStack(overview.stack || {})}
-          </article>
-          ${renderPeriodChange(detail.change || {})}
-          ${renderTopWeakness(detail.topWeakItems || [], detail.topWeakTitle || "기간 오답 TOP")}
-          ${groups.map((group) => renderPeriodAnalysisGroup(group, period)).join("")}
+          ${renderPeriodReferenceReport(detail)}
         `;
         showInlineBreakdown(breakdown, "period", activeInlineSelections.period);
       };

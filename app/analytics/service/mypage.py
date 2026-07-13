@@ -136,6 +136,11 @@ def build_wrong_type_summary(user, today=None):
     최신 주간평가 기록을 우선해 q_type별 오답률을 계산하고,
     주간평가가 없을 때만 최근 7일 완료 기록을 사용한다.
     """
+    return build_wrong_rate_summary(user, "q_type", today)
+
+
+def build_wrong_rate_summary(user, field, today=None):
+    """최근 풀이의 지정 분류별 오답률 요약을 만든다."""
     unclassified_label = "미분류"
     period = get_recent_wrong_rate_period(today)
     completed_records = get_completed_records(user.user_id)
@@ -155,7 +160,7 @@ def build_wrong_type_summary(user, today=None):
 
     rows = (
         record_scope
-        .values("q_type")
+        .values(field)
         .annotate(
             total=Count("record_id"),
             wrong=Count("record_id", filter=Q(is_correct=False)),
@@ -173,7 +178,11 @@ def build_wrong_type_summary(user, today=None):
         wrong_count += wrong
         items.append(
             {
-                "label": row["q_type"] or unclassified_label,
+                "label": (
+                    get_classification_display_label(field, row[field])
+                    if field in {"era", "topic"}
+                    else row[field] or unclassified_label
+                ),
                 "total": total,
                 "wrong": wrong,
                 "rate": calculate_percent_rate(wrong, total),

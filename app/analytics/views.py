@@ -31,6 +31,7 @@ from analytics.service.mypage import (
     build_diagnosis_comparison_summary,
     build_learning_summary,
     build_weakness_summary,
+    build_wrong_rate_summary,
     build_wrong_type_summary,
 )
 from analytics.service.studyplan import (
@@ -64,11 +65,17 @@ def mypage(request):
         plan_generation_available,
     )
     wrong_type_summary = build_wrong_type_summary(request.user, today)
+    wrong_rate_summaries = [
+        {"title": "유형별 오답률", **wrong_type_summary},
+        {"title": "주제별 오답률", **build_wrong_rate_summary(request.user, "topic", today)},
+        {"title": "시대별 오답률", **build_wrong_rate_summary(request.user, "era", today)},
+    ]
     weakness_summary = build_weakness_summary(request.user, today)
     context = {
         "learning_summary": build_learning_summary(request.user, today),
         "diagnosis_comparison": build_diagnosis_comparison_summary(request.user),
         "wrong_type_summary": wrong_type_summary,
+        "wrong_rate_summaries": wrong_rate_summaries,
         "weakness_summary": weakness_summary,
         "d_day_label": build_d_day_label(request.user, today),
         "planner_summary": planner_summary,
