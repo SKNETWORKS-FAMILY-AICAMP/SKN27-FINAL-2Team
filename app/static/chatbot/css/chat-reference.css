@@ -22,9 +22,31 @@ body:has(.chat-page) { overflow: hidden; background: #fbfaf5 !important; }
 .chat-page .chat-stream > .message.bot > .avatar { width: 66px !important; height: 66px !important; display: block !important; overflow: hidden !important; border: 1px solid #e5dccf !important; border-radius: 50% !important; background: #fff !important; }
 .chat-page .chat-stream > .message.bot > .avatar img { width: 100% !important; height: 100% !important; display: block !important; object-fit: contain !important; }
 
-.chat-page .left-sidebar { padding-top: 24px !important; }
+.chat-page .left-sidebar { padding-top: 19px !important; }
 .chat-page .left-sidebar::before { content: none; }
 .chat-page .session-sidebar .new-session-button { width: calc(100% - 48px) !important; }
-.chat-page .chat-sidebar-toggle { top: 24px !important; left: 296px !important; width: 50px !important; height: 50px !important; }
-.chat-page .chat-layout.is-sidebar-collapsed .chat-sidebar-toggle { left: 10px !important; }
+.chat-page .chat-layout > .chat-sidebar-toggle { top: 19px !important; left: 296px !important; width: 50px !important; min-width: 50px !important; height: 50px !important; min-height: 50px !important; }
+.chat-page .chat-layout.is-sidebar-collapsed > .chat-sidebar-toggle { left: 10px !important; }
 .chat-page .chat-layout.is-sidebar-collapsed .chat-sidebar-toggle::before { transform: rotate(180deg); }
+.chat-page .chat-layout.is-sidebar-collapsed .chat-panel::after { padding-left: 76px !important; }
+
+.chat-page .chat-stream > .message.bot { max-width: 980px !important; }
+.chat-page .chat-stream > .message.bot > .bot-bubble { max-width: 880px !important; }
+
+/* The loading bubble has its own compact layout; do not inherit answer-bubble spacing. */
+.chat-page .chat-stream > .message.bot > .typing-bubble {
+  width: 74px !important;
+  min-width: 74px !important;
+  max-width: 74px !important;
+  height: 48px !important;
+  min-height: 48px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 7px !important;
+  padding: 0 18px !important;
+  border: 1px solid #e0d4c5 !important;
+  border-radius: 999px !important;
+  background: #fffdfa !important;
+}
+.chat-page .chat-stream > .message.bot > .typing-bubble span { background: #4a6b5d !important; }
