@@ -5,7 +5,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>himate | 상세 취약점 분석</title>
-  <link rel="stylesheet" href="{% static 'analytics/css/wrong_rate_detail.css' %}" />
+  <link rel="stylesheet" href="{% static 'analytics/css/wrong_rate_detail.css' %}?v=chart-selection-5" />
   <link rel="stylesheet" href="{% static 'himate.css' %}" />
   <link rel="stylesheet" href="{% static 'layout.css' %}" />
 </head>
@@ -44,15 +44,6 @@
               <article>
                 <i style="background: {{ item.color }}"></i>
                 <strong>{{ item.label }}</strong>
-                <span>
-                  {{ item.share }}% · {{ item.wrong }}개
-                  {% if item.status_label %}
-                    <b class="donut-status {{ item.status_class }}">{{ item.status_label }}</b>
-                  {% endif %}
-                  {% if item.trend_label %}
-                    <b class="donut-status trend">{{ item.trend_label }}</b>
-                  {% endif %}
-                </span>
               </article>
             {% empty %}
               <article>
@@ -76,15 +67,6 @@
               <article>
                 <i style="background: {{ item.color }}"></i>
                 <strong>{{ item.label }}</strong>
-                <span>
-                  {{ item.share }}% · {{ item.wrong }}개
-                  {% if item.status_label %}
-                    <b class="donut-status {{ item.status_class }}">{{ item.status_label }}</b>
-                  {% endif %}
-                  {% if item.trend_label %}
-                    <b class="donut-status trend">{{ item.trend_label }}</b>
-                  {% endif %}
-                </span>
               </article>
             {% empty %}
               <article>
@@ -108,15 +90,6 @@
               <article>
                 <i style="background: {{ item.color }}"></i>
                 <strong>{{ item.label }}</strong>
-                <span>
-                  {{ item.share }}% · {{ item.wrong }}개
-                  {% if item.status_label %}
-                    <b class="donut-status {{ item.status_class }}">{{ item.status_label }}</b>
-                  {% endif %}
-                  {% if item.trend_label %}
-                    <b class="donut-status trend">{{ item.trend_label }}</b>
-                  {% endif %}
-                </span>
               </article>
             {% empty %}
               <article>
@@ -125,63 +98,6 @@
               </article>
             {% endfor %}
           </div>
-        </div>
-      </article>
-    </section>
-
-    <section class="wrong-rate-stats" aria-label="분류별 취약 판정">
-      <article class="rate-section">
-        <div class="section-heading">
-          <div>
-            <h2>시대별 판정</h2>
-            <span>정렬·취약 판정은 최근 학습 가중 기준</span>
-          </div>
-        </div>
-        <div class="rate-bars">
-          {% for item in era_stats %}
-            {% include "analytics/partials/wrong_rate_stat_card.html" with item=item category="era" %}
-          {% empty %}
-            <article class="detail-empty compact">
-              <strong>기록 없음</strong>
-              <span>최근 7일 풀이 기록이 없습니다.</span>
-            </article>
-          {% endfor %}
-        </div>
-      </article>
-      <article class="rate-section">
-        <div class="section-heading">
-          <div>
-            <h2>유형별 판정</h2>
-            <span>정렬·취약 판정은 최근 학습 가중 기준</span>
-          </div>
-        </div>
-        <div class="rate-bars">
-          {% for item in type_stats %}
-            {% include "analytics/partials/wrong_rate_stat_card.html" with item=item category="type" %}
-          {% empty %}
-            <article class="detail-empty compact">
-              <strong>기록 없음</strong>
-              <span>최근 7일 풀이 기록이 없습니다.</span>
-            </article>
-          {% endfor %}
-        </div>
-      </article>
-      <article class="rate-section">
-        <div class="section-heading">
-          <div>
-            <h2>주제별 판정</h2>
-            <span>정렬·취약 판정은 최근 학습 가중 기준</span>
-          </div>
-        </div>
-        <div class="rate-bars">
-          {% for item in topic_stats %}
-            {% include "analytics/partials/wrong_rate_stat_card.html" with item=item category="topic" %}
-          {% empty %}
-            <article class="detail-empty compact">
-              <strong>기록 없음</strong>
-              <span>최근 7일 풀이 기록이 없습니다.</span>
-            </article>
-          {% endfor %}
         </div>
       </article>
     </section>
@@ -197,17 +113,6 @@
             <div>
               <p>{{ group.description }}</p>
               <h2>{{ group.title }}</h2>
-            </div>
-            <div class="scope-chart-meta">
-              <span class="scope-chart-caption">{{ group.label }}</span>
-              <span
-                {% if group.scope == "period" %}
-                  data-period-count
-                  data-count-unit="{{ group.countUnit }}"
-                {% endif %}
-              >
-                {{ group.bars|length }}개 {{ group.countUnit }}
-              </span>
             </div>
           </div>
           {% if group.scope == "period" %}
@@ -513,12 +418,12 @@
       };
 
       const lineChartLayout = {
-        chartHeight: 226,
+        chartHeight: 240,
         edgeInset: 34,
         minWidth: 560,
         pointGap: 68,
-        topY: 31,
-        bottomY: 191,
+        topY: 60,
+        bottomY: 205,
       };
 
       const getVisibleLinePoints = (chart) => Array
@@ -880,25 +785,26 @@
         hideInlineBreakdowns("session");
         setInlineBreakdownHeading(
           breakdown,
-          `${overview.recordedDate || "세션"} 선택`,
-          detail.title || "세션 상세 분석",
+          overview.recordedDate || "문제지",
+          detail.title || "문제지 상세 분석",
           "선택한 세션의 시대별, 유형별, 주제별 오답률입니다.",
         );
 
         breakdown.body.innerHTML = `
-          <article class="session-overview-card">
-            <div>
-              <span>${escapeHtml(overview.recordedDate)} · ${escapeHtml(overview.sessionTypeLabel)}</span>
-              <strong>오답률 ${escapeHtml(overview.wrongRate)}%</strong>
-            </div>
-            <div class="session-overview-meter" aria-label="세션 오답률 ${escapeHtml(overview.wrongRate)}%">
-              <i style="width: ${Number(overview.wrongRate) || 0}%"></i>
-            </div>
-            <p>
-              ${escapeHtml(overview.totalCount)}문제 · 오답 ${escapeHtml(overview.wrongCount)}개 · 정답률 ${escapeHtml(overview.answerRate)}% · 문제당 ${escapeHtml(overview.averageTimeLabel)}
-            </p>
-          </article>
-          ${groups.map((group) => renderInlineAnalysisGroup(group, overview.sessionId)).join("")}
+          <div class="session-report">
+            <article class="session-overview-card">
+              <header class="session-report-title">
+                <div><span>${escapeHtml(overview.recordedDate)}</span><h3>${escapeHtml(detail.title || overview.sessionTypeLabel)}</h3></div>
+                <p>선택한 문제지의 시대별, 유형별, 주제별 오답률을 요약하여 제공합니다.</p>
+              </header>
+              <div class="session-overview-summary">
+                <div class="session-overview-score"><span>오답률</span><strong>${escapeHtml(overview.wrongRate)}%</strong></div>
+                <div class="session-overview-progress"><i style="width: ${Number(overview.wrongRate) || 0}%"></i></div>
+                <dl><div><dt>전체 문항</dt><dd>${escapeHtml(overview.totalCount)}개</dd></div><div><dt>오답 문항</dt><dd>${escapeHtml(overview.wrongCount)}개</dd></div><div><dt>정답 문항</dt><dd>${escapeHtml(overview.correctCount)}개</dd></div><div><dt>총 풀이 시간</dt><dd>${escapeHtml(overview.averageTimeLabel)}</dd></div></dl>
+              </div>
+            </article>
+            <div class="session-report-groups">${groups.map((group) => renderInlineAnalysisGroup(group, overview.sessionId)).join("")}</div>
+          </div>
         `;
         showInlineBreakdown(breakdown, "session", activeInlineSelections.session);
       };
@@ -996,38 +902,35 @@
         || question.statusClass === "empty"
       );
 
-      const renderQuestionCard = (question) => `
-        <article
+      const renderQuestionCard = (question, index) => `
+        <details
           class="question-detail-card ${escapeHtml(question.statusClass)}"
           data-question-card
           data-unanswered="${isQuestionUnanswered(question) ? "true" : "false"}"
+          ${index === 0 ? "open" : ""}
         >
-          <header>
+          <summary>
+            <header>
             <div>
               <strong>문제 ${escapeHtml(question.questionNo)}</strong>
               <span>
                 ${escapeHtml(question.era)} · ${escapeHtml(question.topic)} · ${escapeHtml(question.questionType)}
               </span>
             </div>
-            <b>${escapeHtml(question.resultLabel)}</b>
-          </header>
-          ${renderQuestionTextBlock("지문", question.passage)}
-          ${renderQuestionTextBlock("문제", question.content)}
-          <div class="question-answer-grid">
-            ${renderQuestionAnswer("선택", question.selectedLabel, question.selectedContent)}
-            ${renderQuestionAnswer("정답", question.answerLabel, question.answerContent)}
+            <div class="question-result-meta"><b>${escapeHtml(question.resultLabel)}</b><small>${escapeHtml(question.score)}점 · ${escapeHtml(question.timeLabel)}</small></div>
+            </header>
+          </summary>
+          <div class="question-card-body">
+            ${renderQuestionTextBlock("지문", question.passage)}
+            ${renderQuestionTextBlock("문제", question.content)}
+            <div class="question-answer-grid">
+              ${renderQuestionAnswer("선택", question.selectedLabel, question.selectedContent)}
+              ${renderQuestionAnswer("정답", question.answerLabel, question.answerContent)}
+            </div>
+            ${question.coreConcept ? `<p class="question-concept">핵심 개념 · ${escapeHtml(question.coreConcept)}</p>` : ""}
+            ${question.answerExplanation ? `<details class="question-explanation"><summary>해설 보기</summary><p>${escapeHtml(question.answerExplanation)}</p></details>` : ""}
           </div>
-          <p class="question-meta">
-            ${escapeHtml(question.score)}점 · 풀이시간 ${escapeHtml(question.timeLabel)}
-          </p>
-          ${question.coreConcept ? `<p class="question-concept">핵심 개념 · ${escapeHtml(question.coreConcept)}</p>` : ""}
-          ${question.answerExplanation ? `
-            <details class="question-explanation">
-              <summary>해설 보기</summary>
-              <p>${escapeHtml(question.answerExplanation)}</p>
-            </details>
-          ` : ""}
-        </article>
+        </details>
       `;
 
       const renderQuestionList = (detail) => {
@@ -1082,7 +985,7 @@
               <span data-question-filter-empty-message>선택한 조건에 해당하는 문제가 없습니다.</span>
             </article>
             <div class="question-filter-list">
-              ${questions.map((question) => renderQuestionCard(question)).join("")}
+              ${questions.map((question, index) => renderQuestionCard(question, index)).join("")}
             </div>
           </section>
         `;

@@ -132,48 +132,103 @@ a {
 .improvement-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
+  gap: 0;
   margin-bottom: 18px;
-}
-
-.improvement-card {
-  min-height: 104px;
-  display: grid;
-  align-content: center;
-  gap: 6px;
-  padding: 18px 22px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #eee3d3;
+  border-radius: 22px;
   background: rgba(255, 255, 255, 0.94);
   box-shadow: var(--shadow);
 }
 
+.improvement-card {
+  min-height: 254px;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  gap: 20px;
+  padding: 38px 48px 30px;
+  background: transparent;
+}
+
+.improvement-card + .improvement-card {
+  border-left: 1px solid #eee3d3;
+}
+
+.improvement-main {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+
+.improvement-icon {
+  width: 128px;
+  height: 128px;
+  flex: 0 0 128px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #fff3ec;
+}
+
+.improvement-icon img {
+  width: 62px;
+  height: 62px;
+  object-fit: contain;
+  filter: invert(61%) sepia(70%) saturate(700%) hue-rotate(326deg) brightness(101%) contrast(93%);
+}
+
+.improvement-icon.time {
+  background: #f0f5e9;
+}
+
+.improvement-icon.time img {
+  filter: invert(38%) sepia(16%) saturate(1389%) hue-rotate(49deg) brightness(93%) contrast(82%);
+}
+
 .improvement-card span {
   color: var(--muted);
-  font-size: 13px;
+  display: block;
+  font-size: 20px;
   font-weight: 900;
 }
 
 .improvement-card strong {
   color: var(--accent);
-  font-size: 28px;
+  display: block;
+  margin-top: 18px;
+  font-size: 52px;
   line-height: 1;
   font-weight: 950;
 }
 
 .improvement-card p {
   margin: 0;
+  padding-top: 28px;
+  border-top: 1px dashed #eadfce;
   color: #4d3524;
-  font-size: 13px;
+  font-size: 17px;
   font-weight: 900;
 }
 
-.improvement-card.good strong {
-  color: var(--green);
+.improvement-card.answer.good .comparison-change-text { color: var(--green) !important; }
+.improvement-card.answer.warn .comparison-change-text,
+.improvement-card.time.warn .comparison-change-text { color: #f05f68 !important; }
+.improvement-card.time.good .comparison-change-text { color: #4e9fe6 !important; }
+
+.improvement-card.time.good .improvement-icon {
+  background: #eef5ff;
 }
 
-.improvement-card.warn strong {
-  color: #f05f68;
+.improvement-card.time.good .improvement-icon img {
+  filter: invert(57%) sepia(72%) saturate(639%) hue-rotate(177deg) brightness(94%) contrast(92%);
+}
+
+.improvement-card.time.warn .improvement-icon {
+  background: #fff1ee;
+}
+
+.improvement-card.time.warn .improvement-icon img {
+  filter: invert(56%) sepia(52%) saturate(1029%) hue-rotate(313deg) brightness(100%) contrast(89%);
 }
 
 .improvement-card.empty {
@@ -383,25 +438,11 @@ a {
 
 
 .weak-list .weak-item {
-  grid-template-columns: 24px minmax(0, 1fr) 64px auto;
+  grid-template-columns: 24px minmax(0, 1fr) auto;
 }
 
 .weak-list .weak-item em {
   white-space: nowrap;
-}
-
-.weak-list .weak-bar {
-  height: 6px;
-  border-radius: 999px;
-  background: #f0e2d6;
-  overflow: hidden;
-}
-
-.weak-list .weak-bar i {
-  display: block;
-  height: 100%;
-  border-radius: 999px;
-  background: #f05f68;
 }
 
 .donut-layout {
@@ -477,9 +518,7 @@ a {
 .donut-layout li {
   display: grid;
   grid-template-columns: 32px minmax(0, 1fr) auto;
-  grid-template-areas:
-    "chart label rate"
-    "chart bar bar";
+  grid-template-areas: "chart label rate";
   gap: 8px;
   align-items: center;
   padding: 2px 0;
@@ -516,15 +555,6 @@ a {
 
 .donut-layout .donut-type-label {
   grid-area: label;
-  display: grid;
-  gap: 3px;
-}
-
-.donut-layout .donut-type-label small {
-  color: var(--muted);
-  font-size: 11px;
-  font-weight: 800;
-  line-height: 1;
 }
 
 .donut-layout li strong {
@@ -1833,4 +1863,216 @@ body.modal-open {
 .planner-lessons .plan-item.empty {
   grid-template-columns: 22px minmax(0, 1fr);
   grid-template-areas: "marker content";
+}
+
+/* Reference learning planner layout: decorative icons intentionally omitted. */
+.bottom-grid { display: block; }
+.planner-panel {
+  padding: 38px 40px 42px !important;
+  border: 1px solid #e7dccc !important;
+  border-radius: 24px !important;
+  background: #fffdfa !important;
+  box-shadow: 0 12px 32px rgba(89, 68, 47, .09) !important;
+}
+.planner-panel .planner-heading {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 72px;
+  margin-bottom: 22px;
+  padding-right: 48px;
+  border-bottom: 1px solid #dccab5;
+}
+.planner-title-copy { display: flex; align-items: baseline; gap: 28px; }
+.planner-title-copy h2 { margin: 0; color: #202520; font-size: 34px; font-weight: 950; letter-spacing: -.04em; }
+.planner-title-copy p { margin: 0; color: #827b72; font-size: 16px; font-weight: 700; }
+.planner-flower { position: absolute; top: 50%; right: 0; width: 34px; height: 34px; object-fit: contain; transform: translateY(-50%); }
+.planner-header-actions { margin-left: auto; }
+.planner-create { min-height: 40px; border-color: #dfcdb9; background: #fffdfa; color: #665a4d; }
+
+.planner-progress-summary {
+  display: grid;
+  grid-template-columns: auto minmax(160px, 1fr) auto auto;
+  align-items: center;
+  gap: 26px;
+  min-height: 84px;
+  margin-bottom: 24px;
+  padding: 18px 26px;
+  border: 1px solid #ede2d4;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 5px 14px rgba(89, 68, 47, .05);
+}
+.planner-progress-summary > span { color: #2b312c; font-size: 17px; font-weight: 900; white-space: nowrap; }
+.planner-progress-summary strong { color: #526f54; font-size: 29px; line-height: 1; font-weight: 950; }
+.planner-progress-summary p { margin: 0; padding-left: 24px; border-left: 1px solid #e1d4c4; color: #6f6961; font-size: 15px; font-weight: 800; white-space: nowrap; }
+.planner-progress-meter { height: 14px; margin: 0; border-radius: 999px; background: #eee8df; overflow: hidden; }
+.planner-progress-meter i { display: block; height: 100%; border-radius: inherit; background: #718d73; }
+
+.planner-board { grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); min-width: 0; border-color: #e6d8c7; border-radius: 16px; }
+.planner-calendar, .planner-day { padding: 32px 30px; background: #fffdfa; }
+.planner-calendar { border-right-color: #d6bfa8; background: #fffdfa; }
+.planner-month { margin-bottom: 26px; }
+.planner-month strong { font-size: 34px; letter-spacing: .02em; }
+.planner-month button { width: 50px; height: 50px; border-color: #e4d5c6; color: #333; box-shadow: 0 3px 8px rgba(89, 68, 47, .08); }
+.planner-calendar .calendar-week { gap: 9px; }
+.planner-calendar .calendar-week.labels { margin-bottom: 8px; }
+.planner-calendar .calendar-week.labels span { min-height: 26px; font-size: 15px; color: #262a27; }
+.planner-calendar .calendar-week.labels span:first-child { color: #cf5e50; }
+.planner-calendar .calendar-week.labels span:last-child { color: #2b659f; }
+.planner-calendar .calendar-week button { min-height: 66px; border: 1px solid #f0e9e0; border-radius: 9px; background: #fff; color: #282d29; font-size: 18px; box-shadow: none; }
+.planner-calendar .calendar-week button.planned { border-color: #e4a296; background: #fffaf8; color: #b4372d; }
+.planner-calendar .calendar-week button.today, .planner-calendar .calendar-week button.today.progress-tracked { border-color: #688069; background: #688069; color: #fff; outline: none; }
+.planner-calendar .calendar-week button.selected { outline: 2px solid #688069; outline-offset: -4px; }
+.planner-calendar .calendar-week button.muted { color: #bab5af; background: #fffdfa; }
+.planner-calendar .calendar-week button em { font-size: 11px; }
+
+.planner-day { max-height: none; }
+.planner-day-top { align-items: center; margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid #dfcbb7; }
+.planner-day-top span { color: #4d4339; font-size: 14px; }
+.planner-day-top strong { margin-top: 9px; font-size: 29px; }
+.planner-extra { min-height: 42px; border-color: #ddc6b1; background: #fffdfa; color: #5d5043; }
+.planner-day-actions .planner-extra { background: #fffdfa; color: #5d5043; }
+.planner-lessons { gap: 18px; overflow: visible; padding: 0; }
+.planner-lessons .plan-item { min-height: 132px; padding: 20px 20px; border: 1px solid #eee4d9; border-left: 3px solid #718d73; border-radius: 10px; background: #fff !important; box-shadow: 0 4px 12px rgba(89, 68, 47, .05); }
+.planner-lessons .plan-item > i { width: 22px; height: 22px; border-color: #bba790; background: #fff; }
+.planner-lessons .plan-item.done > i { border-color: #718d73; background: #718d73; }
+.planner-lessons .plan-item strong { color: #272b28; font-size: 17px; }
+.planner-lessons .plan-item span { margin-top: 7px; color: #777067; font-size: 13px; }
+.planner-lessons .plan-progress-line { display: none; }
+.planner-lessons .plan-progress-count { color: #2d302e; font-size: 16px; }
+.planner-lessons .plan-actions { gap: 7px; }
+.planner-lessons .plan-item button { min-height: 32px; border-color: #e3d6c8; color: #665a4d; }
+.planner-lessons .plan-item .plan-start-button { border-color: #cf7465; background: #cf7465; color: #fff; }
+
+/* Keep the day plan aligned with the calendar; only its lesson list scrolls. */
+.planner-board { height: 610px; }
+.planner-day {
+  height: 100%;
+  min-height: 0;
+  grid-template-rows: auto minmax(0, 1fr);
+}
+.planner-lessons {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: 9px;
+}
+.planner-lessons .plan-item { min-height: 112px; }
+.planner-lessons::-webkit-scrollbar { width: 8px; }
+.planner-lessons::-webkit-scrollbar-track { border-radius: 999px; background: #f2ece4; }
+.planner-lessons::-webkit-scrollbar-thumb { border: 2px solid #f2ece4; border-radius: 999px; background: #bda990; }
+.planner-lessons { scrollbar-color: #bda990 #f2ece4; scrollbar-width: thin; }
+
+@media (max-width: 900px) {
+  .planner-panel { padding: 24px 18px !important; }
+  .planner-title-copy { display: grid; gap: 4px; }
+  .planner-title-copy h2 { font-size: 28px; }
+  .planner-progress-summary { grid-template-columns: 1fr auto; gap: 14px; }
+  .planner-progress-meter { grid-column: 1 / -1; grid-row: 2; }
+  .planner-progress-summary p { padding: 0; border: 0; }
+  .planner-board { grid-template-columns: 1fr; }
+  .planner-board { height: auto; }
+  .planner-calendar { border-right: 0; border-bottom: 1px solid #d6bfa8; }
+  .planner-day { min-height: 500px; }
+}
+
+/* Final planner composition, matched to the supplied reference. */
+.mypage .summary-strip { box-shadow: 0 3px 9px rgba(64, 43, 20, .05) !important; }
+.mypage .planner-panel {
+  margin: 26px 0 34px !important;
+  padding: 38px 40px !important;
+  border-radius: 26px !important;
+}
+.mypage .planner-panel, .mypage .planner-panel * { font-family: "Noto Serif KR", "Nanum Myeongjo", Batang, serif !important; }
+.mypage .planner-panel .planner-heading { justify-content: flex-start; min-height: 64px; padding-bottom: 20px; }
+.mypage .planner-title-copy { gap: 30px; }
+.mypage .planner-title-copy h2 { font-size: 35px !important; line-height: 1; }
+.mypage .planner-title-copy p { color: #81786e !important; font-size: 16px !important; }
+.mypage .planner-flower { width: 36px; height: 36px; }
+.mypage .planner-progress-summary { min-height: 84px; margin-bottom: 24px; padding: 18px 28px; }
+.mypage .planner-progress-summary > span { font-size: 17px !important; }
+.mypage .planner-progress-summary strong { color: #5c795e !important; font-size: 30px !important; }
+.mypage .planner-progress-summary p { font-size: 16px !important; }
+.mypage .planner-board { height: 640px; grid-template-columns: 52.5% 47.5%; }
+.mypage .planner-calendar, .mypage .planner-day { padding: 32px 30px; }
+.mypage .planner-calendar { display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto; }
+.mypage .planner-month { margin-bottom: 24px; }
+.mypage .planner-month strong { font-size: 35px !important; }
+.mypage .planner-month .wrong-rate-arrow { width: 30px; height: 30px; border: 0 !important; border-radius: 0; padding: 0 !important; background: transparent url("/static/images/wrong-rate-next.png") center / 18px 18px no-repeat !important; color: transparent !important; font-size: 0; box-shadow: none; }
+.mypage #prevPlannerMonth { transform: scaleX(-1); }
+.mypage .planner-calendar .calendar-week { gap: 9px; }
+.mypage .planner-calendar-grid { display: grid; gap: 9px; align-content: start; }
+.mypage .planner-calendar .calendar-week button { min-height: 60px; font-size: 18px; }
+.mypage .planner-calendar .calendar-week.labels span { font-size: 16px !important; }
+.planner-calendar-legend { display: flex; align-items: center; justify-content: space-evenly; min-height: 72px; margin-top: 20px; border: 1px solid #f0e8de; border-radius: 8px; background: #fcfaf6; color: #655f57; font-size: 14px; }
+.planner-calendar-legend span { display: inline-flex; align-items: center; gap: 10px; }
+.planner-calendar-legend i { width: 16px; height: 16px; border-radius: 50%; background: #eee6db; }
+.planner-calendar-legend .planned-dot { background: #ecb3a8; }
+.planner-calendar-legend .today-dot { background: #688069; }
+.mypage .planner-day { grid-template-rows: auto minmax(0, 1fr) auto; gap: 0; }
+.mypage .planner-day-top { min-height: 110px; margin-bottom: 20px; }
+.mypage .planner-day-top > div:first-child { transform: translateY(-20px); }
+.mypage .planner-day-top span { font-size: 15px !important; }
+.mypage .planner-day-top strong { font-size: 25px !important; }
+.mypage .planner-extra { min-width: 104px; min-height: 34px; border-radius: 999px; font-size: 13px; }
+.mypage .planner-date-change { min-width: 112px; min-height: 34px; border: 1px solid #ddc6b1; border-radius: 999px; background: #fffdfa; color: #5d5043; font-size: 13px; font-weight: 900; cursor: pointer; }
+.mypage .planner-board, .mypage .planner-day { overflow: visible; }
+.mypage .planner-day-actions { position: relative; z-index: 3; }
+.mypage .planner-extra:disabled:hover::after,
+.mypage .planner-extra:disabled:focus-visible::after { top: auto; right: 0; bottom: calc(100% + 8px); left: auto; z-index: 20; transform: none; }
+.mypage .planner-lessons { align-content: start; gap: 18px; padding-right: 7px; }
+.mypage .planner-lessons .plan-item { min-height: 118px; padding: 16px 16px; grid-template-columns: 21px minmax(0, 1fr) max-content; }
+.mypage .planner-lessons .plan-item > i { width: 19px; height: 19px; }
+.mypage .planner-lessons .plan-item strong { font-size: 15px !important; line-height: 1.35; }
+.mypage .planner-lessons .plan-item span { margin-top: 4px; font-size: 12px !important; }
+.mypage .planner-lessons .plan-progress-count { font-size: 14px !important; }
+.mypage .planner-lessons .plan-actions { margin-top: 8px; }
+.mypage .planner-lessons .plan-item button { min-height: 28px; padding: 0 8px; font-size: 11px; }
+.mypage .planner-note { display: grid; gap: 7px; min-height: 100px; margin-top: 20px; padding: 23px 30px; border-top: 1px solid #dfcbb7; background: #f9f6ef; color: #617760; }
+.mypage .planner-note strong { font-size: 15px; }
+.mypage .planner-note span { color: #59574f; font-size: 14px; }
+
+@media (max-width: 900px) {
+  .mypage .planner-board { height: auto; grid-template-columns: 1fr; }
+  .mypage .planner-calendar { min-height: 590px; }
+  .mypage .planner-day { min-height: 520px; }
+  .mypage .planner-calendar .calendar-week button { min-height: 58px; }
+}
+
+/* Override shared dashboard rules for the reference planner only. */
+.mypage .planner-panel {
+  padding: 38px 40px 42px !important;
+  border: 1px solid #e7dccc !important;
+  border-radius: 24px !important;
+  background: #fffdfa !important;
+  box-shadow: 0 12px 32px rgba(89, 68, 47, .09) !important;
+}
+.mypage .planner-panel .planner-heading {
+  min-height: 72px;
+  margin-bottom: 22px;
+  padding: 0 48px 0 0;
+  border-bottom: 1px solid #dccab5 !important;
+}
+.mypage .planner-progress-summary {
+  border-radius: 12px !important;
+  background: #fff !important;
+  box-shadow: 0 5px 14px rgba(89, 68, 47, .05) !important;
+}
+.mypage .planner-board {
+  height: 640px;
+  border: 1px solid #e6d8c7 !important;
+  border-radius: 16px !important;
+  background: #fffdfa !important;
+}
+.mypage .planner-calendar, .mypage .planner-day { background: #fffdfa !important; }
+.mypage .planner-calendar { border-right: 1px solid #d6bfa8 !important; }
+.mypage .planner-day { height: 100%; min-height: 0; }
+.mypage .planner-day-top { border-bottom: 1px solid #dfcbb7 !important; }
+.mypage .planner-lessons { min-height: 0; overflow-y: auto; }
+
+@media (max-width: 900px) {
+  .mypage .planner-panel { padding: 24px 18px !important; }
+  .mypage .planner-board { height: auto; }
+  .mypage .planner-calendar { border-right: 0 !important; border-bottom: 1px solid #d6bfa8 !important; }
 }
