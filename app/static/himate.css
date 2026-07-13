@@ -1,29 +1,29 @@
 :root {
-  --hm-ink: #0e120f;
-  --hm-muted: #435044;
-  --hm-line: #dfe8db;
-  --hm-soft: #f4f8f0;
-  --hm-lime: #9bea6f;
-  --hm-green: #123b06;
-  --hm-red: #f23042;
-  --hm-white: #ffffff;
-  --hm-shadow: 0 28px 70px rgba(18, 59, 6, 0.14);
-  --bg: #ffffff;
-  --panel: #ffffff;
+  --hm-ink: #1E3A4C;
+  --hm-muted: #516A77;
+  --hm-line: #A3704C;
+  --hm-soft: #F4F6F6;
+  --hm-lime: #A3704C;
+  --hm-green: #4A6B5D;
+  --hm-red: #4A6B5D;
+  --hm-white: #fff;
+  --hm-shadow: 0 14px 30px rgba(64, 43, 20, .10);
+  --bg: #F4F6F6;
+  --panel: #fff;
   --ink: var(--hm-ink);
   --muted: var(--hm-muted);
   --line: var(--hm-line);
-  --label: var(--hm-soft);
-  --accent: var(--hm-green);
-  --accent-strong: #10270c;
-  --accent-soft: #eef5e8;
+  --label: #fff;
+  --accent: var(--hm-red);
+  --accent-strong: #365548;
+  --accent-soft: #fff;
   --user: var(--hm-green);
-  --soft: var(--hm-soft);
-  --point: #fff9d8;
-  --point-line: #eadf94;
-  --danger: #b42318;
-  --green: var(--hm-lime);
-  --green-soft: var(--hm-soft);
+  --soft: #fff;
+  --point: #f9edc8;
+  --point-line: #A3704C;
+  --danger: #4A6B5D;
+  --green: var(--hm-green);
+  --green-soft: #fff;
   --lime-dark: var(--hm-green);
   --shadow: var(--hm-shadow);
 }
@@ -38,8 +38,8 @@
 body {
   margin: 0;
   color: var(--hm-ink) !important;
-  background: #F4F6F6 !important;
-  font-family: Pretendard, "Noto Sans KR", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  background: var(--bg) !important;
+  font-family: "Noto Serif KR", "Nanum Myeongjo", Batang, serif !important;
   line-height: 1.5;
 }
 
@@ -60,16 +60,16 @@ a {
   position: sticky !important;
   top: 0 !important;
   z-index: 100 !important;
-  height: 72px !important;
-  min-height: 72px !important;
+  height: 76px !important;
+  min-height: 76px !important;
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
   gap: 24px !important;
   padding: 0 5vw !important;
-  border-bottom: 1px solid var(--hm-line) !important;
-  background: rgba(251, 252, 250, 0.94) !important;
-  box-shadow: none !important;
+  border-bottom: 3px double var(--hm-line) !important;
+  background: #fff !important;
+  box-shadow: 0 4px 14px rgba(64, 43, 20, .07) !important;
   backdrop-filter: none !important;
 }
 
@@ -82,7 +82,7 @@ a {
   align-items: center !important;
   overflow: visible !important;
   margin: 0 !important;
-  color: var(--hm-green) !important;
+  color: var(--hm-red) !important;
   font-size: 0 !important;
   line-height: 1 !important;
   font-weight: 950 !important;
@@ -97,20 +97,17 @@ a {
 .site-header .brand::after,
 .chat-header .brand::after,
 .site-brand::after {
-  content: "himate";
-  font-size: 28px !important;
+  content: "HIMATE";
+  font-family: Georgia, "Times New Roman", serif !important;
+  font-size: 27px !important;
   line-height: 1 !important;
+  letter-spacing: .06em !important;
 }
 
 .site-header .brand::before,
 .chat-header .brand::before,
 .site-brand::before {
-  content: "";
-  width: 32px;
-  height: 32px;
-  margin-right: 8px;
-  flex: 0 0 auto;
-  background: url("/static/images/favicon.png") center / contain no-repeat;
+  display: none !important;
 }
 
 .main-nav {
@@ -127,7 +124,8 @@ a {
   padding: 0 !important;
   border-radius: 0 !important;
   background: transparent !important;
-  color: #1b241c !important;
+  color: var(--hm-ink) !important;
+  font-family: "Noto Serif KR", serif !important;
   font-size: 18px !important;
   font-weight: 850 !important;
   white-space: nowrap !important;
@@ -136,7 +134,7 @@ a {
 .main-nav a:hover,
 .main-nav a.active {
   background: transparent !important;
-  color: var(--hm-green) !important;
+  color: var(--hm-red) !important;
 }
 
 .header-actions {
@@ -156,15 +154,20 @@ a {
 .login-button,
 .signup-button,
 .submit-button,
-.action-button {
-  min-height: 48px;
+.action-button,
+button[type="submit"] {
+  min-height: 44px;
   min-width: 96px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   padding: 0 22px;
-  border-radius: 999px !important;
-  font-weight: 950 !important;
+  border: 2px solid var(--hm-green) !important;
+  border-radius: 3px !important;
+  background: var(--hm-green) !important;
+  color: #fff !important;
+  box-shadow: inset 0 0 0 2px rgba(255, 253, 248, .5) !important;
+  font-weight: 800 !important;
   white-space: nowrap;
 }
 
@@ -173,30 +176,35 @@ a {
 .start-button,
 .login-button,
 .submit-button {
-  border: 2px solid var(--hm-lime) !important;
-  background: var(--hm-lime) !important;
-  color: var(--hm-green) !important;
+  border-color: var(--hm-green) !important;
+  background: var(--hm-green) !important;
+  color: #fff !important;
 }
 
 .ghost-button,
 .secondary-button,
 .signup-button {
-  border: 1px solid var(--hm-line) !important;
+  border-color: var(--hm-line) !important;
   background: var(--hm-white) !important;
-  color: var(--hm-ink) !important;
+  color: var(--hm-line) !important;
 }
 
 .outline-button,
 .action-button {
-  border: 2px solid var(--hm-green) !important;
+  border-color: var(--hm-line) !important;
   background: var(--hm-white) !important;
-  color: var(--hm-green) !important;
+  color: var(--hm-line) !important;
 }
 
 .dark-button {
-  border: 2px solid var(--hm-green) !important;
+  border-color: var(--hm-green) !important;
   background: var(--hm-green) !important;
-  color: var(--hm-lime) !important;
+  color: #fff !important;
+}
+
+.pill-button:hover, .primary-button:hover, .start-button:hover, .login-button:hover,
+.submit-button:hover, .dark-button:hover, button[type="submit"]:hover {
+  background: var(--hm-line) !important;
 }
 
 .question-badge,

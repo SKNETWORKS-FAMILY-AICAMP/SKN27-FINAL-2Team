@@ -135,6 +135,11 @@ def build_wrong_type_summary(user, today=None):
     완료된 풀이 기록을 q_type 기준으로 묶어 오답률을 계산하고,
     오답률이 높은 상위 항목에 강조용 CSS 클래스를 부여한다.
     """
+    return build_wrong_rate_summary(user, "q_type", today)
+
+
+def build_wrong_rate_summary(user, field, today=None):
+    """최근 풀이의 지정 분류별 오답률 요약을 만든다."""
     unclassified_label = "미분류"
     period = get_recent_wrong_rate_period(today)
     rows = (
@@ -143,7 +148,7 @@ def build_wrong_type_summary(user, today=None):
             session__recorded_date__gte=period["startDate"],
             session__recorded_date__lte=period["endDate"],
         )
-        .values("q_type")
+        .values(field)
         .annotate(
             total=Count("record_id"),
             wrong=Count("record_id", filter=Q(is_correct=False)),
@@ -161,7 +166,11 @@ def build_wrong_type_summary(user, today=None):
         wrong_count += wrong
         items.append(
             {
-                "label": row["q_type"] or unclassified_label,
+                "label": (
+                    get_classification_display_label(field, row[field])
+                    if field in {"era", "topic"}
+                    else row[field] or unclassified_label
+                ),
                 "total": total,
                 "wrong": wrong,
                 "rate": calculate_percent_rate(wrong, total),

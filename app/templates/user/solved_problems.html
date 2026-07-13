@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>himate | 내가 푼 문제</title>
-  <link rel="stylesheet" href="/static/user/css/solved_problems.css" />
+  <link rel="stylesheet" href="/static/user/css/solved_problems.css?v=question-jump-toggle-2" />
   <link rel="stylesheet" href="../../static/user/css/solved_problems.css" />
   <link rel="stylesheet" href="/static/himate.css" />
   <link rel="stylesheet" href="/static/layout.css" />
@@ -21,7 +21,6 @@
       <a class="active" href="/analytics/mypage/">나의 학습실</a>
     </nav>
     <nav class="header-actions" aria-label="계정 메뉴">
-      <a class="outline-button" href="/analytics/mypage/">마이페이지</a>
       <a class="ghost-button" href="/user/logout/">로그아웃</a>
     </nav>
   </header>
@@ -34,7 +33,13 @@
             <span class="page-kicker">{{ selected_session_display.date }}</span>
             <h1>{{ selected_session_display.title }}</h1>
           </div>
-          <div class="question-jump" id="questionJump" aria-label="문제 번호 이동"></div>
+          <section class="question-jump-panel" aria-label="문항 선택">
+            <div class="question-jump-heading">
+              <strong>문항 선택</strong>
+              <button class="question-jump-toggle" id="questionJumpToggle" type="button" aria-expanded="true" aria-label="문항 선택 접기"><img src="/static/diagnosis/assets/hide.png" alt="" /></button>
+            </div>
+            <div class="question-jump" id="questionJump" aria-label="문제 번호 이동"></div>
+          </section>
         </header>
 
         <section class="session-overview" aria-label="세션 요약">
@@ -89,6 +94,7 @@
         let currentIndex = 0;
 
         const questionJump = document.getElementById("questionJump");
+        const questionJumpToggle = document.getElementById("questionJumpToggle");
         const questionNumber = document.getElementById("questionNumber");
         const resultState = document.getElementById("resultState");
         const userAnswer = document.getElementById("userAnswer");
@@ -102,6 +108,16 @@
         const coreConcept = document.getElementById("coreConcept");
         const prevQuestion = document.getElementById("prevQuestion");
         const nextQuestion = document.getElementById("nextQuestion");
+
+        questionJumpToggle.addEventListener("click", () => {
+          const expanded = questionJump.hidden;
+          questionJump.hidden = !expanded;
+          questionJumpToggle.setAttribute("aria-expanded", String(expanded));
+          questionJumpToggle.setAttribute("aria-label", expanded ? "문항 선택 접기" : "문항 선택 펼치기");
+          questionJumpToggle.querySelector("img").src = expanded
+            ? "/static/diagnosis/assets/hide.png"
+            : "/static/diagnosis/assets/eye.png";
+        });
 
         function answerLabel(value) {
           return value ? `${value}번` : "미응답";

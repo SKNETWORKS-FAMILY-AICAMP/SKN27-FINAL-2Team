@@ -7,7 +7,8 @@
   <title>himate 한국사 챗봇</title>
   <link rel="stylesheet" href="/static/himate.css" />
   <link rel="stylesheet" href="/static/layout.css" />
-  <link rel="stylesheet" href="{% static 'chatbot/css/chat.css' %}?v=chatbot-avatar-label-4" />
+  <link rel="stylesheet" href="{% static 'chatbot/css/chat.css' %}?v=hanok-chat-2" />
+  <link rel="stylesheet" href="{% static 'chatbot/css/chat-reference.css' %}?v=2" />
 </head>
 <body>
   <main class="chat-page">
@@ -30,7 +31,8 @@
 
     <section class="messages">
       <div class="chat-layout">
-        <aside class="left-sidebar session-sidebar" aria-label="저장된 대화 세션">
+        <button class="chat-sidebar-toggle is-active" id="chatSidebarToggle" type="button" aria-controls="chatSidebar" aria-expanded="true" aria-label="대화 목록 접기"></button>
+        <aside class="left-sidebar session-sidebar" id="chatSidebar" aria-label="저장된 대화 세션">
           <button class="new-session-button" id="newSessionButton" type="button">+ 새 채팅</button>
           <label class="session-search">
             <span>채팅 검색</span>
@@ -94,6 +96,8 @@
     const sendButton = document.getElementById("sendButton");
     const csrfToken = document.querySelector("[name=csrfmiddlewaretoken]").value;
     const sessionList = document.getElementById("sessionList");
+    const chatLayout = document.querySelector(".chat-layout");
+    const chatSidebarToggle = document.getElementById("chatSidebarToggle");
     const newSessionButton = document.getElementById("newSessionButton");
     const sessionSearchInput = document.getElementById("sessionSearchInput");
     const problemPickerButton = document.getElementById("problemPickerButton");
@@ -114,6 +118,13 @@
     renderSessionList();
     renderActiveSession();
     openPendingProblemContext();
+
+    chatSidebarToggle.addEventListener("click", () => {
+      const collapsed = chatLayout.classList.toggle("is-sidebar-collapsed");
+      chatSidebarToggle.classList.toggle("is-active", !collapsed);
+      chatSidebarToggle.setAttribute("aria-expanded", String(!collapsed));
+      chatSidebarToggle.setAttribute("aria-label", collapsed ? "대화 목록 펼치기" : "대화 목록 접기");
+    });
 
     newSessionButton.addEventListener("click", () => {
       const session = createSession("새 대화");

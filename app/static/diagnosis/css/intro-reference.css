@@ -1,0 +1,63 @@
+/* Reference-matched diagnosis intro. Navigation intentionally remains shared. */
+body:has(.ref-diagnosis) { background: #fff !important; font-family: Arial, "Noto Sans KR", sans-serif !important; }
+.diagnosis-page:has(.ref-diagnosis) { min-height: calc(100vh - 76px) !important; padding: 28px 2.5vw 16px !important; background: #fff !important; }
+.ref-diagnosis { position:relative; top:5px; width: min(1380px,100%) !important; gap: 18px !important; }
+.ref-diagnosis, .ref-diagnosis * { font-family: Arial, "Noto Sans KR", sans-serif !important; }
+.ref-title { display:flex; align-items:center; gap:22px; min-height:100px; color:#153f32; }
+.ref-title h1 { margin:0 !important; color:#103d30 !important; font-size:48px !important; line-height:1; font-weight:900 !important; letter-spacing:-3px !important; }
+.ref-title p { margin:12px 0 0; color:#4b5153; font-size:17px; font-weight:500; }
+.ref-steps { display:grid; grid-template-columns:repeat(4,1fr); gap:46px; }
+.ref-steps article { position:relative; min-height:132px; display:grid; grid-template-columns:72px 1fr; align-items:center; gap:10px; padding:18px 20px; border:1px solid #cbdcd2; border-radius:13px; background:#fff; }
+.ref-steps article:not(:last-child)::after { content:""; position:absolute; left:calc(100% + 14px); width:16px; height:16px; background-image:url("/static/diagnosis/assets/arrow.png") !important; background-position:center; background-size:contain; background-repeat:no-repeat; filter:invert(43%) sepia(19%) saturate(1175%) hue-rotate(104deg) brightness(93%) contrast(86%); }
+.ref-steps i { color:#4e8970; font-size:47px; font-style:normal; text-align:center; }
+.ref-steps strong { display:block; color:#1f2528; font-size:21px; font-weight:800; white-space:nowrap; }.ref-steps p { margin:8px 0 0; color:#555b5e; font-size:14px; white-space:nowrap; }
+.ref-main-card { display:grid; grid-template-columns:1fr 1.05fr; gap:22px; padding:24px 20px; border:1px solid #edf0ed; border-radius:15px; background:#fff; box-shadow:0 5px 15px rgba(24,47,37,.09); }
+.ref-guide { overflow:hidden; border:1px solid #e3e7e4; border-radius:13px; }.ref-guide article { min-height:64px; display:grid; grid-template-columns:55px 142px 1fr; align-items:center; border-bottom:1px solid #e6e9e7; }.ref-guide article:last-child{border-bottom:0}.ref-guide i { color:#4e8970; font-size:26px; text-align:center; font-style:normal; }.ref-guide strong { align-self:stretch; display:flex; align-items:center; padding:0 20px; border-right:1px solid #e6e9e7; color:#24292c; font-size:16px; font-weight:800; }.ref-guide p { margin:0; padding:8px 24px; color:#3e4547; font-size:16px; line-height:1.5; font-weight:600; }.ref-guide em,.ref-guide .point { color:#dd531a; font-style:normal; font-weight:800; }
+.ref-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; }.ref-stats article { min-height:378px; display:grid; justify-items:center; align-content:center; gap:20px; border:1px solid #dfe8e1; border-radius:15px; background:#fcfdfc; text-align:center; }.ref-stats article.warm { border-color:#f1dfd2; background:#fffdfb; }.ref-stats i { width:92px; height:92px; display:grid; place-items:center; border-radius:50%; background:#eef5ef; color:#39785d; font-size:52px; font-style:normal; }.ref-stats .warm i { background:#fbf0e5; color:#925a2d; }.ref-stats span { color:#20272a; font-size:21px; font-weight:800; }.ref-stats strong { padding-top:16px; border-top:1px solid #edf0ed; color:#276648 !important; font-size:32px; font-weight:900; }.ref-stats .warm strong{color:#81502c !important;}
+.ref-notice { padding:18px 20px; border:1px solid #edf0ed; border-radius:14px; box-shadow:0 5px 15px rgba(24,47,37,.06); }.ref-notice h2 { margin:0 0 12px; color:#34775b !important; font-size:20px !important; }.ref-notice h2 span { color:#20272a; }.ref-notice > div { display:grid; grid-template-columns:1fr 1fr; gap:16px; }.ref-notice article { display:flex; align-items:center; gap:18px; min-height:92px; padding:16px 22px; border:1px solid #e4e8e5; border-radius:12px; }.ref-notice article>i { width:54px; height:54px; display:grid; place-items:center; flex:none; border-radius:50%; background:#eef5ef; color:#438267; font-size:28px; font-style:normal; }.ref-notice strong { color:#252b2d; font-size:17px; }.ref-notice p { margin:7px 0 0; color:#454b4d; font-size:14px; }
+.ref-diagnosis .start-actions { margin-top:-12px; transform:translateY(3px); }.ref-diagnosis .start-button { min-width:330px !important; min-height:62px !important; border:0 !important; border-radius:9px !important; background:#4d8a70 !important; box-shadow:0 8px 16px rgba(42,101,78,.2) !important; font-size:20px !important; }
+@media (max-width:1000px){.ref-steps{grid-template-columns:repeat(2,1fr);gap:14px}.ref-steps article::after{display:none}.ref-main-card{grid-template-columns:1fr}.ref-stats article{min-height:230px}}@media(max-width:650px){.diagnosis-page:has(.ref-diagnosis){padding:22px 16px}.ref-title{gap:12px}.ref-title h1{font-size:36px !important}.ref-title p{font-size:14px}.ref-steps,.ref-stats,.ref-notice>div{grid-template-columns:1fr}.ref-guide article{grid-template-columns:42px 105px 1fr}.ref-guide strong{padding:0 10px;font-size:14px}.ref-guide p{padding:8px 12px;font-size:13px}.ref-stats article{min-height:180px}.ref-diagnosis .start-button{min-width:100% !important;}}
+.ref-steps img { width:46px; height:46px; object-fit:contain; justify-self:center; opacity:.78; }
+.ref-guide img { width:29px; height:29px; object-fit:contain; justify-self:center; opacity:.72; }
+.ref-stats img { width:92px; height:92px; padding:21px; border-radius:50%; background:#eef5ef; object-fit:contain; opacity:.76; }
+.ref-stats .warm img { background:#fbf0e5; }
+.ref-notice h2 img { width:26px; height:26px; object-fit:contain; vertical-align:middle; opacity:.72; }
+.ref-diagnosis img { filter: invert(43%) sepia(19%) saturate(1175%) hue-rotate(104deg) brightness(93%) contrast(86%); }
+@media (min-width:901px) {
+  .diagnosis-page:has(.ref-diagnosis) { padding:14px 2.5vw 10px !important; }
+  .ref-diagnosis { gap:10px !important; }
+  .ref-title { min-height:72px; gap:14px; }
+  .ref-leaf { width:72px; height:72px; font-size:38px; }
+  .ref-title h1 { font-size:38px !important; }
+  .ref-title p { margin-top:6px; font-size:14px; }
+  .ref-steps { gap:32px; }
+  .ref-steps article { min-height:104px; grid-template-columns:54px 1fr; padding:12px 16px; }
+  .ref-steps img { width:36px; height:36px; }
+  .ref-steps i { font-size:38px; }
+  .ref-steps strong { font-size:18px; }.ref-steps p { margin-top:5px; font-size:12px; }
+  .ref-steps article:not(:last-child)::after { left:calc(100% + 11px); }
+  .ref-main-card { gap:18px; padding:16px; }
+  .ref-guide article { min-height:52px; grid-template-columns:46px 124px 1fr; }
+  .ref-guide img { width:23px; height:23px; }.ref-guide i { font-size:22px; }
+  .ref-guide strong { padding:0 16px; font-size:14px; }.ref-guide p { padding:6px 18px; font-size:14px; }
+  .ref-stats { gap:14px; }.ref-stats article { min-height:300px; gap:14px; }
+  .ref-stats img,.ref-stats i { width:72px; height:72px; padding:16px; font-size:42px; }
+  .ref-stats span { font-size:18px; }.ref-stats strong { padding-top:12px; font-size:27px; }
+  .ref-notice { padding:12px 16px; }.ref-notice h2 { margin-bottom:8px; font-size:18px !important; }
+  .ref-notice article { min-height:70px; padding:10px 16px; }.ref-notice article>i { width:44px; height:44px; font-size:23px; }
+  .ref-notice strong { font-size:15px; }.ref-notice p { margin-top:3px; font-size:12px; }
+  .ref-diagnosis .start-actions { margin-top:-4px; }.ref-diagnosis .start-button { min-width:280px !important; min-height:50px !important; font-size:17px !important; }
+}
+@media (min-width:901px) {
+  .diagnosis-page:has(.ref-diagnosis) { padding-top:8px !important; padding-bottom:6px !important; }
+  .ref-diagnosis { gap:7px !important; }
+  .ref-title { min-height:60px; }.ref-leaf { width:60px; height:60px; font-size:32px; }
+  .ref-title h1 { font-size:34px !important; }.ref-title p { font-size:13px; }
+  .ref-steps article { min-height:88px; padding:9px 14px; }
+  .ref-main-card { padding:12px; }.ref-guide article { min-height:44px; }
+  .ref-stats article { min-height:238px; gap:10px; }.ref-stats img { width:56px; height:56px; padding:0; border-radius:0; background:transparent !important; }
+  .ref-stats i { width:56px; height:56px; padding:0; border-radius:0; background:transparent !important; }
+  .ref-stats span { font-size:16px; }.ref-stats strong { padding-top:9px; font-size:24px; }
+  .ref-notice { padding:9px 14px; }.ref-notice article { min-height:60px; padding:8px 14px; }
+  .ref-diagnosis .start-button { min-height:44px !important; }
+}

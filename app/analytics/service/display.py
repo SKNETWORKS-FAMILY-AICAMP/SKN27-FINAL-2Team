@@ -663,6 +663,9 @@ def build_wrong_rate_donut_gradient(segments):
         end = start + segment["shareValue"]
         if index == len(segments) - 1:
             end = 100
+        angle = round((start + end) * 1.8, 2)
+        segment["labelAngle"] = angle
+        segment["labelReverseAngle"] = -angle
         gradient_parts.append(f"{segment['color']} {start}% {end}%")
         start = end
 

@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="/static/question/css/result.css?v=summary-card-layout-4" />
   <link rel="stylesheet" href="../../static/question/css/result.css?v=summary-card-layout-4" />
   <link rel="stylesheet" href="/static/himate.css" />
-  <link rel="stylesheet" href="/static/layout.css" />
+  <link rel="stylesheet" href="/static/layout.css?v=navigator-toggle-2" />
   <style>
     body { background: #F4F6F6 !important; }
   </style>
@@ -43,7 +43,13 @@
           <span class="page-kicker" id="resultKicker">문제별 해설</span>
           <h1>문제별 결과 확인</h1>
         </div>
-        <div class="question-jump" id="questionJump" aria-label="문제 번호 이동"></div>
+        <section class="question-jump-panel" aria-label="문항 선택">
+          <div class="question-jump-heading">
+            <strong>문항 선택</strong>
+            <button class="question-jump-toggle" id="questionJumpToggle" type="button" aria-expanded="true" aria-label="문항 선택 접기"><img src="/static/diagnosis/assets/hide.png" alt="" /></button>
+          </div>
+          <div class="question-jump" id="questionJump" aria-label="문제 번호 이동"></div>
+        </section>
       </header>
 
       <section class="answer-summary" aria-label="답안 요약">
@@ -152,8 +158,19 @@
     const wrongExplanation = document.getElementById("wrongExplanation");
     const coreConcept = document.getElementById("coreConcept");
     const questionJump = document.getElementById("questionJump");
+    const questionJumpToggle = document.getElementById("questionJumpToggle");
     const noteSaveButton = document.getElementById("noteSaveButton");
     const noteSaveStatus = document.getElementById("noteSaveStatus");
+
+    questionJumpToggle.addEventListener("click", () => {
+      const expanded = questionJump.hidden;
+      questionJump.hidden = !expanded;
+      questionJumpToggle.setAttribute("aria-expanded", String(expanded));
+      questionJumpToggle.setAttribute("aria-label", expanded ? "문항 선택 접기" : "문항 선택 펼치기");
+      questionJumpToggle.querySelector("img").src = expanded
+        ? "/static/diagnosis/assets/hide.png"
+        : "/static/diagnosis/assets/eye.png";
+    });
 
     function escapeHtml(value) {
       return String(value || "")
