@@ -1,0 +1,6 @@
+source_eid,override_action,polity_id,succession_order,role_title,reign_period_text,evidence_field,evidence_text,review_status,note
+E0002178,ADD,AKS_POLITY_HUBAEKJE,1,왕,892~935,summary,재위 기간은 892년~935년이며,CURATED_OVERRIDE,제N대 형식이 없는 후백제 건국자
+E0003938,REPLACE,AKS_POLITY_GORYEO,23,왕,1213~1259,curated_seed,기존 reign_seed의 고려 고종 왕대 범위,CURATED_OVERRIDE,원문 요약의 고종 18년과 46년을 기존 왕대 seed로 보완
+E0003939,REPLACE,AKS_POLITY_JOSEON,26,왕,1863~1897,summary,조선 제26대 왕이자 대한제국 제1대 황제,CURATED_OVERRIDE,대한제국 선포 전 조선 국왕 재위 구간
+E0003939,REPLACE,AKS_POLITY_KOREAN_EMPIRE,1,황제,1897~1907,summary,조선 제26대 왕이자 대한제국 제1대 황제,CURATED_OVERRIDE,대한제국 선포 후 황제 재위 구간
+E0018693,REPLACE,AKS_POLITY_GORYEO,7,왕,997~1009,curated_seed,고려 제7대 목종 재위 범위,CURATED_OVERRIDE,원문에 수치 범위가 없어 검수 seed로 보완

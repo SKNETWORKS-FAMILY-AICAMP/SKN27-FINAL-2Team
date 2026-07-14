@@ -6,6 +6,95 @@ CALL (row) {
     SET r += row
 } IN TRANSACTIONS OF 1000 ROWS;
 
+LOAD CSV WITH HEADERS FROM 'file:///relations/source_article_describes_entity.csv' AS row
+CALL (row) {
+    MATCH (start:SourceRecord {source_record_id: row.start_source_record_id})
+    MATCH (target:CanonicalEntity {canonical_id: row.end_canonical_id})
+    MERGE (start)-[r:DESCRIBES]->(target)
+    SET r += row
+    SET r.confidence = toFloatOrNull(row.confidence)
+} IN TRANSACTIONS OF 1000 ROWS;
+
+LOAD CSV WITH HEADERS FROM 'file:///relations/monarch_held_reign.csv' AS row
+CALL (row) {
+    MATCH (start:CanonicalEntity {canonical_id: row.start_canonical_id})
+    MATCH (target:Reign {reign_id: row.end_reign_id})
+    MERGE (start)-[r:HELD_REIGN]->(target)
+    SET r += row
+} IN TRANSACTIONS OF 1000 ROWS;
+
+LOAD CSV WITH HEADERS FROM 'file:///relations/reign_of_polity.csv' AS row
+CALL (row) {
+    MATCH (start:Reign {reign_id: row.start_reign_id})
+    MATCH (target:Polity {polity_id: row.end_polity_id})
+    MERGE (start)-[r:OF_POLITY]->(target)
+    SET r += row
+} IN TRANSACTIONS OF 1000 ROWS;
+
+LOAD CSV WITH HEADERS FROM 'file:///relations/source_article_evidence_for_reign.csv' AS row
+CALL (row) {
+    MATCH (start:SourceRecord {source_record_id: row.start_source_record_id})
+    MATCH (target:Reign {reign_id: row.end_reign_id})
+    MERGE (start)-[r:EVIDENCE_FOR]->(target)
+    SET r += row
+} IN TRANSACTIONS OF 1000 ROWS;
+
+LOAD CSV WITH HEADERS FROM 'file:///relations/monarch_associated_with_royal_action.csv' AS row
+CALL (row) {
+    MATCH (start:CanonicalEntity {canonical_id: row.start_canonical_id})
+    MATCH (target:RoyalAction {action_id: row.end_action_id})
+    MERGE (start)-[r:ASSOCIATED_WITH_ACTION]->(target)
+    SET r += row
+} IN TRANSACTIONS OF 1000 ROWS;
+
+LOAD CSV WITH HEADERS FROM 'file:///relations/royal_action_targets_entity.csv' AS row
+CALL (row) {
+    MATCH (start:RoyalAction {action_id: row.start_action_id})
+    MATCH (target:CanonicalEntity {canonical_id: row.end_canonical_id})
+    MERGE (start)-[r:TARGETS]->(target)
+    SET r += row
+} IN TRANSACTIONS OF 1000 ROWS;
+
+LOAD CSV WITH HEADERS FROM 'file:///relations/royal_action_during_reign.csv' AS row
+CALL (row) {
+    MATCH (start:RoyalAction {action_id: row.start_action_id})
+    MATCH (target:Reign {reign_id: row.end_reign_id})
+    MERGE (start)-[r:DURING_REIGN]->(target)
+    SET r += row
+} IN TRANSACTIONS OF 1000 ROWS;
+
+LOAD CSV WITH HEADERS FROM 'file:///relations/source_article_evidence_for_royal_action.csv' AS row
+CALL (row) {
+    MATCH (start:SourceRecord {source_record_id: row.start_source_record_id})
+    MATCH (target:RoyalAction {action_id: row.end_action_id})
+    MERGE (start)-[r:EVIDENCE_FOR]->(target)
+    SET r += row
+} IN TRANSACTIONS OF 1000 ROWS;
+
+LOAD CSV WITH HEADERS FROM 'file:///relations/source_image_depicts_entity.csv' AS row
+CALL (row) {
+    MATCH (start:SourceImage {source_image_id: row.source_image_id})
+    MATCH (target:CanonicalEntity {canonical_id: row.canonical_id})
+    MERGE (start)-[r:DEPICTS]->(target)
+    SET r += row
+} IN TRANSACTIONS OF 1000 ROWS;
+
+LOAD CSV WITH HEADERS FROM 'file:///relations/inscription_content_inscribed_on.csv' AS row
+CALL (row) {
+    MATCH (start:InscriptionContent {inscription_id: row.inscription_id})
+    MATCH (target:CulturalHeritage {canonical_id: row.canonical_id})
+    MERGE (start)-[r:INSCRIBED_ON]->(target)
+    SET r += row
+} IN TRANSACTIONS OF 1000 ROWS;
+
+LOAD CSV WITH HEADERS FROM 'file:///relations/source_text_presents_inscription.csv' AS row
+CALL (row) {
+    MATCH (start:SourceText {source_text_id: row.source_text_id})
+    MATCH (target:InscriptionContent {inscription_id: row.inscription_id})
+    MERGE (start)-[r:PRESENTS_TEXT_OF]->(target)
+    SET r += row
+} IN TRANSACTIONS OF 1000 ROWS;
+
 LOAD CSV WITH HEADERS FROM 'file:///relations/term_in_period.csv' AS row
 CALL (row) {
     MATCH (start:Term {term_id: row.start_term_id})

@@ -142,6 +142,74 @@ def build_pipeline_steps(script_dir, project_root):
                 import_output_dirs["relations_dir"],
             ],
         },
+        {
+            "step_name": "6. AKS canonical/source graph data",
+            "script_path": step_dir / "make_aks_graph_csv.py",
+            "extra_args": [
+                "--nodes-dir",
+                import_output_dirs["nodes_dir"],
+                "--relations-dir",
+                import_output_dirs["relations_dir"],
+            ],
+        },
+        {
+            "step_name": "7. AKS polity/reign graph data",
+            "script_path": step_dir / "make_aks_reign_graph_csv.py",
+            "extra_args": [
+                "--nodes-dir",
+                import_output_dirs["nodes_dir"],
+                "--relations-dir",
+                import_output_dirs["relations_dir"],
+            ],
+        },
+        {
+            "step_name": "8. AKS curated royal action graph data",
+            "script_path": step_dir / "make_aks_royal_action_csv.py",
+            "extra_args": [
+                "--nodes-dir",
+                import_output_dirs["nodes_dir"],
+                "--relations-dir",
+                import_output_dirs["relations_dir"],
+            ],
+        },
+        {
+            "step_name": "9. AKS cultural heritage classification data",
+            "script_path": step_dir / "make_aks_heritage_csv.py",
+            "extra_args": [
+                "--nodes-dir",
+                import_output_dirs["nodes_dir"],
+            ],
+        },
+        {
+            "step_name": "10. Source image nodes and depicts relations",
+            "script_path": step_dir / "make_source_image_csv.py",
+            "extra_args": [
+                "--nodes-dir",
+                import_output_dirs["nodes_dir"],
+                "--relations-dir",
+                import_output_dirs["relations_dir"],
+            ],
+        },
+        {
+            "step_name": "11. Inscription content and source text graph data",
+            "script_path": step_dir / "make_inscription_content_csv.py",
+            "extra_args": [
+                "--nodes-dir",
+                import_output_dirs["nodes_dir"],
+                "--relations-dir",
+                import_output_dirs["relations_dir"],
+            ],
+        },
+        {
+            "step_name": "12. Positive and negative graph QA",
+            "script_path": step_dir / "validate_graph_qa.py",
+            "extra_args": [
+                "--nodes-dir",
+                import_output_dirs["nodes_dir"],
+                "--relations-dir",
+                import_output_dirs["relations_dir"],
+            ],
+        },
     ]
 
 
