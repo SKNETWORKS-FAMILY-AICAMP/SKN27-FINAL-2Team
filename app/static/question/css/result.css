@@ -13,35 +13,3 @@
   opacity: 0.72;
   cursor: not-allowed;
 }
-.result-loading {
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-  display: grid;
-  place-items: center;
-  align-content: center;
-  gap: 10px;
-  min-height: 100svh;
-  border: 0;
-  border-radius: 0;
-  background: #101b20;
-  color: #f5fff1;
-  box-shadow: none;
-  text-align: center;
-}
-
-.result-loading img {
-  width: min(110px, 28vw);
-  height: auto;
-}
-
-.result-loading strong {
-  font-size: 18px;
-  font-weight: 950;
-}
-
-.result-loading span {
-  color: #b8c7bc;
-  font-size: 13px;
-  font-weight: 850;
-}

@@ -635,6 +635,18 @@ def diagnosis_result_api(request, session_id):
     score_rate = round(total_score / max_score, 4) if max_score else 0.0
     score_rate_pct = score_rate * 100
     expected_grade = _get_expected_grade(score_rate_pct)
+    previous_session = (
+        SolveSessions.objects.filter(
+            user_id=session.user_id,
+            session_type="diagnostic",
+            status="completed",
+            session_id__lt=session.session_id,
+        )
+        .order_by("-session_id")
+        .first()
+    )
+    previous_score = previous_session.total_score if previous_session else None
+    score_change = total_score - previous_score if previous_score is not None else None
 
     # 시대별/유형별 분석 구성
     era_analytics = []
@@ -664,6 +676,8 @@ def diagnosis_result_api(request, session_id):
         "max_score": max_score,
         "score_rate": score_rate,
         "expected_grade": expected_grade,
+        "previous_score": previous_score,
+        "score_change": score_change,
         "era_analytics": era_analytics,
         "type_analytics": type_analytics,
         "question_ids": question_ids,

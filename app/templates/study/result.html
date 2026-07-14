@@ -4,12 +4,43 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>himate | 결과</title>
-  <link rel="stylesheet" href="/static/question/css/result.css?v=summary-card-layout-4" />
-  <link rel="stylesheet" href="../../static/question/css/result.css?v=summary-card-layout-4" />
+  <link rel="stylesheet" href="/static/question/css/result.css?v=summary-card-layout-5" />
+  <link rel="stylesheet" href="../../static/question/css/result.css?v=summary-card-layout-5" />
   <link rel="stylesheet" href="/static/himate.css" />
-  <link rel="stylesheet" href="/static/layout.css?v=navigator-toggle-2" />
+  <link rel="stylesheet" href="/static/layout.css?v=result-card-align-2" />
   <style>
     body { background: #F4F6F6 !important; }
+    .result-page,
+    .result-page .diagnosis-summary { background: #F4F6F6 !important; }
+    .result-page .summary-grid article:nth-child(-n+2) > strong,
+    .result-page .summary-grid article:nth-child(-n+2) > p {
+      justify-self: center !important;
+      text-align: center !important;
+      width: 100%;
+    }
+    .result-page .summary-grid article:nth-child(3) > strong,
+    .result-page .summary-grid article:nth-child(3) > p {
+      justify-self: center !important;
+      text-align: center !important;
+      width: 100%;
+    }
+    {% if result_mode == "practice" %}
+      /* 취약 TOP 3 제목 높이: 숫자를 바꾸면 위아래 위치를 직접 조절할 수 있습니다. */
+      .result-page .summary-grid article:nth-child(3) > span { transform: translateY(0); }
+      /* 취약 TOP 3 항목 목록 높이: 숫자를 바꾸면 항목 전체를 위아래로 옮길 수 있습니다. */
+      .result-page .summary-grid article:nth-child(3) > ul { transform: translateX(40px); }
+    {% endif %}
+    .result-page .summary-grid .performance-low { color: #d9544d !important; }
+    .result-page .summary-grid .performance-mid { color: #c79819 !important; }
+    .result-page .summary-grid .performance-high { color: #4a8055 !important; }
+    .result-page .summary-grid [hidden] { display: none !important; }
+    /* 세 카드 내부 행 높이: 제목 / 핵심값 / 설명 순서입니다. */
+    .result-page .summary-grid article {
+      height: 168px !important;
+      min-height: 168px !important;
+      grid-template-rows: 24px 50px 42px !important;
+      overflow: hidden;
+    }
   </style>
 </head>
 <body>
@@ -31,12 +62,6 @@
   </header>
 
   <main class="result-page">
-    <div class="result-loading" id="loadingMsg">
-      <img src="/static/images/loading.gif" alt="" />
-      <strong>분석 결과를 생성하고 있습니다</strong>
-      <span>잠시만 기다려 주세요.</span>
-    </div>
-
     <section class="review-shell" id="reviewShell" aria-label="문제별 해설" style="display:none;">
       <header class="review-top">
         <div>
@@ -129,6 +154,8 @@
         <article>
           <span id="weakLabel">취약 TOP 3</span>
           <ul id="weakTopics"></ul>
+          <strong id="scoreChangeText" hidden>-</strong>
+          <p id="scoreChangeDescription" hidden></p>
         </article>
       </div>
     </section>
@@ -142,7 +169,6 @@
     let savedQuestionIds = new Set();
     let currentIndex = 0;
 
-    const loadingMsg = document.getElementById("loadingMsg");
     const reviewShell = document.getElementById("reviewShell");
     const summarySection = document.getElementById("summarySection");
     const questionNumber = document.getElementById("questionNumber");
@@ -403,6 +429,8 @@
         totalCount: summary.total_count,
         correctCount: summary.correct_count,
         expectedGrade: summary.expected_grade,
+        previousScore: summary.previous_score,
+        scoreChange: summary.score_change,
         eraAnalytics: summary.era_analytics || [],
         typeAnalytics: summary.type_analytics || [],
       };
@@ -485,19 +513,34 @@
       if (RESULT_MODE === "diagnostic") {
         document.getElementById("resultKicker").textContent = "진단평가 해설";
         document.getElementById("summaryKicker").textContent = "진단 결과";
-        document.getElementById("summaryDescription").textContent = "진단평가 점수와 예상 급수, 취약 영역을 요약합니다.";
-        scoreLabel.textContent = "총점 / 정답률";
-        document.getElementById("scoreText").textContent = `${resultPayload.totalScore || 0}점`;
+        document.getElementById("summaryDescription").textContent = "진단평가 점수와 예상 급수, 직전 평가 대비 점수 변화를 요약합니다.";
+        const levelText = document.getElementById("levelText");
+        const totalScoreText = document.getElementById("scoreText");
+        const weakLabel = document.getElementById("weakLabel");
+        const weakTopics = document.getElementById("weakTopics");
+        const scoreChangeText = document.getElementById("scoreChangeText");
+        const scoreChangeDescription = document.getElementById("scoreChangeDescription");
+        scoreLabel.textContent = "총점";
+        totalScoreText.textContent = `${resultPayload.totalScore || 0}점`;
         document.getElementById("levelLabel").textContent = "예상 급수";
-        document.getElementById("levelText").textContent = resultPayload.expectedGrade || "-";
+        levelText.textContent = resultPayload.expectedGrade || "-";
+        levelText.style.setProperty("color", resultPayload.expectedGrade === "탈락" ? "#d9544d" : "#4a8055", "important");
+        totalScoreText.style.setProperty("color", (resultPayload.totalScore || 0) < 60 ? "#d9544d" : "#4a8055", "important");
         document.getElementById("levelDescription").textContent = `총점 ${resultPayload.totalScore || 0}점 기준 진단 결과입니다.`;
-        const weakTop3 = [...(resultPayload.eraAnalytics || []), ...(resultPayload.typeAnalytics || [])]
-          .sort((a, b) => b.wrong_rate - a.wrong_rate)
-          .slice(0, 3)
-          .map((item) => item.label);
-        document.getElementById("weakTopics").innerHTML = (weakTop3.length ? weakTop3 : ["데이터 없음"])
-          .map((topic) => `<li>${escapeHtml(topic)}</li>`)
-          .join("");
+        document.getElementById("accuracyCount").textContent = `${resultPayload.correctCount} / ${resultPayload.totalCount} · 정답률 ${accuracy}%`;
+        weakLabel.textContent = "직전 진단평가 대비 점수 변화";
+        weakTopics.hidden = true;
+        scoreChangeText.hidden = false;
+        scoreChangeDescription.hidden = false;
+        if (resultPayload.scoreChange === null || resultPayload.scoreChange === undefined) {
+          scoreChangeText.textContent = "이전 기록 없음";
+          scoreChangeDescription.textContent = "점수 변화를 비교할 진단평가 기록이 없습니다.";
+        } else {
+          const change = resultPayload.scoreChange;
+          scoreChangeText.textContent = change > 0 ? `${change}점 상승` : change < 0 ? `${Math.abs(change)}점 하락` : "변화 없음";
+          scoreChangeDescription.textContent = `직전 ${resultPayload.previousScore}점 → 현재 ${resultPayload.totalScore || 0}점`;
+          scoreChangeText.style.setProperty("color", change > 0 ? "#4a8055" : change < 0 ? "#d9544d" : "#5b625d", "important");
+        }
         return;
       }
 
@@ -508,7 +551,19 @@
       document.getElementById("scoreText").textContent = `${accuracy}%`;
       document.getElementById("accuracyCount").textContent = "";
       document.getElementById("levelLabel").textContent = "맞은 개수";
-      document.getElementById("levelText").textContent = `${resultPayload.correctCount} / ${resultPayload.totalCount}`;
+      document.getElementById("weakTopics").hidden = false;
+      document.getElementById("scoreChangeText").hidden = true;
+      document.getElementById("scoreChangeDescription").hidden = true;
+      const levelText = document.getElementById("levelText");
+      const scoreText = document.getElementById("scoreText");
+      const correctTone = resultPayload.correctCount <= 4 ? "low" : resultPayload.correctCount <= 7 ? "mid" : "high";
+      const accuracyTone = accuracy <= 40 ? "low" : accuracy <= 70 ? "mid" : "high";
+      const toneColors = { low: "#d9544d", mid: "#c79819", high: "#4a8055" };
+      scoreText.className = `performance-${accuracyTone}`;
+      levelText.className = `performance-${correctTone}`;
+      scoreText.style.setProperty("color", toneColors[accuracyTone], "important");
+      levelText.style.setProperty("color", toneColors[correctTone], "important");
+      levelText.textContent = `${resultPayload.correctCount} / ${resultPayload.totalCount}`;
       document.getElementById("levelDescription").textContent = `총 ${resultPayload.totalCount}문항 중 ${resultPayload.correctCount}문항을 맞혔습니다.`;
       const weakTypes = questions
         .filter((question) => !question.isCorrect)
@@ -623,16 +678,13 @@
       } else {
         await loadPracticeResult();
       }
-      loadingMsg.style.display = "none";
       reviewShell.style.display = "";
       summarySection.style.display = "";
       renderSummary();
       renderQuestion();
     }
 
-    init().catch((error) => {
-      loadingMsg.textContent = `오류: ${error.message}`;
-    });
+    init().catch((error) => alert(`오류: ${error.message}`));
   </script>
 </body>
 </html>
