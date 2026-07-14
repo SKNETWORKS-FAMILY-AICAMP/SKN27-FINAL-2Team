@@ -94,6 +94,7 @@ def evaluate_graph_connectivity(queries: list[str]) -> Metric:
 def evaluate_latency(queries: list[str]) -> list[Metric]:
     search_values = []
     generation_values = []
+    total_values = []
     retriever = PgVectorHybridRetriever()
     for query in queries:
         cached_pg_search.cache_clear()
@@ -108,9 +109,11 @@ def evaluate_latency(queries: list[str]) -> list[Metric]:
 
         search_values.append(search_sec)
         generation_values.append(max(0.0, total_sec - search_sec))
+        total_values.append(total_sec)
 
     search_avg = sum(search_values) / len(search_values) if search_values else 0.0
     generation_avg = sum(generation_values) / len(generation_values) if generation_values else 0.0
+    total_avg = sum(total_values) / len(total_values) if total_values else 0.0
     return [
         Metric(
             "검색 속도",
@@ -127,6 +130,14 @@ def evaluate_latency(queries: list[str]) -> list[Metric]:
             "5.0s 이내",
             generation_avg <= 5.0,
             "전체 응답 시간 - 검색 시간",
+        ),
+        Metric(
+            "전체 응답 속도",
+            "LLM 생성 포함 평균 응답 시간",
+            f"{total_avg * 1000:.0f}ms" if total_avg < 1 else f"{total_avg:.2f}s",
+            "7.0s 이내",
+            total_avg <= 7.0,
+            "서비스 RAG 전체 호출 지연시간 측정",
         ),
     ]
 
@@ -178,11 +189,18 @@ def evaluate_ragas_metrics(questions: list[dict], limit: int, debug_path: Path |
         ]
 
     ragas_intents = {"concept", "summary", "compare", "evidence"}
-    text_questions = [
-        question
-        for question in questions
-        if not question.get("requires_image") and (question.get("intent") or "concept") in ragas_intents
-    ]
+    grouped_questions = {intent: [] for intent in ragas_intents}
+    for question in questions:
+        intent = question.get("intent") or "concept"
+        if not question.get("requires_image") and intent in grouped_questions:
+            grouped_questions[intent].append(question)
+
+    # Keep each RAGAS intent equally represented without changing service intents.
+    text_questions = []
+    for index in range(15):
+        for intent in ("concept", "summary", "compare", "evidence"):
+            if index < len(grouped_questions[intent]):
+                text_questions.append(grouped_questions[intent][index])
     rows = []
     retriever = PgVectorHybridRetriever()
     for question in text_questions[:limit]:
@@ -195,15 +213,31 @@ def evaluate_ragas_metrics(questions: list[dict], limit: int, debug_path: Path |
             contexts = ["검색 근거 없음"]
         rows.append(
             {
+                "id": question.get("id") or "",
+                "intent": question.get("intent") or "concept",
                 "user_input": question["query"],
                 "response": answer,
                 "retrieved_contexts": contexts,
                 "reference": question.get("reference_answer") or ", ".join(question.get("expected_keywords") or []),
+                "expected_keywords": question.get("expected_keywords") or [],
+                "expected_era": question.get("expected_era") or "",
+                "expected_source_type": question.get("expected_source_type") or "",
             }
         )
 
     try:
-        dataset = Dataset.from_list(rows)
+        # RAGAS 입력은 문자열/문맥 목록만 허용한다. 평가 이력용 메타데이터는 CSV에만 보관한다.
+        dataset = Dataset.from_list(
+            [
+                {
+                    "user_input": row["user_input"],
+                    "response": row["response"],
+                    "retrieved_contexts": row["retrieved_contexts"],
+                    "reference": row["reference"],
+                }
+                for row in rows
+            ]
+        )
         evaluator_llm = LangchainLLMWrapper(
             ChatOpenAI(
                 model=os.getenv("RAGAS_LLM_MODEL") or "gpt-4o-mini",
@@ -268,24 +302,43 @@ def evaluate_ragas_metrics(questions: list[dict], limit: int, debug_path: Path |
 
 def write_ragas_debug(rows: list[dict], scores: list[dict], path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", encoding="utf-8-sig", newline="") as fp:
-        writer = csv.DictWriter(
-            fp,
-            fieldnames=["question", "context_precision", "context_recall", "faithfulness", "answer_relevancy", "answer", "contexts"],
+    fieldnames = [
+        "run_at", "id", "intent", "question", "expected_keywords", "expected_era",
+        "expected_source_type", "reference_answer", "context_precision", "context_recall",
+        "faithfulness", "answer_relevancy", "answer", "contexts",
+    ]
+    run_at = datetime.now().isoformat(timespec="seconds")
+    records = []
+    for row, score in zip(rows, scores):
+        records.append(
+            {
+                "run_at": run_at,
+                "id": row["id"],
+                "intent": row["intent"],
+                "question": row["user_input"],
+                "expected_keywords": ", ".join(row["expected_keywords"]),
+                "expected_era": row["expected_era"],
+                "expected_source_type": row["expected_source_type"],
+                "reference_answer": row["reference"],
+                "context_precision": score.get("context_precision"),
+                "context_recall": score.get("context_recall"),
+                "faithfulness": score.get("faithfulness"),
+                "answer_relevancy": score.get("answer_relevancy"),
+                "answer": row["response"],
+                "contexts": "\n---\n".join(row["retrieved_contexts"]),
+            }
         )
+    with path.open("w", encoding="utf-8-sig", newline="") as fp:
+        writer = csv.DictWriter(fp, fieldnames=fieldnames)
         writer.writeheader()
-        for row, score in zip(rows, scores):
-            writer.writerow(
-                {
-                    "question": row["user_input"],
-                    "context_precision": score.get("context_precision"),
-                    "context_recall": score.get("context_recall"),
-                    "faithfulness": score.get("faithfulness"),
-                    "answer_relevancy": score.get("answer_relevancy"),
-                    "answer": row["response"],
-                    "contexts": "\n---\n".join(row["retrieved_contexts"]),
-                }
-            )
+        writer.writerows(records)
+
+    history_path = path.with_name(f"{path.stem}_history.csv")
+    with history_path.open("a", encoding="utf-8-sig", newline="") as fp:
+        writer = csv.DictWriter(fp, fieldnames=fieldnames)
+        if history_path.stat().st_size == 0:
+            writer.writeheader()
+        writer.writerows(records)
 
 
 def write_outputs(metrics: list[Metric], out_prefix: Path) -> None:
@@ -334,6 +387,16 @@ def print_markdown(metrics: list[Metric]) -> None:
         print(f"| {item.name} | {item.definition} | {item.value} | {item.threshold} | {item.verification} |")
 
 
+def print_langsmith_status() -> None:
+    enabled = os.getenv("LANGSMITH_TRACING", "").lower() == "true"
+    has_key = bool(os.getenv("LANGSMITH_API_KEY"))
+    project = os.getenv("LANGSMITH_PROJECT", "default")
+    if enabled and has_key:
+        print(f"LangSmith tracing=enabled project={project}")
+    else:
+        print("LangSmith tracing=disabled (set LANGSMITH_TRACING=true and LANGSMITH_API_KEY in .env)")
+
+
 def run_service_evaluation(args: argparse.Namespace, questions: list[dict], queries: list[str]) -> list[dict[str, str]]:
     metrics = [
         evaluate_graph_connectivity(queries),
@@ -368,6 +431,7 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
+    print_langsmith_status()
     questions = load_jsonl(args.golden_file)
     queries = [item["query"] for item in questions[: args.latency_limit]]
     rows = run_service_evaluation(args, questions, queries)
