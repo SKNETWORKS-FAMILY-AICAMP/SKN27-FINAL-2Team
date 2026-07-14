@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 
 # from django.contrib.auth.decorators import login_required  # TODO: 인증 연동 후 활성화
 from django.db import models, transaction
+from django.db import connection
 from django.shortcuts import render
 from rest_framework import status
 from rest_framework.decorators import api_view
@@ -35,6 +36,16 @@ from .serializers import (
 DIAGNOSIS_QUESTION_COUNT = 50
 DIAGNOSIS_TARGET_SCORE = 100
 DIAGNOSIS_TIME_LIMIT_SEC = 4800  # 80분
+DIAGNOSIS_ERA_GROUPS = [
+    {"eras": ("선사 시대", "고조선", "초기 국가"), "count": 2},
+    {"eras": ("삼국 시대", "남북국 시대"), "count": 7},
+    {"eras": ("고려",), "count": 8},
+    {"eras": ("조선",), "count": 12},
+    {"eras": ("개항기",), "count": 6},
+    {"eras": ("일제 강점기",), "count": 8},
+    {"eras": ("현대",), "count": 7},
+]
+DIAGNOSIS_SCORE_COUNTS = {1: 10, 2: 30, 3: 10}
 
 # 예상 수준 기준 (취득점 / 최대점 × 100)
 GRADE_THRESHOLDS = [
@@ -113,6 +124,16 @@ def _complete_weekly_review_block_for_session(session, user_id):
     )
 
 
+def _has_solve_sessions_review_type():
+    return any(
+        column.name == "review_type"
+        for column in connection.introspection.get_table_description(
+            connection.cursor(),
+            "solve_sessions",
+        )
+    )
+
+
 # ── 페이지 뷰 (템플릿) ──────────────────────────────────────────────────────────
 
 # @login_required  # TODO: 인증 연동 후 활성화
@@ -183,6 +204,8 @@ def diagnosis_start(request):
     )
     if block_error:
         return Response(block_error, status=status.HTTP_400_BAD_REQUEST)
+    review_type = "weekly_review" if weekly_review_block else None
+    has_review_type = _has_solve_sessions_review_type()
 
     # 1) 전체 문제에서 50문항 / 총점 100점 조합을 랜덤 선택
     selected_ids = _pick_diagnosis_question_ids()
@@ -194,19 +217,27 @@ def diagnosis_start(request):
 
     questions_qs = Questions.objects.filter(question_id__in=selected_ids)
     # 새 진단평가를 시작하면 이전 진행 중 세션을 정리해 저장 진단지는 1개만 유지한다.
-    SolveSessions.objects.filter(
+    in_progress_sessions = SolveSessions.objects.filter(
         user_id=user_id,
         session_type="diagnostic",
         status="in_progress",
-    ).delete()
+    )
+    if has_review_type:
+        in_progress_sessions = in_progress_sessions.filter(review_type=review_type)
+    in_progress_sessions.delete()
 
     # 2) 세션 생성
+    session_data = {
+        "user_id": user_id,
+        "session_type": "diagnostic",
+        "total_count": DIAGNOSIS_QUESTION_COUNT,
+        "status": "in_progress",
+        "recorded_date": datetime.now(tz=timezone.utc).date(),
+    }
+    if has_review_type:
+        session_data["review_type"] = review_type
     session = SolveSessions.objects.create(
-        user_id=user_id,
-        session_type="diagnostic",
-        total_count=DIAGNOSIS_QUESTION_COUNT,
-        status="in_progress",
-        recorded_date=datetime.now(tz=timezone.utc).date(),
+        **session_data,
     )
 
     # 3) 문제 목록 구성 (문제 순서 랜덤 + 선택지 셔플)
@@ -697,11 +728,77 @@ def _get_total_from_records(records, analytics_obj):
 def _pick_diagnosis_question_ids():
     rows = list(Questions.objects.values("question_id", "q_score", "era", "question_type"))
     random.shuffle(rows)
-    return _pick_exact_score_question_ids(
-        rows,
-        DIAGNOSIS_QUESTION_COUNT,
-        DIAGNOSIS_TARGET_SCORE,
-    )
+    return _pick_balanced_diagnosis_question_ids(rows)
+
+
+def _pick_balanced_diagnosis_question_ids(rows):
+    buckets = {
+        (group_index, score): []
+        for group_index in range(len(DIAGNOSIS_ERA_GROUPS))
+        for score in DIAGNOSIS_SCORE_COUNTS
+    }
+    for row in rows:
+        group_index = _diagnosis_era_group_index(row["era"])
+        score = row["q_score"] or 0
+        if group_index is not None and score in DIAGNOSIS_SCORE_COUNTS:
+            buckets[(group_index, score)].append(row["question_id"])
+
+    score_plan = _pick_score_plan_by_era(buckets)
+    if score_plan is None:
+        return []
+
+    selected_ids = []
+    for group_index, score_counts in score_plan.items():
+        for score, count in score_counts.items():
+            selected_ids.extend(buckets[(group_index, score)][:count])
+    random.shuffle(selected_ids)
+    return selected_ids
+
+
+def _diagnosis_era_group_index(era):
+    for index, group in enumerate(DIAGNOSIS_ERA_GROUPS):
+        if era in group["eras"]:
+            return index
+    return None
+
+
+def _pick_score_plan_by_era(buckets):
+    target_1 = DIAGNOSIS_SCORE_COUNTS[1]
+    target_2 = DIAGNOSIS_SCORE_COUNTS[2]
+    dp = {(0, 0): {}}
+
+    for group_index, group in enumerate(DIAGNOSIS_ERA_GROUPS):
+        next_dp = {}
+        for counts in _possible_group_score_counts(group["count"], group_index, buckets):
+            for (used_1, used_2), plan in dp.items():
+                next_1 = used_1 + counts[1]
+                next_2 = used_2 + counts[2]
+                if next_1 > target_1 or next_2 > target_2:
+                    continue
+                next_plan = {**plan, group_index: counts}
+                next_dp.setdefault((next_1, next_2), next_plan)
+        dp = next_dp
+
+    plan = dp.get((target_1, target_2))
+    if not plan:
+        return None
+    if sum(group_counts[3] for group_counts in plan.values()) != DIAGNOSIS_SCORE_COUNTS[3]:
+        return None
+    return plan
+
+
+def _possible_group_score_counts(total_count, group_index, buckets):
+    options = []
+    max_1 = min(total_count, len(buckets[(group_index, 1)]))
+    max_2 = min(total_count, len(buckets[(group_index, 2)]))
+    max_3 = min(total_count, len(buckets[(group_index, 3)]))
+    for count_1 in range(max_1 + 1):
+        for count_2 in range(max_2 + 1):
+            count_3 = total_count - count_1 - count_2
+            if 0 <= count_3 <= max_3:
+                options.append({1: count_1, 2: count_2, 3: count_3})
+    random.shuffle(options)
+    return options
 
 
 def _pick_exact_score_question_ids(rows, count, target_score):
