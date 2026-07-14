@@ -543,7 +543,7 @@ input:focus, textarea:focus, select:focus { outline: 2px solid rgba(183, 50, 37,
 
 .result-page .review-shell { padding: 26px 30px 20px !important; }
 .result-page .review-top {
-  align-items: center !important;
+  align-items: start !important;
   margin-bottom: 20px !important;
 }
 .result-page .page-kicker { display: none !important; }

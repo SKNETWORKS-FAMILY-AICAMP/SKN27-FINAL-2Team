@@ -1,5 +1,8 @@
 # 마이페이지 서비스 흐름도
 
+> 문서 상태: V1 REFERENCE
+> 현재 화면·서비스 흐름 확인용이다. 목표 학습계획 흐름은 [study_plan/SPEC.md](study_plan/SPEC.md)와 [study_plan/AI_WORKFLOW.md](study_plan/AI_WORKFLOW.md)를 따른다.
+
 `GET /analytics/mypage` 요청에서 view가 서비스 함수를 어떤 순서로 호출하고 각 파일이 어떤 역할을 맡는지 정리한 흐름도다. view(`views.mypage`)는 **호출 순서만** 담당하고, 실제 DB 조회·계산·표시 가공은 service 계층이 맡는다. (근거: `app/analytics/views.py:53`)
 
 각 노드는 `함수명 — 한글 설명` 형식으로 표기했다.
