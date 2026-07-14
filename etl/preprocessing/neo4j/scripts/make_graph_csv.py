@@ -1280,6 +1280,40 @@ def build_event_about_country(event_has_canonical_category, canonical_category_c
     ].drop_duplicates()
 
 
+def build_period_subperiod_of(period_dictionary):
+    """
+    기간 계층(하위 기간 → 상위 기간) 관계를 만든다.
+
+    parent_period_name은 지금까지 노드 속성으로만 있었고 기간 간 엣지가 없었다
+    (docs/neo4j/neo4j_관계_정규화_점검.md). 기간 이름은 사전 내에서 유일하므로
+    이름 → period_id 매핑으로 관계를 생성하고, 매칭 실패분은 제외한다.
+    """
+    period_data = period_dictionary.copy()
+    name_to_id = (
+        period_data.dropna(subset=["period_name"])
+        .drop_duplicates(subset=["period_name"])
+        .set_index("period_name")["period_id"]
+    )
+    relation_data = period_data.dropna(subset=["parent_period_name"]).copy()
+    relation_data = relation_data[
+        relation_data["parent_period_name"].astype(str).str.strip() != ""
+    ]
+    relation_data["end_period_id"] = relation_data["parent_period_name"].map(name_to_id)
+    relation_data = relation_data.dropna(subset=["end_period_id"])
+    relation_data = relation_data.rename(columns={"period_id": "start_period_id"})
+    relation_data["relation_type"] = "SUBPERIOD_OF"
+
+    return relation_data[
+        [
+            "start_period_id",
+            "end_period_id",
+            "relation_type",
+            "period_name",
+            "parent_period_name",
+        ]
+    ].drop_duplicates()
+
+
 def build_region_subregion_of(region_dictionary):
     relation_data = region_dictionary.dropna(subset=["parent_region_id"]).copy()
     relation_data = relation_data.rename(
@@ -3783,6 +3817,7 @@ def build_relation_outputs(inputs, node_outputs):
         "canonical_category_about_economic_domain": canonical_category_about_economic_domain,
         "canonical_category_about_taxonomy_facet": canonical_category_about_taxonomy_facet,
         "region_subregion_of": build_region_subregion_of(inputs["region_dictionary"]),
+        "period_subperiod_of": build_period_subperiod_of(inputs["period_dictionary"]),
         "event_has_source_category": event_has_source_category,
         "source_category_mapped_to_canonical_category": build_source_category_mapped_to_canonical_category(
             inputs["taxonomy_crosswalk"]
