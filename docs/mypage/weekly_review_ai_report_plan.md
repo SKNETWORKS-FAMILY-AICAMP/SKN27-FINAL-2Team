@@ -1,5 +1,8 @@
 # 주간평가 완료 후 AI 주간 리포트 및 학습계획 생성 설계
 
+> 문서 상태: SUPERSEDED DESIGN
+> 초기 설계의 배경 참고용이다. queue·worker·lease·Planner 경계의 v2 기준은 [study_plan/AI_WORKFLOW.md](study_plan/AI_WORKFLOW.md)를 따른다.
+
 ## 목적
 
 주간평가는 단순히 점수를 보여 주는 종료 화면이 아니라, 한 주 동안의 학습 결과를 요약하고 다음 주 학습계획을 만드는 트리거가 되어야 한다.

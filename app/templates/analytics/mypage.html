@@ -5,9 +5,9 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>himate | 나의 학습실</title>
-  <link rel="stylesheet" href="{% static 'analytics/css/mypage.css' %}" />
   <link rel="stylesheet" href="{% static 'himate.css' %}" />
   <link rel="stylesheet" href="{% static 'layout.css' %}" />
+  <link rel="stylesheet" href="{% static 'analytics/css/mypage.css' %}?v=planner-reference-13" />
 </head>
 <body>
   <header class="site-header" aria-label="마이페이지 메뉴">
@@ -44,14 +44,18 @@
 
     <section class="improvement-grid" aria-label="진단평가 비교">
       {% if diagnosis_comparison.has_records %}
-        <article class="improvement-card {{ diagnosis_comparison.answer.tone }}">
-          <span>이전 진단평가 대비 정답률</span>
-          <strong>{{ diagnosis_comparison.answer.change_label }}</strong>
+        <article class="improvement-card answer {{ diagnosis_comparison.answer.tone }}">
+          <div class="improvement-main">
+            <i class="improvement-icon target"><img src="{% static 'diagnosis/assets/target.png' %}" alt="" /></i>
+            <div><span>이전 진단평가 대비 정답률</span><strong class="comparison-change-text">{{ diagnosis_comparison.answer.change_label }}</strong></div>
+          </div>
           <p>{{ diagnosis_comparison.answer.diagnosis_label }} {{ diagnosis_comparison.answer.diagnosis_rate }}% → {{ diagnosis_comparison.answer.current_label }} {{ diagnosis_comparison.answer.current_rate }}%</p>
         </article>
-        <article class="improvement-card {{ diagnosis_comparison.time.tone }}">
-          <span>이전 진단평가 대비 문제당 평균 풀이시간</span>
-          <strong>{{ diagnosis_comparison.time.change_label }}</strong>
+        <article class="improvement-card time {{ diagnosis_comparison.time.tone }}">
+          <div class="improvement-main">
+            <i class="improvement-icon time"><img src="{% static 'diagnosis/assets/time.png' %}" alt="" /></i>
+            <div><span>이전 진단평가 대비 문제당 평균 풀이시간</span><strong class="comparison-change-text">{{ diagnosis_comparison.time.change_label }}</strong></div>
+          </div>
           <p>{{ diagnosis_comparison.time.diagnosis_label }} 문제당 {{ diagnosis_comparison.time.diagnosis_time }} → {{ diagnosis_comparison.time.current_label }} 문제당 {{ diagnosis_comparison.time.current_time }}</p>
         </article>
       {% endif %}
@@ -80,9 +84,8 @@
           {% for item in weakness_summary.items %}
             <div class="weak-item {{ item.status_class }}">
               <span>{{ forloop.counter }}</span>
-              <strong>{{ item.label }}{% if item.trend_label %} · {{ item.trend_label }}{% endif %}</strong>
-              <div class="weak-bar"><i style="width: {{ item.bar_ratio }}%;"></i></div>
-              <em>최근 {{ item.total }}문제 중 {{ item.wrong }}오답</em>
+              <strong>{{ item.label }}</strong>
+              <em>{{ item.bar_ratio }}%</em>
             </div>
           {% empty %}
             <div class="empty">
@@ -109,12 +112,8 @@
                   <i class="donut-type-chart"></i>
                   <span class="donut-type-label">
                     {{ item.label }}
-                    <small>{{ item.wrong }}/{{ item.total }} 오답</small>
                   </span>
                   <strong>{{ item.rate }}%</strong>
-                  <div class="donut-rate-bar" aria-hidden="true">
-                    <b style="width: {{ item.rate }}%"></b>
-                  </div>
                 </li>
               {% endfor %}
             {% endif %}
@@ -131,10 +130,11 @@
     <section class="bottom-grid">
       <section class="panel planner-panel" aria-label="학습 플래너">
         <div class="panel-heading planner-heading">
-          <div>
-            <span class="section-mark"></span>
-            <h2>학습플래너</h2>
+          <div class="planner-title-copy">
+            <h2>학습 플래너</h2>
+            <p>계획을 세우고, 꾸준히 실천해요.</p>
           </div>
+          <img class="planner-flower" src="{% static 'chatbot/assets/chat-floral.png' %}" alt="" aria-hidden="true" />
           {% if planner_summary.can_create_plan %}
             <div class="planner-header-actions">
               <form
@@ -152,34 +152,38 @@
         </div>
 
         <section class="planner-progress-summary" aria-label="학습계획 달성률">
-          <div>
-            <span>계획 달성률</span>
-            <strong>{{ planner_summary.progress.completionPercent }}%</strong>
-          </div>
+          <span>이번 달 학습 진행률</span>
           <div class="planner-progress-meter" aria-label="현재 계획 달성률 {{ planner_summary.progress.completionPercent }}%">
             <i style="width: {{ planner_summary.progress.completionPercent }}%"></i>
           </div>
-          <p>{{ planner_summary.progress.achievedCount }}/{{ planner_summary.progress.targetCount }}문항 달성 · 앞으로 {{ planner_summary.progress.remainingCount }}문항</p>
+          <strong>{{ planner_summary.progress.completionPercent }}%</strong>
+          <p>{{ planner_summary.progress.achievedCount }} / {{ planner_summary.progress.targetCount }}문항</p>
         </section>
 
         <div class="planner-board">
           <section class="planner-calendar" aria-label="월간 학습 달력">
             <div class="planner-month">
-              <button id="prevPlannerMonth" type="button" aria-label="이전 달">‹</button>
+              <button class="wrong-rate-arrow" id="prevPlannerMonth" type="button" aria-label="이전 달">‹</button>
               <strong id="plannerMonthLabel">{{ planner_summary.month_label }}</strong>
-              <button id="nextPlannerMonth" type="button" aria-label="다음 달">›</button>
+              <button class="wrong-rate-arrow" id="nextPlannerMonth" type="button" aria-label="다음 달">›</button>
             </div>
             <div class="calendar-week labels"><span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span></div>
             <div class="planner-calendar-grid" id="plannerCalendarGrid"></div>
+            <div class="planner-calendar-legend" aria-label="달력 표시 안내">
+              <span><i class="planned-dot"></i>학습 계획일</span>
+              <span><i class="today-dot"></i>오늘</span>
+              <span><i></i>미계획일</span>
+            </div>
           </section>
 
           <section class="planner-day" aria-label="선택 날짜 학습 일정">
             <div class="planner-day-top">
               <div>
-                <span id="plannerDayKicker">오늘의 계획</span>
+                <span id="plannerDayKicker">선택한 날짜</span>
                 <strong id="plannerDayLabel">{{ planner_summary.day_label }}</strong>
               </div>
               <div class="planner-day-actions">
+                <button class="planner-date-change" id="plannerDateChange" type="button">학습일 변경</button>
                 {% if planner_summary.show_add_extra_study %}
                   <button
                     class="planner-extra"
@@ -241,6 +245,7 @@
                 </article>
               {% endfor %}
             </div>
+            <div class="planner-note"><strong>꾸준함이 실력을 만듭니다.</strong><span>오늘도 함께 성장해요!</span></div>
           </section>
         </div>
       </section>
@@ -257,6 +262,7 @@
     const createPlanForm = document.getElementById("createPlanForm");
     const plannerCalendarGrid = document.getElementById("plannerCalendarGrid");
     const plannerMonthLabel = document.getElementById("plannerMonthLabel");
+    const plannerDateChange = document.getElementById("plannerDateChange");
     const prevPlannerMonth = document.getElementById("prevPlannerMonth");
     const nextPlannerMonth = document.getElementById("nextPlannerMonth");
     const plannerDayKicker = document.getElementById("plannerDayKicker");
@@ -271,6 +277,9 @@
     const completedKeys = new Set(plannerData.completedKeys || []);
     const plannedKeys = new Set(plannerData.plannedKeys || []);
     const progressByDate = plannerData.progressByDate || {};
+    plannerDateChange?.addEventListener("click", () => {
+      document.querySelector(".planner-calendar button.selected")?.focus();
+    });
     const getCookie = (name) => {
       const cookies = document.cookie ? document.cookie.split("; ") : [];
       for (const cookie of cookies) {
@@ -477,16 +486,16 @@
 
     const renderPlannerLessons = () => {
       const [yearValue, monthValue, dayValue] = selectedPlannerKey.split("-").map(Number);
-      plannerDayKicker.textContent = "오늘의 계획";
+      plannerDayKicker.textContent = "선택한 날짜";
       let emptyDescription = "오늘 표시할 일정 없음";
       if (selectedPlannerKey < todayKey) {
-        plannerDayKicker.textContent = "지난 계획";
+        emptyDescription = "지난 날짜의 학습 계획입니다";
       }
       if (selectedPlannerKey > todayKey) {
-        plannerDayKicker.textContent = "계획 없음";
         emptyDescription = "예정된 계획은 당일에 보여드려요";
       }
-      plannerDayLabel.textContent = `${String(monthValue).padStart(2, "0")}월 ${String(dayValue).padStart(2, "0")}일`;
+      const weekday = ["일", "월", "화", "수", "목", "금", "토"][new Date(yearValue, monthValue - 1, dayValue).getDay()];
+      plannerDayLabel.textContent = `${String(monthValue).padStart(2, "0")}월 ${String(dayValue).padStart(2, "0")}일 (${weekday})`;
       if (addExtraStudy) {
         addExtraStudy.disabled = !canAddExtraStudy || selectedPlannerKey !== todayKey;
         let disabledMessage = "";
