@@ -5,6 +5,7 @@ import csv
 import re
 from collections import defaultdict
 from pathlib import Path
+from urllib.parse import urlparse
 
 from neo4j_common import require_file, resolve_import_dir, resolve_project_root
 
@@ -20,6 +21,8 @@ def build_default_paths(script_path):
         "canonical_path": import_dir / "nodes" / "canonical_entities.csv",
         "nodes_dir": import_dir / "nodes",
         "relations_dir": import_dir / "relations",
+        "source_url_path": import_dir / "nodes" / "source_urls.csv",
+        "related_content_path": neo4j_dir / "staging" / "image_related_content.csv",
         "review_path": neo4j_dir
         / "staging"
         / "source_image_entity_mapping_review.csv",
@@ -50,6 +53,16 @@ def parse_args(default_paths):
         "--relations-dir",
         type=Path,
         default=default_paths["relations_dir"],
+    )
+    parser.add_argument(
+        "--source-url-path",
+        type=Path,
+        default=default_paths["source_url_path"],
+    )
+    parser.add_argument(
+        "--related-content-path",
+        type=Path,
+        default=default_paths["related_content_path"],
     )
     parser.add_argument(
         "--review-path",
@@ -281,7 +294,6 @@ def build_source_image_row(image_row, source_config, project_root):
         "image_source": image_row[source_config["source_column"]],
         "usage_condition": image_row[source_config["usage_condition_column"]],
         "keywords": image_row[source_config["keywords_column"]],
-        "related_content": image_row[source_config["related_content_column"]],
         "thumbnail_url": image_row[source_config["thumbnail_url_column"]],
         "original_url": image_row[source_config["original_url_column"]],
         "saved_file": saved_file,
@@ -410,6 +422,174 @@ def build_graph_rows(
     return source_image_rows, depicts_rows, review_rows
 
 
+def read_related_content(related_content_path):
+    fieldnames, rows = read_csv_rows(
+        related_content_path,
+        "Image related content staging",
+    )
+    required_columns = {
+        "source_image_eid",
+        "content_title",
+        "content_collection",
+        "url",
+    }
+    missing_columns = sorted(required_columns - fieldnames)
+
+    if len(missing_columns) > 0:
+        raise ValueError(
+            "Image related content staging 필수 컬럼이 없습니다: "
+            + ", ".join(missing_columns)
+        )
+
+    relation_keys = set()
+
+    for row_number, row in enumerate(rows, start=2):
+        missing_values = sorted(
+            column_name
+            for column_name in required_columns
+            if row[column_name] == ""
+        )
+
+        if len(missing_values) > 0:
+            raise ValueError(
+                "Image related content staging 필수값이 비어 있습니다: "
+                f"row={row_number}, columns={','.join(missing_values)}"
+            )
+
+        parsed_url = urlparse(row["url"])
+
+        if (
+            parsed_url.scheme not in {"http", "https"}
+            or parsed_url.netloc == ""
+            or re.search(r"\s", row["url"]) is not None
+        ):
+            raise ValueError(
+                "Image related content staging URL이 올바르지 않습니다: "
+                f"row={row_number}, value={row['url']}"
+            )
+
+        relation_key = (row["source_image_eid"], row["url"])
+
+        if relation_key in relation_keys:
+            raise ValueError(
+                "Image related content staging 관계가 중복되었습니다: "
+                f"source_image_eid={row['source_image_eid']}, url={row['url']}"
+            )
+
+        relation_keys.add(relation_key)
+
+    return rows
+
+
+def read_source_urls(source_url_path):
+    fieldnames, rows = read_csv_rows(source_url_path, "SourceUrl nodes")
+    required_columns = {"source_url_id", "url"}
+    missing_columns = sorted(required_columns - fieldnames)
+
+    if len(missing_columns) > 0:
+        raise ValueError(
+            "SourceUrl 필수 컬럼이 없습니다: " + ", ".join(missing_columns)
+        )
+
+    source_url_id_by_url = {}
+    source_url_ids = set()
+
+    for row in rows:
+        source_url_id = row["source_url_id"]
+        url = row["url"]
+
+        if source_url_id == "" or url == "":
+            raise ValueError("SourceUrl ID 또는 URL이 비어 있습니다.")
+
+        if url in source_url_id_by_url:
+            raise ValueError(f"SourceUrl URL이 중복되었습니다: {url}")
+
+        if source_url_id in source_url_ids:
+            raise ValueError(f"SourceUrl ID가 중복되었습니다: {source_url_id}")
+
+        source_url_ids.add(source_url_id)
+        source_url_id_by_url[url] = source_url_id
+
+    return source_url_id_by_url
+
+
+def build_related_content_relations(
+    image_rows,
+    source_image_rows,
+    source_config,
+    related_content_rows,
+    source_url_id_by_url,
+):
+    source_image_id_by_eid = {
+        row["source_image_eid"]: row["source_image_id"]
+        for row in source_image_rows
+    }
+    expected_counts = {}
+
+    for image_row in image_rows:
+        source_image_eid = image_row[source_config["image_id_column"]]
+        raw_value = image_row[source_config["related_content_column"]]
+        expected_counts[source_image_eid] = len(
+            [line for line in raw_value.splitlines() if line.strip() != ""]
+        )
+
+    actual_counts = defaultdict(int)
+    relation_rows = []
+
+    for row in related_content_rows:
+        source_image_eid = row["source_image_eid"]
+        url = row["url"]
+        source_image_id = source_image_id_by_eid.get(source_image_eid)
+        source_url_id = source_url_id_by_url.get(url)
+
+        if source_image_id is None:
+            raise ValueError(
+                "Image related content staging의 SourceImage가 없습니다: "
+                f"{source_image_eid}"
+            )
+
+        if source_url_id is None:
+            raise ValueError(
+                "Image related content staging의 SourceUrl이 없습니다: "
+                f"{url}"
+            )
+
+        actual_counts[source_image_eid] += 1
+        relation_rows.append(
+            {
+                "source_image_id": source_image_id,
+                "source_url_id": source_url_id,
+                "relation_type": "HAS_RELATED_CONTENT",
+                "content_title": row["content_title"],
+                "content_collection": row["content_collection"],
+                "mapping_method": "SOURCE_DECLARED_URL",
+                "review_status": "SOURCE_ANCHORED",
+            }
+        )
+
+    count_mismatches = [
+        (
+            source_image_eid,
+            expected_count,
+            actual_counts.get(source_image_eid, 0),
+        )
+        for source_image_eid, expected_count in expected_counts.items()
+        if expected_count != actual_counts.get(source_image_eid, 0)
+    ]
+
+    if len(count_mismatches) > 0:
+        mismatch_text = "; ".join(
+            f"{source_image_eid}: raw={expected_count}, staging={actual_count}"
+            for source_image_eid, expected_count, actual_count in count_mismatches[:10]
+        )
+        raise ValueError(
+            "이미지 관련콘텐츠 원천과 staging 건수가 일치하지 않습니다: "
+            + mismatch_text
+        )
+
+    return relation_rows
+
+
 def save_rows(rows, output_path, fieldnames):
     output_path.parent.mkdir(parents=True, exist_ok=True)
     temporary_path = output_path.with_suffix(f"{output_path.suffix}.tmp")
@@ -445,6 +625,8 @@ def main():
     )
     overrides_by_eid = read_mapping_overrides(args.override_seed_path)
     image_rows = read_image_records(project_root, source_config)
+    related_content_rows = read_related_content(args.related_content_path)
+    source_url_id_by_url = read_source_urls(args.source_url_path)
     source_image_rows, depicts_rows, review_rows = build_graph_rows(
         image_rows,
         source_config,
@@ -453,8 +635,18 @@ def main():
         canonical_by_title,
         overrides_by_eid,
     )
+    related_content_relation_rows = build_related_content_relations(
+        image_rows,
+        source_image_rows,
+        source_config,
+        related_content_rows,
+        source_url_id_by_url,
+    )
     source_image_path = args.nodes_dir / "source_images.csv"
     depicts_path = args.relations_dir / "source_image_depicts_entity.csv"
+    related_content_path = (
+        args.relations_dir / "source_image_has_related_content.csv"
+    )
 
     if args.save:
         save_rows(
@@ -476,12 +668,24 @@ def main():
                 "image_source",
                 "usage_condition",
                 "keywords",
-                "related_content",
                 "thumbnail_url",
                 "original_url",
                 "saved_file",
                 "local_file_available",
                 "detail_url",
+                "review_status",
+            ],
+        )
+        save_rows(
+            related_content_relation_rows,
+            related_content_path,
+            [
+                "source_image_id",
+                "source_url_id",
+                "relation_type",
+                "content_title",
+                "content_collection",
+                "mapping_method",
                 "review_status",
             ],
         )
@@ -514,6 +718,10 @@ def main():
 
     print(f"source_images.csv: {len(source_image_rows)} rows")
     print(f"source_image_depicts_entity.csv: {len(depicts_rows)} rows")
+    print(
+        "source_image_has_related_content.csv: "
+        f"{len(related_content_relation_rows)} rows"
+    )
     print(f"source_image_entity_mapping_review.csv: {len(review_rows)} rows")
 
     if not args.save:

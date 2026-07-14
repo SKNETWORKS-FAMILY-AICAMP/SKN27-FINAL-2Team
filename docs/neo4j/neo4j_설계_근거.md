@@ -1,5 +1,13 @@
 ﻿# Neo4j 설계 근거
 
+> 문서 상태: `CURRENT-ADR`
+> 확인일: 2026-07-14
+> 현행 구현과 목표 설계를 혼동하지 않는다. 현행 상태는 [README.md](./README.md),
+> 목표 구조는 [neo4j_지식그래프_재설계안.md](./neo4j_지식그래프_재설계안.md)를 따른다.
+> 최신 생성 검증: seed 31개, node CSV 26개, relationship CSV 55개,
+> preload 114 + golden 21 = QA 135/135 PASS. completion manifest와 final 승격 완료,
+> LIVE Neo4j 미적용.
+
 노드·관계를 왜 그렇게 설계했는지(1부)와 사전·매핑 파일의 상세 설계(2부)를 한 문서로 관리한다.
 (구 neo4j_design_decisions_detail.md + neo4j_dictionary_design.md 통합)
 
@@ -23,6 +31,7 @@
 | 자주 쓰는 조회 경로는 전처리에서 펼친다 | 시대, 주제, 검색 태그처럼 서비스가 자주 쓰는 축은 1-hop 관계로 물리화한다. |
 | 파생 관계에는 근거를 남긴다 | SearchTag, Era, Theme 같은 파생 관계는 `match_source`, `source_detail` 등으로 왜 생겼는지 추적 가능해야 한다. |
 | 애매한 연결은 공백으로 둔다 | 나중에 seed로 보강할 수 있는 누락보다, 한 번 들어가면 여러 파생 관계로 퍼지는 오연결이 더 위험하다. |
+| 노드는 자기 사실만 소유한다 | 다른 개체를 가리키는 단순 참조는 typed edge, 시기·역할·지역·근거가 필요한 복합 명제는 `Fact`로 표현한다. 원문 텍스트와 리니지 메타는 예외로 보존한다. |
 
 ---
 
@@ -46,6 +55,12 @@
 용어명 중에는 실제 인물이나 사건과 같은 이름이 있지만, 모든 Term이 Person/Event는 아니다.
 `선조`처럼 인물명일 수도 있고 일반 명사일 수도 있으며, `권도`처럼 같은 이름으로 여러 설명이 섞일 수도 있다.
 따라서 Term은 독립 노드로 유지하고, 실제 인물/사건을 가리키는 경우에만 `REFERS_TO`를 만든다.
+
+`topterm_id`는 Term 계층의 부모 ID가 아니다. 원천에서 17개 값만 가지는 최상위
+분류 코드이며, `term_lk`의 17개 루트 그룹과 대응한다. 따라서 Term→Term 엣지를 만들지
+않고 정규화 원천에만 남기며 최신 `Term` node CSV에서는 제거한다. 실제 카테고리 계층은
+`term_lk`를 분해한 leaf `HAS_CATEGORY`와 `SUBCATEGORY_OF`가 소유한다. 이 값은
+`HAS_CATEGORY` 루트 정합 검증에 활용할 수 있지만 현행 QA에는 아직 구현되어 있지 않다.
 
 ### 1.2 Event
 
@@ -262,7 +277,8 @@ Person 별칭은 `PersonAlias` 출처로 분리하고, Event/Term에서 Person�
 
 ### 4.2 SourceUrl
 
-`SourceUrl`은 사건 URL과 인물 상세 URL을 관리하는 출처 노드다.
+`SourceUrl`은 사건 URL, 인물 상세 URL, 이미지 원천이 명시한 관련 콘텐츠 URL을 관리하는
+출처 노드다.
 URL 문자열, 출처 타입, RAG 수집 대상 여부, 수집 상태를 관리할 수 있다.
 
 이 노드가 필요한 이유는 출처가 단순 속성이 아니라 RAG 수집과 답변 근거 표시의 대상이기 때문이다.
@@ -273,7 +289,15 @@ URL을 노드로 두면 여러 Event/Person에서 같은 출처를 공유할 수
 
 버린 대안은 모든 URL을 SourceUrl 노드로 승격하는 방식이다.
 `person_relations.evidence_url`은 많은 인물 관계가 같은 문헌/목록 URL을 공유할 수 있어 노드로 만들면 과도한 허브가 된다.
-그래서 사건 URL과 인물 상세 URL은 `SourceUrl` 노드로 만들고, 인물 관계 근거 URL은 `RELATED_TO.evidence_url` 속성으로만 보존한다.
+그래서 사건 URL, 인물 상세 URL, 이미지 관련 콘텐츠 URL은 `SourceUrl` 노드로 만들고,
+이미지는 `HAS_RELATED_CONTENT`로 연결한다. 인물 관계 근거 URL은
+typed 인물 관계 또는 catch-all `RELATED_TO`의 `evidence_url` 속성으로 보존한다.
+
+`SourceImage.related_content` 원문은 이미지 자체의 사실이 아니라
+`제목 (콘텐츠군) | URL` 형식의 외부 개체 참조다. 노드 속성으로 중복 보존하지 않고
+staging에서 구조화해 관계로 승격한다. 이 관계는 “그 이미지가 무엇을 묘사하는가”라는
+`DEPICTS`와 다르다. `DEPICTS`는 이미지 제목 또는 사람이 승인한 override만 근거로 삼고,
+관련 콘텐츠 문자열을 실물·그림 판정에 사용하지 않는다.
 
 ### 4.3 EventGroup
 
@@ -289,6 +313,11 @@ URL을 노드로 두면 여러 Event/Person에서 같은 출처를 공유할 수
 버린 대안은 Event끼리 직접 `RELATED_EVENT`로만 연결하는 방식이다.
 직접 연결만 있으면 같은 사건군 전체를 찾기 위해 여러 edge를 따라야 하고, 사건군 자체의 이름과 속성을 붙이기 어렵다.
 `EventGroup`을 두면 묶음 단위를 노드로 다룰 수 있다.
+
+원천 `related_event_name`을 Term 후보로 해소할 때도 개별 Event마다 같은 연결을 반복하지
+않는다. 먼저 `PART_OF_EVENT_GROUP`으로 사건군을 만든 뒤, 사건군 이름과 유일하게 일치한
+Term만 `EventGroup - HAS_TERM_CANDIDATE -> Term`으로 연결한다. 이 관계는
+`AUTO_CANDIDATE`, `answer_eligible=N`인 검수 후보이며 사건 동일성이나 정답 근거가 아니다.
 
 ---
 
@@ -309,6 +338,7 @@ URL을 노드로 두면 여러 Event/Person에서 같은 출처를 공유할 수
 | `MAPPED_TO_CATEGORY` | SourceEventCategory와 CanonicalCategory의 crosswalk | 이벤트 분류와 용어 카테고리의 연결 기준이 코드나 쿼리에 흩어진다. | 서로 다른 분류 체계의 연결은 seed/mapping 관계로만 관리한다. |
 | `HAS_EVENT_FACET` | Event를 사건 의미 facet에 연결 | 원본 사건 분류가 서비스 의미 축을 그대로 떠안아 검색 의미가 흔들린다. | 원본 분류와 의미 facet을 분리해 원본 보존과 서비스 필터를 동시에 만족한다. |
 | `IN_PERIOD` | Term/Event의 원천 시대 표기를 보존 | 원천 시대가 무엇이었는지 추적할 수 없다. | 원천 시대 표기는 `Period`에 남기고, 표준 시대는 별도 `Era`로 연결한다. |
+| `SUBPERIOD_OF` | 세부 Period를 상위 Period에 연결 | 고려전기·고려후기 같은 세부 시기가 평면 문자열로 남는다. | 원천 이름이 유일하게 해소될 때만 자식→부모 계층으로 연결하고 순환을 금지한다. |
 | `PART_OF_ERA` | Period를 표준 Era로 통합 | 고려/고려시대/고려전기 같은 변형을 매번 쿼리에서 묶어야 한다. | 표기 변형 흡수는 seed 기반 관계로 관리한다. |
 | `IN_ERA` | Term/Event/Person을 표준 시대로 직접 연결 | 서비스 시대 필터가 매번 2-hop 이상 경로를 타야 한다. | 원천 경로는 유지하고, 조회용 직통 관계를 파생 산출물로 만든다. |
 | `HAS_THEME` | Term/Event/Person/Category를 서비스 주제에 연결 | 사용자에게 카테고리 400개를 직접 노출하거나 주제 필터를 코드에서 계산해야 한다. | Theme은 서비스가 통제하는 고정 축이고, 원천 매핑은 Category-Theme 관계로 남긴다. |
@@ -318,11 +348,14 @@ URL을 노드로 두면 여러 Event/Person에서 같은 출처를 공유할 수
 | `ABOUT_ECONOMIC_DOMAIN` | 경제 분야 의미 축을 연결 | 경제·산업 하위 분야 검색이 중간 카테고리 문자열에 묻힌다. | 경제 분야는 서비스 필터가 될 수 있으므로 별도 축으로 분리한다. |
 | `ABOUT_TAXONOMY_FACET` | 중간 카테고리 facet을 연결 | leaf category 원칙 때문에 중간 단위 검색이 비어버린다. | 중간 경로 검색은 `TaxonomyFacet`으로 보완한다. |
 | `INVOLVED_IN` | Person과 Event 참여 관계를 연결 | 인물이 어떤 사건과 연결되는지 그래프 탐색이 불가능하다. | 원본 참여 행의 식별자를 보존해 같은 Person-Event라도 역할/근거가 다른 기록을 뭉개지 않는다. |
-| `RELATED_TO` | Person 간 관계를 연결 | 가족, 교유, 사제 관계가 문자열로 흩어져 관계망 탐색이 어렵다. | 관계 타입은 하나로 고정하고 의미는 속성으로 관리한다. |
+| typed 인물 관계 | Person 간 가족·혼인·사제·사회 관계를 연결 | 유형이 속성에만 있으면 타입 경로 질의와 의미별 hop이 불편하다. | `normalized_relation_type`의 승인 목록은 typed edge로 적재하고, 미등록 유형만 `RELATED_TO` catch-all로 보존한다. |
 | `REFERS_TO` | Term이 실제 Person/Event를 가리키는 강한 연결 | 용어 세계와 인물/사건 세계가 이어지지 않는다. | 오연결 위험이 커서 이름만으로 만들지 않고 보수적으로 생성한다. |
 | `MENTIONS_PERSON` | Term 설명문에 언급된 Person을 연결 | 설명문 맥락 확장과 관련 인물 후보 탐색이 어렵다. | `REFERS_TO`보다 약한 관계로 분리해 정답 실체 연결과 혼동하지 않게 한다. |
+| `HAS_TERM_CANDIDATE` | EventGroup 이름을 유일 Term 후보에 연결 | 개별 Event마다 같은 사건군 이름을 Term에 반복 연결하면 분포가 부풀고 사건 동일성처럼 보인다. | EventGroup 단위 후보만 만들고 `answer_eligible=N`으로 두어 canonical 사건 사실이나 정답 근거로 사용하지 않는다. |
+| `STARTED_DURING_REIGN` / `ENDED_DURING_REIGN` | 사건 시작·종료 시점을 Reign에 연결 | 왕호 문자열만으로는 재위·국가·연도를 따라갈 수 없다. | 왕호가 유일하거나 사건 연도로 동명 왕호가 하나로 해소될 때만 연결하고 `match_method`를 남긴다. |
 | `PART_OF_EVENT_GROUP` | Event를 사건군에 연결 | 연속 사건이나 전쟁 흐름을 묶어 조회하기 어렵다. | 사건군 자체를 노드화해 전후 맥락과 흐름형 문제 생성을 지원한다. |
 | `HAS_SOURCE_URL` | Event/Person을 출처 URL에 연결 | RAG 수집 상태와 출처 근거를 URL 단위로 관리하기 어렵다. | RAG 후보가 되는 URL만 노드로 승격한다. |
+| `HAS_RELATED_CONTENT` | SourceImage를 원천이 안내한 별도 콘텐츠 URL에 연결 | 관련 콘텐츠가 이미지의 묘사 대상처럼 섞여 실물과 그림을 구분하기 어려워진다. | 구조화 URL 참조로만 표현하고 `DEPICTS`와 근거·의미를 분리한다. |
 | `HAS_SEARCH_TAG` | Term/Event/Person을 통합 검색 태그에 연결 | 키워드 검색이 여러 축의 OR 조건으로 길어진다. | 의도된 비정규화이므로 출처 속성을 반드시 남기고 조회 시 `DISTINCT`를 쓴다. |
 
 ### 5.1 REFERS_TO와 MENTIONS_PERSON을 분리한 이유
@@ -338,18 +371,29 @@ URL을 노드로 두면 여러 Event/Person에서 같은 출처를 공유할 수
 Person SearchTag 상속, 주제 상속, 관련 노드 확장, 문제 후보 추천에서 모두 강한 근거처럼 쓰일 수 있다.
 그래서 이름/한자/생몰년이 맞는 유일 후보, 관계망 단서가 있는 후보, 사람이 승인한 후보만 연결한다.
 
-### 5.2 RELATED_TO를 하나의 관계 타입으로 둔 이유
+### 5.2 인물 관계를 typed edge로 적재하는 이유
 
-인물 관계는 `부`, `자`, `형제`, `교유`, `스승`, `제자`처럼 원문 유형이 다양하다.
-이걸 `HAS_FATHER`, `HAS_CHILD`, `SIBLING_OF`처럼 관계 타입으로 쪼개면 스키마가 원문 값의 품질에 끌려간다.
-새 관계명이 추가될 때마다 import Cypher와 서비스 쿼리를 고쳐야 한다.
+초기 MVP는 인물 관계를 `RELATED_TO` 하나로 적재하고 실제 의미를 관계 속성에
+보존했다. 원천 유형이 흔들려도 스키마를 유지하기 쉬운 장점은 있었지만,
+"아버지 관계만 따라가기" 같은 질의가 타입 패턴이 아니라 속성 필터에 의존하고
+문제 생성용 공유 경로도 납작해졌다.
 
-그래서 관계 타입은 `RELATED_TO` 하나로 고정하고, 실제 의미는 관계 속성에 보존한다.
-`raw_relation_type`, `normalized_relation_type`, `relation_group`, `direction_rule`, `is_symmetric`, `inverse_relation_type`, `evidence_url`을 속성으로 둔다.
-이 구조에서는 관계 유형 정제가 필요할 때 seed만 수정하면 되고, Neo4j 스키마는 흔들리지 않는다.
+현재 정책은 **원천 CSV는 하나로 유지하고 적재 타입만 분리**하는 방식이다.
+`relation_type_seed.csv`의 `neo4j_rel_type`이 실제 관계 타입의 단일 기준이고,
+`relation_type_dictionary.csv`가 이를 정규화명·방향·역관계·대칭 여부와 함께 전달한다.
+승인된 유형은 `HAS_FATHER`, `HAS_CHILD`, `SIBLING_OF`,
+`HAS_TEACHER`, `HAS_STUDENT`, `ASSOCIATED_WITH` 등의 typed edge로 적재한다.
+`raw_relation_type`, `relation_group`, `direction_rule`, `is_symmetric`,
+`inverse_relation_type`, `evidence_url`은 추적과 검증을 위해 관계 속성에도 보존한다.
 
-없으면 인물 관계 검색은 관계 타입의 폭발이나 문자열 조건문에 의존한다.
-대칭 관계도 양방향 중복으로 남기 쉬우므로, 현재는 대칭 관계를 무방향 쌍 기준 한 방향만 저장하고 조회 시 무방향 패턴을 사용한다.
+목록 밖 유형은 유실시키지 않고 `RELATED_TO` catch-all로 적재한다. 다만 catch-all이
+1건이라도 생기면 정상 완료로 보지 않고 seed와 import type을 검토하는 QA 신호로 쓴다.
+대칭 관계는 무방향 쌍 기준 한 방향만 저장하고 조회할 때 무방향 패턴을 사용한다.
+양방향 원천 행을 합칠 때 서로 다른 비어 있지 않은 `evidence_url`을 정렬·중복 제거해
+모두 보존한다. `related_count`는 관계 강도가 아니라 대상 쪽 원천 집계일 가능성이 있어
+최종 관계에서 제거한다. Person의 `core_relation_degree`는 원천 행 수가 아니라 최종
+`INVOLVED_IN`과 typed Person-Person 관계 endpoint에서 다시 계산한다.
+이 정책은 타입 폭발을 막으면서도 안정된 역사 관계를 그래프의 의미 타입으로 노출한다.
 
 ### 5.3 IN_PERIOD, PART_OF_ERA, IN_ERA를 함께 둔 이유
 
@@ -394,7 +438,7 @@ SearchTag가 없으면 검색 쿼리가 길어진다.
 하지만 SearchTag만 있으면 의미가 납작해진다.
 그래서 SearchTag는 두고, `source_*` 속성으로 원래 의미 축을 추적 가능하게 만든다.
 
-### 5.6 HAS_SOURCE_URL과 RELATED_TO.evidence_url을 분리한 이유
+### 5.6 HAS_SOURCE_URL과 인물 관계의 evidence_url을 분리한 이유
 
 출처 URL 중 일부는 독립 노드가 되어야 하고, 일부는 관계 속성으로 남아야 한다.
 Event의 source URL과 Person의 detail URL은 RAG 수집 후보이므로 `SourceUrl` 노드로 승격한다.
@@ -406,7 +450,8 @@ Event의 source URL과 Person의 detail URL은 RAG 수집 후보이므로 `Sourc
 |---|---|
 | 사건 출처 URL | `Event - HAS_SOURCE_URL - SourceUrl` |
 | 인물 상세 URL | `Person - HAS_SOURCE_URL - SourceUrl` |
-| 인물 관계 근거 URL | `RELATED_TO.evidence_url` 속성 |
+| 이미지 관련 콘텐츠 URL | `SourceImage - HAS_RELATED_CONTENT - SourceUrl` |
+| 인물 관계 근거 URL | typed 인물 관계(또는 catch-all `RELATED_TO`)의 `evidence_url` 속성 |
 
 이 기준이 없으면 모든 URL을 노드로 만들어 그래프가 URL 허브 중심으로 왜곡되거나, 반대로 모든 URL을 속성으로만 묻어 RAG 수집 상태를 관리하지 못한다.
 
@@ -958,16 +1003,16 @@ date_precision = YEAR_MONTH_RANGE
 
 예시는 다음과 같다.
 
-| raw_relation_type | normalized_relation_type | relation_group | direction_rule | is_symmetric | inverse_relation_type |
-|---|---|---|---|---|---|
-| `부` | `HAS_FATHER` | `FAMILY_PARENT` | `person_to_related` | `N` | `HAS_CHILD` |
-| `자` | `HAS_CHILD` | `FAMILY_CHILD` | `person_to_related` | `N` | `HAS_PARENT` |
-| `형제` | `SIBLING_OF` | `FAMILY_SIBLING` | `undirected` | `Y` | `SIBLING_OF` |
-| `교유` | `ASSOCIATED_WITH` | `SOCIAL` | `undirected` | `Y` | `ASSOCIATED_WITH` |
-| `스승` | `HAS_TEACHER` | `SOCIAL_TEACHER` | `person_to_related` | `N` | `HAS_STUDENT` |
-| `제자` | `HAS_STUDENT` | `SOCIAL_STUDENT` | `person_to_related` | `N` | `HAS_TEACHER` |
-| `아내` | `HAS_WIFE` | `SPOUSE` | `person_to_related` | `N` | `HAS_HUSBAND` |
-| `남편` | `HAS_HUSBAND` | `SPOUSE` | `person_to_related` | `N` | `HAS_WIFE` |
+| raw_relation_type | normalized_relation_type | neo4j_rel_type | relation_group | direction_rule | is_symmetric | inverse_relation_type |
+|---|---|---|---|---|---|---|
+| `부` | `HAS_FATHER` | `HAS_FATHER` | `FAMILY_PARENT` | `person_to_related` | `N` | `HAS_CHILD` |
+| `자` | `HAS_CHILD` | `HAS_CHILD` | `FAMILY_CHILD` | `person_to_related` | `N` | `HAS_PARENT` |
+| `형제` | `SIBLING_OF` | `SIBLING_OF` | `FAMILY_SIBLING` | `undirected` | `Y` | `SIBLING_OF` |
+| `교유` | `ASSOCIATED_WITH` | `ASSOCIATED_WITH` | `SOCIAL` | `undirected` | `Y` | `ASSOCIATED_WITH` |
+| `스승` | `HAS_TEACHER` | `HAS_TEACHER` | `SOCIAL_TEACHER` | `person_to_related` | `N` | `HAS_STUDENT` |
+| `제자` | `HAS_STUDENT` | `HAS_STUDENT` | `SOCIAL_STUDENT` | `person_to_related` | `N` | `HAS_TEACHER` |
+| `아내` | `HAS_WIFE` | `HAS_WIFE` | `SPOUSE` | `person_to_related` | `N` | `HAS_HUSBAND` |
+| `남편` | `HAS_HUSBAND` | `HAS_HUSBAND` | `SPOUSE` | `person_to_related` | `N` | `HAS_WIFE` |
 
 `HAS_FATHER`와 `SIBLING_OF`는 반대 관계가 아니다. `HAS_FATHER`는 세대 관계이고, `SIBLING_OF`는 동세대 관계다.
 
@@ -980,9 +1025,10 @@ HAS_WIFE <-> HAS_HUSBAND
 SIBLING_OF <-> SIBLING_OF
 ```
 
-### 11.4 Neo4j MVP 적용 방식
+### 11.4 Neo4j 적용 방식
 
-MVP에서는 관계 타입을 너무 많이 나누지 않고 `RELATED_TO` 하나로 넣은 뒤 속성으로 정규화 의미를 유지하는 방식이 좋다.
+초기 MVP는 아래처럼 `RELATED_TO` 하나와 속성으로 정규화 의미를 유지했다.
+이 예시는 **과거 스냅샷**이며 현재 적재 정책은 5.2의 typed edge 방식이다.
 
 ```text
 (:Person)-[:RELATED_TO {
@@ -994,7 +1040,26 @@ MVP에서는 관계 타입을 너무 많이 나누지 않고 `RELATED_TO` 하나
 }]->(:Person)
 ```
 
-이렇게 하면 다음 질의가 쉬워진다.
+현재는 같은 원천 row가 다음처럼 적재된다.
+
+```text
+(:Person)-[:HAS_FATHER {
+  relation_id: "...",
+  raw_relation_type: "부",
+  normalized_relation_type: "HAS_FATHER",
+  relation_group: "FAMILY_PARENT",
+  is_symmetric: false,
+  inverse_relation_type: "HAS_CHILD",
+  evidence_url: "..."
+}]->(:Person)
+```
+
+정규화 유형이 승인 목록에 없을 때만 `RELATED_TO`로 적재하며 QA가 이를 검출한다.
+실제 import는 Neo4j 5.26의 동적 타입 문법
+`MERGE (start)-[r:$(row.relation_type)]->(target)`을 사용하므로 관계 유형마다 Cypher
+LOAD 블록을 복제하지 않는다. seed의 `neo4j_rel_type`과 CSV `relation_type`이 어긋나면
+사전 생성 또는 preload QA에서 실패한다.
+이렇게 하면 다음 질의가 관계 타입 패턴으로 명확해진다.
 
 - 가족 관계만 찾기
 - 형제 같은 동세대 관계 찾기
@@ -1010,21 +1075,24 @@ MVP에서는 관계 타입을 너무 많이 나누지 않고 `RELATED_TO` 하나
 
 `source_url_dictionary.csv`는 RAG와 출처 추적을 위한 URL 사전이다.
 
-현재 URL 사전 대상은 다음 세 가지다.
+현재 URL 사전 대상은 다음 네 가지다.
 
 ```text
 events.source_urls
 event_relations.source_urls
 person_relations.detail_url
+source_images.related_content에서 파싱한 URL
 ```
 
-`person_relations.evidence_url`은 URL 사전에 넣지 않고 `RELATED_TO.evidence_url` 관계 속성으로만 보존한다. 인물 관계 근거 URL을 `SourceUrl` 노드로 승격하면 같은 URL 하나가 많은 인물 관계를 묶는 허브가 될 수 있기 때문이다.
+`person_relations.evidence_url`은 URL 사전에 넣지 않고 typed 인물 관계 또는 catch-all
+`RELATED_TO`의 `evidence_url` 속성으로 보존한다. 인물 관계 근거 URL을 `SourceUrl`
+노드로 승격하면 같은 URL 하나가 많은 인물 관계를 묶는 허브가 될 수 있기 때문이다.
 
 URL은 그래프 구조 자체에는 필수는 아니지만, 답변의 근거와 RAG 품질에는 중요하다.
 
 ### 12.2 왜 필요한가
 
-1. 사건 URL과 인물 상세 URL의 중복을 제거한다.
+1. 사건 URL, 인물 상세 URL, 이미지 관련 콘텐츠 URL의 중복을 제거한다.
 2. URL이 어떤 테이블과 컬럼에서 왔는지 추적한다.
 3. Tavily extract 대상 URL queue로 쓸 수 있다.
 4. `Evidence`, `Source`, `DocumentChunk` 확장에 사용할 수 있다.

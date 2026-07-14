@@ -198,9 +198,11 @@ CREATE INDEX person_name_index IF NOT EXISTS
 FOR (n:Person)
 ON (n.name);
 
-CREATE INDEX person_degree_index IF NOT EXISTS
+DROP INDEX person_degree_index IF EXISTS;
+
+CREATE INDEX person_core_relation_degree_index IF NOT EXISTS
 FOR (n:Person)
-ON (n.degree);
+ON (n.core_relation_degree);
 
 CREATE INDEX canonical_category_path_index IF NOT EXISTS
 FOR (n:CanonicalCategory)

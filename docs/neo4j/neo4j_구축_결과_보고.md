@@ -1,8 +1,33 @@
 # Neo4j GraphDB 구축 결과 보고
 
-한국사 학습 챗봇의 문제 생성·개념 검색을 위해, 한국사 용어·사건·인물 데이터를 Neo4j 지식 그래프로 구축했다. 이 문서는 전처리를 어떻게 했고, 왜 그렇게 했으며, 그 결과 무엇을 얻었는지, 그리고 노드·엣지를 어떤 기준으로 설계했는지를 정리한 보고 문서다.
+> 문서 상태: `MVP-SNAPSHOT`
+> 스냅샷 범위: AKS·문화유산·이미지·비문·typed 인물 관계를 추가하기 전의 초기 기본 그래프
+> 현재 구현 판단에 사용 금지: 최신 상태는 [README.md](./README.md), 최신 스키마는
+> [neo4j_그래프_스키마_mermaid.md](./neo4j_그래프_스키마_mermaid.md)를 따른다.
 
-**최종 결과: 노드 17종 295,920건, 관계 CSV 39개 1,176,708건, 관계 타입 22종. 전처리 스크립트 1회 실행으로 전체 재현 가능.**
+한국사 학습 챗봇의 문제 생성·개념 검색을 위해, 한국사 용어·사건·인물 데이터를 Neo4j 지식 그래프로 구축했다. 이 문서는 당시 전처리를 어떻게 했고, 왜 그렇게 했으며, 그 결과 무엇을 얻었는지를 보존한 역사적 보고다.
+
+**당시 MVP 결과: 노드 17종 295,920건, 관계 CSV 39개 1,176,708건, 관계 타입 22종.**
+
+이 수치는 현재 SOURCE 또는 LIVE 수치가 아니다. 특히 이 문서의 단일 `RELATED_TO`
+정책은 현재 16개 typed 인물 관계 + catch-all 정책으로 대체됐다.
+
+2026-07-14 SOURCE/GENERATED의 핵심 차이는 다음과 같다. 전체 runner 실측 결과이며
+이 보고서의 과거 MVP 실측값을 덮어쓰지 않는다.
+
+- node CSV 26개, relationship CSV 55개
+- 인물 관계는 `relation_type_seed.neo4j_rel_type`과 Neo4j 5.26 동적 타입 LOAD를 사용
+- 대칭 인물 관계의 모든 고유 근거 URL을 병합하고 `related_count`는 제거
+- Person 중요도는 최종 코어 관계 기반 `core_relation_degree`
+- Event별 `HAS_RELATED_EVENT` 140건 대신 EventGroup의 `HAS_TERM_CANDIDATE` 18건
+- 이미지 관련 콘텐츠 URL 427개를 SourceUrl에 합류해 SourceUrl 57,239개,
+  staging과 `HAS_RELATED_CONTENT` 각각 1,720건
+- runner는 candidate build와 QA/schema 검사 후 원자적으로 최종 import를 승격
+- preload QA 114건 + golden QA 21건 = 135/135 PASS, 2026-07-14 18:14:27 KST
+  completion manifest 생성·final 승격 완료
+
+CSV 재생성과 LIVE 반영은 별도다. GENERATED CSV와 final 승격은 완료됐지만 LIVE Neo4j
+적재는 아직 수행하지 않았다.
 
 ---
 
@@ -23,7 +48,7 @@
 
 ## 2. 전처리를 어떻게 했는가
 
-### 2.1 파이프라인 구조
+### 2.1 당시 파이프라인 구조
 
 전체 전처리는 시작 파일 하나(`etl/preprocessing/neo4j/run_neo4j_preprocessing.py`)로 실행되며, 5단계 스크립트가 순서대로 돌아간다.
 Term-Person 수동 검수 후보는 graph 생성 필수 단계가 아니므로 기본 runner에 포함하지 않고, 필요할 때 `make_term_person_review.py --save`로 별도 생성한다.
@@ -134,7 +159,7 @@ raw CSV → normalized → dictionary → mapping/staging → Neo4j import CSV �
 | HAS_SEARCH_TAG | Term/Event/Person → SearchTag | 349,531 / 6,016 / 238,817 |
 | 구조 관계 | SUBCATEGORY_OF 335, MAPPED_TO_CATEGORY 45, PART_OF_ERA 23 등 | - |
 
-### 4.2 설계 결정 1 — 인물 관계는 type 하나 + 속성으로 의미 보존
+### 4.2 당시 설계 결정 1 — 인물 관계는 type 하나 + 속성으로 의미 보존
 
 인물 관계 타입을 `HAS_FATHER`, `SIBLING_OF`처럼 쪼개지 않고 전부 `RELATED_TO` 하나로 통일했다. 실제 의미(부/자/형제/교유/사제)는 `normalized_relation_type`, `relation_group`, `direction_rule`, `is_symmetric` 등 관계 속성으로 보존했다.
 
@@ -168,7 +193,7 @@ raw CSV → normalized → dictionary → mapping/staging → Neo4j import CSV �
 
 ---
 
-## 5. 적재와 검증
+## 5. 당시 적재와 검증
 
 - **적재**: `storage/neo4j/load_schema.py` 실행 한 번으로 기존 그래프 reset → 제약조건 → 노드 → 관계 → 검증 순서로 진행. `LOAD CSV + MERGE` 기반 멱등 적재라 재실행해도 안전하다.
 - **무결성**: 17개 label 전부에 ID unique constraint. 다중 근거가 정당한 관계(사건-인물 참여 등)는 MERGE 키에 원본 식별자를 포함해 중복 collapse를 방지했다.
@@ -177,7 +202,7 @@ raw CSV → normalized → dictionary → mapping/staging → Neo4j import CSV �
 
 ---
 
-## 6. 요약: 이 설계로 얻은 것
+## 6. 당시 MVP 설계로 얻은 것
 
 | 얻은 것 | 근거 |
 |---|---|
@@ -205,7 +230,7 @@ raw CSV → normalized → dictionary → mapping/staging → Neo4j import CSV �
 ## 7. 부록: 빠른 참조
 
 상세한 노드·관계별 설계 이유는 `docs/neo4j/neo4j_설계_근거.md`로 합쳤다.
-이 보고서에는 최종 import 규모를 확인하기 위한 요약만 남긴다.
+이 보고서에는 당시 MVP import 규모를 확인하기 위한 요약만 남긴다.
 
 ### 7.1 노드 요약
 

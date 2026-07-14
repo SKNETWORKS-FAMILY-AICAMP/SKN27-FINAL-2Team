@@ -294,6 +294,9 @@ def build_term_nodes(terms_data, keyword_era_seed, term_year_parse, graph_config
     )
     term_nodes = add_exam_keyword_column(term_nodes, keyword_era_seed)
 
+    # topterm_id는 원천의 최상위 대분류 코드로, HAS_CATEGORY 계층과 중복이라
+    # 노드 속성에서 제외한다 (점검 문서 "Term.topterm_id 정정" 참조).
+    # category_text·period_text는 chatbot graph_service가 검색에 사용하므로 유지한다.
     return term_nodes[
         [
             "term_id",
@@ -304,7 +307,6 @@ def build_term_nodes(terms_data, keyword_era_seed, term_year_parse, graph_config
             "period_text",
             "category_text",
             "description",
-            "topterm_id",
             "start_year",
             "end_year",
             "year_precision",
@@ -322,15 +324,14 @@ def build_category_nodes(category_dictionary):
     category_nodes = category_dictionary.copy()
     category_nodes = category_nodes.rename(columns={"category_name": "name"})
 
+    # parent_category_id/path·root_category_name은 SUBCATEGORY_OF 엣지로 표현되므로
+    # 노드 속성에서 제외한다 (docs/neo4j/neo4j_관계_정규화_점검.md 발견 4).
     return category_nodes[
         [
             "category_id",
             "name",
             "category_path",
-            "parent_category_id",
-            "parent_category_path",
             "depth",
-            "root_category_name",
             "term_count",
             "direct_term_count",
             "source",
@@ -414,6 +415,8 @@ def build_period_nodes(period_dictionary):
     period_nodes = period_dictionary.copy()
     period_nodes = period_nodes.rename(columns={"period_name": "name"})
 
+    # parent_period_name은 SUBPERIOD_OF 엣지로 표현되므로 노드 속성에서 제외한다
+    # (점검 문서 발견 4 강등 항목).
     return period_nodes[
         [
             "period_id",
@@ -423,7 +426,6 @@ def build_period_nodes(period_dictionary):
             "period_order",
             "start_year",
             "end_year",
-            "parent_period_name",
             "is_range_expansion_candidate",
             "term_count",
             "event_count",
@@ -476,13 +478,13 @@ def build_country_nodes(country_dictionary):
     country_nodes = country_dictionary.copy()
     country_nodes = country_nodes.rename(columns={"country_name": "name"})
 
+    # canonical_category_id/path는 (CanonicalCategory)-[:ABOUT_COUNTRY]-> 엣지로
+    # 표현되므로 노드 속성에서 제외한다 (점검 문서 발견 4).
     return country_nodes[
         [
             "country_id",
             "name",
             "country_type",
-            "canonical_category_id",
-            "canonical_category_path",
             "aliases",
             "review_status",
             "note",
@@ -495,15 +497,13 @@ def build_region_nodes(region_dictionary):
     region_nodes = region_dictionary.copy()
     region_nodes = region_nodes.rename(columns={"region_name": "name"})
 
+    # parent_region_id/name은 SUBREGION_OF, canonical_category_id/path는
+    # ABOUT_REGION 엣지로 표현되므로 노드 속성에서 제외한다 (점검 문서 발견 4).
     return region_nodes[
         [
             "region_id",
             "name",
             "region_type",
-            "canonical_category_id",
-            "canonical_category_path",
-            "parent_region_id",
-            "parent_region_name",
             "aliases",
             "review_status",
             "note",
@@ -518,13 +518,13 @@ def build_economic_domain_nodes(economic_domain_dictionary):
         columns={"economic_domain_name": "name"}
     )
 
+    # canonical_category_id/path는 ABOUT_ECONOMIC_DOMAIN 엣지로 표현되므로
+    # 노드 속성에서 제외한다 (점검 문서 발견 4).
     return economic_domain_nodes[
         [
             "economic_domain_id",
             "name",
             "domain_type",
-            "canonical_category_id",
-            "canonical_category_path",
             "review_status",
             "note",
             "source",
@@ -538,6 +538,8 @@ def build_taxonomy_facet_nodes(taxonomy_facet_dictionary):
         columns={"taxonomy_facet_name": "name"}
     )
 
+    # canonical_category_id는 ABOUT_TAXONOMY_FACET 엣지로 표현되므로 노드 속성에서
+    # 제외한다. root_category_name·taxonomy_facet_path는 facet 자신의 경로 정보라 유지.
     return taxonomy_facet_nodes[
         [
             "taxonomy_facet_id",
@@ -545,7 +547,6 @@ def build_taxonomy_facet_nodes(taxonomy_facet_dictionary):
             "taxonomy_facet_path",
             "taxonomy_facet_depth",
             "root_category_name",
-            "canonical_category_id",
             "child_category_count",
             "descendant_category_count",
             "term_count",
@@ -956,8 +957,6 @@ def build_person_nodes(event_relations_data, person_relations_data):
     ]
     people_data = pd.concat(people_parts, ignore_index=True)
     people_data = people_data.dropna(subset=["person_id"]).copy()
-    degree_lookup = build_person_degree_lookup(event_relations_data, person_relations_data)
-
     person_nodes = (
         people_data
         .groupby("person_id", dropna=False)
@@ -975,9 +974,7 @@ def build_person_nodes(event_relations_data, person_relations_data):
         .sort_values("person_id")
         .reset_index(drop=True)
     )
-    person_nodes["degree"] = (
-        person_nodes["person_id"].map(degree_lookup).fillna(0).astype(int)
-    )
+    person_nodes["core_relation_degree"] = 0
 
     return person_nodes[
         [
@@ -987,35 +984,39 @@ def build_person_nodes(event_relations_data, person_relations_data):
             "birth_year",
             "death_year",
             "bonkwan",
-            "father_name",
+            # father_name은 HAS_FATHER 엣지로 표현되므로 노드 속성에서 제외한다
+            # (docs/neo4j/neo4j_관계_정규화_점검.md 발견 2).
             "detail_urls",
-            "degree",
+            "core_relation_degree",
             "source",
         ]
     ]
 
 
-def build_person_degree_lookup(event_relations_data, person_relations_data):
-    # 그래프에서 인물의 연결 정도를 미리 계산해 출제 우선순위나 중심 인물 후보에 쓴다.
-    degree_parts = []
-
-    if "person_id" in event_relations_data.columns:
-        degree_parts.append(event_relations_data["person_id"])
-
-    if "person_id" in person_relations_data.columns:
-        degree_parts.append(person_relations_data["person_id"])
-
-    if "related_person_id" in person_relations_data.columns:
-        degree_parts.append(person_relations_data["related_person_id"])
-
-    if len(degree_parts) == 0:
-        return {}
-
-    degree_data = pd.concat(degree_parts, ignore_index=True).dropna()
+def add_person_core_relation_degree(
+    person_nodes,
+    person_involved_in_event,
+    person_related_to_person,
+):
+    # 원천 행 수가 아니라 최종 관계 CSV에 남은 코어 관계만 집계한다.
+    degree_data = pd.concat(
+        [
+            person_involved_in_event["start_person_id"],
+            person_related_to_person["start_person_id"],
+            person_related_to_person["end_person_id"],
+        ],
+        ignore_index=True,
+    ).dropna()
     degree_data = degree_data.astype(str).str.strip()
     degree_data = degree_data[degree_data.ne("")]
+    degree_lookup = degree_data.value_counts().to_dict()
 
-    return degree_data.value_counts().to_dict()
+    result = person_nodes.copy()
+    result["core_relation_degree"] = (
+        result["person_id"].map(degree_lookup).fillna(0).astype(int)
+    )
+
+    return result
 
 
 def build_term_has_category(term_category_relation):
@@ -1224,6 +1225,30 @@ def build_canonical_category_about_country(canonical_category_country_crosswalk)
     ].drop_duplicates()
 
 
+def aggregate_category_mapping_evidence(relation_data, identity_columns):
+    """동일 의미 엣지의 여러 분류 경로를 파이프 구분 근거로 보존한다."""
+    evidence_columns = [
+        "canonical_category_id",
+        "canonical_category_path",
+        "match_type",
+    ]
+    output_columns = [*identity_columns, *evidence_columns]
+    selected_data = relation_data[output_columns].drop_duplicates()
+
+    if selected_data[evidence_columns].isna().any(axis=None):
+        raise ValueError("ABOUT 관계의 category mapping evidence가 비어 있습니다.")
+
+    selected_data = selected_data.sort_values(output_columns)
+    aggregated_data = (
+        selected_data.groupby(identity_columns, as_index=False, dropna=False)
+        .agg({column_name: "|".join for column_name in evidence_columns})
+        .sort_values(identity_columns)
+        .reset_index(drop=True)
+    )
+
+    return aggregated_data[output_columns]
+
+
 def build_term_about_country(term_has_canonical_category, canonical_category_country_crosswalk):
     relation_data = term_has_canonical_category.merge(
         canonical_category_country_crosswalk,
@@ -1239,17 +1264,15 @@ def build_term_about_country(term_has_canonical_category, canonical_category_cou
     )
     relation_data["relation_type"] = "ABOUT_COUNTRY"
 
-    return relation_data[
+    return aggregate_category_mapping_evidence(
+        relation_data,
         [
             "start_term_id",
             "end_country_id",
             "relation_type",
             "country_name",
-            "canonical_category_id",
-            "canonical_category_path",
-            "match_type",
-        ]
-    ].drop_duplicates()
+        ],
+    )
 
 
 def build_event_about_country(event_has_canonical_category, canonical_category_country_crosswalk):
@@ -1267,17 +1290,59 @@ def build_event_about_country(event_has_canonical_category, canonical_category_c
     )
     relation_data["relation_type"] = "ABOUT_COUNTRY"
 
-    return relation_data[
+    return aggregate_category_mapping_evidence(
+        relation_data,
         [
             "start_event_id",
             "end_country_id",
             "relation_type",
             "country_name",
-            "canonical_category_id",
-            "canonical_category_path",
-            "match_type",
+        ],
+    )
+
+
+def build_event_group_has_term_candidate(event_group_nodes, term_nodes):
+    """EventGroup 이름과 유일하게 일치하는 Term을 검수 후보로 연결한다."""
+    term_data = term_nodes[["term_id", "name"]].dropna(subset=["name"]).copy()
+    term_data["matched_name"] = term_data["name"].map(clean_value)
+    term_data = term_data.dropna(subset=["matched_name"])
+    term_name_counts = term_data["matched_name"].value_counts()
+    unique_term_names = term_name_counts[term_name_counts.eq(1)].index
+    unique_term_data = term_data[term_data["matched_name"].isin(unique_term_names)]
+
+    group_data = event_group_nodes[["event_group_id", "name"]].copy()
+    group_data["matched_name"] = group_data["name"].map(clean_value)
+    relation_data = group_data.merge(
+        unique_term_data[["term_id", "matched_name"]],
+        on="matched_name",
+        how="inner",
+    )
+    relation_data = relation_data.rename(
+        columns={
+            "event_group_id": "start_event_group_id",
+            "term_id": "end_term_id",
+            "name": "event_group_name",
+        }
+    )
+    relation_data["relation_type"] = "HAS_TERM_CANDIDATE"
+    relation_data["match_method"] = "UNIQUE_TERM_NAME"
+    relation_data["review_status"] = "AUTO_CANDIDATE"
+    relation_data["answer_eligible"] = "N"
+    relation_data = relation_data.sort_values(
+        ["start_event_group_id", "end_term_id"]
+    ).reset_index(drop=True)
+
+    return relation_data[
+        [
+            "start_event_group_id",
+            "end_term_id",
+            "relation_type",
+            "event_group_name",
+            "match_method",
+            "review_status",
+            "answer_eligible",
         ]
-    ].drop_duplicates()
+    ]
 
 
 def build_period_subperiod_of(period_dictionary):
@@ -1376,18 +1441,16 @@ def build_term_about_region(term_has_canonical_category, canonical_category_regi
     )
     relation_data["relation_type"] = "ABOUT_REGION"
 
-    return relation_data[
+    return aggregate_category_mapping_evidence(
+        relation_data,
         [
             "start_term_id",
             "end_region_id",
             "relation_type",
             "region_name",
             "region_type",
-            "canonical_category_id",
-            "canonical_category_path",
-            "match_type",
-        ]
-    ].drop_duplicates()
+        ],
+    )
 
 
 def build_event_about_region(event_has_canonical_category, canonical_category_region_crosswalk):
@@ -1404,18 +1467,16 @@ def build_event_about_region(event_has_canonical_category, canonical_category_re
     )
     relation_data["relation_type"] = "ABOUT_REGION"
 
-    return relation_data[
+    return aggregate_category_mapping_evidence(
+        relation_data,
         [
             "start_event_id",
             "end_region_id",
             "relation_type",
             "region_name",
             "region_type",
-            "canonical_category_id",
-            "canonical_category_path",
-            "match_type",
-        ]
-    ].drop_duplicates()
+        ],
+    )
 
 
 def build_canonical_category_about_economic_domain(
@@ -1461,17 +1522,15 @@ def build_term_about_economic_domain(
     )
     relation_data["relation_type"] = "ABOUT_ECONOMIC_DOMAIN"
 
-    return relation_data[
+    return aggregate_category_mapping_evidence(
+        relation_data,
         [
             "start_term_id",
             "end_economic_domain_id",
             "relation_type",
             "economic_domain_name",
-            "canonical_category_id",
-            "canonical_category_path",
-            "match_type",
-        ]
-    ].drop_duplicates()
+        ],
+    )
 
 
 def build_event_about_economic_domain(
@@ -1491,17 +1550,15 @@ def build_event_about_economic_domain(
     )
     relation_data["relation_type"] = "ABOUT_ECONOMIC_DOMAIN"
 
-    return relation_data[
+    return aggregate_category_mapping_evidence(
+        relation_data,
         [
             "start_event_id",
             "end_economic_domain_id",
             "relation_type",
             "economic_domain_name",
-            "canonical_category_id",
-            "canonical_category_path",
-            "match_type",
-        ]
-    ].drop_duplicates()
+        ],
+    )
 
 
 def build_canonical_category_about_taxonomy_facet(
@@ -1550,18 +1607,16 @@ def build_term_about_taxonomy_facet(
     )
     relation_data["relation_type"] = "ABOUT_TAXONOMY_FACET"
 
-    return relation_data[
+    return aggregate_category_mapping_evidence(
+        relation_data,
         [
             "start_term_id",
             "end_taxonomy_facet_id",
             "relation_type",
             "taxonomy_facet_name",
             "taxonomy_facet_path",
-            "canonical_category_id",
-            "canonical_category_path",
-            "match_type",
-        ]
-    ].drop_duplicates()
+        ],
+    )
 
 
 def build_event_about_taxonomy_facet(
@@ -1581,18 +1636,16 @@ def build_event_about_taxonomy_facet(
     )
     relation_data["relation_type"] = "ABOUT_TAXONOMY_FACET"
 
-    return relation_data[
+    return aggregate_category_mapping_evidence(
+        relation_data,
         [
             "start_event_id",
             "end_taxonomy_facet_id",
             "relation_type",
             "taxonomy_facet_name",
             "taxonomy_facet_path",
-            "canonical_category_id",
-            "canonical_category_path",
-            "match_type",
-        ]
-    ].drop_duplicates()
+        ],
+    )
 
 
 def build_search_tag_lookup(search_tag_nodes):
@@ -3355,53 +3408,107 @@ def build_term_refers_to_event(term_nodes, event_nodes):
     ]
 
 
-def drop_symmetric_duplicate_pairs(relation_data):
-    # 대칭 관계(is_symmetric=Y)는 원본에 A->B, B->A 양방향으로 들어 있어
-    # 무방향 쌍 + 관계 유형 기준으로 한 방향만 남긴다.
-    pair_start = relation_data[["person_id", "related_person_id"]].min(axis=1)
-    pair_end = relation_data[["person_id", "related_person_id"]].max(axis=1)
-    pair_key = pair_start + ">" + pair_end + ">" + relation_data["relation_type"]
+def join_unique_pipe_values(values):
+    unique_values = sorted(
+        {
+            token
+            for value in values
+            for token in split_pipe_values(value)
+        }
+    )
 
-    symmetric_mask = relation_data["is_symmetric"].eq("Y")
-    duplicated_pair_mask = pair_key.duplicated()
-    drop_mask = symmetric_mask & duplicated_pair_mask
+    if len(unique_values) == 0:
+        return pd.NA
 
-    return relation_data[~drop_mask].reset_index(drop=True)
+    return "|".join(unique_values)
 
 
 def build_person_related_to_person(person_relations_data, relation_type_dictionary):
-    # 관계 타입은 Neo4j 관계명으로 쪼개기보다 RELATED_TO 하나로 두고,
-    # raw/normalized relation type을 속성으로 보존한다.
+    # 관계 타입은 seed에서 검수된 neo4j_rel_type을 단일 기준으로 삼는다.
     relation_data = person_relations_data.dropna(
         subset=["person_id", "related_person_id", "relation_type"]
     ).copy()
     relation_data = relation_data[
         relation_data["person_id"].ne(relation_data["related_person_id"])
     ].copy()
+    relation_data = relation_data.rename(columns={"relation_type": "raw_relation_type"})
+    relation_type_columns = [
+        "raw_relation_type",
+        "normalized_relation_type",
+        "neo4j_rel_type",
+        "relation_group",
+        "direction_rule",
+        "is_symmetric",
+        "inverse_relation_type",
+    ]
+    relation_type_data = relation_type_dictionary[relation_type_columns].drop_duplicates(
+        subset=["raw_relation_type"]
+    )
     relation_data = relation_data.merge(
-        relation_type_dictionary,
-        left_on="relation_type",
-        right_on="raw_relation_type",
+        relation_type_data,
+        on="raw_relation_type",
         how="left",
     )
-    relation_data = relation_data.drop(columns=["raw_relation_type"])
-    relation_data = relation_data.drop_duplicates(
-        subset=["person_id", "related_person_id", "relation_type"]
-    ).reset_index(drop=True)
-    relation_data = drop_symmetric_duplicate_pairs(relation_data)
+    missing_type_mask = relation_data["neo4j_rel_type"].isna()
+
+    if missing_type_mask.any():
+        missing_types = sorted(
+            relation_data.loc[missing_type_mask, "raw_relation_type"].unique()
+        )
+        raise ValueError(
+            "relation_type_dictionary에 neo4j_rel_type 매핑이 없습니다: "
+            + ", ".join(missing_types)
+        )
+
+    relation_data = relation_data.rename(
+        columns={
+            "person_id": "start_person_id",
+            "related_person_id": "end_person_id",
+        }
+    )
+    symmetric_mask = relation_data["is_symmetric"].eq("Y")
+    reverse_pair_mask = (
+        symmetric_mask
+        & relation_data["start_person_id"].gt(relation_data["end_person_id"])
+    )
+    reverse_starts = relation_data.loc[reverse_pair_mask, "start_person_id"].copy()
+    relation_data.loc[reverse_pair_mask, "start_person_id"] = relation_data.loc[
+        reverse_pair_mask, "end_person_id"
+    ].values
+    relation_data.loc[reverse_pair_mask, "end_person_id"] = reverse_starts.values
+
+    group_columns = [
+        "start_person_id",
+        "end_person_id",
+        "raw_relation_type",
+        "neo4j_rel_type",
+        "normalized_relation_type",
+        "relation_group",
+        "direction_rule",
+        "is_symmetric",
+        "inverse_relation_type",
+    ]
+    relation_data = (
+        relation_data
+        .groupby(group_columns, dropna=False)
+        .agg(evidence_url=("evidence_url", join_unique_pipe_values))
+        .reset_index()
+        .sort_values(
+            [
+                "start_person_id",
+                "end_person_id",
+                "neo4j_rel_type",
+                "raw_relation_type",
+            ]
+        )
+        .reset_index(drop=True)
+    )
     relation_data.insert(
         0,
         "person_relation_id",
         build_sequential_ids("PERSON_REL", len(relation_data), 7),
     )
-    relation_data = relation_data.rename(
-        columns={
-            "person_id": "start_person_id",
-            "related_person_id": "end_person_id",
-            "relation_type": "raw_relation_type",
-        }
-    )
-    relation_data["relation_type"] = "RELATED_TO"
+    relation_data = relation_data.rename(columns={"neo4j_rel_type": "relation_type"})
 
     return relation_data[
         [
@@ -3415,7 +3522,6 @@ def build_person_related_to_person(person_relations_data, relation_type_dictiona
             "direction_rule",
             "is_symmetric",
             "inverse_relation_type",
-            "related_count",
             "evidence_url",
         ]
     ]
@@ -3786,6 +3892,11 @@ def build_relation_outputs(inputs, node_outputs):
         inputs["person_relations"],
         inputs["relation_type_dictionary"],
     )
+    node_outputs["people"] = add_person_core_relation_degree(
+        node_outputs["people"],
+        person_involved_in_event,
+        person_related_to_person,
+    )
     term_mentions_person = build_term_mentions_person(
         node_outputs["terms"],
         node_outputs["people"],
@@ -3840,6 +3951,10 @@ def build_relation_outputs(inputs, node_outputs):
         "event_part_of_event_group": build_event_part_of_group(
             inputs["events"],
             node_outputs["event_groups"],
+        ),
+        "event_group_has_term_candidate": build_event_group_has_term_candidate(
+            node_outputs["event_groups"],
+            node_outputs["terms"],
         ),
         "person_involved_in_event": person_involved_in_event,
         "person_related_to_person": person_related_to_person,
@@ -3897,7 +4012,10 @@ def build_output_files(args, node_outputs, relation_outputs):
         if not skip_output:
             output_files.append(output_file)
 
-    for output_name in build_discontinued_relation_output_names():
+    discontinued_output_names = set(build_discontinued_relation_output_names())
+    discontinued_output_names.add("event_has_related_event")
+
+    for output_name in sorted(discontinued_output_names):
         skipped_output_files.append(
             (
                 f"{output_name}.csv",
