@@ -2,7 +2,7 @@ import json
 from datetime import date, timedelta
 from uuid import uuid4
 
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from django.db.models import Max
 from django.utils import timezone
 
@@ -14,7 +14,12 @@ from analytics.service.analysis_snapshot import (
 )
 from analytics.service.analytics import get_classification_fields, get_composite_weak_targets
 from analytics.service.prediction import get_predicted_targets
-from analytics.service.weakness import get_trend_bonus, get_weakness_config
+from analytics.service.taxonomy import build_target_display_label
+from analytics.service.weakness import (
+    build_group_key_id,
+    get_trend_bonus,
+    get_weakness_config,
+)
 from question.models import SolveRecords
 from user.models import UserAccounts
 
@@ -32,6 +37,10 @@ class StudyPlanExtraBlockUnavailable(Exception):
 
 
 class StudyPlanExtraBlockCompletionRequired(Exception):
+    pass
+
+
+class StudyPlanGenerationUnavailable(Exception):
     pass
 
 
@@ -118,17 +127,59 @@ def get_study_plan_info(user_id):
 
 
 def ensure_today_study_plan(user_id, today=None):
-    should_create_plan = False
+    """
+    나의 학습실 진입 시 active 학습계획의 오늘 상태를 보장한다.
+
+    상태별 처리(study_plan_policy.md):
+    - active 계획 없음: 최초 계획을 자동 생성한다.
+    - 계획 기간 만료(오늘 > end_date): 이월·생성하지 않는다.
+      기간 만료 표시와 새 계획 생성 유도는 화면이 담당한다.
+    - 기간 내: 과거 미완료 블록을 오늘로 이월하고, 변경이 있으면
+      기간 경계 날짜를 보존한 뒤 저장한다.
+
+    동시 요청으로 인한 중복 active 생성의 최종 방어는 DB partial unique index
+    (study_plan_mypage_user_active_uidx)가 담당한다.
+    오늘 블록 공백은 같은 날 반복 생성을 막으면서 새 계획으로 복구한다.
+    주간평가 완료/미응시 구분 분기는 SolveSessions.review_type 스키마 도입 후 추가한다.
+    """
+    if today is None:
+        today = timezone.localdate()
 
     with transaction.atomic():
+        lock_study_plan_user(user_id)
         study_plan = get_active_study_plans(user_id, lock=True).first()
         if study_plan is None:
-            should_create_plan = True
-
-    if should_create_plan:
-        return create_study_plan(user_id)
+            return create_study_plan(user_id)
+        elif not is_study_plan_period_expired(study_plan, today):
+            carry_result = carry_over_incomplete_past_blocks_to_today(
+                parse_study_plan_items(study_plan.study_plan_items),
+                today,
+            )
+            if carry_result["changed"]:
+                plan_items = keep_study_plan_period_boundary_days(
+                    carry_result["items"],
+                    study_plan.start_date,
+                    study_plan.end_date,
+                )
+                save_study_plan_items(
+                    user_id,
+                    study_plan,
+                    sort_study_plan_days(plan_items),
+                )
+            elif should_create_plan_for_today(study_plan, carry_result["items"], today):
+                return create_study_plan(user_id)
 
     return None
+
+
+def is_study_plan_period_expired(study_plan, today):
+    """
+    계획 기간이 끝났는지 판정한다. end_date가 없으면 만료로 보지 않는다.
+    """
+    if study_plan.end_date is None:
+        return False
+
+    return today > study_plan.end_date
 
 
 def save_study_plan_items(user_id, study_plan, plan_items):
@@ -153,8 +204,19 @@ def save_study_plan_items(user_id, study_plan, plan_items):
 
 
 def carry_over_incomplete_past_blocks_to_today(plan_items, today):
+    """
+    오늘 이전 날짜의 미완료 학습 블록을 오늘 날짜로 이월한다.
+
+    순수 함수로 plan_items(JSON 목록)만 다루며, DB 잠금·저장·기간 판단은
+    호출부(ensure_today_study_plan)가 담당한다. 이월 규칙(study_plan_policy.md):
+    - 완료 블록은 원래 날짜에 남긴다.
+    - 주간평가 블록은 이월하지 않는다. 지나간 미완료 주간평가는 미응시 처리 대상이다.
+    - 복습 블록은 같은 대상의 다음 복습 블록 날짜에 오늘이 도달하기 전까지만 이월한다.
+      도달했으면 다음 복습 블록이 역할을 대신하므로 원래 날짜에 남긴다.
+    - 일반 학습 블록은 blockId를 유지한 채 오늘 날짜로 이동한다.
+    """
     today_key = today.isoformat()
-    target_day_plan = get_or_create_study_plan_day(plan_items, today_key)
+    review_dates_by_target = collect_review_block_dates_by_target(plan_items)
     moved_blocks = []
     changed = False
 
@@ -168,27 +230,102 @@ def carry_over_incomplete_past_blocks_to_today(plan_items, today):
         blocks = day_plan.get("blocks", [])
         remaining_blocks = []
         for block in blocks:
-            if block.get("isCompleted"):
-                remaining_blocks.append(block)
-            elif not block.get("isCompleted"):
+            should_carry = should_carry_over_block(block, plan_date, today, review_dates_by_target)
+            if should_carry:
                 moved_blocks.append(block)
+            elif not should_carry:
+                remaining_blocks.append(block)
 
         if len(remaining_blocks) != len(blocks):
             day_plan["blocks"] = remaining_blocks
             changed = True
 
     if moved_blocks:
+        target_day_plan = get_or_create_study_plan_day(plan_items, today_key)
         target_day_plan.setdefault("blocks", []).extend(moved_blocks)
         changed = True
 
     if changed:
         plan_items = prune_empty_study_plan_days(plan_items)
-        plan_items = sorted(plan_items, key=lambda plan: str(plan.get("date", ""))[:10])
+        plan_items = sort_study_plan_days(plan_items)
 
     return {
         "items": plan_items,
         "changed": changed,
     }
+
+
+def should_carry_over_block(block, plan_date, today, review_dates_by_target):
+    """
+    과거 날짜 블록 하나의 이월 여부를 판정한다.
+    """
+    if block.get("isCompleted"):
+        return False
+    if is_weekly_review_plan_block(block):
+        return False
+    if is_review_plan_block(block):
+        return is_review_block_still_relevant(block, plan_date, today, review_dates_by_target)
+
+    return True
+
+
+def is_review_block_still_relevant(block, plan_date, today, review_dates_by_target):
+    """
+    미완료 복습 블록이 아직 이월할 가치가 있는지 판정한다.
+
+    같은 대상의 다음 복습 블록 날짜가 이미 오늘 이전에 도달했으면
+    그 블록이 복습 역할을 대신하므로 이월하지 않는다.
+    """
+    target_key = get_review_block_target_key(block)
+    for review_date in review_dates_by_target.get(target_key, []):
+        if plan_date < review_date <= today:
+            return False
+
+    return True
+
+
+def collect_review_block_dates_by_target(plan_items):
+    """
+    계획 전체에서 복습 블록의 날짜를 대상(target)별로 모은다.
+    """
+    review_dates_by_target = {}
+    for day_plan in plan_items:
+        plan_date = parse_study_plan_day_date(day_plan)
+        if plan_date is None:
+            continue
+        for block in day_plan.get("blocks", []):
+            if is_review_plan_block(block):
+                target_key = get_review_block_target_key(block)
+                review_dates_by_target.setdefault(target_key, []).append(plan_date)
+
+    return review_dates_by_target
+
+
+def get_review_block_target_key(block):
+    """
+    복습 블록의 학습 대상을 canonical key로 식별한다.
+    """
+    group_key_id = block.get("groupKeyId")
+    if group_key_id:
+        return str(group_key_id)
+
+    era = block.get("era") or ""
+    topic = block.get("topic") or ""
+    q_type = block.get("qType") or block.get("q_type") or ""
+    if era and topic and q_type:
+        return build_group_key_id(
+            ["era", "topic", "q_type"],
+            [era, topic, q_type],
+        )
+
+    return build_group_key_id(
+        ["classification", "label"],
+        [block.get("classification") or "", block.get("label") or ""],
+    )
+
+
+def sort_study_plan_days(plan_items):
+    return sorted(plan_items, key=lambda day_plan: str(day_plan.get("date", ""))[:10])
 
 
 def parse_study_plan_day_date(day_plan):
@@ -595,27 +732,42 @@ def create_study_plan(user_id, study_plans="", study_plan_items=None, predicted_
             study_plans = generated_plan["summary"]
 
     study_plan_items = prepare_study_plan_items(study_plan_items)
+    if not has_study_plan_blocks(study_plan_items):
+        raise StudyPlanGenerationUnavailable
+
     start_date, end_date = get_plan_date_range(study_plan_items)
     completion_stats = calculate_plan_completion(study_plan_items)
     now = timezone.now()
 
-    with transaction.atomic():
-        active_plans = get_active_study_plans(user_id, lock=True)
-        for active_plan in active_plans:
-            archive_study_plan(user_id, active_plan, now)
+    try:
+        with transaction.atomic():
+            lock_study_plan_user(user_id)
+            active_plans = get_active_study_plans(user_id, lock=True)
+            for active_plan in active_plans:
+                archive_study_plan(user_id, active_plan, now)
 
-        study_plan = StudyPlanMypage.objects.create(
-            user_id=user_id,
-            study_plans=study_plans,
-            study_plan_items=format_plan_items(study_plan_items),
-            created_at=now,
-            modified_at=now,
-            status="active",
-            plan_version=get_next_plan_version(user_id),
-            start_date=start_date,
-            end_date=end_date,
-            completion_rate=completion_stats["completion_rate"],
-        )
+            study_plan = StudyPlanMypage.objects.create(
+                user_id=user_id,
+                study_plans=study_plans,
+                study_plan_items=format_plan_items(study_plan_items),
+                created_at=now,
+                modified_at=now,
+                status="active",
+                plan_version=get_next_plan_version(user_id),
+                start_date=start_date,
+                end_date=end_date,
+                completion_rate=completion_stats["completion_rate"],
+            )
+    except IntegrityError as error:
+        if not is_active_study_plan_unique_violation(error):
+            raise
+
+        active_plan = get_active_study_plans(user_id).first()
+        if active_plan is None:
+            raise
+
+        daily_available_minutes = get_daily_available_minutes(user_id)
+        return serialize_study_plan(active_plan, daily_available_minutes)
 
     create_study_plan_base_snapshot(user_id, study_plan.studyplan_id)
     daily_available_minutes = get_daily_available_minutes(user_id)
@@ -683,45 +835,47 @@ def delete_study_plan_block(user_id, study_plan_id, day_index, block_index):
     마이페이지 달력에서 개별 학습 항목의 삭제 버튼을 눌렀을 때 사용하며,
     study_plan_items JSON을 다시 저장한 뒤 최신 직렬화 결과를 반환한다.
     """
-    study_plan = StudyPlanMypage.objects.filter(
-        user_id=user_id,
-        studyplan_id=study_plan_id,
-    ).first()
-    if study_plan is None:
-        return None
+    with transaction.atomic():
+        study_plan = (
+            get_active_study_plans(user_id, lock=True)
+            .filter(studyplan_id=study_plan_id)
+            .first()
+        )
+        if study_plan is None:
+            return None
 
-    plan_items = parse_study_plan_items(study_plan.study_plan_items)
-    if 0 <= day_index < len(plan_items):
-        day_plan = plan_items[day_index]
-        if is_study_plan_delete_limit_reached(plan_items):
-            raise StudyPlanBlockDeleteLimitExceeded
+        plan_items = parse_study_plan_items(study_plan.study_plan_items)
+        if 0 <= day_index < len(plan_items):
+            day_plan = plan_items[day_index]
+            if is_study_plan_delete_limit_reached(plan_items):
+                raise StudyPlanBlockDeleteLimitExceeded
 
-        blocks = day_plan.get("blocks", [])
-        if 0 <= block_index < len(blocks):
-            block = blocks[block_index]
-            if block.get("blockType") == get_study_plan_config()["weekly_review_block_type"]:
-                return None
+            blocks = day_plan.get("blocks", [])
+            if 0 <= block_index < len(blocks):
+                block = blocks[block_index]
+                if block.get("blockType") == get_study_plan_config()["weekly_review_block_type"]:
+                    return None
 
-            deleted_block = blocks.pop(block_index)
-            increase_study_plan_day_delete_count(day_plan)
-            refill_deleted_plan_block(
-                user_id,
-                plan_items,
-                day_index,
-                block_index,
-                deleted_block,
-            )
-            plan_items = [
-                plan
-                for plan in plan_items
-                if plan.get("blocks") or get_study_plan_day_delete_count(plan)
-            ]
-            return update_study_plan(
-                user_id,
-                study_plan_id,
-                study_plan.study_plans,
-                plan_items,
-            )
+                deleted_block = blocks.pop(block_index)
+                increase_study_plan_day_delete_count(day_plan)
+                refill_deleted_plan_block(
+                    user_id,
+                    plan_items,
+                    day_index,
+                    block_index,
+                    deleted_block,
+                )
+                plan_items = [
+                    plan
+                    for plan in plan_items
+                    if plan.get("blocks") or get_study_plan_day_delete_count(plan)
+                ]
+                return update_study_plan(
+                    user_id,
+                    study_plan_id,
+                    study_plan.study_plans,
+                    plan_items,
+                )
 
     return None
 
@@ -971,25 +1125,27 @@ def complete_study_plan_block(user_id, study_plan_id, day_index, block_index, is
 
     block의 isCompleted/completedAt 값을 갱신하고, 전체 completion_rate를 다시 계산한다.
     """
-    study_plan = StudyPlanMypage.objects.filter(
-        user_id=user_id,
-        studyplan_id=study_plan_id,
-    ).first()
-    if study_plan is None:
-        return None
+    with transaction.atomic():
+        study_plan = (
+            get_active_study_plans(user_id, lock=True)
+            .filter(studyplan_id=study_plan_id)
+            .first()
+        )
+        if study_plan is None:
+            return None
 
-    plan_items = parse_study_plan_items(study_plan.study_plan_items)
-    if 0 <= day_index < len(plan_items):
-        day_plan = plan_items[day_index]
-        blocks = day_plan.get("blocks", [])
-        if 0 <= block_index < len(blocks):
-            set_study_plan_block_completion(blocks[block_index], is_completed)
-            return update_study_plan(
-                user_id,
-                study_plan_id,
-                study_plan.study_plans,
-                plan_items,
-            )
+        plan_items = parse_study_plan_items(study_plan.study_plan_items)
+        if 0 <= day_index < len(plan_items):
+            day_plan = plan_items[day_index]
+            blocks = day_plan.get("blocks", [])
+            if 0 <= block_index < len(blocks):
+                set_study_plan_block_completion(blocks[block_index], is_completed)
+                return update_study_plan(
+                    user_id,
+                    study_plan_id,
+                    study_plan.study_plans,
+                    plan_items,
+                )
 
     return None
 
@@ -998,24 +1154,26 @@ def complete_study_plan_block_by_id(user_id, study_plan_id, block_id, is_complet
     if not block_id:
         return None
 
-    study_plan = StudyPlanMypage.objects.filter(
-        user_id=user_id,
-        studyplan_id=study_plan_id,
-    ).first()
-    if study_plan is None:
-        return None
+    with transaction.atomic():
+        study_plan = (
+            get_active_study_plans(user_id, lock=True)
+            .filter(studyplan_id=study_plan_id)
+            .first()
+        )
+        if study_plan is None:
+            return None
 
-    plan_items = parse_study_plan_items(study_plan.study_plan_items)
-    for day_plan in plan_items:
-        for block in day_plan.get("blocks", []):
-            if str(block.get("blockId")) == str(block_id):
-                set_study_plan_block_completion(block, is_completed)
-                return update_study_plan(
-                    user_id,
-                    study_plan_id,
-                    study_plan.study_plans,
-                    plan_items,
-                )
+        plan_items = parse_study_plan_items(study_plan.study_plan_items)
+        for day_plan in plan_items:
+            for block in day_plan.get("blocks", []):
+                if str(block.get("blockId")) == str(block_id):
+                    set_study_plan_block_completion(block, is_completed)
+                    return update_study_plan(
+                        user_id,
+                        study_plan_id,
+                        study_plan.study_plans,
+                        plan_items,
+                    )
 
     return None
 
@@ -1067,6 +1225,27 @@ def get_active_study_plans(user_id, lock=False):
         queryset = queryset.select_for_update()
 
     return queryset.order_by("-plan_version", "-modified_at")
+
+
+def lock_study_plan_user(user_id):
+    """
+    같은 사용자의 학습계획 생성·교체 요청을 직렬화한다.
+    """
+    return (
+        UserAccounts.objects.select_for_update()
+        .only("user_id")
+        .get(user_id=user_id)
+    )
+
+
+def is_active_study_plan_unique_violation(error):
+    """
+    사용자별 active 계획 partial unique index 충돌인지 판정한다.
+    """
+    cause = getattr(error, "__cause__", None)
+    diagnostic = getattr(cause, "diag", None)
+    constraint_name = getattr(diagnostic, "constraint_name", "")
+    return constraint_name == "study_plan_mypage_user_active_uidx"
 
 
 def archive_study_plan(user_id, study_plan, archived_at):
@@ -1156,6 +1335,14 @@ def prepare_study_plan_items(study_plan_items):
     return prepared_items
 
 
+def has_study_plan_blocks(study_plan_items):
+    for day_plan in study_plan_items:
+        if day_plan.get("blocks"):
+            return True
+
+    return False
+
+
 def get_plan_date_range(study_plan_items):
     """
     학습계획 JSON의 날짜 목록에서 시작일과 종료일을 계산한다.
@@ -1236,7 +1423,12 @@ def build_user_study_plan(user_id, predicted_targets=None, today=None):
     )
 
     return {
-        "summary": build_plan_summary(priority_targets, daily_available_minutes, config),
+        "summary": build_plan_summary(
+            priority_targets,
+            daily_available_minutes,
+            remaining_days,
+            config,
+        ),
         "dailyAvailableMinutes": daily_available_minutes,
         "remainingDays": remaining_days,
         "plans": plans,
@@ -1244,7 +1436,7 @@ def build_user_study_plan(user_id, predicted_targets=None, today=None):
 
 
 def build_study_plan_target_label(era, topic, q_type):
-    return " · ".join([era, topic, q_type])
+    return build_target_display_label(era, topic, q_type)
 
 
 def get_priority_target_identity(target):
@@ -1253,7 +1445,12 @@ def get_priority_target_identity(target):
     q_type = target.get("qType") or target.get("q_type") or target.get("questionType") or ""
     if era and topic and q_type:
         label = target.get("label") or build_study_plan_target_label(era, topic, q_type)
-        return (era, topic, q_type), {
+        group_key_id = target.get("groupKeyId") or build_group_key_id(
+            ["era", "topic", "q_type"],
+            [era, topic, q_type],
+        )
+        return group_key_id, {
+            "groupKeyId": group_key_id,
             "classification": target.get("classification") or "복합",
             "label": label,
             "era": era,
@@ -1264,7 +1461,12 @@ def get_priority_target_identity(target):
     classification = target.get("classification")
     label = target.get("label")
     if classification and label:
-        return (classification, label), {
+        group_key_id = target.get("groupKeyId") or build_group_key_id(
+            ["classification", "label"],
+            [classification, label],
+        )
+        return group_key_id, {
+            "groupKeyId": group_key_id,
             "classification": classification,
             "label": label,
             "era": "",
@@ -1277,6 +1479,7 @@ def get_priority_target_identity(target):
 
 def build_priority_target_seed(identity):
     return {
+        "groupKeyId": identity["groupKeyId"],
         "classification": identity["classification"],
         "label": identity["label"],
         "era": identity["era"],
@@ -1295,13 +1498,23 @@ def build_priority_target_seed(identity):
 
 
 def get_priority_target_key(target):
+    group_key_id = target.get("groupKeyId")
+    if group_key_id:
+        return str(group_key_id)
+
     era = target.get("era") or ""
     topic = target.get("topic") or ""
     q_type = target.get("qType") or ""
     if era and topic and q_type:
-        return (era, topic, q_type)
+        return build_group_key_id(
+            ["era", "topic", "q_type"],
+            [era, topic, q_type],
+        )
 
-    return (target["classification"], target["label"])
+    return build_group_key_id(
+        ["classification", "label"],
+        [target["classification"], target["label"]],
+    )
 
 
 def build_priority_targets(weak_targets, predicted_targets, remaining_days, config):
@@ -1418,14 +1631,23 @@ def build_daily_plan_items(priority_targets, daily_available_minutes, remaining_
     """
     우선순위 대상들을 날짜별 학습 블록으로 배치한다.
 
-    하루 가용시간에 따라 블록 수와 블록별 시간을 나눈다.
+    7일 이상이면 6일 학습과 주간평가를 만들고, 7일 미만이면
+    시험 전 날짜에 취약 영역 압축 학습만 배치한다.
     """
     if not priority_targets:
         return []
 
-    plan_days = config["weekly_plan_days"]
+    plan_days = min(
+        config["weekly_plan_days"],
+        max(remaining_days, config["same_day_plan_days"]),
+    )
+    is_compressed_plan = plan_days < config["weekly_plan_days"]
+    scheduled_targets = priority_targets
     learning_days = config["weekly_learning_days"]
-    if learning_days >= plan_days:
+    if is_compressed_plan:
+        scheduled_targets = select_compressed_plan_targets(priority_targets)
+        learning_days = plan_days
+    elif learning_days >= plan_days:
         learning_days = plan_days - 1
 
     blocks_per_day = get_blocks_per_day(daily_available_minutes, config)
@@ -1439,12 +1661,14 @@ def build_daily_plan_items(priority_targets, daily_available_minutes, remaining_
         blocks = []
 
         while len(blocks) < blocks_per_day and remaining_minutes >= config["min_block_minutes"]:
-            target = priority_targets[target_index % len(priority_targets)]
+            target = scheduled_targets[target_index % len(scheduled_targets)]
             target_index += 1
             target_key = get_priority_target_key(target)
             block_type = get_target_block_type(target)
+            if is_compressed_plan and target.get("weaknessScore", 0) > 0:
+                block_type = "newWeakness"
             if target_key in used_target_keys:
-                if len(used_target_keys) < len(priority_targets):
+                if len(used_target_keys) < len(scheduled_targets):
                     continue
 
             block_minutes = get_block_minutes(remaining_minutes, blocks_per_day, len(blocks), config)
@@ -1461,15 +1685,28 @@ def build_daily_plan_items(priority_targets, daily_available_minutes, remaining_
                 }
             )
 
-    review_date = today + timedelta(days=learning_days)
-    plans.append(
-        {
-            "date": review_date.isoformat(),
-            "blocks": [build_weekly_review_block(config)],
-        }
-    )
+    if not is_compressed_plan:
+        review_date = today + timedelta(days=learning_days)
+        plans.append(
+            {
+                "date": review_date.isoformat(),
+                "blocks": [build_weekly_review_block(config)],
+            }
+        )
 
     return plans
+
+
+def select_compressed_plan_targets(priority_targets):
+    weak_targets = [
+        target
+        for target in priority_targets
+        if target.get("weaknessScore", 0) > 0
+    ]
+    if weak_targets:
+        return weak_targets
+
+    return priority_targets
 
 
 def build_weekly_review_block(config):
@@ -1513,6 +1750,7 @@ def build_study_block(target, block_type, estimated_minutes, config):
 
     return {
         "blockId": str(uuid4()),
+        "groupKeyId": target["groupKeyId"],
         "blockType": block_type,
         "classification": target["classification"],
         "label": target["label"],
@@ -1561,7 +1799,7 @@ def build_priority_reason(target):
     return "학습 유지가 필요한 항목입니다."
 
 
-def build_plan_summary(priority_targets, daily_available_minutes, config):
+def build_plan_summary(priority_targets, daily_available_minutes, remaining_days, config):
     """
     생성된 학습계획의 한 줄 요약 문장을 만든다.
 
@@ -1570,6 +1808,17 @@ def build_plan_summary(priority_targets, daily_available_minutes, config):
     """
     if not priority_targets:
         return "취약점과 출제 예상 데이터가 부족해 학습 계획을 생성하지 못했습니다."
+
+    plan_days = min(
+        config["weekly_plan_days"],
+        max(remaining_days, config["same_day_plan_days"]),
+    )
+    if plan_days < config["weekly_plan_days"]:
+        top_target = select_compressed_plan_targets(priority_targets)[0]
+        return (
+            f"시험 전 {plan_days}일 동안 하루 {daily_available_minutes}분 기준으로 "
+            f"{top_target['label']} 중심의 취약 영역 압축 계획을 생성했습니다."
+        )
 
     top_target = priority_targets[0]
     return (
@@ -1692,6 +1941,7 @@ def get_study_plan_config():
         "daily_delete_limit": 2,
         "daily_delete_count_key": "deletedBlockCount",
         "daily_delete_count_date_key": "deletedBlockCountDate",
+        "regeneration_overload_multiplier": 2,
         "history_display_limit": 3,
         "fallback_daily_available_minutes": 60,
         "small_daily_available_minutes": 45,

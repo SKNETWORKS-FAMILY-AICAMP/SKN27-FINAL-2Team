@@ -12,7 +12,7 @@
     button, textarea { font: inherit; }
 
     .chat-page {
-      font-family: "Himate Noto Sans KR", "Noto Sans KR", system-ui, sans-serif;
+      font-family: "Noto Serif KR", "Nanum Myeongjo", Batang, serif;
       max-width: 1440px;
       height: 100vh;
       margin: 0 auto;

@@ -9,6 +9,11 @@ from analytics.service.classification import (
     normalize_classification_value,
     should_normalize_classification,
 )
+from analytics.service.taxonomy import (
+    build_target_display_label,
+    get_display_label as get_taxonomy_display_label,
+    get_unclassified_label as get_taxonomy_unclassified_label,
+)
 from analytics.service.weakness import (
     build_group_key_id,
     build_weakness_rows,
@@ -956,10 +961,11 @@ def get_first_diagnosis_summary(user_id):
 
 def get_diagnosis_improvement_summary(user_id, today=None):
     """
-    최신 진단평가 두 회차 사이의 개선 정도를 계산한다.
+    직전 평가와 최신 주간평가 사이의 개선 정도를 계산한다.
 
-    completed diagnostic 세션을 시간순으로 보고, 1회차-2회차 또는
-    직전 회차-최신 회차처럼 인접한 두 진단평가의 정답률과 풀이시간을 비교한다.
+    첫 주간평가는 직전 일반 진단평가와 비교하고, 이후 주간평가는
+    바로 전 주간평가와 정답률·풀이시간을 비교한다. 주간평가가 없으면
+    기존 일반 진단평가 회차 비교를 유지한다.
     """
     diagnosis_pair = get_diagnosis_comparison_pair(user_id)
     diagnosis_summary = diagnosis_pair["diagnosis"]
@@ -1001,25 +1007,83 @@ def get_diagnosis_improvement_summary(user_id, today=None):
 
 
 def get_diagnosis_comparison_pair(user_id):
-    sessions = list(get_completed_diagnostic_sessions(user_id))
-    if len(sessions) >= 2:
-        previous_session = sessions[-2]
-        current_session = sessions[-1]
+    """
+    일반 진단평가와 주간평가를 구분해 마이페이지 비교 세션 쌍을 선택한다.
+    """
+    weekly_sessions = list(get_completed_weekly_review_sessions(user_id))
+    weekly_session_ids = [session.session_id for session in weekly_sessions]
+    diagnosis_sessions = list(
+        get_completed_diagnostic_sessions(user_id).exclude(
+            session_id__in=weekly_session_ids,
+        )
+    )
+    if len(weekly_sessions) >= 2:
+        previous_session = weekly_sessions[-2]
+        current_session = weekly_sessions[-1]
+        return {
+            "diagnosis": build_evaluation_session_summary(
+                previous_session,
+                f"{len(weekly_sessions) - 1}주차 주간평가",
+                len(weekly_sessions) - 1,
+            ),
+            "current": build_evaluation_session_summary(
+                current_session,
+                f"{len(weekly_sessions)}주차 주간평가",
+                len(weekly_sessions),
+            ),
+            "diagnosisSessionCount": len(diagnosis_sessions) + len(weekly_sessions),
+        }
+
+    if weekly_sessions:
+        current_session = weekly_sessions[-1]
+        baseline_sessions = [
+            session
+            for session in diagnosis_sessions
+            if is_session_before(session, current_session)
+        ]
+        if baseline_sessions:
+            return {
+                "diagnosis": build_evaluation_session_summary(
+                    baseline_sessions[-1],
+                    "직전 진단평가",
+                    len(diagnosis_sessions),
+                ),
+                "current": build_evaluation_session_summary(
+                    current_session,
+                    "1주차 주간평가",
+                    1,
+                ),
+                "diagnosisSessionCount": len(diagnosis_sessions) + 1,
+            }
+
+        return {
+            "diagnosis": build_empty_diagnosis_session_summary(),
+            "current": build_evaluation_session_summary(
+                current_session,
+                "1주차 주간평가",
+                1,
+            ),
+            "diagnosisSessionCount": 1,
+        }
+
+    if len(diagnosis_sessions) >= 2:
+        previous_session = diagnosis_sessions[-2]
+        current_session = diagnosis_sessions[-1]
         return {
             "diagnosis": build_diagnosis_session_summary(
                 previous_session,
-                len(sessions) - 1,
+                len(diagnosis_sessions) - 1,
             ),
             "current": build_diagnosis_session_summary(
                 current_session,
-                len(sessions),
+                len(diagnosis_sessions),
             ),
-            "diagnosisSessionCount": len(sessions),
+            "diagnosisSessionCount": len(diagnosis_sessions),
         }
 
-    if sessions:
+    if diagnosis_sessions:
         return {
-            "diagnosis": build_diagnosis_session_summary(sessions[0], 1),
+            "diagnosis": build_diagnosis_session_summary(diagnosis_sessions[0], 1),
             "current": build_empty_diagnosis_session_summary(),
             "diagnosisSessionCount": 1,
         }
@@ -1041,13 +1105,42 @@ def get_completed_diagnostic_sessions(user_id):
     ).order_by("recorded_date", "session_id")
 
 
+def get_completed_weekly_review_sessions(user_id):
+    """
+    review_type 도입 전 fallback으로 계획 블록 연결값이 있는 주간평가를 찾는다.
+    """
+    block_refs = get_weekly_review_block_refs(user_id)
+    records = get_weekly_review_records(user_id, block_refs)
+    session_ids = records.values_list("session_id", flat=True).distinct()
+    return SolveSessions.objects.filter(
+        user_id=user_id,
+        status="completed",
+        session_type="diagnostic",
+        session_id__in=session_ids,
+    ).order_by("recorded_date", "session_id")
+
+
+def is_session_before(candidate_session, reference_session):
+    candidate_key = (candidate_session.recorded_date, candidate_session.session_id)
+    reference_key = (reference_session.recorded_date, reference_session.session_id)
+    return candidate_key < reference_key
+
+
 def build_diagnosis_session_summary(session, session_number):
+    return build_evaluation_session_summary(
+        session,
+        f"{session_number}회차 진단평가",
+        session_number,
+    )
+
+
+def build_evaluation_session_summary(session, session_label, session_number):
     records = SolveRecords.objects.filter(session=session)
     summary = build_record_summary(records)
     summary["recordedDate"] = session.recorded_date
     summary["sessionId"] = session.session_id
     summary["sessionNumber"] = session_number
-    summary["sessionLabel"] = f"{session_number}회차 진단평가"
+    summary["sessionLabel"] = session_label
     summary["averageSessionTimeSec"] = session.elapsed_sec
     summary["periodStart"] = session.recorded_date
     summary["periodEnd"] = session.recorded_date
@@ -1495,7 +1588,7 @@ def build_composite_target_label(era, topic, q_type):
     """
     복합 취약 항목의 화면 표시 라벨을 만든다.
     """
-    return " · ".join([era, topic, q_type])
+    return build_target_display_label(era, topic, q_type)
 
 
 def build_recommended_study_targets(records):
@@ -2417,13 +2510,7 @@ def get_group_average_time_from_summary(summary):
 
 
 def get_classification_display_label(field_name, value):
-    normalized_value = normalize_classification_value(field_name, value)
-    if normalized_value:
-        return normalized_value
-    elif should_normalize_classification(field_name):
-        return get_unclassified_label()
-
-    return value or get_unclassified_label()
+    return get_taxonomy_display_label(field_name, value)
 
 
 def get_classification_fields():
@@ -2445,7 +2532,7 @@ def get_unclassified_label():
 
     era, q_type, topic 값이 없을 때 화면에 빈 문자열이 노출되지 않게 한다.
     """
-    return "미분류"
+    return get_taxonomy_unclassified_label()
 
 
 def calculate_rate(count, total):

@@ -284,6 +284,9 @@ def build_term_nodes(terms_data, keyword_era_seed, term_year_parse, graph_config
         }
     )
     term_nodes["source"] = "history_terms"
+    term_nodes["source_record_id"] = (
+        term_nodes["source"].astype(str) + ":" + term_nodes["term_id"].astype(str)
+    )
     term_nodes = merge_term_year_parse_columns(term_nodes, term_year_parse)
     term_nodes = add_term_question_ready_columns(
         term_nodes,
@@ -310,6 +313,7 @@ def build_term_nodes(terms_data, keyword_era_seed, term_year_parse, graph_config
             "question_ready",
             "is_exam_keyword",
             "source",
+            "source_record_id",
         ]
     ]
 

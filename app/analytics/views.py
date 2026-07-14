@@ -9,7 +9,6 @@ from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from analytics.service.analytics import (
-    analytics_summary,
     build_wrong_rate_detail_validation,
     get_analysis_scope_chart_data,
     get_plan_completion_chart_data,
@@ -31,7 +30,6 @@ from analytics.service.mypage import (
     build_d_day_label,
     build_diagnosis_comparison_summary,
     build_learning_summary,
-    build_mypage_summary_validation,
     build_weakness_summary,
     build_wrong_rate_summary,
     build_wrong_type_summary,
@@ -41,6 +39,7 @@ from analytics.service.studyplan import (
     StudyPlanDateOutOfRange,
     StudyPlanExtraBlockCompletionRequired,
     StudyPlanExtraBlockUnavailable,
+    StudyPlanGenerationUnavailable,
     add_extra_study_plan_block,
     complete_study_plan_block,
     create_study_plan,
@@ -54,9 +53,17 @@ from analytics.service.studyplan import (
 def mypage(request):
     user_id = request.user.user_id
     today = timezone.localdate()
-    ensure_today_study_plan(user_id, today)
+    plan_generation_available = True
+    try:
+        ensure_today_study_plan(user_id, today)
+    except StudyPlanGenerationUnavailable:
+        plan_generation_available = False
     study_plan = get_study_plan_info(user_id)
-    planner_summary = build_planner_summary(study_plan, today)
+    planner_summary = build_planner_summary(
+        study_plan,
+        today,
+        plan_generation_available,
+    )
     wrong_type_summary = build_wrong_type_summary(request.user, today)
     wrong_rate_summaries = [
         {"title": "유형별 오답률", **wrong_type_summary},
@@ -64,18 +71,8 @@ def mypage(request):
         {"title": "시대별 오답률", **build_wrong_rate_summary(request.user, "era", today)},
     ]
     weakness_summary = build_weakness_summary(request.user, today)
-    validation = build_mypage_summary_validation(
-        request.user,
-        today,
-        weakness_summary,
-        wrong_type_summary,
-    )
-    log_analytics_validation("mypage", validation)
     context = {
-        "user": request.user,
-        "analytics": analytics_summary(user_id),
-        "study_plan": study_plan,
-        "learning_summary": build_learning_summary(request.user),
+        "learning_summary": build_learning_summary(request.user, today),
         "diagnosis_comparison": build_diagnosis_comparison_summary(request.user),
         "wrong_type_summary": wrong_type_summary,
         "wrong_rate_summaries": wrong_rate_summaries,
@@ -241,7 +238,11 @@ def wrong_rate_period_item_questions(request):
 @login_required
 @require_POST
 def create_study_plan_view(request):
-    create_study_plan(request.user.user_id)
+    try:
+        create_study_plan(request.user.user_id)
+    except StudyPlanGenerationUnavailable:
+        return redirect("analytics:mypage")
+
     return redirect("analytics:mypage")
 
 
@@ -286,9 +287,13 @@ def complete_study_plan_block_view(request):
         study_plan_id = int(data.get("studyPlanId"))
         day_index = int(data.get("dayIndex"))
         block_index = int(data.get("blockIndex"))
-        is_completed = bool(data.get("isCompleted", True))
     except (TypeError, ValueError):
         return JsonResponse({"ok": False}, status=400)
+
+    raw_is_completed = data.get("isCompleted", True)
+    if not isinstance(raw_is_completed, bool):
+        return JsonResponse({"ok": False}, status=400)
+    is_completed = raw_is_completed
 
     completed_plan = complete_study_plan_block(
         request.user.user_id,

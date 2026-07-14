@@ -2,11 +2,89 @@ LOAD CSV WITH HEADERS FROM 'file:///nodes/terms.csv' AS row
 CALL (row) {
     WITH row WHERE row.term_id IS NOT NULL AND trim(row.term_id) <> ''
     MERGE (n:Term {term_id: row.term_id})
+    SET n:SourceRecord
     SET n += row
     SET n.topterm_id = toIntegerOrNull(row.topterm_id),
         n.start_year = toIntegerOrNull(row.start_year),
         n.end_year = toIntegerOrNull(row.end_year),
         n.description_length = toIntegerOrNull(row.description_length)
+} IN TRANSACTIONS OF 1000 ROWS;
+
+LOAD CSV WITH HEADERS FROM 'file:///nodes/canonical_entities.csv' AS row
+CALL (row) {
+    WITH row WHERE row.canonical_id IS NOT NULL AND trim(row.canonical_id) <> ''
+    MERGE (n:CanonicalEntity {canonical_id: row.canonical_id})
+    SET n += row
+} IN TRANSACTIONS OF 1000 ROWS;
+
+LOAD CSV WITH HEADERS FROM 'file:///nodes/source_articles.csv' AS row
+CALL (row) {
+    WITH row WHERE row.source_record_id IS NOT NULL AND trim(row.source_record_id) <> ''
+    MERGE (n:SourceRecord {source_record_id: row.source_record_id})
+    SET n:SourceArticle
+    SET n += row
+} IN TRANSACTIONS OF 1000 ROWS;
+
+LOAD CSV WITH HEADERS FROM 'file:///nodes/source_images.csv' AS row
+CALL (row) {
+    WITH row WHERE row.source_record_id IS NOT NULL AND trim(row.source_record_id) <> ''
+    MERGE (n:SourceRecord {source_record_id: row.source_record_id})
+    SET n:SourceImage
+    SET n += row
+} IN TRANSACTIONS OF 1000 ROWS;
+
+LOAD CSV WITH HEADERS FROM 'file:///nodes/source_texts.csv' AS row
+CALL (row) {
+    WITH row WHERE row.source_record_id IS NOT NULL AND trim(row.source_record_id) <> ''
+    MERGE (n:SourceRecord {source_record_id: row.source_record_id})
+    SET n:SourceText
+    SET n += row
+} IN TRANSACTIONS OF 1000 ROWS;
+
+LOAD CSV WITH HEADERS FROM 'file:///nodes/polities.csv' AS row
+CALL (row) {
+    MATCH (n:CanonicalEntity {canonical_id: row.canonical_id})
+    WHERE row.polity_id IS NOT NULL AND trim(row.polity_id) <> ''
+    SET n:Polity
+    SET n += row
+} IN TRANSACTIONS OF 1000 ROWS;
+
+LOAD CSV WITH HEADERS FROM 'file:///nodes/reigns.csv' AS row
+CALL (row) {
+    WITH row WHERE row.reign_id IS NOT NULL AND trim(row.reign_id) <> ''
+    MERGE (n:Reign {reign_id: row.reign_id})
+    SET n += row
+    SET n.succession_order = toIntegerOrNull(row.succession_order),
+        n.interval_index = toIntegerOrNull(row.interval_index),
+        n.start_year = toIntegerOrNull(row.start_year),
+        n.end_year = toIntegerOrNull(row.end_year)
+} IN TRANSACTIONS OF 1000 ROWS;
+
+LOAD CSV WITH HEADERS FROM 'file:///nodes/royal_actions.csv' AS row
+CALL (row) {
+    WITH row WHERE row.action_id IS NOT NULL AND trim(row.action_id) <> ''
+    MERGE (n:RoyalAction {action_id: row.action_id})
+    SET n += row
+    SET n.start_year = toIntegerOrNull(row.start_year),
+        n.end_year = toIntegerOrNull(row.end_year)
+} IN TRANSACTIONS OF 1000 ROWS;
+
+LOAD CSV WITH HEADERS FROM 'file:///nodes/heritage_entities.csv' AS row
+CALL (row) {
+    MATCH (n:CanonicalEntity {canonical_id: row.canonical_id})
+    WHERE row.heritage_id IS NOT NULL AND trim(row.heritage_id) <> ''
+    SET n:CulturalHeritage
+    SET n += row
+} IN TRANSACTIONS OF 1000 ROWS;
+
+LOAD CSV WITH HEADERS FROM 'file:///nodes/inscription_contents.csv' AS row
+CALL (row) {
+    MATCH (n:Term {term_id: row.term_id})
+    WHERE row.inscription_id IS NOT NULL AND trim(row.inscription_id) <> ''
+    SET n:InscriptionContent
+    SET n += row
+    SET n.start_year = toIntegerOrNull(row.start_year),
+        n.end_year = toIntegerOrNull(row.end_year)
 } IN TRANSACTIONS OF 1000 ROWS;
 
 LOAD CSV WITH HEADERS FROM 'file:///nodes/events.csv' AS row

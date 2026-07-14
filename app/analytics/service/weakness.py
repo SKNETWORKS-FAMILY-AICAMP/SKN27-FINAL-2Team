@@ -4,6 +4,7 @@ from datetime import timedelta
 from django.utils import timezone
 
 from analytics.service.classification import normalize_classification_value
+from analytics.service.taxonomy import build_group_display_label, get_unclassified_label
 
 
 def get_weakness_config():
@@ -18,7 +19,7 @@ def get_weakness_config():
         "trend_threshold": 0.10,
         "trend_bonus_worsening": 0.08,
         "trend_bonus_improving": -0.04,
-        "unclassified_label": "미분류",
+        "unclassified_label": get_unclassified_label(),
         "status_insufficient": "INSUFFICIENT",
         "status_weak": "WEAK",
         "status_neutral": "NEUTRAL",
@@ -172,6 +173,7 @@ def build_weakness_row(summary, config):
         "groupKeyId": summary["groupKeyId"],
         "groupKey": summary["groupKey"],
         "group": summary["group"],
+        "label": build_group_display_label(summary["groupKey"]),
         "raw": {
             "total": raw_total,
             "wrong": raw_wrong,

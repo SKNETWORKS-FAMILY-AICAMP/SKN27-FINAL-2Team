@@ -18,7 +18,7 @@ def parse_display_date(raw_date):
     return None
 
 
-def build_planner_summary(study_plans, today):
+def build_planner_summary(study_plans, today, plan_generation_available=True):
     """
     저장된 학습계획 목록을 마이페이지 달력 표시용 데이터로 변환한다.
 
@@ -28,6 +28,7 @@ def build_planner_summary(study_plans, today):
     achieved_label = "달성"
     default_title = "학습 계획"
     missed_label = "미달성"
+    missed_weekly_review_label = "미응시"
     planned_label = "예정"
     today_label = "오늘"
     config = get_study_plan_config()
@@ -84,6 +85,8 @@ def build_planner_summary(study_plans, today):
                     status_label = planned_label
                     if is_achieved:
                         status_label = achieved_label
+                    elif is_weekly_review and plan_date < today:
+                        status_label = missed_weekly_review_label
                     elif plan_date < today:
                         status_label = missed_label
                     elif plan_date == today:
@@ -183,11 +186,11 @@ def build_planner_summary(study_plans, today):
                         }
                     )
 
-    visible_plans_by_date = build_visible_plans_by_date(plans_by_date, today)
+    display_plans_by_date = plans_by_date
 
     completed_keys = []
     planned_keys = []
-    for date_key, plan_items in visible_plans_by_date.items():
+    for date_key, plan_items in display_plans_by_date.items():
         plan_date = date.fromisoformat(date_key)
         is_achieved_date = bool(plan_items) and all(item["done"] for item in plan_items)
         if is_achieved_date:
@@ -196,11 +199,30 @@ def build_planner_summary(study_plans, today):
             planned_keys.append(date_key)
 
     today_key = today.isoformat()
-    progress_by_date = build_calendar_progress_by_date(visible_plans_by_date, today)
-    selected_key = get_default_planner_selected_key(visible_plans_by_date, today)
+    progress_by_date = build_calendar_progress_by_date(display_plans_by_date, today)
+    selected_key = get_default_planner_selected_key(display_plans_by_date, today)
     selected_date = date.fromisoformat(selected_key)
     has_active_plan = bool(study_plans)
+    active_plan_end_date = None
+    if has_active_plan:
+        active_plan_end_date = parse_display_date(study_plans[0].get("endDate"))
+    is_expired_active_plan = bool(
+        active_plan_end_date
+        and active_plan_end_date < today
+    )
+    is_overloaded_active_plan = bool(
+        has_active_plan
+        and not is_expired_active_plan
+        and is_study_plan_workload_overloaded(
+            study_plans[0],
+            today,
+            weekly_review_block_type,
+            config["regeneration_overload_multiplier"],
+            config["fallback_daily_available_minutes"],
+        )
+    )
     weekly_review_done = has_completed_weekly_review(plans_by_date)
+    is_recoverable_expired_plan = is_expired_active_plan and not weekly_review_done
     has_weekly_review = has_weekly_review_item(plans_by_date)
     last_plan_key = get_last_plan_key(plans_by_date)
     is_empty_active_plan = has_active_plan and not plans_by_date
@@ -210,13 +232,21 @@ def build_planner_summary(study_plans, today):
         and last_plan_key
         and last_plan_key < today_key
     )
-    can_create_plan = (
+    can_create_plan = plan_generation_available and (
         not has_active_plan
-        or weekly_review_done
         or is_finished_legacy_plan
         or is_empty_active_plan
+        or is_recoverable_expired_plan
+        or is_overloaded_active_plan
     )
-    show_add_extra_study = has_active_plan and not can_create_plan
+    show_add_extra_study = (
+        plan_generation_available
+        and has_active_plan
+        and not can_create_plan
+        and not is_empty_active_plan
+        and not is_expired_active_plan
+        and not weekly_review_done
+    )
     can_add_extra_study = (
         show_add_extra_study
         and is_due_learning_plan_completed(
@@ -228,7 +258,9 @@ def build_planner_summary(study_plans, today):
     create_plan_label = ""
     if not has_active_plan or is_empty_active_plan:
         create_plan_label = "7일 계획 만들기"
-    elif weekly_review_done or is_finished_legacy_plan:
+    elif is_overloaded_active_plan:
+        create_plan_label = "학습계획 재생성"
+    elif is_finished_legacy_plan or is_recoverable_expired_plan:
         create_plan_label = "다음 7일 계획 만들기"
     create_plan_confirm = ""
     if has_active_plan:
@@ -239,21 +271,56 @@ def build_planner_summary(study_plans, today):
         "progress": build_planner_progress_summary(study_plans),
         "today_key": today_key,
         "selected_key": selected_key,
-        "today_items": visible_plans_by_date.get(today_key, []),
-        "selected_items": visible_plans_by_date.get(selected_key, []),
+        "today_items": display_plans_by_date.get(today_key, []),
+        "selected_items": display_plans_by_date.get(selected_key, []),
         "has_active_plan": has_active_plan,
+        "is_expired_plan": is_expired_active_plan,
+        "is_overloaded_plan": is_overloaded_active_plan,
+        "plan_generation_available": plan_generation_available,
         "can_create_plan": can_create_plan,
         "show_add_extra_study": show_add_extra_study,
         "can_add_extra_study": can_add_extra_study,
         "create_plan_label": create_plan_label,
         "create_plan_confirm": create_plan_confirm,
         "data": {
-            "plansByDate": visible_plans_by_date,
+            "plansByDate": display_plans_by_date,
             "completedKeys": sorted(completed_keys),
             "plannedKeys": sorted(planned_keys),
             "progressByDate": progress_by_date,
         },
     }
+
+
+def is_study_plan_workload_overloaded(
+    study_plan,
+    today,
+    weekly_review_block_type,
+    overload_multiplier,
+    fallback_daily_available_minutes,
+):
+    try:
+        daily_available_minutes = int(study_plan.get("dailyAvailableMinutes") or 0)
+    except (TypeError, ValueError):
+        return False
+    if daily_available_minutes <= 0:
+        daily_available_minutes = fallback_daily_available_minutes
+
+    incomplete_minutes = 0
+    for day_plan in study_plan.get("plans", []):
+        plan_date = parse_display_date(day_plan.get("date"))
+        if plan_date is None or plan_date > today:
+            continue
+        for block in day_plan.get("blocks", []):
+            if not is_learning_plan_block(block, weekly_review_block_type):
+                continue
+            if block.get("isAchieved") or block.get("isCompleted"):
+                continue
+            try:
+                incomplete_minutes += max(int(block.get("estimatedMinutes") or 0), 0)
+            except (TypeError, ValueError):
+                continue
+
+    return incomplete_minutes > daily_available_minutes * overload_multiplier
 
 
 def build_plan_learning_completion_lookup(study_plans, weekly_review_block_type):
@@ -302,15 +369,6 @@ def is_due_learning_plan_completed(study_plans, today, weekly_review_block_type)
         bool(block.get("isAchieved") or block.get("isCompleted"))
         for block in learning_blocks
     )
-
-
-def build_visible_plans_by_date(plans_by_date, today):
-    today_key = today.isoformat()
-    return {
-        date_key: plan_items
-        for date_key, plan_items in plans_by_date.items()
-        if date_key <= today_key
-    }
 
 
 def build_calendar_progress_by_date(plans_by_date, today):
@@ -499,9 +557,9 @@ def build_wrong_rate_display(stats, weakness_rows=None):
     return sorted(
         display_items,
         key=lambda item: (
-            -item["weaknessScore"],
-            -item["wrong"],
             -item["rate"],
+            -item["wrong"],
+            -item["total"],
             item["label"],
         ),
     )
