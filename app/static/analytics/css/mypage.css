@@ -1854,10 +1854,18 @@ body.modal-open {
 
 .mypage .donut-layout .empty-state {
   display: flex;
-  min-height: 96px;
-  align-items: center;
+  min-height: 0;
+  align-items: flex-start;
   font-size: 13px;
   font-weight: 900;
+}
+
+.mypage .weakness-panel .panel-heading {
+  padding-bottom: 14px;
+}
+
+.mypage .weakness-panel .weak-list {
+  margin-top: 20px;
 }
 
 .planner-lessons .plan-item.empty {
