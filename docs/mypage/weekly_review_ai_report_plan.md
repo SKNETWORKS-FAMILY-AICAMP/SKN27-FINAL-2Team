@@ -713,6 +713,50 @@ flowchart TD
 - Planner 경로는 리포트 worker와 별도이므로 `planner_attempt_count`와 `weekly_report_config.planner_max_attempts`를 사용한다.
 - Report Writer는 metric 참조 토큰만 생성하고, 숫자 렌더링은 deterministic renderer가 수행한다.
 
+### 실행 방식 — 상시 worker 없는 이벤트 트리거 (v1 확정)
+
+"worker"는 별도 상시 프로세스가 아니라 **요청 프로세스의 백그라운드 스레드**다.
+상시 폴링 프로세스를 두지 않는다. lease·token·claim 코드는 실행 주체와 무관하게 동일하므로,
+운영 확장이 필요해지면 같은 코드를 management command 폴링 프로세스로 옮기기만 하면 된다.
+
+- **주 트리거 (제출)**: `diagnosis_submit`이 enqueue 후 `transaction.on_commit()`으로
+  스레드를 띄워 claim을 1회 시도한다. 리포트 그래프 완료(`persist_ready`) 후 같은 스레드가
+  Planner claim → 실행 → finalize로 이어 간다 (자동 체이닝).
+- **회수 트리거 1 (나의 학습실 진입)**: 내 리포트가 `PENDING`이거나 lease 만료 `RUNNING`,
+  또는 `planner_status`가 재실행 대상(`NOT_REQUESTED`·lease 만료 `RUNNING`)이면
+  스레드로 claim을 1회 시도한다. 사용자가 결과를 보러 온 시점이 곧 재시도가 필요한 시점이다.
+  이월(`ensure_today_study_plan`)과 같은 사상 — 배치 없이 사용자 행동이 트리거다.
+- **회수 트리거 2 (수동 재시도 버튼)**: `FAILED → PENDING`(리포트) 또는
+  `FAILED → NOT_REQUESTED`(Planner) 전이 직후 같은 방식으로 claim을 1회 시도한다.
+- 동시 트리거 경합은 claim의 `SELECT ... FOR UPDATE SKIP LOCKED`가 직렬화한다.
+  집을 작업이 없는 claim은 빈손 no-op라 마이페이지 진입 비용에 영향이 없다.
+- `notify_report_worker()`는 v1에서 no-op다 (트리거 스레드가 직접 실행하므로 알림 대상이 없다).
+  상시 worker 전환 시에만 의미를 갖는다.
+- 스레드는 종료 전 DB 커넥션을 정리한다 (`connection.close()`).
+  runserver autoreload 등으로 스레드가 중단돼도 lease 만료 후 회수 트리거가 복구한다.
+- 수용하는 한계: 실패한 작업은 사용자가 나의 학습실에 들어와야 재시도된다.
+  리포트·다음 계획은 사용자가 볼 때 필요한 산출물이므로 v1에서 허용한다.
+
+### 나의 학습실 표시 규칙 (학습 플래너 패널 헤딩)
+
+리포트·Planner 상태는 학습 플래너 패널 헤딩 영역(기존 `planner-header-actions` 자리)에 표시한다.
+
+| 상태 | 표시 |
+|---|---|
+| 주간평가 미제출 | 표시 없음 (현행 유지) |
+| report `PENDING`/`RUNNING` | "AI 리포트 생성 중" 배지 (버튼 없음 — 진입 자체가 회수 트리거) |
+| report `READY` + planner `RUNNING` | "리포트 보기" + "다음 주 계획 생성 중" 배지 |
+| report `READY` + planner `READY` | "리포트 보기" + "다음 주 계획이 준비됐어요" (새 계획으로 전환됨) |
+| planner `NEEDS_ARCHIVE_TARGET` | "리포트 보기" + 교체할 active 계획 선택 UI + 생성 버튼 |
+| report/planner `FAILED` | 실패 배지 + **[다시 생성]** 버튼 |
+| 주간평가 미응시 | "평가 미응시" 배지 (버튼 없음) |
+
+- 재시도 API는 analytics 관할이다: `POST /analytics/api/weekly-report/retry/` —
+  실패 처리 절의 수동 재시도 전이를 수행하고 claim 스레드를 1회 띄운다.
+  이미 `PENDING`/`RUNNING`이면 상태 변경 없이 현재 상태를 반환한다 (멱등).
+- mypage view는 최신 리포트 row의 `report_status`/`planner_status`를 context로 내려주고,
+  view는 호출 순서만 담당한다 (상태 계산은 서비스 함수).
+
 ## 설정값
 
 하드코딩을 피하기 위해 다음 값은 설정으로 둔다.
@@ -740,6 +784,11 @@ flowchart TD
 
 ## 확정 결정 사항
 
+- Planner 자동 실행:
+  - 리포트 `READY` 저장 후 사용자 확정 없이 Planner를 자동 실행해 다음 계획을 생성·교체한다.
+  - 근거: 주간평가는 계획의 마지막 날 블록이므로 제출 = 해당 주 계획 소진. 다음 계획 자동 준비가 사이클상 자연스럽다.
+  - 사용자 개입 예외는 `NEEDS_ARCHIVE_TARGET`(교체 대상 선택)과 `FAILED`(수동 재시도) 두 가지뿐이다.
+  - 실행 주체는 상시 프로세스가 아니라 이벤트 트리거 스레드다 ("실행 방식" 절 참조).
 - 주간평가 세션 식별 방식:
   - `solve_sessions`에 `review_type` 필드를 추가한다.
   - 기존 `session_type='diagnostic'`은 유지한다.
