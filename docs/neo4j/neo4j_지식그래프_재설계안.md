@@ -1,9 +1,10 @@
 # 한국사 문제 생성용 Neo4j 지식그래프 재설계안
 
-> 문서 상태: 설계 초안 v0.1<br>
+> 문서 상태: `TARGET-DRAFT` v0.2<br>
 > 작성 기준일: 2026-07-14<br>
 > 적용 범위: `etl/preprocessing/neo4j`, `storage/neo4j`, `docs/neo4j`<br>
-> 제외 범위: `graph_service`, 문제 생성 애플리케이션 구현, 기존 운영 DB 변경
+> 제외 범위: `graph_service`, 문제 생성 애플리케이션 구현, 기존 운영 DB 변경<br>
+> 현행 상태: [README.md](./README.md), 정규화 진행: [neo4j_관계_정규화_점검.md](./neo4j_관계_정규화_점검.md)
 
 ## 1. 문서 목적
 
@@ -46,17 +47,23 @@
 
 ## 3. 현재 상태와 문제
 
-현재 import CSV를 기준으로 한 주요 규모는 다음과 같다.
+아래 수치는 2026-07-14 점검 당시 **LIVE 스냅샷**의 주요 규모다. 최신 SOURCE에는
+seed 기반 typed 인물 관계, EventGroup→Term 후보, SourceImage 관련 콘텐츠 관계,
+기간·사건·재위 관계가 추가됐지만 아직 LIVE에 재적재되지 않았다. 최신 SOURCE의 전체
+실행 결과는 node CSV 26개, relationship CSV 55개, `SourceUrl` 57,239건, 인물 관계
+184,044건이다. preload 114개와 golden 21개, 총 QA 135/135가 통과했고 55개 relation
+CSV의 Cypher `MERGE` identity 중복은 0건이다. manifest는 2026-07-14 18:14:27 KST에
+생성됐고 final import 승격도 완료했다.
 
 | 영역 | 현재 규모 | 현재 역할 | 문제 |
 |---|---:|---|---|
 | `CanonicalEntity` | 75,835 | AKS EID 기반 역사 대상 후보 | `Term`·ITKC `Person/Event`와 canonical 정렬이 없음 |
 | `Term` | 61,598 | 시소러스 용어·설명·분류 | 원천 용어와 실제 역사 실체의 구분이 일부만 연결됨 |
-| `Person` | 56,403 | ITKC 인물 관계망 | AKS 인물과 별도 세계이며 관계 의미가 주로 `RELATED_TO` 속성에 있음 |
-| `Event` | 600 | ITKC 사건 | AKS 사건과 정렬되지 않음 |
+| `Person` | 56,403 | ITKC 인물 관계망 | AKS 인물과 별도 세계. SOURCE는 typed 관계를 구현했지만 LIVE는 `RELATED_TO` 상태 |
+| `Event` | 600 | ITKC 사건 | AKS 사건과 정렬되지 않음. SOURCE의 재위·EventGroup→Term 후보는 canonical 정렬이 아님 |
 | `RoyalAction` | 9 | 검수된 왕 업적 사례 | 왕에게만 특수화되어 일반 인물·단체·국가 업적으로 확장하기 어려움 |
 | `CulturalHeritage` | 18,511 | 규칙 기반 문화유산 후보 | 본질 유형·법적 지정·문헌·실물 구분이 평면적임 |
-| `SourceImage` | 1,417 | 이미지 원천 | `DEPICTS` 연결은 211건이며 미디어 유형과 다중 대상 모델이 부족함 |
+| `SourceImage` | 1,417 | 이미지 원천 | `DEPICTS`와 관련 콘텐츠 URL을 분리했으나 미디어 유형과 다중 대상 모델은 부족함 |
 | `InscriptionContent` | 1 | 비문 내용 사례 | `Term` 추가 라벨을 사용한 one-off 구조임 |
 
 현재 구조에서 유지할 부분은 다음과 같다.
@@ -82,7 +89,23 @@
 
 ### 3.3 관계가 노드 속성과 generic edge에 중복됨
 
-예를 들어 인물의 `father_name`은 Person 속성에 들어가면서 Person 관계 CSV에도 존재한다. `RoyalAction`도 `monarch_name`, `target_name`을 속성으로 가질 수 있으면서 실제 노드 관계를 별도로 가진다. 이 구조는 수정 시 속성과 관계가 불일치할 수 있다.
+발견 당시 인물의 `father_name`은 Person 속성과 Person 관계 CSV에 중복됐고,
+`RoyalAction.monarch_name`, `target_name`도 실제 관계와 중복됐다. 최신 SOURCE는 확정된
+중복 속성을 노드 CSV에서 제거했다.
+
+인물 관계 CSV의 `relation_type`은 `relation_type_seed.csv.neo4j_rel_type`을 단일 기준으로
+삼고 Neo4j 5.26 dynamic typed load로 적재한다. `RELATED_TO`는 미등록 원천 유형의
+fallback이며 QA 기대값은 0이다. 대칭 관계는 canonical endpoint 한 쌍으로 합치되 양방향
+evidence URL을 모두 보존하고, 관계 의미와 무관한 `related_count`는 제거한다.
+`Person.core_relation_degree`는 최종 Person↔Person 관계와 `INVOLVED_IN` incident edge의
+합으로 계산한다.
+
+기존 `Event-[:HAS_RELATED_EVENT]->Term` 140건은 Event마다 같은 집단명을 복제하므로
+폐기했다. 최신 SOURCE는
+`Event-[:PART_OF_EVENT_GROUP]->EventGroup-[:HAS_TERM_CANDIDATE]->Term`을 사용한다.
+exact unique 이름 일치 후보만 만들며 GENERATED에서 18건을 확인했다. 모든 후보는
+`review_status=AUTO_CANDIDATE`, `answer_eligible=N`이므로 source–canonical 승인 전 정답
+근거나 canonical 사실로 사용하지 않는다.
 
 ### 3.4 역사 사실 모델이 왕 업적에 특수화됨
 
@@ -92,9 +115,23 @@
 
 현재 문화유산 분류는 주로 AKS `primaryTypePartA/B` 규칙과 override로 만든다. 공유 `HeritageClass` 계층이 없기 때문에 비석끼리, 불상끼리, 회화끼리 비교하는 경로가 약하다. 또한 문화유산 실물과 그 실물을 나타내는 이미지, 실물에 새겨진 비문 내용을 분명하게 분리해야 한다.
 
-### 3.6 전처리와 적재가 파괴적임
+최신 SOURCE에서는 `SourceImage.related_content`를 이미지 자신의 속성으로 보지 않는다.
+구조화된 제목·콘텐츠군·URL 참조를 파싱해 GENERATED에서 고유 URL 427개를 `SourceUrl`에
+통합하고 1,720개 `HAS_RELATED_CONTENT`로 연결했다. 이는 이미지가 역사 대상을 묘사한다는
+`DEPICTS`와 별개이며, 두 관계를 섞어 문화유산 실물·이미지·관련 문서를 오인하지 않는다.
 
-현재 전처리 runner는 실행 시작 시 기존 생성 CSV를 삭제하고, loader는 매번 전체 관계와 노드를 삭제한 후 적재한다. 파일럿 반복, 실패 복구, 이전 정상 버전 유지에 적합하지 않다.
+### 3.6 최종 import 승격은 안전화됐지만 중간 산출물과 loader는 비원자적임
+
+발견 당시 전처리 runner는 실행 시작 시 기존 최종 import CSV를 삭제해 중단되면 정상
+산출물까지 잃었다. 최신 SOURCE는 최종 `nodes/relations`만 `.neo4j_import.building`에
+만들고 completion manifest가 있는 성공 결과를 최종 import로 atomic promotion한다.
+`normalized`, `dictionary`, `mapping`, `staging`은 기존 위치에서 삭제·재생성되는 비원자적
+중간 산출물이므로 실패 시 부분 상태가 남을 수 있다. 완료 marker가 있는 후보는 승격 실패
+후 보존하며, Windows bind mount가 rename을 막으면 컨테이너를 중지한 뒤
+`--promote-existing`으로 재승격한다.
+
+다만 현재 loader의 전체 reset은 별도 문제로 남아 있다. 전처리 파일 promotion은 LIVE
+적재가 아니며, loader 안전화·백업·대상 DB 확인·명시 승인 없이 LIVE를 변경하지 않는다.
 
 ---
 
@@ -880,6 +917,14 @@ flowchart LR
 build/neo4j/{dataset_version}/{run_id}/
 ```
 
+목표 versioned run 구조로 이행하기 전의 현행 안전장치도 같은 원칙을 따른다. 현재
+전처리 runner는 최종 `neo4j_import`를 직접 비우지 않고 sibling
+`.neo4j_import.building`에서 최종 `nodes/relations`와 QA를 완성한다. 성공 manifest를 쓴
+뒤 기존 최종 디렉터리를 `.neo4j_import.previous`로 옮기고 후보를 atomic promotion하며,
+실패 시 기존 최종 결과를 복구·보존한다. 중간 `normalized/dictionary/mapping/staging`은
+아직 versioned run 디렉터리 밖에서 비원자적으로 재생성된다. 이 단계는 CSV publish일 뿐
+LIVE DB publish가 아니다.
+
 기존 정상 run을 실행 시작 시 삭제하지 않는다. 각 run manifest에는 다음을 남긴다.
 
 - run ID, profile `pilot|full`, parent run, 상태
@@ -955,6 +1000,32 @@ CREATED → BUILDING → VALIDATED → LOADED → PUBLISHED
 - Cypher `LOAD CSV` 목록과 실제 artifact 목록이 정확히 일치
 - conflict·unresolved·abstain 비율과 시대/topic/predicate별 검수 precision·recall이 `quality_gate.yaml` 임계값을 통과
 
+현행 정규화 bridge에서는 위 목표 gate와 함께 다음 계약을 검증했다. 최신 전체 실행에서
+아래 계약과 golden case가 모두 통과했으며, 건수는 승격된 GENERATED 실측값이다.
+
+- Cypher가 선언한 node/relationship CSV와 실제 artifact 집합이 정확히 일치: node 26개,
+  relationship 55개
+- `SourceUrl` 57,239건, endpoint orphan·고유키 중복 0
+- `person_related_to_person.csv.relation_type`이 seed의 `neo4j_rel_type` 허용 집합과 일치,
+  `RELATED_TO` 기대 0
+- 대칭 Person pair 중복 0, 양방향의 서로 다른 evidence URL 유실 0,
+  관계 `related_count` 컬럼 0
+- 모든 `Person.core_relation_degree`가 최종 Person↔Person + `INVOLVED_IN` incident edge와 일치
+- `EventGroup-[:HAS_TERM_CANDIDATE]->Term`은 exact unique 18건,
+  전부 `AUTO_CANDIDATE`와 `answer_eligible=N`
+- `SourceImage.related_content` 노드 속성 잔존 0,
+  `HAS_RELATED_CONTENT` 1,720건, `DEPICTS`와 endpoint·의미 혼합 0
+- 사건 재위 관계는 시작 444건·종료 445건, 재위 연도 범위 밖 후보는
+  `event_reign_mapping_review.csv`의 `YEAR_OUT_OF_RANGE` 2행으로 격리
+- 의미 축 관계는 Term→Country 1,619건, Term→EconomicDomain 2,893건,
+  Term→TaxonomyFacet 22,894건, Event→TaxonomyFacet 691건
+- 파생 `ABOUT_*`의 category ID·path·match type pipe 집계는 동일 tuple 순서를 유지하고,
+  Term/Event `HAS_CATEGORY` × `CanonicalCategory-[:ABOUT_*]`로 만든 source-target별 기대
+  tuple set과 실제 집계 set의 exact equality(누락·초과 0)를 QA로 확인
+- 55개 relation CSV의 Cypher `MERGE` identity 빈 값·중복 0
+- preload 계약 114개와 현행 golden case 21개가 모두 통과해 135/135 PASS
+- `.preprocessing_complete.json` 2026-07-14 18:14:27 KST 생성과 final import 승격 완료
+
 ### 15.2 post-load gate
 
 - uniqueness constraint와 index가 모두 ONLINE
@@ -1014,6 +1085,8 @@ CREATED → BUILDING → VALIDATED → LOADED → PUBLISHED
 
 ### 단계 1. 비파괴 파일럿 기반
 
+- 현행 최종 import의 후보 디렉터리·manifest·atomic promotion 안전장치 유지
+- 아직 비원자적인 `normalized/dictionary/mapping/staging`도 versioned run 디렉터리로 이동
 - AKS EID offset index
 - versioned run directory와 manifest
 - pilot scope builder
@@ -1151,7 +1224,9 @@ dataset_run_includes_projection.csv
 - AKS `SourceArticle`·`CanonicalEntity`: `etl/preprocessing/neo4j/scripts/make_aks_graph_csv.py`
 - 문화유산 규칙: `etl/preprocessing/neo4j/scripts/make_aks_heritage_csv.py`
 - 왕 업적 사례: `etl/preprocessing/neo4j/scripts/make_aks_royal_action_csv.py`
-- 전처리 전체 실행과 기존 CSV 정리: `etl/preprocessing/neo4j/run_neo4j_preprocessing.py`
+- 전처리 전체 실행, 후보 디렉터리 검증과 atomic promotion: `etl/preprocessing/neo4j/run_neo4j_preprocessing.py`
+- 인물 typed 관계·대칭 evidence·core degree와 EventGroup 후보: `etl/preprocessing/neo4j/scripts/make_graph_csv.py`
+- 이미지 관련 콘텐츠 URL 분리: `etl/preprocessing/neo4j/scripts/make_source_image_csv.py`
 - Neo4j 전체 reset과 schema 적재: `storage/neo4j/load_schema.py`
 - 현재 노드 import: `storage/neo4j/schema/history_graph_import_nodes.cypher`
 - 현재 관계 import: `storage/neo4j/schema/history_graph_import_relations.cypher`
@@ -1166,3 +1241,4 @@ dataset_run_includes_projection.csv
 | 버전 | 날짜 | 내용 |
 |---|---|---|
 | v0.1 | 2026-07-14 | 현행 감사 결과, 9/54 계약, canonical 정렬, Fact/Evidence, 문화유산·미디어 분리, 파일럿/전체 적재 방향을 최초 통합 |
+| v0.2 | 2026-07-14 | seed 기반 dynamic 인물 관계, EventGroup→Term 후보, SourceImage 관련 콘텐츠 URL 분리, 실패 안전 전처리와 현행 QA 계약 반영 |

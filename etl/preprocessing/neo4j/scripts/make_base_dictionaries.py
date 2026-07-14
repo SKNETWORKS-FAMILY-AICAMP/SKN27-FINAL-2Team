@@ -7,6 +7,7 @@
 import argparse
 import re
 from pathlib import Path
+from urllib.parse import urlparse
 
 import pandas as pd
 
@@ -16,6 +17,7 @@ from neo4j_common import (
     print_summary,
     read_csv,
     resolve_neo4j_dir,
+    resolve_project_root,
     save_csv,
     split_category_paths,
     split_event_category_tokens,
@@ -51,6 +53,12 @@ def parse_args(default_paths):
         default=default_paths["person_relations"],
         type=Path,
         help="정규화된 person-person 관계 CSV 경로.",
+    )
+    parser.add_argument(
+        "--image-source-seed-path",
+        default=default_paths["image_source_seed"],
+        type=Path,
+        help="이미지 원천 파일 위치와 컬럼명을 정의한 seed CSV 경로.",
     )
     parser.add_argument(
         "--dictionary-dir",
@@ -1004,6 +1012,7 @@ def build_source_url_dictionary(
     events_data,
     event_relations_data,
     person_relations_data,
+    image_related_content,
 ):
     url_rows = []
 
@@ -1017,6 +1026,17 @@ def build_source_url_dictionary(
     for data_frame, source_table, source_column, source_type in source_specs:
         url_rows.extend(
             collect_source_url_rows(data_frame, source_table, source_column, source_type)
+        )
+
+    for row_index, row in image_related_content.iterrows():
+        url_rows.append(
+            {
+                "url": row["url"],
+                "source_table": "source_images",
+                "source_column": "related_content",
+                "source_type": "IMAGE_RELATED_CONTENT",
+                "source_row_index": row_index,
+            }
         )
 
     if len(url_rows) == 0:
@@ -1048,6 +1068,167 @@ def build_source_url_dictionary(
     return source_url_dictionary[build_source_url_dictionary_columns()]
 
 
+def read_image_related_content_source(image_source_seed_path, project_root):
+    source_seed = read_csv(image_source_seed_path, "image_source_seed")
+
+    if len(source_seed) != 1:
+        raise ValueError("image_source_seed에는 설정이 정확히 한 행이어야 합니다.")
+
+    required_columns = {
+        "raw_relative_path",
+        "image_id_column",
+        "related_content_column",
+    }
+    missing_columns = sorted(required_columns - set(source_seed.columns))
+
+    if len(missing_columns) > 0:
+        raise ValueError(
+            "image_source_seed 필수 컬럼이 없습니다: " + ", ".join(missing_columns)
+        )
+
+    source_config = source_seed.iloc[0]
+    missing_values = sorted(
+        column_name
+        for column_name in required_columns
+        if pd.isna(clean_value(source_config[column_name]))
+    )
+
+    if len(missing_values) > 0:
+        raise ValueError(
+            "image_source_seed 필수값이 비어 있습니다: " + ", ".join(missing_values)
+        )
+
+    image_path = (project_root / source_config["raw_relative_path"]).resolve()
+    image_data = read_csv(image_path, "한국사 이미지 자료")
+    configured_columns = {
+        source_config["image_id_column"],
+        source_config["related_content_column"],
+    }
+    missing_image_columns = sorted(configured_columns - set(image_data.columns))
+
+    if len(missing_image_columns) > 0:
+        raise ValueError(
+            "한국사 이미지 자료 필수 컬럼이 없습니다: "
+            + ", ".join(missing_image_columns)
+        )
+
+    return source_config, image_data
+
+
+def parse_image_related_content_label(label, source_image_eid, line_number):
+    label_match = re.fullmatch(r"(.+)\s+\(([^()]+)\)", label)
+
+    if label_match is None:
+        raise ValueError(
+            "이미지 관련콘텐츠 라벨은 '제목 (콘텐츠군)' 형식이어야 합니다: "
+            f"source_image_eid={source_image_eid}, line={line_number}, value={label}"
+        )
+
+    content_title = label_match.group(1).strip()
+    content_collection = label_match.group(2).strip()
+
+    if content_title == "" or content_collection == "":
+        raise ValueError(
+            "이미지 관련콘텐츠 제목 또는 콘텐츠군이 비어 있습니다: "
+            f"source_image_eid={source_image_eid}, line={line_number}"
+        )
+
+    return content_title, content_collection
+
+
+def build_image_related_content(image_data, source_config):
+    image_id_column = source_config["image_id_column"]
+    related_content_column = source_config["related_content_column"]
+    related_rows = []
+    source_image_eids = set()
+    relation_keys = set()
+
+    for source_row_number, image_row in image_data.iterrows():
+        source_image_eid = clean_value(image_row[image_id_column])
+
+        if pd.isna(source_image_eid):
+            raise ValueError(
+                f"한국사 이미지 자료의 이미지 ID가 비어 있습니다: row={source_row_number + 2}"
+            )
+
+        if source_image_eid in source_image_eids:
+            raise ValueError(f"한국사 이미지 ID가 중복되었습니다: {source_image_eid}")
+
+        source_image_eids.add(source_image_eid)
+        raw_related_content = clean_value(image_row[related_content_column])
+
+        if pd.isna(raw_related_content):
+            continue
+
+        for source_line_number, raw_line in enumerate(
+            str(raw_related_content).splitlines(),
+            start=1,
+        ):
+            clean_line = raw_line.strip()
+
+            if clean_line == "":
+                continue
+
+            if clean_line.count("|") != 1:
+                raise ValueError(
+                    "이미지 관련콘텐츠는 줄마다 '라벨 | URL' 한 쌍이어야 합니다: "
+                    f"source_image_eid={source_image_eid}, line={source_line_number}, "
+                    f"value={clean_line}"
+                )
+
+            label, url = [value.strip() for value in clean_line.split("|", maxsplit=1)]
+            content_title, content_collection = parse_image_related_content_label(
+                label,
+                source_image_eid,
+                source_line_number,
+            )
+            parsed_url = urlparse(url)
+
+            if (
+                url == ""
+                or parsed_url.scheme not in {"http", "https"}
+                or parsed_url.netloc == ""
+                or re.search(r"\s", url) is not None
+            ):
+                raise ValueError(
+                    "이미지 관련콘텐츠 URL이 올바르지 않습니다: "
+                    f"source_image_eid={source_image_eid}, line={source_line_number}, "
+                    f"value={url}"
+                )
+
+            relation_key = (source_image_eid, url)
+
+            if relation_key in relation_keys:
+                raise ValueError(
+                    "동일 이미지의 관련콘텐츠 URL이 중복되었습니다: "
+                    f"source_image_eid={source_image_eid}, url={url}"
+                )
+
+            relation_keys.add(relation_key)
+            related_rows.append(
+                {
+                    "source_image_eid": source_image_eid,
+                    "content_title": content_title,
+                    "content_collection": content_collection,
+                    "url": url,
+                    "source_row_number": source_row_number + 2,
+                    "source_line_number": source_line_number,
+                }
+            )
+
+    return pd.DataFrame(
+        related_rows,
+        columns=[
+            "source_image_eid",
+            "content_title",
+            "content_collection",
+            "url",
+            "source_row_number",
+            "source_line_number",
+        ],
+    )
+
+
 def build_default_paths(script_path):
     neo4j_dir = resolve_neo4j_dir(script_path)
     normalized_dir = neo4j_dir / "normalized"
@@ -1058,6 +1239,7 @@ def build_default_paths(script_path):
         "events": normalized_dir / "events.csv",
         "event_relations": normalized_dir / "event_relations.csv",
         "person_relations": normalized_dir / "person_relations.csv",
+        "image_source_seed": seed_dir / "image_source_seed.csv",
         "dictionary_dir": neo4j_dir / "dictionary",
         "staging_dir": neo4j_dir / "staging",
         "relation_type_seed": seed_dir / "relation_type_seed.csv",
@@ -1076,6 +1258,7 @@ def build_output_specs():
         ("source_url_dictionary", "source_url_dictionary.csv", "dictionary_dir"),
         ("event_date_parse", "event_date_parse.csv", "staging_dir"),
         ("term_year_parse", "term_year_parse.csv", "staging_dir"),
+        ("image_related_content", "image_related_content.csv", "staging_dir"),
     ]
 
 
@@ -1097,6 +1280,7 @@ def build_outputs(
     relation_type_seed,
     period_seed,
     reign_seed,
+    image_related_content,
 ):
     return {
         "category_dictionary": build_category_dictionary(terms_data),
@@ -1114,14 +1298,17 @@ def build_outputs(
             events_data,
             event_relations_data,
             person_relations_data,
+            image_related_content,
         ),
         "event_date_parse": build_event_date_parse(events_data, reign_seed),
         "term_year_parse": build_term_year_parse(terms_data, reign_seed),
+        "image_related_content": image_related_content,
     }
 
 
 def main():
     script_path = Path(__file__).resolve()
+    project_root = resolve_project_root(script_path)
     default_paths = build_default_paths(script_path)
     args = parse_args(default_paths)
 
@@ -1132,6 +1319,14 @@ def main():
     relation_type_seed = read_relation_type_seed(args.relation_type_seed_path)
     period_seed = read_period_seed(args.period_seed_path)
     reign_seed = read_reign_seed(args.reign_seed_path)
+    image_source_config, image_data = read_image_related_content_source(
+        args.image_source_seed_path,
+        project_root,
+    )
+    image_related_content = build_image_related_content(
+        image_data,
+        image_source_config,
+    )
 
     outputs = build_outputs(
         terms_data,
@@ -1141,6 +1336,7 @@ def main():
         relation_type_seed,
         period_seed,
         reign_seed,
+        image_related_content,
     )
     output_files = build_output_files(args, outputs)
 

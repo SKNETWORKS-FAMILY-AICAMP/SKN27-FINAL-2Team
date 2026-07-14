@@ -1,21 +1,28 @@
 # Neo4j 구현 Mermaid 전체 구조
 
-이 문서는 Neo4j 구현 흐름을 Mermaid 구조도로만 따라갈 수 있게 정리한 문서다.
+> 문서 상태: `CURRENT-PARTIAL`
+> 확인일: 2026-07-14
+> 최신 상태는 [README.md](./README.md), 최신 SOURCE 스키마는
+> [neo4j_그래프_스키마_mermaid.md](./neo4j_그래프_스키마_mermaid.md)를 우선한다.
+> 뒤쪽의 5단계·17 node·39 relation 도표는 초기 기본 그래프의 상세 snapshot이다.
+
+이 문서는 Neo4j 구현 흐름을 Mermaid 구조도로 따라갈 수 있게 정리한 문서다.
 
 포함 범위:
 
 - raw CSV 입력
-- 전처리 runner와 기본 실행 스크립트 5개
-- seed CSV 15개
+- 전처리 runner와 실행 단계 12개
+- seed CSV 31개(`graph_preload_contract_seed.csv` 포함)
 - normalized CSV 4개
 - dictionary CSV 10개
 - mapping CSV 6개
-- staging CSV 5개
-- 최종 node CSV 17개
-- 최종 relationship CSV 39개와 optional relation CSV 2개
+- staging CSV 10개(`event_reign_mapping_review.csv`, `graph_qa_report.csv` 포함)
+- 최종 node CSV 26개
+- 최종 relationship CSV 55개(2026-07-14 전체 runner 실측)
 - Cypher 4개와 내부 reset
 - Neo4j import 경로와 Docker mount
-- 카테고리, 이벤트 분류, 시대 범위, 인물 관계 생성 규칙
+- 카테고리, 이벤트 분류, 시대 범위, typed 인물 관계 생성 규칙
+- AKS source/canonical, 국가·재위, 왕 업적 사례, 문화유산, 이미지, 비문, QA
 
 ---
 
@@ -31,31 +38,48 @@ flowchart TB
     mapping["make_mapping_tables.py<br/>mapping / staging 생성"]
     graph_csv["make_graph_csv.py<br/>Neo4j import CSV 생성"]
     theme_era["make_theme_era_csv.py<br/>Theme/Era/EntityType 생성"]
+    aks["make_aks_graph_csv.py<br/>AKS source/canonical"]
+    reign["make_aks_reign_graph_csv.py<br/>국가·재위·Event 재위 시점<br/>범위 밖 검수 2행"]
+    action["make_aks_royal_action_csv.py<br/>왕 업적 구조 사례"]
+    heritage["make_aks_heritage_csv.py<br/>문화유산 분류"]
+    image["make_source_image_csv.py<br/>이미지·DEPICTS·HAS_RELATED_CONTENT"]
+    inscription["make_inscription_content_csv.py<br/>비문 내용·표현"]
+    qa["validate_graph_qa.py<br/>preload 114 + golden 21<br/>135/135 PASS"]
+    declared["import Cypher 선언 CSV 검사<br/>완료 marker"]
+    candidate[".neo4j_import.building<br/>후보 import"]
     term_person_review["make_term_person_review.py<br/>Term-Person 검수 후보 생성<br/>필요 시 단독 실행"]
     import_dir["storage/neo4j/neo4j_import<br/>최종 import CSV"]
     schema_runner["storage/neo4j/load_schema.py<br/>Cypher 실행"]
     neo4j["Neo4j Graph DB"]
 
     runner --> normalize
-    runner --> base_dict
-    runner --> mapping
-    runner --> graph_csv
-    runner --> theme_era
-
     raw --> normalize
     normalize --> base_dict
     base_dict --> mapping
-    normalize --> mapping
-    normalize --> graph_csv
-    base_dict --> graph_csv
     mapping --> graph_csv
-    graph_csv --> import_dir
     graph_csv --> theme_era
-    theme_era --> import_dir
+    theme_era --> aks
+    aks --> reign
+    reign --> action
+    action --> heritage
+    heritage --> image
+    image --> inscription
+    inscription --> qa
+    qa --> candidate
+    candidate --> declared
+    declared -->|"atomic promotion"| import_dir
     import_dir -.-> term_person_review
     import_dir --> schema_runner
     schema_runner --> neo4j
 ```
+
+runner는 최종 import를 먼저 삭제하지 않는다. lock을 잡고 최종 `nodes/relations`를 후보
+폴더에 만든 뒤 QA와 schema 선언 검사를 통과한 후보만 완료 marker와 함께 승격한다.
+`normalized`, `dictionary`, `mapping`, `staging`은 기존 위치에서 재생성되는 비원자적 중간
+산출물이다. 기존 최종 폴더는 승격 동안 `.neo4j_import.previous`로 보존하며 실패하면
+복원한다. 완료 후보는 승격 실패 후에도 보존한다. Windows bind mount가 rename을 막으면
+Neo4j 컨테이너를 중지한 뒤 `--promote-existing`으로 재승격한다. LIVE 적재는 이 흐름 뒤
+`load_schema.py`를 별도로 실행할 때만 일어난다.
 
 ---
 
@@ -479,7 +503,7 @@ flowchart LR
     end
 
     subgraph url["출처"]
-        source_url["SourceUrl<br/>출처 URL (57,412)<br/>RAG 수집 후보"]
+        source_url["SourceUrl<br/>출처 URL (57,239 실측)<br/>RAG 수집 후보"]
     end
 
     term -->|"HAS_THEME · 주제"| theme
@@ -493,11 +517,11 @@ flowchart LR
     term -->|"MENTIONS_PERSON · 설명문 언급"| person
     term -->|"REFERS_TO · 가리키는 실체"| event
     person -->|"INVOLVED_IN · 사건 참여"| event
-    person -->|"RELATED_TO · 인물 관계"| person
+    person -->|"typed 인물 관계 16종<br/>미등록 유형만 RELATED_TO"| person
 
     event -->|"HAS_SOURCE_URL · 출처"| source_url
     person -->|"HAS_SOURCE_URL · 상세 페이지"| source_url
-    person -.->|"RELATED_TO.evidence_url · 관계 속성"| person
+    person -.->|"typed relation.evidence_url · 관계 속성"| person
 ```
 
 ### 10.2 분류 체계와 의미 축 상세 스키마
@@ -547,6 +571,7 @@ flowchart LR
     event2 -->|"HAS_EVENT_FACET · 의미 facet"| event_facet
     event2 -->|"IN_PERIOD · 원본 시대"| period
     event2 -->|"PART_OF_EVENT_GROUP · 사건군"| event_group
+    event_group -->|"HAS_TERM_CANDIDATE · 유일 이름 후보 (18 실측)<br/>answer_eligible=N"| term2
     event2 -->|"HAS_SEARCH_TAG · 검색 태그"| search_tag
     event2 -->|"ABOUT_COUNTRY · 관련 국가"| country
     event2 -->|"ABOUT_TAXONOMY_FACET · 중간 분류"| taxonomy_facet
@@ -564,7 +589,7 @@ flowchart LR
     period -->|"PART_OF_ERA · 표준 시대 통합"| era2
 ```
 
-읽는 법: 10.1이 문제 생성 서비스가 실제로 쓰는 관계이고(전부 1홉 직통), 10.2는 그 직통 엣지의 원천이 되는 분류/시대 체계다. 직통 엣지(`HAS_THEME`, `IN_ERA`)는 원천 매핑(`CanonicalCategory-HAS_THEME`, `Period-PART_OF_ERA`)에서 전처리 때 미리 펼친 파생 관계다.
+읽는 법: 10.1이 문제 생성 서비스가 실제로 쓰는 관계이고(전부 1홉 직통), 10.2는 그 직통 엣지의 원천이 되는 분류/시대 체계다. 직통 엣지(`HAS_THEME`, `IN_ERA`)는 원천 매핑(`CanonicalCategory-HAS_THEME`, `Period-PART_OF_ERA`)에서 전처리 때 미리 펼친 파생 관계다. `HAS_TERM_CANDIDATE`는 정답용 직통 엣지가 아니라 검수 후보 경로다. 과거 Event별 `HAS_RELATED_EVENT` 140건은 제거한다.
 
 ---
 
@@ -685,8 +710,8 @@ flowchart TB
 flowchart TB
     event_rel["normalized/event_relations.csv<br/>event_id / person_id / relation_type"]
     person_rel["normalized/person_relations.csv<br/>person_id / related_person_id / relation_type"]
-    relation_seed["relation_type_seed.csv"]
-    relation_dict["relation_type_dictionary.csv"]
+    relation_seed["relation_type_seed.csv<br/>neo4j_rel_type 단일 기준"]
+    relation_dict["relation_type_dictionary.csv<br/>타입·방향·대칭 규칙"]
 
     people_from_event["event_relations.person_id<br/>사건 참여자"]
     people_from_person["person_relations.person_id<br/>관계 출발 인물"]
@@ -694,7 +719,8 @@ flowchart TB
     people_node["people.csv<br/>Person"]
 
     involved["person_involved_in_event.csv<br/>Person - INVOLVED_IN - Event"]
-    related["person_related_to_person.csv<br/>Person - RELATED_TO - Person<br/>raw / normalized / direction 속성 보존"]
+    related["person_related_to_person.csv<br/>Person - typed edge - Person<br/>대칭 evidence 병합·related_count 제외"]
+    core_degree["people.csv.core_relation_degree<br/>최종 코어 관계에서 재집계"]
     person_url["person_has_source_url.csv<br/>Person - HAS_SOURCE_URL - SourceUrl"]
 
     event_rel --> people_from_event --> people_node
@@ -704,6 +730,8 @@ flowchart TB
     event_rel --> involved
     person_rel --> related
     relation_seed --> relation_dict --> related
+    involved --> core_degree
+    related --> core_degree
     person_rel --> person_url
 ```
 
@@ -716,26 +744,48 @@ flowchart TB
     event_urls["events.source_urls"]
     event_relation_urls["event_relations.source_urls"]
     person_evidence["person_relations.evidence_url"]
-    related_evidence["person_related_to_person.csv<br/>RELATED_TO.evidence_url 속성"]
+    related_evidence["person_related_to_person.csv<br/>실제 관계 타입의 evidence_url 속성"]
     person_detail["person_relations.detail_url"]
+    image_related_raw["source_images.related_content<br/>제목 (콘텐츠군) | URL"]
+    image_related_stage["staging/image_related_content.csv<br/>1,720 실측"]
 
     source_url_dict["source_url_dictionary.csv<br/>use_for_rag=Y<br/>fetch_status=PENDING"]
     source_urls_node["source_urls.csv<br/>SourceUrl"]
 
     event_has_url["event_has_source_url.csv<br/>Event - HAS_SOURCE_URL - SourceUrl"]
     person_has_url["person_has_source_url.csv<br/>Person - HAS_SOURCE_URL - SourceUrl"]
+    image_has_related["source_image_has_related_content.csv<br/>SourceImage - HAS_RELATED_CONTENT - SourceUrl"]
+    depicts["source_image_depicts_entity.csv<br/>DEPICTS<br/>제목/override 근거만 사용"]
     web_rag["Web RAG / Tavily 후보<br/>그래프에서 URL을 찾고 외부 문서 수집 가능"]
 
     event_urls --> source_url_dict
     event_relation_urls --> source_url_dict
     person_evidence --> related_evidence
     person_detail --> source_url_dict
+    image_related_raw --> image_related_stage --> source_url_dict
 
     source_url_dict --> source_urls_node
     source_urls_node --> event_has_url
     source_urls_node --> person_has_url
+    source_urls_node --> image_has_related
+    image_related_stage --> image_has_related
+    image_related_raw -.->|"DEPICTS 근거로 사용하지 않음"| depicts
     source_urls_node --> web_rag
 ```
+
+2026-07-14 18:14:27 KST final 승격 결과에서 이미지 관련 콘텐츠 staging·관계 1,720개,
+고유 URL 427개, `SourceUrl` 57,239개가 생성됐다. 사건 재위 관계는 시작 444개·종료
+445개이며, 범위 밖 1개 Event의 시작·종료 후보는 `event_reign_mapping_review.csv`에
+`YEAR_OUT_OF_RANGE` 2행으로 남겼다. 의미 축 관계는 Term→Country 1,619개,
+Term→EconomicDomain 2,893개, Term→TaxonomyFacet 22,894개,
+Event→TaxonomyFacet 691개다. preload 114건과 golden 21건, 총 135/135 QA를 통과했고
+55개 relation CSV의 `MERGE` identity 중복 0건을 확인했다. LIVE Neo4j에는 아직 적재하지
+않았다.
+
+파생 `ABOUT_*` 관계의 category ID·path·match type은 같은 원본 tuple 순서로 pipe 집계하며,
+QA는 세 열의 arity를 확인한다. 이어 각 Term/Event의 `HAS_CATEGORY`와
+`CanonicalCategory-[:ABOUT_*]`를 조합한 source-target별 기대 tuple set을 실제 집계 set과
+비교해 누락·초과 0의 exact equality를 검사한다.
 
 ---
 
@@ -771,6 +821,10 @@ flowchart TB
     import_relation_cypher --> verify
     verify --> neo4j
 ```
+
+인물 관계 import는 `relation_type_seed.neo4j_rel_type`을 CSV `relation_type`으로 전달하고
+Neo4j 5.26의 `$(row.relation_type)` 동적 관계 타입으로 한 LOAD 블록에서 처리한다. 관계별
+Cypher 블록을 복제하지 않으며, 정규화 속성과 병합된 `evidence_url`만 명시적으로 적재한다.
 
 ---
 
@@ -958,7 +1012,7 @@ flowchart TB
 
     subgraph evidence_url["관계 근거 URL 처리"]
         person_rel["person_relations.csv<br/>person_id, related_person_id, evidence_url"]
-        related_rel["person_related_to_person.csv<br/>Person - RELATED_TO - Person<br/>evidence_url 관계 속성"]
+        related_rel["person_related_to_person.csv<br/>Person - typed edge - Person<br/>evidence_url 관계 속성"]
 
         person_rel --> related_rel
     end
@@ -973,4 +1027,4 @@ flowchart TB
     related_rel --> import_rel
 ```
 
-이 흐름에서 `IN_ERA`는 원본을 대체하지 않는다. `IN_PERIOD`, `PART_OF_ERA` 같은 원천 경로를 유지한 상태에서 서비스 조회를 빠르게 하기 위해 미리 펼친 관계다. Person의 `IN_ERA`는 생몰년 기반을 우선하고, 생몰년이 없을 때만 참여 사건 Era를 보조로 쓰며, 더 좁은 Era가 같은 생애 겹침 구간을 완전히 설명하면 넓은 Era 중복은 제외한다. 인물 관계 근거 URL은 별도 `HAS_EVIDENCE_URL` 관계로 만들지 않고 `RELATED_TO.evidence_url` 속성으로만 보존한다.
+이 흐름에서 `IN_ERA`는 원본을 대체하지 않는다. `IN_PERIOD`, `PART_OF_ERA` 같은 원천 경로를 유지한 상태에서 서비스 조회를 빠르게 하기 위해 미리 펼친 관계다. Person의 `IN_ERA`는 생몰년 기반을 우선하고, 생몰년이 없을 때만 참여 사건 Era를 보조로 쓰며, 더 좁은 Era가 같은 생애 겹침 구간을 완전히 설명하면 넓은 Era 중복은 제외한다. 인물 관계 근거 URL은 별도 `HAS_EVIDENCE_URL` 관계로 만들지 않고 typed 인물 관계 또는 catch-all `RELATED_TO`의 `evidence_url` 속성으로 보존한다.

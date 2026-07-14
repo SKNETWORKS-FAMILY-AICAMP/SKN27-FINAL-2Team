@@ -27,6 +27,7 @@ def build_default_paths(script_path):
         "nodes_dir": import_dir / "nodes",
         "relations_dir": import_dir / "relations",
         "review_path": neo4j_dir / "staging" / "aks_reign_review.csv",
+        "event_review_path": neo4j_dir / "staging" / "event_reign_mapping_review.csv",
     }
 
 
@@ -60,6 +61,11 @@ def parse_args(default_paths):
         "--review-path",
         type=Path,
         default=default_paths["review_path"],
+    )
+    parser.add_argument(
+        "--event-review-path",
+        type=Path,
+        default=default_paths["event_review_path"],
     )
     parser.add_argument(
         "--save",
@@ -812,6 +818,176 @@ def build_output_rows(
     }
 
 
+def build_monarch_reign_index(reign_rows):
+    """
+    왕호 → 재위 후보 목록 인덱스를 만든다. 재위 이름은 "{왕호}의 {국가} 재위" 형식이다.
+    """
+    monarch_pattern = re.compile(r"^(.+?)의 .+? 재위$")
+    monarch_index = {}
+    for reign_row in reign_rows:
+        matched = monarch_pattern.match(reign_row["name"])
+        if matched:
+            monarch_index.setdefault(matched.group(1), []).append(reign_row)
+
+    return monarch_index
+
+
+def to_year_or_none(value):
+    try:
+        return int(str(value).strip())
+    except (TypeError, ValueError):
+        return None
+
+
+def match_event_reign(monarch_index, monarch_name, event_year):
+    """
+    이벤트의 재위 왕호를 재위 노드와 매칭한다.
+
+    왕호가 유일해도 사건 연도가 있으면 재위 기간을 검증한다. 동명 왕호
+    (예: 고려 태조 vs 조선 태조)는 사건 연도가 재위 기간에 포함되는 재위가
+    정확히 1개일 때만 매칭한다.
+    """
+    candidates = monarch_index.get(monarch_name, [])
+    if not candidates:
+        return None, "NO_MONARCH"
+    if len(candidates) == 1:
+        candidate = candidates[0]
+        start_year = to_year_or_none(candidate["start_year"])
+        end_year = to_year_or_none(candidate["end_year"])
+
+        if event_year is None or start_year is None or end_year is None:
+            return candidate, "UNIQUE_MONARCH"
+        if start_year <= event_year <= end_year:
+            return candidate, "UNIQUE_MONARCH"
+
+        return None, "YEAR_OUT_OF_RANGE"
+    if event_year is not None:
+        in_range = [
+            candidate
+            for candidate in candidates
+            if to_year_or_none(candidate["start_year"]) is not None
+            and to_year_or_none(candidate["end_year"]) is not None
+            and to_year_or_none(candidate["start_year"])
+            <= event_year
+            <= to_year_or_none(candidate["end_year"])
+        ]
+        if len(in_range) == 1:
+            return in_range[0], "YEAR_RESOLVED"
+
+    return None, "AMBIGUOUS"
+
+
+def read_event_node_rows(events_path):
+    require_file(events_path, "Event nodes")
+
+    with events_path.open(encoding="utf-8-sig", newline="") as events_file:
+        return list(csv.DictReader(events_file))
+
+
+def build_event_reign_relation_rows(events_path, reign_rows):
+    """
+    Event의 start_reign_name/end_reign_name(노드 속성으로만 있던 관계)을
+    재위 엣지로 만든다 (docs/neo4j/neo4j_관계_정규화_점검.md 발견 3).
+    미매칭·모호분은 관계를 만들지 않고 별도 검수 CSV에 남긴다.
+    """
+    monarch_index = build_monarch_reign_index(reign_rows)
+    event_rows = read_event_node_rows(events_path)
+    relation_specs = [
+        ("start_reign_name", "start_year", "STARTED_DURING_REIGN", "event_started_during_reign"),
+        ("end_reign_name", "end_year", "ENDED_DURING_REIGN", "event_ended_during_reign"),
+    ]
+    outputs = {output_name: [] for _, _, _, output_name in relation_specs}
+    review_rows = []
+
+    for event_row in event_rows:
+        for name_column, year_column, relation_type, output_name in relation_specs:
+            monarch_name = (event_row.get(name_column) or "").strip()
+            if not monarch_name:
+                continue
+            event_year = to_year_or_none(event_row.get(year_column))
+            if event_year is None:
+                event_year = to_year_or_none(event_row.get("start_year"))
+            matched_reign, match_method = match_event_reign(
+                monarch_index,
+                monarch_name,
+                event_year,
+            )
+            if matched_reign is None:
+                candidates = monarch_index.get(monarch_name, [])
+                review_rows.append(
+                    {
+                        "event_id": event_row["event_id"],
+                        "event_name": event_row.get("name", ""),
+                        "relation_type": relation_type,
+                        "monarch_name": monarch_name,
+                        "event_year": event_year if event_year is not None else "",
+                        "event_date": event_row.get("event_date", ""),
+                        "issue_code": match_method,
+                        "candidate_reign_ids": "|".join(
+                            candidate["reign_id"] for candidate in candidates
+                        ),
+                        "candidate_reign_names": "|".join(
+                            candidate["name"] for candidate in candidates
+                        ),
+                        "candidate_year_ranges": "|".join(
+                            f"{candidate['start_year']}-{candidate['end_year']}"
+                            for candidate in candidates
+                        ),
+                    }
+                )
+                continue
+            outputs[output_name].append(
+                {
+                    "start_event_id": event_row["event_id"],
+                    "end_reign_id": matched_reign["reign_id"],
+                    "relation_type": relation_type,
+                    "event_name": event_row.get("name", ""),
+                    "reign_name": matched_reign["name"],
+                    "match_method": match_method,
+                }
+            )
+
+    return outputs, review_rows
+
+
+def build_event_reign_output_specs(args, event_reign_outputs, event_review_rows):
+    fieldnames = [
+        "start_event_id",
+        "end_reign_id",
+        "relation_type",
+        "event_name",
+        "reign_name",
+        "match_method",
+    ]
+
+    output_specs = {
+        output_name: {
+            "path": args.relations_dir / f"{output_name}.csv",
+            "rows": rows,
+            "fieldnames": fieldnames,
+        }
+        for output_name, rows in event_reign_outputs.items()
+    }
+    output_specs["event_reign_mapping_review"] = {
+        "path": args.event_review_path,
+        "rows": event_review_rows,
+        "fieldnames": [
+            "event_id",
+            "event_name",
+            "relation_type",
+            "monarch_name",
+            "event_year",
+            "event_date",
+            "issue_code",
+            "candidate_reign_ids",
+            "candidate_reign_names",
+            "candidate_year_ranges",
+        ],
+    }
+
+    return output_specs
+
+
 def build_output_specs(args, output_rows, review_rows):
     return {
         "polities": {
@@ -969,6 +1145,17 @@ def main():
         source_config,
     )
     output_specs = build_output_specs(args, output_rows, review_rows)
+    event_reign_outputs, event_reign_review_rows = build_event_reign_relation_rows(
+        args.nodes_dir / "events.csv",
+        output_rows["reigns"],
+    )
+    output_specs.update(
+        build_event_reign_output_specs(
+            args,
+            event_reign_outputs,
+            event_reign_review_rows,
+        )
+    )
 
     if args.save:
         save_output_specs(output_specs)

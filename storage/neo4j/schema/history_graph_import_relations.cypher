@@ -76,7 +76,21 @@ CALL (row) {
     MATCH (start:SourceImage {source_image_id: row.source_image_id})
     MATCH (target:CanonicalEntity {canonical_id: row.canonical_id})
     MERGE (start)-[r:DEPICTS]->(target)
-    SET r += row
+    SET r.mapping_method = row.mapping_method,
+        r.evidence_field = row.evidence_field,
+        r.evidence_text = row.evidence_text,
+        r.review_status = row.review_status
+} IN TRANSACTIONS OF 1000 ROWS;
+
+LOAD CSV WITH HEADERS FROM 'file:///relations/source_image_has_related_content.csv' AS row
+CALL (row) {
+    MATCH (start:SourceImage {source_image_id: row.source_image_id})
+    MATCH (target:SourceUrl {source_url_id: row.source_url_id})
+    MERGE (start)-[r:HAS_RELATED_CONTENT]->(target)
+    SET r.content_title = row.content_title,
+        r.content_collection = row.content_collection,
+        r.mapping_method = row.mapping_method,
+        r.review_status = row.review_status
 } IN TRANSACTIONS OF 1000 ROWS;
 
 LOAD CSV WITH HEADERS FROM 'file:///relations/inscription_content_inscribed_on.csv' AS row
@@ -108,7 +122,10 @@ CALL (row) {
     MATCH (start:Term {term_id: row.start_term_id})
     MATCH (target:Country {country_id: row.end_country_id})
     MERGE (start)-[r:ABOUT_COUNTRY]->(target)
-    SET r += row
+    SET r.country_name = row.country_name,
+        r.canonical_category_id = row.canonical_category_id,
+        r.canonical_category_path = row.canonical_category_path,
+        r.match_type = row.match_type
 } IN TRANSACTIONS OF 1000 ROWS;
 
 LOAD CSV WITH HEADERS FROM 'file:///relations/term_about_region.csv' AS row
@@ -116,7 +133,11 @@ CALL (row) {
     MATCH (start:Term {term_id: row.start_term_id})
     MATCH (target:Region {region_id: row.end_region_id})
     MERGE (start)-[r:ABOUT_REGION]->(target)
-    SET r += row
+    SET r.region_name = row.region_name,
+        r.region_type = row.region_type,
+        r.canonical_category_id = row.canonical_category_id,
+        r.canonical_category_path = row.canonical_category_path,
+        r.match_type = row.match_type
 } IN TRANSACTIONS OF 1000 ROWS;
 
 LOAD CSV WITH HEADERS FROM 'file:///relations/term_about_economic_domain.csv' AS row
@@ -124,7 +145,10 @@ CALL (row) {
     MATCH (start:Term {term_id: row.start_term_id})
     MATCH (target:EconomicDomain {economic_domain_id: row.end_economic_domain_id})
     MERGE (start)-[r:ABOUT_ECONOMIC_DOMAIN]->(target)
-    SET r += row
+    SET r.economic_domain_name = row.economic_domain_name,
+        r.canonical_category_id = row.canonical_category_id,
+        r.canonical_category_path = row.canonical_category_path,
+        r.match_type = row.match_type
 } IN TRANSACTIONS OF 1000 ROWS;
 
 LOAD CSV WITH HEADERS FROM 'file:///relations/term_about_taxonomy_facet.csv' AS row
@@ -132,7 +156,11 @@ CALL (row) {
     MATCH (start:Term {term_id: row.start_term_id})
     MATCH (target:TaxonomyFacet {taxonomy_facet_id: row.end_taxonomy_facet_id})
     MERGE (start)-[r:ABOUT_TAXONOMY_FACET]->(target)
-    SET r += row
+    SET r.taxonomy_facet_name = row.taxonomy_facet_name,
+        r.taxonomy_facet_path = row.taxonomy_facet_path,
+        r.canonical_category_id = row.canonical_category_id,
+        r.canonical_category_path = row.canonical_category_path,
+        r.match_type = row.match_type
 } IN TRANSACTIONS OF 1000 ROWS;
 
 LOAD CSV WITH HEADERS FROM 'file:///relations/event_has_source_category.csv' AS row
@@ -224,7 +252,10 @@ CALL (row) {
     MATCH (start:Event {event_id: row.start_event_id})
     MATCH (target:Country {country_id: row.end_country_id})
     MERGE (start)-[r:ABOUT_COUNTRY]->(target)
-    SET r += row
+    SET r.country_name = row.country_name,
+        r.canonical_category_id = row.canonical_category_id,
+        r.canonical_category_path = row.canonical_category_path,
+        r.match_type = row.match_type
 } IN TRANSACTIONS OF 1000 ROWS;
 
 LOAD CSV WITH HEADERS FROM 'file:///relations/event_about_taxonomy_facet.csv' AS row
@@ -232,7 +263,11 @@ CALL (row) {
     MATCH (start:Event {event_id: row.start_event_id})
     MATCH (target:TaxonomyFacet {taxonomy_facet_id: row.end_taxonomy_facet_id})
     MERGE (start)-[r:ABOUT_TAXONOMY_FACET]->(target)
-    SET r += row
+    SET r.taxonomy_facet_name = row.taxonomy_facet_name,
+        r.taxonomy_facet_path = row.taxonomy_facet_path,
+        r.canonical_category_id = row.canonical_category_id,
+        r.canonical_category_path = row.canonical_category_path,
+        r.match_type = row.match_type
 } IN TRANSACTIONS OF 1000 ROWS;
 
 LOAD CSV WITH HEADERS FROM 'file:///relations/person_involved_in_event.csv' AS row
@@ -243,172 +278,21 @@ CALL (row) {
     SET r += row
 } IN TRANSACTIONS OF 1000 ROWS;
 
-// 인물 간 관계: normalized_relation_type을 엣지 타입으로 적재한다.
-// 관계 종류는 엣지 속성이 아니라 타입이어야 타입 패턴 매칭이 가능하다
-// (docs/neo4j/neo4j_관계_정규화_점검.md 발견 1).
-// 순수 Cypher는 MERGE에 동적 타입을 쓸 수 없어 유형별 블록으로 나눈다.
-// 아래 목록은 person_related_to_person.csv의 normalized_relation_type 전체와
-// 일치해야 하며, 새 유형 추가 시 블록을 추가한다. 목록 밖 유형은
-// 마지막 catch-all 블록이 RELATED_TO로 적재해 유실을 막는다.
-
+// 인물 간 관계: relation_type_seed.csv에서 승인된 neo4j_rel_type을 CSV에 기록하고
+// Neo4j 5.26의 동적 관계 타입으로 한 번만 읽어 적재한다. seed에 없는 원천 유형은
+// 사전 생성 단계에서 RELATED_TO로 명시되며 QA에서 실패 대상으로 검출한다.
 LOAD CSV WITH HEADERS FROM 'file:///relations/person_related_to_person.csv' AS row
 CALL (row) {
-    WITH row WHERE row.normalized_relation_type = 'HAS_FATHER'
     MATCH (start:Person {person_id: row.start_person_id})
     MATCH (target:Person {person_id: row.end_person_id})
-    MERGE (start)-[r:HAS_FATHER {person_relation_id: row.person_relation_id}]->(target)
-    SET r += row
-} IN TRANSACTIONS OF 250 ROWS;
-
-LOAD CSV WITH HEADERS FROM 'file:///relations/person_related_to_person.csv' AS row
-CALL (row) {
-    WITH row WHERE row.normalized_relation_type = 'HAS_MOTHER'
-    MATCH (start:Person {person_id: row.start_person_id})
-    MATCH (target:Person {person_id: row.end_person_id})
-    MERGE (start)-[r:HAS_MOTHER {person_relation_id: row.person_relation_id}]->(target)
-    SET r += row
-} IN TRANSACTIONS OF 250 ROWS;
-
-LOAD CSV WITH HEADERS FROM 'file:///relations/person_related_to_person.csv' AS row
-CALL (row) {
-    WITH row WHERE row.normalized_relation_type = 'HAS_BIOLOGICAL_FATHER'
-    MATCH (start:Person {person_id: row.start_person_id})
-    MATCH (target:Person {person_id: row.end_person_id})
-    MERGE (start)-[r:HAS_BIOLOGICAL_FATHER {person_relation_id: row.person_relation_id}]->(target)
-    SET r += row
-} IN TRANSACTIONS OF 250 ROWS;
-
-LOAD CSV WITH HEADERS FROM 'file:///relations/person_related_to_person.csv' AS row
-CALL (row) {
-    WITH row WHERE row.normalized_relation_type = 'HAS_BIOLOGICAL_MOTHER'
-    MATCH (start:Person {person_id: row.start_person_id})
-    MATCH (target:Person {person_id: row.end_person_id})
-    MERGE (start)-[r:HAS_BIOLOGICAL_MOTHER {person_relation_id: row.person_relation_id}]->(target)
-    SET r += row
-} IN TRANSACTIONS OF 250 ROWS;
-
-LOAD CSV WITH HEADERS FROM 'file:///relations/person_related_to_person.csv' AS row
-CALL (row) {
-    WITH row WHERE row.normalized_relation_type = 'HAS_CHILD'
-    MATCH (start:Person {person_id: row.start_person_id})
-    MATCH (target:Person {person_id: row.end_person_id})
-    MERGE (start)-[r:HAS_CHILD {person_relation_id: row.person_relation_id}]->(target)
-    SET r += row
-} IN TRANSACTIONS OF 250 ROWS;
-
-LOAD CSV WITH HEADERS FROM 'file:///relations/person_related_to_person.csv' AS row
-CALL (row) {
-    WITH row WHERE row.normalized_relation_type = 'HAS_GRANDFATHER'
-    MATCH (start:Person {person_id: row.start_person_id})
-    MATCH (target:Person {person_id: row.end_person_id})
-    MERGE (start)-[r:HAS_GRANDFATHER {person_relation_id: row.person_relation_id}]->(target)
-    SET r += row
-} IN TRANSACTIONS OF 250 ROWS;
-
-LOAD CSV WITH HEADERS FROM 'file:///relations/person_related_to_person.csv' AS row
-CALL (row) {
-    WITH row WHERE row.normalized_relation_type = 'HAS_GREAT_GRANDFATHER'
-    MATCH (start:Person {person_id: row.start_person_id})
-    MATCH (target:Person {person_id: row.end_person_id})
-    MERGE (start)-[r:HAS_GREAT_GRANDFATHER {person_relation_id: row.person_relation_id}]->(target)
-    SET r += row
-} IN TRANSACTIONS OF 250 ROWS;
-
-LOAD CSV WITH HEADERS FROM 'file:///relations/person_related_to_person.csv' AS row
-CALL (row) {
-    WITH row WHERE row.normalized_relation_type = 'HAS_FATHER_IN_LAW'
-    MATCH (start:Person {person_id: row.start_person_id})
-    MATCH (target:Person {person_id: row.end_person_id})
-    MERGE (start)-[r:HAS_FATHER_IN_LAW {person_relation_id: row.person_relation_id}]->(target)
-    SET r += row
-} IN TRANSACTIONS OF 250 ROWS;
-
-LOAD CSV WITH HEADERS FROM 'file:///relations/person_related_to_person.csv' AS row
-CALL (row) {
-    WITH row WHERE row.normalized_relation_type = 'HAS_SON_IN_LAW'
-    MATCH (start:Person {person_id: row.start_person_id})
-    MATCH (target:Person {person_id: row.end_person_id})
-    MERGE (start)-[r:HAS_SON_IN_LAW {person_relation_id: row.person_relation_id}]->(target)
-    SET r += row
-} IN TRANSACTIONS OF 250 ROWS;
-
-LOAD CSV WITH HEADERS FROM 'file:///relations/person_related_to_person.csv' AS row
-CALL (row) {
-    WITH row WHERE row.normalized_relation_type = 'HAS_HUSBAND'
-    MATCH (start:Person {person_id: row.start_person_id})
-    MATCH (target:Person {person_id: row.end_person_id})
-    MERGE (start)-[r:HAS_HUSBAND {person_relation_id: row.person_relation_id}]->(target)
-    SET r += row
-} IN TRANSACTIONS OF 250 ROWS;
-
-LOAD CSV WITH HEADERS FROM 'file:///relations/person_related_to_person.csv' AS row
-CALL (row) {
-    WITH row WHERE row.normalized_relation_type = 'HAS_WIFE'
-    MATCH (start:Person {person_id: row.start_person_id})
-    MATCH (target:Person {person_id: row.end_person_id})
-    MERGE (start)-[r:HAS_WIFE {person_relation_id: row.person_relation_id}]->(target)
-    SET r += row
-} IN TRANSACTIONS OF 250 ROWS;
-
-LOAD CSV WITH HEADERS FROM 'file:///relations/person_related_to_person.csv' AS row
-CALL (row) {
-    WITH row WHERE row.normalized_relation_type = 'SIBLING_OF'
-    MATCH (start:Person {person_id: row.start_person_id})
-    MATCH (target:Person {person_id: row.end_person_id})
-    MERGE (start)-[r:SIBLING_OF {person_relation_id: row.person_relation_id}]->(target)
-    SET r += row
-} IN TRANSACTIONS OF 250 ROWS;
-
-LOAD CSV WITH HEADERS FROM 'file:///relations/person_related_to_person.csv' AS row
-CALL (row) {
-    WITH row WHERE row.normalized_relation_type = 'LINEAGE_RELATED'
-    MATCH (start:Person {person_id: row.start_person_id})
-    MATCH (target:Person {person_id: row.end_person_id})
-    MERGE (start)-[r:LINEAGE_RELATED {person_relation_id: row.person_relation_id}]->(target)
-    SET r += row
-} IN TRANSACTIONS OF 250 ROWS;
-
-LOAD CSV WITH HEADERS FROM 'file:///relations/person_related_to_person.csv' AS row
-CALL (row) {
-    WITH row WHERE row.normalized_relation_type = 'HAS_TEACHER'
-    MATCH (start:Person {person_id: row.start_person_id})
-    MATCH (target:Person {person_id: row.end_person_id})
-    MERGE (start)-[r:HAS_TEACHER {person_relation_id: row.person_relation_id}]->(target)
-    SET r += row
-} IN TRANSACTIONS OF 250 ROWS;
-
-LOAD CSV WITH HEADERS FROM 'file:///relations/person_related_to_person.csv' AS row
-CALL (row) {
-    WITH row WHERE row.normalized_relation_type = 'HAS_STUDENT'
-    MATCH (start:Person {person_id: row.start_person_id})
-    MATCH (target:Person {person_id: row.end_person_id})
-    MERGE (start)-[r:HAS_STUDENT {person_relation_id: row.person_relation_id}]->(target)
-    SET r += row
-} IN TRANSACTIONS OF 250 ROWS;
-
-LOAD CSV WITH HEADERS FROM 'file:///relations/person_related_to_person.csv' AS row
-CALL (row) {
-    WITH row WHERE row.normalized_relation_type = 'ASSOCIATED_WITH'
-    MATCH (start:Person {person_id: row.start_person_id})
-    MATCH (target:Person {person_id: row.end_person_id})
-    MERGE (start)-[r:ASSOCIATED_WITH {person_relation_id: row.person_relation_id}]->(target)
-    SET r += row
-} IN TRANSACTIONS OF 250 ROWS;
-
-// catch-all: 위 유형 목록에 없는 신규/미정규화 유형은 RELATED_TO로 적재해 유실을 막는다.
-// 반입 후 검증에서 RELATED_TO 건수가 0이 아니면 유형 블록 추가가 필요하다는 신호다.
-LOAD CSV WITH HEADERS FROM 'file:///relations/person_related_to_person.csv' AS row
-CALL (row) {
-    WITH row WHERE NOT row.normalized_relation_type IN [
-        'HAS_FATHER', 'HAS_MOTHER', 'HAS_BIOLOGICAL_FATHER', 'HAS_BIOLOGICAL_MOTHER',
-        'HAS_CHILD', 'HAS_GRANDFATHER', 'HAS_GREAT_GRANDFATHER',
-        'HAS_FATHER_IN_LAW', 'HAS_SON_IN_LAW', 'HAS_HUSBAND', 'HAS_WIFE',
-        'SIBLING_OF', 'LINEAGE_RELATED', 'HAS_TEACHER', 'HAS_STUDENT', 'ASSOCIATED_WITH'
-    ]
-    MATCH (start:Person {person_id: row.start_person_id})
-    MATCH (target:Person {person_id: row.end_person_id})
-    MERGE (start)-[r:RELATED_TO {person_relation_id: row.person_relation_id}]->(target)
-    SET r += row
+    MERGE (start)-[r:$(row.relation_type) {person_relation_id: row.person_relation_id}]->(target)
+    SET r.raw_relation_type = row.raw_relation_type,
+        r.normalized_relation_type = row.normalized_relation_type,
+        r.relation_group = row.relation_group,
+        r.direction_rule = row.direction_rule,
+        r.is_symmetric = row.is_symmetric,
+        r.inverse_relation_type = row.inverse_relation_type,
+        r.evidence_url = row.evidence_url
 } IN TRANSACTIONS OF 250 ROWS;
 
 LOAD CSV WITH HEADERS FROM 'file:///relations/term_refers_to_person.csv' AS row
@@ -557,7 +441,42 @@ CALL (row) {
     MATCH (start:Period {period_id: row.start_period_id})
     MATCH (target:Period {period_id: row.end_period_id})
     MERGE (start)-[r:SUBPERIOD_OF]->(target)
-    SET r += row
+    SET r.period_name = row.period_name,
+        r.parent_period_name = row.parent_period_name
+} IN TRANSACTIONS OF 1000 ROWS;
+
+// 이벤트 발생 재위. start_reign_name/end_reign_name 노드 속성으로만 있던
+// 관계를 왕호+연도 매칭으로 엣지화한 것 (점검 문서 발견 3).
+LOAD CSV WITH HEADERS FROM 'file:///relations/event_started_during_reign.csv' AS row
+CALL (row) {
+    MATCH (start:Event {event_id: row.start_event_id})
+    MATCH (target:Reign {reign_id: row.end_reign_id})
+    MERGE (start)-[r:STARTED_DURING_REIGN]->(target)
+    SET r.event_name = row.event_name,
+        r.reign_name = row.reign_name,
+        r.match_method = row.match_method
+} IN TRANSACTIONS OF 1000 ROWS;
+
+LOAD CSV WITH HEADERS FROM 'file:///relations/event_ended_during_reign.csv' AS row
+CALL (row) {
+    MATCH (start:Event {event_id: row.start_event_id})
+    MATCH (target:Reign {reign_id: row.end_reign_id})
+    MERGE (start)-[r:ENDED_DURING_REIGN]->(target)
+    SET r.event_name = row.event_name,
+        r.reign_name = row.reign_name,
+        r.match_method = row.match_method
+} IN TRANSACTIONS OF 1000 ROWS;
+
+// Event의 related_event_name은 같은 이름을 공유하는 EventGroup으로 이미 구조화된다.
+// 그룹명과 유일 Term 이름이 정확히 일치할 때만 후보 링크를 만들며 정답 근거로는 쓰지 않는다.
+LOAD CSV WITH HEADERS FROM 'file:///relations/event_group_has_term_candidate.csv' AS row
+CALL (row) {
+    MATCH (start:EventGroup {event_group_id: row.start_event_group_id})
+    MATCH (target:Term {term_id: row.end_term_id})
+    MERGE (start)-[r:HAS_TERM_CANDIDATE]->(target)
+    SET r.match_method = row.match_method,
+        r.review_status = row.review_status,
+        r.answer_eligible = row.answer_eligible
 } IN TRANSACTIONS OF 1000 ROWS;
 
 LOAD CSV WITH HEADERS FROM 'file:///relations/term_has_entity_type.csv' AS row

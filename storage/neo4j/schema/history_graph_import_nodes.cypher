@@ -4,10 +4,10 @@ CALL (row) {
     MERGE (n:Term {term_id: row.term_id})
     SET n:SourceRecord
     SET n += row
-    SET n.topterm_id = toIntegerOrNull(row.topterm_id),
-        n.start_year = toIntegerOrNull(row.start_year),
+    SET n.start_year = toIntegerOrNull(row.start_year),
         n.end_year = toIntegerOrNull(row.end_year),
         n.description_length = toIntegerOrNull(row.description_length)
+    REMOVE n.topterm_id
 } IN TRANSACTIONS OF 1000 ROWS;
 
 LOAD CSV WITH HEADERS FROM 'file:///nodes/canonical_entities.csv' AS row
@@ -31,6 +31,7 @@ CALL (row) {
     MERGE (n:SourceRecord {source_record_id: row.source_record_id})
     SET n:SourceImage
     SET n += row
+    REMOVE n.related_content
 } IN TRANSACTIONS OF 1000 ROWS;
 
 LOAD CSV WITH HEADERS FROM 'file:///nodes/source_texts.csv' AS row
@@ -67,6 +68,7 @@ CALL (row) {
     SET n += row
     SET n.start_year = toIntegerOrNull(row.start_year),
         n.end_year = toIntegerOrNull(row.end_year)
+    REMOVE n.monarch_name, n.target_name, n.target_kind
 } IN TRANSACTIONS OF 1000 ROWS;
 
 LOAD CSV WITH HEADERS FROM 'file:///nodes/heritage_entities.csv' AS row
@@ -107,7 +109,8 @@ CALL (row) {
     SET n += row
     SET n.birth_year = toIntegerOrNull(row.birth_year),
         n.death_year = toIntegerOrNull(row.death_year),
-        n.degree = toIntegerOrNull(row.degree)
+        n.core_relation_degree = toIntegerOrNull(row.core_relation_degree)
+    REMOVE n.father_name, n.degree
 } IN TRANSACTIONS OF 1000 ROWS;
 
 LOAD CSV WITH HEADERS FROM 'file:///nodes/canonical_categories.csv' AS row
@@ -118,6 +121,7 @@ CALL (row) {
     SET n.depth = toIntegerOrNull(row.depth),
         n.term_count = toIntegerOrNull(row.term_count),
         n.direct_term_count = toIntegerOrNull(row.direct_term_count)
+    REMOVE n.parent_category_id, n.parent_category_path, n.root_category_name
 } IN TRANSACTIONS OF 1000 ROWS;
 
 LOAD CSV WITH HEADERS FROM 'file:///nodes/source_event_categories.csv' AS row
@@ -138,6 +142,7 @@ CALL (row) {
         n.end_year = toIntegerOrNull(row.end_year),
         n.term_count = toIntegerOrNull(row.term_count),
         n.event_count = toIntegerOrNull(row.event_count)
+    REMOVE n.parent_period_name
 } IN TRANSACTIONS OF 1000 ROWS;
 
 LOAD CSV WITH HEADERS FROM 'file:///nodes/source_urls.csv' AS row
@@ -170,6 +175,7 @@ CALL (row) {
     WITH row WHERE row.country_id IS NOT NULL AND trim(row.country_id) <> ''
     MERGE (n:Country {country_id: row.country_id})
     SET n += row
+    REMOVE n.canonical_category_id, n.canonical_category_path
 } IN TRANSACTIONS OF 1000 ROWS;
 
 LOAD CSV WITH HEADERS FROM 'file:///nodes/regions.csv' AS row
@@ -177,6 +183,8 @@ CALL (row) {
     WITH row WHERE row.region_id IS NOT NULL AND trim(row.region_id) <> ''
     MERGE (n:Region {region_id: row.region_id})
     SET n += row
+    REMOVE n.canonical_category_id, n.canonical_category_path,
+           n.parent_region_id, n.parent_region_name
 } IN TRANSACTIONS OF 1000 ROWS;
 
 LOAD CSV WITH HEADERS FROM 'file:///nodes/economic_domains.csv' AS row
@@ -184,6 +192,7 @@ CALL (row) {
     WITH row WHERE row.economic_domain_id IS NOT NULL AND trim(row.economic_domain_id) <> ''
     MERGE (n:EconomicDomain {economic_domain_id: row.economic_domain_id})
     SET n += row
+    REMOVE n.canonical_category_id, n.canonical_category_path
 } IN TRANSACTIONS OF 1000 ROWS;
 
 LOAD CSV WITH HEADERS FROM 'file:///nodes/taxonomy_facets.csv' AS row
@@ -196,6 +205,7 @@ CALL (row) {
         n.descendant_category_count = toIntegerOrNull(row.descendant_category_count),
         n.term_count = toIntegerOrNull(row.term_count),
         n.direct_term_count = toIntegerOrNull(row.direct_term_count)
+    REMOVE n.canonical_category_id
 } IN TRANSACTIONS OF 1000 ROWS;
 
 LOAD CSV WITH HEADERS FROM 'file:///nodes/search_tags.csv' AS row

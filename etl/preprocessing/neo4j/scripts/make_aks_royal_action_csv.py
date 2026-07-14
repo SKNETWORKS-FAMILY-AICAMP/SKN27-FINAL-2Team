@@ -522,9 +522,9 @@ def build_output_rows(action_rows, articles, reign_by_action_id, source_config):
                 "date_precision": row["date_precision"],
                 "start_year": row.get("start_year", ""),
                 "end_year": row.get("end_year", ""),
-                "monarch_name": clean_text(monarch_article.get("headword")),
-                "target_name": clean_text(target_article.get("headword")),
-                "target_kind": row["target_kind"],
+                # monarch_name·target_name·target_kind는 ASSOCIATED_WITH_ACTION·
+                # TARGETS 엣지로 표현되므로 노드 속성에서 제외한다
+                # (docs/neo4j/neo4j_관계_정규화_점검.md 발견 4).
                 "certainty": row["certainty"],
                 "anchor_source_id": source_config["source_id"],
                 "evidence_source_eid": row["evidence_source_eid"],
@@ -587,9 +587,6 @@ def build_output_specs(args, outputs, candidate_rows):
                 "date_precision",
                 "start_year",
                 "end_year",
-                "monarch_name",
-                "target_name",
-                "target_kind",
                 "certainty",
                 "anchor_source_id",
                 "evidence_source_eid",
