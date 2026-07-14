@@ -191,7 +191,7 @@ raw CSV → normalized → dictionary → mapping/staging → Neo4j import CSV �
 ### 6.1 전처리 품질 원칙
 
 이 보고서는 품질 원칙을 요약만 남긴다.
-상세한 설계 판단과 실패 시 영향은 `docs/neo4j/neo4j_design_decisions_detail.md`에 합쳤다.
+상세한 설계 판단과 실패 시 영향은 `docs/neo4j/neo4j_설계_근거.md`에 합쳤다.
 
 핵심 원칙은 다음 네 가지다.
 
@@ -204,7 +204,7 @@ raw CSV → normalized → dictionary → mapping/staging → Neo4j import CSV �
 
 ## 7. 부록: 빠른 참조
 
-상세한 노드·관계별 설계 이유는 `docs/neo4j/neo4j_design_decisions_detail.md`로 합쳤다.
+상세한 노드·관계별 설계 이유는 `docs/neo4j/neo4j_설계_근거.md`로 합쳤다.
 이 보고서에는 최종 import 규모를 확인하기 위한 요약만 남긴다.
 
 ### 7.1 노드 요약

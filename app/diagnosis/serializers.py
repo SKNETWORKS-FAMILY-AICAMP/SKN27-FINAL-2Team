@@ -5,7 +5,13 @@ from rest_framework import serializers
 
 class DiagnosisStartRequestSerializer(serializers.Serializer):
     """POST /api/diagnosis/start/"""
-    pass  # 인증 연동 전까지 body 불필요 (user_id는 서버에서 하드코딩)
+    studyplan_id = serializers.IntegerField(required=False, allow_null=True, default=None)
+    study_plan_block_id = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        allow_null=True,
+        default=None,
+    )
 
 
 class ChoiceSerializer(serializers.Serializer):
@@ -84,6 +90,8 @@ class DiagnosisResultResponseSerializer(serializers.Serializer):
     max_score = serializers.IntegerField()
     score_rate = serializers.FloatField()     # 취득점 / 최대점
     expected_grade = serializers.CharField()  # '1급' | '2급' | '3급' | '탈락'
+    previous_score = serializers.IntegerField(allow_null=True)
+    score_change = serializers.IntegerField(allow_null=True)
     era_analytics = AnalyticsItemSerializer(many=True)
     type_analytics = AnalyticsItemSerializer(many=True)
     question_ids = serializers.ListField(

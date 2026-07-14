@@ -9,7 +9,13 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 from analytics.models import Analytics
+from analytics.models import StudyPlanMypage
+from analytics.serializers import parse_study_plan_items
 from analytics.service.analysis_snapshot import create_session_snapshot
+from analytics.service.studyplan import (
+    complete_study_plan_block_by_id,
+    is_weekly_review_plan_block,
+)
 from question.models import (
     QuestionOptions,
     Questions,
@@ -19,6 +25,7 @@ from question.models import (
 from .serializers import (
     DiagnosisExplanationResponseSerializer,
     DiagnosisResultResponseSerializer,
+    DiagnosisStartRequestSerializer,
     DiagnosisStartResponseSerializer,
     DiagnosisSubmitRequestSerializer,
     DiagnosisSubmitResponseSerializer,
@@ -43,6 +50,67 @@ def _get_expected_grade(score_rate_pct: float) -> str:
         if score_rate_pct >= threshold:
             return grade
     return "탈락"
+
+
+def _find_weekly_review_block(user_id, studyplan_id, block_id):
+    if not studyplan_id and not block_id:
+        return None, None
+    if not studyplan_id or not block_id:
+        return None, {"error": "studyplan_id와 study_plan_block_id가 모두 필요합니다."}
+
+    study_plan = StudyPlanMypage.objects.filter(
+        user_id=user_id,
+        studyplan_id=studyplan_id,
+        status="active",
+    ).first()
+    if study_plan is None:
+        return None, {"error": "활성 학습계획을 찾을 수 없습니다."}
+
+    for day_plan in parse_study_plan_items(study_plan.study_plan_items):
+        for block in day_plan.get("blocks", []):
+            if str(block.get("blockId")) == str(block_id):
+                if not is_weekly_review_plan_block(block):
+                    return None, {"error": "주간평가 블록이 아닙니다."}
+                return block, None
+
+    return None, {"error": "학습계획 블록을 찾을 수 없습니다."}
+
+
+def _session_study_plan_ref(session):
+    return (
+        SolveRecords.objects.filter(
+            session=session,
+            studyplan_id__isnull=False,
+            study_plan_block_id__isnull=False,
+        )
+        .exclude(study_plan_block_id="")
+        .values("studyplan_id", "study_plan_block_id")
+        .first()
+    )
+
+
+def _complete_weekly_review_block_for_session(session, user_id):
+    if session.session_type != "diagnostic" or session.status != "completed":
+        return None
+
+    ref = _session_study_plan_ref(session)
+    if not ref:
+        return None
+
+    block, error = _find_weekly_review_block(
+        user_id,
+        ref["studyplan_id"],
+        ref["study_plan_block_id"],
+    )
+    if error or block is None:
+        return None
+
+    return complete_study_plan_block_by_id(
+        user_id,
+        ref["studyplan_id"],
+        ref["study_plan_block_id"],
+        True,
+    )
 
 
 # ── 페이지 뷰 (템플릿) ──────────────────────────────────────────────────────────
@@ -101,6 +169,20 @@ def diagnosis_start(request):
             status=status.HTTP_401_UNAUTHORIZED,
         )
     user_id = request.user.user_id
+    req_serializer = DiagnosisStartRequestSerializer(data=request.data)
+    if not req_serializer.is_valid():
+        return Response(req_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    start_data = req_serializer.validated_data
+    studyplan_id = start_data.get("studyplan_id")
+    study_plan_block_id = start_data.get("study_plan_block_id")
+    weekly_review_block, block_error = _find_weekly_review_block(
+        user_id,
+        studyplan_id,
+        study_plan_block_id,
+    )
+    if block_error:
+        return Response(block_error, status=status.HTTP_400_BAD_REQUEST)
 
     # 1) 전체 문제에서 50문항 / 총점 100점 조합을 랜덤 선택
     selected_ids = _pick_diagnosis_question_ids()
@@ -142,6 +224,8 @@ def diagnosis_start(request):
             topic=question.topic,
             era=question.era,
             q_score=question.q_score,
+            studyplan_id=studyplan_id if weekly_review_block else None,
+            study_plan_block_id=study_plan_block_id if weekly_review_block else None,
         )
         for question in questions_list
     ])
@@ -201,16 +285,24 @@ def diagnosis_submit(request):
     req_serializer = DiagnosisSubmitRequestSerializer(data=request.data)
     if not req_serializer.is_valid():
         return Response(req_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    if not request.user.is_authenticated:
+        return Response(
+            {"error": "로그인이 필요한 기능입니다."},
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
 
     data = req_serializer.validated_data
     session_id = data["session_id"]
     elapsed_sec = data["elapsed_sec"]
     answers = data["answers"]
+    user_id = request.user.user_id
 
     # 세션 확인
     try:
         session = SolveSessions.objects.get(
-            session_id=session_id, session_type="diagnostic"
+            session_id=session_id,
+            user_id=user_id,
+            session_type="diagnostic",
         )
     except SolveSessions.DoesNotExist:
         return Response(
@@ -241,6 +333,7 @@ def diagnosis_submit(request):
         record.question_id: record
         for record in SolveRecords.objects.filter(session=session, question_id__in=question_ids)
     }
+    study_plan_ref = _session_study_plan_ref(session) or {}
     records_to_update = []
     records_to_create = []
     total_score = 0
@@ -281,6 +374,8 @@ def diagnosis_submit(request):
                 topic=q.topic,
                 era=q.era,
                 q_score=q.q_score,
+                studyplan_id=study_plan_ref.get("studyplan_id"),
+                study_plan_block_id=study_plan_ref.get("study_plan_block_id"),
             ))
             continue
 
@@ -311,6 +406,7 @@ def diagnosis_submit(request):
     session.save()
     # 완료된 세션 기록을 기준으로 overall/era/type/topic 분석 스냅샷을 저장한다.
     create_session_snapshot(session.session_id)
+    _complete_weekly_review_block_for_session(session, user_id)
 
     resp_serializer = DiagnosisSubmitResponseSerializer({
         "session_id": session.session_id,
@@ -539,6 +635,18 @@ def diagnosis_result_api(request, session_id):
     score_rate = round(total_score / max_score, 4) if max_score else 0.0
     score_rate_pct = score_rate * 100
     expected_grade = _get_expected_grade(score_rate_pct)
+    previous_session = (
+        SolveSessions.objects.filter(
+            user_id=session.user_id,
+            session_type="diagnostic",
+            status="completed",
+            session_id__lt=session.session_id,
+        )
+        .order_by("-session_id")
+        .first()
+    )
+    previous_score = previous_session.total_score if previous_session else None
+    score_change = total_score - previous_score if previous_score is not None else None
 
     # 시대별/유형별 분석 구성
     era_analytics = []
@@ -568,6 +676,8 @@ def diagnosis_result_api(request, session_id):
         "max_score": max_score,
         "score_rate": score_rate,
         "expected_grade": expected_grade,
+        "previous_score": previous_score,
+        "score_change": score_change,
         "era_analytics": era_analytics,
         "type_analytics": type_analytics,
         "question_ids": question_ids,

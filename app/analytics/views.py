@@ -9,7 +9,6 @@ from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from analytics.service.analytics import (
-    analytics_summary,
     build_wrong_rate_detail_validation,
     get_analysis_scope_chart_data,
     get_plan_completion_chart_data,
@@ -20,6 +19,7 @@ from analytics.service.analytics import (
     get_wrong_rate_session_analysis_detail,
     get_wrong_rate_session_item_questions,
     get_wrong_rate_group_stats,
+    get_wrong_rate_weakness_rows,
 )
 from analytics.service.display import (
     build_planner_summary,
@@ -30,18 +30,22 @@ from analytics.service.mypage import (
     build_d_day_label,
     build_diagnosis_comparison_summary,
     build_learning_summary,
-    build_mypage_summary_validation,
     build_weakness_summary,
+    build_wrong_rate_summary,
     build_wrong_type_summary,
 )
 from analytics.service.studyplan import (
     StudyPlanBlockDeleteLimitExceeded,
-    StudyPlanMoveDateOutOfRange,
+    StudyPlanDateOutOfRange,
+    StudyPlanExtraBlockCompletionRequired,
+    StudyPlanExtraBlockUnavailable,
+    StudyPlanGenerationUnavailable,
+    add_extra_study_plan_block,
     complete_study_plan_block,
     create_study_plan,
     delete_study_plan_block,
+    ensure_today_study_plan,
     get_study_plan_info,
-    move_study_plan_blocks,
 )
 
 
@@ -49,24 +53,29 @@ from analytics.service.studyplan import (
 def mypage(request):
     user_id = request.user.user_id
     today = timezone.localdate()
+    plan_generation_available = True
+    try:
+        ensure_today_study_plan(user_id, today)
+    except StudyPlanGenerationUnavailable:
+        plan_generation_available = False
     study_plan = get_study_plan_info(user_id)
-    planner_summary = build_planner_summary(study_plan, today)
-    wrong_type_summary = build_wrong_type_summary(request.user, today)
-    weakness_summary = build_weakness_summary(request.user, today)
-    validation = build_mypage_summary_validation(
-        request.user,
+    planner_summary = build_planner_summary(
+        study_plan,
         today,
-        weakness_summary,
-        wrong_type_summary,
+        plan_generation_available,
     )
-    log_analytics_validation("mypage", validation)
+    wrong_type_summary = build_wrong_type_summary(request.user, today)
+    wrong_rate_summaries = [
+        {"title": "유형별 오답률", **wrong_type_summary},
+        {"title": "주제별 오답률", **build_wrong_rate_summary(request.user, "topic", today)},
+        {"title": "시대별 오답률", **build_wrong_rate_summary(request.user, "era", today)},
+    ]
+    weakness_summary = build_weakness_summary(request.user, today)
     context = {
-        "user": request.user,
-        "analytics": analytics_summary(user_id),
-        "study_plan": study_plan,
-        "learning_summary": build_learning_summary(request.user),
+        "learning_summary": build_learning_summary(request.user, today),
         "diagnosis_comparison": build_diagnosis_comparison_summary(request.user),
         "wrong_type_summary": wrong_type_summary,
+        "wrong_rate_summaries": wrong_rate_summaries,
         "weakness_summary": weakness_summary,
         "d_day_label": build_d_day_label(request.user, today),
         "planner_summary": planner_summary,
@@ -103,9 +112,12 @@ def wrong_rate_detail(request):
         donut_period["startDate"],
         donut_period["endDate"],
     )
-    era_display = build_wrong_rate_display(era_stats)
-    type_display = build_wrong_rate_display(type_stats)
-    topic_display = build_wrong_rate_display(topic_stats)
+    era_weakness_rows = get_wrong_rate_weakness_rows(request.user, "era", today)
+    type_weakness_rows = get_wrong_rate_weakness_rows(request.user, "q_type", today)
+    topic_weakness_rows = get_wrong_rate_weakness_rows(request.user, "topic", today)
+    era_display = build_wrong_rate_display(era_stats, era_weakness_rows)
+    type_display = build_wrong_rate_display(type_stats, type_weakness_rows)
+    topic_display = build_wrong_rate_display(topic_stats, topic_weakness_rows)
     era_donut = build_wrong_rate_donut_summary(era_display)
     type_donut = build_wrong_rate_donut_summary(type_display)
     topic_donut = build_wrong_rate_donut_summary(topic_display)
@@ -226,7 +238,11 @@ def wrong_rate_period_item_questions(request):
 @login_required
 @require_POST
 def create_study_plan_view(request):
-    create_study_plan(request.user.user_id)
+    try:
+        create_study_plan(request.user.user_id)
+    except StudyPlanGenerationUnavailable:
+        return redirect("analytics:mypage")
+
     return redirect("analytics:mypage")
 
 
@@ -271,9 +287,13 @@ def complete_study_plan_block_view(request):
         study_plan_id = int(data.get("studyPlanId"))
         day_index = int(data.get("dayIndex"))
         block_index = int(data.get("blockIndex"))
-        is_completed = bool(data.get("isCompleted", True))
     except (TypeError, ValueError):
         return JsonResponse({"ok": False}, status=400)
+
+    raw_is_completed = data.get("isCompleted", True)
+    if not isinstance(raw_is_completed, bool):
+        return JsonResponse({"ok": False}, status=400)
+    is_completed = raw_is_completed
 
     completed_plan = complete_study_plan_block(
         request.user.user_id,
@@ -290,41 +310,45 @@ def complete_study_plan_block_view(request):
 
 @login_required
 @require_POST
-def move_study_plan_blocks_view(request):
+def add_extra_study_plan_block_view(request):
     data = get_json_request_data(request)
-    move_items = data.get("items") or []
-    target_date = data.get("targetDate")
-    if not move_items or not target_date:
+    target_date = data.get("targetDate") or timezone.localdate().isoformat()
+    try:
+        target_date_key = date.fromisoformat(str(target_date)[:10]).isoformat()
+    except (TypeError, ValueError):
         return JsonResponse({"ok": False}, status=400)
 
     try:
-        target_date_key = date.fromisoformat(target_date[:10]).isoformat()
-        normalized_items = [
-            {
-                "studyPlanId": int(item["studyPlanId"]),
-                "dayIndex": int(item["dayIndex"]),
-                "blockIndex": int(item["blockIndex"]),
-            }
-            for item in move_items
-        ]
-    except (KeyError, TypeError, ValueError):
-        return JsonResponse({"ok": False}, status=400)
-
-    try:
-        updated_plans = move_study_plan_blocks(
+        updated_plan = add_extra_study_plan_block(
             request.user.user_id,
-            normalized_items,
             target_date_key,
         )
-    except StudyPlanMoveDateOutOfRange:
+    except StudyPlanDateOutOfRange:
         return JsonResponse(
             {
                 "ok": False,
-                "error": "학습일 변경은 해당 학습계획 기간 안에서만 가능합니다.",
+                "error": "추가학습은 오늘 계획에만 만들 수 있습니다.",
             },
             status=400,
         )
-    if not updated_plans:
+    except StudyPlanExtraBlockUnavailable:
+        return JsonResponse(
+            {
+                "ok": False,
+                "error": "추가학습을 만들 취약점 데이터가 부족합니다.",
+            },
+            status=400,
+        )
+    except StudyPlanExtraBlockCompletionRequired:
+        return JsonResponse(
+            {
+                "ok": False,
+                "error": "오늘의 학습 문제를 모두 푼 뒤 추가학습을 만들 수 있습니다.",
+            },
+            status=400,
+        )
+
+    if updated_plan is None:
         return JsonResponse({"ok": False}, status=404)
 
     return JsonResponse({"ok": True})

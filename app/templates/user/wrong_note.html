@@ -10,7 +10,7 @@
 </head>
 <body>
   <header class="site-header" aria-label="노트 메뉴">
-    <a class="brand" href="/" aria-label="himate 홈">himate</a>
+    <a class="brand" href="/" aria-label="himate 홈">Himate</a>
     <nav class="main-nav" aria-label="학습 메뉴">
       <a href="/diagnosis/">진단 평가</a>
       <a href="/question/">문제 풀이</a>
@@ -18,74 +18,46 @@
       <a class="active" href="/analytics/mypage/">나의 학습실</a>
     </nav>
     <nav class="header-actions" aria-label="계정 메뉴">
-      <a class="outline-button" href="/analytics/mypage/">마이페이지</a>
       <a class="ghost-button" href="/user/logout/">로그아웃</a>
     </nav>
   </header>
 
   <main class="wrong-note-page">
     <section class="note-title">
-      <div>
-        <p>My Review Note</p>
-        <h1>노트</h1>
-      </div>
-      <div class="note-tabs" aria-label="노트 보기">
-        <button class="active" type="button" data-note-tab="wrong">오답 노트</button>
-        <button type="button" data-note-tab="saved">저장 노트</button>
-      </div>
+
     </section>
 
     <section class="note-workspace" aria-label="노트 상세">
       <div class="note-toolbar">
-        <button class="back-button" id="backButton" type="button" aria-label="마이페이지로 돌아가기">‹</button>
         <div class="toolbar-actions">
           <button class="practice-button" id="wrongPracticeButton" type="button">문제 풀이</button>
           <button class="delete-button" id="deleteButton" type="button">저장 해제</button>
-          <details class="filter-menu">
-            <summary>필터</summary>
-            <div class="filter-panel">
-              <label>
-                세션
-                <select id="sessionFilter">
-                  <option value="all">전체</option>
-                </select>
-              </label>
-              <label>
-                세션 유형
-                <select id="sessionTypeFilter">
-                  <option value="all">전체</option>
-                  <option value="diagnostic">진단평가</option>
-                  <option value="practice">문제풀이</option>
-                  <option value="study_plan">학습계획 문제 풀이</option>
-                </select>
-              </label>
-              <label>
-                시대
-                <select id="eraFilter">
-                  <option value="all">전체</option>
-                </select>
-              </label>
-              <label>
-                주제
-                <select id="topicFilter">
-                  <option value="all">전체</option>
-                </select>
-              </label>
-              <label>
-                유형
-                <select id="typeFilter">
-                  <option value="all">전체</option>
-                </select>
-              </label>
-            </div>
-          </details>
         </div>
       </div>
 
       <div class="note-layout">
-        <aside class="note-list-panel" aria-label="세션 및 문항 목록">
-          <h2 id="listTitle">세션 목록</h2>
-          <div class="note-list" id="noteList"></div>
+        <aside class="note-sidebar" id="noteSidebar" aria-label="노트 및 문항 선택">
+          <button class="note-sidebar-toggle is-active" id="noteSidebarToggle" type="button" aria-controls="noteSidebar" aria-expanded="true" aria-label="사이드바 접기"></button>
+          <nav class="note-tabs" aria-label="노트 보기">
+            <button class="active" type="button" data-note-tab="wrong">오답 노트</button>
+            <button type="button" data-note-tab="saved">저장 노트</button>
+          </nav>
+          <div class="note-list-panel">
+            <div class="note-list-heading">
+              <h2 id="listTitle">세션 목록</h2>
+              <details class="filter-menu">
+                <summary aria-label="필터"></summary>
+                <div class="filter-panel">
+                  <label>세션<select id="sessionFilter"><option value="all">전체</option></select></label>
+                  <label>세션 유형<select id="sessionTypeFilter"><option value="all">전체</option><option value="diagnostic">진단평가</option><option value="practice">문제풀이</option><option value="study_plan">학습계획 문제 풀이</option></select></label>
+                  <label>시대<select id="eraFilter"><option value="all">전체</option></select></label>
+                  <label>주제<select id="topicFilter"><option value="all">전체</option></select></label>
+                  <label>유형<select id="typeFilter"><option value="all">전체</option></select></label>
+                </div>
+              </details>
+            </div>
+            <div class="note-list" id="noteList"></div>
+          </div>
         </aside>
 
         <article class="question-note" aria-label="문제 내용">
@@ -103,7 +75,7 @@
 
         <article class="explain-note" aria-label="정오답 및 해설">
           <div class="answer-ribbon">
-            <span>정오답</span>
+            <span>정답 여부</span>
             <strong id="resultBadge">-</strong>
             <span class="time-pill" id="timeSpentBadge">00:00</span>
           </div>
@@ -153,6 +125,8 @@
     let activeId = records[0]?.id || null;
 
     const noteList = document.getElementById("noteList");
+    const noteLayout = document.querySelector(".note-layout");
+    const noteSidebarToggle = document.getElementById("noteSidebarToggle");
     const choiceList = document.getElementById("choiceList");
     const noteMeta = document.getElementById("noteMeta");
     const noteQuestionNumber = document.getElementById("noteQuestionNumber");
@@ -477,8 +451,11 @@
       }
     }
 
-    document.getElementById("backButton").addEventListener("click", () => {
-      window.location.href = "/analytics/mypage/";
+    noteSidebarToggle.addEventListener("click", () => {
+      const collapsed = noteLayout.classList.toggle("is-sidebar-collapsed");
+      noteSidebarToggle.classList.toggle("is-active", !collapsed);
+      noteSidebarToggle.setAttribute("aria-expanded", String(!collapsed));
+      noteSidebarToggle.setAttribute("aria-label", collapsed ? "사이드바 펼치기" : "사이드바 접기");
     });
 
     deleteButton.addEventListener("click", async () => {

@@ -9,6 +9,16 @@ from analytics.service.classification import (
     normalize_classification_value,
     should_normalize_classification,
 )
+from analytics.service.taxonomy import (
+    build_target_display_label,
+    get_display_label as get_taxonomy_display_label,
+    get_unclassified_label as get_taxonomy_unclassified_label,
+)
+from analytics.service.weakness import (
+    build_group_key_id,
+    build_weakness_rows,
+    get_weakness_config,
+)
 from question.models import QuestionOptions, SolveRecords, SolveSessions
 
 
@@ -582,7 +592,7 @@ def build_record_chart_bar(
         "createdLabel": created_label,
         "detailLine": f"{total_count}문제 · 문제당 {format_seconds(average_time_sec)}",
         "subDetailLine": f"{period_label} · {created_label}",
-        "statusClass": get_scope_status_class(total_count, wrong_rate),
+        "rawRateClass": get_raw_rate_class(total_count, wrong_rate),
     }
     if extra_data:
         chart_bar.update(extra_data)
@@ -694,7 +704,7 @@ def build_analysis_scope_overview_item(user_id, scope_config):
         "average_time_label": format_seconds(summary["average_time_sec"]),
         "period_label": format_period_label(period_start, period_end),
         "created_label": format_datetime_label(created_at),
-        "status_class": get_scope_status_class(summary["total_count"], summary["wrong_rate"]),
+        "status_class": get_raw_rate_class(summary["total_count"], summary["wrong_rate"]),
     }
 
 
@@ -774,18 +784,33 @@ def calculate_scope_row_summary(rows):
     }
 
 
-def get_scope_status_class(total_count, wrong_rate):
+def get_raw_rate_class(total_count, wrong_rate):
     """
-    분석 요약 카드의 상태 클래스를 정한다.
+    raw 오답률 표시용 상태 클래스를 정한다.
     """
-    weak_rate_threshold = 20
-    status_class = "stable"
+    stable_rate_threshold = get_wrong_rate_stable_threshold()
+    weak_rate_threshold = get_wrong_rate_weak_threshold()
+    status_class = "neutral"
     if not total_count:
         status_class = "empty"
     elif wrong_rate >= weak_rate_threshold:
         status_class = "weak"
+    elif wrong_rate <= stable_rate_threshold:
+        status_class = "stable"
 
     return status_class
+
+
+def get_scope_status_class(total_count, wrong_rate):
+    return get_raw_rate_class(total_count, wrong_rate)
+
+
+def get_wrong_rate_stable_threshold():
+    return 30
+
+
+def get_wrong_rate_weak_threshold():
+    return 70
 
 
 def format_period_label(period_start, period_end):
@@ -936,15 +961,15 @@ def get_first_diagnosis_summary(user_id):
 
 def get_diagnosis_improvement_summary(user_id, today=None):
     """
-    첫 진단평가 기준의 개선 정도를 계산한다.
+    직전 평가와 최신 주간평가 사이의 개선 정도를 계산한다.
 
-    진단평가 이후 완료한 주간평가를 첫 진단평가 대비 향상도로 비교한다.
+    첫 주간평가는 직전 일반 진단평가와 비교하고, 이후 주간평가는
+    바로 전 주간평가와 정답률·풀이시간을 비교한다. 주간평가가 없으면
+    기존 일반 진단평가 회차 비교를 유지한다.
     """
-    diagnosis_summary = get_first_diagnosis_summary(user_id)
-    post_diagnosis_summary = get_post_diagnosis_weekly_review_summary(
-        user_id,
-        diagnosis_summary,
-    )
+    diagnosis_pair = get_diagnosis_comparison_pair(user_id)
+    diagnosis_summary = diagnosis_pair["diagnosis"]
+    post_diagnosis_summary = diagnosis_pair["current"]
     has_comparison = (
         diagnosis_summary["hasRecords"]
         and post_diagnosis_summary["hasRecords"]
@@ -971,13 +996,167 @@ def get_diagnosis_improvement_summary(user_id, today=None):
         "averageQuestionTimeChangeSec": average_question_time_change_sec,
         "hasComparison": has_comparison,
         "hasDiagnosis": diagnosis_summary["hasRecords"],
-        "hasWeeklyReviewPlan": post_diagnosis_summary["hasWeeklyReviewPlan"],
+        "hasWeeklyReviewPlan": bool(get_weekly_review_block_refs(user_id)),
         "hasPostDiagnosisPractice": has_post_diagnosis_practice_records(
             user_id,
             diagnosis_summary,
             today,
         ),
+        "diagnosisSessionCount": diagnosis_pair["diagnosisSessionCount"],
     }
+
+
+def get_diagnosis_comparison_pair(user_id):
+    """
+    일반 진단평가와 주간평가를 구분해 마이페이지 비교 세션 쌍을 선택한다.
+    """
+    weekly_sessions = list(get_completed_weekly_review_sessions(user_id))
+    weekly_session_ids = [session.session_id for session in weekly_sessions]
+    diagnosis_sessions = list(
+        get_completed_diagnostic_sessions(user_id).exclude(
+            session_id__in=weekly_session_ids,
+        )
+    )
+    if len(weekly_sessions) >= 2:
+        previous_session = weekly_sessions[-2]
+        current_session = weekly_sessions[-1]
+        return {
+            "diagnosis": build_evaluation_session_summary(
+                previous_session,
+                f"{len(weekly_sessions) - 1}주차 주간평가",
+                len(weekly_sessions) - 1,
+            ),
+            "current": build_evaluation_session_summary(
+                current_session,
+                f"{len(weekly_sessions)}주차 주간평가",
+                len(weekly_sessions),
+            ),
+            "diagnosisSessionCount": len(diagnosis_sessions) + len(weekly_sessions),
+        }
+
+    if weekly_sessions:
+        current_session = weekly_sessions[-1]
+        baseline_sessions = [
+            session
+            for session in diagnosis_sessions
+            if is_session_before(session, current_session)
+        ]
+        if baseline_sessions:
+            return {
+                "diagnosis": build_evaluation_session_summary(
+                    baseline_sessions[-1],
+                    "직전 진단평가",
+                    len(diagnosis_sessions),
+                ),
+                "current": build_evaluation_session_summary(
+                    current_session,
+                    "1주차 주간평가",
+                    1,
+                ),
+                "diagnosisSessionCount": len(diagnosis_sessions) + 1,
+            }
+
+        return {
+            "diagnosis": build_empty_diagnosis_session_summary(),
+            "current": build_evaluation_session_summary(
+                current_session,
+                "1주차 주간평가",
+                1,
+            ),
+            "diagnosisSessionCount": 1,
+        }
+
+    if len(diagnosis_sessions) >= 2:
+        previous_session = diagnosis_sessions[-2]
+        current_session = diagnosis_sessions[-1]
+        return {
+            "diagnosis": build_diagnosis_session_summary(
+                previous_session,
+                len(diagnosis_sessions) - 1,
+            ),
+            "current": build_diagnosis_session_summary(
+                current_session,
+                len(diagnosis_sessions),
+            ),
+            "diagnosisSessionCount": len(diagnosis_sessions),
+        }
+
+    if diagnosis_sessions:
+        return {
+            "diagnosis": build_diagnosis_session_summary(diagnosis_sessions[0], 1),
+            "current": build_empty_diagnosis_session_summary(),
+            "diagnosisSessionCount": 1,
+        }
+
+    return {
+        "diagnosis": build_empty_diagnosis_session_summary(),
+        "current": build_empty_diagnosis_session_summary(),
+        "diagnosisSessionCount": 0,
+    }
+
+
+def get_completed_diagnostic_sessions(user_id):
+    completed_status = "completed"
+    diagnostic_type = "diagnostic"
+    return SolveSessions.objects.filter(
+        user_id=user_id,
+        status=completed_status,
+        session_type=diagnostic_type,
+    ).order_by("recorded_date", "session_id")
+
+
+def get_completed_weekly_review_sessions(user_id):
+    """
+    review_type 도입 전 fallback으로 계획 블록 연결값이 있는 주간평가를 찾는다.
+    """
+    block_refs = get_weekly_review_block_refs(user_id)
+    records = get_weekly_review_records(user_id, block_refs)
+    session_ids = records.values_list("session_id", flat=True).distinct()
+    return SolveSessions.objects.filter(
+        user_id=user_id,
+        status="completed",
+        session_type="diagnostic",
+        session_id__in=session_ids,
+    ).order_by("recorded_date", "session_id")
+
+
+def is_session_before(candidate_session, reference_session):
+    candidate_key = (candidate_session.recorded_date, candidate_session.session_id)
+    reference_key = (reference_session.recorded_date, reference_session.session_id)
+    return candidate_key < reference_key
+
+
+def build_diagnosis_session_summary(session, session_number):
+    return build_evaluation_session_summary(
+        session,
+        f"{session_number}회차 진단평가",
+        session_number,
+    )
+
+
+def build_evaluation_session_summary(session, session_label, session_number):
+    records = SolveRecords.objects.filter(session=session)
+    summary = build_record_summary(records)
+    summary["recordedDate"] = session.recorded_date
+    summary["sessionId"] = session.session_id
+    summary["sessionNumber"] = session_number
+    summary["sessionLabel"] = session_label
+    summary["averageSessionTimeSec"] = session.elapsed_sec
+    summary["periodStart"] = session.recorded_date
+    summary["periodEnd"] = session.recorded_date
+    return summary
+
+
+def build_empty_diagnosis_session_summary():
+    summary = build_record_summary(SolveRecords.objects.none())
+    summary["recordedDate"] = None
+    summary["sessionId"] = None
+    summary["sessionNumber"] = None
+    summary["sessionLabel"] = "진단평가"
+    summary["averageSessionTimeSec"] = None
+    summary["periodStart"] = None
+    summary["periodEnd"] = None
+    return summary
 
 
 def get_post_diagnosis_weekly_review_summary(user_id, diagnosis_summary):
@@ -991,7 +1170,15 @@ def get_post_diagnosis_weekly_review_summary(user_id, diagnosis_summary):
     summary["periodStart"] = None
     summary["periodEnd"] = None
     if not block_refs:
-        return summary
+        fallback_sessions = get_post_diagnosis_diagnostic_sessions(
+            user_id,
+            diagnosis_summary,
+        )
+        records = SolveRecords.objects.filter(session__in=fallback_sessions)
+        if not records.exists():
+            return summary
+
+        return build_post_diagnosis_review_summary(records, bool(block_refs))
 
     records = get_weekly_review_records(user_id, block_refs)
     if diagnosis_summary["recordedDate"] is not None:
@@ -1000,7 +1187,17 @@ def get_post_diagnosis_weekly_review_summary(user_id, diagnosis_summary):
             diagnosis_summary["recordedDate"],
             diagnosis_summary["sessionId"],
         )
+    if not records.exists():
+        fallback_sessions = get_post_diagnosis_diagnostic_sessions(
+            user_id,
+            diagnosis_summary,
+        )
+        records = SolveRecords.objects.filter(session__in=fallback_sessions)
 
+    return build_post_diagnosis_review_summary(records, bool(block_refs))
+
+
+def build_post_diagnosis_review_summary(records, has_weekly_review_plan):
     sessions = SolveSessions.objects.filter(
         session_id__in=records.values_list("session_id", flat=True).distinct(),
     )
@@ -1019,8 +1216,26 @@ def get_post_diagnosis_weekly_review_summary(user_id, diagnosis_summary):
     summary["averageSessionTimeSec"] = average_session_time_sec
     summary["periodStart"] = period_bounds["period_start"]
     summary["periodEnd"] = period_bounds["period_end"]
-    summary["hasWeeklyReviewPlan"] = bool(block_refs)
+    summary["hasWeeklyReviewPlan"] = has_weekly_review_plan
     return summary
+
+
+def get_post_diagnosis_diagnostic_sessions(user_id, diagnosis_summary):
+    completed_status = "completed"
+    diagnostic_type = "diagnostic"
+    sessions = SolveSessions.objects.filter(
+        user_id=user_id,
+        status=completed_status,
+        session_type=diagnostic_type,
+    )
+    if diagnosis_summary["recordedDate"] is not None:
+        sessions = filter_sessions_after(
+            sessions,
+            diagnosis_summary["recordedDate"],
+            diagnosis_summary["sessionId"],
+        )
+
+    return sessions
 
 
 def get_weekly_review_block_refs(user_id):
@@ -1326,48 +1541,41 @@ def build_composite_weak_targets(records):
     시대, 주제, 유형 조합별 취약 항목 목록을 만든다.
 
     단일 분류가 아니라 실제 학습계획에서 사용할 복합 조건을 기준으로
-    오답률과 평균 풀이시간을 계산한다.
+    보정 취약 점수와 평균 풀이시간을 계산한다.
     """
-    rows = (
-        records.values("era", "topic", "q_type")
-        .annotate(
-            total_count=Count("record_id"),
-            wrong_count=Count("record_id", filter=Q(is_correct=False)),
-            total_time_ms=Sum("time_spent_ms"),
-            time_count=Count("time_spent_ms"),
+    config = get_weakness_config()
+    weakness_rows = build_weakness_rows(records, ["era", "topic", "q_type"])
+    weak_targets = []
+    for row in weakness_rows:
+        group = row["group"]
+        era = group.get("era") or ""
+        topic = group.get("topic") or ""
+        q_type = group.get("qType") or ""
+        if config["unclassified_label"] in (era, topic, q_type):
+            continue
+
+        weak_targets.append(
+            {
+                "classification": "복합",
+                "label": build_composite_target_label(era, topic, q_type),
+                "era": era,
+                "topic": topic,
+                "qType": q_type,
+                "wrongRate": row["raw"]["wrongRate"],
+                "wrongCount": row["raw"]["wrong"],
+                "totalCount": row["raw"]["total"],
+                "weaknessScore": row["weaknessScore"],
+                "weaknessStatus": row["status"],
+                "trend": row["trend"],
+                "averageTimeSec": row["raw"]["avgTimeSec"] or 0,
+            }
         )
-        .filter(wrong_count__gt=0)
-        .order_by("era", "topic", "q_type")
-    )
-
-    target_map = {}
-    for row in rows:
-        era = normalize_classification_value("era", row["era"])
-        topic = normalize_classification_value("topic", row["topic"])
-        q_type = row["q_type"]
-        if era and topic and q_type:
-            key = (era, topic, q_type)
-            if key not in target_map:
-                target_map[key] = build_composite_group_seed(era, topic, q_type)
-            update_composite_group_summary(target_map[key], row)
-
-    weak_targets = [
-        {
-            "classification": "복합",
-            "label": build_composite_target_label(era, topic, q_type),
-            "era": era,
-            "topic": topic,
-            "qType": q_type,
-            "wrongRate": calculate_rate(summary["wrongCount"], summary["totalCount"]),
-            "averageTimeSec": get_group_average_time_from_summary(summary) or 0,
-        }
-        for (era, topic, q_type), summary in target_map.items()
-    ]
 
     return sorted(
         weak_targets,
         key=lambda item: (
-            -item["wrongRate"],
+            -item["weaknessScore"],
+            -item["wrongCount"],
             -item["averageTimeSec"],
             item["era"],
             item["topic"],
@@ -1380,7 +1588,7 @@ def build_composite_target_label(era, topic, q_type):
     """
     복합 취약 항목의 화면 표시 라벨을 만든다.
     """
-    return " · ".join([era, topic, q_type])
+    return build_target_display_label(era, topic, q_type)
 
 
 def build_recommended_study_targets(records):
@@ -1473,6 +1681,8 @@ def get_wrong_rate_group_stats(user, field_name, start_date=None, end_date=None)
     return [
         {
             "label": summary["label"],
+            "groupKeyId": build_group_key_id([field_name], [summary["label"]]),
+            "groupKey": [[field_name, summary["label"]]],
             "total": summary["totalCount"],
             "wrong": summary["wrongCount"],
             "rate": calculate_percent_rate(summary["wrongCount"], summary["totalCount"]),
@@ -1480,6 +1690,17 @@ def get_wrong_rate_group_stats(user, field_name, start_date=None, end_date=None)
         }
         for summary in build_classification_group_summaries(rows, field_name)
     ]
+
+
+def get_wrong_rate_weakness_rows(user, field_name, today=None):
+    """
+    오답률 상세 페이지의 배지·정렬에 사용할 공용 취약 판정 row를 만든다.
+    """
+    queryset = SolveRecords.objects.filter(
+        session__user=user,
+        session__status="completed",
+    )
+    return build_weakness_rows(queryset, [field_name], today)
 
 
 def get_wrong_rate_item_session_details(user, category, label):
@@ -1542,6 +1763,7 @@ def get_wrong_rate_session_analysis_detail(user, session_id):
         "categoryLabel": "세션 상세 분석",
         "title": format_session_analysis_title(session, session_type_label),
         "overview": build_session_analysis_overview(session, records, session_type_label),
+        "topWeakTitle": "세션 오답 TOP",
         "topWeakItems": build_session_top_weak_items(groups),
         "groups": groups,
     }
@@ -1629,6 +1851,7 @@ def get_wrong_rate_period_analysis_detail(user, start_date, end_date):
         },
         "overview": build_period_analysis_overview(records, start_date, end_date),
         "change": build_period_change_summary(records),
+        "topWeakTitle": "기간 오답 TOP",
         "topWeakItems": build_session_top_weak_items(groups),
         "groups": groups,
     }
@@ -1947,7 +2170,7 @@ def build_session_group_analysis_item(summary, classification_label, category):
         "answerRate": calculate_percent_rate(correct_count, total_count),
         "wrongRate": wrong_rate,
         "averageTimeLabel": format_seconds(get_group_average_time_from_summary(summary)),
-        "statusClass": get_scope_status_class(total_count, wrong_rate),
+        "statusClass": get_raw_rate_class(total_count, wrong_rate),
     }
 
 
@@ -1979,12 +2202,15 @@ def build_session_top_weak_items(groups):
     세션 안의 시대/유형/주제 취약 항목을 한 목록으로 합쳐 상위 항목만 반환한다.
     """
     display_limit = 5
+    weak_rate_threshold = get_wrong_rate_weak_threshold()
     weak_items = []
     for group in groups:
         for item in group["items"]:
-            if item["wrongCount"] > 0:
+            if item["wrongRate"] >= weak_rate_threshold:
                 weak_items.append(item)
 
+    # TODO: ML 기반 출제가능성 점수가 연결되면 오답률 동률 시 출제가능성을
+    # wrongCount/totalCount보다 먼저 비교해 TOP 취약 항목을 정렬한다.
     return sorted(
         weak_items,
         key=lambda item: (
@@ -2284,13 +2510,7 @@ def get_group_average_time_from_summary(summary):
 
 
 def get_classification_display_label(field_name, value):
-    normalized_value = normalize_classification_value(field_name, value)
-    if normalized_value:
-        return normalized_value
-    elif should_normalize_classification(field_name):
-        return get_unclassified_label()
-
-    return value or get_unclassified_label()
+    return get_taxonomy_display_label(field_name, value)
 
 
 def get_classification_fields():
@@ -2312,7 +2532,7 @@ def get_unclassified_label():
 
     era, q_type, topic 값이 없을 때 화면에 빈 문자열이 노출되지 않게 한다.
     """
-    return "미분류"
+    return get_taxonomy_unclassified_label()
 
 
 def calculate_rate(count, total):

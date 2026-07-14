@@ -5,9 +5,9 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>himate | 나의 학습실</title>
-  <link rel="stylesheet" href="{% static 'analytics/css/mypage.css' %}" />
   <link rel="stylesheet" href="{% static 'himate.css' %}" />
   <link rel="stylesheet" href="{% static 'layout.css' %}" />
+  <link rel="stylesheet" href="{% static 'analytics/css/mypage.css' %}?v=weakness-item-17" />
 </head>
 <body>
   <header class="site-header" aria-label="마이페이지 메뉴">
@@ -28,33 +28,35 @@
 
   <main class="mypage">
     <section class="page-title">
+      <img class="hanok-children" src="/static/images/mypage-hanok-children.png" alt="" aria-hidden="true">
       <div>
         <p>{{ request.user.nickname }}님의 마이페이지</p>
         <h1>나의 학습실</h1>
       </div>
-      <aside class="d-day-box" aria-label="시험까지 남은 기간">
-        <span>D-day</span>
-        <strong>{{ d_day_label }}</strong>
-      </aside>
     </section>
 
     <section class="summary-strip" aria-label="학습 요약">
       <article><span>이번 주 정답률</span><strong>{{ learning_summary.answer_rate }}%</strong></article>
       <article><span>이번 주 풀이 수</span><strong>{{ learning_summary.solved_count }}문제</strong></article>
       <article><span>연속 학습일수</span><strong>{{ learning_summary.study_streak_days }}일</strong></article>
+      <article class="d-day-box" aria-label="시험까지 남은 기간"><span>시험까지</span><strong>{{ d_day_label }}</strong></article>
     </section>
 
     <section class="improvement-grid" aria-label="진단평가 비교">
       {% if diagnosis_comparison.has_records %}
-        <article class="improvement-card {{ diagnosis_comparison.answer.tone }}">
-          <span>첫 진단평가 대비 정답률</span>
-          <strong>{{ diagnosis_comparison.answer.change_label }}</strong>
-          <p>진단평가 {{ diagnosis_comparison.answer.diagnosis_rate }}% → 주간평가 {{ diagnosis_comparison.answer.current_rate }}%</p>
+        <article class="improvement-card answer {{ diagnosis_comparison.answer.tone }}">
+          <div class="improvement-main">
+            <i class="improvement-icon target"><img src="{% static 'diagnosis/assets/target.png' %}" alt="" /></i>
+            <div><span>이전 진단평가 대비 정답률</span><strong class="comparison-change-text">{{ diagnosis_comparison.answer.change_label }}</strong></div>
+          </div>
+          <p>{{ diagnosis_comparison.answer.diagnosis_label }} {{ diagnosis_comparison.answer.diagnosis_rate }}% → {{ diagnosis_comparison.answer.current_label }} {{ diagnosis_comparison.answer.current_rate }}%</p>
         </article>
-        <article class="improvement-card {{ diagnosis_comparison.time.tone }}">
-          <span>첫 진단평가 대비 문제당 평균 풀이시간</span>
-          <strong>{{ diagnosis_comparison.time.change_label }}</strong>
-          <p>진단평가 문제당 {{ diagnosis_comparison.time.diagnosis_time }} → 주간평가 문제당 {{ diagnosis_comparison.time.current_time }}</p>
+        <article class="improvement-card time {{ diagnosis_comparison.time.tone }}">
+          <div class="improvement-main">
+            <i class="improvement-icon time"><img src="{% static 'diagnosis/assets/time.png' %}" alt="" /></i>
+            <div><span>이전 진단평가 대비 문제당 평균 풀이시간</span><strong class="comparison-change-text">{{ diagnosis_comparison.time.change_label }}</strong></div>
+          </div>
+          <p>{{ diagnosis_comparison.time.diagnosis_label }} 문제당 {{ diagnosis_comparison.time.diagnosis_time }} → {{ diagnosis_comparison.time.current_label }} 문제당 {{ diagnosis_comparison.time.current_time }}</p>
         </article>
       {% endif %}
       {% if not diagnosis_comparison.has_records %}
@@ -80,37 +82,47 @@
         </div>
         <div class="weak-list">
           {% for item in weakness_summary.items %}
-            <div><span>{{ forloop.counter }}</span><strong>{{ item.label }}</strong><em>{{ item.rate }}%</em></div>
+            <div class="weak-item {{ item.status_class }}">
+              <span>{{ forloop.counter }}</span>
+              <strong>{{ item.label }}</strong>
+              <em>{{ item.bar_ratio }}%</em>
+            </div>
           {% empty %}
-            <div><span>-</span><strong>풀이 기록 없음</strong><em>0%</em></div>
+            <div class="empty">
+              <span>-</span>
+              <strong>{{ weakness_summary.empty_title }}</strong>
+              <em>보류</em>
+            </div>
           {% endfor %}
         </div>
       </article>
 
       <article class="panel donut-panel">
-        <div class="panel-heading compact">
-          <h2>유형별 오답률 <span>{{ wrong_type_summary.period_label }}</span></h2>
+        <div class="panel-heading compact wrong-rate-heading">
+          <button class="wrong-rate-arrow" id="wrongRatePrev" type="button" aria-label="이전 오답률 분류">‹</button>
+          <h2 id="wrongRateTitle">{{ wrong_rate_summaries.0.title }} <span id="wrongRatePeriod">{{ wrong_rate_summaries.0.period_label }}</span></h2>
+          <button class="wrong-rate-arrow" id="wrongRateNext" type="button" aria-label="다음 오답률 분류">›</button>
         </div>
-        <div class="donut-layout" style="--overall-rate: {{ wrong_type_summary.overall_rate }}%;">
-          <div class="donut-chart{% if not wrong_type_summary.has_records %} is-empty{% endif %}">
-            <strong>{{ wrong_type_summary.overall_rate }}%</strong>
-            <span>{{ wrong_type_summary.status_label }}</span>
-          </div>
+        {% for summary in wrong_rate_summaries %}
+        <div class="donut-layout wrong-rate-slide" data-title="{{ summary.title }}" data-period="{{ summary.period_label }}"{% if not forloop.first %} hidden{% endif %}>
           <ul>
-            {% if wrong_type_summary.has_records %}
-              {% for item in wrong_type_summary.items %}
+            {% if summary.has_records %}
+              {% for item in summary.items %}
                 <li style="--type-rate: {{ item.rate }}%;">
                   <i class="donut-type-chart"></i>
-                  <span>{{ item.label }}</span>
+                  <span class="donut-type-label">
+                    {{ item.label }}
+                  </span>
                   <strong>{{ item.rate }}%</strong>
                 </li>
               {% endfor %}
             {% endif %}
-            {% if not wrong_type_summary.has_records %}
+            {% if not summary.has_records %}
               <li class="empty-state">풀이 기록 없음</li>
             {% endif %}
           </ul>
         </div>
+        {% endfor %}
       </article>
 
     </section>
@@ -118,10 +130,11 @@
     <section class="bottom-grid">
       <section class="panel planner-panel" aria-label="학습 플래너">
         <div class="panel-heading planner-heading">
-          <div>
-            <span class="section-mark"></span>
-            <h2>학습플래너</h2>
+          <div class="planner-title-copy">
+            <h2>학습 플래너</h2>
+            <p>계획을 세우고, 꾸준히 실천해요.</p>
           </div>
+          <img class="planner-flower" src="{% static 'chatbot/assets/chat-floral.png' %}" alt="" aria-hidden="true" />
           {% if planner_summary.can_create_plan %}
             <div class="planner-header-actions">
               <form
@@ -139,36 +152,50 @@
         </div>
 
         <section class="planner-progress-summary" aria-label="학습계획 달성률">
-          <div>
-            <span>계획 달성률</span>
-            <strong>{{ planner_summary.progress.completionPercent }}%</strong>
-          </div>
+          <span>이번 달 학습 진행률</span>
           <div class="planner-progress-meter" aria-label="현재 계획 달성률 {{ planner_summary.progress.completionPercent }}%">
             <i style="width: {{ planner_summary.progress.completionPercent }}%"></i>
           </div>
-          <p>{{ planner_summary.progress.achievedCount }}/{{ planner_summary.progress.targetCount }}문항 달성 · 앞으로 {{ planner_summary.progress.remainingCount }}문항</p>
+          <strong>{{ planner_summary.progress.completionPercent }}%</strong>
+          <p>{{ planner_summary.progress.achievedCount }} / {{ planner_summary.progress.targetCount }}문항</p>
         </section>
 
         <div class="planner-board">
           <section class="planner-calendar" aria-label="월간 학습 달력">
             <div class="planner-month">
-              <button id="prevPlannerMonth" type="button" aria-label="이전 달">‹</button>
+              <button class="wrong-rate-arrow" id="prevPlannerMonth" type="button" aria-label="이전 달">‹</button>
               <strong id="plannerMonthLabel">{{ planner_summary.month_label }}</strong>
-              <button id="nextPlannerMonth" type="button" aria-label="다음 달">›</button>
+              <button class="wrong-rate-arrow" id="nextPlannerMonth" type="button" aria-label="다음 달">›</button>
             </div>
             <div class="calendar-week labels"><span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span></div>
             <div class="planner-calendar-grid" id="plannerCalendarGrid"></div>
+            <div class="planner-calendar-legend" aria-label="달력 표시 안내">
+              <span><i class="planned-dot"></i>학습 계획일</span>
+              <span><i class="today-dot"></i>오늘</span>
+              <span><i></i>미계획일</span>
+            </div>
           </section>
 
           <section class="planner-day" aria-label="선택 날짜 학습 일정">
             <div class="planner-day-top">
               <div>
-                <span id="plannerDayKicker">오늘의 계획</span>
+                <span id="plannerDayKicker">선택한 날짜</span>
                 <strong id="plannerDayLabel">{{ planner_summary.day_label }}</strong>
               </div>
-              {% if planner_summary.can_move_plan %}
-                <button class="planner-change" id="openPlanModal" type="button">학습일 변경</button>
-              {% endif %}
+              <div class="planner-day-actions">
+                <button class="planner-date-change" id="plannerDateChange" type="button">학습일 변경</button>
+                {% if planner_summary.show_add_extra_study %}
+                  <button
+                    class="planner-extra"
+                    id="addExtraStudy"
+                    type="button"
+                    data-can-add="{{ planner_summary.can_add_extra_study|yesno:'true,false' }}"
+                    data-disabled-message="{% if not planner_summary.can_add_extra_study %}학습계획 완료 후 이용 가능합니다.{% endif %}"
+                    title="{% if not planner_summary.can_add_extra_study %}학습계획 완료 후 이용 가능합니다.{% endif %}"
+                    {% if not planner_summary.can_add_extra_study %}disabled{% endif %}
+                  >추가학습</button>
+                {% endif %}
+              </div>
             </div>
 
             <div class="plan-list planner-lessons" id="plannerLessons">
@@ -184,20 +211,22 @@
                   </div>
                   <em class="plan-progress-count">{{ item.achievedCount }}/{{ item.questionCount }}</em>
                   <div class="plan-actions">
-                    <button
-                      class="plan-start-button"
-                      type="button"
-                      data-study-plan-id="{{ item.studyPlanId }}"
-                      data-block-id="{{ item.blockId }}"
-                      data-classification="{{ item.classification }}"
-                      data-label="{{ item.label }}"
-                      data-era="{{ item.era }}"
-                      data-topic="{{ item.topic }}"
-                      data-q-type="{{ item.qType }}"
-                      data-question-count="{{ item.questionCount|default:10 }}"
-                      data-is-weekly-review="{% if item.isWeeklyReview %}true{% else %}false{% endif %}"
-                      {% if not item.canStart %}disabled aria-disabled="true"{% endif %}
-                    >{{ item.startLabel }}</button>
+                    {% if item.showStart %}
+                      <button
+                        class="plan-start-button"
+                        type="button"
+                        data-study-plan-id="{{ item.studyPlanId }}"
+                        data-block-id="{{ item.blockId }}"
+                        data-classification="{{ item.classification }}"
+                        data-label="{{ item.label }}"
+                        data-era="{{ item.era }}"
+                        data-topic="{{ item.topic }}"
+                        data-q-type="{{ item.qType }}"
+                        data-question-count="{{ item.questionCount|default:10 }}"
+                        data-is-weekly-review="{% if item.isWeeklyReview %}true{% else %}false{% endif %}"
+                        {% if not item.canStart %}disabled aria-disabled="true"{% endif %}
+                      >{{ item.startLabel }}</button>
+                    {% endif %}
                     {% if item.canDelete %}
                       <button
                         class="plan-delete-button"
@@ -216,67 +245,24 @@
                 </article>
               {% endfor %}
             </div>
+            <div class="planner-note"><strong>꾸준함이 실력을 만듭니다.</strong><span>오늘도 함께 성장해요!</span><img class="planner-turtle" src="{% static 'analytics/assets/planner-turtle.png' %}" alt="" aria-hidden="true" /></div>
           </section>
         </div>
       </section>
     </section>
 
-    <div class="planner-modal" id="plannerModal" hidden>
-      <section class="planner-dialog" role="dialog" aria-modal="true" aria-labelledby="plannerDialogTitle">
-        <button class="planner-close" id="closePlanModal" type="button" aria-label="닫기">×</button>
-        <header>
-          <h2 id="plannerDialogTitle">학습일 변경</h2>
-          <p>선택된 날짜의 학습일을 다른 날짜로 옮길 수 있습니다.</p>
-        </header>
-        <div class="planner-dialog-grid">
-          <article>
-            <span>STEP 1</span>
-            <strong>변경할 학습을 선택해 주세요</strong>
-            <div class="planner-move-items" id="plannerMoveItems">
-              {% for item in planner_summary.selected_items %}
-                <label>
-                  <input
-                    class="planner-move-item"
-                    type="checkbox"
-                    data-study-plan-id="{{ item.studyPlanId }}"
-                    data-plan-start-date="{{ item.planStartDate }}"
-                    data-plan-end-date="{{ item.planEndDate }}"
-                    data-day-index="{{ item.dayIndex }}"
-                    data-block-index="{{ item.blockIndex }}"
-                  />
-                  {{ item.title }}
-                </label>
-              {% empty %}
-                <p>변경할 학습이 없습니다.</p>
-              {% endfor %}
-            </div>
-          </article>
-          <article>
-            <span>STEP 2</span>
-            <strong>변경할 날짜를 선택해 주세요</strong>
-            <input id="planTargetDate" type="date" value="{{ planner_summary.next_date_key }}" />
-          </article>
-        </div>
-        <footer>
-          <button class="outline-button" id="cancelPlanModal" type="button">취소</button>
-          <button class="primary-button" id="savePlanModal" type="button">저장</button>
-        </footer>
-      </section>
-    </div>
   </main>
 
   {{ planner_data|json_script:"planner-data" }}
   <script>
-    const plannerModal = document.getElementById("plannerModal");
-    const openPlanModal = document.getElementById("openPlanModal");
+    const addExtraStudy = document.getElementById("addExtraStudy");
+    const canAddExtraStudy = addExtraStudy?.dataset.canAdd === "true";
+    const extraStudyCompletionMessage = "학습계획 완료 후 이용 가능합니다.";
+    const extraStudyTodayMessage = "추가학습은 오늘 계획에서만 만들 수 있습니다.";
     const createPlanForm = document.getElementById("createPlanForm");
-    const closePlanModal = document.getElementById("closePlanModal");
-    const cancelPlanModal = document.getElementById("cancelPlanModal");
-    const savePlanModal = document.getElementById("savePlanModal");
-    const planTargetDate = document.getElementById("planTargetDate");
-    const plannerMoveItems = document.getElementById("plannerMoveItems");
     const plannerCalendarGrid = document.getElementById("plannerCalendarGrid");
     const plannerMonthLabel = document.getElementById("plannerMonthLabel");
+    const plannerDateChange = document.getElementById("plannerDateChange");
     const prevPlannerMonth = document.getElementById("prevPlannerMonth");
     const nextPlannerMonth = document.getElementById("nextPlannerMonth");
     const plannerDayKicker = document.getElementById("plannerDayKicker");
@@ -291,6 +277,9 @@
     const completedKeys = new Set(plannerData.completedKeys || []);
     const plannedKeys = new Set(plannerData.plannedKeys || []);
     const progressByDate = plannerData.progressByDate || {};
+    plannerDateChange?.addEventListener("click", () => {
+      document.querySelector(".planner-calendar button.selected")?.focus();
+    });
     const getCookie = (name) => {
       const cookies = document.cookie ? document.cookie.split("; ") : [];
       for (const cookie of cookies) {
@@ -341,81 +330,6 @@
       planIndex: index,
     }));
 
-    const renderPlannerMoveItems = () => {
-      const plans = getPlansByDateKey(selectedPlannerKey);
-      if (!plans.length) {
-        plannerMoveItems.innerHTML = "<p>변경할 학습이 없습니다.</p>";
-        updatePlanTargetDateBounds();
-        return;
-      }
-
-      plannerMoveItems.innerHTML = plans.map((plan) => `
-        <label>
-          <input
-            class="planner-move-item"
-            type="checkbox"
-            data-study-plan-id="${plan.studyPlanId || ""}"
-            data-plan-start-date="${escapeHtml(plan.planStartDate || "")}"
-            data-plan-end-date="${escapeHtml(plan.planEndDate || "")}"
-            data-day-index="${plan.dayIndex}"
-            data-block-index="${plan.blockIndex}"
-          />
-          ${escapeHtml(plan.title)}
-        </label>
-      `).join("");
-      updatePlanTargetDateBounds();
-    };
-
-    const getPlanMoveInputs = () => Array.from(plannerMoveItems.querySelectorAll(".planner-move-item"));
-
-    const getPlanMoveRangeSourceInputs = () => {
-      const checkedInputs = getPlanMoveInputs().filter((input) => input.checked);
-      if (checkedInputs.length) {
-        return checkedInputs;
-      }
-
-      return getPlanMoveInputs();
-    };
-
-    const updatePlanTargetDateBounds = () => {
-      const inputs = getPlanMoveRangeSourceInputs();
-      let minDate = "";
-      let maxDate = "";
-      inputs.forEach((input) => {
-        const planStartDate = input.dataset.planStartDate || "";
-        const planEndDate = input.dataset.planEndDate || "";
-        if (planStartDate && (!minDate || planStartDate > minDate)) {
-          minDate = planStartDate;
-        }
-        if (planEndDate && (!maxDate || planEndDate < maxDate)) {
-          maxDate = planEndDate;
-        }
-      });
-
-      planTargetDate.min = minDate;
-      planTargetDate.max = maxDate;
-      if (!planTargetDate.value) {
-        planTargetDate.value = selectedPlannerKey;
-      }
-      if (minDate && planTargetDate.value < minDate) {
-        planTargetDate.value = minDate;
-      }
-      if (maxDate && planTargetDate.value > maxDate) {
-        planTargetDate.value = maxDate;
-      }
-    };
-
-    const isPlanTargetDateWithinBounds = () => {
-      if (planTargetDate.min && planTargetDate.value < planTargetDate.min) {
-        return false;
-      }
-      if (planTargetDate.max && planTargetDate.value > planTargetDate.max) {
-        return false;
-      }
-
-      return true;
-    };
-
     const renderPlanProgress = (plan) => {
       return `
         <div class="plan-progress-line" aria-label="${escapeHtml(plan.title)} 달성률 ${plan.progressPercent || 0}%">
@@ -448,6 +362,29 @@
       return "";
     };
 
+    const renderPlanStartButton = (plan) => {
+      if (plan.showStart === false) {
+        return "";
+      }
+
+      return `
+        <button
+          class="plan-start-button"
+          type="button"
+          data-study-plan-id="${plan.studyPlanId || ""}"
+          data-block-id="${escapeHtml(plan.blockId || "")}"
+          data-classification="${escapeHtml(plan.classification || "")}"
+          data-label="${escapeHtml(plan.label || "")}"
+          data-era="${escapeHtml(plan.era || "")}"
+          data-topic="${escapeHtml(plan.topic || "")}"
+          data-q-type="${escapeHtml(plan.qType || "")}"
+          data-question-count="${plan.questionCount || 10}"
+          data-is-weekly-review="${plan.isWeeklyReview ? "true" : "false"}"
+          ${renderDisabledAttribute(plan.canStart)}
+        >${escapeHtml(plan.startLabel || "문제 풀기")}</button>
+      `;
+    };
+
     const renderPlanItem = (plan) => `
       <article class="plan-item${plan.done ? " done" : ""}" data-date-key="${plan.dateKey}" data-plan-index="${plan.planIndex}">
         <i></i>
@@ -458,20 +395,7 @@
         </div>
         <em class="plan-progress-count">${plan.achievedCount || 0}/${plan.questionCount || 0}</em>
         <div class="plan-actions">
-          <button
-            class="plan-start-button"
-            type="button"
-            data-study-plan-id="${plan.studyPlanId || ""}"
-            data-block-id="${escapeHtml(plan.blockId || "")}"
-            data-classification="${escapeHtml(plan.classification || "")}"
-            data-label="${escapeHtml(plan.label || "")}"
-            data-era="${escapeHtml(plan.era || "")}"
-            data-topic="${escapeHtml(plan.topic || "")}"
-            data-q-type="${escapeHtml(plan.qType || "")}"
-            data-question-count="${plan.questionCount || 10}"
-            data-is-weekly-review="${plan.isWeeklyReview ? "true" : "false"}"
-            ${renderDisabledAttribute(plan.canStart)}
-          >${escapeHtml(plan.startLabel || "문제 풀기")}</button>
+          ${renderPlanStartButton(plan)}
           ${renderPlanDeleteButton(plan)}
         </div>
       </article>
@@ -501,9 +425,6 @@
       if (progress.state === "future") {
         return "";
       }
-      if (progress.state === "today") {
-        return "";
-      }
 
       return ` style="--day-progress-hue: ${progress.hue}; --day-progress-percent: ${progress.percent}%;"`;
     };
@@ -530,16 +451,16 @@
           if (key === selectedPlannerKey) classes.push("selected");
           if (completedKeys.has(key)) classes.push("done");
           if (plannedKeys.has(key)) classes.push("planned");
-          if (progress && progress.state !== "future" && progress.state !== "today") {
+          if (progress && progress.state !== "future") {
             classes.push("progress-tracked", `progress-${progress.state}`);
           }
 
           let label = "";
-          if (key === todayKey) {
-            label = "<em>오늘</em>";
-          }
-          if (progress && progress.state !== "future" && progress.state !== "today") {
+          if (progress && progress.state !== "future") {
             label = `<em>${escapeHtml(progress.label)}</em>`;
+          }
+          if (!label && key === todayKey) {
+            label = "<em>오늘</em>";
           }
           if (!label && plannedKeys.has(key)) {
             label = "<em>예정</em>";
@@ -565,15 +486,29 @@
 
     const renderPlannerLessons = () => {
       const [yearValue, monthValue, dayValue] = selectedPlannerKey.split("-").map(Number);
-      plannerDayKicker.textContent = "오늘의 계획";
+      plannerDayKicker.textContent = "선택한 날짜";
+      let emptyDescription = "오늘 표시할 일정 없음";
       if (selectedPlannerKey < todayKey) {
-        plannerDayKicker.textContent = "지난 계획";
+        emptyDescription = "지난 날짜의 학습 계획입니다";
       }
       if (selectedPlannerKey > todayKey) {
-        plannerDayKicker.textContent = "예정된 계획";
+        emptyDescription = "예정된 계획은 당일에 보여드려요";
       }
-      plannerDayLabel.textContent = `${String(monthValue).padStart(2, "0")}월 ${String(dayValue).padStart(2, "0")}일`;
-      renderPlannerPlanItems(getPlansByDateKey(selectedPlannerKey), "오늘 표시할 일정 없음");
+      const weekday = ["일", "월", "화", "수", "목", "금", "토"][new Date(yearValue, monthValue - 1, dayValue).getDay()];
+      plannerDayLabel.textContent = `${String(monthValue).padStart(2, "0")}월 ${String(dayValue).padStart(2, "0")}일 (${weekday})`;
+      if (addExtraStudy) {
+        addExtraStudy.disabled = !canAddExtraStudy || selectedPlannerKey !== todayKey;
+        let disabledMessage = "";
+        if (!canAddExtraStudy) {
+          disabledMessage = extraStudyCompletionMessage;
+        }
+        if (canAddExtraStudy && selectedPlannerKey !== todayKey) {
+          disabledMessage = extraStudyTodayMessage;
+        }
+        addExtraStudy.dataset.disabledMessage = disabledMessage;
+        addExtraStudy.title = disabledMessage;
+      }
+      renderPlannerPlanItems(getPlansByDateKey(selectedPlannerKey), emptyDescription);
     };
 
     const startWeeklyReviewBlock = async (button) => {
@@ -616,7 +551,52 @@
       };
     };
 
+    const formatStudyPlanFilterText = (filters) => {
+      const filterLabels = {
+        era: "시대",
+        topic: "주제",
+        question_type: "유형",
+        question_subtype: "세부 유형",
+      };
+      return Object.entries(filterLabels)
+        .filter(([key]) => Boolean(filters[key]))
+        .map(([key, label]) => `${label}: ${filters[key]}`)
+        .join(" / ");
+    };
+
+    const buildStudyPlanShortageMessage = (payload) => {
+      if (!Number.isInteger(payload.available_count) || !Number.isInteger(payload.requested_count)) {
+        return "";
+      }
+
+      const filterText = formatStudyPlanFilterText(payload.filters || {});
+      const lines = [
+        "이 학습계획 조건으로 만들 수 있는 문제가 부족해요.",
+      ];
+      if (filterText) {
+        lines.push(`조건: ${filterText}`);
+      }
+      lines.push(`현재 가능 문항: ${payload.available_count}문항`);
+      lines.push(`필요 문항: ${payload.requested_count}문항`);
+      if (
+        Number.isInteger(payload.score)
+        && Number.isInteger(payload.score_available_count)
+        && Number.isInteger(payload.score_requested_count)
+      ) {
+        lines.push(
+          `${payload.score}점 문항: ${payload.score_available_count}문항 / 필요 ${payload.score_requested_count}문항`
+        );
+      }
+      lines.push("다른 학습 블록을 선택하거나 학습계획을 다시 생성해 주세요.");
+      return lines.join("\n");
+    };
+
     const formatQuestionStartError = (payload) => {
+      const shortageMessage = buildStudyPlanShortageMessage(payload || {});
+      if (shortageMessage) {
+        return shortageMessage;
+      }
+
       const details = [];
       if (Number.isInteger(payload.available_count)) details.push(`가능 ${payload.available_count}개`);
       if (Number.isInteger(payload.requested_count)) details.push(`요청 ${payload.requested_count}개`);
@@ -683,10 +663,22 @@
       }
     };
 
-    const setPlannerModal = (isOpen) => {
-      plannerModal.hidden = !isOpen;
-      document.body.classList.toggle("modal-open", isOpen);
+    const addExtraStudyBlock = async (button) => {
+      button.disabled = true;
+      try {
+        await postPlannerJson(
+          "{% url 'analytics:study_plan_block_add' %}",
+          {
+            targetDate: selectedPlannerKey,
+          },
+        );
+        window.location.reload();
+      } catch (error) {
+        button.disabled = false;
+        alert(error.message);
+      }
     };
+
     prevPlannerMonth.addEventListener("click", () => {
       plannerDate = new Date(plannerDate.getFullYear(), plannerDate.getMonth() - 1, 1);
       renderPlannerCalendar();
@@ -705,47 +697,12 @@
         }
       });
     }
-    if (openPlanModal) {
-      openPlanModal.addEventListener("click", () => {
-        renderPlannerMoveItems();
-        setPlannerModal(true);
+    if (addExtraStudy) {
+      addExtraStudy.addEventListener("click", () => {
+        if (addExtraStudy.disabled) return;
+        addExtraStudyBlock(addExtraStudy);
       });
     }
-    closePlanModal.addEventListener("click", () => setPlannerModal(false));
-    cancelPlanModal.addEventListener("click", () => setPlannerModal(false));
-    plannerMoveItems.addEventListener("change", updatePlanTargetDateBounds);
-    savePlanModal.addEventListener("click", async () => {
-      const items = Array.from(document.querySelectorAll(".planner-move-item:checked")).map((item) => ({
-        studyPlanId: item.dataset.studyPlanId,
-        dayIndex: item.dataset.dayIndex,
-        blockIndex: item.dataset.blockIndex,
-      }));
-      if (!items.length || !planTargetDate.value) {
-        return;
-      }
-      if (!isPlanTargetDateWithinBounds()) {
-        alert("학습일 변경은 해당 학습계획 기간 안에서만 가능합니다.");
-        return;
-      }
-
-      savePlanModal.disabled = true;
-      try {
-        await postPlannerJson(
-          "{% url 'analytics:study_plan_block_move' %}",
-          {
-            items,
-            targetDate: planTargetDate.value,
-          },
-        );
-        window.location.reload();
-      } catch (error) {
-        savePlanModal.disabled = false;
-        alert(error.message);
-      }
-    });
-    plannerModal.addEventListener("click", (event) => {
-      if (event.target === plannerModal) setPlannerModal(false);
-    });
     plannerLessons.addEventListener("click", (event) => {
       const deleteButton = event.target.closest(".plan-delete-button");
       if (deleteButton) {
@@ -759,6 +716,19 @@
       if (startButton.disabled) return;
       startStudyPlanBlock(startButton);
     });
+    const wrongRateSlides = Array.from(document.querySelectorAll(".wrong-rate-slide"));
+    const wrongRateTitle = document.getElementById("wrongRateTitle");
+    const wrongRatePeriod = document.getElementById("wrongRatePeriod");
+    let wrongRateIndex = 0;
+    const showWrongRateSlide = (step) => {
+      wrongRateIndex = (wrongRateIndex + step + wrongRateSlides.length) % wrongRateSlides.length;
+      wrongRateSlides.forEach((slide, index) => { slide.hidden = index !== wrongRateIndex; });
+      const activeSlide = wrongRateSlides[wrongRateIndex];
+      wrongRateTitle.firstChild.nodeValue = `${activeSlide.dataset.title} `;
+      wrongRatePeriod.textContent = activeSlide.dataset.period;
+    };
+    document.getElementById("wrongRatePrev")?.addEventListener("click", () => showWrongRateSlide(-1));
+    document.getElementById("wrongRateNext")?.addEventListener("click", () => showWrongRateSlide(1));
     renderPlannerCalendar();
     renderPlannerLessons();
   </script>

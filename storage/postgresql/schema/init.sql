@@ -68,6 +68,39 @@ CREATE TABLE IF NOT EXISTS question_options (
 );
 
 -- 4. 챗봇 세션
+-- 3-1. 기출 전처리 원장
+-- 초기 적재는 ML_han_v1.json 전처리 데이터를 사용하고,
+-- 이후에는 기출 원본에서 다시 추출한 데이터를 같은 구조로 적재합니다.
+CREATE TABLE IF NOT EXISTS exam_data (
+    id                         BIGSERIAL       PRIMARY KEY,
+    round_no                   INT             NOT NULL,
+    question_no                INT             NOT NULL,
+    question_text              TEXT            NOT NULL,
+    material_text              TEXT            NULL,
+    choices_json               JSONB           NOT NULL DEFAULT '[]'::jsonb,
+    distractor_choices_json    JSONB           NOT NULL DEFAULT '[]'::jsonb,
+    answer_choice              TEXT            NULL,
+    answer_no                  INT             NULL,
+    era                        VARCHAR(50)     NULL,
+    topic                      VARCHAR(50)     NULL,
+    question_type              VARCHAR(50)     NULL,
+    question_subtype           VARCHAR(50)     NULL,
+    q_score                    INT             NULL,
+    has_image                  BOOLEAN         NOT NULL DEFAULT FALSE,
+    image_meta_json            JSONB           NOT NULL DEFAULT '{}'::jsonb,
+    created_at                 TIMESTAMP       NOT NULL DEFAULT NOW(),
+    updated_at                 TIMESTAMP       NOT NULL DEFAULT NOW(),
+    answer_explanation         TEXT            NULL,
+    choice_explanations_json   JSONB           NOT NULL DEFAULT '{}'::jsonb,
+    explanation_source         VARCHAR(50)     NULL
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS exam_data_round_question_uidx
+    ON exam_data(round_no, question_no);
+
+CREATE INDEX IF NOT EXISTS exam_data_classification_idx
+    ON exam_data(era, topic, question_type, question_subtype);
+
 CREATE TABLE IF NOT EXISTS chat_sessions (
     session_id  VARCHAR(50)     PRIMARY KEY,
     chat_type   VARCHAR(20)     NOT NULL,
@@ -189,4 +222,3 @@ CREATE TABLE IF NOT EXISTS email_verification_codes (
     created_at  TIMESTAMP       NOT NULL DEFAULT NOW(),
     used_at     TIMESTAMP       NULL
 );
-

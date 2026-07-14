@@ -1,0 +1,60 @@
+/* Screenshot-matched chat layout. Deliberately text and CSS only: no logo or image assets. */
+body:has(.chat-page) { overflow: hidden; background: #fbfaf5 !important; }
+.chat-page { height: 100vh; display: grid; grid-template-rows: 76px minmax(0, 1fr); background: #fbfaf5 !important; color: #343530 !important; font-family: "Noto Serif KR", "Nanum Myeongjo", serif !important; }
+.chat-page img { display: none !important; }
+.chat-page .chat-header { display: flex !important; height: 76px !important; min-height: 76px !important; }
+.chat-page .messages { height: auto !important; min-height: 0; padding: 0 !important; overflow: hidden !important; }
+.chat-page .chat-layout { width: 100% !important; height: 100% !important; display: grid !important; grid-template-columns: 358px minmax(0, 1fr) !important; gap: 0 !important; margin: 0 !important; overflow: hidden; border: 1px solid #cbb9a4 !important; border-radius: 8px !important; background-color: #fbfaf5 !important; background-image: radial-gradient(rgba(151,128,99,.12) .65px, transparent .75px) !important; background-size: 10px 10px !important; box-shadow: none !important; }
+.chat-page .left-sidebar { position: relative; display: grid !important; grid-template-rows: auto auto auto minmax(0, 1fr); align-content: start; gap: 26px; height: 100% !important; padding: 96px 23px 24px !important; border: 0 !important; border-right: 1px solid #decfbd !important; border-radius: 0 !important; background: rgba(255,253,248,.66) !important; box-shadow: none !important; overflow: hidden; }
+.chat-page .left-sidebar::before { content: "한국사 학습 챗봇"; position: absolute; top: 33px; left: 25px; color: #304536; font-size: 21px; font-weight: 900; }
+.chat-page .left-sidebar::after { display: none !important; }
+.chat-page .chat-sidebar-toggle { top: 5px !important; left: 252px !important; width: 42px !important; height: 42px !important; display: grid !important; place-items: center; border: 0 !important; border-radius: 0 !important; background: transparent !important; }
+.chat-page .chat-sidebar-toggle::before { content: "" !important; width: 20px !important; height: 20px !important; background: #4A6B5D !important; mask: url("/static/images/sidebar-toggle.png") center / contain no-repeat !important; color: transparent !important; font-size: 0 !important; }
+.chat-page .session-sidebar .new-session-button { width: 100% !important; height: 50px !important; min-height: 50px !important; margin: 0 !important; border: 0 !important; border-radius: 7px !important; background: #416f60 !important; color: #fff !important; box-shadow: none !important; font-size: 15px !important; }
+.chat-page .session-search { display: grid; gap: 7px; }.chat-page .session-search span, .chat-page .side-title { color: #292b28 !important; font-size: 14px !important; font-weight: 900 !important; }.chat-page .session-search input { height: 42px !important; border: 1px solid #d8c7b2 !important; border-radius: 7px !important; background: rgba(255,255,255,.65) !important; color: #605f5b !important; box-shadow: none !important; }.chat-page .session-top { min-height: auto; }.chat-page .session-list { display: grid; gap: 8px; padding: 0; }.chat-page .session-item, .chat-page .session-item.active { min-height: 64px; padding: 9px 11px; border: 1px solid #dacbb8 !important; border-radius: 7px !important; background: rgba(255,255,255,.45) !important; color: #30332f !important; box-shadow: none !important; }.chat-page .session-item.active { border-color: #4d7d6d !important; background: rgba(248,248,242,.9) !important; }.chat-page .session-item-title { font-size: 13px !important; }.chat-page .session-item-meta { color: #76736c !important; font-size: 11px !important; }.chat-page .session-delete { min-width: 30px !important; height: 30px !important; border: 1px solid #d7c9b8 !important; border-radius: 5px !important; background: transparent !important; color: #75716b !important; opacity: 1 !important; }
+.chat-page .chat-panel { position: relative; display: grid !important; grid-template-rows: minmax(0, 1fr) auto; height: 100% !important; padding-top: 87px !important; border: 0 !important; border-radius: 0 !important; background: transparent !important; box-shadow: none !important; overflow: hidden; }.chat-page .chat-panel::after { content: "한국사 학습 챗봇" !important; position: absolute; z-index: 3; top: 0; left: 0; right: 0; height: 87px; display: flex; align-items: center; padding: 0 40px; border-bottom: 1px solid #dfceba; color: #304536; background: transparent !important; font-size: 21px; font-weight: 900; letter-spacing: -.03em; }.chat-page .chat-panel::before { content: "역사를 배우는 즐거운 대화" !important; position: absolute; z-index: 4; top: 0; right: 39px; left: auto; width: auto; height: 87px; display: flex; align-items: center; color: #938d84; background: transparent !important; mask: none !important; font-size: 14px; font-weight: 650; }
+.chat-page .chat-stream { display: flex; gap: 16px; padding: 37px 46px 14px !important; background: transparent !important; }.chat-page .chat-stream > .message.bot { width: auto !important; max-width: 630px !important; display: block !important; margin: 0 !important; }.chat-page .chat-stream > .message.bot > .avatar { display: none !important; }.chat-page .chat-stream > .message.bot > .bot-bubble { width: auto !important; min-width: 0 !important; max-width: 630px !important; padding: 0 !important; border: 1px solid #e0d4c5 !important; border-radius: 20px !important; background: #fffdfa !important; box-shadow: 0 4px 13px rgba(89,68,47,.08) !important; }.chat-page .markdown-answer { padding: 25px 38px !important; color: #34332f !important; font-size: 17px !important; font-weight: 650 !important; line-height: 1.55 !important; }
+.chat-page .composer { padding: 10px 52px 14px !important; background: transparent !important; }.chat-page .composer-box { min-height: 62px !important; grid-template-columns: 126px minmax(0, 1fr) 44px !important; gap: 9px !important; padding: 8px 9px !important; border-radius: 12px !important; }.chat-page .problem-picker-trigger { height: 44px !important; font-size: 14px !important; }.chat-page .question-input { min-height: 44px !important; font-size: 14px !important; }.chat-page .send { width: 44px !important; min-width: 44px !important; height: 44px !important; min-height: 44px !important; }.chat-page .send::after { font-size: 20px; }
+@media (max-width: 900px) { body:has(.chat-page) { overflow: auto; }.chat-page { height: auto; min-height: 100vh; }.chat-page .chat-layout { grid-template-columns: 1fr !important; }.chat-page .left-sidebar, .chat-page .chat-sidebar-toggle { display: none !important; }.chat-page .chat-panel { min-height: calc(100vh - 76px); }.chat-page .chat-panel::after { padding: 0 20px; font-size: 17px; }.chat-page .chat-panel::before { display: none; }.chat-page .chat-stream { padding: 28px 18px 12px !important; }.chat-page .composer { padding: 12px 16px 18px !important; }.chat-page .composer-box { min-height: auto !important; grid-template-columns: 1fr 52px !important; }.chat-page .problem-picker-trigger { grid-column: 1 / -1; grid-row: 2; height: 45px !important; }.chat-page .send { width: 52px !important; height: 52px !important; } }
+
+/* Keep only the original chatbot character; other logo and decorative images stay hidden. */
+.chat-page .chat-stream > .message.bot { display: grid !important; grid-template-columns: 66px minmax(0, 1fr) !important; gap: 18px !important; max-width: 730px !important; }
+.chat-page .chat-stream > .message.bot > .avatar { width: 66px !important; height: 66px !important; display: block !important; overflow: hidden !important; border: 1px solid #e5dccf !important; border-radius: 50% !important; background: #fff !important; }
+.chat-page .chat-stream > .message.bot > .avatar img { width: 100% !important; height: 100% !important; display: block !important; object-fit: contain !important; }
+
+.chat-page .left-sidebar { padding-top: 19px !important; }
+.chat-page .left-sidebar::before { content: none; }
+.chat-page .session-sidebar .new-session-button { width: calc(100% - 48px) !important; }
+.chat-page .chat-layout > .chat-sidebar-toggle { top: 19px !important; left: 296px !important; width: 50px !important; min-width: 50px !important; height: 50px !important; min-height: 50px !important; }
+.chat-page .chat-layout.is-sidebar-collapsed > .chat-sidebar-toggle { left: 10px !important; }
+.chat-page .chat-layout.is-sidebar-collapsed .chat-sidebar-toggle::before { transform: rotate(180deg); }
+.chat-page .chat-layout.is-sidebar-collapsed .chat-panel::after { padding-left: 76px !important; }
+
+.chat-page .chat-panel::before {
+  padding-right: 30px !important;
+  background-image: url("/static/chatbot/assets/chat-floral.png") !important;
+  background-position: right center !important;
+  background-repeat: no-repeat !important;
+  background-size: 24px 24px !important;
+}
+
+.chat-page .chat-stream > .message.bot { max-width: 980px !important; }
+.chat-page .chat-stream > .message.bot > .bot-bubble { max-width: 880px !important; }
+
+/* The loading bubble has its own compact layout; do not inherit answer-bubble spacing. */
+.chat-page .chat-stream > .message.bot > .typing-bubble {
+  width: 74px !important;
+  min-width: 74px !important;
+  max-width: 74px !important;
+  height: 48px !important;
+  min-height: 48px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 7px !important;
+  padding: 0 18px !important;
+  border: 1px solid #e0d4c5 !important;
+  border-radius: 999px !important;
+  background: #fffdfa !important;
+}
+.chat-page .chat-stream > .message.bot > .typing-bubble span { background: #4a6b5d !important; }

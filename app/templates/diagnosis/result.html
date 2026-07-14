@@ -7,7 +7,8 @@
   <link rel="stylesheet" href="/static/question/css/result.css" />
   <link rel="stylesheet" href="../../static/question/css/result.css" />
   <link rel="stylesheet" href="/static/himate.css" />
-  <link rel="stylesheet" href="/static/layout.css" />
+  <link rel="stylesheet" href="/static/layout.css?v=result-reference-1" />
+  <style>html, body { background: #fbfcfa !important; }</style>
 </head>
 <body>
   <header class="site-header" aria-label="진단평가 결과 메뉴">
@@ -36,7 +37,13 @@
           <span class="page-kicker">진단평가 해설</span>
           <h1>문제별 결과 확인</h1>
         </div>
-        <div class="question-jump" id="questionJump" aria-label="문제 번호 이동"></div>
+        <section class="question-jump-panel" aria-label="문항 선택">
+          <div class="question-jump-heading">
+            <strong>문항 선택</strong>
+            <button class="question-jump-toggle" id="questionJumpToggle" type="button" aria-expanded="true" aria-label="문항 선택 접기"><img src="/static/diagnosis/assets/hide.png" alt="" /></button>
+          </div>
+          <div class="question-jump" id="questionJump" aria-label="문제 번호 이동"></div>
+        </section>
       </header>
 
       <section class="answer-summary" aria-label="답안 요약">
@@ -99,22 +106,23 @@
     <section class="diagnosis-summary" id="diagnosisSummary" aria-label="전체 진단 결과" style="display:none;">
       <div class="summary-copy">
         <span class="page-kicker">진단 결과</span>
-        <p>풀었던 문제 전체를 기반으로 현재 수준, 정답률, 취약 유형을 요약합니다.</p>
+        <p>풀었던 문제 전체를 기반으로 예상 급수와 점수 변화를 요약합니다.</p>
       </div>
       <div class="summary-grid">
         <article>
-          <span>현재 수준</span>
+          <span>예상 급수</span>
           <strong id="levelText" style="color: red;">-</strong>
           <p id="levelDescription"></p>
         </article>
         <article>
-          <span>정답률</span>
+          <span>총점</span>
           <strong id="accuracyText" style="color: red;">0%</strong>
           <p id="accuracyCount">0 / 0</p>
         </article>
         <article>
-          <span>취약 TOP 3</span>
-          <ul id="weakTopics"></ul>
+          <span>직전 진단평가 대비 점수 변화</span>
+          <strong id="scoreChangeText">-</strong>
+          <p id="scoreChangeDescription"></p>
         </article>
       </div>
     </section>
@@ -134,6 +142,18 @@
     let resultData = null;      // GET /api/result/<id>/
     let explanations = [];      // GET /api/result/<id>/explanation/<qid>/ × N
     let currentIndex = 0;
+    const questionJump = document.getElementById("questionJump");
+    const questionJumpToggle = document.getElementById("questionJumpToggle");
+
+    questionJumpToggle.addEventListener("click", () => {
+      const expanded = questionJump.hidden;
+      questionJump.hidden = !expanded;
+      questionJumpToggle.setAttribute("aria-expanded", String(expanded));
+      questionJumpToggle.setAttribute("aria-label", expanded ? "문항 선택 접기" : "문항 선택 펼치기");
+      questionJumpToggle.querySelector("img").src = expanded
+        ? "/static/diagnosis/assets/hide.png"
+        : "/static/diagnosis/assets/eye.png";
+    });
 
     // ── 데이터 로드 ──────────────────────────────────────────────────────────────
     async function loadAll() {
@@ -169,12 +189,16 @@
 
     // ── 요약 렌더링 ──────────────────────────────────────────────────────────────
     function renderSummary() {
-      const { correct_count, total_count, total_score, expected_grade, era_analytics, type_analytics } = resultData;
+      const { correct_count, total_count, total_score, expected_grade, previous_score, score_change } = resultData;
       const accuracy = total_count ? Math.round((correct_count / total_count) * 100) : 0;
 
-      document.getElementById("levelText").textContent = `${total_score}점`;
-      document.getElementById("accuracyText").textContent = `${accuracy}%`;
-      document.getElementById("accuracyCount").textContent = `${correct_count} / ${total_count}`;
+      const levelText = document.getElementById("levelText");
+      const totalScoreText = document.getElementById("accuracyText");
+      levelText.textContent = expected_grade;
+      totalScoreText.textContent = `${total_score}점`;
+      levelText.style.setProperty("color", expected_grade === "탈락" ? "#d9544d" : "#4a8055", "important");
+      totalScoreText.style.setProperty("color", total_score < 60 ? "#d9544d" : "#4a8055", "important");
+      document.getElementById("accuracyCount").textContent = `${correct_count} / ${total_count} · 정답률 ${accuracy}%`;
 
       const gradeDesc = {
         "1급": "상위권 수준입니다. 고난도 사료와 시대 통합 문제를 보완하세요.",
@@ -184,19 +208,20 @@
       };
       document.getElementById("levelDescription").textContent = `${expected_grade} · ${gradeDesc[expected_grade] || ""}`;
 
-      // 취약 TOP3: wrong_rate 높은 순
-      const allAnalytics = [...(era_analytics || []), ...(type_analytics || [])];
-      const weakTop3 = allAnalytics
-        .sort((a, b) => b.wrong_rate - a.wrong_rate)
-        .slice(0, 3)
-        .map((a) => a.label);
-      const topics = weakTop3.length ? weakTop3 : ["데이터 없음"];
-      document.getElementById("weakTopics").innerHTML = topics.map((t) => `<li>${t}</li>`).join("");
+      const scoreChangeText = document.getElementById("scoreChangeText");
+      const scoreChangeDescription = document.getElementById("scoreChangeDescription");
+      if (score_change === null) {
+        scoreChangeText.textContent = "이전 기록 없음";
+        scoreChangeDescription.textContent = "점수 변화를 비교할 진단평가 기록이 없습니다.";
+      } else {
+        scoreChangeText.textContent = score_change > 0 ? `${score_change}점 상승` : score_change < 0 ? `${Math.abs(score_change)}점 하락` : "변화 없음";
+        scoreChangeDescription.textContent = `직전 ${previous_score}점 → 현재 ${total_score}점`;
+        scoreChangeText.style.setProperty("color", score_change > 0 ? "#4a8055" : score_change < 0 ? "#d9544d" : "#5b625d", "important");
+      }
     }
 
     // ── 문항 번호 점프 ────────────────────────────────────────────────────────────
     function renderJump() {
-      const questionJump = document.getElementById("questionJump");
       questionJump.innerHTML = explanations.map((exp, index) => `
         <button class="${index === currentIndex ? "active" : ""} ${exp.is_correct ? "correct" : "wrong"}"
                 type="button" data-index="${index}">
@@ -253,6 +278,30 @@
       ].filter(Boolean).join("\n");
     }
 
+    function buildChatProblem(exp) {
+      return {
+        record_id: exp.record_id || exp.question_id || Date.now(),
+        session_id: SESSION_ID,
+        number: currentIndex + 1,
+        content: exp.content || "",
+        passage: exp.passage || "",
+        question_type: exp.question_type || "",
+        era: exp.era || "",
+        topic: exp.topic || "",
+        selected_no: exp.user_choice_no,
+        answer_no: exp.correct_choice_no,
+        is_correct: exp.is_correct,
+        answer_explanation: exp.answer_explanation || "",
+        core_concept: exp.core_concept || "",
+        options: (exp.choices || []).map((choice) => ({
+          choice_no: choice.choice_no,
+          content: choice.content,
+          is_answer: choice.choice_no === exp.correct_choice_no,
+          choice_explanation: choice.choice_explanation || "",
+        })),
+      };
+    }
+
     function renderQuestion() {
       const exp = explanations[currentIndex];
 
@@ -306,7 +355,7 @@
     document.getElementById("prevQuestion").addEventListener("click", () => move(-1));
     document.getElementById("nextQuestion").addEventListener("click", () => move(1));
     document.getElementById("askChatbot").addEventListener("click", () => {
-      sessionStorage.setItem("chatbotQuestionContext", buildChatContext(explanations[currentIndex]));
+      sessionStorage.setItem("chatbotProblemContext", JSON.stringify(buildChatProblem(explanations[currentIndex])));
       window.location.href = "/chatbot/?from=diagnosis-result";
     });
     // ── 로드 시작 ─────────────────────────────────────────────────────────────────

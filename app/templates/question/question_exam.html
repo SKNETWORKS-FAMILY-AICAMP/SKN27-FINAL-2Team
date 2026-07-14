@@ -4,10 +4,10 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>himate | {% if exam_mode == 'diagnostic' %}진단평가{% else %}문제풀이{% endif %}</title>
-  <link rel="stylesheet" href="/static/question/css/exam.css?v=analysis-loading-2" />
-  <link rel="stylesheet" href="../../static/question/css/exam.css?v=analysis-loading-2" />
+  <link rel="stylesheet" href="/static/question/css/exam.css?v=exam-4" />
+  <link rel="stylesheet" href="../../static/question/css/exam.css?v=exam-4" />
   <link rel="stylesheet" href="/static/himate.css" />
-  <link rel="stylesheet" href="/static/layout.css" />
+  <link rel="stylesheet" href="/static/layout.css?v=answered-marker-2" />
 </head>
 <body>
   <header class="site-header" aria-label="{% if exam_mode == 'diagnostic' %}진단평가{% else %}문제풀이{% endif %} 메뉴">
@@ -35,11 +35,30 @@
         <div class="exam-title">
           <h1>{% if exam_mode == 'diagnostic' %}진단 평가{% else %}문제 풀이{% endif %}</h1>
         </div>
+        <section class="timer-card header-timer" aria-label="남은 시간">
+          <span>남은 시간</span>
+          <strong id="timerText">20:00</strong>
+        </section>
         <div class="progress-box" aria-label="문항 진행률">
-          <strong>문항 수</strong>
+          <strong>문제 진행률</strong>
           <div class="progress-track"><span id="progressFill" style="width: 5%"></span></div>
           <em id="progressText">1 / 20</em>
         </div>
+        <section class="save-card action-card header-exit">
+          <div class="side-action-buttons">
+            {% if exam_mode != 'diagnostic' %}
+            {% if request.user.is_authenticated %}
+            <button id="saveProgressButton" type="button">문제 저장</button>
+            {% endif %}
+            {% endif %}
+            <button class="exit-top-button" id="exitButton" type="button">나가기</button>
+          </div>
+          {% if exam_mode != 'diagnostic' %}
+          {% if request.user.is_authenticated %}
+          <p id="saveStatus">답안 선택, 이동, 나가기 시 진행 상황이 자동 저장됩니다.</p>
+          {% endif %}
+          {% endif %}
+        </section>
       </header>
 
       <div class="exam-layout">
@@ -69,26 +88,6 @@
         </section>
 
         <aside class="side-panel" aria-label="문제풀이 상태">
-          <section class="save-card action-card">
-            <div class="side-action-buttons">
-              <button class="exit-top-button" id="exitButton" type="button">나가기</button>
-              {% if exam_mode != 'diagnostic' %}
-              {% if request.user.is_authenticated %}
-              <button id="saveProgressButton" type="button">진행 저장</button>
-              {% endif %}
-              {% endif %}
-            </div>
-            {% if exam_mode != 'diagnostic' %}
-            {% if request.user.is_authenticated %}
-            <p id="saveStatus">답안 선택, 이동, 나가기 시 진행 상황이 자동 저장됩니다.</p>
-            {% endif %}
-            {% endif %}
-          </section>
-          <section class="timer-card">
-            <span>남은 시간</span>
-            <strong id="timerText">20:00</strong>
-          </section>
-
           <section class="number-card">
             <h2>문항 목록</h2>
             <div class="number-grid" id="numberGrid" aria-label="문항 번호"></div>
@@ -97,14 +96,13 @@
       </div>
     </section>
   </main>
-  <section class="analysis-loading" id="analysisLoading" aria-live="polite" hidden>
-    <div class="analysis-loading-card">
-      <img src="/static/images/loading.gif" alt="" />
-      <strong>분석 결과를 생성하고 있습니다</strong>
+  <section class="submit-loading" id="submitLoading" role="status" aria-live="polite" hidden>
+    <div class="submit-loading-card">
+      <i aria-hidden="true"></i>
+      <strong>결과를 분석하고 있습니다</strong>
       <span>잠시만 기다려 주세요.</span>
     </div>
   </section>
-
   <script>
     const EXAM_MODE = "{{ exam_mode|default:'practice' }}";
     const IS_DIAGNOSTIC = EXAM_MODE === "diagnostic";
@@ -157,7 +155,7 @@
     const timerText = document.getElementById("timerText");
     const saveProgressButton = document.getElementById("saveProgressButton");
     const saveStatus = document.getElementById("saveStatus");
-    const analysisLoading = document.getElementById("analysisLoading");
+    const submitLoading = document.getElementById("submitLoading");
     let remainingSeconds = shouldResume && Number.isInteger(savedProgress?.remainingSeconds) ? savedProgress.remainingSeconds : 0;
     let totalExamSeconds = 0;
     let isTimeOver = false;
@@ -521,7 +519,7 @@
     function finishExam() {
       isSubmittingExam = true;
       commitCurrentQuestionTime();
-      analysisLoading.hidden = false;
+      submitLoading.hidden = false;
       localStorage.setItem("questionResult", JSON.stringify({
         questions,
         answers,
@@ -531,9 +529,7 @@
         condition: savedCondition,
       }));
       localStorage.removeItem(progressStorageKey);
-      setTimeout(() => {
-        window.location.href = "/question/result/";
-      }, 1200);
+      window.location.href = "/question/result/";
     }
 
     async function submitDiagnosisExam() {
@@ -545,7 +541,7 @@
 
       isSubmittingExam = true;
       commitCurrentQuestionTime();
-      analysisLoading.hidden = false;
+      submitLoading.hidden = false;
       submitButton.disabled = true;
       submitButton.textContent = "제출 중...";
 
@@ -582,7 +578,7 @@
         localStorage.removeItem(progressStorageKey);
         window.location.href = `/diagnosis/result/?session_id=${sessionId}`;
       } catch (error) {
-        analysisLoading.hidden = true;
+        submitLoading.hidden = true;
         isSubmittingExam = false;
         submitButton.disabled = false;
         submitButton.textContent = "제출";
@@ -599,7 +595,7 @@
 
       isSubmittingExam = true;
       commitCurrentQuestionTime();
-      analysisLoading.hidden = false;
+      submitLoading.hidden = false;
       submitButton.disabled = true;
       submitButton.textContent = "제출 중...";
 
@@ -640,11 +636,9 @@
           condition: savedCondition,
         }));
         localStorage.removeItem(progressStorageKey);
-        setTimeout(() => {
-          window.location.href = "/question/result/";
-        }, 1200);
+        window.location.href = "/question/result/";
       } catch (error) {
-        analysisLoading.hidden = true;
+        submitLoading.hidden = true;
         isSubmittingExam = false;
         submitButton.disabled = false;
         submitButton.textContent = "제출";

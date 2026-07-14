@@ -11,6 +11,7 @@ from neo4j import GraphDatabase
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 TOKEN_RE = re.compile(r"[가-힣A-Za-z0-9]+")
+FILTER_INTENT_TERMS = {"문화", "문화재", "인물", "사건", "시대", "관련", "관계"}
 STOPWORDS = {
     "관련",
     "관계",
@@ -29,6 +30,8 @@ STOPWORDS = {
     "있는지",
     "뭐야",
     "무엇",
+    "무슨",
+    "무슨관계",
     "누구",
     "하고",
     "이랑",
@@ -36,8 +39,8 @@ STOPWORDS = {
     "차이",
     "업적",
     "정책",
-}
-TOKEN_SUFFIXES = ("이랑", "하고", "와", "과", "에게", "에서", "으로", "부터", "까지", "은", "는", "이", "가", "을", "를", "의", "에")
+} | FILTER_INTENT_TERMS
+TOKEN_SUFFIXES = ("인가요", "이야", "인가", "이랑", "하고", "에게", "에서", "으로", "부터", "까지", "와", "과", "은", "는", "이", "가", "을", "를", "의", "에", "야")
 HONORIFIC_SUFFIXES = ("대왕",)
 
 
@@ -63,10 +66,14 @@ def unique_values(values: list[str]) -> list[str]:
 
 def normalize_token(token: str) -> str:
     value = (token or "").strip()
-    for suffix in TOKEN_SUFFIXES:
-        if len(value) > len(suffix) and value.endswith(suffix):
-            value = value[: -len(suffix)]
-            break
+    changed = True
+    while changed:
+        changed = False
+        for suffix in TOKEN_SUFFIXES:
+            if len(value) > len(suffix) + 1 and value.endswith(suffix):
+                value = value[: -len(suffix)]
+                changed = True
+                break
     return value
 
 
@@ -80,11 +87,14 @@ def token_variants(token: str) -> list[str]:
 
 def extract_query_tokens(question: str) -> list[str]:
     tokens = [normalize_token(token) for token in TOKEN_RE.findall(question or "") if len(token) >= 2]
+    base_tokens = [token for token in tokens if len(token) >= 2 and token not in STOPWORDS]
     filtered = []
-    for token in tokens:
+    for size in (3, 2):
+        for index in range(len(base_tokens) - size + 1):
+            phrase_tokens = base_tokens[index : index + size]
+            filtered.extend([" ".join(phrase_tokens), "".join(phrase_tokens)])
+    for token in base_tokens:
         if len(token) < 2:
-            continue
-        if token in STOPWORDS:
             continue
         filtered.extend(token_variants(token))
     return unique_values(filtered)[:24]
@@ -215,7 +225,7 @@ def build_relation_summary(terms: list[dict[str, Any]]) -> str:
     return " / ".join(pieces)
 
 
-def build_graph_context(question: str, limit: int = 6) -> dict[str, Any]:
+def build_graph_context(question: str, limit: int = 6, max_hop: int = 1) -> dict[str, Any]:
     tokens = extract_query_tokens(question)
     if not tokens:
         return disabled_context("no_query_tokens")
@@ -225,10 +235,14 @@ def build_graph_context(question: str, limit: int = 6) -> dict[str, Any]:
         return disabled_context("neo4j_password_missing")
 
     uri, user, password = config
+    query = GRAPH_QUERY
+    if max_hop >= 2:
+        query = query.replace("[:RELATED_TO|REFERS_TO]-(related:Term)", "[:RELATED_TO|REFERS_TO*1..2]-(related:Term)")
+        query = query.replace("[:RELATED_TO]-(related:Person)", "[:RELATED_TO*1..2]-(related:Person)")
     try:
         with GraphDatabase.driver(uri, auth=(user, password)) as driver:
             with driver.session() as session:
-                rows = list(session.run(GRAPH_QUERY, tokens=tokens, limit=limit))
+                rows = list(session.run(query, tokens=tokens, limit=limit))
     except Exception as exc:
         return disabled_context(f"neo4j_unavailable: {type(exc).__name__}")
 
@@ -266,4 +280,5 @@ def build_graph_context(question: str, limit: int = 6) -> dict[str, Any]:
         "terms": terms,
         "keywords": keywords[:36],
         "relation_summary": build_relation_summary(terms),
+        "max_hop": max_hop,
     }
