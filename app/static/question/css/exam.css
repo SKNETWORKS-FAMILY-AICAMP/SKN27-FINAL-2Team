@@ -221,42 +221,42 @@ body {
   border-radius: 6px;
 }
 
-.analysis-loading {
+.submit-loading {
   position: fixed;
   inset: 0;
   z-index: 1000;
   display: grid;
   place-items: center;
-  background: #101b20;
+  background: rgb(16 27 32 / 82%);
 }
 
-.analysis-loading[hidden] {
-  display: none;
-}
+.submit-loading[hidden] { display: none; }
 
-.analysis-loading-card {
+.submit-loading-card {
   display: grid;
   justify-items: center;
   gap: 10px;
-  color: #f5fff1;
+  width: 320px;
+  padding: 28px;
+  border-radius: 16px;
+  background: #101b20;
+  color: #fff;
   text-align: center;
 }
 
-.analysis-loading-card img {
-  width: min(110px, 28vw);
-  height: auto;
+.submit-loading-card i {
+  width: 42px;
+  height: 42px;
+  border: 4px solid rgb(255 255 255 / 30%);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: submit-spin .7s linear infinite;
 }
 
-.analysis-loading-card strong {
-  font-size: 18px;
-  font-weight: 950;
-}
+.submit-loading-card strong { font-size: 20px; }
+.submit-loading-card span { font-size: 14px; }
 
-.analysis-loading-card span {
-  color: #b8c7bc;
-  font-size: 13px;
-  font-weight: 850;
-}
+@keyframes submit-spin { to { transform: rotate(360deg); } }
 
 @media (min-width: 901px) {
   .exam-page {

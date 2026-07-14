@@ -90,6 +90,8 @@ class DiagnosisResultResponseSerializer(serializers.Serializer):
     max_score = serializers.IntegerField()
     score_rate = serializers.FloatField()     # 취득점 / 최대점
     expected_grade = serializers.CharField()  # '1급' | '2급' | '3급' | '탈락'
+    previous_score = serializers.IntegerField(allow_null=True)
+    score_change = serializers.IntegerField(allow_null=True)
     era_analytics = AnalyticsItemSerializer(many=True)
     type_analytics = AnalyticsItemSerializer(many=True)
     question_ids = serializers.ListField(

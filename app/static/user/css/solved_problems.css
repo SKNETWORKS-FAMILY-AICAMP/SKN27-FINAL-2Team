@@ -88,6 +88,10 @@ button {
   margin-bottom: 18px;
 }
 
+.review-top > div:first-child {
+  align-self: flex-start;
+}
+
 .bundle-heading h2,
 .review-top h1 {
   margin-top: 4px;

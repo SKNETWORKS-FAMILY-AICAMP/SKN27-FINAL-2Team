@@ -543,14 +543,14 @@ input:focus, textarea:focus, select:focus { outline: 2px solid rgba(183, 50, 37,
 
 .result-page .review-shell { padding: 26px 30px 20px !important; }
 .result-page .review-top {
-  align-items: center !important;
+  align-items: start !important;
   margin-bottom: 20px !important;
 }
 .result-page .page-kicker { display: none !important; }
 .result-page .review-top h1 {
   margin: 0 !important;
   color: #172027 !important;
-  font-family: "Noto Sans KR", Arial, sans-serif !important;
+  font-family: "Noto Serif KR", "Nanum Myeongjo", Batang, serif !important;
   font-size: clamp(31px, 3vw, 42px) !important;
   font-weight: 900 !important;
   letter-spacing: -.05em;
@@ -1298,14 +1298,14 @@ main > *:not(.page-title):not(.hero):not(.cta-section)
 
 .create-page .mode-card span {
   color: #171C22 !important;
-  font-family: "Noto Sans KR", Arial, sans-serif !important;
+  font-family: "Noto Serif KR", "Nanum Myeongjo", Batang, serif !important;
   font-size: 24px;
   font-weight: 800;
 }
 
 .create-page .mode-card strong {
   color: #62666A !important;
-  font-family: "Noto Sans KR", Arial, sans-serif !important;
+  font-family: "Noto Serif KR", "Nanum Myeongjo", Batang, serif !important;
   font-size: 14px;
   font-weight: 500;
 }
@@ -1332,7 +1332,7 @@ main > *:not(.page-title):not(.hero):not(.cta-section)
   margin: 0;
   border-right: 1px solid #EEE8E3;
   color: #1B2025 !important;
-  font-family: "Noto Sans KR", Arial, sans-serif !important;
+  font-family: "Noto Serif KR", "Nanum Myeongjo", Batang, serif !important;
   font-size: 18px;
   font-weight: 800 !important;
 }
@@ -1347,7 +1347,7 @@ main > *:not(.page-title):not(.hero):not(.cta-section)
   border-radius: 999px !important;
   background: #fff !important;
   color: #363A3E !important;
-  font-family: "Noto Sans KR", Arial, sans-serif !important;
+  font-family: "Noto Serif KR", "Nanum Myeongjo", Batang, serif !important;
   font-size: 14px;
   font-weight: 600;
 }
@@ -1429,7 +1429,7 @@ main > *:not(.page-title):not(.hero):not(.cta-section)
 
   .exam-page .exam-title h1 {
     color: #171C22 !important;
-    font-family: "Noto Sans KR", Arial, sans-serif !important;
+    font-family: "Noto Serif KR", "Nanum Myeongjo", Batang, serif !important;
     font-size: 34px !important;
     font-weight: 800 !important;
   }
@@ -1538,7 +1538,7 @@ main > *:not(.page-title):not(.hero):not(.cta-section)
     overflow: hidden !important;
   }
   .exam-page .side-panel > .number-card { height: 100%; padding: 0 !important; border: 0 !important; background: transparent !important; box-shadow: none !important; }
-  .exam-page .side-panel .number-card h2 { margin: 0 0 18px !important; color: #1D2528 !important; font-family: "Noto Sans KR", Arial, sans-serif !important; font-size: 19px !important; }
+  .exam-page .side-panel .number-card h2 { margin: 0 0 18px !important; color: #1D2528 !important; font-family: "Noto Serif KR", "Nanum Myeongjo", Batang, serif !important; font-size: 19px !important; }
   .exam-page .side-panel .number-grid { grid-template-columns: repeat(4, 1fr) !important; gap: 8px !important; max-height: none !important; overflow: auto !important; }
   .exam-page .side-panel .number-grid button { height: 40px !important; min-height: 40px !important; border: 1px solid #DCE5DF !important; border-radius: 6px !important; background: #fff !important; color: #315346 !important; font-size: 14px !important; }
   .exam-page .side-panel .number-grid button.active { border-color: #89B29A !important; background: #89B29A !important; color: #fff !important; }
@@ -1816,7 +1816,7 @@ main > *:not(.page-title):not(.hero):not(.cta-section)
 .exam-page .exam-title h1,
 .result-page .review-top h1,
 .create-page .create-title h1 {
-  font-family: "Noto Sans KR", Arial, sans-serif !important;
+  font-family: "Noto Serif KR", "Nanum Myeongjo", Batang, serif !important;
 }
 
 /* Keep native hidden state above the navigator's grid display rule. */
