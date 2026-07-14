@@ -53,6 +53,7 @@ class SolveSessions(models.Model):
     answer_rate = models.FloatField(blank=True, null=True)
     total_score = models.IntegerField(blank=True, null=True)
     recorded_date = models.DateField()
+    review_type = models.CharField(max_length=20, blank=True, null=True)
 
     class Meta:
         managed = False

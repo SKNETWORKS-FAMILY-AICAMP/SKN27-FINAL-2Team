@@ -1,8 +1,8 @@
 /* Reference-matched diagnosis intro. Navigation intentionally remains shared. */
-body:has(.ref-diagnosis) { background: #fff !important; font-family: Arial, "Noto Sans KR", sans-serif !important; }
+body:has(.ref-diagnosis) { background: #fff !important; font-family: "Noto Serif KR", "Nanum Myeongjo", Batang, serif !important; }
 .diagnosis-page:has(.ref-diagnosis) { min-height: calc(100vh - 76px) !important; padding: 28px 2.5vw 16px !important; background: #fff !important; }
 .ref-diagnosis { position:relative; top:5px; width: min(1380px,100%) !important; gap: 18px !important; }
-.ref-diagnosis, .ref-diagnosis * { font-family: Arial, "Noto Sans KR", sans-serif !important; }
+.ref-diagnosis, .ref-diagnosis * { font-family: "Noto Serif KR", "Nanum Myeongjo", Batang, serif !important; }
 .ref-title { display:flex; align-items:center; gap:22px; min-height:100px; color:#153f32; }
 .ref-title h1 { margin:0 !important; color:#103d30 !important; font-size:48px !important; line-height:1; font-weight:900 !important; letter-spacing:-3px !important; }
 .ref-title p { margin:12px 0 0; color:#4b5153; font-size:17px; font-weight:500; }
