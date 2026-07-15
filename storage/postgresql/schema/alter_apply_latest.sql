@@ -70,6 +70,32 @@ ALTER TABLE questions
 ALTER TABLE solve_sessions
     ADD COLUMN IF NOT EXISTS recorded_date DATE NOT NULL DEFAULT CURRENT_DATE;
 
+-- solve_sessions: mark weekly review diagnostic sessions.
+ALTER TABLE solve_sessions
+    ADD COLUMN IF NOT EXISTS review_type VARCHAR(20) NULL;
+
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1
+        FROM pg_constraint
+        WHERE conname = 'solve_sessions_review_type_check'
+    ) THEN
+        ALTER TABLE solve_sessions
+            ADD CONSTRAINT solve_sessions_review_type_check
+            CHECK (
+                review_type IS NULL
+                OR review_type IN ('weekly_review')
+            );
+    END IF;
+END $$;
+
+CREATE INDEX IF NOT EXISTS solve_sessions_weekly_review_idx
+    ON solve_sessions(user_id, recorded_date, session_id)
+    WHERE session_type = 'diagnostic'
+      AND review_type = 'weekly_review'
+      AND status = 'completed';
+
 -- solve_records: store per-question time in milliseconds only.
 ALTER TABLE solve_records
     ADD COLUMN IF NOT EXISTS time_spent_ms INT NULL;
@@ -185,6 +211,10 @@ ALTER TABLE study_plan_mypage
     ADD COLUMN IF NOT EXISTS completion_rate DOUBLE PRECISION NOT NULL DEFAULT 0,
     ADD COLUMN IF NOT EXISTS archived_at TIMESTAMPTZ NULL,
     ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ NULL;
+
+CREATE UNIQUE INDEX IF NOT EXISTS study_plan_mypage_user_active_uidx
+    ON study_plan_mypage(user_id)
+    WHERE status = 'active';
 
 -- user_accounts: 학습 가능 시간과 시험일을 사용자 계정 테이블에 직접 저장한다.
 ALTER TABLE user_accounts
