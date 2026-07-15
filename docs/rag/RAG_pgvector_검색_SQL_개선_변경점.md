@@ -71,15 +71,63 @@ merged_candidates AS (
 - 키워드 후보 검색에서 trigram 연산자 `%`를 활용할 수 있음
 - 최종 점수 계산 대상이 전체 row가 아니라 후보 row로 줄어듦
 
-## 함께 변경한 값
+## 이전 변경 기록: 후보 수 조정
 
-`candidate_pool` 기본값을 `50`에서 `30`으로 낮췄다.
+초기 개선 시점에는 `candidate_pool` 기본값을 `50`에서 `30`으로 낮추는 실험을 기록했다.
 
 ```python
 candidate_pool: int = 30
 ```
 
 속도는 좋아질 수 있지만 검색 품질이 떨어지면 `40`으로 조정한다.
+
+> 현재 운영 코드는 벡터, Trigram, BM25 채널별 후보 수를 `50`으로 사용한다. 이 절은 과거 실험 기록이다.
+
+## 2026-07-15: MeCab BM25, RRF, Trigram 채널 분리 측정
+
+이 문서를 RAG 검색 변경과 성능 실험의 누적 이력으로 사용한다.
+
+### 적용 내용
+
+- MeCab 명사 토큰을 `search_tokens`에 저장하고, PostgreSQL `search_vector` GIN 인덱스로 BM25 검색을 추가했다.
+- 벡터 HNSW, Trigram, BM25 후보를 각각 수집해 RRF(Reciprocal Rank Fusion)로 병합한다.
+- 벡터 검색 임베딩은 키워드 확장문이 아니라 사용자의 원문 질문을 사용한다.
+- `RAG_TRIGRAM_ENABLED` 환경 변수로 Trigram 후보 채널을 켜거나 끌 수 있게 했다. 기본값은 `true`다.
+
+### 단일 질문 지연시간 측정
+
+측정 질문: `세종대왕 업적 알려줘`
+
+| 구분 | Trigram 사용 | Trigram 미사용 |
+|---|---:|---:|
+| pgvector 검색 | 7.311초 | 2.039초 |
+| DB 후보 검색 및 리랭킹 | 6.261초 | 0.545초 |
+| 전체 응답 | 10.819초 | 5.197초 |
+| 검색 결과 수 | 5건 | 5건 |
+| 검색 실패 | false | false |
+
+Trigram 채널을 끈 단일 실행에서는 검색 지연이 크게 줄었다. 다만 이 값만으로 기본값을 변경하지 않는다. 오타, 띄어쓰기 변형, RAGAS 품질 지표를 함께 비교한 뒤 Trigram을 기본 채널에서 제외하거나 BM25 실패 시 fallback으로 전환한다.
+
+### 측정 명령
+
+```powershell
+# Trigram 사용
+Remove-Item Env:RAG_TRIGRAM_ENABLED -ErrorAction SilentlyContinue
+.\.venv\Scripts\python.exe test\HS\measure_rag_stage_latency.py "세종대왕 업적 알려줘"
+
+# Trigram 미사용
+$env:RAG_TRIGRAM_ENABLED="false"
+.\.venv\Scripts\python.exe test\HS\measure_rag_stage_latency.py "세종대왕 업적 알려줘"
+
+# RAGAS 품질 비교
+.\.venv\Scripts\python.exe test\HS\evaluate_service_metrics.py --ragas --ragas-limit 15
+```
+
+측정 후 환경 변수는 제거한다.
+
+```powershell
+Remove-Item Env:RAG_TRIGRAM_ENABLED -ErrorAction SilentlyContinue
+```
 
 ## 확인 방법
 

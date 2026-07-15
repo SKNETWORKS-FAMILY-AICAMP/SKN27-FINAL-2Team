@@ -105,8 +105,12 @@ def has_enough_evidence(
         )
 
     best_keyword = max(float(result.keyword_score or 0.0) for result in results)
+    best_vector = max(float(result.vector_score or 0.0) for result in results)
     best_score = float(best.score or 0.0)
     min_score = FOLLOW_UP_MIN_COMBINED_SCORE if follow_up else MIN_COMBINED_SCORE
+    # RRF 점수는 순위 합산값(약 0.01~0.05)이므로 이전 복합 점수 임계값과 비교하지 않습니다.
+    if 0 < best_score < 0.2:
+        return best_keyword >= MIN_KEYWORD_SCORE or best_vector >= 0.35
     if best_score >= 1.8:
         return True
     if best_keyword >= MIN_KEYWORD_SCORE and best_score >= min_score:

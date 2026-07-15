@@ -309,3 +309,11 @@
 2026-07-14T23:16:14,feature-chatbot,274516b,Y,RAGAS Context Recall,정답에 필요한 근거를 검색 문맥이 포함하는지 평가,0.56,0.80 이상,FAIL,RAGAS Framework (Context Recall)
 2026-07-14T23:16:14,feature-chatbot,274516b,Y,RAGAS Faithfulness,답변이 검색 근거에 충실한지 평가,0.76,0.80 이상,FAIL,RAGAS Framework (Faithfulness)
 2026-07-14T23:16:14,feature-chatbot,274516b,Y,RAGAS Answer Relevance,답변이 질문 의도에 적합한지 평가,0.77,0.80 이상,FAIL,RAGAS Framework (Answer Relevance)
+2026-07-15T09:02:51,feature-chatbot,e84cca5,Y,연결성(Graph),노드 간 탐색 성공률,100.0%,95% 이상,PASS,Cypher Query 성능 테스트 및 접속 조사
+2026-07-15T09:02:51,feature-chatbot,e84cca5,Y,검색 속도,LLM 생성 제외 쿼리 평균 소요 시간,7.00s,2.0s 이내,FAIL,pgvector/Graph 검색 지연시간 측정
+2026-07-15T09:02:51,feature-chatbot,e84cca5,Y,LLM 답변 생성 속도,검색 이후 답변 생성 평균 소요 시간,4.01s,5.0s 이내,PASS,전체 응답 시간 - 검색 시간
+2026-07-15T09:02:51,feature-chatbot,e84cca5,Y,전체 응답 속도,LLM 생성 포함 평균 응답 시간,11.01s,7.0s 이내,FAIL,서비스 RAG 전체 호출 지연시간 측정
+2026-07-15T09:02:51,feature-chatbot,e84cca5,Y,RAGAS Context Precision,검색 문맥 중 질문과 관련 있는 문맥 비율,0.68,0.80 이상,FAIL,RAGAS Framework (Context Precision)
+2026-07-15T09:02:51,feature-chatbot,e84cca5,Y,RAGAS Context Recall,정답에 필요한 근거를 검색 문맥이 포함하는지 평가,0.92,0.80 이상,PASS,RAGAS Framework (Context Recall)
+2026-07-15T09:02:51,feature-chatbot,e84cca5,Y,RAGAS Faithfulness,답변이 검색 근거에 충실한지 평가,0.86,0.80 이상,PASS,RAGAS Framework (Faithfulness)
+2026-07-15T09:02:51,feature-chatbot,e84cca5,Y,RAGAS Answer Relevance,답변이 질문 의도에 적합한지 평가,0.77,0.80 이상,FAIL,RAGAS Framework (Answer Relevance)
