@@ -155,3 +155,27 @@ LIMIT 30;
 ```
 
 `Index Scan using document_chunks_embedding_cosine_idx` 또는 HNSW 인덱스명이 보이면 벡터 인덱스를 타는 것이다.
+
+## 2026-07-15: 개요형 BGE 리랭킹 적용 및 평가
+
+### 변경 내용
+
+- 개요형 질문도 BGE 리랭커로 최종 순서를 정하도록 변경했다. 이전에는 RRF 결과를 그대로 반환했다.
+- BGE 점수로 `PgSearchResult.score`를 덮어쓰면 `has_enough_evidence()`가 기존 RRF 근거 점수 대신 BGE 점수로 판단해, 문맥이 있어도 `검색 결과가 없습니다.`를 반환하는 회귀가 발생했다.
+- 최종 구현은 BGE 점수를 정렬에만 사용하고, `score`는 RRF 점수를 유지한다. 따라서 근거 충족 판정은 기존 기준을 그대로 사용한다.
+
+### 전체 평가 결과
+
+| 평가 항목 | 결과 | 기준 | 상태 |
+|---|---:|---:|---|
+| 검색 속도 | 12.13초 | 2.0초 이내 | FAIL |
+| LLM 답변 생성 속도 | 8.68초 | 5.0초 이내 | FAIL |
+| 전체 응답 속도 | 20.79초 | 7.0초 이내 | FAIL |
+| RAGAS Context Precision | 0.82 | 0.80 이상 | PASS |
+| RAGAS Context Recall | 0.87 | 0.80 이상 | PASS |
+| RAGAS Faithfulness | 0.91 | 0.80 이상 | PASS |
+| RAGAS Answer Relevance | 0.81 | 0.80 이상 | PASS |
+
+Precision은 리랭커 적용 전 0.67에서 0.82로 개선됐다. 반면 CPU에서 모든 개요형 질문에 BGE를 실행하면서 속도가 기준을 넘었다.
+
+다음 실험은 RRF 상위 결과의 점수 차가 충분한 질문은 BGE를 건너뛰고, 순위가 애매한 질문에만 BGE를 적용하는 조건부 리랭킹이다. 후보 수, Top-K, 임베딩, HNSW는 변경하지 않는다.

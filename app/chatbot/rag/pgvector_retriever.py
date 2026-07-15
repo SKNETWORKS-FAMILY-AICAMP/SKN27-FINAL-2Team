@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 import re
-from dataclasses import dataclass, replace
+from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
 from typing import Any
@@ -232,12 +232,8 @@ def rerank_results(question: str, rows: list[PgSearchResult], top_k: int) -> lis
 
     pairs = [(question, f"{row.title}\n{compact_text(row.chunk_text, 900)}") for row in rows]
     scores = model.predict(pairs)
-    ranked = sorted(
-        (replace(row, score=float(score)) for row, score in zip(rows, scores)),
-        key=lambda row: row.score,
-        reverse=True,
-    )
-    return ranked[:top_k]
+    ranked = sorted(zip(rows, scores), key=lambda item: float(item[1]), reverse=True)
+    return [row for row, _ in ranked[:top_k]]
 
 
 def load_env() -> None:
@@ -757,8 +753,6 @@ class PgVectorHybridRetriever:
             )
             for row in rows
         ]
-        if generic_overview_query:
-            return results[:top_k]
         return rerank_results(question, results, top_k)
 
 
