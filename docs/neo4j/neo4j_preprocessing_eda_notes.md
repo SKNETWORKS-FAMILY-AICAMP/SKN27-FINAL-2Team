@@ -1,5 +1,10 @@
 # Neo4j 전처리 EDA 정리
 
+> 문서 상태: `EVIDENCE-SNAPSHOT`
+> 용도: 초기 원천 EDA와 설계 판단의 근거 보존
+> 주의: 현재 node/relation 수치나 적재 상태를 설명하는 문서가 아니다. 최신 상태는
+> [README.md](./README.md)를 따른다.
+
 이 문서는 `test/MK/prep_neo4j` 아래의 check 계열 노트북 하단에 정리해둔 전처리 EDA Markdown 블록을 문서화한 것이다.
 
 ## 원본 노트북
@@ -324,7 +329,8 @@ P000002 각겸 --교유--> P020378 석나암
 P000002 각겸 --교유--> P039883 이색
 ```
 
-따라서 이 데이터는 `Person` 노드 생성용이라기보다 `Person - RELATED_TO - Person` 관계 생성용으로 먼저 해석한다.
+따라서 이 데이터는 `Person` 노드 생성용이라기보다 `Person - typed relation - Person`
+관계 생성용으로 먼저 해석한다. 실제 타입은 후속 seed의 `neo4j_rel_type`이 결정한다.
 
 ### 1. 컬럼별 의미와 사용 판단
 
@@ -339,7 +345,7 @@ P000002 각겸 --교유--> P039883 이색
 | `related_death_year` | 대상 인물 사망연도 | Person 보강 후보 | 관계 속성이 아니라 대상 Person의 속성 후보. |
 | `related_bonkwan` | 대상 인물 본관 | Person 보강 후보 | 관계 속성이 아니라 대상 Person의 속성 후보. |
 | `related_father` | 대상 인물의 아버지 | Person 보강 후보 | 관계 속성이 아니라 대상 Person의 가족 정보 후보. |
-| `related_count` | 관련 수 표시 | 선택 보존 | 의미가 관계 강도인지 대상 인물의 관련 수인지 애매하므로 핵심 관계 판단에는 쓰지 않는다. |
+| `related_count` | 관련 수 표시 | normalized 진단용만 보존 | 의미가 관계 강도인지 대상 인물의 관련 수인지 애매하므로 최종 관계/노드 속성에는 전달하지 않는다. |
 | `evidence_url` | 관계 근거 URL | 보존 | 관계의 근거 출처로 사용한다. RAG 근거 수집에도 활용 가능하다. |
 | `detail_url` | 시작 인물 상세 URL | 보존 | Person 상세 출처 URL로 사용한다. |
 
@@ -367,7 +373,7 @@ person_relation_edges = person_relation_df[
 ]
 ```
 
-출처와 원본 값을 조금 더 보존하려면 다음처럼 가져간다.
+후속 구현에서는 원천 관계명과 근거를 다음처럼 가져간다.
 
 ```python
 person_relation_edges = person_relation_df[
@@ -375,12 +381,14 @@ person_relation_edges = person_relation_df[
         "person_id",
         "related_person_id",
         "relation_type",
-        "related_count",
         "evidence_url",
-        "detail_url",
     ]
 ]
 ```
+
+`detail_url`은 관계가 아니라 시작 Person의 `HAS_SOURCE_URL` 입력으로 분리한다.
+대칭 관계는 endpoint를 정렬해 한 쌍으로 만들되, 양방향 행의 서로 다른
+`evidence_url`을 정렬·중복 제거해 모두 병합한다.
 
 `person_name`, `related_person_name`, `related_birth_year`, `related_death_year`, `related_bonkwan`, `related_father`는 관계 import용에서는 제외할 수 있다. 다만 버리는 것이 아니라 Person 노드 보강용 staging 데이터로 따로 볼 수 있다.
 
@@ -422,8 +430,38 @@ Tavily = URL 본문 추출과 외부 웹 근거 보강
 - 중복 제거는 `person_id`, `related_person_id`, `relation_type` 기준으로 한다.
 - 관계 import용에서는 `person_name`, `related_person_name`, `related_birth_year`, `related_death_year`, `related_bonkwan`, `related_father`를 제외할 수 있다.
 - 제외한 인물 속성 컬럼은 버리는 것이 아니라 Person 노드 보강용 staging으로 남긴다.
-- `related_count`는 의미가 애매하므로 핵심 관계 판단에는 쓰지 않고 선택 보존한다.
+- `related_count`는 의미가 애매하므로 normalized 진단용 외에는 사용하지 않는다.
 - `evidence_url`, `detail_url`은 RAG와 출처 추적을 위해 보존한다.
+- 인물 관계의 실제 Neo4j 타입은 `relation_type_seed.neo4j_rel_type`을 단일 기준으로 삼는다.
+- Person 중요도는 원천 행 수가 아니라 최종 `INVOLVED_IN`과 typed 인물 관계의 endpoint를
+  집계한 `core_relation_degree`로 계산한다.
+
+---
+
+## 2026-07-14 보충 EDA: 이미지 `related_content`
+
+이미지 원천의 `related_content`는 이미지 설명문이 아니라 다음 구조를 가진 외부 콘텐츠
+참조다.
+
+```text
+제목 (콘텐츠군) | https://...
+```
+
+한 이미지에 여러 줄이 올 수 있다. 현재 원천을 파싱하면 관계 1,720개, 고유 URL
+427개가 나오며 parse failure는 없었다. 2026-07-14 전체 runner에서도 staging과 최종
+관계가 각각 1,720개로 생성됐고 최신 전체 실행에서 QA 135/135를 통과했다.
+
+후속 구현 판단은 다음과 같다.
+
+- step 2에서 `staging/image_related_content.csv`로 행 단위 파싱한다.
+- 고유 URL 427개를 `source_url_dictionary.csv`에 합류한다. 기존 URL 집합과의 중복은
+  현재 EDA에서 발견되지 않았고 최종 `SourceUrl` 57,239개로 생성됐다.
+- step 10에서 `source_image_has_related_content.csv`를 만들고
+  `SourceImage - HAS_RELATED_CONTENT -> SourceUrl`로 적재한다.
+- `SourceImage.related_content` 노드 속성은 제거한다. 다른 개체를 가리키는 사실은 엣지가
+  소유해야 한다.
+- `DEPICTS`는 이미지의 묘사 대상 관계다. 제목 또는 검수 override만 근거로 사용하고,
+  `related_content` 제목·URL을 실물/그림 식별 근거로 사용하지 않는다.
 
 ---
 

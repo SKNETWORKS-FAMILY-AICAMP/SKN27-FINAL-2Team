@@ -12,6 +12,7 @@ from dotenv import load_dotenv
 from openai import OpenAI
 from psycopg2.extras import RealDictCursor
 
+from .korean_tokenizer import mecab_search_tokens
 from .query_terms import expand_query_tokens, tokenize
 
 
@@ -561,15 +562,22 @@ class PgVectorHybridRetriever:
         overview_query = any(term in question for term in OVERVIEW_TERMS)
         use_reranker = os.getenv("RAG_RERANKER_ENABLED", "").lower() in {"1", "true", "yes"}
         use_bm25 = os.getenv("RAG_BM25_ENABLED", "true").lower() in {"1", "true", "yes"}
+        use_trigram = os.getenv("RAG_TRIGRAM_ENABLED", "true").lower() in {"1", "true", "yes"}
         final_limit = max(top_k * 5, top_k) if generic_overview_query or use_reranker else top_k
-        keyword_candidate_pool = min(self.candidate_pool, 30)
-        bm25_candidate_pool = min(self.candidate_pool, 30)
+        keyword_candidate_pool = self.candidate_pool
+        bm25_candidate_pool = self.candidate_pool
 
         # 불용어(Stopwords)를 걸러낸 정밀한 focus_terms 추출
         filtered_focus_terms = tuple(term for term in focus_terms if term not in HISTORY_STOPWORDS)
         comparison_query = any(term in question for term in COMPARISON_JOIN_TERMS) and len(focus_terms) >= 2
-        use_bm25 = use_bm25 and not comparison_query
-        bm25_query = build_bm25_query(filtered_focus_terms or focus_terms, keyword_filter)
+        bm25_query = mecab_search_tokens(
+            build_bm25_query(filtered_focus_terms or focus_terms, keyword_filter)
+        ) or keyword_filter
+        bm25_tsquery_function = "plainto_tsquery"
+        if comparison_query:
+            # 비교 대상은 보통 다른 청크에 있으므로 FTS에서 둘 중 하나를 후보로 수집합니다.
+            bm25_query = " OR ".join(bm25_query.split())
+            bm25_tsquery_function = "websearch_to_tsquery"
 
         def build_where(relaxed: bool = False) -> tuple[str, list[Any]]:
             where_parts = ["embedding IS NOT NULL"]
@@ -597,43 +605,11 @@ class PgVectorHybridRetriever:
                 focus_match_params.extend([like_term, like_term])
         bm25_cte_sql = ""
         bm25_union_sql = ""
-        if use_bm25:
-            bm25_cte_sql = f"""
+        trigram_cte_sql = ""
+        trigram_union_sql = ""
+        if use_trigram:
+            trigram_cte_sql = f"""
         ,
-        bm25_candidates AS (
-            SELECT
-                id,
-                chunk_id,
-                source_type,
-                0.0::float AS vector_score,
-                ts_rank_cd(search_vector, plainto_tsquery('simple', %s)) * 2.0 AS keyword_score,
-                CASE WHEN %s AND ({focus_match_sql}) THEN 1 ELSE 0 END AS focus_hit
-            FROM rag.document_chunks
-            WHERE {where_sql}
-              AND search_vector @@ plainto_tsquery('simple', %s)
-            ORDER BY keyword_score DESC
-            LIMIT %s
-        )
-            """
-            bm25_union_sql = """
-            UNION ALL
-            SELECT * FROM bm25_candidates
-            """
-
-        sql = f"""
-        WITH vector_candidates AS (
-            SELECT
-                id,
-                chunk_id,
-                source_type,
-                1 - (embedding <=> %s::vector) AS vector_score,
-                0.0::float AS keyword_score,
-                CASE WHEN %s AND ({focus_match_sql}) THEN 1 ELSE 0 END AS focus_hit
-            FROM rag.document_chunks
-            WHERE embedding IS NOT NULL
-            ORDER BY embedding <=> %s::vector
-            LIMIT %s
-        ),
         keyword_candidates AS (
             SELECT
                 id,
@@ -652,27 +628,79 @@ class PgVectorHybridRetriever:
               AND (title %% %s OR chunk_text %% %s)
             ORDER BY keyword_score DESC
             LIMIT %s
+        ),
+        keyword_ranked AS (
+            SELECT *, row_number() OVER (ORDER BY keyword_score DESC) AS channel_rank
+            FROM keyword_candidates
         )
+            """
+            trigram_union_sql = """
+            UNION ALL
+            SELECT * FROM keyword_ranked
+            """
+        if use_bm25:
+            bm25_cte_sql = f"""
+        ,
+        bm25_candidates AS (
+            SELECT
+                id,
+                chunk_id,
+                source_type,
+                0.0::float AS vector_score,
+                ts_rank_cd(search_vector, {bm25_tsquery_function}('simple', %s)) * 2.0 AS keyword_score,
+                CASE WHEN %s AND ({focus_match_sql}) THEN 1 ELSE 0 END AS focus_hit
+            FROM rag.document_chunks
+            WHERE {where_sql}
+              AND search_vector @@ {bm25_tsquery_function}('simple', %s)
+            ORDER BY keyword_score DESC
+            LIMIT %s
+        ),
+        bm25_ranked AS (
+            SELECT *, row_number() OVER (ORDER BY keyword_score DESC) AS channel_rank
+            FROM bm25_candidates
+        )
+            """
+            bm25_union_sql = """
+            UNION ALL
+            SELECT * FROM bm25_ranked
+            """
+
+        sql = f"""
+        WITH vector_candidates AS (
+            SELECT
+                id,
+                chunk_id,
+                source_type,
+                1 - (embedding <=> %s::vector) AS vector_score,
+                0.0::float AS keyword_score,
+                CASE WHEN %s AND ({focus_match_sql}) THEN 1 ELSE 0 END AS focus_hit
+            FROM rag.document_chunks
+            WHERE embedding IS NOT NULL
+            ORDER BY embedding <=> %s::vector
+            LIMIT %s
+        ),
+        vector_ranked AS (
+            SELECT *, row_number() OVER (ORDER BY vector_score DESC) AS channel_rank
+            FROM vector_candidates
+        )
+        {trigram_cte_sql}
         {bm25_cte_sql},
         merged_candidates AS (
-            SELECT * FROM vector_candidates
-            UNION ALL
-            SELECT * FROM keyword_candidates
+            SELECT * FROM vector_ranked
+            {trigram_union_sql}
             {bm25_union_sql}
         ),
         candidates AS (
-            SELECT DISTINCT ON (chunk_id) *
-            FROM (
-                SELECT
-                    id,
-                    chunk_id,
-                    source_type,
-                    max(vector_score) OVER (PARTITION BY chunk_id) AS vector_score,
-                    max(keyword_score) OVER (PARTITION BY chunk_id) AS keyword_score,
-                    max(focus_hit) OVER (PARTITION BY chunk_id) AS focus_hit
-                FROM merged_candidates
-            ) merged
-            ORDER BY chunk_id, vector_score DESC, keyword_score DESC
+            SELECT
+                id,
+                chunk_id,
+                max(source_type) AS source_type,
+                max(vector_score) AS vector_score,
+                max(keyword_score) AS keyword_score,
+                max(focus_hit) AS focus_hit,
+                sum(1.0 / (60 + channel_rank)) AS rrf_score
+            FROM merged_candidates
+            GROUP BY id, chunk_id
         ),
         ranked AS (
             SELECT
@@ -682,21 +710,14 @@ class PgVectorHybridRetriever:
                 vector_score,
                 keyword_score,
                 (
-                    vector_score * 0.65
-                    + keyword_score * 0.35
+                    rrf_score
                     + CASE
-                        WHEN %s AND source_type = 'image_material' THEN 1.2
-                        WHEN %s AND source_type <> 'image_material' THEN -1.0
-                        WHEN %s AND source_type = 'historical_overview' THEN 0.5
-                        WHEN %s AND source_type = 'historical_source' THEN -0.15
+                        WHEN %s AND source_type = 'historical_overview' THEN 0.0005
+                        WHEN %s AND source_type = 'historical_source' THEN -0.00015
                         ELSE 0.0
                       END
                     + CASE
-                        WHEN %s AND focus_hit = 1 THEN 1.8
-                        ELSE 0.0
-                      END
-                    + CASE
-                        WHEN %s AND source_type = 'image_material' THEN -1.0
+                        WHEN %s AND focus_hit = 1 THEN 0.0018
                         ELSE 0.0
                       END
                 ) AS score
@@ -727,16 +748,22 @@ class PgVectorHybridRetriever:
                 *focus_match_params,
                 embedding,
                 self.candidate_pool,
-                keyword_question,
-                keyword_question,
-                f"%{question}%",
-                f"%{question}%",
-                generic_overview_query,
-                *focus_match_params,
-                *where_params,
-                keyword_filter,
-                keyword_filter,
-                keyword_candidate_pool,
+                *(
+                    [
+                        keyword_question,
+                        keyword_question,
+                        f"%{question}%",
+                        f"%{question}%",
+                        generic_overview_query,
+                        *focus_match_params,
+                        *where_params,
+                        keyword_filter,
+                        keyword_filter,
+                        keyword_candidate_pool,
+                    ]
+                    if use_trigram
+                    else []
+                ),
                 *(
                     [
                         bm25_query,
@@ -749,11 +776,8 @@ class PgVectorHybridRetriever:
                     if use_bm25
                     else []
                 ),
-                image_query,
-                image_query,
                 overview_query,
                 overview_query,
-                generic_overview_query,
                 generic_overview_query,
                 final_limit,
             ]

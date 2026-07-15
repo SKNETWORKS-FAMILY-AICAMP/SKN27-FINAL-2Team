@@ -5,7 +5,9 @@ Neo4j 전처리 스크립트에서 함께 쓰는 작은 유틸리티 함수 모�
 입출력/문자열 정리/토큰 분해 함수만 이 파일에서 관리한다.
 """
 
+import os
 import re
+from pathlib import Path
 
 import pandas as pd
 
@@ -213,9 +215,23 @@ def resolve_neo4j_dir(script_path):
     return neo4j_dir
 
 
-def resolve_import_dir(project_root):
+def resolve_default_import_dir(project_root):
     # Neo4j 적재용 최종 CSV가 모이는 폴더. 경로 규칙은 여기 한 곳에서만 관리한다.
     return project_root / "storage" / "neo4j" / "neo4j_import"
+
+
+def resolve_import_dir(project_root):
+    override_path = os.environ.get("NEO4J_IMPORT_DIR", "").strip()
+
+    if override_path == "":
+        return resolve_default_import_dir(project_root)
+
+    import_dir = Path(override_path).expanduser()
+
+    if not import_dir.is_absolute():
+        import_dir = project_root / import_dir
+
+    return import_dir.resolve()
 
 
 def resolve_project_root(start_path):

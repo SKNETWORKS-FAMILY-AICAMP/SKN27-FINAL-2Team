@@ -105,8 +105,12 @@ def has_enough_evidence(
         )
 
     best_keyword = max(float(result.keyword_score or 0.0) for result in results)
+    best_vector = max(float(result.vector_score or 0.0) for result in results)
     best_score = float(best.score or 0.0)
     min_score = FOLLOW_UP_MIN_COMBINED_SCORE if follow_up else MIN_COMBINED_SCORE
+    # RRF 점수는 순위 합산값(약 0.01~0.05)이므로 이전 복합 점수 임계값과 비교하지 않습니다.
+    if 0 < best_score < 0.2:
+        return best_keyword >= MIN_KEYWORD_SCORE or best_vector >= 0.35
     if best_score >= 1.8:
         return True
     if best_keyword >= MIN_KEYWORD_SCORE and best_score >= min_score:
@@ -164,9 +168,11 @@ def build_retrieval_debug(
 
 
 def build_enriched_question(question: str, graph_context: dict[str, Any]) -> str:
-    keywords = graph_context.get("keywords") or []
+    # ponytail: 원 질문의 핵심어가 이미 검색을 제한하므로 단일 개념 질문에는 그래프 후보를 덧붙이지 않습니다.
+    keywords = [] if overview_focus_terms(question) else (graph_context.get("keywords") or [])
     relation_summary = graph_context.get("relation_summary") or ""
-    if not keywords and not relation_summary:
+    is_relation_query = any(term in question for term in RELATION_QUERY_TERMS)
+    if not keywords and not (is_relation_query and relation_summary):
         return question
     selected = []
     for keyword in keywords:
@@ -177,15 +183,14 @@ def build_enriched_question(question: str, graph_context: dict[str, Any]) -> str
             continue
         if value.endswith(PERIOD_ONLY_SUFFIXES):
             continue
-        if any(value != item and value in item for item in selected):
-            selected = [item for item in selected if value not in item]
-        if any(item != value and item in value for item in selected):
+        if value in question or any(value != item and (value in item or item in value) for item in selected):
             continue
         selected.append(value)
-        if len(selected) >= 4:
+        if len(selected) >= 1:
             break
     keyword_text = " ".join(selected)
-    return f"{question} {keyword_text} {relation_summary}".strip()
+    relation_text = relation_summary.split("/")[0].strip() if is_relation_query else ""
+    return f"{question} {keyword_text} {relation_text}".strip()
 
 
 def should_use_graph_context(question: str, intent: str) -> bool:

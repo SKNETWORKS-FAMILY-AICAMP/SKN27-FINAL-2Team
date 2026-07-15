@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import sys
 import time
 from pathlib import Path
 from typing import Iterable
@@ -12,8 +13,13 @@ from dotenv import load_dotenv
 from openai import OpenAI, RateLimitError
 from psycopg2.extras import Json, execute_values
 
-
 PROJECT_ROOT = Path(__file__).resolve().parents[4]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+from app.chatbot.rag.korean_tokenizer import mecab_search_tokens
+
+
 DEFAULT_PROCESSED_DIR = PROJECT_ROOT / "etl" / "preprocessing" / "history" / "processed"
 DEFAULT_CHUNK_FILES = [
     "historical_sources.chunks.jsonl",
@@ -65,6 +71,7 @@ def ensure_table(conn, embedding_dimensions: int) -> None:
                 chunk_text TEXT NOT NULL,
                 token_count INTEGER,
                 metadata JSONB NOT NULL DEFAULT '{{}}'::jsonb,
+                search_tokens TEXT NOT NULL DEFAULT '',
                 embedding VECTOR({embedding_dimensions}),
                 embedding_model TEXT,
                 embedded_at TIMESTAMPTZ,
@@ -100,9 +107,14 @@ def ensure_table(conn, embedding_dimensions: int) -> None:
         cur.execute(
             """
             ALTER TABLE rag.document_chunks
+            ADD COLUMN IF NOT EXISTS search_tokens TEXT NOT NULL DEFAULT ''
+            """
+        )
+        cur.execute(
+            """
+            ALTER TABLE rag.document_chunks
             ADD COLUMN IF NOT EXISTS search_vector tsvector GENERATED ALWAYS AS (
-                setweight(to_tsvector('simple', coalesce(title, '')), 'A')
-                || setweight(to_tsvector('simple', coalesce(chunk_text, '')), 'B')
+                to_tsvector('simple', search_tokens)
             ) STORED
             """
         )
@@ -130,6 +142,7 @@ def upsert_chunks(conn, chunk_files: list[Path]) -> int:
                     row["chunk_text"],
                     int(row.get("token_count") or 0),
                     Json(row.get("metadata") or {}),
+                    mecab_search_tokens(f"{row['title']} {row['title']} {row['chunk_text']}"),
                 )
             )
 
@@ -149,7 +162,8 @@ def upsert_chunks(conn, chunk_files: list[Path]) -> int:
                 chunk_index,
                 chunk_text,
                 token_count,
-                metadata
+                metadata,
+                search_tokens
             )
             VALUES %s
             ON CONFLICT (chunk_id) DO UPDATE SET
@@ -161,6 +175,7 @@ def upsert_chunks(conn, chunk_files: list[Path]) -> int:
                 chunk_text = EXCLUDED.chunk_text,
                 token_count = EXCLUDED.token_count,
                 metadata = EXCLUDED.metadata,
+                search_tokens = EXCLUDED.search_tokens,
                 updated_at = NOW()
             """,
             rows,
@@ -168,6 +183,70 @@ def upsert_chunks(conn, chunk_files: list[Path]) -> int:
         )
     conn.commit()
     return len(rows)
+
+
+def refresh_search_tokens(conn, batch_size: int) -> int:
+    refreshed = 0
+    last_id = 0
+    while True:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT id, chunk_id, title, chunk_text
+                FROM rag.document_chunks
+                WHERE id > %s
+                ORDER BY id
+                LIMIT %s
+                """,
+                (last_id, batch_size),
+            )
+            source_rows = cur.fetchall()
+        if not source_rows:
+            return refreshed
+
+        rows = [
+            (chunk_id, mecab_search_tokens(f"{title} {title} {chunk_text}"))
+            for _, chunk_id, title, chunk_text in source_rows
+        ]
+        with conn.cursor() as cur:
+            execute_values(
+                cur,
+                """
+                UPDATE rag.document_chunks AS target
+                SET search_tokens = data.search_tokens
+                FROM (VALUES %s) AS data(chunk_id, search_tokens)
+                WHERE target.chunk_id = data.chunk_id
+                """,
+                rows,
+                page_size=batch_size,
+            )
+        conn.commit()
+        refreshed += len(rows)
+        last_id = source_rows[-1][0]
+        print(f"refreshed_search_tokens={refreshed}", flush=True)
+
+
+def rebuild_mecab_bm25_index(conn) -> None:
+    """Rebuild PostgreSQL FTS over the persisted MeCab token column."""
+    with conn.cursor() as cur:
+        cur.execute("DROP INDEX IF EXISTS rag.document_chunks_search_vector_idx")
+        cur.execute("ALTER TABLE rag.document_chunks DROP COLUMN IF EXISTS search_vector")
+        cur.execute(
+            """
+            ALTER TABLE rag.document_chunks
+            ADD COLUMN search_vector tsvector GENERATED ALWAYS AS (
+                to_tsvector('simple', search_tokens)
+            ) STORED
+            """
+        )
+        cur.execute(
+            """
+            CREATE INDEX document_chunks_search_vector_idx
+            ON rag.document_chunks USING GIN (search_vector)
+            """
+        )
+        cur.execute("ANALYZE rag.document_chunks")
+    conn.commit()
 
 
 def collect_chunk_ids_by_source_type(chunk_files: list[Path]) -> dict[str, set[str]]:
@@ -278,6 +357,17 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--limit", type=int, default=1000, help="Maximum chunks to embed in this run.")
     parser.add_argument("--skip-upsert", action="store_true", help="Do not load JSONL chunks before embedding.")
     parser.add_argument(
+        "--refresh-search-tokens",
+        action="store_true",
+        help="Rebuild MeCab BM25 tokens for existing chunks without creating embeddings.",
+    )
+    parser.add_argument(
+        "--setup-mecab-bm25",
+        action="store_true",
+        help="Refresh MeCab tokens and rebuild the PostgreSQL BM25 GIN index without re-embedding.",
+    )
+    parser.add_argument("--token-batch-size", type=int, default=500)
+    parser.add_argument(
         "--delete-missing",
         action="store_true",
         help="Delete existing DB chunks for loaded source types when their chunk_id is no longer present in JSONL.",
@@ -293,60 +383,71 @@ def main() -> None:
     load_dotenv(PROJECT_ROOT / ".env")
     args = parse_args()
 
-    chunk_names = args.chunk_file or DEFAULT_CHUNK_FILES
-    chunk_files = [args.processed_dir / name for name in chunk_names]
-    missing = [path for path in chunk_files if not path.exists()]
-    if missing:
-        raise FileNotFoundError(f"Missing chunk files: {missing}")
-
     conn = connect_db()
-    client = OpenAI()
+    try:
+        ensure_table(conn, args.dimensions)
+        if args.setup_mecab_bm25:
+            refreshed = refresh_search_tokens(conn, args.token_batch_size)
+            rebuild_mecab_bm25_index(conn)
+            print(f"mecab_bm25_setup=done refreshed_search_tokens={refreshed}")
+            return
+        if args.refresh_search_tokens:
+            refreshed = refresh_search_tokens(conn, args.token_batch_size)
+            print(f"refreshed_search_tokens={refreshed}")
+            return
 
-    ensure_table(conn, args.dimensions)
+        chunk_names = args.chunk_file or DEFAULT_CHUNK_FILES
+        chunk_files = [args.processed_dir / name for name in chunk_names]
+        missing = [path for path in chunk_files if not path.exists()]
+        if missing:
+            raise FileNotFoundError(f"Missing chunk files: {missing}")
 
-    if args.delete_missing:
-        deleted = delete_missing_chunks(conn, chunk_files)
-        print(f"deleted_missing_chunks={deleted}")
+        client = OpenAI()
 
-    if not args.skip_upsert:
-        loaded = upsert_chunks(conn, chunk_files)
-        print(f"upserted_chunks={loaded}")
+        if args.delete_missing:
+            deleted = delete_missing_chunks(conn, chunk_files)
+            print(f"deleted_missing_chunks={deleted}")
 
-    embedded = 0
-    current_batch_size = args.batch_size
-    while embedded < args.limit:
-        batch_limit = min(current_batch_size, args.limit - embedded)
-        rows = fetch_unembedded_chunks(conn, args.model, batch_limit)
-        if not rows:
-            break
+        if not args.skip_upsert:
+            loaded = upsert_chunks(conn, chunk_files)
+            print(f"upserted_chunks={loaded}")
 
-        chunk_ids = [row[0] for row in rows]
-        texts = [row[1] for row in rows]
-        try:
-            embeddings = embed_texts(client, args.model, texts, args.dimensions)
-        except RateLimitError as exc:
-            current_batch_size = max(1, current_batch_size // 2)
-            print(
-                "rate_limit=hit "
-                f"next_batch_size={current_batch_size} "
-                f"sleep_seconds={args.rate_limit_sleep}"
-            )
-            time.sleep(args.rate_limit_sleep)
-            continue
+        embedded = 0
+        current_batch_size = args.batch_size
+        while embedded < args.limit:
+            batch_limit = min(current_batch_size, args.limit - embedded)
+            rows = fetch_unembedded_chunks(conn, args.model, batch_limit)
+            if not rows:
+                break
 
-        update_embeddings(conn, chunk_ids, embeddings, args.model)
+            chunk_ids = [row[0] for row in rows]
+            texts = [row[1] for row in rows]
+            try:
+                embeddings = embed_texts(client, args.model, texts, args.dimensions)
+            except RateLimitError:
+                current_batch_size = max(1, current_batch_size // 2)
+                print(
+                    "rate_limit=hit "
+                    f"next_batch_size={current_batch_size} "
+                    f"sleep_seconds={args.rate_limit_sleep}"
+                )
+                time.sleep(args.rate_limit_sleep)
+                continue
 
-        embedded += len(rows)
-        print(f"embedded_chunks={embedded} batch_size={len(rows)}")
-        if args.sleep:
-            time.sleep(args.sleep)
+            update_embeddings(conn, chunk_ids, embeddings, args.model)
 
-    if args.create_index:
-        create_vector_index(conn, args.index_lists)
-        print("vector_index=created")
+            embedded += len(rows)
+            print(f"embedded_chunks={embedded} batch_size={len(rows)}")
+            if args.sleep:
+                time.sleep(args.sleep)
 
-    conn.close()
-    print("done")
+        if args.create_index:
+            create_vector_index(conn, args.index_lists)
+            print("vector_index=created")
+
+        print("done")
+    finally:
+        conn.close()
 
 
 if __name__ == "__main__":
