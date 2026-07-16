@@ -23,10 +23,11 @@
 
 다음 문서는 배경과 기존 동작 확인용이다. canonical v2 문서와 충돌하면 v2 문서를 따른다.
 
-- study_plan_policy.md: v1 정책과 후속 제안이 섞인 기존 문서
+구 문서 study_plan_policy.md, 학습계획_설계.md, weekly_review_ai_report_plan.md는
+유니크 내용을 SPEC.md·CONTRACTS.md·AI_WORKFLOW.md로 이관한 뒤 삭제했다
+(2026-07-16, 이관 내역은 docs/drafts/학습계획_AI리포트_정의_재검토.md 참조).
+
 - study_plan_flow.md: 현재 함수 중심 흐름과 미구현 미래 흐름이 섞인 문서
-- weekly_review_ai_report_plan.md: 초기 AI 리포트 설계
-- 학습계획_설계.md: 초기 계획 생성 설계
 - study_plan_progress_api.md: 현재 v1 진행률 연동 참고
 - mypage_service_flow.md: 현재 마이페이지 서비스 흐름 참고
 - 주간평가_협조_요청서.md: 초기 앱 간 협조 요청

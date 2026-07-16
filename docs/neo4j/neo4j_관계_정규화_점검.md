@@ -6,13 +6,16 @@
 > 대상: `storage/neo4j/schema/*.cypher`, `storage/neo4j/neo4j_import/` CSV,
 > `etl/preprocessing/neo4j/scripts/*.py`
 > 상태 기준: `SOURCE`(코드) / `GENERATED`(생성 CSV) / `LIVE`(Neo4j 적재)를 구분한다.
+> 범위 주의: 이 문서는 현재 구현 감사다. 문제 생성 목표 스키마인 `SemanticClass`,
+> `Fact`, `QuestionFacet`, `QuestionUse`가 현재 구현됐다는 뜻이 아니다. 목표 계약은
+> [README.md](./README.md)를 따른다.
 
 현재 `SOURCE`에는 이 문서의 신규 관계와 안전한 최종 import 후보 승격이 반영돼 있다.
 최신 계약으로 node CSV 26개, relationship CSV 55개, `SourceUrl` 57,239건을 생성했고,
 preload 114개와 golden 21개를 합친 QA 135/135가 통과했다. relation CSV 전체의 Cypher
-`MERGE` identity 중복은 0건이다. completion manifest는 2026-07-14 18:14:27 KST에
-생성됐고 final import 승격도 완료했다. `LIVE`에는 이 변경을 적재하지 않았고 기존 상태를
-유지한다.
+`MERGE` identity 중복은 0건이다. 생성 완료 시각과 final import 승격 여부는 고정 문구를
+복사하지 않고 `storage/neo4j/neo4j_import/.preprocessing_complete.json`을 단일 진실원으로
+확인한다. `LIVE`에는 이 변경을 적재하지 않았고 기존 상태를 유지한다.
 
 파생 `ABOUT_*` 관계가 여러 category mapping 근거를 합칠 때는
 `canonical_category_id`, `canonical_category_path`, `match_type` 세 열을 동일 tuple 순서로
@@ -200,7 +203,7 @@ set을 만든 뒤 실제 집계 set과 정확히 일치하는지 검증한다. �
 | 관계성 중복 속성 정리 (**제거로 확정**) | 완료 | CSV 제거·QA 통과 | 기존 속성 유지 | LIVE 적용 후 verify의 `removed_*_residue_count` 11종이 0인지 확인 |
 | `SourceImage.related_content` → `HAS_RELATED_CONTENT` | 완료 | 고유 URL 427개·관계 1,720건·QA 통과 | 미적용 | 별도 LIVE 적용 판단 |
 | 실패 안전 전처리와 promotion | 완료 | manifest 생성·final 승격 완료 | 해당 없음 | LIVE 적재와 계속 분리 |
-| 정규화 원칙 문서화 | 완료 | 해당 없음 | 해당 없음 | `neo4j_설계_근거.md`와 함께 유지 |
+| 정규화 원칙 문서화 | 완료 | 해당 없음 | 해당 없음 | 문제 생성 목표 계약은 [README.md](./README.md)와 함께 유지 |
 
 ### 중복 속성 제거 확정 내역 (SOURCE 반영 완료)
 

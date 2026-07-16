@@ -1,6 +1,6 @@
 # DB 스키마 변경 요청서 — 학습계획·주간평가 (study_plan_mypage / solve_sessions)
 
-- 요청 근거: `docs/mypage/study_plan_policy.md`, `docs/mypage/weekly_review_ai_report_plan.md`,
+- 요청 근거: `docs/mypage/study_plan/SPEC.md`, `docs/mypage/study_plan/AI_WORKFLOW.md`,
   `docs/mypage/주간평가_협조_요청서.md`
 - 변경 요약: **인덱스 2종 + 컬럼 3개 + CHECK 제약 2개** (테이블 신규 생성 없음, 데이터 마이그레이션 없음)
 - 적용 파일:
@@ -84,7 +84,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS study_plan_mypage_user_active_uidx
   `CREATE UNIQUE INDEX CONCURRENTLY`로 실행한다 (단, CONCURRENTLY는 트랜잭션 블록
   안에서 실행 불가 — alter 스크립트를 트랜잭션으로 감싸는 경우 이 구문만 분리).
 - 이 인덱스 적용 후, 앱의 계획 생성 경로는 unique 충돌(23505) 시 새로 생긴 active를
-  재조회해 반환하도록 구현된다 (앱 측 책임, `study_plan_policy.md` "active 계획 유일성 보장").
+  재조회해 반환하도록 구현된다 (앱 측 책임, `study_plan/SPEC.md` 15장 계획 교체와 동시성).
 
 ### 롤백
 

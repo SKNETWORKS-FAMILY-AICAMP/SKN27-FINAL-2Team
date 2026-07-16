@@ -28,7 +28,7 @@ flowchart TD
     content -->|"있음"| created["새 active 계획 저장"]
 ```
 
-> 이월 규칙: 완료·주간평가 블록 제외, 복습 블록은 같은 대상의 다음 복습 블록 도달 전까지만, blockId 유지. 오늘 블록 공백은 같은 날 반복 생성을 막으면서 새 계획으로 복구한다. 상세는 `study_plan_policy.md`의 "미완료 블록 이월 정책"·"오늘 계획 동기화 상태 분기" 참조. 주간평가 완료/미응시 구분은 `SolveSessions.review_type` 도입 후 추가한다.
+> 이월 규칙: 완료·주간평가 블록 제외, 복습 블록은 같은 대상의 다음 복습 블록 도달 전까지만, blockId 유지. 오늘 블록 공백은 같은 날 반복 생성을 막으면서 새 계획으로 복구한다. 상세는 `study_plan/SPEC.md` 13장 Rollover 참조. 주간평가 완료/미응시 구분은 `SolveSessions.review_type` 도입 후 추가한다.
 
 ## 2. 학습계획 생성
 

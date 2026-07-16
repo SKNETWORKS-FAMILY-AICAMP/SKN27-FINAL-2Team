@@ -2,8 +2,9 @@
 
 > 문서 상태: `EVIDENCE-SNAPSHOT`
 > 용도: 초기 원천 EDA와 설계 판단의 근거 보존
-> 주의: 현재 node/relation 수치나 적재 상태를 설명하는 문서가 아니다. 최신 상태는
-> [README.md](./README.md)를 따른다.
+> 주의: 현재 node/relation 수치나 적재 상태를 설명하는 문서가 아니다. 최신 문제 생성
+> 목표 계약은 [README.md](./README.md)를 따른다. 이 문서의
+> `CanonicalCategory` 등은 원천 EDA 용어이며 목표 `SemanticClass`와 자동으로 같지 않다.
 
 이 문서는 `test/MK/prep_neo4j` 아래의 check 계열 노트북 하단에 정리해둔 전처리 EDA Markdown 블록을 문서화한 것이다.
 
@@ -68,7 +69,11 @@ df[
 
 ## EDA 정리: 1차 전처리 컬럼 사용 기준
 
-현재까지 확인한 기준으로 `history_terms.csv`는 `Term`, `CanonicalCategory`, `Period` 후보를 뽑는 원천 데이터로 사용한다. 핵심은 실제 용어 행인 `term_kind = 2`를 중심으로 보고, 분류 체계는 `term_lk`를 `>>`와 `>`로 분해해서 만드는 것이다.
+이 노트북에서 과거 `history_terms.csv`라고 줄여 부른 파일의 실제 프로젝트 경로는
+`etl/raw_data/교육부 국사편찬위원회_한국역사용어시소러스 정보_20211028 (1).csv`다.
+이 원천은 `Term`, `CanonicalCategory`, `Period` 후보를 뽑는 데 사용했다. 핵심은 실제
+용어 행인 `term_kind = 2`를 중심으로 보고, 분류 체계는 `term_lk`를 `>>`와 `>`로
+분해하는 것이다.
 
 ### 1. 컬럼 기반 추출 가능 데이터
 
@@ -413,15 +418,20 @@ person_id 인물의 아버지 = related_person_id 인물
 | `evidence_url` | 인물 관계의 근거 URL. 관계 속성 또는 Evidence 노드 후보. |
 | `detail_url` | 시작 인물 상세 페이지 URL. Person 노드의 source URL 후보. |
 
-Tavily를 쓰면 이 URL들의 본문을 추출해서 RAG 근거로 사용할 수 있다. 다만 Tavily 결과를 바로 확정 관계로 넣기보다, URL 본문 추출과 답변 근거 보강용으로 쓰는 것이 안전하다.
+Tavily 같은 웹 수집 도구로 URL 본문을 가져오는 방안은 context-only 검색 후보가 될 수
+있다. 그러나 외부 웹 결과나 런타임에 새로 찾은 span은 문제 생성의 정답 Fact,
+authoritative EvidenceSpan 또는 오답 mismatch proof로 바로 사용할 수 없다. 그런 용도로
+쓰려면 오프라인 원천 검수, content hash 고정, EvidenceSpan ID 발급과 새 GraphSnapshot
+배포가 먼저다.
 
 ```text
 Neo4j = 인물/사건/용어의 구조적 관계
 Vector RAG = 설명문, URL 본문, term_desc 검색
-Tavily = URL 본문 추출과 외부 웹 근거 보강
+Web retrieval = 표현용 context 보강 후보, authoritative proof 아님
 ```
 
-따라서 이 프로젝트의 RAG 구조는 `Graph RAG + Vector RAG + Web RAG`를 섞은 Hybrid RAG로 볼 수 있다.
+초기 아이디어는 `Graph + Vector + Web`의 hybrid였지만, 문제 생성 계약에서는 Graph가
+승인한 span과 context-only 검색을 엄격히 분리한다.
 
 ### 6. 1차 결론
 

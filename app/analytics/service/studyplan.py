@@ -130,7 +130,7 @@ def ensure_today_study_plan(user_id, today=None):
     """
     나의 학습실 진입 시 active 학습계획의 오늘 상태를 보장한다.
 
-    상태별 처리(study_plan_policy.md):
+    상태별 처리(docs/mypage/study_plan/SPEC.md 13장 Rollover):
     - active 계획 없음: 최초 계획을 자동 생성한다.
     - 계획 기간 만료(오늘 > end_date): 이월·생성하지 않는다.
       기간 만료 표시와 새 계획 생성 유도는 화면이 담당한다.
@@ -208,7 +208,7 @@ def carry_over_incomplete_past_blocks_to_today(plan_items, today):
     오늘 이전 날짜의 미완료 학습 블록을 오늘 날짜로 이월한다.
 
     순수 함수로 plan_items(JSON 목록)만 다루며, DB 잠금·저장·기간 판단은
-    호출부(ensure_today_study_plan)가 담당한다. 이월 규칙(study_plan_policy.md):
+    호출부(ensure_today_study_plan)가 담당한다. 이월 규칙(docs/mypage/study_plan/SPEC.md 13장 Rollover):
     - 완료 블록은 원래 날짜에 남긴다.
     - 주간평가 블록은 이월하지 않는다. 지나간 미완료 주간평가는 미응시 처리 대상이다.
     - 복습 블록은 같은 대상의 다음 복습 블록 날짜에 오늘이 도달하기 전까지만 이월한다.
