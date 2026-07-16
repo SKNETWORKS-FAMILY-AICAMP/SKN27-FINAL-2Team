@@ -132,8 +132,20 @@ CREATE TABLE IF NOT EXISTS solve_sessions (
     status          VARCHAR(20)     NOT NULL DEFAULT 'in_progress', -- 'in_progress' | 'completed'
     answer_rate     FLOAT           NULL,                  -- 정답률
     total_score     INT             NULL,                  -- 총점
-    recorded_date   DATE            NOT NULL DEFAULT CURRENT_DATE -- 저장/풀이 기록 날짜
+    recorded_date   DATE            NOT NULL DEFAULT CURRENT_DATE, -- 저장/풀이 기록 날짜
+    review_type     VARCHAR(20)     NULL,
+    CONSTRAINT solve_sessions_review_type_check
+        CHECK (
+            review_type IS NULL
+            OR review_type IN ('weekly_review')
+        )
 );
+
+CREATE INDEX IF NOT EXISTS solve_sessions_weekly_review_idx
+    ON solve_sessions(user_id, recorded_date, session_id)
+    WHERE session_type = 'diagnostic'
+      AND review_type = 'weekly_review'
+      AND status = 'completed';
 
 -- 7. 문항별 풀이 기록
 -- solve_sessions에 포함된 각 문제의 선택 답안과 풀이 시간을 저장합니다.
@@ -210,6 +222,10 @@ CREATE TABLE IF NOT EXISTS study_plan_mypage (
     archived_at         TIMESTAMPTZ     NULL,                      -- 과거 계획 처리 시각
     deleted_at          TIMESTAMPTZ     NULL                       -- 삭제 처리 시각
 );
+
+CREATE UNIQUE INDEX IF NOT EXISTS study_plan_mypage_user_active_uidx
+    ON study_plan_mypage(user_id)
+    WHERE status = 'active';
 
 -- 11. 이메일 인증 코드
 CREATE TABLE IF NOT EXISTS email_verification_codes (
