@@ -30,14 +30,23 @@ flowchart LR
     RETRIEVE["3. AKS 검색 후보 수집"]
     NER["4. NER·사전·정규식<br/>mention 후보"]
     LINK["5. Entity Linking<br/>동일 실체/동명이인 판정"]
+    ID_REVIEW0["5a. Identity Review<br/>AMBIGUOUS · UNRESOLVED"]
+    ID_HOLD0["상태 유지 · 검색 제외"]
     EXTRACT["6. RelationCandidate 추출<br/>raw 표현 · endpoint · 근거"]
     PROFILE["7. 관계 EDA<br/>타입 조합 · 빈도 · 중의성 · coverage"]
     CONTRACT["8. EntityType·Predicate 계약 승인<br/>방향 · endpoint allowlist · version"]
-    VERIFY["9. 매핑·근거·NLI/검증 LLM"]
-    REVIEW["10. 충돌·모호성 검토"]
+    VERIFY["9. 사전 Gate · NLI<br/>최종 승격 Gate"]
+    REL_REVIEW0["10. 관계 Review<br/>PENDING · CONFLICT"]
     PROD["11. ACCEPTED entity와<br/>VERIFIED 관계만 배포"]
 
-    RAW --> STAGE --> NORM --> RETRIEVE --> NER --> LINK --> EXTRACT --> PROFILE --> CONTRACT --> VERIFY --> REVIEW --> PROD
+    RAW --> STAGE --> NORM --> RETRIEVE --> NER --> LINK
+    LINK -->|"ACCEPTED"| EXTRACT --> PROFILE --> CONTRACT --> VERIFY
+    LINK -->|"AMBIGUOUS · UNRESOLVED"| ID_REVIEW0
+    ID_REVIEW0 -->|"구분 근거 확보"| LINK
+    ID_REVIEW0 -->|"보강 실패"| ID_HOLD0
+    VERIFY -->|"VERIFIED"| PROD
+    VERIFY -->|"PENDING · CONFLICT"| REL_REVIEW0
+    REL_REVIEW0 -->|"보강 후 재검증"| VERIFY
 ```
 
 NER만으로는 부족하다. NER은 문자열 span이 인물·사건·국가·지역인지 찾을 뿐, 그 span이
@@ -50,6 +59,144 @@ NER -> Entity Linking -> Relation Extraction -> Evidence Verification
 위 축약 흐름의 `Relation Extraction`은 두 단계다. 먼저 자유로운 raw 관계 표현을
 `RelationCandidate`로 staging한 뒤 EDA하고, EDA로 승인된 Predicate 카탈로그에 매핑한다.
 EDA 전 후보 관계는 production Neo4j edge가 아니다.
+
+### 2.1 EDA부터 Production까지의 권장 실행 순서
+
+다음 도식은 위 선형 흐름에 누락된 정규화·AKS 후보 수집, 실패 유형별 재처리, 자동 승격과
+수동 감사를 포함한 실제 권장 순서다.
+
+```mermaid
+flowchart TD
+    subgraph PREP["1. 원천·전처리 점검"]
+        RAW2["Raw 3종<br/>AKS · ITKC · 시소러스"]
+        AUDIT["전처리 코드·컬럼 감사<br/>drop · rename · dedup 점검"]
+        STAGE2["Raw/Staging 정비<br/>원천 ID · Hash · URL · 원문 보존"]
+        BASIC["기초 EDA<br/>결측 · 중복 · 고유값 · 분류·관계 분포"]
+        NORMALIZE2["이름·날짜·분류 정규화<br/>정규화 버전 기록"]
+        RETRIEVE2["AKS 검색 후보 수집<br/>이름 + 한자 + 시대 + 관계 맥락"]
+    end
+
+    subgraph ENTITY["2. Entity·NER EDA"]
+        TYPE_SEED["NER·EntityType Seed<br/>Person · Event · Heritage<br/>Work · Polity · Place 등"]
+        NER2["Hybrid NER<br/>구조 필드 · 사전 · 정규식<br/>NER 모델 · LLM 보완"]
+        NER_QA{"NER 품질 검수<br/>누락 · 오탐 · 타입 혼동"}
+        LINK2["Entity Linking<br/>이름 · 한자 · 시대 · 생몰년<br/>본관 · 관계 이웃 비교"]
+        LINK_GATE{"Identity 판정"}
+        ID_REVIEW["Identity Review Queue<br/>AMBIGUOUS · UNRESOLVED"]
+        ID_ENRICH["AKS 후보·구분 근거 보강"]
+        ID_HOLD["AMBIGUOUS · UNRESOLVED 유지<br/>production 검색 제외"]
+        ENTITY_REJECT["REJECTED<br/>현재 대상과 다른 실체"]
+    end
+
+    subgraph RELATION["3. 관계 후보 EDA"]
+        EXTRACT2["RelationCandidate 추출<br/>구조 필드 + LLM<br/>endpoint · raw relation · quote · offset"]
+        PROFILE2["관계 EDA<br/>Subject Type × Relation × Object Type<br/>빈도 · 방향 · 중의성 · 근거 회수율"]
+        DECIDE["미결정 정책 검토<br/>대표·보조 EntityType<br/>Work·Polity · Place–Region<br/>Topic Crosswalk · RelationAssertion"]
+        CATALOG["카탈로그 승인<br/>EntityType · Taxonomy · Predicate<br/>방향 · Endpoint · Evidence 기준"]
+    end
+
+    subgraph VERIFY2["4. 재추출·검증"]
+        REEXTRACT["승인 카탈로그로 재추출<br/>LLM 출력은 PROPOSED"]
+        PRE_GATE{"사전 Code Gate<br/>조건 1~6 · 저비용 충돌 검사"}
+        NLI2["독립 NLI·검증 LLM<br/>Claim ↔ Evidence"]
+        NLI_GATE{"NLI 판정"}
+        FINAL_GATE{"최종 승격 Gate<br/>SUPPORTED + 사전 Gate 통과<br/>미해소 충돌 없음"}
+        PENDING2["PENDING<br/>NOT_ENOUGH_INFORMATION"]
+        CONFLICT2["CONFLICT<br/>시대·기존 관계·반대 근거 충돌"]
+        REL_REVIEW["관계 Review Queue<br/>PENDING · CONFLICT 검토"]
+        EVIDENCE_ENRICH["근거 보강·claim 수정"]
+        REL_REJECT["REJECTED<br/>현재 release에서 제외"]
+    end
+
+    subgraph PRODUCTION["5. Production ETL·운영 QA"]
+        VERIFIED2["VERIFIED 관계·분류"]
+        GRAPH["Neo4j Production Graph<br/>ACCEPTED CanonicalEntity · provenance<br/>승인 Anchor · VERIFIED 관계"]
+        SAMPLE_AUDIT["VERIFIED 표본 감사<br/>정밀도 · 오류 유형 · 임계값"]
+        QA2["챗봇·오답 후보 QA<br/>동명이인 · Broad Anchor<br/>관계 방향 · 근거 재현"]
+        READY["조회 서비스 공개"]
+        REMEDIATE["원인 분류·ETL 보완"]
+    end
+
+    RAW2 --> AUDIT --> STAGE2 --> BASIC --> NORMALIZE2 --> RETRIEVE2
+    RETRIEVE2 --> TYPE_SEED --> NER2 --> NER_QA
+
+    NER_QA -->|"품질 통과"| LINK2
+    NER_QA -->|"품질 미달"| TYPE_SEED
+
+    LINK2 --> LINK_GATE
+    LINK_GATE -->|"ACCEPTED"| EXTRACT2
+    LINK_GATE -->|"AMBIGUOUS · UNRESOLVED"| ID_REVIEW
+    LINK_GATE -->|"REJECTED"| ENTITY_REJECT
+    ID_REVIEW --> ID_ENRICH
+    ID_ENRICH -->|"구분 근거 확보"| LINK2
+    ID_ENRICH -->|"보강 실패"| ID_HOLD
+
+    EXTRACT2 --> PROFILE2 --> DECIDE --> CATALOG
+    CATALOG --> REEXTRACT --> PRE_GATE
+
+    PRE_GATE -->|"통과"| NLI2
+    PRE_GATE -->|"quote · offset 불일치"| REEXTRACT
+    PRE_GATE -->|"endpoint 미해소"| ID_REVIEW
+    PRE_GATE -->|"타입 · ID · Allowlist 위반"| REL_REJECT
+    PRE_GATE -->|"시대 · 기존 관계 충돌"| CONFLICT2
+
+    NLI2 --> NLI_GATE
+    NLI_GATE -->|"SUPPORTED"| FINAL_GATE
+    NLI_GATE -->|"NOT_ENOUGH_INFORMATION"| PENDING2
+    NLI_GATE -->|"CONTRADICTED"| CONFLICT2
+
+    FINAL_GATE -->|"통과"| VERIFIED2
+    FINAL_GATE -->|"미해소 충돌"| CONFLICT2
+
+    PENDING2 --> REL_REVIEW
+    CONFLICT2 --> REL_REVIEW
+    REL_REVIEW -->|"근거 보강·수정"| EVIDENCE_ENRICH --> REEXTRACT
+    REL_REVIEW -->|"명시적 오류"| REL_REJECT
+    REL_REVIEW -->|"규칙·카탈로그 보완"| CATALOG
+
+    VERIFIED2 --> GRAPH --> QA2
+    VERIFIED2 -.->|"표본 추출"| SAMPLE_AUDIT
+    QA2 -->|"통과"| READY
+    QA2 -->|"실패"| REMEDIATE
+    SAMPLE_AUDIT -->|"오류 발견"| REMEDIATE
+
+    REMEDIATE -->|"NER 문제"| TYPE_SEED
+    REMEDIATE -->|"Identity 문제"| ID_REVIEW
+    REMEDIATE -->|"Predicate·검증 규칙 문제"| CATALOG
+```
+
+실행 원칙은 다음과 같다.
+
+1. production ETL 전체를 먼저 만들지 않고 raw 손실 여부와 기초 분포를 확인한 뒤 이름·날짜·
+   분류를 정규화하고 AKS 검색 후보를 수집한다.
+2. NER 모델과 LLM은 mention·분류·관계 후보를 제안하지만 identity와 `VERIFIED`를 확정하지
+   않는다.
+3. `AMBIGUOUS`와 `UNRESOLVED`는 review queue에서 근거를 보강하고 구분 근거가 확보된
+   경우에만 Entity Linking을 다시 수행한다. 보강에 실패하면 기존 상태를 유지하고
+   production 검색에서 제외해 무한 재시도하지 않는다. `REJECTED`는 현재 identity 후보의
+   종착 상태다.
+4. Entity Linking을 통과한 endpoint만 RelationCandidate 추출에 사용하고, 관계 EDA와 표본
+   검수로 Predicate 계약을 승인한 뒤 승인 카탈로그로 재추출한다.
+5. `04 §10`의 최종 code gate는 NLI 전 사전 Gate와 NLI 후 최종 승격 Gate로 나눈다. 사전
+   Gate는 quote·offset·ID·타입·시대·allowlist 같은 저비용 조건을 먼저 검사하고, 최종 Gate는
+   `SUPPORTED`와 미해소 충돌 여부를 함께 검사한다.
+6. 사전 Gate 실패는 원인별로 처리한다. quote·offset 불일치는 재추출, endpoint 미해소는
+   Entity Linking, 타입·ID·allowlist 위반은 현재 release에서 제외, 시대·기존 관계 충돌은
+   `CONFLICT` 검토로 보낸다.
+7. `SUPPORTED`는 최종 Gate를 통과하면 수동 전수 검수 없이 `VERIFIED`로 승격한다. 수동
+   검수는 `PENDING/CONFLICT` review와 VERIFIED 표본 정밀도 감사라는 두 역할로 분리한다.
+8. `PENDING`은 새 근거가 확보되면 claim을 보강해 재추출할 수 있고, 운영 QA나 표본 감사에서
+   오류가 발견되면 원인에 따라 NER·Entity Linking·카탈로그 단계로 돌아간다.
+9. production Graph에는 `ACCEPTED` CanonicalEntity뿐 아니라 SourceRecord·EntityName·
+   EvidenceSpan provenance, 승인 Anchor와 `VERIFIED` 관계를 함께 적재한다.
+
+권장 순서는 다음 한 줄로 요약된다.
+
+```text
+전처리 감사 → 기초 EDA → 정규화 → AKS 후보 수집 → NER → Entity Linking
+→ LLM 관계 추출 → 관계 EDA → 카탈로그 확정 → 재추출 → 사전 Code Gate
+→ NLI → 최종 승격 Gate → Production ETL → 운영 QA
+```
 
 ## 3. 원천별 입력과 사용 한계
 
@@ -417,7 +564,8 @@ NOT_ENOUGH_INFORMATION
 NLI 모델이 필수라는 뜻은 아니다. 규칙과 별도 검증 LLM으로 구현할 수도 있다. 다만
 같은 생성 LLM의 confidence만 믿지 않고 claim-evidence 검증 단계를 둬야 한다.
 
-최종 code gate는 다음 조건을 모두 검사한다.
+검증은 `사전 Code Gate → NLI → 최종 승격 Gate`의 두 gate 구조로 수행한다. 사전 Code
+Gate는 NLI를 호출하기 전에 다음 저비용·결정적 조건을 검사한다.
 
 1. `evidence_quote`가 해당 원문에 정확히 존재하고 offset이 일치한다.
 2. subject와 object의 link status가 모두 `ACCEPTED`다.
@@ -425,15 +573,30 @@ NLI 모델이 필수라는 뜻은 아니다. 규칙과 별도 검증 LLM으로 �
 4. subject/object entity type이 Predicate signature와 호환된다.
 5. 구조화 생몰년·날짜·시대와 명백한 충돌이 없다.
 6. 허용 taxonomy ID만 사용했다.
-7. claim 검증 결과가 `SUPPORTED`다.
-8. 충돌하는 기존 VERIFIED 관계가 없거나 검토가 끝났다.
 
-하나라도 실패하면 `VERIFIED`로 승격하지 않는다.
+사전 Gate 실패는 하나의 `PENDING`으로 합치지 않는다.
 
 ```text
-SUPPORTED + code gate 통과 -> VERIFIED
-근거 부족/모호성             -> PENDING
-명시적 반대 근거             -> CONFLICT 또는 REJECTED
+quote/offset 불일치         -> 재추출
+endpoint 미해소             -> Entity Linking review
+Predicate/타입/taxonomy 위반 -> 현재 release에서 REJECTED 또는 제외
+구조화 시대 충돌            -> CONFLICT review
+```
+
+사전 Gate를 통과한 claim만 NLI 또는 독립 검증 LLM에 전달한다. NLI 판정 후 최종 승격
+Gate는 다음 조건을 모두 검사한다.
+
+1. 사전 Code Gate를 통과했다.
+2. claim 검증 결과가 `SUPPORTED`다.
+3. 충돌하는 기존 `VERIFIED` 관계가 없거나 검토가 끝났다.
+
+최종 승격 Gate를 통과해야만 `VERIFIED`가 된다. `SUPPORTED` 결과 전체에 수동 전수 검수를
+요구하지 않으며, `VERIFIED` 관계는 별도 표본 감사로 정밀도를 확인한다.
+
+```text
+사전 Gate 통과 + SUPPORTED + 충돌 없음 -> VERIFIED
+NOT_ENOUGH_INFORMATION                -> PENDING
+CONTRADICTED                          -> CONFLICT 또는 REJECTED
 ```
 
 ## 11. production 적재 경계

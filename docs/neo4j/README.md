@@ -276,6 +276,7 @@ Neo4j 결과는 최소한 다음을 반환한다.
 | `06_distractor_and_difficulty.md` | 공통 노드 기반 후보 조회 규칙 |
 | `07_runtime_generation_pipeline.md` | 런타임 연결 지점과 실패 처리 |
 | `08_validation_and_roadmap.md` | 품질 gate와 구현 순서 |
+| `09_graph_design_rationale_and_query_guide.md` | 설계 이유, 노드·관계 의미, 챗봇·오답 조회 방법과 주의사항 |
 
 `neo4j_preprocessing_eda_notes.md`와 `neo4j_관계_정규화_점검.md`는 현재 구현 감사 문서다.
 목표 스키마가 이미 구현됐다는 뜻이 아니다.
