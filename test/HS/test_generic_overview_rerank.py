@@ -6,7 +6,7 @@ from unittest.mock import patch
 ROOT = Path(__file__).parents[2]
 sys.path.insert(0, str(ROOT))
 
-from app.chatbot.rag.pgvector_retriever import PgSearchResult, rerank_results
+from app.chatbot.rag.pgvector_retriever import HISTORY_STOPWORDS, PgSearchResult, build_bm25_query, prioritize_focus_rows, rerank_results
 
 
 def check_generic_overview_uses_reranker() -> None:
@@ -34,6 +34,25 @@ def check_rerank_preserves_retrieval_scores() -> None:
     assert [item.score for item in ranked] == [0.1, 0.9]
 
 
+def check_focus_rows_are_prioritized() -> None:
+    rows = [
+        {"title": "주생활", "chunk_text": "고구려 주거"},
+        {"title": "광개토대왕", "chunk_text": "고구려의 전성기"},
+    ]
+    assert prioritize_focus_rows(rows, ("고구려", "전성기"))[0]["title"] == "광개토대왕"
+
+
+def check_bm25_ignores_summary_instruction_terms() -> None:
+    assert build_bm25_query(("임진왜란", "전개", "과정", "요약해줘"), "fallback") == "임진왜란"
+
+
+def check_dynasty_names_remain_search_terms() -> None:
+    assert not {"고구려", "신라", "백제", "고려", "조선", "발해", "가야"} & HISTORY_STOPWORDS
+
+
 if __name__ == "__main__":
     check_generic_overview_uses_reranker()
     check_rerank_preserves_retrieval_scores()
+    check_focus_rows_are_prioritized()
+    check_bm25_ignores_summary_instruction_terms()
+    check_dynasty_names_remain_search_terms()

@@ -92,7 +92,7 @@ candidate_pool: int = 30
 - MeCab 명사 토큰을 `search_tokens`에 저장하고, PostgreSQL `search_vector` GIN 인덱스로 BM25 검색을 추가했다.
 - 벡터 HNSW, Trigram, BM25 후보를 각각 수집해 RRF(Reciprocal Rank Fusion)로 병합한다.
 - 벡터 검색 임베딩은 키워드 확장문이 아니라 사용자의 원문 질문을 사용한다.
-- `RAG_TRIGRAM_ENABLED` 환경 변수로 Trigram 후보 채널을 켜거나 끌 수 있게 했다. 기본값은 `true`다.
+- `RAG_TRIGRAM_ENABLED` 환경 변수로 Trigram 후보 채널을 켜거나 끌 수 있게 했다. 운영값은 `false`다.
 
 ### 단일 질문 지연시간 측정
 
@@ -178,4 +178,10 @@ LIMIT 30;
 
 Precision은 리랭커 적용 전 0.67에서 0.82로 개선됐다. 반면 CPU에서 모든 개요형 질문에 BGE를 실행하면서 속도가 기준을 넘었다.
 
-다음 실험은 RRF 상위 결과의 점수 차가 충분한 질문은 BGE를 건너뛰고, 순위가 애매한 질문에만 BGE를 적용하는 조건부 리랭킹이다. 후보 수, Top-K, 임베딩, HNSW는 변경하지 않는다.
+CPU 환경 측정에서는 `RAG_RERANKER_ENABLED=false` 전환을 실험했다. 이후 로컬 측정에서 리랭커 사용 시에도 검색 속도 기준을 충족해 운영값을 다시 `true`로 복원했다. 후보 수, Top-K, 임베딩, HNSW는 변경하지 않는다.
+
+## 2026-07-15: Trigram 후보 채널 제거
+
+- `keyword_candidates`/`keyword_ranked` CTE와 `RAG_TRIGRAM_ENABLED` 환경 변수를 제거했다.
+- 검색은 pgvector HNSW와 MeCab BM25 후보를 RRF로 병합하고, BGE 리랭커가 최종 정렬한다.
+- Trigram 인덱스는 기존 DB에 남아 있어도 검색 쿼리에서 사용하지 않는다.

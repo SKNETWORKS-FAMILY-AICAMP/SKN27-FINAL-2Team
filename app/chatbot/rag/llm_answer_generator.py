@@ -340,23 +340,26 @@ class LLMAnswerGenerator:
     ) -> dict[str, Any]:
         user_prompt = build_structured_prompt(question, sources, follow_up, history)
         if self.config.provider == "openai":
-            raw_answer = self._generate_openai(STRUCTURED_SYSTEM_PROMPT, user_prompt)
+            raw_answer = self._generate_openai(STRUCTURED_SYSTEM_PROMPT, user_prompt, json_mode=True)
         elif self.config.provider == "ollama":
             raw_answer = self._generate_ollama(STRUCTURED_SYSTEM_PROMPT, user_prompt)
         else:
             raise ValueError(f"지원하지 않는 provider입니다: {self.config.provider}")
         return normalize_structured_answer(extract_json_object(raw_answer))
 
-    def _generate_openai(self, system_prompt: str, user_prompt: str) -> str:
+    def _generate_openai(self, system_prompt: str, user_prompt: str, json_mode: bool = False) -> str:
         client = OpenAI()
-        response = client.chat.completions.create(
-            model=self.config.model,
-            temperature=self.config.temperature,
-            messages=[
+        kwargs: dict[str, Any] = {
+            "model": self.config.model,
+            "temperature": self.config.temperature,
+            "messages": [
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt},
             ],
-        )
+        }
+        if json_mode:
+            kwargs["response_format"] = {"type": "json_object"}
+        response = client.chat.completions.create(**kwargs)
         return (response.choices[0].message.content or "").strip()
 
     def _generate_ollama(self, system_prompt: str, user_prompt: str) -> str:

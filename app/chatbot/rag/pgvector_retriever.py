@@ -41,7 +41,9 @@ REQUEST_SUFFIX_TERMS = tuple(
 )
 OVERVIEW_IGNORE_TERMS = {
     "정리",
+    "정리해줘",
     "요약",
+    "요약해줘",
     "흐름",
     "개념",
     "설명",
@@ -83,36 +85,13 @@ OVERVIEW_IGNORE_TERMS = {
     "대표적",
     "대표적인",
     "주요",
+    "전개",
+    "과정",
 }
-GENERIC_OVERVIEW_CONTEXT_TERMS = (
-    "개요",
-    "핵심 내용",
-    "특징",
-    "배경",
-    "의의",
-    "업적",
-    "활동",
-    "시대",
-    "관련 내용",
-    "한능검",
-)
-ACHIEVEMENT_CONTEXT_TERMS = (
-    "창제",
-    "설치",
-    "정비",
-    "편찬",
-    "제작",
-    "반포",
-    "개혁",
-    "발명",
-    "시행",
-)
-ACHIEVEMENT_QUERY_TERMS = ("업적", "정책", "활동")
 HONORIFIC_SUFFIXES = ("대왕",)
 SINGLE_CHAR_FOCUS_TERMS = {"왕"}
 
 HISTORY_STOPWORDS = {
-    "조선", "고려", "신라", "백제", "고구려", "가야", "발해", 
     "전기", "후기", "중기", "초기", "말기", "시대", "국가", "나라", "역사", "한국", 
     "인물", "사건", "조직", "단체", "유물", "유적", "정리", "요약", "설명", "개념",
     "왕", "대왕"
@@ -171,18 +150,6 @@ def is_generic_overview_query(question: str, focus_terms: tuple[str, ...]) -> bo
     if not focus_terms:
         return False
     return any(term in question for term in OVERVIEW_TERMS)
-
-
-def build_keyword_question(
-    question: str,
-    focus_terms: tuple[str, ...] = (),
-    extra_terms: tuple[str, ...] = GENERIC_OVERVIEW_CONTEXT_TERMS,
-) -> str:
-    terms = [question, *focus_terms]
-    terms.extend(extra_terms)
-    if any(term in question for term in ACHIEVEMENT_QUERY_TERMS):
-        terms.extend(ACHIEVEMENT_CONTEXT_TERMS)
-    return " ".join(dict.fromkeys(term for term in terms if term))
 
 
 def build_bm25_query(focus_terms: tuple[str, ...], fallback: str) -> str:
@@ -392,6 +359,21 @@ def diversify_rows(rows: list[dict[str, Any]], limit: int) -> list[dict[str, Any
     return selected
 
 
+def prioritize_focus_rows(rows: list[dict[str, Any]], focus_terms: tuple[str, ...]) -> list[dict[str, Any]]:
+    terms = [
+        term
+        for term in focus_terms
+        if term not in OVERVIEW_IGNORE_TERMS and not term.endswith(("해줘", "알려줘"))
+    ]
+    if not terms:
+        return rows
+    def focus_hits(row: dict[str, Any]) -> int:
+        text = f"{row.get('title') or ''} {row.get('chunk_text') or ''}"
+        return sum(term in text for term in terms)
+
+    return sorted(rows, key=focus_hits, reverse=True)
+
+
 class PgVectorHybridRetriever:
     def __init__(
         self,
@@ -490,20 +472,13 @@ class PgVectorHybridRetriever:
 
         focus_terms = overview_focus_terms(question)
         generic_overview_query = is_generic_overview_query(question, focus_terms)
-        keyword_question = build_keyword_question(
-            question,
-            focus_terms if generic_overview_query else (),
-            GENERIC_OVERVIEW_CONTEXT_TERMS if generic_overview_query else (),
-        )
         keyword_filter = focus_terms[0] if focus_terms else question
         embedding_question = question  # 임베딩용 벡터 쿼리는 순수 원본 질문 사용하여 희석 방지
         embedding = vector_literal(embed_query(embedding_question, self.model, self.dimensions))
         overview_query = any(term in question for term in OVERVIEW_TERMS)
         use_reranker = os.getenv("RAG_RERANKER_ENABLED", "").lower() in {"1", "true", "yes"}
         use_bm25 = os.getenv("RAG_BM25_ENABLED", "true").lower() in {"1", "true", "yes"}
-        use_trigram = os.getenv("RAG_TRIGRAM_ENABLED", "true").lower() in {"1", "true", "yes"}
         final_limit = max(top_k * 5, top_k) if generic_overview_query or use_reranker else top_k
-        keyword_candidate_pool = self.candidate_pool
         bm25_candidate_pool = self.candidate_pool
 
         # 불용어(Stopwords)를 걸러낸 정밀한 focus_terms 추출
@@ -518,20 +493,7 @@ class PgVectorHybridRetriever:
             bm25_query = " OR ".join(bm25_query.split())
             bm25_tsquery_function = "websearch_to_tsquery"
 
-        def build_where(relaxed: bool = False) -> tuple[str, list[Any]]:
-            where_parts = ["embedding IS NOT NULL"]
-            params: list[Any] = []
-            if not generic_overview_query or not filtered_focus_terms:
-                return " AND ".join(where_parts), params
-
-            term_sql = "(title ILIKE %s OR chunk_text ILIKE %s)"
-            # 첫 단어 제목 한정 조건 등 과도한 필터를 완화하여 OR 매칭을 통해 Recall 확보
-            where_parts.append("(" + " OR ".join(term_sql for _ in filtered_focus_terms) + ")")
-            for term in filtered_focus_terms:
-                params.extend([f"%{term}%", f"%{term}%"])
-            return " AND ".join(where_parts), params
-
-        where_sql, params = build_where()
+        where_sql = "embedding IS NOT NULL"
 
         focus_match_sql = "FALSE"
         focus_match_params: list[Any] = []
@@ -542,41 +504,9 @@ class PgVectorHybridRetriever:
             for term in filtered_focus_terms:
                 like_term = f"%{term}%"
                 focus_match_params.extend([like_term, like_term])
+        bm25_focus_hit = "1" if generic_overview_query and filtered_focus_terms else "0"
         bm25_cte_sql = ""
         bm25_union_sql = ""
-        trigram_cte_sql = ""
-        trigram_union_sql = ""
-        if use_trigram:
-            trigram_cte_sql = f"""
-        ,
-        keyword_candidates AS (
-            SELECT
-                id,
-                chunk_id,
-                source_type,
-                0.0::float AS vector_score,
-                (
-                    similarity(title, %s) * 1.5
-                    + similarity(chunk_text, %s) * 0.5
-                    + CASE WHEN title ILIKE %s THEN 0.5 ELSE 0.0 END
-                    + CASE WHEN chunk_text ILIKE %s THEN 0.2 ELSE 0.0 END
-                ) AS keyword_score,
-                CASE WHEN %s AND ({focus_match_sql}) THEN 1 ELSE 0 END AS focus_hit
-            FROM rag.document_chunks
-            WHERE {where_sql}
-              AND (title %% %s OR chunk_text %% %s)
-            ORDER BY keyword_score DESC
-            LIMIT %s
-        ),
-        keyword_ranked AS (
-            SELECT *, row_number() OVER (ORDER BY keyword_score DESC) AS channel_rank
-            FROM keyword_candidates
-        )
-            """
-            trigram_union_sql = """
-            UNION ALL
-            SELECT * FROM keyword_ranked
-            """
         if use_bm25:
             bm25_cte_sql = f"""
         ,
@@ -587,7 +517,7 @@ class PgVectorHybridRetriever:
                 source_type,
                 0.0::float AS vector_score,
                 ts_rank_cd(search_vector, {bm25_tsquery_function}('simple', %s)) * 2.0 AS keyword_score,
-                CASE WHEN %s AND ({focus_match_sql}) THEN 1 ELSE 0 END AS focus_hit
+                {bm25_focus_hit} AS focus_hit
             FROM rag.document_chunks
             WHERE {where_sql}
               AND search_vector @@ {bm25_tsquery_function}('simple', %s)
@@ -622,11 +552,9 @@ class PgVectorHybridRetriever:
             SELECT *, row_number() OVER (ORDER BY vector_score DESC) AS channel_rank
             FROM vector_candidates
         )
-        {trigram_cte_sql}
         {bm25_cte_sql},
         merged_candidates AS (
             SELECT * FROM vector_ranked
-            {trigram_union_sql}
             {bm25_union_sql}
         ),
         candidates AS (
@@ -680,7 +608,7 @@ class PgVectorHybridRetriever:
         ORDER BY ranked.score DESC
         """
 
-        def query_params(where_params: list[Any]) -> list[Any]:
+        def query_params() -> list[Any]:
             return [
                 embedding,
                 generic_overview_query,
@@ -689,26 +617,7 @@ class PgVectorHybridRetriever:
                 self.candidate_pool,
                 *(
                     [
-                        keyword_question,
-                        keyword_question,
-                        f"%{question}%",
-                        f"%{question}%",
-                        generic_overview_query,
-                        *focus_match_params,
-                        *where_params,
-                        keyword_filter,
-                        keyword_filter,
-                        keyword_candidate_pool,
-                    ]
-                    if use_trigram
-                    else []
-                ),
-                *(
-                    [
                         bm25_query,
-                        generic_overview_query,
-                        *focus_match_params,
-                        *where_params,
                         bm25_query,
                         bm25_candidate_pool,
                     ]
@@ -726,18 +635,13 @@ class PgVectorHybridRetriever:
             with conn:
                 with conn.cursor(cursor_factory=RealDictCursor) as cur:
                     cur.execute("SET LOCAL hnsw.ef_search = 120")
-                    cur.execute("SET LOCAL pg_trgm.similarity_threshold = 0.18")
-                    cur.execute(sql, query_params(params))
+                    cur.execute(sql, query_params())
                     rows = cur.fetchall()
-                    if not rows and generic_overview_query and len(focus_terms) > 1:
-                        relaxed_where_sql, relaxed_params = build_where(relaxed=True)
-                        relaxed_sql = sql.replace(f"WHERE {where_sql}", f"WHERE {relaxed_where_sql}")
-                        cur.execute(relaxed_sql, query_params(relaxed_params))
-                        rows = cur.fetchall()
         finally:
             conn.close()
 
-        rows = diversify_rows(rows, top_k) if generic_overview_query else rows
+        if generic_overview_query:
+            rows = diversify_rows(prioritize_focus_rows(rows, focus_terms), top_k)
         results = [
             PgSearchResult(
                 chunk_id=row["chunk_id"],

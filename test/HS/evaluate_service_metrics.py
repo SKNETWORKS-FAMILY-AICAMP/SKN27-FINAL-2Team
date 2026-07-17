@@ -34,6 +34,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from app.chatbot.graph_service import build_graph_context
+from app.chatbot import rag_service as rag_service_module
 from app.chatbot.rag.pgvector_retriever import PgVectorHybridRetriever, cached_pg_search
 from app.chatbot.rag_service import build_history_rag_answer
 
@@ -95,20 +96,40 @@ def evaluate_latency(queries: list[str]) -> list[Metric]:
     search_values = []
     generation_values = []
     total_values = []
-    retriever = PgVectorHybridRetriever()
     for query in queries:
-        cached_pg_search.cache_clear()
-        start = time.perf_counter()
-        retriever.search(query, top_k=5)
-        search_sec = time.perf_counter() - start
+        llm_sec = 0.0
+        original_generate = rag_service_module.LLMAnswerGenerator.generate
+        original_generate_structured = rag_service_module.LLMAnswerGenerator.generate_structured
 
+        def timed_generate(*args, **kwargs):
+            nonlocal llm_sec
+            start = time.perf_counter()
+            try:
+                return original_generate(*args, **kwargs)
+            finally:
+                llm_sec += time.perf_counter() - start
+
+        def timed_generate_structured(*args, **kwargs):
+            nonlocal llm_sec
+            start = time.perf_counter()
+            try:
+                return original_generate_structured(*args, **kwargs)
+            finally:
+                llm_sec += time.perf_counter() - start
+
+        rag_service_module.LLMAnswerGenerator.generate = timed_generate
+        rag_service_module.LLMAnswerGenerator.generate_structured = timed_generate_structured
         cached_pg_search.cache_clear()
         start = time.perf_counter()
-        build_history_rag_answer(query, intent="concept", answer_format="structured", top_k=5)
+        try:
+            build_history_rag_answer(query, intent="concept", answer_format="structured", top_k=5)
+        finally:
+            rag_service_module.LLMAnswerGenerator.generate = original_generate
+            rag_service_module.LLMAnswerGenerator.generate_structured = original_generate_structured
         total_sec = time.perf_counter() - start
 
-        search_values.append(search_sec)
-        generation_values.append(max(0.0, total_sec - search_sec))
+        search_values.append(max(0.0, total_sec - llm_sec))
+        generation_values.append(llm_sec)
         total_values.append(total_sec)
 
     search_avg = sum(search_values) / len(search_values) if search_values else 0.0

@@ -22,7 +22,6 @@
 3. 관계형/비교형/개념 질문은 필요할 때 Neo4j에서 1-hop 또는 2-hop 관계 키워드를 보강한다.
 4. PostgreSQL에서 다음 후보를 검색한다.
    - OpenAI 임베딩 + pgvector HNSW 벡터 후보
-   - Trigram 후보
    - MeCab 명사 토큰 + PostgreSQL FTS(BM25) 후보
 5. 후보를 RRF(Reciprocal Rank Fusion)로 병합하고, 일반 질문은 BGE reranker로 최종 정렬한다.
 6. 검색 근거를 LLM에 전달해 질문에 맞는 동적 섹션 JSON을 생성한다.
@@ -44,11 +43,9 @@ MeCab BM25 구성과 DB 적용 방법은 `docs/rag/MeCab_BM25_검색_적용_가�
 ```env
 RAG_BM25_ENABLED=true
 RAG_RERANKER_ENABLED=true
-RAG_TRIGRAM_ENABLED=true
 ```
 
-- `RAG_TRIGRAM_ENABLED`는 2026-07-15에 추가했다.
-- 기본값은 `true`이며, Trigram 후보 CTE와 RRF 병합 채널을 실제로 제외할 수 있다.
+- Trigram 후보 채널은 제거했다. 검색은 벡터와 BM25 후보를 RRF로 병합한 뒤 BGE 리랭커로 정렬한다.
 - 환경 변수 변경 후 웹 서버는 재시작한다. `test/HS` CLI는 매번 새 프로세스라 바로 반영된다.
 
 ## 5. 최근 성능 현황
@@ -167,4 +164,24 @@ Remove-Item Env:RAG_TRIGRAM_ENABLED -ErrorAction SilentlyContinue
 
 ### 다음 작업
 
-RRF 상위 결과의 점수 차가 충분한 질문은 BGE를 건너뛰고, 후보 순위가 애매한 질문에만 BGE를 적용하는 조건부 리랭킹을 실험한다. 후보 수, Top-K, 임베딩, HNSW는 이 실험에서 변경하지 않는다.
+속도 우선 운영을 위해 `RAG_RERANKER_ENABLED=false`로 전환했다. BGE는 CPU 환경에서 검색 시간을 크게 늘리므로, GPU 배포 또는 더 가벼운 리랭커를 검증하기 전까지 기본 경로에서 사용하지 않는다. 후보 수, Top-K, 임베딩, HNSW는 변경하지 않는다.
+
+## 11. 2026-07-17 백과사전 적재 후 검색 보정
+
+### 변경 전 기준
+
+- `RAG_RERANKER_ENABLED=false`
+- 검색 속도 4.10초, 전체 응답 7.88초
+- Context Precision 0.68, Recall 0.88, Faithfulness 0.90, Answer Relevance 0.81
+- `aks_encyclopedia` 131,278개 청크 적재 완료
+
+### 확인된 문제와 최소 수정
+
+- `임진왜란 전개 과정을 요약해줘`에서 `전개`, `과정`까지 BM25 AND 검색어에 포함돼 관련 문서가 밀렸다.
+- FTS 결과에 다시 `chunk_text ILIKE`를 적용해 BM25 후보 검색만 약 2.62초 걸렸다.
+- `전개`, `과정`, `요약해줘`, `정리해줘`를 BM25 불용어로 추가하고, 중복된 `ILIKE` 사전 필터를 제거했다. BGE 리랭커·Top-K·후보 수는 변경하지 않았다.
+- 국가·왕조명(`고구려`, `신라`, `백제`, `고려`, `조선`, `발해`, `가야`)은 검색 주제이므로 `HISTORY_STOPWORDS`에서 제외했다.
+
+### 복구 기준
+
+품질 또는 Recall이 저하되면 이 절의 변경 두 가지를 되돌리고, 위의 변경 전 기준으로 복구한다.
