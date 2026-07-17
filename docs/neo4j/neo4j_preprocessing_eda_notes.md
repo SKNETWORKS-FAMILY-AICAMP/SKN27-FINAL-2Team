@@ -4,7 +4,7 @@
 > 용도: 초기 원천 EDA와 설계 판단의 근거 보존
 > 주의: 현재 node/relation 수치나 적재 상태를 설명하는 문서가 아니다. 최신 문제 생성
 > 목표 계약은 [README.md](./README.md)를 따른다. 이 문서의
-> `CanonicalCategory` 등은 원천 EDA 용어이며 목표 `SemanticClass`와 자동으로 같지 않다.
+> `CanonicalCategory` 등은 현재 구현의 EDA 용어이며 목표 `Topic`·`DetailClass`와 자동으로 같지 않다.
 
 이 문서는 `test/MK/prep_neo4j` 아래의 check 계열 노트북 하단에 정리해둔 전처리 EDA Markdown 블록을 문서화한 것이다.
 
@@ -419,9 +419,9 @@ person_id 인물의 아버지 = related_person_id 인물
 | `detail_url` | 시작 인물 상세 페이지 URL. Person 노드의 source URL 후보. |
 
 Tavily 같은 웹 수집 도구로 URL 본문을 가져오는 방안은 context-only 검색 후보가 될 수
-있다. 그러나 외부 웹 결과나 런타임에 새로 찾은 span은 문제 생성의 정답 Fact,
-authoritative EvidenceSpan 또는 오답 mismatch proof로 바로 사용할 수 없다. 그런 용도로
-쓰려면 오프라인 원천 검수, content hash 고정, EvidenceSpan ID 발급과 새 GraphSnapshot
+있다. 그러나 외부 웹 결과나 런타임에 새로 찾은 span은 authoritative EvidenceSpan 또는
+검색 가능한 VERIFIED 관계로 바로 사용할 수 없다. 그런 용도로
+쓰려면 오프라인 원천 검수, content hash 고정, EvidenceSpan ID 발급과 새 Graph release
 배포가 먼저다.
 
 ```text
@@ -430,7 +430,7 @@ Vector RAG = 설명문, URL 본문, term_desc 검색
 Web retrieval = 표현용 context 보강 후보, authoritative proof 아님
 ```
 
-초기 아이디어는 `Graph + Vector + Web`의 hybrid였지만, 문제 생성 계약에서는 Graph가
+초기 아이디어는 `Graph + Vector + Web`의 hybrid였지만, 현재 후보 검색 계약에서는 Graph가
 승인한 span과 context-only 검색을 엄격히 분리한다.
 
 ### 6. 1차 결론

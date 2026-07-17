@@ -1,4 +1,4 @@
-# 01. 문제 생성용 raw 3종 EDA
+# 01. 오답 후보 검색용 raw 3종 EDA
 
 > 상태: `EVIDENCE-SNAPSHOT`
 > 기준일: 2026-07-16
@@ -9,7 +9,7 @@
 프로젝트에 `preprocessing/raw_data`는 없다. 실제 raw는 `etl/raw_data`에 있고,
 `etl/preprocessing/neo4j`는 처리 코드 영역이다.
 
-문제 생성 Graph 설계에서 사용하는 3개 데이터군은 다음과 같다.
+오답 후보 검색 Graph 설계에서 사용하는 3개 데이터군은 다음과 같다.
 
 | 데이터군 | 파일 |
 |---|---|
@@ -30,25 +30,26 @@
 
 - 원천별 안정 ID와 `SourceRecord`
 - canonical entity 후보와 정규화된 `EntityName` 후보
-- TopicType 후보
+- EntityType·Topic 후보
 - 원천 분류·시대·연도 후보
 - 사건군·조직군 membership과 직접 포함 관계 후보
-- 관계와 구조화 속성 기반 `FactCandidate`
+- 관계와 구조화 속성 기반 `RelationCandidate`
 - RAG 문서와 EvidenceSpan 후보
+
+이 문서의 `RelationCandidate`는 endpoint 사이의 관계뿐 아니라 생몰년·소재지처럼 검증 후
+노드 속성이나 분류 관계로 투영될 구조화 속성형 사실 후보도 포함하는 staging 용어다.
 
 반면 다음 값은 raw에 직접 존재하지 않는다.
 
 - 검증 완료 `CanonicalEntity`
-- 후보 검색용 parent/subgroup `SemanticClass`
-- `QuestionFacet`
-- `QuestionUse`
-- `answer_shape`, `answer_role`, `target_role`
-- `active`, `verified`, `donor_eligible` 상태
-- 문제 유형·난이도 정책
-- 취약점 분석용 topic 10개·era 10개 매핑
-- 승인된 합성 target과 그 구성 규칙
+- 검색 가능한 `Topic`, `Era`, `Polity`, `PersonRole`, `DetailClass` 매핑
+- 역할·국가·시대를 함께 묶은 `RoleAssignment`
+- `ACCEPTED`, `VERIFIED`, `search_eligible` 상태
+- 원문의 의미보다 강하지 않은 typed historical relation
+- top-level topic 10개·era 10개와 세부 taxonomy의 승인 crosswalk
+- 후보 검색 relation allowlist와 랭킹 정책
 
-따라서 raw를 그대로 Neo4j에 넣는 것과 문제 생성 Graph를 만드는 것은 다른 작업이다.
+따라서 raw를 그대로 Neo4j에 넣는 것과 검증된 후보 검색 Graph를 만드는 것은 다른 작업이다.
 
 ## 3. 한국민족문화대백과사전
 
@@ -86,16 +87,16 @@ EID는 최종 canonical ID의 강한 후보지만, ITKC와 시소러스의 같�
 | 원천 필드 | 활용 |
 |---|---|
 | `headword`, `origin`, `articleAliases` | 대표명·한자·별칭 후보 |
-| `primaryType`, `field` | TopicType·분류 매핑 후보 |
+| `primaryType`, `field` | EntityType·Topic·세부 분류 매핑 후보 |
 | `era` | 시간·시대 후보 |
-| `articleAttributes` | 출생·사망·저서·소재지 등 FactCandidate |
+| `articleAttributes` | 출생·사망·저서·소재지 등 RelationCandidate |
 | `body`, `definition`, `reference` | RAG 문서와 근거 span |
 
 `articleAttributes`의 값도 문자열 endpoint를 canonical entity로 해소하고 본문 근거를
 검증한 뒤에야 Fact가 된다.
 
 `headword`, `origin`, `articleAliases`는 배열 속성으로 `CanonicalEntity`에 복사하지
-않는다. 각 표기를 provenance가 있는 `EntityName` 후보로 정규화하고, accepted 해소가
+않는다. 각 표기를 provenance가 있는 `EntityName` 후보로 정규화하고, `ACCEPTED` 해소가
 끝난 뒤 같은 실체를 가리키는 이름들을 하나의 canonical 대상에 연결한다.
 
 ### 3.3 사용 금지
@@ -140,7 +141,7 @@ endpoint에 의존한다. 목표 ETL의 명시적인 보완 항목이다.
 아내, 남편, 장인, 사위, 교유, 스승, 제자, 출자
 ```
 
-방향·역관계·대칭 규칙을 사전으로 검증하면 typed FactCandidate로 만들 수 있다. 다만
+방향·역관계·대칭 규칙을 사전으로 검증하면 typed RelationCandidate로 만들 수 있다. 다만
 동명이인, self-loop, 중복 방향, evidence URL 누락을 검토해야 한다.
 
 ### 4.4 사건과 사건-인물 관계
@@ -154,19 +155,18 @@ endpoint에 의존한다. 목표 ETL의 명시적인 보완 항목이다.
 
 ```text
 predicate = ASSOCIATED_WITH_EVENT
-status = needs_role_enrichment
-answer_eligible = false
+status = PENDING
+search_anchor_eligible = false
 ```
 
 AKS 본문 또는 추가 권위 근거에서 실제 역할을 확인한 뒤에만 `PARTICIPATED_IN`,
 `COMMANDED`, `LED` 등으로 승격한다.
 
 사건-인물 관계를 찾는 것 자체를 금지하는 것은 아니다. 다만 역할이 확인되지 않은
-`ASSOCIATED_WITH_EVENT`를 일반 오답 donor 자격이나 정답 Fact로 사용하지 않는다는 뜻이다.
-사건군과 개별 사건, 조직과 구성 단위처럼 포함 구조가 확인되면 `EntityGroup`
-membership 또는 직접 `PART_OF`·`INSTANCE_OF` 후보로 추출할 수 있다. 이 관계는
-같은-parent 2홉 donor pool을 넓히지 않고, 중복 제외 또는 별도의 membership Facet에
-사용한다.
+`ASSOCIATED_WITH_EVENT`를 오답 후보 검색 anchor로 사용하지 않는다는 뜻이다.
+사건군과 개별 사건, 조직과 구성 단위처럼 포함 구조가 확인되면 별도 canonical 대상과
+직접 `MEMBER_OF`·`PART_OF`·`INSTANCE_OF` 후보로 추출할 수 있다. 이 관계를 후보
+검색에 사용할지는 발문의도와 relation allowlist에서 별도로 정한다.
 
 ### 4.5 raw response 파일
 
@@ -210,16 +210,16 @@ term_lk, term_desc, term_user, term_created, term_reference
 |---|---|
 | `term_id` | Thesaurus SourceRecord key |
 | `term_name`, `term_ch`, `term_remark` | 이름·한자·동명이인 구분 후보 |
-| `term_lk` | 원천 분류 계층과 SemanticClass 매핑 근거 |
+| `term_lk` | 원천 분류 계층과 Topic·DetailClass 매핑 근거 |
 | `term_year`, `term_times` | 시간·시대 후보 |
 | `term_desc` | RAG 보조 문서와 검색 힌트 |
 
-시소러스 분류는 donor parent의 원재료다. 다음을 자동으로 하면 안 된다.
+시소러스 분류는 세부 검색 anchor의 원재료다. 다음을 자동으로 하면 안 된다.
 
-- `term_lk` leaf를 그대로 donor parent로 승인
+- `term_lk` leaf를 그대로 검색 가능한 DetailClass로 승인
 - `정치·행정·법제` 같은 broad category를 후보 공유 노드로 사용
 - `term_name`만으로 다른 원천과 병합
-- `term_desc`만으로 상세 Fact를 verified 처리
+- `term_desc`만으로 상세 Fact를 `VERIFIED` 처리
 
 ## 6. 이름 통합과 원천 간 entity resolution
 
@@ -228,21 +228,21 @@ term_lk, term_desc, term_user, term_created, term_reference
 ```text
 NFKC 이름
 + 한자
-+ TopicType 호환
++ EntityType 호환
 + 시대·생몰년 교집합
 + 자·호·본관
 + 설명 핵심 속성
 + 이미 해소된 관계 이웃
 ```
 
-자동 승인, 수동 승인, 후보, 충돌, 거절 상태를 분리한다. 후보와 충돌 상태는
-QuestionTarget과 QuestionUse 생성에서 제외한다.
+자동 승인, 수동 승인, 후보, 충돌, 거절 상태를 분리한다. `AMBIGUOUS`, `UNRESOLVED`,
+`REJECTED` 상태는 production 후보 검색에서 제외한다.
 
 동일 실체의 서로 다른 이름과 원천은 다음처럼 한곳으로 모은다.
 
 ```text
-SourceRecord -[:HAS_NAME]-> EntityName -[:REFERS_TO {match_status=accepted}]-> CanonicalEntity
-SourceRecord -[:RESOLVES_TO {match_status=accepted}]-> CanonicalEntity
+SourceRecord -[:HAS_NAME]-> EntityName -[:REFERS_TO {match_status=ACCEPTED}]-> CanonicalEntity
+SourceRecord -[:RESOLVES_TO {match_status=ACCEPTED}]-> CanonicalEntity
 ```
 
 예를 들어 같은 정조를 가리키는 대표명·묘호·한자 표기·원천별 표기는 하나의
@@ -259,16 +259,16 @@ normalized_name
 normalization_version
 name_kind = canonical | alias | birth_name | hanja | ja | ho | former_name | source_variant
 script
-review_status = verified | pending | rejected
+review_status = VERIFIED | PENDING | REJECTED
 provenance = SourceRecord-[:HAS_NAME]->EntityName
 ```
 
 `normalization_version`은 Unicode·공백·구두점·문자권 처리 규칙을 식별하며
 `normalized_name`과 함께 snapshot에 고정한다.
 
-합성 target은 raw 한 행에서 자동 생성하지 않는다. 여러 canonical 대상을 묶어야 하는
-출제 대상은 안정 synthetic `canonical_id`, 구성 canonical ID, construction rule/version,
-provenance와 검수를 갖춘 뒤에만 `QuestionTarget` 역할을 받을 수 있다.
+여러 canonical 대상을 하나의 대상으로 합성하지 않는다. 집단·사건군이 실제 역사 실체로
+확인되면 별도 canonical 대상과 `MEMBER_OF`/`PART_OF` 근거를 만들고, 단순한 편의상 묶음은
+검색 결과에서만 처리한다.
 
 ## 7. 원천별 최종 판정
 
@@ -276,28 +276,52 @@ provenance와 검수를 갖춘 뒤에만 `QuestionTarget` 역할을 받을 수 �
 |---|---|---|
 | AKS/ITKC/시소러스 ID | SourceRecord | snapshot·hash 기록 |
 | 이름·한자·별칭 | entity resolution feature | canonical 해소 승인 |
-| 사건군·포함 구조 후보 | EntityGroup 또는 직접 canonical 관계 후보 | 의미·방향·근거 검증 |
+| 사건군·포함 구조 후보 | canonical 대상과 직접 포함 관계 후보 | 의미·방향·근거 검증 |
 | AKS `primaryType`, 시소러스 `term_lk` | 분류 후보 | mapping review 승인 |
-| AKS 구조화 속성 | FactCandidate | endpoint·Predicate·근거 검증 |
-| ITKC 인물 관계 | FactCandidate | 방향·중복·근거 검증 |
+| AKS 구조화 속성 | RelationCandidate | endpoint·Predicate·근거 검증 |
+| ITKC 인물 관계 | RelationCandidate | 방향·중복·근거 검증 |
 | ITKC 사건-인물 | 낮은 의미 관계 | 역할 보강 전 출제 금지 |
 | 본문·정의 | RAG 문서 | stable document/chunk/span ID |
-| verified Fact + Facet rule | QuestionUse 후보 | endpoint·shape·parent 검증 |
+| 승인 분류·typed relation | 검색 anchor 관계 | endpoint·의미·근거·상태 검증 |
 
 ## 8. EDA 품질 gate
 
 1. 모든 source record key가 원천 안에서 유일하다.
 2. raw 파일 hash와 schema version이 기록된다.
 3. parser error와 중복 처리 내역이 재현된다.
-4. unresolved·conflict entity가 production target에 없다.
-5. broad raw category가 donor parent로 자동 승격되지 않는다.
+4. `UNRESOLVED`·`CONFLICT` entity가 production target에 없다.
+5. broad raw category가 검색 가능한 세부 anchor로 자동 승격되지 않는다.
 6. ITKC 사건-인물의 미확정 역할이 answer eligible Fact가 되지 않는다.
 7. `relatedArticles`가 typed historical Fact로 직접 변환되지 않는다.
-8. verified Fact마다 실제 RAG EvidenceSpan이 존재한다.
+8. `VERIFIED` Fact마다 실제 RAG EvidenceSpan이 존재한다.
 9. `itkc_people.csv`의 수집 coverage가 별도로 보고된다.
-10. raw에 없는 Facet·QuestionUse·난이도 값을 원천 필드라고 설명하지 않는다.
-11. 동일 canonical 대상의 승인 별칭이 별도 QuestionTarget으로 생성되지 않는다.
+10. raw에 없는 VERIFIED 관계·세부 taxonomy·난이도를 원천 필드라고 설명하지 않는다.
+11. 동일 canonical 대상의 승인 별칭이 별도 후보 대상으로 생성되지 않는다.
 12. 동명이인이 이름 문자열만으로 자동 병합되지 않는다.
-13. 사건군·집단 membership이 일반 donor 자격 경로를 넓히지 않는다.
-14. 합성 target은 구성 규칙과 provenance 없이 자동 승인되지 않는다.
-15. source file hash와 변환 정책 버전으로 `graph_snapshot_id`를 재현할 수 있다.
+13. 사건군·집단 membership이 allowlist 없이 후보 자격 경로를 넓히지 않는다.
+14. 역할 미확정 관계가 검색 anchor로 노출되지 않는다.
+15. source file hash와 변환 정책 버전으로 `graph_release_id`를 재현할 수 있다.
+
+## 9. 관계 카탈로그 확정을 위한 EDA 산출물
+
+현재 문서의 EntityType과 Predicate 예시는 최종 카탈로그가 아니다. NER은 mention 타입만
+제안하므로 Entity Linking과 RelationCandidate 추출까지 수행한 뒤 다음 산출물을 만든다.
+
+| 산출물 | 필수 내용 |
+|---|---|
+| EntityType coverage | 원천별 mention 수, canonical 해소율, `DOCUMENT/WORK/POLITY` 분포 |
+| 관계 타입 행렬 | `subject EntityType × raw relation × object EntityType` 빈도 |
+| 근거 품질 | EvidenceSpan 회수율, quote/offset 정확도, 원천별 coverage |
+| 의미 검수 | 관계 방향, 역관계, 대칭성, 다의성, 시간·역할 문맥 |
+| 미매핑 목록 | `UNKNOWN_PREDICATE`, 미분류 endpoint와 대표 원문 표본 |
+
+이 EDA와 표본 검수가 끝난 뒤에 다음 정책을 다시 정의한다.
+
+1. `Work`·`Polity`를 독립 `CanonicalEntity` EntityType으로 채택할지
+2. Place와 Region을 동일 대상·상하 공간 관계로 어떻게 구분할지
+3. DetailClass와 Topic 사이의 taxonomy mapping을 저장할지
+4. Person–Person, Person–Organization과 다른 대상 간 Predicate 목록
+5. Predicate별 방향·역관계·endpoint allowlist·근거 기준
+
+승인 결과는 `entity_type_catalog_version`, `predicate_catalog_version`,
+`taxonomy_version`으로 고정하고 `05_neo4j_generation_schema.md`를 다시 갱신한다.

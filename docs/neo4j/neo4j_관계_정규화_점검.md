@@ -6,8 +6,8 @@
 > 대상: `storage/neo4j/schema/*.cypher`, `storage/neo4j/neo4j_import/` CSV,
 > `etl/preprocessing/neo4j/scripts/*.py`
 > 상태 기준: `SOURCE`(코드) / `GENERATED`(생성 CSV) / `LIVE`(Neo4j 적재)를 구분한다.
-> 범위 주의: 이 문서는 현재 구현 감사다. 문제 생성 목표 스키마인 `SemanticClass`,
-> `Fact`, `QuestionFacet`, `QuestionUse`가 현재 구현됐다는 뜻이 아니다. 목표 계약은
+> 범위 주의: 이 문서는 현재 구현 감사다. 오답 후보 검색 목표 스키마인 공통
+> `CanonicalEntity`, `Anchor`, `RoleAssignment`, VERIFIED 관계가 현재 구현됐다는 뜻이 아니다. 목표 계약은
 > [README.md](./README.md)를 따른다.
 
 현재 `SOURCE`에는 이 문서의 신규 관계와 안전한 최종 import 후보 승격이 반영돼 있다.
@@ -160,7 +160,7 @@ set을 만든 뒤 실제 집계 set과 정확히 일치하는지 검증한다. �
 
 `CanonicalEntity.entity_type`, `entity_subtype`은 현재 `HAS_ENTITY_TYPE`의 중복이 아니다.
 현행 `HAS_ENTITY_TYPE`은 `Term → EntityType`에만 존재한다. 두 컬럼은 CanonicalEntity
-자체 분류 속성이며, 목표 온톨로지에서 `SemanticClass` 또는 승인된 분류 관계로 승격할지
+자체 분류 속성이며, 목표 온톨로지에서 `Topic`·`DetailClass` 또는 승인된 분류 관계로 승격할지
 별도로 결정한다.
 
 ### 허용으로 분류 (원칙의 예외 — 명문화 대상)

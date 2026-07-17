@@ -1,862 +1,332 @@
-# 06. 오답 donor 조회와 난이도 계약
+# 06. 공통 노드 기반 오답 후보 조회
 
-> 계약 버전: `QG-DONOR-V1-DRAFT`
-> 기준일: 2026-07-16
-> 구현 상태: 목표 계약. 현재 라이브 조회 코드에는 미적용.
+> 상태: `TARGET-SEARCH-CONTRACT`
+> 범위: 후보 자격과 반환 근거. 난이도 계산과 최종 순위는 검색/문제 생성 팀의 책임이다.
 
-## 1. 용어와 조회 경계
+## 1. “같은 노드를 타는 다른 대상”의 정의
 
-`Candidate`라는 노드나 영속 역할은 만들지 않는다. 오답 재료를 제공하는 대상은 기존
-`CanonicalEntity:QuestionTarget`, 출제 projection은 기존 `QuestionUse`, 사실은 기존
-`Fact`다. 이 문서와 Cypher에서는 각각 다음 변수명만 사용한다.
+기본 후보는 정답과 같은 검증 anchor를 공유하는 다른 canonical 대상이다.
 
 ```text
-donorTarget = 자신에게 참인 다른 역사 대상
-donorUse    = donorTarget의 검증된 출제 projection
-donorFact   = donorTarget에게 참인 검증 Fact
+(correct)-[VERIFIED 관계]->(shared anchor)<-[동일 의미 VERIFIED 관계]-(candidate)
 ```
 
-generic donor의 자격 경로는 하나의 parent revision을 직접 공유하는 정확한 2홉이다.
+다음 조건을 모두 만족해야 한다.
 
-```mermaid
-flowchart LR
-    T["target<br/>CanonicalEntity<br/>canonical_id=A"]
-    P["parentRevision<br/>SemanticClass<br/>semantic_class_revision_id=P1"]
-    D["donorTarget<br/>CanonicalEntity<br/>canonical_id=B"]
+1. `candidate.canonical_id <> correct.canonical_id`
+2. 정답과 후보의 `EntityType`이 같다.
+3. 정답과 후보의 entity resolution이 `ACCEPTED`다.
+4. 양쪽 관계가 모두 `VERIFIED`다.
+5. 관계 방향과 의미가 같다.
+6. anchor가 해당 요청의 allowlist에 있다.
+7. broad anchor 하나만 공유한 경우는 후보 자격으로 충분하지 않다.
 
-    T -->|"CLASSIFIED_AS<br/>membership_level=parent<br/>graph_snapshot_id=S1"| P
-    D -->|"CLASSIFIED_AS<br/>membership_level=parent<br/>graph_snapshot_id=S1"| P
-```
+여기서 anchor는 후보를 비교하는 계약상의 기준점이다. 물리적인 `:Anchor` 분류 노드는
+그 부분집합이며, `RoleAssignment` 복합 맥락이나 동일 typed relationship 대상도
+`shared_anchors` 결과에 포함될 수 있다.
+
+## 2. 사용할 수 있는 공통 anchor
+
+| 질문 맥락 | 공통 경로 예 | 비고 |
+|---|---|---|
+| 같은 세부 종류 | `Entity -> CLASSIFIED_AS -> DetailClass` | 가장 일반적인 후보 경로 |
+| 같은 국가의 왕 | `Person -> RoleAssignment -> 왕 + Polity` | 역할과 국가를 함께 비교 |
+| 같은 시대 인물 | `Entity -> IN_ERA -> 세부 Era` | top-level era 단독은 너무 넓을 수 있음 |
+| 같은 국가의 제도 | `Institution -> ASSOCIATED_WITH_POLITY -> Polity` | Topic/세부 분류와 결합 권장 |
+| 같은 지역 사건 | `Event -> OCCURRED_IN -> Region` | 발생지와 소재지 혼용 금지 |
+| 같은 사건 참여자 | `Person -> PARTICIPATED_IN -> Event` | `사건인물` 미확정 관계 제외 |
+| 같은 문화재 관계 | `Person -> BUILT/PROMOTED_* -> Heritage` | Predicate 의미가 같아야 함 |
+| 같은 topic | `Entity -> HAS_TOPIC -> Topic` | 단독 후보 자격은 제한 |
+
+`왕`, `조선`, `정치`를 각각 따로 공유하는 것과 `조선에서 왕이었던 역할 assignment`를
+공유하는 것은 다르다. 발문의도가 역할 맥락을 요구하면 후자를 사용한다.
+
+## 3. broad anchor 방어
+
+다음 노드는 degree가 크기 때문에 단독 공통점으로 사용하면 무관한 유명 대상이 대량으로
+섞일 수 있다.
 
 ```text
-target -[:CLASSIFIED_AS]-> parentRevision
-       <-[:CLASSIFIED_AS]- donorTarget
+EntityType=Person/Event
+Topic=인물/사건/정치/문화
+Era=조선/고려
+Polity=조선/고려
 ```
 
-`SUBCLASS_OF*`, `RELATED_TO*`, `MEMBER_OF_GROUP*`, `PART_OF*`,
-`INSTANCE_OF*`를 따라 donor 자격을 확장하지 않는다. subgroup과 시대·국가 qualifier는
-자격 통과 뒤의 난이도 특징이고, group과 직접 상하위 관계는 자격 통과 뒤의 제외
-조건이다.
+이러한 anchor는 필터 또는 보조 공통점으로만 쓰고, 다음 중 하나 이상과 결합한다.
 
-## 2. 생성 요청의 snapshot pin
+- 세부 역할과 역할 국가
+- 세부 시대
+- 세부 사건·제도·문화 유형
+- 구체 지역
+- 동일 typed historical relation
+- degree가 낮은 승인 세부 분류
 
-문제 생성기는 조회 전에 published `GraphSnapshot` 하나를 고정한다. generic donor 조회
-요청은 최소한 다음 값을 가진다.
+anchor별 `search_eligible`, `specificity_level`, `max_degree_policy`를 카탈로그에 둔다.
+실제 가중치와 cutoff는 검색 팀이 결정한다.
+
+## 4. 이름 붙인 path pattern 조회
+
+요청 계약은 물리 hop 수가 아니라 `allowed_path_pattern_ids` 하나로 탐색 의미를 선택한다.
+각 패턴은 허용 축·관계 방향·검증 조건·taxonomy 탐색 범위를 카탈로그에 고정한다. 호출자는
+별도의 최대 hop이나 최대 taxonomy 깊이를 전달하지 않는다.
+
+### 4.1 초기 path pattern seed
+
+| pattern ID | 의미 |
+|---|---|
+| `SHARED_ANCHOR_DIRECT` | 같은 분류 Anchor를 직접 공유 |
+| `ANCESTOR_DESCENDANT_DETAIL_CLASS` | 한쪽의 DetailClass가 다른 쪽 class의 상위·하위 |
+| `SIBLING_DETAIL_CLASS` | 서로 다른 DetailClass가 승인된 공통 조상을 공유 |
+| `SHARED_ROLE_ASSIGNMENT` | role+polity 맥락 공유 |
+| `SHARED_ROLE_ASSIGNMENT_ERA` | role+polity+세부 era 맥락 공유 |
+| `SHARED_TYPED_RELATION` | 같은 방향·Predicate로 동일 canonical 대상을 공유 |
+
+이 목록은 계약 seed다. EDA 후 실제 활성화할 패턴과 Predicate allowlist를
+`path_pattern_catalog_version`으로 승인한다. `SHARED_ANCHOR_DIRECT`도 broad Anchor 단독
+방어와 specificity 조건을 우회하지 않는다.
+
+### 4.2 taxonomy distance
+
+DetailClass 계층 패턴은 정답과 후보의 검증된 실제 분류에서 가장 가까운 공통 조상까지의
+거리를 계산한다.
 
 ```json
 {
-  "graph_snapshot_id": "GRAPH:2026-07-16:v1",
-  "target_question_use_revision_id": "QUR:<TARGET>",
-  "target_fact_id": "FACT:<TARGET>",
-  "target_fact_revision_id": "FR:<TARGET>",
-  "topic_type_revision_id": "TTR:person:<REV>",
-  "facet_revision_id": "QFR:person.activity_achievement:<REV>",
-  "target_predicate_revision_id": "PR:<TARGET>",
-  "parent_semantic_class_revision_id": "SCR:joseon_monarch:<REV>",
-  "semantic_class_taxonomy_version": "semantic-taxonomy-v1",
-  "rag_corpus_version": "corpus-2026-07-16"
+  "correct_to_common": 1,
+  "candidate_to_common": 1,
+  "total": 2
 }
 ```
 
-논리 ID는 표시와 이력 추적용이다. runtime join은 위 revision ID와
-`graph_snapshot_id`로 수행한다. 요청 revision 중 하나라도 해당 snapshot에 없거나 서로
-다른 snapshot edge로 이어지면 조회 전체를 실패시킨다. 새 snapshot으로 자동 대체하거나
-다른 revision을 추정하지 않는다.
+같은 class는 `0/0/0`, 상위·하위는 `1/0/1`, 형제 class는 `1/1/2`처럼 표현한다.
+상위 분류 지름길 edge가 있더라도 거리 계산에는 사용하지 않는다. 비계층 패턴의
+`taxonomy_distance`는 `null`이다. 검증 분류가 여러 개면 `total`이 가장 작고 공통 class의
+specificity가 가장 높은 경로를 대표 거리로 선택하며 나머지는 보조 match로 보존한다.
 
-## 3. generic donor 자격
+### 4.3 `SHARED_ANCHOR_DIRECT` Cypher 예시
 
-`donorTarget`, `donorUse`, `donorFact`는 다음 조건을 모두 만족해야 한다.
-
-1. target과 동일한 `graph_snapshot_id` 안에 있다.
-2. target의 `QuestionUse-[:USES_PARENT_CLASS]`가 선택한 동일 parent
-   `semantic_class_revision_id`를 직접 공유한다.
-3. target과 동일한 primary `topic_type_revision_id`를 직접 공유한다.
-4. target과 동일한 `facet_revision_id`를 사용한다.
-5. `target_role`, `answer_role`, `answer_shape`, `answer_domain_id`가 targetUse와 같다.
-6. donorUse가 Facet의 승인 `ALLOWS_PREDICATE.signature_id`를 사용한다.
-7. target과 다른 `canonical_id`의 active·verified `QuestionTarget`이다.
-8. donorUse가 active·verified이고 `answer_route=GENERIC_DONOR`다.
-9. donorFact가 verified이며 active·answer-eligible Predicate revision을 사용한다.
-10. donorFact에 verified `SUPPORTED_BY` edge와 요청 corpus version의 verified
-    `EvidenceSpan`이 최소 하나 있다.
-11. donorUse의 `target_role`이 가리키는 donorFact endpoint가 donorTarget이다.
-12. answer role·shape의 실제 Fact binding이 `answer_domain_id`와 일치한다.
-13. parent가 같은 snapshot의 active `class_level=parent`,
-    `donor_eligible=true`, `scope_kind=specific` revision이다.
-14. alias 노드가 아니라 canonical target이다. merged·retired·disputed target은 제외한다.
-15. 동일 exclusion group이나 직접 `PART_OF`·`INSTANCE_OF` 관계가 아니다.
-
-`CLASSIFIED_AS.is_primary`는 사용하지 않는다. 출제별 donor parent의 단일 진실원은
-`QuestionUse-[:USES_PARENT_CLASS]->SemanticClass`다. `CLASSIFIED_AS`는 해당 target이 그
-parent에 직접 속한다는 membership만 증명한다.
-
-동명이인은 이름이 아니라 서로 다른 `canonical_id`로 구분한다. 별칭은
-`EntityName-[:REFERS_TO]->CanonicalEntity` 검색에만 쓰며 donorTarget이 될 수 없다. 같은
-canonical target으로 해소된 이름들은 7번 조건에서 한 번에 제거된다.
-
-## 4. Facet signature와 answer binding 검증
-
-같은 Facet 노드만 공유한다고 충분하지 않다. targetUse와 donorUse가 참조한
-`ALLOWS_PREDICATE` signature가 각각 실제 Predicate와 binding을 승인해야 한다.
-
-| signature 계약 | 검증 |
-|---|---|
-| target TopicType | `Facet-[:TARGET_TOPIC_TYPE]->target primary TopicType revision` |
-| allowed Predicate | `Facet-[:ALLOWS_PREDICATE]->Fact Predicate revision` |
-| target role | signature, QuestionUse, Fact target endpoint가 동일 |
-| answer role·shape | signature와 QuestionUse가 동일하고 아래 양방향 표를 만족 |
-| answer domain | signature, QuestionUse, 실제 answer endpoint 또는 literal domain이 동일 |
-| mismatch rule | signature의 versioned `mismatch_rule_ids`만 후속 proof에 사용 |
-| surface template | signature의 versioned `surface_template_ids`만 표현 단계에 전달 |
-
-| answer_role | answer_shape | 필수 answer binding |
-|---|---|---|
-| subject | ENTITY | Fact SUBJECT가 CanonicalEntity이고 그 primary TopicType revision이 `answer_domain_id` |
-| object | ENTITY | Fact OBJECT가 CanonicalEntity이고 그 primary TopicType revision이 `answer_domain_id` |
-| whole_fact | FACT_STATEMENT | Fact 전체, `answer_domain_id=DOMAIN:fact_statement` |
-| time | TIME_POINT | 검증된 단일 시점, `answer_domain_id=DOMAIN:time_point` |
-| time | TIME_RANGE | 검증된 시작·종료 범위, `answer_domain_id=DOMAIN:time_range` |
-
-역방향도 강제한다. `ENTITY`면 answer_role은 subject 또는 object,
-`FACT_STATEMENT`면 whole_fact, 시간 shape면 time이어야 한다. literal object를 ENTITY
-답으로 승격하지 않는다.
-
-## 5. 기준 Cypher
-
-다음 쿼리는 Neo4j 5.26 적용 전 dry-run할 기준안이다. query builder가 모든 `$parameter`를
-주입하며, 가변 길이 경로를 만들지 않는다.
+아래 Cypher는 구조 예시다. production에서는 관계 allowlist와 release ID를 parameter로
+관리한다.
 
 ```cypher
-MATCH (snapshot:GraphSnapshot {
-        graph_snapshot_id: $graph_snapshot_id,
-        status: 'published'
-      })
-
-MATCH (snapshot)-[:CONTAINS_REVISION]->(targetUse:QuestionUse {
-        question_use_revision_id: $target_question_use_revision_id,
-        graph_snapshot_id: $graph_snapshot_id,
-        status: 'active',
-        review_status: 'verified',
-        answer_route: 'GENERIC_DONOR'
-      })
-MATCH (targetUse)-[:TARGET {
-        graph_snapshot_id: $graph_snapshot_id
-      }]->(target:CanonicalEntity:QuestionTarget {
-        graph_snapshot_id: $graph_snapshot_id,
-        entity_status: 'active',
-        question_target_status: 'active',
-        review_status: 'verified'
-      })
-MATCH (targetUse)-[:USES_FACET {
-        graph_snapshot_id: $graph_snapshot_id
-      }]->(facet:QuestionFacet {
-        facet_revision_id: $facet_revision_id,
-        graph_snapshot_id: $graph_snapshot_id,
-        status: 'active',
-        answer_route: 'GENERIC_DONOR'
-      })
-MATCH (snapshot)-[:CONTAINS_REVISION]->(facet)
-MATCH (targetUse)-[:USES_FACT {
-        graph_snapshot_id: $graph_snapshot_id
-      }]->(targetFact:Fact {
-        graph_snapshot_id: $graph_snapshot_id,
-        fact_id: $target_fact_id,
-        fact_revision_id: $target_fact_revision_id,
-        status: 'verified'
-      })
-MATCH (snapshot)-[:CONTAINS_REVISION]->(targetFact)
-MATCH (targetUse)-[:USES_PARENT_CLASS {
-        graph_snapshot_id: $graph_snapshot_id
-      }]->(parent:SemanticClass {
-        semantic_class_revision_id: $parent_semantic_class_revision_id,
-        graph_snapshot_id: $graph_snapshot_id,
-        taxonomy_version: $semantic_class_taxonomy_version,
-        class_level: 'parent',
-        donor_eligible: true,
-        scope_kind: 'specific',
-        status: 'active'
-      })
-MATCH (snapshot)-[:CONTAINS_REVISION]->(parent)
-
-MATCH (target)-[:HAS_TOPIC_TYPE {
-        graph_snapshot_id: $graph_snapshot_id,
-        is_primary: true,
-        review_status: 'verified'
-      }]->(topicType:TopicType {
-        topic_type_revision_id: $topic_type_revision_id,
-        graph_snapshot_id: $graph_snapshot_id,
-        status: 'active'
-      })
-MATCH (snapshot)-[:CONTAINS_REVISION]->(topicType)
-MATCH (facet)-[:TARGET_TOPIC_TYPE {
-        graph_snapshot_id: $graph_snapshot_id
-      }]->(topicType)
-MATCH (target)-[:CLASSIFIED_AS {
-        graph_snapshot_id: $graph_snapshot_id,
-        membership_level: 'parent',
-        review_status: 'verified'
-      }]->(parent)
-
-MATCH (targetFact)-[:PREDICATE {
-        graph_snapshot_id: $graph_snapshot_id
-      }]->(targetPredicate:PredicateType {
-        predicate_revision_id: $target_predicate_revision_id,
-        graph_snapshot_id: $graph_snapshot_id,
-        answer_eligible: true,
-        status: 'active'
-      })
-MATCH (snapshot)-[:CONTAINS_REVISION]->(targetPredicate)
-MATCH (facet)-[targetSignature:ALLOWS_PREDICATE {
-        graph_snapshot_id: $graph_snapshot_id,
-        review_status: 'verified'
-      }]->(targetPredicate)
-MATCH (targetFact)-[:SUBJECT {
-        graph_snapshot_id: $graph_snapshot_id
-      }]->(targetSubject:CanonicalEntity {
-        graph_snapshot_id: $graph_snapshot_id
-      })
-OPTIONAL MATCH (targetFact)-[:OBJECT {
-        graph_snapshot_id: $graph_snapshot_id
-      }]->(targetObject:CanonicalEntity {
-        graph_snapshot_id: $graph_snapshot_id
-      })
-MATCH (targetFact)-[targetSupport:SUPPORTED_BY {
-        graph_snapshot_id: $graph_snapshot_id,
-        review_status: 'verified'
-      }]->(targetEvidence:EvidenceSpan {
-        graph_snapshot_id: $graph_snapshot_id,
-        corpus_version: $rag_corpus_version,
-        review_status: 'verified'
-      })
-MATCH (snapshot)-[:CONTAINS_REVISION]->(targetEvidence)
-
-MATCH (donorTarget:CanonicalEntity:QuestionTarget {
-        graph_snapshot_id: $graph_snapshot_id,
-        entity_status: 'active',
-        question_target_status: 'active',
-        review_status: 'verified'
-      })-[:CLASSIFIED_AS {
-        graph_snapshot_id: $graph_snapshot_id,
-        membership_level: 'parent',
-        review_status: 'verified'
-      }]->(parent)
-MATCH (donorTarget)-[:HAS_TOPIC_TYPE {
-        graph_snapshot_id: $graph_snapshot_id,
-        is_primary: true,
-        review_status: 'verified'
-      }]->(topicType)
-
-MATCH (snapshot)-[:CONTAINS_REVISION]->(donorUse:QuestionUse {
-        graph_snapshot_id: $graph_snapshot_id,
-        status: 'active',
-        review_status: 'verified',
-        answer_route: 'GENERIC_DONOR'
-      })
-MATCH (donorUse)-[:TARGET {
-        graph_snapshot_id: $graph_snapshot_id
-      }]->(donorTarget)
-MATCH (donorUse)-[:USES_FACET {
-        graph_snapshot_id: $graph_snapshot_id
-      }]->(facet)
-MATCH (donorUse)-[:USES_PARENT_CLASS {
-        graph_snapshot_id: $graph_snapshot_id
-      }]->(parent)
-MATCH (donorUse)-[:USES_FACT {
-        graph_snapshot_id: $graph_snapshot_id
-      }]->(donorFact:Fact {
-        graph_snapshot_id: $graph_snapshot_id,
-        status: 'verified'
-      })
-MATCH (snapshot)-[:CONTAINS_REVISION]->(donorFact)
-MATCH (donorFact)-[:PREDICATE {
-        graph_snapshot_id: $graph_snapshot_id
-      }]->(donorPredicate:PredicateType {
-        graph_snapshot_id: $graph_snapshot_id,
-        answer_eligible: true,
-        status: 'active'
-      })
-MATCH (snapshot)-[:CONTAINS_REVISION]->(donorPredicate)
-MATCH (facet)-[donorSignature:ALLOWS_PREDICATE {
-        graph_snapshot_id: $graph_snapshot_id,
-        review_status: 'verified'
-      }]->(donorPredicate)
-MATCH (donorFact)-[:SUBJECT {
-        graph_snapshot_id: $graph_snapshot_id
-      }]->(donorSubject:CanonicalEntity {
-        graph_snapshot_id: $graph_snapshot_id
-      })
-OPTIONAL MATCH (donorFact)-[:OBJECT {
-        graph_snapshot_id: $graph_snapshot_id
-      }]->(donorObject:CanonicalEntity {
-        graph_snapshot_id: $graph_snapshot_id
-      })
-MATCH (donorFact)-[donorSupport:SUPPORTED_BY {
-        graph_snapshot_id: $graph_snapshot_id,
-        review_status: 'verified'
-      }]->(donorEvidence:EvidenceSpan {
-        graph_snapshot_id: $graph_snapshot_id,
-        corpus_version: $rag_corpus_version,
-        review_status: 'verified'
-      })
-MATCH (snapshot)-[:CONTAINS_REVISION]->(donorEvidence)
-
-WHERE donorTarget.canonical_id <> target.canonical_id
-  AND targetUse.contract_version = facet.contract_version
-  AND donorUse.contract_version = facet.contract_version
-  AND targetUse.target_role = donorUse.target_role
-  AND targetUse.answer_role = donorUse.answer_role
-  AND targetUse.answer_shape = donorUse.answer_shape
-  AND targetUse.answer_domain_id = donorUse.answer_domain_id
-
-  AND targetSignature.signature_id = targetUse.facet_signature_id
-  AND targetSignature.target_role = targetUse.target_role
-  AND targetSignature.answer_role = targetUse.answer_role
-  AND targetSignature.answer_shape = targetUse.answer_shape
-  AND targetSignature.answer_domain_id = targetUse.answer_domain_id
-
-  AND donorSignature.signature_id = donorUse.facet_signature_id
-  AND donorSignature.target_role = donorUse.target_role
-  AND donorSignature.answer_role = donorUse.answer_role
-  AND donorSignature.answer_shape = donorUse.answer_shape
-  AND donorSignature.answer_domain_id = donorUse.answer_domain_id
-
-  AND (
-    (targetUse.target_role = 'subject' AND targetSubject = target)
-    OR
-    (targetUse.target_role = 'object' AND targetObject = target)
-  )
-  AND (
-    (donorUse.target_role = 'subject' AND donorSubject = donorTarget)
-    OR
-    (donorUse.target_role = 'object' AND donorObject = donorTarget)
-  )
-
-  AND (
-    (
-      targetUse.answer_shape = 'ENTITY'
-      AND (
-        (
-          targetUse.answer_role = 'subject'
-          AND EXISTS {
-            MATCH (targetSubject)-[targetAnswerType:HAS_TOPIC_TYPE {
-                    graph_snapshot_id: $graph_snapshot_id,
-                    is_primary: true,
-                    review_status: 'verified'
-                  }]->(targetAnswerTopic:TopicType {
-                    graph_snapshot_id: $graph_snapshot_id,
-                    status: 'active'
-                  })
-            WHERE targetAnswerTopic.topic_type_revision_id =
-                  targetUse.answer_domain_id
-          }
-        )
-        OR
-        (
-          targetUse.answer_role = 'object'
-          AND EXISTS {
-            MATCH (targetObject)-[targetAnswerType:HAS_TOPIC_TYPE {
-                    graph_snapshot_id: $graph_snapshot_id,
-                    is_primary: true,
-                    review_status: 'verified'
-                  }]->(targetAnswerTopic:TopicType {
-                    graph_snapshot_id: $graph_snapshot_id,
-                    status: 'active'
-                  })
-            WHERE targetAnswerTopic.topic_type_revision_id =
-                  targetUse.answer_domain_id
-          }
-        )
-      )
-    )
-    OR
-    (
-      targetUse.answer_role = 'whole_fact'
-      AND targetUse.answer_shape = 'FACT_STATEMENT'
-      AND targetUse.answer_domain_id = 'DOMAIN:fact_statement'
-    )
-    OR
-    (
-      targetUse.answer_role = 'time'
-      AND targetUse.answer_shape = 'TIME_POINT'
-      AND targetUse.answer_domain_id = 'DOMAIN:time_point'
-      AND targetFact.start_year IS NOT NULL
-      AND (
-        targetFact.end_year IS NULL
-        OR targetFact.end_year = targetFact.start_year
-      )
-    )
-    OR
-    (
-      targetUse.answer_role = 'time'
-      AND targetUse.answer_shape = 'TIME_RANGE'
-      AND targetUse.answer_domain_id = 'DOMAIN:time_range'
-      AND targetFact.start_year IS NOT NULL
-      AND targetFact.end_year IS NOT NULL
-      AND targetFact.start_year <= targetFact.end_year
-    )
-  )
-
-  AND (
-    (
-      donorUse.answer_shape = 'ENTITY'
-      AND (
-        (
-          donorUse.answer_role = 'subject'
-          AND EXISTS {
-            MATCH (donorSubject)-[donorAnswerType:HAS_TOPIC_TYPE {
-                    graph_snapshot_id: $graph_snapshot_id,
-                    is_primary: true,
-                    review_status: 'verified'
-                  }]->(donorAnswerTopic:TopicType {
-                    graph_snapshot_id: $graph_snapshot_id,
-                    status: 'active'
-                  })
-            WHERE donorAnswerTopic.topic_type_revision_id =
-                  donorUse.answer_domain_id
-          }
-        )
-        OR
-        (
-          donorUse.answer_role = 'object'
-          AND EXISTS {
-            MATCH (donorObject)-[donorAnswerType:HAS_TOPIC_TYPE {
-                    graph_snapshot_id: $graph_snapshot_id,
-                    is_primary: true,
-                    review_status: 'verified'
-                  }]->(donorAnswerTopic:TopicType {
-                    graph_snapshot_id: $graph_snapshot_id,
-                    status: 'active'
-                  })
-            WHERE donorAnswerTopic.topic_type_revision_id =
-                  donorUse.answer_domain_id
-          }
-        )
-      )
-    )
-    OR
-    (
-      donorUse.answer_role = 'whole_fact'
-      AND donorUse.answer_shape = 'FACT_STATEMENT'
-      AND donorUse.answer_domain_id = 'DOMAIN:fact_statement'
-    )
-    OR
-    (
-      donorUse.answer_role = 'time'
-      AND donorUse.answer_shape = 'TIME_POINT'
-      AND donorUse.answer_domain_id = 'DOMAIN:time_point'
-      AND donorFact.start_year IS NOT NULL
-      AND (
-        donorFact.end_year IS NULL
-        OR donorFact.end_year = donorFact.start_year
-      )
-    )
-    OR
-    (
-      donorUse.answer_role = 'time'
-      AND donorUse.answer_shape = 'TIME_RANGE'
-      AND donorUse.answer_domain_id = 'DOMAIN:time_range'
-      AND donorFact.start_year IS NOT NULL
-      AND donorFact.end_year IS NOT NULL
-      AND donorFact.start_year <= donorFact.end_year
-    )
-  )
-
-  AND NOT EXISTS {
-    MATCH (target)-[targetMembership:MEMBER_OF_GROUP {
-            graph_snapshot_id: $graph_snapshot_id,
-            review_status: 'verified'
-          }]->(group:CanonicalEntity:EntityGroup {
-            graph_snapshot_id: $graph_snapshot_id,
-            exclude_from_generic_donor: true,
-            review_status: 'verified'
-          })<-[donorMembership:MEMBER_OF_GROUP {
-            graph_snapshot_id: $graph_snapshot_id,
-            review_status: 'verified'
-          }]-(donorTarget)
-  }
-  AND NOT EXISTS {
-    MATCH (target)-[directHierarchy]-(donorTarget)
-    WHERE type(directHierarchy) IN ['PART_OF', 'INSTANCE_OF']
-      AND directHierarchy.graph_snapshot_id = $graph_snapshot_id
-      AND directHierarchy.review_status = 'verified'
-  }
-
-OPTIONAL MATCH (target)-[:CLASSIFIED_AS {
-        graph_snapshot_id: $graph_snapshot_id,
-        membership_level: 'subgroup',
-        review_status: 'verified'
-      }]->(sharedSubgroup:SemanticClass {
-        graph_snapshot_id: $graph_snapshot_id,
-        taxonomy_version: $semantic_class_taxonomy_version,
-        class_level: 'subgroup',
-        status: 'active'
-      })<-[:CLASSIFIED_AS {
-        graph_snapshot_id: $graph_snapshot_id,
-        membership_level: 'subgroup',
-        review_status: 'verified'
-      }]-(donorTarget)
-WHERE EXISTS {
-        MATCH (snapshot)-[:CONTAINS_REVISION]->(sharedSubgroup)
-      }
-  AND EXISTS {
-        MATCH (sharedSubgroup)-[:SUBCLASS_OF {
-                graph_snapshot_id: $graph_snapshot_id
-              }]->(parent)
-      }
-
-RETURN DISTINCT
-  snapshot.graph_snapshot_id AS graph_snapshot_id,
-  target.canonical_id AS question_target_entity_id,
-  target.canonical_name AS question_target_name,
-  targetUse.question_use_id AS target_question_use_id,
-  targetUse.question_use_revision_id AS target_question_use_revision_id,
-  facet.facet_id AS facet_id,
-  facet.facet_revision_id AS facet_revision_id,
-  topicType.topic_type_id AS topic_type_id,
-  topicType.topic_type_revision_id AS topic_type_revision_id,
-  parent.semantic_class_id AS parent_semantic_class_id,
-  parent.semantic_class_revision_id AS parent_semantic_class_revision_id,
-  parent.taxonomy_version AS semantic_class_taxonomy_version,
-
-  donorTarget.canonical_id AS donor_entity_id,
-  donorTarget.canonical_name AS donor_name,
-  donorUse.question_use_id AS donor_question_use_id,
-  donorUse.question_use_revision_id AS donor_question_use_revision_id,
-  donorUse.facet_signature_id AS donor_facet_signature_id,
-  donorUse.target_role AS target_role,
-  donorUse.answer_role AS answer_role,
-  donorUse.answer_shape AS answer_shape,
-  donorUse.answer_domain_id AS answer_domain_id,
-  donorFact.fact_id AS donor_fact_id,
-  donorFact.fact_revision_id AS donor_fact_revision_id,
-  donorFact.canonical_hash AS donor_fact_canonical_hash,
-  donorTarget.canonical_id AS source_fact_target_entity_id,
-  donorPredicate.predicate_id AS donor_predicate_id,
-  donorPredicate.predicate_revision_id AS donor_predicate_revision_id,
-  donorPredicate.predicate_family AS donor_predicate_family,
-  donorPredicate.functional_scope AS functional_scope,
-  donorPredicate.inverse_functional_scope AS inverse_functional_scope,
-  donorPredicate.exclusive_group_ids AS exclusive_group_ids,
-  donorPredicate.closed_world_scope_ids AS closed_world_scope_ids,
-  donorPredicate.proof_contract_version AS proof_contract_version,
-  donorSignature.mismatch_rule_ids AS mismatch_rule_ids,
-  donorSignature.surface_template_ids AS surface_template_ids,
-
-  donorSubject.canonical_id AS fact_subject_entity_id,
-  donorObject.canonical_id AS fact_object_entity_id,
-  donorFact.object_value AS fact_object_value,
-  donorFact.object_value_type AS fact_object_value_type,
-  donorFact.object_unit AS fact_object_unit,
-  CASE donorUse.target_role
-    WHEN 'subject' THEN donorSubject.canonical_id
-    WHEN 'object' THEN donorObject.canonical_id
-  END AS fact_target_endpoint_id,
-  donorFact.start_year AS start_year,
-  donorFact.end_year AS end_year,
-  donorFact.historical_era_ids AS historical_era_ids,
-  donorFact.historical_polity_ids AS historical_polity_ids,
-  collect(DISTINCT sharedSubgroup.semantic_class_revision_id)
-    AS shared_subgroup_revision_ids,
-  collect(DISTINCT sharedSubgroup.semantic_class_id)
-    AS shared_subgroup_logical_ids,
-  collect(DISTINCT {
-    evidence_span_id: donorEvidence.evidence_span_id,
-    evidence_span_revision_id: donorEvidence.evidence_span_revision_id,
-    content_hash: donorEvidence.content_hash,
-    document_id: donorEvidence.document_id,
-    chunk_id: donorEvidence.chunk_id,
-    corpus_version: donorEvidence.corpus_version
-  }) AS donor_authoritative_evidence_spans
+MATCH (correct:CanonicalEntity {canonical_id: $correct_canonical_id})
+MATCH (correct)-[correctRel]->(anchor:Anchor)<-[candidateRel]-(candidate:CanonicalEntity)
+WHERE candidate.canonical_id <> correct.canonical_id
+  AND NOT candidate.canonical_id IN $excluded_canonical_ids
+  AND correct.resolution_status = 'ACCEPTED'
+  AND candidate.resolution_status = 'ACCEPTED'
+  AND correct.entity_type_id = candidate.entity_type_id
+  AND correctRel.status = 'VERIFIED'
+  AND candidateRel.status = 'VERIFIED'
+  AND type(correctRel) = type(candidateRel)
+  AND type(correctRel) IN $pattern_relation_types
+  AND anchor.axis IN $pattern_anchor_axes
+  AND anchor.search_eligible = true
+  AND anchor.review_status = 'VERIFIED'
+  AND correctRel.graph_release_id = $graph_release_id
+  AND candidateRel.graph_release_id = $graph_release_id
+WITH candidate,
+     collect(DISTINCT {
+       path_pattern_id: 'SHARED_ANCHOR_DIRECT',
+       axis: anchor.axis,
+       anchor_id: anchor.anchor_id,
+       anchor_name: anchor.name,
+       relation_type: type(correctRel),
+       specificity_level: anchor.specificity_level,
+       correct_relation_id: correctRel.relation_id,
+       candidate_relation_id: candidateRel.relation_id,
+       taxonomy_distance: CASE
+         WHEN anchor.axis = 'detail_class' THEN {
+           correct_to_common: 0,
+           candidate_to_common: 0,
+           total: 0
+         }
+         ELSE null
+       END,
+       correct_evidence_ids: correctRel.evidence_ids,
+       candidate_evidence_ids: candidateRel.evidence_ids
+     }) AS sharedAnchors
+WHERE any(a IN sharedAnchors WHERE a.specificity_level >= $minimum_specificity)
+  AND size(sharedAnchors) >= $minimum_shared_anchor_count
+RETURN candidate.canonical_id AS candidate_canonical_id,
+       candidate.display_name AS candidate_name,
+       candidate.entity_type_id AS entity_type_id,
+       sharedAnchors AS shared_anchors
 ```
 
-`targetSupport`와 `targetEvidence`도 mandatory match이므로 target Fact의 근거가 검증되지
-않으면 결과가 없다. donor 쪽도 edge와 span을 각각 검증한다. `OPTIONAL MATCH` 뒤 두 번째
-`WHERE`는 subgroup 특징만 제한하며, subgroup이 없어도 앞선 donor 자격 행은 유지된다.
+`$pattern_relation_types`와 `$pattern_anchor_axes`는 호출자가 임의로 전달하는 값이 아니라
+서버가 승인된 path pattern 카탈로그에서 해석한 값이다. 관계 type을 동적으로 허용하기
+어렵거나 query 계획이 불안정하면 pattern별 고정 query를 분리한다.
 
-운영에서는 이 쿼리 결과에 대해 다음 cardinality를 별도 validator가 다시 검사한다.
+### 4.4 결과 계약
 
-- targetUse·donorUse의 `TARGET`, `USES_FACET`, `USES_FACT`,
-  `USES_PARENT_CLASS`가 각각 정확히 하나
-- Fact의 `SUBJECT`, `PREDICATE`, object binding이 각각 계약 cardinality를 만족
-- 한 target의 primary TopicType revision이 snapshot 안에서 정확히 하나
-- `graph_snapshot_id + Fact.canonical_hash` 중복이 0
-- 결과의 모든 revision ID가 요청 GraphSnapshot에 속함
+모든 후보는 `shared_anchors` 항목별 `path_pattern_id`를 반환한다. 계층 패턴은
+`taxonomy_distance`, 모든 패턴은 통과한 Anchor·관계와 양쪽의
+`correct_evidence_ids`·`candidate_evidence_ids`를 반환한다. 물리 관계 수는 정상 결과
+계약에서 제외하며 필요할 때만 `_debug.physical_hop_count`로 제공한다.
 
-위 Cypher는 canonical binding의 원재료를 반환한다. Graph repository adapter는 이 값을
-3장의 `source-fact-binding-v1` 고정 schema로 조립하고
-`source_fact_binding_hash=sha256(canonical-json-v1(payload))`를 계산한다. Neo4j에 별도
-hash 속성을 추정해서 읽거나 다른 직렬화로 다시 계산하지 않는다.
+## 5. 역할·국가 복합 조회
 
-## 6. 조회 결과 계약
+왕과 국가처럼 관계 맥락이 필요한 경우 `RoleAssignment`를 사용한다.
 
-GraphDB는 donor target만 반환하지 않고 donorUse, donorFact, Predicate proof 메타데이터,
-허용 근거 범위를 함께 확정한다.
+```cypher
+MATCH (correct:CanonicalEntity {canonical_id: $correct_canonical_id})
+      -[:HAS_ROLE_ASSIGNMENT]->(correctAssignment:RoleAssignment {status: 'VERIFIED'})
+MATCH (correctAssignment)-[:ROLE]->(role:PersonRole {
+  search_eligible: true,
+  review_status: 'VERIFIED'
+})
+MATCH (correctAssignment)-[:IN_POLITY]->(polity:Polity {
+  search_eligible: true,
+  review_status: 'VERIFIED'
+})
 
-```json
-{
-  "graph_snapshot_id": "GRAPH:2026-07-16:v1",
-  "question_target_entity_id": "AKS_ENTITY:E0050867",
-  "question_target_name": "정조",
-  "target_question_use_revision_id": "QUR:<TARGET>",
-  "topic_type_revision_id": "TTR:person:<REV>",
-  "facet_revision_id": "QFR:person.activity_achievement:<REV>",
-  "parent_semantic_class_revision_id": "SCR:joseon_monarch:<REV>",
-  "semantic_class_taxonomy_version": "semantic-taxonomy-v1",
-  "donors": [
-    {
-      "donor_entity_id": "AKS_ENTITY:<EID>",
-      "donor_name": "영조",
-      "donor_question_use_id": "QU:person:<EID>:activity:001",
-      "donor_question_use_revision_id": "QUR:<DONOR>",
-      "donor_fact_id": "FACT:<ID>",
-      "donor_fact_revision_id": "FR:<REV>",
-      "donor_fact_canonical_hash": "sha256:<HASH>",
-      "source_fact_target_entity_id": "AKS_ENTITY:<EID>",
-      "donor_predicate_id": "PRED:<ID>",
-      "donor_predicate_revision_id": "PR:<REV>",
-      "donor_facet_signature_id": "SIG:<ID>",
-      "target_role": "subject",
-      "answer_role": "whole_fact",
-      "answer_shape": "FACT_STATEMENT",
-      "answer_domain_id": "DOMAIN:fact_statement",
-      "fact_target_endpoint_id": "AKS_ENTITY:<EID>",
-      "source_fact_binding": {
-        "binding_schema_version": "source-fact-binding-v1",
-        "subject_entity_id": "AKS_ENTITY:<EID>",
-        "predicate_revision_id": "PR:<REV>",
-        "object": {
-          "kind": "ENTITY",
-          "entity_id": "AKS_ENTITY:<OBJECT_EID>",
-          "value": null,
-          "value_type": null,
-          "unit": null
-        },
-        "historical_qualifiers": {
-          "historical_era_ids": ["AKS_ENTITY:<PERIOD_EID>"],
-          "historical_polity_ids": ["AKS_ENTITY:<POLITY_EID>"],
-          "start_year": null,
-          "end_year": null
-        }
-      },
-      "source_fact_binding_hash": "sha256:<BINDING_HASH>",
-      "predicate_proof_contract": {
-        "functional_scope": "SUBJECT_WITH_QUALIFIERS",
-        "inverse_functional_scope": "NONE",
-        "exclusive_group_ids": [],
-        "closed_world_scope_ids": [],
-        "proof_contract_version": "predicate-proof-v1"
-      },
-      "mismatch_rule_ids": ["MR:<ID>:v1"],
-      "surface_template_ids": ["ST:<ID>:v1"],
-      "donor_authoritative_evidence_spans": [
-        {
-          "evidence_span_id": "EV:<ID>",
-          "evidence_span_revision_id": "EVR:<REV>",
-          "content_hash": "sha256:<SPAN_HASH>",
-          "document_id": "aks:<EID>",
-          "chunk_id": "chunk:<ID>",
-          "corpus_version": "<VERSION>"
-        }
-      ],
-      "shared_subgroup_revision_ids": ["SCR:late_joseon_monarch:<REV>"],
-      "difficulty_features": {
-        "shared_subgroup_count": 1,
-        "historical_era_overlap": true,
-        "historical_polity_overlap": true,
-        "time_distance": null,
-        "same_predicate_family": true,
-        "name_or_expression_similarity": null
-      },
-      "relative_rank": 1,
-      "fallback_used": false
-    }
-  ]
-}
+MATCH (candidate:CanonicalEntity)
+      -[:HAS_ROLE_ASSIGNMENT]->(candidateAssignment:RoleAssignment {status: 'VERIFIED'})
+MATCH (candidateAssignment)-[:ROLE]->(role)
+MATCH (candidateAssignment)-[:IN_POLITY]->(polity)
+
+WHERE candidate.canonical_id <> correct.canonical_id
+  AND NOT candidate.canonical_id IN $excluded_canonical_ids
+  AND correct.resolution_status = 'ACCEPTED'
+  AND candidate.entity_type_id = correct.entity_type_id
+  AND candidate.resolution_status = 'ACCEPTED'
+  AND correctAssignment.graph_release_id = $graph_release_id
+  AND candidateAssignment.graph_release_id = $graph_release_id
+RETURN candidate.canonical_id AS candidate_canonical_id,
+       candidate.display_name AS candidate_name,
+       candidate.entity_type_id AS entity_type_id,
+       collect(DISTINCT {
+         axis: 'role_context',
+         path_pattern_id: 'SHARED_ROLE_ASSIGNMENT',
+         role_id: role.anchor_id,
+         role_name: role.name,
+         polity_id: polity.anchor_id,
+         polity_name: polity.name,
+         correct_assignment_id: correctAssignment.assignment_id,
+         candidate_assignment_id: candidateAssignment.assignment_id,
+         taxonomy_distance: null,
+         correct_evidence_ids: correctAssignment.evidence_ids,
+         candidate_evidence_ids: candidateAssignment.evidence_ids,
+         specificity_level: role.specificity_level
+       }) AS shared_anchors
 ```
 
-`historical_era_ids`는 primary TopicType revision이 `period`인
-`CanonicalEntity.canonical_id` 배열이다. `historical_polity_ids`는 primary TopicType
-revision이 `polity`인 CanonicalEntity ID 배열이다. `ERA:joseon`,
-`POLITY:joseon`, 취약점 분석용 `CurriculumEra` ID처럼 별도 ID 공간을 섞지 않는다.
+발문의도가 `같은 시대의 왕`까지 요구하면 두 assignment가 같은 세부 `Era`에도 연결됐는지
+추가로 확인한다. 원천에 국가 또는 세부 시대 근거가 없으면 그 조건에 억지로 포함하지 않는다.
 
-`fact_target_endpoint_id`가 `donor_entity_id`와 다르면 즉시 폐기한다. 이름 문자열이
-일치하는지는 owner 검증이 아니다.
+## 6. typed relation 조회
 
-## 7. 제외 순서
+같은 역사 대상과 같은 의미의 관계를 가진 다른 주체를 찾을 수 있다.
 
-검증 순서는 다음과 같이 고정한다.
-
-1. 동일 snapshot·revision pin 확인
-2. 정확한 parent 2홉과 동일 primary TopicType·Facet 확인
-3. donorUse·donorFact·Predicate·근거 상태 확인
-4. target endpoint와 role-shape-domain binding 확인
-5. 같은 exclusion group과 직접 `PART_OF`·`INSTANCE_OF` 제거
-6. mismatch proof 가능성 평가
-7. 난이도 특징 계산과 순위화
-
-EntityGroup이나 직접 관계를 먼저 따라가 새 donor를 찾지 않는다. 둘은 1~4단계 자격을
-통과한 donor를 5단계에서 제거하는 필터다.
-
-## 8. 관계형 group membership 질문
-
-`answer_route=RELATIONAL_GROUP_MEMBERSHIP`인 Facet은 5장의 generic donor Cypher를
-호출하지 않는다.
-
-```mermaid
-flowchart LR
-    U["QuestionUse<br/>answer_route=RELATIONAL_GROUP_MEMBERSHIP"]
-    F["verified membership Fact"]
-    M["member<br/>CanonicalEntity"]
-    G["EntityGroup<br/>CanonicalEntity<br/>group_kind"]
-
-    U -->|"USES_FACT"| F
-    F -->|"SUBJECT"| M
-    F -->|"OBJECT"| G
-    M -->|"MEMBER_OF_GROUP<br/>review_status=verified<br/>membership_fact_id"| G
+```cypher
+MATCH (correct:CanonicalEntity {canonical_id: $correct_canonical_id})
+      -[correctRel:PARTICIPATED_IN]->(event:CanonicalEntity:Event)
+MATCH (candidate:CanonicalEntity)
+      -[candidateRel:PARTICIPATED_IN]->(event)
+WHERE candidate.canonical_id <> correct.canonical_id
+  AND NOT candidate.canonical_id IN $excluded_canonical_ids
+  AND correct.resolution_status = 'ACCEPTED'
+  AND candidate.resolution_status = 'ACCEPTED'
+  AND event.resolution_status = 'ACCEPTED'
+  AND correctRel.status = 'VERIFIED'
+  AND candidateRel.status = 'VERIFIED'
+  AND candidate.entity_type_id = correct.entity_type_id
+  AND correctRel.graph_release_id = $graph_release_id
+  AND candidateRel.graph_release_id = $graph_release_id
+RETURN candidate.canonical_id AS candidate_canonical_id,
+       candidate.display_name AS candidate_name,
+       candidate.entity_type_id AS entity_type_id,
+       collect(DISTINCT {
+         axis: 'typed_relation',
+         path_pattern_id: 'SHARED_TYPED_RELATION',
+         predicate_id: type(correctRel),
+         target_canonical_id: event.canonical_id,
+         target_name: event.display_name,
+         correct_relation_id: correctRel.relation_id,
+         candidate_relation_id: candidateRel.relation_id,
+         taxonomy_distance: null,
+         correct_evidence_ids: correctRel.evidence_ids,
+         candidate_evidence_ids: candidateRel.evidence_ids
+       }) AS shared_anchors
 ```
 
-대표 binding은 `target_role=object`, `answer_role=subject`,
-`answer_shape=ENTITY`다. 그러나 실제 허용 조합은 해당 Facet signature가 결정한다.
+이 예시는 활성 path pattern 카탈로그가 `PARTICIPATED_IN`을 허용한 경우에만 실행한다.
+결과의 `path_pattern_id`는 `SHARED_TYPED_RELATION`, `taxonomy_distance`는 `null`이다.
 
-오답은 다른 SemanticClass나 다른 group의 member를 일반 donor처럼 가져오지 않는다.
-Facet signature의 mismatch rule이 다음 중 하나를 권위 근거로 증명한 entity만 오답으로
-사용한다.
+`PARTICIPATED_IN`과 `COMMANDED`를 같은 관계로 취급하지 않는다. 문화재 관계도
+`BUILT`, `ORDERED_CONSTRUCTION`, `PROMOTED_CONSTRUCTION`, `REBUILT`를 구분한다.
 
-- 승인된 closed membership scope에서의 비회원
-- 상호배타 group의 검증 member
-- 해당 target group에 속하지 않는다는 명시적 반증
+## 7. 후보 중복·오류 제외 순서
 
-proof가 없으면 `FALSE`가 아니라 `UNKNOWN`이며 폐기한다.
+1. 동일 canonical ID 제외
+2. 요청의 `excluded_canonical_ids`에 포함된 대상 제외
+3. 정답의 승인 별칭이 별도 entity로 남은 중복 제외
+4. entity type 불일치 제외
+5. resolution/relationship status 미승인 제외
+6. 관계 type·방향 불일치 제외
+7. 요청 topic·era와 명백히 충돌하는 후보 제외
+8. broad anchor만 공유한 후보 제외
+9. 같은 실체의 source record가 여러 개인 경우 canonical ID로 deduplicate
 
-## 9. 난이도
+정답과 후보가 같은 사건군·인물군에 속한다는 이유만으로 항상 제외하지는 않는다.
+발문의도에 따라 유용한 공통점일 수 있으므로 group 관계의 의미를 명시해야 한다.
 
-donor 자격은 모든 난이도에서 같다. 난이도는 자격 통과 집합 안에서 다음 versioned
-특징으로만 상대 순위를 정한다.
+## 8. 후보 반환과 RAG 연결
+
+후보마다 다음 값을 보존한다.
 
 ```text
-shared_subgroup_revision_ids
-historical_era_ids overlap
-historical_polity_ids overlap
-normalized time_distance
-same_predicate_family
-name_or_expression_similarity
+candidate canonical ID
+대표명과 승인 별칭
+entity type
+shared anchor ID·축·관계 type
+정답·후보 관계의 분리된 evidence ID
+polity·era·role·region 검색 맥락
+source record ID
 ```
 
-subgroup 비교에는 `semantic_class_revision_id`와
-`semantic_class_taxonomy_version`을 함께 사용한다. 논리 subgroup ID가 같아도 revision
-또는 taxonomy version이 다르면 같은 생성 작업에서 비교하지 않는다.
-
-| 난이도 | 선택 원칙 |
-|---|---|
-| 쉬움 | 공유 subgroup이 없고 시대·국가·시간 거리가 상대적으로 먼 donor 4개 |
-| 보통 | 가까운 donor 2개와 중간 거리 donor 2개 |
-| 어려움 | 동일 subgroup revision과 시대·국가를 최대한 공유하고 시간 거리가 가까운 donor 4개 |
-
-가중치·tie-break·표현 유사도 모델은 Neo4j 속성에 하드코딩하지 않고 versioned difficulty
-policy가 소유한다. Neo4j는 ID와 qualifier만 반환한다. 같은 점수 안에서의 무작위 선택은
-`random_seed`를 받은 생성 서비스가 수행한다.
-
-어려움에서 동일 subgroup 조건을 만족하는 donor가 4개 미만이면 완화하지 않고 해당
-target-Facet 조합을 skip한다. 쉬움의 먼 donor가 4개 미만이어도 가까운 donor로 채우지
-않는다. `fallback_used`는 v1에서 항상 false다.
-
-## 10. Predicate proof와 mismatch 판정
-
-donorFact는 donorTarget에게 참이라는 근거이지, donor에서 가져온 문장을 target에
-대입했을 때 거짓이라는 증명 자체는 아니다. Graph에 Fact가 없다는 이유만으로 거짓으로
-판정하지 않는다.
-
-후속 validator는 Facet signature가 허용한 `mismatch_rule_ids`와 Predicate revision의
-다음 메타데이터를 함께 사용한다.
+RAG query는 후보 이름만 사용하지 않는다. 동명이인 분리를 위해 승인 별칭과 맥락을
+함께 넘긴다.
 
 ```text
-functional_scope
-inverse_functional_scope
-exclusive_group_ids
-closed_world_scope_ids
-proof_contract_version
+후보 대표명 + 한자/별칭 + 시대 + 국가 + 역할/사건 + 발문의도
 ```
 
-가능한 proof 예시는 다음과 같다.
+RAG가 후보를 뒷받침할 근거를 찾지 못하면 해당 후보는 최종 오답 생성에서 제외한다.
+Graph의 공통 anchor 근거와 선지 내용을 지지하는 RAG 근거는 목적이 다르므로 둘 다
+추적한다.
 
-- 동일 qualifier scope에서의 functional 또는 inverse-functional 충돌
-- 권위 있는 상호배타 Predicate/role 그룹의 충돌
-- versioned closed-world scope의 완전 목록과 불일치
-- 권위 원천의 명시적 반증
+## 9. 랭킹 알고리즘의 경계
 
-qualifier scope나 권위 범위가 맞지 않으면 proof를 만들지 않는다. proof payload는 3장의
-`MismatchProofV1`을 단일 계약으로 사용하며 최소한 다음을 불변 저장한다.
+PageRank는 전역적으로 연결이 많은 유명 대상을 높이는 경향이 있어 기본 후보 자격을
+판정하는 수단으로 적합하지 않다. 필요하면 검색 팀이 tie-breaker로 검토할 수 있다.
 
-```text
-proof_id, proof_kind, proof_hash, proof_hash_algorithm
-graph_snapshot_id
-question_target_entity_id, question_use_revision_id, target_fact_revision_id
-donor_entity_id, donor_question_use_revision_id
-source_fact_id, source_fact_revision_id, source_fact_canonical_hash
-source_fact_binding_hash, rendered_claim_hash
-predicate_revision_id
-functional_scope, inverse_functional_scope
-exclusive_group_ids, closed_world_scope_ids, proof_contract_version
-mismatch_rule_id, mismatch_rule_version, validator_version
-evidence[] = {role, evidence_span_id, evidence_span_revision_id, content_hash}
-verdict = FALSE | UNKNOWN
-```
+공통 노드 검색에는 inverse-degree anchor weight, weighted common neighbors,
+Adamic-Adar 같은 방식이 더 직접적일 수 있다. 여러 hop의 연관 탐색이 필요해질 때는
+Personalized PageRank를 실험할 수 있다.
 
-evidence role은 `TARGET_TRUE`, `DONOR_TRUE`, `COUNTER_FALSE` 중 하나다. revision이나
-content hash가 빠진 논리 EvidenceSpan ID만으로 proof를 만들지 않는다. verdict가
-`FALSE`로 증명되지 않은 donor는 `UNKNOWN`으로 폐기한다.
+이 문서는 어떤 알고리즘도 의무화하지 않는다. Graph 계약은 검증된 anchor와 후보 선정
+이유를 제공하는 데서 끝난다.
 
-## 11. donor별 RAG 계약
+## 10. 난이도
 
-RAG는 GraphDB가 확정한 범위를 벗어나 새 donor나 새 Fact를 선택하지 않는다. donor 조회
-결과를 3장의 공통 RAG 요청 DTO로 이름만 매핑한다. 논리 ID만 보내는 축약 요청은
-허용하지 않는다.
+난이도는 문제 재료 또는 문제 생성 단계에서 결정한다. Neo4j가 난이도를 랜덤 선택하거나
+확정하지 않는다. 검색 팀은 난이도를 승인된 `allowed_path_pattern_ids`,
+`specificity_level`, `taxonomy_distance` 조건으로 변환한다. 물리 hop 수는 난이도에
+사용하지 않는다. 난이도 정책은 Graph의 사실 관계나 분류를 변경하지 않는다.
 
-```json
-{
-  "purpose": "DONOR_TRUE_EVIDENCE",
-  "graph_snapshot_id": "GRAPH:2026-07-16:v1",
-  "question_target_entity_id": "AKS_ENTITY:<TARGET_EID>",
-  "source_fact_target_entity_id": "AKS_ENTITY:<DONOR_EID>",
-  "question_use_revision_id": "QUR:<TARGET_REV>",
-  "donor_question_use_revision_id": "QUR:<DONOR_REV>",
-  "source_fact_id": "FACT:<DONOR_FACT_ID>",
-  "source_fact_revision_id": "FR:<DONOR_REV>",
-  "source_fact_canonical_hash": "sha256:<FACT_HASH>",
-  "predicate_revision_id": "PR:<REV>",
-  "source_fact_binding_hash": "sha256:<BINDING_HASH>",
-  "allowed_authoritative_evidence_spans": [
-    {
-      "evidence_span_id": "EV:<ID>",
-      "evidence_span_revision_id": "EVR:<REV>",
-      "content_hash": "sha256:<SPAN_HASH>",
-      "document_id": "aks:<EID>",
-      "chunk_id": "chunk:<ID>"
-    }
-  ],
-  "allowed_document_ids": ["aks:<EID>"],
-  "corpus_version": "<VERSION>"
-}
-```
+## 11. 필수 테스트
 
-위 값으로 donorFact의 참 근거를 가져오고 표현에 필요한 문맥을 보완한다. 허용
-EvidenceSpan 밖에서 발견한 새 span은 문맥 후보일 뿐 donor 자격이나 mismatch proof를
-바꾸지 않는다. 근거 hash·offset·corpus version이 맞지 않거나 stale이면 donor를
-폐기한다.
-
-## 12. 배포 전 QA
-
-1. generic donor 결과에 동일 `canonical_id`가 없다.
-2. 모든 donor가 target과 동일 parent revision을 정확한 2홉으로 직접 공유한다.
-3. 모든 donor가 동일 snapshot의 TopicType·Facet revision을 사용한다.
-4. donorUse role·shape·domain과 실제 donorFact binding 불일치가 0이다.
-5. donor Fact endpoint와 donor entity 불일치가 0이다.
-6. verified edge와 verified EvidenceSpan이 없는 donor가 0이다.
-7. cross-snapshot edge가 0이다.
-8. 같은 exclusion group과 직접 PART_OF·INSTANCE_OF pair가 결과에 없다.
-9. broad 또는 `donor_eligible=false` parent로 조회된 donor가 0이다.
-10. subgroup revision·taxonomy version을 섞은 난이도 계산이 0이다.
-11. `graph_snapshot_id + Fact.canonical_hash` 중복이 0이다.
-12. generic donor 쿼리에 관계형 group membership Facet이 들어오지 않는다.
-13. mismatch proof 없는 donor option이 최종 선지로 전달되지 않는다.
-14. 부족한 난이도 pool을 자동 완화한 결과가 0이다.
+- 같은 이름의 다른 시대 인물이 서로 후보 anchor를 오염시키지 않는다.
+- 동일 인물의 AKS·ITKC·시소러스 레코드가 후보 세 개로 나오지 않는다.
+- `조선 + 정치`만 공유한 대량 후보가 그대로 통과하지 않는다.
+- `왕 + 조선` 역할 맥락은 통과하고 다른 국가의 왕은 요구 조건에 따라 제외된다.
+- `사건인물` PENDING 관계는 참여자 검색에 쓰이지 않는다.
+- `추진` 근거가 `BUILT` 관계 후보를 만들지 않는다.
+- 후보 결과마다 `path_pattern_id`, `shared_anchors`, 양쪽 evidence ID가 존재한다.
+- `excluded_canonical_ids`에 포함된 대상이 어떤 path pattern에서도 반환되지 않는다.
+- DetailClass 계층 패턴의 `taxonomy_distance`가 상위 분류 지름길 edge 유무와 무관하다.
+- 요청에 없는 path pattern과 카탈로그에 없는 임의 관계 경로가 결과에 없다.
+- 최종 후보가 0건이어도 broad fallback으로 미검증 edge를 사용하지 않는다.

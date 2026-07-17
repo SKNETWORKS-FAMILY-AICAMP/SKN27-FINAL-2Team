@@ -1,4 +1,0 @@
-canonical_eid,heritage_kind,heritage_subtype,heritage_form,evidence_source_kind,evidence_id,classification_method,review_status,note
-E0002925,ASTRONOMICAL_FACILITY,천문·의례시설,PHYSICAL,IMAGE_CSV,ki_020_14000,IMAGE_TYPE_OVERRIDE,CURATED,AKS 세부 유형 공백을 이미지 자료의 유형으로 보강
-E0005058,STELE,탑·비,PHYSICAL,AKS_ARTICLE,E0005058,AKS_DEFINITION_OVERRIDE,CURATED,광개토왕릉비 실물 비석
-E0014247,STELE,탑·비,PHYSICAL,AKS_ARTICLE,E0014247,AKS_DEFINITION_OVERRIDE,CURATED,대동법 시행기념비 실물 비석
