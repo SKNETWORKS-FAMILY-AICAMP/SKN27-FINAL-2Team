@@ -1,0 +1,401 @@
+﻿round_no,target,source,rank,label,count,ratio
+71,era,predicted,1,조선,9,0.18
+71,era,predicted,2,일제 강점기,9,0.18
+71,era,predicted,3,고려,8,0.16
+71,era,predicted,4,개항기,8,0.16
+71,era,predicted,5,남북국 시대,6,0.12
+71,era,actual,1,조선,9,0.18
+71,era,actual,2,일제 강점기,9,0.18
+71,era,actual,3,고려,8,0.16
+71,era,actual,4,개항기,7,0.14
+71,era,actual,5,삼국 시대,5,0.1
+72,era,predicted,1,조선,12,0.24
+72,era,predicted,2,고려,8,0.16
+72,era,predicted,3,개항기,7,0.14
+72,era,predicted,4,일제 강점기,7,0.14
+72,era,predicted,5,남북국 시대,6,0.12
+72,era,actual,1,조선,12,0.24
+72,era,actual,2,고려,9,0.18
+72,era,actual,3,개항기,7,0.14
+72,era,actual,4,일제 강점기,7,0.14
+72,era,actual,5,현대,5,0.1
+73,era,predicted,1,조선,11,0.22
+73,era,predicted,2,일제 강점기,10,0.2
+73,era,predicted,3,고려,8,0.16
+73,era,predicted,4,개항기,6,0.12
+73,era,predicted,5,현대,5,0.1
+73,era,actual,1,조선,11,0.22
+73,era,actual,2,일제 강점기,10,0.2
+73,era,actual,3,고려,8,0.16
+73,era,actual,4,개항기,6,0.12
+73,era,actual,5,삼국 시대,5,0.1
+74,era,predicted,1,조선,10,0.2
+74,era,predicted,2,고려,9,0.18
+74,era,predicted,3,일제 강점기,9,0.18
+74,era,predicted,4,개항기,7,0.14
+74,era,predicted,5,현대,6,0.12
+74,era,actual,1,조선,10,0.2
+74,era,actual,2,고려,9,0.18
+74,era,actual,3,일제 강점기,9,0.18
+74,era,actual,4,개항기,7,0.14
+74,era,actual,5,현대,6,0.12
+75,era,predicted,1,일제 강점기,12,0.24
+75,era,predicted,2,조선,9,0.18
+75,era,predicted,3,고려,8,0.16
+75,era,predicted,4,현대,7,0.14
+75,era,predicted,5,삼국 시대,5,0.1
+75,era,actual,1,조선,11,0.22
+75,era,actual,2,일제 강점기,11,0.22
+75,era,actual,3,고려,9,0.18
+75,era,actual,4,삼국 시대,5,0.1
+75,era,actual,5,개항기,5,0.1
+76,era,predicted,1,조선,13,0.26
+76,era,predicted,2,고려,9,0.18
+76,era,predicted,3,일제 강점기,7,0.14
+76,era,predicted,4,개항기,6,0.12
+76,era,predicted,5,삼국 시대,5,0.1
+76,era,actual,1,조선,10,0.2
+76,era,actual,2,고려,9,0.18
+76,era,actual,3,개항기,9,0.18
+76,era,actual,4,일제 강점기,8,0.16
+76,era,actual,5,남북국 시대,5,0.1
+77,era,predicted,1,조선,11,0.22
+77,era,predicted,2,일제 강점기,11,0.22
+77,era,predicted,3,고려,8,0.16
+77,era,predicted,4,삼국 시대,5,0.1
+77,era,predicted,5,남북국 시대,4,0.08
+77,era,actual,1,일제 강점기,11,0.22
+77,era,actual,2,고려,9,0.18
+77,era,actual,3,조선,9,0.18
+77,era,actual,4,개항기,6,0.12
+77,era,actual,5,삼국 시대,5,0.1
+78,era,predicted,1,고려,9,0.18
+78,era,predicted,2,개항기,9,0.18
+78,era,predicted,3,일제 강점기,9,0.18
+78,era,predicted,4,조선,8,0.16
+78,era,predicted,5,현대,6,0.12
+78,era,actual,1,일제 강점기,10,0.2
+78,era,actual,2,고려,9,0.18
+78,era,actual,3,조선,9,0.18
+78,era,actual,4,개항기,7,0.14
+78,era,actual,5,현대,6,0.12
+71,topic_train,predicted,1,사건,18,0.36
+71,topic_train,predicted,2,정치,12,0.24
+71,topic_train,predicted,3,인물,8,0.16
+71,topic_train,predicted,4,문화,7,0.14
+71,topic_train,predicted,5,제도,5,0.1
+71,topic_train,actual,1,사건,19,0.38
+71,topic_train,actual,2,정치,10,0.2
+71,topic_train,actual,3,문화,8,0.16
+71,topic_train,actual,4,인물,8,0.16
+71,topic_train,actual,5,제도,5,0.1
+72,topic_train,predicted,1,사건,15,0.3
+72,topic_train,predicted,2,인물,12,0.24
+72,topic_train,predicted,3,정치,11,0.22
+72,topic_train,predicted,4,문화,6,0.12
+72,topic_train,predicted,5,제도,6,0.12
+72,topic_train,actual,1,정치,20,0.4
+72,topic_train,actual,2,사건,12,0.24
+72,topic_train,actual,3,인물,8,0.16
+72,topic_train,actual,4,제도,5,0.1
+72,topic_train,actual,5,문화,5,0.1
+73,topic_train,predicted,1,사건,22,0.44
+73,topic_train,predicted,2,인물,8,0.16
+73,topic_train,predicted,3,제도,8,0.16
+73,topic_train,predicted,4,정치,7,0.14
+73,topic_train,predicted,5,문화,5,0.1
+73,topic_train,actual,1,사건,17,0.34
+73,topic_train,actual,2,정치,14,0.28
+73,topic_train,actual,3,인물,7,0.14
+73,topic_train,actual,4,문화,6,0.12
+73,topic_train,actual,5,제도,6,0.12
+74,topic_train,predicted,1,사건,17,0.34
+74,topic_train,predicted,2,정치,15,0.3
+74,topic_train,predicted,3,인물,8,0.16
+74,topic_train,predicted,4,문화,5,0.1
+74,topic_train,predicted,5,제도,5,0.1
+74,topic_train,actual,1,사건,17,0.34
+74,topic_train,actual,2,정치,10,0.2
+74,topic_train,actual,3,인물,10,0.2
+74,topic_train,actual,4,문화,7,0.14
+74,topic_train,actual,5,제도,6,0.12
+75,topic_train,predicted,1,사건,20,0.4
+75,topic_train,predicted,2,정치,12,0.24
+75,topic_train,predicted,3,문화,8,0.16
+75,topic_train,predicted,4,인물,7,0.14
+75,topic_train,predicted,5,제도,3,0.06
+75,topic_train,actual,1,사건,21,0.42
+75,topic_train,actual,2,정치,9,0.18
+75,topic_train,actual,3,문화,8,0.16
+75,topic_train,actual,4,인물,8,0.16
+75,topic_train,actual,5,제도,4,0.08
+76,topic_train,predicted,1,사건,17,0.34
+76,topic_train,predicted,2,인물,11,0.22
+76,topic_train,predicted,3,정치,9,0.18
+76,topic_train,predicted,4,문화,8,0.16
+76,topic_train,predicted,5,제도,5,0.1
+76,topic_train,actual,1,사건,19,0.38
+76,topic_train,actual,2,인물,9,0.18
+76,topic_train,actual,3,문화,8,0.16
+76,topic_train,actual,4,정치,8,0.16
+76,topic_train,actual,5,제도,6,0.12
+77,topic_train,predicted,1,사건,14,0.28
+77,topic_train,predicted,2,인물,12,0.24
+77,topic_train,predicted,3,정치,9,0.18
+77,topic_train,predicted,4,제도,8,0.16
+77,topic_train,predicted,5,문화,7,0.14
+77,topic_train,actual,1,정치,14,0.28
+77,topic_train,actual,2,인물,11,0.22
+77,topic_train,actual,3,사건,11,0.22
+77,topic_train,actual,4,제도,8,0.16
+77,topic_train,actual,5,문화,6,0.12
+78,topic_train,predicted,1,사건,18,0.36
+78,topic_train,predicted,2,제도,10,0.2
+78,topic_train,predicted,3,인물,9,0.18
+78,topic_train,predicted,4,문화,7,0.14
+78,topic_train,predicted,5,정치,6,0.12
+78,topic_train,actual,1,사건,20,0.4
+78,topic_train,actual,2,인물,11,0.22
+78,topic_train,actual,3,문화,7,0.14
+78,topic_train,actual,4,제도,7,0.14
+78,topic_train,actual,5,정치,5,0.1
+71,topic,predicted,1,사건,19,0.38
+71,topic,predicted,2,인물,8,0.16
+71,topic,predicted,3,문화,6,0.12
+71,topic,predicted,4,제도,6,0.12
+71,topic,predicted,5,정치,6,0.12
+71,topic,actual,1,사건,18,0.36
+71,topic,actual,2,문화,8,0.16
+71,topic,actual,3,인물,8,0.16
+71,topic,actual,4,정치,6,0.12
+71,topic,actual,5,제도,5,0.1
+72,topic,predicted,1,사건,14,0.28
+72,topic,predicted,2,인물,13,0.26
+72,topic,predicted,3,문화,7,0.14
+72,topic,predicted,4,제도,5,0.1
+72,topic,predicted,5,정치,5,0.1
+72,topic,actual,1,사건,12,0.24
+72,topic,actual,2,정치,10,0.2
+72,topic,actual,3,인물,8,0.16
+72,topic,actual,4,제도,5,0.1
+72,topic,actual,5,문화,5,0.1
+73,topic,predicted,1,사건,19,0.38
+73,topic,predicted,2,인물,9,0.18
+73,topic,predicted,3,제도,6,0.12
+73,topic,predicted,4,문화,5,0.1
+73,topic,predicted,5,정치,4,0.08
+73,topic,actual,1,사건,17,0.34
+73,topic,actual,2,인물,7,0.14
+73,topic,actual,3,제도,6,0.12
+73,topic,actual,4,문화,5,0.1
+73,topic,actual,5,군사,4,0.08
+74,topic,predicted,1,사건,18,0.36
+74,topic,predicted,2,인물,9,0.18
+74,topic,predicted,3,정치,7,0.14
+74,topic,predicted,4,문화,4,0.08
+74,topic,predicted,5,사회,4,0.08
+74,topic,actual,1,사건,17,0.34
+74,topic,actual,2,인물,10,0.2
+74,topic,actual,3,문화,6,0.12
+74,topic,actual,4,제도,6,0.12
+74,topic,actual,5,정치,5,0.1
+75,topic,predicted,1,사건,20,0.4
+75,topic,predicted,2,문화,7,0.14
+75,topic,predicted,3,인물,7,0.14
+75,topic,predicted,4,정치,5,0.1
+75,topic,predicted,5,제도,4,0.08
+75,topic,actual,1,사건,21,0.42
+75,topic,actual,2,인물,8,0.16
+75,topic,actual,3,문화,7,0.14
+75,topic,actual,4,정치,4,0.08
+75,topic,actual,5,제도,4,0.08
+76,topic,predicted,1,사건,17,0.34
+76,topic,predicted,2,정치,9,0.18
+76,topic,predicted,3,문화,8,0.16
+76,topic,predicted,4,인물,8,0.16
+76,topic,predicted,5,제도,4,0.08
+76,topic,actual,1,사건,19,0.38
+76,topic,actual,2,인물,9,0.18
+76,topic,actual,3,문화,7,0.14
+76,topic,actual,4,제도,6,0.12
+76,topic,actual,5,정치,6,0.12
+77,topic,predicted,1,사건,15,0.3
+77,topic,predicted,2,인물,14,0.28
+77,topic,predicted,3,제도,7,0.14
+77,topic,predicted,4,문화,6,0.12
+77,topic,predicted,5,정치,4,0.08
+77,topic,actual,1,인물,11,0.22
+77,topic,actual,2,사건,11,0.22
+77,topic,actual,3,제도,8,0.16
+77,topic,actual,4,정치,6,0.12
+77,topic,actual,5,문화,5,0.1
+78,topic,predicted,1,사건,17,0.34
+78,topic,predicted,2,제도,10,0.2
+78,topic,predicted,3,인물,8,0.16
+78,topic,predicted,4,문화,6,0.12
+78,topic,predicted,5,경제,3,0.06
+78,topic,actual,1,사건,20,0.4
+78,topic,actual,2,인물,11,0.22
+78,topic,actual,3,제도,7,0.14
+78,topic,actual,4,문화,6,0.12
+78,topic,actual,5,경제,3,0.06
+71,era_topic_train,predicted,1,일제 강점기 + 사건,4,0.08
+71,era_topic_train,predicted,2,일제 강점기 + 정치,4,0.08
+71,era_topic_train,predicted,3,고려 + 사건,3,0.06
+71,era_topic_train,predicted,4,조선 + 인물,3,0.06
+71,era_topic_train,predicted,5,개항기 + 사건,3,0.06
+71,era_topic_train,actual,1,개항기 + 사건,4,0.08
+71,era_topic_train,actual,2,일제 강점기 + 사건,4,0.08
+71,era_topic_train,actual,3,조선 + 사건,3,0.06
+71,era_topic_train,actual,4,조선 + 정치,3,0.06
+71,era_topic_train,actual,5,일제 강점기 + 정치,3,0.06
+72,era_topic_train,predicted,1,개항기 + 사건,6,0.12
+72,era_topic_train,predicted,2,조선 + 인물,5,0.1
+72,era_topic_train,predicted,3,일제 강점기 + 정치,4,0.08
+72,era_topic_train,predicted,4,고려 + 인물,3,0.06
+72,era_topic_train,predicted,5,조선 + 제도,3,0.06
+72,era_topic_train,actual,1,개항기 + 사건,5,0.1
+72,era_topic_train,actual,2,고려 + 정치,4,0.08
+72,era_topic_train,actual,3,조선 + 인물,4,0.08
+72,era_topic_train,actual,4,일제 강점기 + 정치,4,0.08
+72,era_topic_train,actual,5,조선 + 정치,3,0.06
+73,era_topic_train,predicted,1,개항기 + 사건,6,0.12
+73,era_topic_train,predicted,2,일제 강점기 + 사건,5,0.1
+73,era_topic_train,predicted,3,현대 + 사건,4,0.08
+73,era_topic_train,predicted,4,고려 + 사건,3,0.06
+73,era_topic_train,predicted,5,조선 + 인물,3,0.06
+73,era_topic_train,actual,1,개항기 + 사건,5,0.1
+73,era_topic_train,actual,2,일제 강점기 + 사건,5,0.1
+73,era_topic_train,actual,3,고려 + 정치,4,0.08
+73,era_topic_train,actual,4,조선 + 인물,4,0.08
+73,era_topic_train,actual,5,삼국 시대 + 정치,3,0.06
+74,era_topic_train,predicted,1,일제 강점기 + 정치,6,0.12
+74,era_topic_train,predicted,2,개항기 + 사건,5,0.1
+74,era_topic_train,predicted,3,현대 + 사건,4,0.08
+74,era_topic_train,predicted,4,고려 + 사건,3,0.06
+74,era_topic_train,predicted,5,조선 + 사건,3,0.06
+74,era_topic_train,actual,1,개항기 + 사건,4,0.08
+74,era_topic_train,actual,2,일제 강점기 + 정치,4,0.08
+74,era_topic_train,actual,3,현대 + 사건,4,0.08
+74,era_topic_train,actual,4,고려 + 사건,3,0.06
+74,era_topic_train,actual,5,조선 + 정치,3,0.06
+75,era_topic_train,predicted,1,조선 + 사건,4,0.08
+75,era_topic_train,predicted,2,일제 강점기 + 사건,4,0.08
+75,era_topic_train,predicted,3,일제 강점기 + 정치,4,0.08
+75,era_topic_train,predicted,4,고려 + 사건,3,0.06
+75,era_topic_train,predicted,5,현대 + 정치,3,0.06
+75,era_topic_train,actual,1,고려 + 사건,4,0.08
+75,era_topic_train,actual,2,조선 + 사건,4,0.08
+75,era_topic_train,actual,3,일제 강점기 + 사건,4,0.08
+75,era_topic_train,actual,4,삼국 시대 + 정치,3,0.06
+75,era_topic_train,actual,5,개항기 + 사건,3,0.06
+76,era_topic_train,predicted,1,조선 + 사건,5,0.1
+76,era_topic_train,predicted,2,조선 + 인물,4,0.08
+76,era_topic_train,predicted,3,일제 강점기 + 정치,4,0.08
+76,era_topic_train,predicted,4,고려 + 사건,3,0.06
+76,era_topic_train,predicted,5,조선 + 제도,3,0.06
+76,era_topic_train,actual,1,개항기 + 사건,4,0.08
+76,era_topic_train,actual,2,일제 강점기 + 사건,4,0.08
+76,era_topic_train,actual,3,고려 + 사건,3,0.06
+76,era_topic_train,actual,4,조선 + 사건,3,0.06
+76,era_topic_train,actual,5,조선 + 인물,3,0.06
+77,era_topic_train,predicted,1,일제 강점기 + 사건,5,0.1
+77,era_topic_train,predicted,2,고려 + 인물,3,0.06
+77,era_topic_train,predicted,3,조선 + 제도,3,0.06
+77,era_topic_train,predicted,4,조선 + 인물,3,0.06
+77,era_topic_train,predicted,5,조선 + 사건,3,0.06
+77,era_topic_train,actual,1,고려 + 인물,4,0.08
+77,era_topic_train,actual,2,개항기 + 사건,4,0.08
+77,era_topic_train,actual,3,일제 강점기 + 정치,4,0.08
+77,era_topic_train,actual,4,조선 + 정치,3,0.06
+77,era_topic_train,actual,5,삼국 시대 + 인물,2,0.04
+78,era_topic_train,predicted,1,개항기 + 사건,5,0.1
+78,era_topic_train,predicted,2,고려 + 인물,4,0.08
+78,era_topic_train,predicted,3,조선 + 사건,3,0.06
+78,era_topic_train,predicted,4,조선 + 제도,3,0.06
+78,era_topic_train,predicted,5,현대 + 사건,3,0.06
+78,era_topic_train,actual,1,고려 + 인물,4,0.08
+78,era_topic_train,actual,2,개항기 + 사건,4,0.08
+78,era_topic_train,actual,3,일제 강점기 + 사건,4,0.08
+78,era_topic_train,actual,4,현대 + 사건,4,0.08
+78,era_topic_train,actual,5,조선 + 사건,3,0.06
+71,era_topic_train_topic,predicted,1,일제 강점기 + 사건 + 사건,4,0.08
+71,era_topic_train_topic,predicted,2,고려 + 사건 + 사건,3,0.06
+71,era_topic_train_topic,predicted,3,조선 + 인물 + 인물,3,0.06
+71,era_topic_train_topic,predicted,4,개항기 + 사건 + 사건,3,0.06
+71,era_topic_train_topic,predicted,5,일제 강점기 + 정치 + 정치,3,0.06
+71,era_topic_train_topic,actual,1,개항기 + 사건 + 사건,4,0.08
+71,era_topic_train_topic,actual,2,일제 강점기 + 사건 + 사건,4,0.08
+71,era_topic_train_topic,actual,3,조선 + 사건 + 사건,3,0.06
+71,era_topic_train_topic,actual,4,현대 + 사건 + 사건,3,0.06
+71,era_topic_train_topic,actual,5,삼국 시대 + 인물 + 인물,2,0.04
+72,era_topic_train_topic,predicted,1,개항기 + 사건 + 사건,6,0.12
+72,era_topic_train_topic,predicted,2,조선 + 인물 + 인물,5,0.1
+72,era_topic_train_topic,predicted,3,고려 + 인물 + 인물,3,0.06
+72,era_topic_train_topic,predicted,4,조선 + 제도 + 제도,3,0.06
+72,era_topic_train_topic,predicted,5,남북국 시대 + 문화 + 문화,2,0.04
+72,era_topic_train_topic,actual,1,개항기 + 사건 + 사건,5,0.1
+72,era_topic_train_topic,actual,2,조선 + 인물 + 인물,4,0.08
+72,era_topic_train_topic,actual,3,일제 강점기 + 정치 + 사회,3,0.06
+72,era_topic_train_topic,actual,4,현대 + 정치 + 정치,3,0.06
+72,era_topic_train_topic,actual,5,삼국 시대 + 정치 + 정치,2,0.04
+73,era_topic_train_topic,predicted,1,개항기 + 사건 + 사건,5,0.1
+73,era_topic_train_topic,predicted,2,일제 강점기 + 사건 + 사건,5,0.1
+73,era_topic_train_topic,predicted,3,조선 + 인물 + 인물,3,0.06
+73,era_topic_train_topic,predicted,4,현대 + 사건 + 사건,3,0.06
+73,era_topic_train_topic,predicted,5,고려 + 인물 + 인물,2,0.04
+73,era_topic_train_topic,actual,1,개항기 + 사건 + 사건,5,0.1
+73,era_topic_train_topic,actual,2,일제 강점기 + 사건 + 사건,5,0.1
+73,era_topic_train_topic,actual,3,조선 + 인물 + 인물,4,0.08
+73,era_topic_train_topic,actual,4,현대 + 사건 + 사건,3,0.06
+73,era_topic_train_topic,actual,5,고려 + 정치 + 군사,2,0.04
+74,era_topic_train_topic,predicted,1,개항기 + 사건 + 사건,4,0.08
+74,era_topic_train_topic,predicted,2,현대 + 사건 + 사건,4,0.08
+74,era_topic_train_topic,predicted,3,고려 + 사건 + 사건,3,0.06
+74,era_topic_train_topic,predicted,4,조선 + 사건 + 사건,3,0.06
+74,era_topic_train_topic,predicted,5,일제 강점기 + 정치 + 정치,3,0.06
+74,era_topic_train_topic,actual,1,개항기 + 사건 + 사건,4,0.08
+74,era_topic_train_topic,actual,2,현대 + 사건 + 사건,4,0.08
+74,era_topic_train_topic,actual,3,고려 + 사건 + 사건,3,0.06
+74,era_topic_train_topic,actual,4,일제 강점기 + 사건 + 사건,3,0.06
+74,era_topic_train_topic,actual,5,고려 + 인물 + 인물,2,0.04
+75,era_topic_train_topic,predicted,1,조선 + 사건 + 사건,4,0.08
+75,era_topic_train_topic,predicted,2,일제 강점기 + 사건 + 사건,4,0.08
+75,era_topic_train_topic,predicted,3,현대 + 사건 + 사건,3,0.06
+75,era_topic_train_topic,predicted,4,남북국 시대 + 사건 + 사건,2,0.04
+75,era_topic_train_topic,predicted,5,고려 + 인물 + 인물,2,0.04
+75,era_topic_train_topic,actual,1,고려 + 사건 + 사건,4,0.08
+75,era_topic_train_topic,actual,2,조선 + 사건 + 사건,4,0.08
+75,era_topic_train_topic,actual,3,일제 강점기 + 사건 + 사건,4,0.08
+75,era_topic_train_topic,actual,4,개항기 + 사건 + 사건,3,0.06
+75,era_topic_train_topic,actual,5,현대 + 사건 + 사건,3,0.06
+76,era_topic_train_topic,predicted,1,조선 + 사건 + 사건,5,0.1
+76,era_topic_train_topic,predicted,2,고려 + 사건 + 사건,3,0.06
+76,era_topic_train_topic,predicted,3,조선 + 인물 + 인물,3,0.06
+76,era_topic_train_topic,predicted,4,조선 + 제도 + 제도,3,0.06
+76,era_topic_train_topic,predicted,5,삼국 시대 + 인물 + 인물,2,0.04
+76,era_topic_train_topic,actual,1,개항기 + 사건 + 사건,4,0.08
+76,era_topic_train_topic,actual,2,일제 강점기 + 사건 + 사건,4,0.08
+76,era_topic_train_topic,actual,3,고려 + 사건 + 사건,3,0.06
+76,era_topic_train_topic,actual,4,조선 + 사건 + 사건,3,0.06
+76,era_topic_train_topic,actual,5,조선 + 인물 + 인물,3,0.06
+77,era_topic_train_topic,predicted,1,일제 강점기 + 사건 + 사건,5,0.1
+77,era_topic_train_topic,predicted,2,고려 + 인물 + 인물,3,0.06
+77,era_topic_train_topic,predicted,3,조선 + 인물 + 인물,3,0.06
+77,era_topic_train_topic,predicted,4,조선 + 사건 + 사건,3,0.06
+77,era_topic_train_topic,predicted,5,개항기 + 사건 + 사건,3,0.06
+77,era_topic_train_topic,actual,1,고려 + 인물 + 인물,4,0.08
+77,era_topic_train_topic,actual,2,개항기 + 사건 + 사건,4,0.08
+77,era_topic_train_topic,actual,3,삼국 시대 + 인물 + 인물,2,0.04
+77,era_topic_train_topic,actual,4,조선 + 제도 + 제도,2,0.04
+77,era_topic_train_topic,actual,5,조선 + 인물 + 인물,2,0.04
+78,era_topic_train_topic,predicted,1,개항기 + 사건 + 사건,5,0.1
+78,era_topic_train_topic,predicted,2,고려 + 인물 + 인물,3,0.06
+78,era_topic_train_topic,predicted,3,조선 + 사건 + 사건,3,0.06
+78,era_topic_train_topic,predicted,4,조선 + 제도 + 제도,3,0.06
+78,era_topic_train_topic,predicted,5,현대 + 사건 + 사건,3,0.06
+78,era_topic_train_topic,actual,1,고려 + 인물 + 인물,4,0.08
+78,era_topic_train_topic,actual,2,개항기 + 사건 + 사건,4,0.08
+78,era_topic_train_topic,actual,3,일제 강점기 + 사건 + 사건,4,0.08
+78,era_topic_train_topic,actual,4,현대 + 사건 + 사건,4,0.08
+78,era_topic_train_topic,actual,5,조선 + 사건 + 사건,3,0.06
