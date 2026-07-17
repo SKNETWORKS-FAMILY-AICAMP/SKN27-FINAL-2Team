@@ -1,0 +1,72 @@
+{
+  "input": "ai/ml/ML_han_v1.json",
+  "raw_results": "ai/ml/output/gpt_relabel_v2/ml_han_gpt_relabel_v2_raw.jsonl",
+  "outputs": {
+    "json": "ai/ml/output/ml_han_features_v2.json",
+    "csv": "ai/ml/output/ml_han_features_v2.csv"
+  },
+  "total_rows": 1600,
+  "split_counts": {
+    "train": 1200,
+    "test": 400
+  },
+  "era_counts": {
+    "조선": 362,
+    "고려": 273,
+    "일제 강점기": 249,
+    "개항기": 231,
+    "현대": 183,
+    "삼국 시대": 124,
+    "남북국 시대": 102,
+    "선사 시대": 32,
+    "초기 국가": 31,
+    "고조선": 13
+  },
+  "topic_counts": {
+    "사건": 564,
+    "인물": 332,
+    "제도": 196,
+    "문화": 186,
+    "정치": 134,
+    "경제": 64,
+    "군사": 37,
+    "외교": 36,
+    "사상·종교": 26,
+    "사회": 25
+  },
+  "topic_train_v1_counts": {
+    "사건": 564,
+    "인물": 332,
+    "정치": 296,
+    "문화": 212,
+    "제도": 196
+  },
+  "topic_train_v2_counts": {
+    "사건": 568,
+    "인물": 332,
+    "정치": 292,
+    "문화": 212,
+    "제도": 196
+  },
+  "question_type_counts": {
+    "역사 자료의 분석 및 해석": 1040,
+    "연대기의 파악": 408,
+    "역사 탐구의 설계 및 수행": 103,
+    "역사 지식의 이해": 35,
+    "결론의 도출 및 평가": 13,
+    "역사 상황 및 쟁점의 인식": 1
+  },
+  "confidence_counts": {
+    "high": 1592,
+    "medium": 8
+  },
+  "ambiguous_counts": {
+    "False": 1589,
+    "True": 11
+  },
+  "usage": {
+    "prompt_tokens": 2826301,
+    "completion_tokens": 221579,
+    "total_tokens": 3047880
+  }
+}

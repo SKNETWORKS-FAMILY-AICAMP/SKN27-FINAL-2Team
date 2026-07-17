@@ -1,0 +1,5 @@
+﻿eval_mode,combo,accuracy,macro_f1,weighted_f1,label_count_true,label_count_pred,test_size
+fixed_holdout,era_topic_train,0.74,0.7008252880772563,0.7341124530426691,41,40,400
+fixed_holdout,era_topic_train_topic,0.6825,0.36199728580969176,0.6868048794059187,64,77,400
+walk_forward,era_topic_train,0.7575,0.6956482719658114,0.7511830117386765,41,40,400
+walk_forward,era_topic_train_topic,0.69,0.3834720247616988,0.698489390553407,64,80,400
