@@ -2,6 +2,42 @@ CREATE CONSTRAINT term_id_unique IF NOT EXISTS
 FOR (n:Term)
 REQUIRE n.term_id IS UNIQUE;
 
+CREATE CONSTRAINT source_record_id_unique IF NOT EXISTS
+FOR (n:SourceRecord)
+REQUIRE n.source_record_id IS UNIQUE;
+
+CREATE CONSTRAINT canonical_entity_id_unique IF NOT EXISTS
+FOR (n:CanonicalEntity)
+REQUIRE n.canonical_id IS UNIQUE;
+
+CREATE CONSTRAINT polity_id_unique IF NOT EXISTS
+FOR (n:Polity)
+REQUIRE n.polity_id IS UNIQUE;
+
+CREATE CONSTRAINT reign_id_unique IF NOT EXISTS
+FOR (n:Reign)
+REQUIRE n.reign_id IS UNIQUE;
+
+CREATE CONSTRAINT royal_action_id_unique IF NOT EXISTS
+FOR (n:RoyalAction)
+REQUIRE n.action_id IS UNIQUE;
+
+CREATE CONSTRAINT cultural_heritage_id_unique IF NOT EXISTS
+FOR (n:CulturalHeritage)
+REQUIRE n.heritage_id IS UNIQUE;
+
+CREATE CONSTRAINT source_image_id_unique IF NOT EXISTS
+FOR (n:SourceImage)
+REQUIRE n.source_image_id IS UNIQUE;
+
+CREATE CONSTRAINT inscription_content_id_unique IF NOT EXISTS
+FOR (n:InscriptionContent)
+REQUIRE n.inscription_id IS UNIQUE;
+
+CREATE CONSTRAINT source_text_id_unique IF NOT EXISTS
+FOR (n:SourceText)
+REQUIRE n.source_text_id IS UNIQUE;
+
 CREATE CONSTRAINT event_id_unique IF NOT EXISTS
 FOR (n:Event)
 REQUIRE n.event_id IS UNIQUE;
@@ -90,6 +126,62 @@ CREATE INDEX term_name_index IF NOT EXISTS
 FOR (n:Term)
 ON (n.name);
 
+CREATE INDEX canonical_entity_name_index IF NOT EXISTS
+FOR (n:CanonicalEntity)
+ON (n.name);
+
+CREATE INDEX canonical_entity_type_index IF NOT EXISTS
+FOR (n:CanonicalEntity)
+ON (n.entity_type);
+
+CREATE INDEX source_article_eid_index IF NOT EXISTS
+FOR (n:SourceArticle)
+ON (n.source_eid);
+
+CREATE INDEX polity_name_index IF NOT EXISTS
+FOR (n:Polity)
+ON (n.name);
+
+CREATE INDEX reign_start_year_index IF NOT EXISTS
+FOR (n:Reign)
+ON (n.start_year);
+
+CREATE INDEX reign_end_year_index IF NOT EXISTS
+FOR (n:Reign)
+ON (n.end_year);
+
+CREATE INDEX reign_succession_order_index IF NOT EXISTS
+FOR (n:Reign)
+ON (n.succession_order);
+
+CREATE INDEX royal_action_type_index IF NOT EXISTS
+FOR (n:RoyalAction)
+ON (n.action_type);
+
+CREATE INDEX royal_action_start_year_index IF NOT EXISTS
+FOR (n:RoyalAction)
+ON (n.start_year);
+
+CREATE INDEX cultural_heritage_kind_index IF NOT EXISTS
+FOR (n:CulturalHeritage)
+ON (n.heritage_kind);
+
+CREATE INDEX cultural_heritage_name_index IF NOT EXISTS
+FOR (n:CulturalHeritage)
+ON (n.name);
+
+CREATE INDEX source_image_title_index IF NOT EXISTS
+FOR (n:SourceImage)
+ON (n.title);
+
+CREATE INDEX inscription_content_name_index IF NOT EXISTS
+FOR (n:InscriptionContent)
+ON (n.name);
+
+CREATE INDEX source_text_title_index IF NOT EXISTS
+FOR (n:SourceText)
+ON (n.title);
+
 CREATE INDEX term_start_year_index IF NOT EXISTS
 FOR (n:Term)
 ON (n.start_year);
@@ -106,9 +198,11 @@ CREATE INDEX person_name_index IF NOT EXISTS
 FOR (n:Person)
 ON (n.name);
 
-CREATE INDEX person_degree_index IF NOT EXISTS
+DROP INDEX person_degree_index IF EXISTS;
+
+CREATE INDEX person_core_relation_degree_index IF NOT EXISTS
 FOR (n:Person)
-ON (n.degree);
+ON (n.core_relation_degree);
 
 CREATE INDEX canonical_category_path_index IF NOT EXISTS
 FOR (n:CanonicalCategory)

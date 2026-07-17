@@ -1,6 +1,12 @@
 # Neo4j 구현 전체 흐름
 
-이 문서는 한국사 Graph DB 구현에서 전처리, CSV 생성 규칙, seed 관리, Neo4j import CSV, Cypher 쿼리까지 전체 흐름을 한 번에 보기 위한 기준 문서다.
+> 문서 상태: `CURRENT-PARTIAL`
+> 확인일: 2026-07-14
+> 최신 상태와 문서 우선순위는 [README.md](./README.md)를 먼저 본다.
+> 이 문서의 5단계·17노드·39관계 CSV 설명은 초기 기본 그래프의 상세 기록이며,
+> 아래 12단계 보충과 충돌하면 최신 보충을 우선한다.
+
+이 문서는 한국사 Graph DB 구현에서 전처리, CSV 생성 규칙, seed 관리, Neo4j import CSV, Cypher 쿼리까지 전체 흐름을 한 번에 보기 위한 운영 문서다.
 
 현재 기준은 다음과 같다.
 
@@ -10,8 +16,21 @@
 - `etl/preprocessing/neo4j/seed`는 사람이 관리하는 규칙표다. runner가 생성하지 않는다.
 - Cypher 파일은 `storage/neo4j/schema/` 아래의 `history_graph_*.cypher`를 사용한다.
 - 과거 `init.cypher`, `event.cypher`는 삭제했고 현재 import 흐름에서 사용하지 않는다.
+- SOURCE/GENERATED 기준은 runner 12단계, seed CSV 31개, node CSV 26개,
+  relationship CSV 55개다. typed 인물 관계 seed와 import Cypher 선언을 포함해
+  2026-07-14 전체 runner QA에서 검증했다.
+- runner는 기존 최종 import를 먼저 정리하지 않는다. 최종 `nodes/relations`는 별도
+  candidate 폴더에 만들고, 12단계 QA와 import Cypher 선언 검사를 통과해 완료 marker를
+  기록한 뒤에만 최종 import 폴더로 원자적 승격한다. `normalized`, `dictionary`,
+  `mapping`, `staging`은 기존 위치에서 재생성되는 비원자적 중간 산출물이다.
+- CSV 재생성과 LIVE 적재는 별도다. `load_schema.py`를 명시적으로 실행하기 전에는 LIVE가
+  바뀌지 않는다.
 
-행 수는 현재 생성된 CSV 기준이다. raw 데이터나 seed를 바꾸면 다시 생성될 수 있다.
+행 수는 실행마다 달라진다. CSV 안 인용 필드에 개행이 있으므로 단순 줄 수가 아니라 CSV
+파서의 논리 레코드 수를 사용한다. 직전 54개 relation 수치는 과거 snapshot이고,
+현재 GENERATED는 node CSV 26개와 relationship CSV 55개다. preload 114건과 golden 21건,
+총 135/135 QA를 통과했으며 완료 manifest 생성과 최종 import 승격까지 끝났다.
+LIVE Neo4j 적재는 아직 수행하지 않았다.
 
 ---
 
@@ -24,7 +43,9 @@ flowchart LR
     dictionary["dictionary CSV\n노드 후보 사전"]
     mapping["mapping CSV\n사전 간 crosswalk"]
     staging["staging CSV\n중간 관계/날짜 파싱"]
-    graph["Neo4j import CSV\nnodes / relations"]
+    candidate["candidate import CSV\n.neo4j_import.building"]
+    validate["12단계 QA + schema 선언 검사\n완료 marker"]
+    graph["최종 import CSV\nneo4j_import"]
     cypher["Cypher import\nconstraints / nodes / relations / verify"]
     neo4j["Neo4j Graph DB"]
 
@@ -33,9 +54,11 @@ flowchart LR
     normalized --> staging
     dictionary --> mapping
     mapping --> staging
-    dictionary --> graph
-    mapping --> graph
-    staging --> graph
+    dictionary --> candidate
+    mapping --> candidate
+    staging --> candidate
+    candidate --> validate
+    validate -->|"atomic promotion"| graph
     graph --> cypher
     cypher --> neo4j
 ```
@@ -51,12 +74,23 @@ runner 실행 순서:
 | 순서 | 스크립트 | 생성 대상 | 역할 |
 |---:|---|---|---|
 | 1 | `scripts/normalize_raw_data.py` | `normalized/` | raw CSV를 EDA 기준으로 정리 |
-| 2 | `scripts/make_base_dictionaries.py` | `dictionary/`, `staging/` | 1차 사전, 날짜 파싱, URL 사전 생성 |
+| 2 | `scripts/make_base_dictionaries.py` | `dictionary/`, `staging/` | 1차 사전, 날짜 파싱, 이미지 관련 콘텐츠 parsing, URL 사전 생성 |
 | 3 | `scripts/make_mapping_tables.py` | `dictionary/`, `mapping/`, `staging/` | 카테고리/이벤트/국가/지역/경제/중간 facet 매핑 생성 |
 | 4 | `scripts/make_graph_csv.py` | `storage/neo4j/neo4j_import/nodes/`, `storage/neo4j/neo4j_import/relations/` | Neo4j import용 최종 CSV 생성 |
 | 5 | `scripts/make_theme_era_csv.py` | `storage/neo4j/neo4j_import/nodes/`, `storage/neo4j/neo4j_import/relations/` | Theme/Era/EntityType 상위 레이어 노드/관계 CSV 생성 |
+| 6 | `scripts/make_aks_graph_csv.py` | 최종 import CSV | AKS `SourceRecord`·`CanonicalEntity` 기본 그래프 생성 |
+| 7 | `scripts/make_aks_reign_graph_csv.py` | 최종 import CSV | 국가·재위와 사건 시작/종료 재위 관계 생성 |
+| 8 | `scripts/make_aks_royal_action_csv.py` | 최종 import CSV | 검수된 왕 업적 구조 사례 생성 |
+| 9 | `scripts/make_aks_heritage_csv.py` | node CSV | 문화유산 역할·세부분류 생성 |
+| 10 | `scripts/make_source_image_csv.py` | 최종 import CSV | 이미지 원천과 `DEPICTS`, `HAS_RELATED_CONTENT` 생성 |
+| 11 | `scripts/make_inscription_content_csv.py` | 최종 import CSV | 비문 내용·텍스트 표현 관계 생성 |
+| 12 | `scripts/validate_graph_qa.py` | 검증 결과 | positive/negative graph QA 실행 |
 
-`make_graph_csv.py`를 단독 실행하면 기본 출력은 `etl/preprocessing/neo4j/graph/nodes/`, `etl/preprocessing/neo4j/graph/relations/`다. 다만 runner의 graph 생성 단계는 `--nodes-dir`, `--relations-dir`를 넘겨 `storage/neo4j/neo4j_import/` 아래로 바로 저장한다.
+`make_graph_csv.py`의 현재 기본 출력도 `neo4j_common.resolve_import_dir()`가 정한
+`storage/neo4j/neo4j_import/nodes/`, `relations/`다. 과거 `etl/preprocessing/neo4j/graph/`
+경로 설명은 더 이상 적용하지 않는다.
+runner 자식 프로세스에는 `NEO4J_IMPORT_DIR`로 candidate 경로를 전달한다. 단독 스크립트
+실행은 기본 최종 경로를 쓰므로 운영 재생성은 runner 사용을 원칙으로 한다.
 `make_term_person_review.py`는 기본 runner에 포함하지 않는다. 이 스크립트는 graph CSV 생성 이후 Term-Person 수동 검수 후보가 필요할 때 단독 실행한다.
 
 노드/관계 설계 판단의 상세 근거는 `docs/neo4j/neo4j_설계_근거.md`에 둔다.
@@ -69,7 +103,7 @@ runner 실행 순서:
 | 경로 | 성격 | 설명 |
 |---|---|---|
 | `etl/raw_data/` | raw 입력 | 원본 CSV가 있는 곳 |
-| `etl/preprocessing/neo4j/run_neo4j_preprocessing.py` | 시작 파일 | 전처리 스크립트 6개를 순서대로 실행 |
+| `etl/preprocessing/neo4j/run_neo4j_preprocessing.py` | 시작 파일 | 전처리 스크립트 12개를 순서대로 실행 |
 | `etl/preprocessing/neo4j/scripts/` | 전처리 코드 | 정규화, 사전 생성, 매핑 생성, graph CSV 생성 로직 |
 | `etl/preprocessing/neo4j/seed/` | 수동 규칙 | 사람이 관리하는 고정 규칙표 |
 | `etl/preprocessing/neo4j/normalized/` | 중간 산출물 | raw를 EDA 기준으로 정리한 CSV |
@@ -104,7 +138,7 @@ runner 실행 순서:
 | `normalized/terms.csv` | 61,598 | `term_kind=2`인 실제 용어만 남김. `term_id` 기준 중복 제거. `term_ch`는 `Term` 속성으로 보존. `term_user`, `term_created`, `term_reference`, `term_attr` 등 그래프 설계에 쓰지 않는 컬럼은 제외 |
 | `normalized/events.csv` | 600 | `event_id` 기준 중복 제거. `scope`, `person_count`, `detail_url` 제거. `detail_url`은 event별 `source_urls`로 합침 |
 | `normalized/event_relations.csv` | 6,918 | `event_id`, `person_id`, `relation_type`이 모두 같은 경우 중복 제거. `detail_url`은 `source_urls`로 합침. `scope`, 비어 있는 관련 사건/evidence 컬럼은 제외 |
-| `normalized/person_relations.csv` | 206,507 | `person_id`, `related_person_id`, `relation_type` 기준 중복 제거. 인물 관계 검수에 필요한 `related_*`, `related_count`, `evidence_url`, `detail_url`은 보존 |
+| `normalized/person_relations.csv` | 206,507 | `person_id`, `related_person_id`, `relation_type` 기준 중복 제거. `related_*`, `related_count`, `evidence_url`, `detail_url`은 원천 검수용으로 보존하되 `related_count`는 최종 관계 강도로 사용하지 않음 |
 
 정규화 단계에서 URL을 바로 버리지 않는 이유는 이후 `SourceUrl` 노드로 분리해 Web RAG/Tavily 연계 후보로 쓸 수 있기 때문이다.
 
@@ -121,7 +155,7 @@ seed는 자동 생성 결과가 아니라 사람이 관리하는 입력 규칙�
 | `region_seed.csv` | 7 | 기타지역, 동남아시아, 서남아시아, 아메리카, 아프리카, 유럽, 중앙아시아 같은 권역 정의 |
 | `event_facet_seed.csv` | 53 | 원천 이벤트 분류를 사건 의미 facet으로 재분류 |
 | `period_seed.csv` | 29 | 시대 순서, 범위 확장 후보, 연도 범위, 상위 시대 정보 정의 |
-| `relation_type_seed.csv` | 16 | 인물 관계 원문 타입을 정규화 타입, 관계 그룹, 방향성 기준으로 매핑 |
+| `relation_type_seed.csv` | 16 | 인물 관계 원문 타입을 정규화 의미, 실제 `neo4j_rel_type`, 관계 그룹, 방향성 기준으로 매핑 |
 | `taxonomy_crosswalk_seed.csv` | 42 | 이벤트 분류와 표준 카테고리 사이의 수동 매핑 |
 | `theme_seed.csv` | 10 | 서비스 고정 주제 10개(사건/인물/정치/제도/문화/사회/군사/경제/사상·종교/외교). 계층 없는 평면 구조 |
 | `category_theme_seed.csv` | 30 | 표준 카테고리 경로와 주제의 매핑. prefix 규칙으로 하위 경로까지 흡수. 정치·행정·법제는 depth 2에서 정치/제도로 분리 |
@@ -131,6 +165,7 @@ seed는 자동 생성 결과가 아니라 사람이 관리하는 입력 규칙�
 | `keyword_era_seed.csv` | 120 | 시험 빈출 키워드와 표준 시대의 매핑. `test/CJ/test_ML/ml_keyword_era_overrides.json`에서 변환 후 고조선/초기 국가 키워드 20건 확장 |
 | `reign_seed.csv` | 8 | 왕대/연호 이름과 연도 범위. 연도 파서 보조용. 같은 왕 이름이 여러 시대에 있으면 자동 계산에서 제외 |
 | `term_person_review_approved.csv` | 0 | 사람이 승인한 Term-Person 수동 연결 목록. 승인 행은 `term_refers_to_person.csv`에 `match_type=MANUAL`로 합류 |
+| `graph_preload_contract_seed.csv` | 계약 행 | 핵심 relation별 endpoint 파일·ID 컬럼·유일키·계약 건수를 선언해 step 12 preload QA에서 검사 |
 
 seed가 필요한 이유:
 
@@ -151,8 +186,8 @@ seed가 필요한 이유:
 | `canonical_category_dictionary.csv` | 400 | `terms.term_lk`를 `>>`로 복수 경로 분리, 각 경로를 `>`로 depth 분리. depth별 `category_path`를 모두 생성하고 부모 경로를 연결 |
 | `source_event_category_dictionary.csv` | 53 | `events.subject_category`를 쉼표/줄바꿈 기준으로 분리해 원천 이벤트 분류 사전 생성 |
 | `period_dictionary.csv` | 30 | `terms.term_times`, `events.period`의 시대명을 수집한 뒤 `period_seed.csv`로 순서/기간/범위 확장 가능 여부 보강 |
-| `relation_type_dictionary.csv` | 16 | `person_relations.relation_type` 빈도에 `relation_type_seed.csv`를 merge해서 정규화 관계 사전 생성 |
-| `source_url_dictionary.csv` | 57,412 | events, event_relations의 `source_urls`와 person_relations의 `detail_url`만 모아 중복 제거. RAG 후보 상태값 포함 |
+| `relation_type_dictionary.csv` | 16 | `person_relations.relation_type` 빈도에 `relation_type_seed.csv`를 merge해 `neo4j_rel_type`까지 보존한 관계 사전 생성 |
+| `source_url_dictionary.csv` | 57,239 | 사건 URL, 인물 상세 URL, 이미지 관련 콘텐츠 고유 URL 427개를 합쳐 중복 제거. 전체 runner 검증 완료 |
 
 ### 5.2 2차 dictionary
 
@@ -176,6 +211,7 @@ seed가 필요한 이유:
 | `event_source_category_relation.csv` | 713 | 사건이 가진 원천 이벤트 분류 관계 후보 |
 | `event_date_parse.csv` | 703 | `event_date`에서 시작/종료 연도, 월, 왕대 표현, 파싱 상태 추출 |
 | `term_year_parse.csv` | 61,598 | `term_year`에서 시작/종료 연도, precision, 파싱 상태 추출. 최종 `nodes/terms.csv`에 병합 |
+| `image_related_content.csv` | 1,720 | 이미지 원천의 `제목 (콘텐츠군) \| URL`을 엄격히 파싱한 구조화 링크. 고유 URL 427개를 SourceUrl 사전에 합류하고 `HAS_RELATED_CONTENT` 생성에 사용 |
 | `term_person_review.csv` | 206 | graph CSV 기준 Term-Person 수동 검수 후보. `review_type`으로 검수 유형을 구분하고, 승인 결과는 `seed/term_person_review_approved.csv`에 기록 |
 
 ### 6.2 mapping CSV
@@ -232,7 +268,7 @@ flowchart TD
 | `canonical_categories.csv` | `CanonicalCategory` | 400 | `category_id` | `history_terms.term_lk` 기반 표준 카테고리 |
 | `source_event_categories.csv` | `SourceEventCategory` | 53 | `event_category_id` | ITKC 이벤트 원천 분류 |
 | `periods.csv` | `Period` | 30 | `period_id` | 시대/기간 노드. 범위 확장 순서 정보 포함 |
-| `source_urls.csv` | `SourceUrl` | 57,412 | `source_url_id` | 출처 URL. RAG 수집 후보 |
+| `source_urls.csv` | `SourceUrl` | 57,239 | `source_url_id` | 사건·인물 상세·이미지 관련 콘텐츠 출처 URL. 전체 runner 검증 완료 |
 | `event_groups.csv` | `EventGroup` | 32 | `event_group_id` | `related_event`를 묶은 사건 그룹 |
 | `event_facets.csv` | `EventFacet` | 53 | `event_facet_id` | 전쟁, 정치, 제도 등 이벤트 의미 facet |
 | `countries.csv` | `Country` | 5 | `country_id` | 국가/정치체 의미 축 |
@@ -248,10 +284,10 @@ flowchart TD
 
 | Label | 주요 속성 |
 |---|---|
-| `Term` | `name`, `hanja`, `remark`, `year_text`, `period_text`, `category_text`, `description`, `topterm_id`, `start_year`, `end_year`, `year_precision`, `year_parse_status`, `question_ready`, `source` |
+| `Term` | `name`, `hanja`, `remark`, `year_text`, `period_text`, `category_text`, `description`, `start_year`, `end_year`, `year_precision`, `year_parse_status`, `question_ready`, `source` |
 | `Event` | `name`, `subject_category`, `period_text`, `event_date`, `related_event_name`, `source_urls`, `start_year`, `end_year`, `date_precision`, `parse_status` |
-| `Person` | `name`, `name_candidates`, `birth_year`, `death_year`, `bonkwan`, `father_name`, `detail_urls`, `degree`, `source` |
-| `CanonicalCategory` | `name`, `category_path`, `parent_category_id`, `depth`, `root_category_name`, `term_count`, `direct_term_count` |
+| `Person` | `name`, `name_candidates`, `birth_year`, `death_year`, `bonkwan`, `detail_urls`, `core_relation_degree`, `source` |
+| `CanonicalCategory` | `name`, `category_path`, `depth`, `term_count`, `direct_term_count`, `source`, `review_status` |
 | `Period` | `name`, `period_level`, `range_group`, `period_order`, `start_year`, `end_year`, `is_range_expansion_candidate` |
 | `SourceUrl` | `url`, `source_tables`, `source_columns`, `source_types`, `source_count`, `use_for_rag`, `fetch_status` |
 
@@ -285,7 +321,7 @@ flowchart LR
     Econ["EconomicDomain<br/>경제 분야 (16)"]
 
     %% ===== 출처/그룹 =====
-    Url["SourceUrl<br/>출처 URL (57,412)"]
+    Url["SourceUrl<br/>출처 URL (57,239 실측)"]
     EventGroup["EventGroup<br/>사건군 (32)"]
 
     %% ----- Term에서 나가는 관계 -----
@@ -319,7 +355,7 @@ flowchart LR
 
     %% ----- Person에서 나가는 관계 -----
     Person -->|"INVOLVED_IN · 사건 참여 (6,918)"| Event
-    Person -->|"RELATED_TO · 인물 관계 (184,044)"| Person
+    Person -->|"typed 인물 관계 16종 (184,044)<br/>미등록 유형만 RELATED_TO"| Person
     Person -->|"HAS_THEME · 주제 (60,512)"| Theme
     Person -->|"IN_ERA · 시대 (23,029)"| Era
     Person -->|"HAS_SOURCE_URL · 상세 (56,212)"| Url
@@ -361,7 +397,7 @@ flowchart LR
 | `event_about_country.csv` | `ABOUT_COUNTRY` | 2 | `Event -> Country` | 이벤트 표준 카테고리가 국가 crosswalk에 걸리면 연결 |
 | `event_about_taxonomy_facet.csv` | `ABOUT_TAXONOMY_FACET` | 714 | `Event -> TaxonomyFacet` | 이벤트 표준 카테고리가 taxonomy facet에 속하면 연결 |
 | `person_involved_in_event.csv` | `INVOLVED_IN` | 6,918 | `Person -> Event` | event_relations의 사건-인물 관계. CSV 속성 `relation_type`도 Neo4j 관계 타입과 같은 `INVOLVED_IN`으로 맞춤 |
-| `person_related_to_person.csv` | `RELATED_TO` | 184,044 | `Person -> Person` | person_relations의 인물 관계. raw/normalized relation type, 방향성, `evidence_url` 속성 보존. 대칭 관계(`is_symmetric=Y`)는 무방향 쌍 기준으로 한 방향만 저장. 인물 이름과 detail_url은 Person 노드에 있으므로 관계 속성에서 제외 |
+| `person_related_to_person.csv` | seed 승인 typed 관계 + `RELATED_TO` catch-all | 184,044 | `Person -> Person` | `relation_type_seed.neo4j_rel_type`을 CSV `relation_type`으로 기록하고 Neo4j 5.26 동적 타입으로 적재한다. 대칭 쌍의 서로 다른 근거 URL은 병합하며 전체 runner에서 검증했다. |
 | `person_has_source_url.csv` | `HAS_SOURCE_URL` | 56,212 | `Person -> SourceUrl` | person detail URL을 출처 URL 노드에 연결 |
 | `person_has_search_tag.csv` | `HAS_SEARCH_TAG` | 238,817 | `Person -> SearchTag` | 인물명, 별칭, 참여 사건의 검색 태그, 지시 용어의 검색 태그, 주제, 시대를 검색 태그로 통합 연결 |
 | `canonical_category_subcategory_of.csv` | `SUBCATEGORY_OF` | 335 | `CanonicalCategory -> CanonicalCategory` | 표준 카테고리 부모-자식 관계. 국가/지역 의미 축으로 분리한 경로는 계층 관계에서 제외 |
@@ -392,7 +428,10 @@ flowchart LR
 - 검수자가 실제 누락인지, 의도된 빈 결과인지 매번 구분해야 한다.
 - Neo4j import 문서와 파일 목록이 불필요하게 늘어난다.
 
-그래서 현재 구현은 `make_graph_csv.py`에서 두 optional relation이 0행이면 CSV를 생성하지 않고, 예전에 남아 있던 같은 이름의 빈 CSV도 삭제한다. 다만 Cypher import 블록은 유지하고, `load_schema.py`가 해당 optional CSV가 없으면 그 LOAD 문장만 건너뛴다. 이렇게 한 이유는 나중에 `taxonomy_crosswalk_seed.csv`나 이벤트 분류 매핑을 보강해서 실제 행이 생겼을 때, 별도 구조 변경 없이 같은 관계를 다시 import할 수 있게 하기 위해서다.
+그래서 현재 구현은 `make_graph_csv.py`에서 두 optional relation이 0행이면 CSV를 생성하지
+않고, 예전에 남아 있던 같은 이름의 빈 CSV도 삭제한다. 현재 import Cypher에도 두 LOAD
+블록을 두지 않는다. `load_schema.py`의 optional skip 로직은 이후 매핑 보강으로 행이 생겨
+LOAD 블록을 다시 추가할 경우를 대비한 방어 장치다.
 
 ### 8.2 시대 범위 확장 규칙
 
@@ -409,7 +448,9 @@ flowchart LR
 
 ### 8.3 인물 관계 규칙
 
-인물 관계는 Neo4j type을 모두 `RELATED_TO`로 통일하고, 관계의 실제 의미는 속성으로 보존한다.
+인물 관계는 하나의 `person_related_to_person.csv`를 유지하되 Neo4j 적재 타입은
+`relation_type_seed.neo4j_rel_type`이 결정한다. `relation_type_dictionary.csv`가 실제
+Neo4j 타입, 방향·대칭·역관계 규칙을 소유하고 관계 속성에도 원천 의미를 보존한다.
 
 | 속성 | 의미 |
 |---|---|
@@ -419,10 +460,57 @@ flowchart LR
 | `direction_rule` | 원본 행 방향을 어떻게 해석할지 |
 | `is_symmetric` | 대칭 관계 여부 |
 | `inverse_relation_type` | 반대 방향 관계 후보 |
+| `evidence_url` | 같은 정규화 관계 쌍의 고유 근거 URL을 정렬·중복 제거해 pipe로 병합한 값 |
 
-관계 type을 `HAS_FATHER`, `SIBLING_OF`처럼 모두 쪼개지 않은 이유는 raw 관계명이 다양하고 검수 전 의미가 불안정하기 때문이다. type은 단순화하고 의미는 속성으로 두면 import가 안정적이고, 나중에 정제 규칙을 보강하기 쉽다.
+승인된 정규화 타입은 `HAS_FATHER`, `HAS_CHILD`, `SIBLING_OF`, `HAS_TEACHER`,
+`HAS_STUDENT`, `ASSOCIATED_WITH` 등 typed edge로 적재한다. 목록 밖 유형만
+`RELATED_TO` catch-all로 보존하며, catch-all이 1건이라도 있으면 seed/type 보강이
+필요한 QA 신호로 본다.
 
-대칭 관계(`is_symmetric=Y`, 예: `교유`, `형제`)는 원본에 A->B, B->A 양방향으로 들어 있으므로 CSV 생성 단계에서 무방향 쌍 기준으로 한 방향만 남긴다. 따라서 대칭 관계를 조회할 때는 방향 없는 패턴 `(a)-[r:RELATED_TO]-(b)`을 사용해야 한다.
+대칭 관계(`is_symmetric=Y`, 예: `교유`, `형제`)는 원본에 A→B, B→A 양방향으로
+들어 있으므로 CSV 생성 단계에서 endpoint를 정렬한 무방향 쌍 기준으로 한 방향만 남긴다.
+한쪽 행에만 있던 근거 URL을 잃지 않도록 양방향 `evidence_url`을 합친다. 조회할 때는
+`(a)-[:SIBLING_OF]-(b)`, `(a)-[:ASSOCIATED_WITH]-(b)`처럼 타입별 무방향 패턴을 쓴다.
+
+`related_count`는 대상 인물의 원천 집계인지 관계 강도인지 의미가 불명확해 최종 관계에서
+제외한다. Person의 `core_relation_degree`는 최종 `INVOLVED_IN`과 typed Person-Person
+관계 CSV의 endpoint 등장 수로 다시 계산한다.
+
+### 8.4 2026-07-14 추가 관계
+
+| CSV | 타입 | 최신 GENERATED | 의미 |
+|---|---|---:|---|
+| `period_subperiod_of.csv` | `SUBPERIOD_OF` | 21 | 세부 Period → 상위 Period |
+| `event_group_has_term_candidate.csv` | `HAS_TERM_CANDIDATE` | 18 | 관련 사건명을 공유하는 EventGroup → 유일 이름 일치 Term 후보. `AUTO_CANDIDATE`, `answer_eligible=N` |
+| `event_started_during_reign.csv` | `STARTED_DURING_REIGN` | 444 | Event 시작 시점 → Reign |
+| `event_ended_during_reign.csv` | `ENDED_DURING_REIGN` | 445 | Event 종료 시점 → Reign |
+| `source_image_has_related_content.csv` | `HAS_RELATED_CONTENT` | 1,720 | SourceImage → 원천이 명시한 관련 콘텐츠 SourceUrl |
+| `term_about_country.csv` | `ABOUT_COUNTRY` | 1,619 | Term → Country |
+| `term_about_economic_domain.csv` | `ABOUT_ECONOMIC_DOMAIN` | 2,893 | Term → EconomicDomain |
+| `term_about_taxonomy_facet.csv` | `ABOUT_TAXONOMY_FACET` | 22,894 | Term → TaxonomyFacet |
+| `event_about_taxonomy_facet.csv` | `ABOUT_TAXONOMY_FACET` | 691 | Event → TaxonomyFacet |
+
+위 파생 `ABOUT_*` 관계의 `canonical_category_id`, `canonical_category_path`, `match_type`은
+원본 category mapping tuple의 같은 순서로 각각 pipe 집계한다. QA는 세 열의 항목 수가
+같은지 확인하고, 각 Term/Event의 `HAS_CATEGORY` × `CanonicalCategory-[:ABOUT_*]`로
+source-target별 기대 tuple set을 구성한다. 실제 집계 tuple set은 이 기대 set과 정확히
+같아야 하며 누락·초과를 허용하지 않는다.
+
+과거 `event_has_related_event.csv` 140건은 Event마다 같은 사건군 이름을 반복해 Term에
+연결하므로 제거한다. `Event - PART_OF_EVENT_GROUP -> EventGroup - HAS_TERM_CANDIDATE -> Term`
+경로로 바꾸며 후보 관계는 정답 근거로 사용하지 않는다.
+
+이미지의 `related_content`는 이미지 자체 속성이 아니라 외부 콘텐츠 참조다. step 2에서
+`image_related_content.csv`로 파싱해 고유 URL 427개를 URL 사전에 추가하고, step 10에서
+1,720개 `HAS_RELATED_CONTENT`를 만든다. 이 문자열은 실물/그림을 식별하는 `DEPICTS`
+근거로 사용하지 않으며, 최종 `SourceImage` 노드 속성에서도 제거한다.
+
+사건 날짜의 왕호와 연도가 실제 재위 범위를 벗어난 1개 Event는 재위 관계에서 제외한다.
+`staging/event_reign_mapping_review.csv`에 시작·종료 각 1행, 총 2행을
+`YEAR_OUT_OF_RANGE`로 기록한다.
+
+이 관계들의 SOURCE 생성과 LIVE 반영은 별개다. LIVE 적재 여부는 `load_schema.py` 실행과
+적재 후 verify 결과로 따로 확인한다.
 
 ---
 
@@ -432,7 +520,7 @@ flowchart LR
 
 | 파일 | 기본 실행 여부 | 역할 |
 |---|---|---|
-| `history_graph_constraints.cypher` | 예 | 17개 label의 ID unique constraint와 주요 name/path/url/연도 index 생성 |
+| `history_graph_constraints.cypher` | 예 | 26개 고유성 constraint와 27개 명시적 property index 생성 |
 | `history_graph_import_nodes.cypher` | 예 | `file:///nodes/*.csv`에서 모든 노드 import |
 | `history_graph_import_relations.cypher` | 예 | `file:///relations/*.csv`에서 모든 관계 import |
 | `history_graph_verify.cypher` | 예 | label별 노드 수, 관계 type별 수, 빈 label/type 이상 여부 확인 |
@@ -462,6 +550,15 @@ reset은 Cypher 파일이 아니라 `load_schema.py` 내부 배치 루프로 항
 | Label | Unique key |
 |---|---|
 | `Term` | `term_id` |
+| `SourceRecord` | `source_record_id` |
+| `CanonicalEntity` | `canonical_id` |
+| `Polity` | `polity_id` |
+| `Reign` | `reign_id` |
+| `RoyalAction` | `action_id` |
+| `CulturalHeritage` | `heritage_id` |
+| `SourceImage` | `source_image_id` |
+| `InscriptionContent` | `inscription_id` |
+| `SourceText` | `source_text_id` |
 | `Event` | `event_id` |
 | `Person` | `person_id` |
 | `CanonicalCategory` | `category_id` |
@@ -484,8 +581,17 @@ reset은 Cypher 파일이 아니라 `load_schema.py` 내부 배치 루프로 항
 | Label | Index property |
 |---|---|
 | `Term` | `name`, `start_year`, `end_year` |
+| `CanonicalEntity` | `name`, `entity_type` |
+| `SourceArticle` | `source_eid` |
+| `Polity` | `name` |
+| `Reign` | `start_year`, `end_year`, `succession_order` |
+| `RoyalAction` | `action_type`, `start_year` |
+| `CulturalHeritage` | `heritage_kind`, `name` |
+| `SourceImage` | `title` |
+| `InscriptionContent` | `name` |
+| `SourceText` | `title` |
 | `Event` | `name` |
-| `Person` | `name`, `degree` |
+| `Person` | `name`, `core_relation_degree` |
 | `CanonicalCategory` | `category_path` |
 | `SearchTag` | `tag_name`, `tag_value` |
 | `SourceUrl` | `url` |
@@ -506,7 +612,6 @@ SET n.numeric_property = toIntegerOrNull(row.numeric_property)
 
 `SET n += row`만 쓰면 CSV의 모든 값이 문자열로 들어간다. 그래서 연도, 월, 순서, 집계 수처럼 범위 검색이나 정렬에 쓰일 속성은 `toIntegerOrNull()`로 다시 세팅한다. 현재 명시 캐스팅 대상은 다음 계열이다.
 
-- `Term.topterm_id`
 - `Event.start_year`, `end_year`, `start_month`, `end_month`, `start_reign_year`, `end_reign_year`
 - `Person.birth_year`, `death_year`
 - `CanonicalCategory.depth`, `term_count`, `direct_term_count`
@@ -529,6 +634,19 @@ MERGE (start)-[r:<TYPE>]->(target)
 SET r += row
 ```
 
+인물 관계는 예외적으로 seed가 승인한 타입을 CSV에 기록하고 Neo4j 5.26 동적 관계 타입
+문법으로 한 번만 읽는다.
+
+```cypher
+MERGE (start)-[r:$(row.relation_type) {
+  person_relation_id: row.person_relation_id
+}]->(target)
+```
+
+이때 `SET r += row`로 transport 컬럼 전체를 흘리지 않고 정규화 의미와
+`evidence_url`만 명시적으로 설정한다. 관계 타입의 단일 기준은
+`relation_type_seed.neo4j_rel_type`이다.
+
 중복 collapse를 막아야 하는 관계는 `MERGE`에 추가 key 속성을 포함한다.
 
 | 관계 파일 | MERGE key 보강 |
@@ -536,11 +654,15 @@ SET r += row
 | `event_has_canonical_category.csv` | `event_category_id` |
 | `event_has_facet.csv` | `source_event_category_id` |
 | `event_has_source_url.csv` | `source_column` |
-| `term_has_search_tag.csv` | `source_node_type`, `source_node_id`, `source_relation`, `source_detail` |
-| `event_has_search_tag.csv` | `source_node_type`, `source_node_id`, `source_relation`, `source_detail` |
-| `person_has_search_tag.csv` | `source_node_type`, `source_node_id`, `source_relation`, `source_detail` |
+| `term_has_search_tag.csv` | `source_node_type`, `source_node_id`, `source_relation` |
+| `event_has_search_tag.csv` | `source_node_type`, `source_node_id`, `source_relation` |
+| `person_has_search_tag.csv` | `source_node_type`, `source_node_id`, `source_relation` |
 | `person_involved_in_event.csv` | `event_person_relation_id` |
 | `person_related_to_person.csv` | `person_relation_id` |
+
+`source_detail`은 검색 태그의 계보 속성으로 보존하지만 현재 `MERGE` identity에는 포함하지
+않는다. 최신 preload QA는 55개 relation CSV의 Cypher `MERGE` identity를 모두 파싱했고,
+빈 identity 값과 중복을 각각 0건으로 확인했다.
 
 `event_about_region.csv`, `event_about_economic_domain.csv`는 현재 0행이므로 최종 CSV도 만들지 않고 import Cypher에도 LOAD 블록을 두지 않는다. 따라서 `history_graph_import_relations.cypher`를 직접 실행해도 존재하지 않는 optional CSV 때문에 실패하지 않는다. `load_schema.py`의 optional skip 로직은 이후 해당 블록을 다시 추가할 경우를 대비한 방어 장치로 남아 있다.
 
@@ -577,6 +699,27 @@ storage/neo4j/neo4j_import/relations/*.csv
 ```powershell
 .\.venv\Scripts\python.exe etl/preprocessing/neo4j/run_neo4j_preprocessing.py
 ```
+
+runner는 `.neo4j_preprocessing.lock`으로 동시 실행을 막고 최종 `nodes/relations`를
+`.neo4j_import.building`에 만든다. 12단계 QA, import Cypher 선언 CSV의 존재·header 계약,
+contract seed 대상의 endpoint·고유키·기대 건수 검사를 통과하면
+`.preprocessing_complete.json`을 기록한 뒤 기존 최종 폴더를
+`.neo4j_import.previous`로 옮기고 후보를 원자적으로 승격한다. `normalized`, `dictionary`,
+`mapping`, `staging`은 이 원자적 보호 범위에 포함되지 않는다.
+
+승격 중 실패하면 이전 최종 폴더를 복원하고, 완료 marker가 있는 후보는 삭제하지 않는다.
+Windows에서 실행 중인 Neo4j 컨테이너의 bind mount가 rename을 막는 경우 다음 순서로
+재생성 없이 재승격한다.
+
+```powershell
+docker compose -f storage/neo4j/docker-compose.yml stop neo4j
+.\.venv\Scripts\python.exe etl/preprocessing/neo4j/run_neo4j_preprocessing.py --promote-existing
+docker compose -f storage/neo4j/docker-compose.yml start neo4j
+```
+
+2026-07-14 18:14:27 KST 결과는 preload 114건 + golden 21건 = 135/135 PASS였고,
+completion manifest 생성과 final 승격까지 완료됐다. 이 결과는 GENERATED CSV 상태이며
+LIVE 적재 완료를 뜻하지 않는다.
 
 생성 확인:
 
@@ -632,9 +775,9 @@ docker compose -f storage/neo4j/docker-compose.yml up -d
 인물은 사건 참여와 인물 관계를 분리한다.
 
 - `Person - INVOLVED_IN - Event`
-- `Person - RELATED_TO - Person`
+- `Person - typed relation - Person`
 - `Person - HAS_SOURCE_URL - SourceUrl`
-- 인물 관계 근거 URL은 `Person - RELATED_TO - Person`의 `evidence_url` 속성
+- 인물 관계 근거 URL은 typed 인물 관계 또는 catch-all `RELATED_TO`의 `evidence_url` 속성
 
 인물 관계 방향과 의미는 관계 속성으로 확인한다.
 
@@ -673,7 +816,8 @@ Tavily 같은 Web RAG 도구를 붙일 경우, 그래프에서 관련 `SourceUrl
 - 이벤트 분류와 표준 카테고리의 연결은 `taxonomy_crosswalk.csv`로 명시한다.
 - 국가, 지역, 경제 분야, 중간 taxonomy facet은 카테고리에서 의미 축으로 분리한다.
 - 범위 시대 처리는 쿼리가 아니라 CSV 생성 단계에서 끝낸다.
-- 인물 관계는 type을 과하게 쪼개지 않고 `RELATED_TO` 하나와 속성으로 의미를 표현한다.
+- 인물 관계는 승인된 16개 정규화 유형을 typed edge로 적재하고, 미등록 유형만
+  `RELATED_TO` catch-all로 보존한다.
 - 최종 import 대상은 `storage/neo4j/neo4j_import/nodes`, `storage/neo4j/neo4j_import/relations`다.
 - Neo4j import 쿼리는 `storage/neo4j/schema/history_graph_*.cypher`만 보면 된다.
 
@@ -692,7 +836,8 @@ Tavily 같은 Web RAG 도구를 붙일 경우, 그래프에서 관련 `SourceUrl
 조회 규칙 중 구현에 직접 필요한 것만 남긴다.
 
 - SearchTag 경유 조회는 같은 노드가 여러 출처로 잡힐 수 있으므로 `RETURN DISTINCT`를 사용한다.
-- 인물 관계 근거 URL은 `SourceUrl` 노드가 아니라 `RELATED_TO.evidence_url` 속성에서 확인한다.
+- 인물 관계 근거 URL은 `SourceUrl` 노드가 아니라 typed 인물 관계 또는 catch-all
+  `RELATED_TO`의 `evidence_url` 속성에서 확인한다.
 - 서비스의 시대·주제·유형 필터는 `IN_ERA`, `HAS_THEME`, `HAS_ENTITY_TYPE` 직통 관계를 우선 사용한다.
 
 ---
@@ -732,7 +877,9 @@ Tavily 같은 Web RAG 도구를 붙일 경우, 그래프에서 관련 `SourceUrl
 
 ### 15.3 Person 중요도
 
-`people.csv`에 `degree` 컬럼을 추가했다. `event_relations.person_id`, `person_relations.person_id`, `person_relations.related_person_id`에 등장한 횟수를 합산해 인물의 연결 정도를 표시한다.
+`people.csv`의 현재 중요도 컬럼은 `core_relation_degree`다. 원천 row 등장 횟수가 아니라
+최종 `person_involved_in_event.csv`의 시작 Person과 `person_related_to_person.csv`의 양
+endpoint 등장 횟수를 합산한다. 대칭 관계 병합 이후 계산하므로 실제 코어 그래프와 맞는다.
 
 이 값은 “관계가 많은 중심 인물부터 문제로 낼지”, “그래프 탐색에서 중요한 인물을 먼저 보여줄지” 같은 우선순위 계산에 사용한다.
 
@@ -778,9 +925,11 @@ Tavily 같은 Web RAG 도구를 붙일 경우, 그래프에서 관련 `SourceUrl
 | `events.source_urls` | `SourceUrl` 노드 + `Event - HAS_SOURCE_URL - SourceUrl` |
 | `event_relations.source_urls` | `SourceUrl` 노드 + `Event - HAS_SOURCE_URL - SourceUrl` |
 | `person_relations.detail_url` | `SourceUrl` 노드 + `Person - HAS_SOURCE_URL - SourceUrl` |
-| `person_relations.evidence_url` | `Person - RELATED_TO - Person` 관계의 `evidence_url` 속성으로만 보존 |
+| `source_images.related_content` | parsing staging + `SourceUrl` 노드 + `SourceImage - HAS_RELATED_CONTENT - SourceUrl` |
+| `person_relations.evidence_url` | typed 인물 관계 또는 catch-all `RELATED_TO`의 `evidence_url` 속성으로만 보존 |
 
-따라서 `person_has_evidence_url.csv`와 `HAS_EVIDENCE_URL` import 블록은 생성하지 않는다. 인물 관계의 근거를 확인할 때는 `RELATED_TO.evidence_url`을 조회한다.
+따라서 `person_has_evidence_url.csv`와 `HAS_EVIDENCE_URL` import 블록은 생성하지 않는다.
+인물 관계의 근거를 확인할 때는 실제 관계 타입의 `evidence_url`을 조회한다.
 
 ### 15.7 Term-Person 수동 검수 흐름
 
@@ -827,7 +976,7 @@ staging 파일의 `review_status`와 `note`를 수정해도 graph 반영 기준�
 `history_graph_import_nodes.cypher`는 다음 속성을 숫자로 캐스팅한다.
 
 - `Term.start_year`, `Term.end_year`, `Term.description_length`
-- `Person.degree`
+- `Person.core_relation_degree`
 - `Era.start_year`, `Era.end_year`
 
 `history_graph_import_relations.cypher`는 다음 관계 CSV를 추가로 import한다.
@@ -839,7 +988,7 @@ staging 파일의 `review_status`와 `note`를 수정해도 graph 반영 기준�
 - `event_has_search_tag.csv`
 - `person_has_search_tag.csv`
 
-`history_graph_constraints.cypher`에는 `Term.start_year`, `Term.end_year`, `Person.degree` 인덱스를 추가했다.
+`history_graph_constraints.cypher`에는 `Term.start_year`, `Term.end_year`, `Person.core_relation_degree` 인덱스를 추가했다.
 서비스에서 이름으로 바로 조회하는 `Theme.name`, `Era.name`, `EntityType.name`에도 인덱스를 둔다.
 SearchTag 검색에는 `SearchTag.tag_name`, `SearchTag.tag_value` 인덱스를 사용한다.
 

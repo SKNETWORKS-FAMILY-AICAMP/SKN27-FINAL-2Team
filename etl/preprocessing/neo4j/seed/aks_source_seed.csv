@@ -1,0 +1,2 @@
+source_id,source_name,source_record_id_prefix,canonical_id_prefix,reign_id_prefix,heritage_id_prefix,raw_relative_path,review_status
+AKS,한국민족문화대백과사전,AKS_ARTICLE,AKS_ENTITY,AKS_REIGN,AKS_HERITAGE,etl/raw_data/한국민족문화대백과사전/articles_detail.jsonl,SOURCE_ANCHORED

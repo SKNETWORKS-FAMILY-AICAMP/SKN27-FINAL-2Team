@@ -1,5 +1,9 @@
 # 학습계획 정책 정리
 
+> 문서 상태: LEGACY MIXED
+> 현재 구현 설명과 과거 제안이 섞여 있으므로 신규 구현 기준으로 사용하지 않는다.
+> v2 기준은 [study_plan/SPEC.md](study_plan/SPEC.md)와 [study_plan/CONTRACTS.md](study_plan/CONTRACTS.md)를 따른다.
+
 > **ℹ️ 부분 갱신 안내 (2026-07 기준)**
 > 이 문서의 대부분(블록 유형·진행률·이월·삭제·과거날짜 차단)은 현행 정책이다.
 > 단, 아래 "주간평가 판단 기준"은 최신 설계에서 `SolveSessions.review_type='weekly_review'`를 1차 식별 기준으로 바꿨다. 자세한 흐름은 `docs/mypage/weekly_review_ai_report_plan.md`를 따른다.
@@ -460,4 +464,14 @@ canStart = plan_date == today and not done
 ### 이월 후 진행률
 
 1. 이월된 블록에서 문제풀이를 시작한다.
-2. 생성된 `SolveRecords.study_plan_block_id
+2. 생성된 `SolveRecords.study_plan_block_id`가 이월 전과 같은 `blockId`인지 확인한다.
+3. 세션을 제출 완료한다.
+4. 해당 블록의 달성 문항 수와 진행률이 증가하는지 확인한다.
+5. 다른 plan 또는 block의 기록이 섞이지 않는지 확인한다.
+
+### 주간평가 음성 검증
+
+1. 일반 진단평가는 주간평가 블록을 완료시키지 않아야 한다.
+2. 날짜가 지난 미완료 주간평가를 question API로 시작할 수 없어야 한다.
+3. 이미 완료된 주간평가를 중복 제출해도 완료 시각과 진행률이 중복 변경되지 않아야 한다.
+4. report·worker가 없는 환경에서는 자동 Planner 완료를 전제로 수동 복구 경로를 숨기면 안 된다.

@@ -1,0 +1,8 @@
+contract_id,relation_file,start_node_file,start_node_id_column,start_relation_id_column,end_node_file,end_node_id_column,end_relation_id_column,unique_key_columns,expected_row_count,review_status,note
+PERIOD_HIERARCHY,period_subperiod_of.csv,periods.csv,period_id,start_period_id,periods.csv,period_id,end_period_id,start_period_id|end_period_id,21,APPROVED,기간 계층 기준선
+EVENT_START_REIGN,event_started_during_reign.csv,events.csv,event_id,start_event_id,reigns.csv,reign_id,end_reign_id,start_event_id|end_reign_id,444,APPROVED,연도 범위 검증을 통과한 사건 시작 재위 기준선
+EVENT_END_REIGN,event_ended_during_reign.csv,events.csv,event_id,start_event_id,reigns.csv,reign_id,end_reign_id,start_event_id|end_reign_id,445,APPROVED,연도 범위 검증을 통과한 사건 종료 재위 기준선
+EVENT_GROUP_TERM_CANDIDATE,event_group_has_term_candidate.csv,event_groups.csv,event_group_id,start_event_group_id,terms.csv,term_id,end_term_id,start_event_group_id,18,APPROVED,유일 이름 일치 후보만 허용
+PERSON_TYPED_RELATION,person_related_to_person.csv,people.csv,person_id,start_person_id,people.csv,person_id,end_person_id,person_relation_id,184044,APPROVED,정규화된 인물 관계 기준선
+SOURCE_IMAGE_DEPICTS,source_image_depicts_entity.csv,source_images.csv,source_image_id,source_image_id,canonical_entities.csv,canonical_id,canonical_id,source_image_id|canonical_id,211,APPROVED,제목 근거 개념 묘사 관계
+SOURCE_IMAGE_RELATED_CONTENT,source_image_has_related_content.csv,source_images.csv,source_image_id,source_image_id,source_urls.csv,source_url_id,source_url_id,source_image_id|source_url_id,1720,APPROVED,원천이 선언한 관련 콘텐츠 링크
