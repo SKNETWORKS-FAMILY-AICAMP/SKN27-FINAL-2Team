@@ -1,0 +1,51 @@
+﻿scope,target,source,rank,label,count,ratio
+71~78_total,era,predicted,1,조선,83,0.2075
+71~78_total,era,predicted,2,일제 강점기,74,0.185
+71~78_total,era,predicted,3,고려,67,0.1675
+71~78_total,era,predicted,4,개항기,51,0.1275
+71~78_total,era,predicted,5,현대,43,0.1075
+71~78_total,era,actual,1,조선,81,0.2025
+71~78_total,era,actual,2,일제 강점기,75,0.1875
+71~78_total,era,actual,3,고려,70,0.175
+71~78_total,era,actual,4,개항기,54,0.135
+71~78_total,era,actual,5,현대,41,0.1025
+71~78_total,topic_train,predicted,1,사건,141,0.3525
+71~78_total,topic_train,predicted,2,정치,81,0.2025
+71~78_total,topic_train,predicted,3,인물,75,0.1875
+71~78_total,topic_train,predicted,4,문화,53,0.1325
+71~78_total,topic_train,predicted,5,제도,50,0.125
+71~78_total,topic_train,actual,1,사건,136,0.34
+71~78_total,topic_train,actual,2,정치,90,0.225
+71~78_total,topic_train,actual,3,인물,72,0.18
+71~78_total,topic_train,actual,4,문화,55,0.1375
+71~78_total,topic_train,actual,5,제도,47,0.1175
+71~78_total,topic,predicted,1,사건,139,0.3475
+71~78_total,topic,predicted,2,인물,76,0.19
+71~78_total,topic,predicted,3,문화,49,0.1225
+71~78_total,topic,predicted,4,제도,45,0.1125
+71~78_total,topic,predicted,5,정치,43,0.1075
+71~78_total,topic,actual,1,사건,135,0.3375
+71~78_total,topic,actual,2,인물,72,0.18
+71~78_total,topic,actual,3,문화,49,0.1225
+71~78_total,topic,actual,4,제도,47,0.1175
+71~78_total,topic,actual,5,정치,40,0.1
+71~78_total,era_topic_train,predicted,1,개항기 + 사건,32,0.08
+71~78_total,era_topic_train,predicted,2,일제 강점기 + 정치,30,0.075
+71~78_total,era_topic_train,predicted,3,일제 강점기 + 사건,25,0.0625
+71~78_total,era_topic_train,predicted,4,조선 + 사건,24,0.06
+71~78_total,era_topic_train,predicted,5,현대 + 사건,23,0.0575
+71~78_total,era_topic_train,actual,1,개항기 + 사건,33,0.0825
+71~78_total,era_topic_train,actual,2,일제 강점기 + 사건,27,0.0675
+71~78_total,era_topic_train,actual,3,일제 강점기 + 정치,23,0.0575
+71~78_total,era_topic_train,actual,4,현대 + 사건,23,0.0575
+71~78_total,era_topic_train,actual,5,조선 + 사건,21,0.0525
+71~78_total,era_topic_train_topic,predicted,1,개항기 + 사건 + 사건,30,0.075
+71~78_total,era_topic_train_topic,predicted,2,조선 + 사건 + 사건,24,0.06
+71~78_total,era_topic_train_topic,predicted,3,일제 강점기 + 사건 + 사건,24,0.06
+71~78_total,era_topic_train_topic,predicted,4,조선 + 인물 + 인물,21,0.0525
+71~78_total,era_topic_train_topic,predicted,5,현대 + 사건 + 사건,20,0.05
+71~78_total,era_topic_train_topic,actual,1,개항기 + 사건 + 사건,33,0.0825
+71~78_total,era_topic_train_topic,actual,2,일제 강점기 + 사건 + 사건,27,0.0675
+71~78_total,era_topic_train_topic,actual,3,현대 + 사건 + 사건,23,0.0575
+71~78_total,era_topic_train_topic,actual,4,조선 + 사건 + 사건,21,0.0525
+71~78_total,era_topic_train_topic,actual,5,조선 + 인물 + 인물,21,0.0525
