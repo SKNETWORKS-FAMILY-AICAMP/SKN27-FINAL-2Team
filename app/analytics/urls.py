@@ -33,18 +33,8 @@ urlpatterns = [
     ),
     path("study-plan/create/", views.create_study_plan_view, name="study_plan_create"),
     path(
-        "study-plan/block/delete/",
-        views.delete_study_plan_block_view,
-        name="study_plan_block_delete",
-    ),
-    path(
-        "study-plan/block/complete/",
-        views.complete_study_plan_block_view,
-        name="study_plan_block_complete",
-    ),
-    path(
-        "study-plan/block/add/",
-        views.add_extra_study_plan_block_view,
-        name="study_plan_block_add",
+        "study-plan/sync/",
+        views.synchronize_study_plan_view,
+        name="study_plan_sync",
     ),
 ]

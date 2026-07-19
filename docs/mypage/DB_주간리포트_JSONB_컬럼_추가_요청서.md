@@ -1,0 +1,223 @@
+# DB 변경 요청서 — 주간 리포트 JSONB 컬럼 추가
+
+상태: DRAFT (승인 전)  
+작성일: 2026-07-20  
+요청 대상: DB 담당  
+관련 문서: [학습계획·AI 주간리포트 통합설계](./학습계획_AI주간리포트_통합설계.md)
+
+## 1. 요청 목적
+
+계획 1개에 주간 리포트가 최대 1개이므로 신규 리포트·작업 테이블을 만들지 않고 기존 `study_plan_mypage` 행에 리포트 결과와 처리 상태를 JSON으로 저장하려 한다.
+
+요청 범위는 nullable JSONB 열 1개와 최상위 객체 확인 제약 1개다. 기존 계획 데이터의 백필·이관·수정은 하지 않는다.
+
+계획 메타데이터는 신규 열을 요청하지 않고 기존 계획 요약 열(`study_plans TEXT`)에 버전 JSON으로 저장한다. 레거시 일반 문자열은 애플리케이션에서 읽기 호환하며 DB가 변환하지 않는다.
+
+## 2. 요청 변경
+
+### 2.1 신규 환경 SQL
+
+대상: `storage/postgresql/schema/init.sql`
+
+`study_plan_mypage` 정의에 다음 열과 제약을 추가해 달라.
+
+```sql
+weekly_report_data JSONB NULL,
+CONSTRAINT study_plan_mypage_weekly_report_data_object_check
+    CHECK (
+        weekly_report_data IS NULL
+        OR COALESCE(
+            jsonb_typeof(weekly_report_data) = 'object',
+            FALSE
+        )
+    )
+```
+
+실제 삽입 위치에 따라 앞 열의 쉼표를 함께 정리해야 한다.
+
+`COALESCE(..., FALSE)`는 객체 판정 결과가 알 수 없음(`NULL`)이 되는 경우에도 제약 검사를 통과시키지 않기 위한 방어다. SQL `NULL`만 바깥 조건에서 허용하고, JSON `null`을 포함한 객체 이외의 JSON 값은 거부한다.
+
+### 2.2 기존 환경 변경 SQL
+
+대상: `storage/postgresql/schema/alter_apply_latest.sql`
+
+```sql
+ALTER TABLE study_plan_mypage
+    ADD COLUMN IF NOT EXISTS weekly_report_data JSONB NULL;
+
+DO $$
+BEGIN
+    ALTER TABLE study_plan_mypage
+        DROP CONSTRAINT IF EXISTS study_plan_mypage_weekly_report_data_object_check;
+
+    ALTER TABLE study_plan_mypage
+        ADD CONSTRAINT study_plan_mypage_weekly_report_data_object_check
+        CHECK (
+            weekly_report_data IS NULL
+            OR COALESCE(
+                jsonb_typeof(weekly_report_data) = 'object',
+                FALSE
+            )
+        );
+END
+$$;
+```
+
+기존 초안의 제약이 먼저 적용된 환경도 수정된 식으로 교체할 수 있도록 제약 삭제와 재생성을 단일 `DO` 블록 안에서 수행한다. 제약 재생성이 실패하면 같은 문장의 제약 삭제도 롤백된다. 이 SQL은 재실행해도 같은 제약 하나만 남으며 계획 데이터는 변경하지 않는다.
+
+변경 SQL은 두 번 실행해도 실패하거나 중복 생성되지 않아야 한다.
+
+### 2.3 Django 모델
+
+대상: `app/analytics/models.py`의 계획 모델(`StudyPlanMypage`)
+
+```python
+weekly_report_data = models.JSONField(blank=True, null=True)
+```
+
+기존 방침대로 자동 관리 제외(`managed = False`)를 유지하고, 실제 SQL 열 이름과 모델 필드 이름을 동일하게 선언해 달라.
+
+analytics 저장 계층은 ORM에 전달하기 전에 주간 리포트 값이 Python 사전(`dict`) 또는 `None`인지 검사한다. `None`은 SQL `NULL`로 저장하고, 목록·문자열·숫자·불리언은 저장 전에 거부한다. 이 애플리케이션 검증은 정상 저장 경로의 오류를 빠르게 잡는 용도이며 직접 SQL이나 다른 코드 경로까지 막을 수 없으므로 위 DB 제약을 대체하지 않는다.
+
+## 3. 저장 JSON 계약
+
+애플리케이션은 다음 형태의 최상위 객체를 저장한다. DB는 내부 필드까지 제약하지 않고, 최상위 값이 객체인지까지만 확인한다.
+
+```json
+{
+  "schemaVersion": "1",
+  "status": "pending",
+  "reportType": "first_week",
+  "sourceSessionId": 123,
+  "result": {
+    "snapshotAt": "2026-07-19T12:00:00Z",
+    "recoveredSnapshot": false,
+    "assessment": {
+      "score": 82,
+      "totalScore": 100,
+      "correctCount": 41,
+      "totalCount": 50
+    },
+    "comparison": {
+      "status": "INSUFFICIENT_BASELINE",
+      "baselineType": null,
+      "baselineSessionId": null,
+      "previousScore": null,
+      "scoreChange": null
+    },
+    "planProgress": {
+      "completedLearningBlocks": 10,
+      "totalLearningBlocks": 12,
+      "completionRate": 0.833
+    },
+    "strengths": [],
+    "priorityImprovements": [],
+    "timeSummary": [],
+    "nextPlanTargets": []
+  },
+  "content": {
+    "comment": null,
+    "tips": [],
+    "validation": null,
+    "fallbackUsed": false
+  },
+  "worker": {
+    "attemptCount": 0,
+    "availableAt": "2026-07-19T12:00:00Z",
+    "startedAt": null,
+    "lastError": null
+  },
+  "nextPlan": {
+    "status": "pending",
+    "studyPlanId": null,
+    "blockedReason": null
+  },
+  "version": "weekly-report-v1",
+  "model": "configured-model",
+  "createdAt": "2026-07-19T12:00:00Z",
+  "readyAt": null
+}
+```
+
+세부 필드, 준비 완료 JSON 예시와 상태 전이는 [구현 상세 부록의 저장 JSON](./학습계획_AI주간리포트_구현상세부록.md#23-저장-json)을 기준으로 한다. DB 제약은 내부 스키마를 검사하지 않으며 애플리케이션의 버전별 검증기가 담당한다.
+
+## 4. 추가하지 않는 항목
+
+- `weekly_reports`, `ai_jobs`, 신규 계획·날짜·블록 테이블
+- 기본값 `{}` 또는 문자열 `"null"`
+- 기존 행에 대한 JSON 백필
+- 계획 메타데이터용 신규 열과 기존 `study_plans TEXT`의 형식 변경
+- 초기 JSON 경로 인덱스
+- 세션 취소 시각·취소 사유 열
+- 기존 계획 번호, 블록 번호, 풀이 연결값 변경
+
+조회 성능 문제가 실제로 확인되면 실행 계획을 근거로 필요한 JSON 경로 인덱스만 별도 요청한다.
+
+## 5. 적용 전 주의사항
+
+1. 적용 전에 `study_plan_mypage` 백업과 복원 절차를 확인한다.
+2. 운영 적용은 트래픽이 낮은 시간에 수행하고 DDL 잠금 대기 시간을 관찰한다.
+3. 기존 행은 SQL `NULL`로 남겨야 한다.
+4. 제약은 배열, 문자열, 숫자, 불리언, JSON `null` 저장을 거부해야 한다. 객체 판정이 알 수 없음(`NULL`)이 되더라도 `COALESCE(..., FALSE)`로 거부해야 한다.
+5. 운영 반영 순서는 DB 열·제약 적용과 확인 → Django 모델·애플리케이션 배포로 한다. 모델을 먼저 배포하면 ORM 조회도 없는 열을 참조할 수 있다.
+6. 초기에는 열을 읽고 쓰는 쿼리 외에 기존 계획 쿼리를 바꾸지 않는다.
+7. JSONB 상태 갱신도 행의 새 버전을 만들기 때문에 심박 같은 잦은 쓰기는 하지 않는다. 화면 폴링은 읽기 전용이다.
+8. 전체 풀이 이력처럼 계속 커지는 배열은 저장하지 않으며, 운영 후 `pg_column_size(weekly_report_data)` 분포와 테이블 팽창을 관찰한다.
+
+## 6. 검증 요청
+
+```sql
+SELECT column_name, data_type, is_nullable
+FROM information_schema.columns
+WHERE table_name = 'study_plan_mypage'
+  AND column_name = 'weekly_report_data';
+
+SELECT conname, pg_get_constraintdef(oid)
+FROM pg_constraint
+WHERE conrelid = 'study_plan_mypage'::regclass
+  AND conname = 'study_plan_mypage_weekly_report_data_object_check';
+
+SELECT COUNT(*) AS non_null_report_count
+FROM study_plan_mypage
+WHERE weekly_report_data IS NOT NULL;
+
+SELECT COUNT(*) AS invalid_report_count
+FROM study_plan_mypage
+WHERE weekly_report_data IS NOT NULL
+  AND COALESCE(jsonb_typeof(weekly_report_data) <> 'object', TRUE);
+```
+
+적용 직후 기대값:
+
+- 열 형식: `jsonb`
+- nullable: `YES`
+- 객체 제약: 1개
+- 제약 교체 실패 시 기존 제약 유지
+- 기존 행의 non-null 리포트 수: `0`
+- 기존 행의 잘못된 최상위 JSON 수: `0`
+- 변경 전후 계획 행 수·계획 번호·계획 JSON 변화: `0`
+- `alter_apply_latest.sql` 재실행 성공
+
+검증용 임시 행을 사용한다면 운영 데이터를 건드리지 않는 별도 테스트 환경에서 SQL `NULL`과 객체 저장 성공, 배열·문자열·숫자·불리언·JSON `null` 저장 실패를 확인한다.
+
+## 7. 롤백
+
+nullable 열 추가 자체는 기존 기능에 영향을 주지 않으므로 문제 발생 시 우선 애플리케이션의 리포트 기능을 끄고 열은 유지한다.
+
+열 제거는 저장된 리포트를 유실하므로 자동 롤백에 포함하지 않는다. 정말 제거해야 할 때만 데이터 보관과 미사용 확인 후 별도 승인으로 다음 순서로 수행한다.
+
+```sql
+ALTER TABLE study_plan_mypage
+    DROP CONSTRAINT IF EXISTS study_plan_mypage_weekly_report_data_object_check;
+
+ALTER TABLE study_plan_mypage
+    DROP COLUMN IF EXISTS weekly_report_data;
+```
+
+## 8. DB 담당 회신 요청
+
+- `init.sql`·`alter_apply_latest.sql` 반영 가능 여부
+- 적용 예정 시점
+- 컬럼과 제약 생성 확인 결과
+- 변경 SQL 재실행 검증 결과
+- 운영 DDL 잠금 또는 배포 순서 관련 추가 주의사항

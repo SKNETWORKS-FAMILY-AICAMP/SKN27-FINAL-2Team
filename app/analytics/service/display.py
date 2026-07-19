@@ -574,7 +574,7 @@ def build_wrong_rate_status_display(weakness_row, total):
                 "label": "기록 없음",
                 "class": "empty",
                 "weaknessScore": 0.0,
-                "trend": {"value": config["trend_unknown"]},
+                "trend": config["trend_unknown"],
                 "trendLabel": "",
             }
         return {
@@ -582,7 +582,7 @@ def build_wrong_rate_status_display(weakness_row, total):
             "label": "",
             "class": "neutral",
             "weaknessScore": 0.0,
-            "trend": {"value": config["trend_unknown"]},
+            "trend": config["trend_unknown"],
             "trendLabel": "",
         }
 
@@ -612,7 +612,9 @@ def get_weakness_status_label(status, config):
 
 
 def get_weakness_trend_label(status, trend, config):
-    trend_value = trend.get("value")
+    trend_value = trend
+    if isinstance(trend, dict):
+        trend_value = trend.get("value")
     if status == config["status_weak"] and trend_value == config["trend_worsening"]:
         return "악화"
     elif trend_value == config["trend_improving"]:
