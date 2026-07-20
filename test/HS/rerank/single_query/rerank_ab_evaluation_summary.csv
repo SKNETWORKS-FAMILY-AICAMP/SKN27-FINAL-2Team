@@ -1,0 +1,8 @@
+﻿group,metric,label,before,after,delta
+quality,RAGAS Context Precision,Precision,0.9,0.9,0.0
+quality,RAGAS Context Recall,Recall,0.89,0.89,0.0
+quality,RAGAS Faithfulness,Faithfulness,0.75,0.75,0.0
+quality,RAGAS Answer Relevance,Relevance,0.76,0.76,0.0
+speed_sec,검색 속도,검색,47.69,47.69,0.0
+speed_sec,LLM 답변 생성 속도,LLM,4.0,4.0,0.0
+speed_sec,전체 응답 속도,전체,51.69,51.69,0.0

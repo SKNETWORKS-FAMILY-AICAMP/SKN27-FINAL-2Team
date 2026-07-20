@@ -1,0 +1,19 @@
+{
+  "source": "C:\\dev\\project\\SKN27-FINAL-2Team\\ai\\ml\\ML_han_v1.json",
+  "total": 3200,
+  "label_count": {
+    "0": 1600,
+    "1": 1600
+  },
+  "split_count": {
+    "train": 2590,
+    "valid": 320,
+    "test": 290
+  },
+  "files": [
+    "review_data.json",
+    "train.json",
+    "valid.json",
+    "test.json"
+  ]
+}

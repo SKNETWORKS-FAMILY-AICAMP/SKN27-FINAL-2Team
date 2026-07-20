@@ -92,7 +92,7 @@ candidate_pool: int = 30
 - MeCab 명사 토큰을 `search_tokens`에 저장하고, PostgreSQL `search_vector` GIN 인덱스로 BM25 검색을 추가했다.
 - 벡터 HNSW, Trigram, BM25 후보를 각각 수집해 RRF(Reciprocal Rank Fusion)로 병합한다.
 - 벡터 검색 임베딩은 키워드 확장문이 아니라 사용자의 원문 질문을 사용한다.
-- `RAG_TRIGRAM_ENABLED` 환경 변수로 Trigram 후보 채널을 켜거나 끌 수 있게 했다. 기본값은 `true`다.
+- `RAG_TRIGRAM_ENABLED` 환경 변수로 Trigram 후보 채널을 켜거나 끌 수 있게 했다. 운영값은 `false`다.
 
 ### 단일 질문 지연시간 측정
 
@@ -155,3 +155,52 @@ LIMIT 30;
 ```
 
 `Index Scan using document_chunks_embedding_cosine_idx` 또는 HNSW 인덱스명이 보이면 벡터 인덱스를 타는 것이다.
+
+## 2026-07-15: 개요형 BGE 리랭킹 적용 및 평가
+
+### 변경 내용
+
+- 개요형 질문도 BGE 리랭커로 최종 순서를 정하도록 변경했다. 이전에는 RRF 결과를 그대로 반환했다.
+- BGE 점수로 `PgSearchResult.score`를 덮어쓰면 `has_enough_evidence()`가 기존 RRF 근거 점수 대신 BGE 점수로 판단해, 문맥이 있어도 `검색 결과가 없습니다.`를 반환하는 회귀가 발생했다.
+- 최종 구현은 BGE 점수를 정렬에만 사용하고, `score`는 RRF 점수를 유지한다. 따라서 근거 충족 판정은 기존 기준을 그대로 사용한다.
+
+### 전체 평가 결과
+
+| 평가 항목 | 결과 | 기준 | 상태 |
+|---|---:|---:|---|
+| 검색 속도 | 12.13초 | 2.0초 이내 | FAIL |
+| LLM 답변 생성 속도 | 8.68초 | 5.0초 이내 | FAIL |
+| 전체 응답 속도 | 20.79초 | 7.0초 이내 | FAIL |
+| RAGAS Context Precision | 0.82 | 0.80 이상 | PASS |
+| RAGAS Context Recall | 0.87 | 0.80 이상 | PASS |
+| RAGAS Faithfulness | 0.91 | 0.80 이상 | PASS |
+| RAGAS Answer Relevance | 0.81 | 0.80 이상 | PASS |
+
+Precision은 리랭커 적용 전 0.67에서 0.82로 개선됐다. 반면 CPU에서 모든 개요형 질문에 BGE를 실행하면서 속도가 기준을 넘었다.
+
+CPU 환경 측정에서는 `RAG_RERANKER_ENABLED=false` 전환을 실험했다. 이후 로컬 측정에서 리랭커 사용 시에도 검색 속도 기준을 충족해 운영값을 다시 `true`로 복원했다. 후보 수, Top-K, 임베딩, HNSW는 변경하지 않는다.
+
+## 2026-07-20: 골든셋 BGE 최종 Top-K 선정
+
+`golden_saved_rerank_ab_results.csv`의 35개 strict 골든 질문에서 RRF와 BGE의 같은 Top-K를 비교했다. 검색 후보 수는 50개로 유지하고, BGE가 최종 순서만 조정했다.
+
+이 평가는 RAGAS 기반 최종 답변 품질 평가가 아니라, 같은 RRF 후보에서 BGE가 문서 순서를 개선하는지와 최종 Top-K를 고르는 rerank 최적화 실험이다. 따라서 저장된 35개 strict 질문 표본으로 비교하며, 서비스 전체 품질은 별도 RAGAS 평가로 검증한다.
+
+| 최종 Top-K | RRF Precision / Recall | BGE Precision / Recall |
+|---:|---|---|
+| 5 | 0.9079 / 0.8905 | 0.9761 / 0.9286 |
+| 10 | 0.9055 / 0.9476 | 0.9627 / 0.9476 |
+| 15 | 0.8866 / 0.9429 | 0.9553 / 0.9667 |
+| 20 | 0.8783 / 0.9810 | 0.9567 / 0.9810 |
+| 30 | 0.8499 / 0.9810 | 0.9282 / 0.9810 |
+
+- BGE Top-20은 RRF Top-20과 Recall(0.9810)은 같고 Precision은 0.8783에서 0.9567로 개선됐다.
+- Top-30 이상은 Recall 증가 없이 Precision만 하락했다.
+- 따라서 평가 기준 권장값은 **후보 50개 → BGE rerank → 최종 Top-20**이다.
+- API 기본 `top_k`는 20이고 최대 20이다. 후보 수나 reranker 모델을 바꾸면 같은 방식으로 다시 비교한다.
+
+## 2026-07-15: Trigram 후보 채널 제거
+
+- `keyword_candidates`/`keyword_ranked` CTE와 `RAG_TRIGRAM_ENABLED` 환경 변수를 제거했다.
+- 검색은 pgvector HNSW와 MeCab BM25 후보를 RRF로 병합하고, BGE 리랭커가 최종 정렬한다.
+- Trigram 인덱스는 기존 DB에 남아 있어도 검색 쿼리에서 사용하지 않는다.
