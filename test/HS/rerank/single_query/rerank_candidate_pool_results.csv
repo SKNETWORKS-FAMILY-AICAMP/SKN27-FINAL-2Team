@@ -1,0 +1,3 @@
+﻿measured_at,question,vector_candidate_pool,bm25_candidate_pool,rerank_pool,rerank_input_count,top_k,rerank_sec,pre_rerank_sec,total_search_sec,result_count,result_titles,ragas_limit,context_precision,context_recall,faithfulness,answer_relevance,ragas_error
+2026-07-18T10:56:15,고구려 전성기 왕 알려줘,1000,1000,15,15,5,46.185,1.693,47.879,5,"[""일본이 발해에 보낸 외교 문서"", ""나제동맹의 결성 > 나제동맹 성립 이전의 대외관계"", ""세기말 이후의 체제정비"", ""발해의 전성"", ""고구려 성곽""]",12,0.90,0.89,0.75,0.76,
+,,,,,,,,,,,"",,,,,,

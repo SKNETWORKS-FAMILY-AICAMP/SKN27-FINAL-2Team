@@ -1,7 +1,7 @@
 from pathlib import Path
 import sys
 
-ROOT = Path(__file__).parents[2]
+ROOT = Path(__file__).parents[3]
 sys.path.insert(0, str(ROOT))
 
 from etl.preprocessing.history.preprocess_aks_encyclopedia import build_document, iter_chunks

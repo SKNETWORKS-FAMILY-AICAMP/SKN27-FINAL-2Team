@@ -216,75 +216,13 @@ def extract_json_object(text: str) -> dict[str, Any]:
     return parsed
 
 
-EXAM_POINT_BLOCK_TERMS = (
-    "단정",
-    "근거",
-    "부족",
-    "확실",
-    "추정",
-    "이름",
-    "부인",
-    "어머니",
-    "아버지",
-    "낳았다",
-    "나온다",
-    "제공된",
-    "검색",
-    "출처",
-)
-EXAM_POINT_ALLOW_TERMS = (
-    "한능검",
-    "시험",
-    "출제",
-    "암기",
-    "시대",
-    "왕",
-    "정책",
-    "제도",
-    "사건",
-    "개혁",
-    "전쟁",
-    "운동",
-    "조약",
-    "문화",
-    "경제",
-    "정치",
-    "사회",
-    "불교",
-    "유교",
-    "토지",
-    "세금",
-    "관청",
-    "업적",
-    "비교",
-    "순서",
-    "흐름",
-)
-
-
-def filter_exam_points(points: list[Any]) -> list[str]:
-    filtered: list[str] = []
-    for point in points:
-        text = re.sub(r"\s+", " ", str(point or "")).strip()
-        if not text:
-            continue
-        if any(term in text for term in EXAM_POINT_BLOCK_TERMS) and not any(
-            term in text for term in EXAM_POINT_ALLOW_TERMS
-        ):
-            continue
-        if text not in filtered:
-            filtered.append(text)
-    return filtered[:5]
-
-
 def normalize_structured_answer(value: dict[str, Any]) -> dict[str, Any]:
-    exam_points = value.get("exam_points") if isinstance(value.get("exam_points"), list) else []
     return {
         "answer_type": str(value.get("answer_type") or "textbook_note"),
         "title": str(value.get("title") or "한국사 개념 정리"),
         "summary": sanitize_answer(str(value.get("summary") or "")),
         "sections": value.get("sections") if isinstance(value.get("sections"), list) else [],
-        "exam_points": filter_exam_points(exam_points),
+        "exam_points": value.get("exam_points") if isinstance(value.get("exam_points"), list) else [],
         "highlights": value.get("highlights") if isinstance(value.get("highlights"), list) else [],
         "source_titles": value.get("source_titles") if isinstance(value.get("source_titles"), list) else [],
     }

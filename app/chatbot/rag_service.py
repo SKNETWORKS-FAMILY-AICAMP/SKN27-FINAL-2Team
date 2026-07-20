@@ -4,6 +4,7 @@ import re
 from typing import Any
 
 from .graph_service import build_graph_context
+from .rag.evidence import has_enough_evidence
 from .rag.llm_answer_generator import LLMAnswerGenerator
 from .rag.pgvector_retriever import (
     PgVectorHybridRetriever,
@@ -16,9 +17,6 @@ from .rag.pgvector_retriever import (
 
 SUPPORTED_INTENTS = {"concept", "question", "image", "chat", "casual"}
 NOT_FOUND_ANSWER = "검색 결과가 없습니다."
-MIN_KEYWORD_SCORE = 0.12
-MIN_COMBINED_SCORE = 0.70
-FOLLOW_UP_MIN_COMBINED_SCORE = 0.50
 FOLLOW_UP_TERMS = ("그거", "이거", "저거", "방금", "위", "앞에서", "그 정책", "그 왕", "그 인물", "그 사건", "그 제도")
 PROBLEM_CONTEXT_TERMS = ("문제", "문항", "선지", "정답", "해설", "키 포인트", "오답", "보기")
 CONTEXT_ONLY_TERMS = ("업적", "정책", "활동", "과학적", "문화적", "정치적", "경제적")
@@ -82,40 +80,6 @@ def no_rag_answer(question: str, intent: str) -> dict[str, Any]:
         "sources": [],
         "graph_context": None,
     }
-
-
-def has_enough_evidence(
-    results: list[Any],
-    intent: str,
-    extra_sources: list[dict[str, Any]] | None = None,
-    follow_up: bool = False,
-) -> bool:
-    if not results:
-        return bool(extra_sources and intent != "image")
-
-    if extra_sources and intent != "image":
-        return True
-
-    best = results[0]
-    if intent == "image":
-        return any(
-            result.source_type == "image_material"
-            and (result.metadata.get("original_image_url") or result.metadata.get("thumbnail_url"))
-            for result in results
-        )
-
-    best_keyword = max(float(result.keyword_score or 0.0) for result in results)
-    best_vector = max(float(result.vector_score or 0.0) for result in results)
-    best_score = float(best.score or 0.0)
-    min_score = FOLLOW_UP_MIN_COMBINED_SCORE if follow_up else MIN_COMBINED_SCORE
-    # RRF 점수는 순위 합산값(약 0.01~0.05)이므로 이전 복합 점수 임계값과 비교하지 않습니다.
-    if 0 < best_score < 0.2:
-        return best_keyword >= MIN_KEYWORD_SCORE or best_vector >= 0.35
-    if best_score >= 1.8:
-        return True
-    if best_keyword >= MIN_KEYWORD_SCORE and best_score >= min_score:
-        return True
-    return False
 
 
 def not_found_answer(question: str, intent: str, graph_context: dict[str, Any] | None = None) -> dict[str, Any]:
@@ -377,7 +341,7 @@ def build_history_rag_answer(
     sources.extend(timeline_sources)
     retrieval_debug = build_retrieval_debug(search_seed, search_question, sources, graph_context)
 
-    if not has_enough_evidence(results, intent, timeline_sources, is_contextual_follow_up):
+    if not has_enough_evidence(results, intent):
         result = not_found_answer(question, intent, graph_context)
         result["search_seed"] = search_seed
         result["enriched_question"] = search_question
@@ -385,16 +349,7 @@ def build_history_rag_answer(
         return result
 
     if intent == "image":
-        generator = LLMAnswerGenerator.from_env()
-        answer = generator.generate(
-            generation_question,
-            sources,
-            style="textbook",
-            follow_up=False,
-            history=[],
-            include_source_summary=False,
-        )
-        answer = re.sub(r"https?://\S+", "", answer).strip() or build_image_answer(question, sources)
+        answer = build_image_answer(question, sources)
         return {
             "question": question,
             "mode": mode,
@@ -403,11 +358,7 @@ def build_history_rag_answer(
             "answer": answer,
             "structured_answer": None,
             "not_found": False,
-            "llm": {
-                "provider": generator.config.provider,
-                "model": generator.config.model,
-                "temperature": generator.config.temperature,
-            },
+            "llm": None,
             "sources": sources,
             "graph_context": graph_context,
             "search_seed": search_seed,

@@ -14,6 +14,16 @@ from psycopg2.extras import RealDictCursor
 
 from .korean_tokenizer import mecab_search_tokens
 from .query_terms import expand_query_tokens, tokenize
+from .reranker import get_reranker, rerank_results
+from .retrieval_rules import (
+    HISTORY_STOPWORDS,
+    OVERVIEW_IGNORE_TERMS,
+    OVERVIEW_TERMS,
+    build_bm25_query,
+    is_generic_overview_query,
+    normalize_query_spacing,
+    overview_focus_terms,
+)
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
@@ -22,148 +32,7 @@ TIMELINE_ERAS = ("고대", "고려", "조선", "근대", "현대")
 TIMELINE_FIELDS = ("인물", "사건", "조직·단체", "조직", "단체", "유물·유적", "유물", "유적")
 IMAGE_QUERY_TERMS = ("이미지", "사진", "그림", "유물", "유적", "자료", "찾아줘", "보여줘", "조회")
 IMAGE_TITLE_IGNORE_TERMS = set(IMAGE_QUERY_TERMS) | {"시대", "대표", "관련", "설명"}
-OVERVIEW_TERMS = ("정리", "요약", "흐름", "개념", "설명", "알려", "누구", "뭐야", "무엇", "내용", "왜", "이유", "중요", "중요한", "중요성", "업적", "정책", "대해", "대한", "대해서")
-REQUEST_SUFFIX_TERMS = tuple(
-    sorted(
-        {
-            *IMAGE_QUERY_TERMS,
-            *OVERVIEW_TERMS,
-            "알려줘",
-            "설명해줘",
-            "정리해줘",
-            "요약해줘",
-            "보여달라",
-            "보여줄래",
-        },
-        key=len,
-        reverse=True,
-    )
-)
-OVERVIEW_IGNORE_TERMS = {
-    "정리",
-    "정리해줘",
-    "요약",
-    "요약해줘",
-    "흐름",
-    "개념",
-    "설명",
-    "설명해줘",
-    "알려",
-    "알려줘",
-    "누구",
-    "뭐",
-    "무엇",
-    "업적",
-    "정책",
-    "대해",
-    "대한",
-    "대해서",
-    "조회",
-    "역사적",
-    "역사적으로",
-    "의미",
-    "의의",
-    "이유",
-    "왜",
-    "어떤",
-    "있는지",
-    "중요",
-    "중요성",
-    "중요한",
-    "중요한지",
-    "차이",
-    "비교",
-    "대비",
-    "특징",
-    "내용",
-    "보여주",
-    "보여주는",
-    "사건",
-    "사건이야",
-    "유명한",
-    "대표",
-    "대표적",
-    "대표적인",
-    "주요",
-    "전개",
-    "과정",
-}
-HONORIFIC_SUFFIXES = ("대왕",)
-SINGLE_CHAR_FOCUS_TERMS = {"왕"}
-
-HISTORY_STOPWORDS = {
-    "전기", "후기", "중기", "초기", "말기", "시대", "국가", "나라", "역사", "한국", 
-    "인물", "사건", "조직", "단체", "유물", "유적", "정리", "요약", "설명", "개념",
-    "왕", "대왕"
-}
-BM25_IGNORE_TERMS = HISTORY_STOPWORDS | OVERVIEW_IGNORE_TERMS
 COMPARISON_JOIN_TERMS = ("와", "과", "이랑", "하고", "및")
-
-
-def normalize_query_spacing(question: str) -> str:
-    value = re.sub(r"\s+", " ", question or "").strip()
-    for term in REQUEST_SUFFIX_TERMS:
-        value = re.sub(
-            rf"(?<=[가-힣A-Za-z0-9])({re.escape(term)})(?=$|\s|[?.!,])",
-            r" \1",
-            value,
-        )
-    return re.sub(r"\s+", " ", value).strip()
-
-
-def overview_focus_terms(question: str) -> tuple[str, ...]:
-    question = normalize_query_spacing(question)
-    tokens = tokenize(question)
-    compact_question = re.sub(r"[^\w\s]", " ", question)
-    tokens.extend(
-        term
-        for term in SINGLE_CHAR_FOCUS_TERMS
-        if re.search(rf"(?<!\S){re.escape(term)}(?:은|는|이|가|을|를|의|에)?(?!\S)", compact_question)
-    )
-    terms: list[str] = []
-    for token in tokens:
-        normalized = token.strip()
-        if (len(normalized) < 2 and normalized not in SINGLE_CHAR_FOCUS_TERMS) or normalized in OVERVIEW_IGNORE_TERMS:
-            continue
-        if terms and re.search(rf"{re.escape(normalized)}에\s*(대해|대한|대해서)", question):
-            continue
-        if normalized.endswith("에") and len(normalized) > 2:
-            if terms:
-                continue
-            normalized = normalized[:-1]
-        if normalized.endswith("은") or normalized.endswith("는"):
-            normalized = normalized[:-1]
-        if normalized in OVERVIEW_IGNORE_TERMS:
-            continue
-        candidates = [normalized]
-        for suffix in HONORIFIC_SUFFIXES:
-            if len(normalized) > len(suffix) + 1 and normalized.endswith(suffix):
-                candidates.append(normalized[: -len(suffix)])
-        for candidate in candidates:
-            if candidate and candidate not in terms:
-                terms.append(candidate)
-    return tuple(terms[:4])
-
-
-def is_generic_overview_query(question: str, focus_terms: tuple[str, ...]) -> bool:
-    question = normalize_query_spacing(question)
-    if not focus_terms:
-        return False
-    return any(term in question for term in OVERVIEW_TERMS)
-
-
-def build_bm25_query(focus_terms: tuple[str, ...], fallback: str) -> str:
-    terms: list[str] = []
-    for term in focus_terms:
-        variants = [term]
-        for suffix in HONORIFIC_SUFFIXES:
-            if len(term) > len(suffix) + 1 and term.endswith(suffix):
-                variants.insert(0, term[: -len(suffix)])
-        for candidate in variants:
-            if len(candidate) >= 2 and candidate not in BM25_IGNORE_TERMS:
-                terms.append(candidate)
-                break
-    return " ".join(dict.fromkeys(terms)) or fallback
 
 
 @dataclass(frozen=True)
@@ -178,29 +47,6 @@ class PgSearchResult:
     vector_score: float
     keyword_score: float
     score: float
-
-
-@lru_cache(maxsize=1)
-def get_reranker():
-    model_name = os.getenv("RAG_RERANKER_MODEL", "BAAI/bge-reranker-v2-m3")
-    try:
-        from sentence_transformers import CrossEncoder
-    except ImportError:
-        return None
-    return CrossEncoder(model_name)
-
-
-def rerank_results(question: str, rows: list[PgSearchResult], top_k: int) -> list[PgSearchResult]:
-    if os.getenv("RAG_RERANKER_ENABLED", "").lower() not in {"1", "true", "yes"}:
-        return rows[:top_k]
-    model = get_reranker()
-    if model is None:
-        return rows[:top_k]
-
-    pairs = [(question, f"{row.title}\n{compact_text(row.chunk_text, 900)}") for row in rows]
-    scores = model.predict(pairs)
-    ranked = sorted(zip(rows, scores), key=lambda item: float(item[1]), reverse=True)
-    return [row for row, _ in ranked[:top_k]]
 
 
 def load_env() -> None:
@@ -379,12 +225,15 @@ class PgVectorHybridRetriever:
         self,
         model: str | None = None,
         dimensions: int | None = None,
-        candidate_pool: int = 50,
+        candidate_pool: int | None = None,
+        rerank_pool: int | None = None,
     ) -> None:
         load_env()
         self.model = model or os.getenv("EMBEDDING_MODEL", "text-embedding-3-small")
         self.dimensions = dimensions if dimensions is not None else int(os.getenv("EMBEDDING_DIMENSIONS", "1536"))
-        self.candidate_pool = candidate_pool
+        self.candidate_pool = candidate_pool if candidate_pool is not None else int(os.getenv("RAG_RETRIEVAL_CANDIDATE_POOL", "50"))
+        configured_rerank_pool = rerank_pool if rerank_pool is not None else int(os.getenv("RAG_RERANK_CANDIDATE_POOL", "0"))
+        self.rerank_pool = configured_rerank_pool or None
 
     def search_images(self, question: str, top_k: int = 5) -> list[PgSearchResult]:
         title_tokens = image_title_tokens(question)
@@ -458,6 +307,7 @@ class PgVectorHybridRetriever:
                 self.model,
                 self.dimensions,
                 self.candidate_pool,
+                self.rerank_pool,
             )
         )
 
@@ -478,7 +328,9 @@ class PgVectorHybridRetriever:
         overview_query = any(term in question for term in OVERVIEW_TERMS)
         use_reranker = os.getenv("RAG_RERANKER_ENABLED", "").lower() in {"1", "true", "yes"}
         use_bm25 = os.getenv("RAG_BM25_ENABLED", "true").lower() in {"1", "true", "yes"}
-        final_limit = max(top_k * 5, top_k) if generic_overview_query or use_reranker else top_k
+        final_limit = max(top_k, self.rerank_pool) if use_reranker and self.rerank_pool else (
+            max(top_k * 5, top_k) if generic_overview_query or use_reranker else top_k
+        )
         bm25_candidate_pool = self.candidate_pool
 
         # 불용어(Stopwords)를 걸러낸 정밀한 focus_terms 추출
@@ -579,7 +431,7 @@ class PgVectorHybridRetriever:
                 (
                     rrf_score
                     + CASE
-                        WHEN %s AND source_type = 'historical_overview' THEN 0.0005
+                        WHEN %s AND source_type = 'aks_encyclopedia' THEN 0.0005
                         WHEN %s AND source_type = 'historical_source' THEN -0.00015
                         ELSE 0.0
                       END
@@ -641,7 +493,8 @@ class PgVectorHybridRetriever:
             conn.close()
 
         if generic_overview_query:
-            rows = diversify_rows(prioritize_focus_rows(rows, focus_terms), top_k)
+            diversity_limit = final_limit if use_reranker and self.rerank_pool else top_k
+            rows = diversify_rows(prioritize_focus_rows(rows, focus_terms), diversity_limit)
         results = [
             PgSearchResult(
                 chunk_id=row["chunk_id"],
@@ -667,10 +520,11 @@ def cached_pg_search(
     model: str,
     dimensions: int | None,
     candidate_pool: int,
+    rerank_pool: int | None,
 ) -> tuple[PgSearchResult, ...]:
     if not question:
         return ()
-    return tuple(PgVectorHybridRetriever(model, dimensions, candidate_pool)._search_uncached(question, top_k))
+    return tuple(PgVectorHybridRetriever(model, dimensions, candidate_pool, rerank_pool)._search_uncached(question, top_k))
 
 
 def result_to_payload(result: PgSearchResult) -> dict[str, Any]:
