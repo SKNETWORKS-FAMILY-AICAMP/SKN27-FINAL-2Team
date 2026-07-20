@@ -235,7 +235,7 @@ class PgVectorHybridRetriever:
         configured_rerank_pool = rerank_pool if rerank_pool is not None else int(os.getenv("RAG_RERANK_CANDIDATE_POOL", "0"))
         self.rerank_pool = configured_rerank_pool or None
 
-    def search_images(self, question: str, top_k: int = 5) -> list[PgSearchResult]:
+    def search_images(self, question: str, top_k: int = 20) -> list[PgSearchResult]:
         title_tokens = image_title_tokens(question)
         where_parts = [
             "source_type = 'image_material'",
@@ -296,7 +296,7 @@ class PgVectorHybridRetriever:
             for row in rows
         ]
 
-    def search(self, question: str, top_k: int = 5) -> list[PgSearchResult]:
+    def search(self, question: str, top_k: int = 20) -> list[PgSearchResult]:
         question = normalize_query_spacing(question.strip())
         if is_image_query(question):
             return self._search_uncached(question, top_k)
@@ -311,7 +311,7 @@ class PgVectorHybridRetriever:
             )
         )
 
-    def _search_uncached(self, question: str, top_k: int = 5) -> list[PgSearchResult]:
+    def _search_uncached(self, question: str, top_k: int = 20) -> list[PgSearchResult]:
         question = normalize_query_spacing(question.strip())
         if not question:
             return []
