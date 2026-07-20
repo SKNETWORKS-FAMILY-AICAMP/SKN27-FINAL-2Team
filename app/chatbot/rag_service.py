@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 import re
+from collections.abc import Iterator
 from typing import Any
 
 from .graph_service import build_graph_context
 from .rag.evidence import has_enough_evidence
-from .rag.llm_answer_generator import LLMAnswerGenerator
+from .rag.llm_answer_generator import LLMAnswerGenerator, normalize_structured_answer, sanitize_answer
 from .rag.pgvector_retriever import (
     PgVectorHybridRetriever,
     is_image_query,
@@ -304,13 +305,61 @@ def build_image_answer(question: str, sources: list[dict[str, Any]]) -> str:
     return "\n".join(lines)
 
 
+def stream_concept_rag_answer(
+    question: str, mode: str = "history", top_k: int = 20, history: list[dict[str, Any]] | None = None
+) -> Iterator[dict[str, Any]]:
+    """기존 개념 검색 흐름을 유지하고 LLM 표 행만 즉시 내보냅니다."""
+    conversation_history = normalize_history(history)
+    search_seed = build_search_question(question, conversation_history, "concept")
+    is_contextual_follow_up = search_seed != question
+    graph_context = build_graph_context(search_seed, limit=8, max_hop=graph_hop_for_question(search_seed)) if should_use_graph_context(search_seed, "concept") else None
+    search_question = build_enriched_question(search_seed, graph_context) if graph_context else search_seed
+    retriever = PgVectorHybridRetriever()
+    results = retriever.search(search_question, top_k=max(top_k, 8 if graph_context and graph_context.get("keywords") else top_k))
+    sources = [result_to_payload(result) for result in results]
+    sources.extend(search_timeline_sources(search_question))
+    retrieval_debug = build_retrieval_debug(search_seed, search_question, sources, graph_context)
+    if not has_enough_evidence(results, "concept"):
+        yield {"type": "done", "data": not_found_answer(question, "concept", graph_context)}
+        return
+
+    generator = LLMAnswerGenerator.from_env()
+    answer: dict[str, Any] = {"answer_type": "textbook_note", "title": "한국사 개념 정리", "summary": "", "sections": [], "exam_points": [], "highlights": [], "source_titles": []}
+    current_section: dict[str, Any] | None = None
+    for event in generator.generate_structured_stream(question, sources, follow_up=is_contextual_follow_up, history=conversation_history):
+        event_type = event["type"]
+        if event_type == "meta":
+            answer["title"] = str(event.get("title") or answer["title"])
+            answer["summary"] = sanitize_answer(str(event.get("summary") or ""))
+        elif event_type == "section":
+            current_section = {"heading": str(event.get("heading") or ""), "items": []}
+            answer["sections"].append(current_section)
+        elif event_type == "row" and current_section is not None:
+            row = {"term": str(event.get("term") or ""), "content": str(event.get("content") or "")}
+            current_section["items"].append(row)
+        elif event_type == "sources":
+            answer["source_titles"] = event.get("source_titles") if isinstance(event.get("source_titles"), list) else []
+        if event_type != "done":
+            yield event
+
+    result = {
+        "question": question, "mode": mode, "intent": "concept", "answer_format": "structured", "answer": None,
+        "structured_answer": normalize_structured_answer(answer), "not_found": False,
+        "llm": {"provider": generator.config.provider, "model": generator.config.model, "temperature": generator.config.temperature},
+        "sources": sources, "graph_context": graph_context, "search_seed": search_seed, "enriched_question": search_question, "retrieval_debug": retrieval_debug,
+    }
+    if is_insufficient_structured_answer(result["structured_answer"]):
+        result = not_found_answer(question, "concept", graph_context)
+    yield {"type": "done", "data": result}
+
+
 def build_history_rag_answer(
     question: str,
     mode: str = "history",
     intent: str = "concept",
     answer_format: str = "structured",
     follow_up: bool = False,
-    top_k: int = 5,
+    top_k: int = 20,
     history: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     intent = normalize_intent(intent, answer_format)

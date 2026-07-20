@@ -5,7 +5,7 @@ from unittest.mock import patch
 from django.test import RequestFactory, TestCase
 from django.urls import reverse
 
-from .views import rag_chat_api
+from .views import rag_chat_api, rag_chat_stream_api
 
 
 class ChatbotApiTests(TestCase):
@@ -28,6 +28,13 @@ class ChatbotApiTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(build_answer.call_args.kwargs["top_k"], 20)
 
+    @patch("chatbot.views.save_chat_turn")
+    @patch("chatbot.views.build_history_rag_answer", return_value={"answer": "정상"})
+    def test_top_k_defaults_to_20(self, build_answer, _save_chat_turn):
+        response = rag_chat_api(self.request({"question": "세종대왕"}))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(build_answer.call_args.kwargs["top_k"], 20)
+
     @patch("chatbot.views.build_history_rag_answer", side_effect=RuntimeError("internal detail"))
     def test_rag_error_hides_internal_detail(self, _build_answer):
         response = rag_chat_api(self.request({"question": "세종대왕"}))
@@ -40,6 +47,19 @@ class ChatbotApiTests(TestCase):
         response = rag_chat_api(self.request({"question": "세종대왕", "session_id": "test"}))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(json.loads(response.content)["answer"], "정상")
+
+    @patch("chatbot.views.save_chat_turn")
+    @patch(
+        "chatbot.views.stream_concept_rag_answer",
+        return_value=iter(({"type": "meta", "title": "세종", "summary": "요약"}, {"type": "done", "data": {"answer": "정상"}})),
+    )
+    def test_concept_stream_returns_sse_events(self, _stream_answer, save_chat_turn):
+        response = rag_chat_stream_api(self.request({"question": "세종대왕"}))
+        body = b"".join(response.streaming_content).decode()
+        self.assertEqual(response["Content-Type"], "text/event-stream; charset=utf-8")
+        self.assertIn('event: meta', body)
+        self.assertIn('event: done', body)
+        save_chat_turn.assert_called_once()
 
     def test_image_proxy_requires_login(self):
         response = self.client.get(reverse("chatbot:image_proxy"), {"url": "https://contents.history.go.kr/data/img/test.jpg"})
