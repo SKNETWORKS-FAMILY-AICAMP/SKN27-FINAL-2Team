@@ -14,30 +14,14 @@ from django.db import transaction
 from django.views.decorators.http import require_GET
 from django.views.decorators.http import require_POST
 
-from question.models import QuestionOptions, SolveRecords, SolveSessions
+from question.models import QuestionOptions, SolveRecords
 from user.views import build_session_display_map
 
 from .models import ChatMessages, ChatSessions
-from .rag_service import build_history_rag_answer, stream_concept_rag_answer
+from .rag_service import build_history_rag_answer, stream_concept_rag_answer, stream_question_rag_answer
 
 
 logger = logging.getLogger(__name__)
-
-
-def explanation_level_for_score(total_score: int | None) -> str:
-    if total_score is None:
-        return ""
-    if total_score < 60:
-        return "foundation"
-    return "core"
-
-
-def personalized_explanation_level(user, problem_session_id: int | None = None) -> str:
-    sessions = SolveSessions.objects.filter(user=user, session_type="diagnostic", status="completed")
-    total_score = sessions.filter(session_id=problem_session_id).values_list("total_score", flat=True).first() if problem_session_id else None
-    if total_score is None:
-        total_score = sessions.order_by("-session_id").values_list("total_score", flat=True).first()
-    return explanation_level_for_score(total_score)
 
 
 @login_required
@@ -116,7 +100,7 @@ def rag_chat_api(request):
         problem_session_id = int(payload.get("problem_session_id"))
     except (TypeError, ValueError):
         problem_session_id = None
-    explanation_level = personalized_explanation_level(request.user, problem_session_id) if intent == "question" else ""
+    explanation_level = "foundation" if intent == "question" and payload.get("foundation_explanation") is True else "core" if intent == "question" else ""
 
     try:
         result = build_history_rag_answer(
@@ -158,11 +142,24 @@ def rag_chat_stream_api(request):
     session_id = str(payload.get("session_id") or "").strip()
     display_question = str(payload.get("display_question") or question).strip()
     history = payload.get("conversation_history") if isinstance(payload.get("conversation_history"), list) else []
+    try:
+        problem_session_id = int(payload.get("problem_session_id"))
+    except (TypeError, ValueError):
+        problem_session_id = None
+    intent = payload.get("intent") or "concept"
+    explanation_level = "foundation" if intent == "question" and payload.get("foundation_explanation") is True else "core" if intent == "question" else ""
 
     def stream():
         try:
-            for event in stream_concept_rag_answer(question, mode=payload.get("mode") or "history", top_k=top_k, history=history):
+            answer_stream = (
+                stream_question_rag_answer(question, mode=payload.get("mode") or "history", top_k=top_k, history=history, explanation_level=explanation_level)
+                if intent == "question"
+                else stream_concept_rag_answer(question, mode=payload.get("mode") or "history", top_k=top_k, history=history)
+            )
+            for event in answer_stream:
                 if event["type"] == "done":
+                    if intent == "question":
+                        event["data"]["problem_session_id"] = problem_session_id
                     try:
                         save_chat_turn(request, session_id, display_question, event["data"])
                     except Exception:

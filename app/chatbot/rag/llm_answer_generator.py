@@ -32,12 +32,19 @@ Markdown 가로선(---)은 사용하지 마세요."""
 
 FOUNDATION_EXPLANATION_SYSTEM_PROMPT = FOLLOW_UP_SYSTEM_PROMPT + """
 
-이 사용자는 기초 해설이 필요합니다. 용어 뜻과 시대 배경부터 설명하고, 개념 흐름·정답 근거·각 선지의 이유·암기 포인트 순서로 자세히 풀이하세요.
-문제 본문에 있는 짧은 답변·한 문장·고정 표 형식 요구와 충돌하면 이 규칙을 우선하세요."""
+이 사용자는 기초 해설이 필요합니다. 정답 번호나 선지 표만 제시하고 끝내면 안 됩니다.
+교과서 요약처럼 딱딱하게 쓰지 말고, 옆에서 차근차근 알려 주는 선생님처럼 상냥한 존댓말로 설명하세요. 모든 문장 종결은 "~에요/~예요"체로 쓰고 "~습니다/~입니다"체는 쓰지 마세요. "처음에는 헷갈릴 수 있지만", "이렇게 연결해서 보면 쉬워요", "이 부분만 기억해 두면 돼요"처럼 자연스러운 안내를 섞고, 틀린 선지는 "헷갈리기 쉬운 부분이에요"처럼 부담을 주지 않는 말로 안내하세요.
+반드시 다음 순서로 충분히 설명하세요.
+1. 먼저 알아둘 용어: 문제의 핵심 용어를 쉬운 말로 풀이합니다.
+2. 시대 배경: 이 사건·제도가 어떤 흐름에서 나왔는지 설명합니다.
+3. 문제 풀이: 지문과 정답이 어떻게 연결되는지 원인-과정-결과로 설명합니다.
+4. 암기 포인트: 헷갈리지 않게 한두 문장으로 정리합니다.
+5. 선지별 해설: 모든 선지가 왜 맞거나 틀리는지, 사실 오류인지 시점 오류인지 구분해 설명합니다.
+각 항목은 한 문장으로 끝내지 말고 이해에 필요한 설명을 덧붙이세요. 문제 본문의 짧은 답변·한 문장·고정 표 형식 요구와 충돌하면 이 규칙을 우선하세요."""
 
 CORE_EXPLANATION_SYSTEM_PROMPT = FOLLOW_UP_SYSTEM_PROMPT + """
 
-이 사용자는 기본 개념을 갖추고 있습니다. 핵심 개념과 정답 근거를 먼저 설명하고, 선지별 판단 이유를 간결하게 풀이하세요."""
+이 사용자는 기본 개념을 갖추고 있습니다. 검색 근거에서 확인되는 정답 근거와 선지 판단만 요점 위주로 간결하게 설명하세요. 모든 문장 종결은 "~에요/~예요"체로 쓰고 "~습니다/~입니다/~이다"체는 쓰지 마세요."""
 
 
 STRUCTURED_SYSTEM_PROMPT = """당신은 한국사능력검정시험을 준비하는 학습자를 돕는 한국사 튜터입니다.
@@ -53,6 +60,22 @@ STREAM_STRUCTURED_SYSTEM_PROMPT = """당신은 한국사능력검정시험을 �
 반환 순서는 meta, section, row(여러 개 가능), section, row..., sources, done입니다.
 meta는 title과 summary, section은 heading, row는 term과 content, sources는 source_titles 배열을 가집니다.
 한자나 한문 원문은 현대 한국어 한글 표현으로 풀어 쓰세요."""
+
+FOUNDATION_STREAM_STRUCTURED_SYSTEM_PROMPT = STREAM_STRUCTURED_SYSTEM_PROMPT + """
+
+이 사용자는 기초 해설이 필요합니다. 섹션을 반드시 "1. 먼저 알아둘 용어", "2. 시대 배경", "3. 문제 풀이", "4. 암기 포인트", "5. 선지별 해설" 순서로 구성하세요.
+각 row의 content는 한 문장으로 끝내지 말고 쉬운 말로 충분히 설명하세요. 교과서 요약처럼 딱딱하게 쓰지 말고, 옆에서 차근차근 알려 주는 선생님처럼 상냥한 존댓말로 안내하세요. 모든 문장 종결은 "~에요/~예요"체로 쓰고 "~습니다/~입니다"체는 쓰지 마세요. "처음에는 헷갈릴 수 있지만", "이렇게 연결해서 보면 쉬워요", "이 부분만 기억해 두면 돼요"처럼 자연스러운 안내를 섞고, 틀린 선지는 부담을 주지 않는 말로 설명하세요."""
+
+CORE_STREAM_STRUCTURED_SYSTEM_PROMPT = STREAM_STRUCTURED_SYSTEM_PROMPT + """
+
+이 사용자는 기본 개념을 갖추고 있습니다. 섹션은 "1. 정답 근거", "2. 선지 판단", "3. 암기 포인트" 순서로만 구성하세요.
+검색 근거에서 확인되는 내용만 골라 각 row를 한두 문장으로 간결하게 설명하세요. 모든 문장 종결은 "~에요/~예요"체로 쓰고 "~습니다/~입니다/~이다"체는 쓰지 마세요."""
+
+CONCEPT_STREAM_STRUCTURED_SYSTEM_PROMPT = STREAM_STRUCTURED_SYSTEM_PROMPT + """
+
+개념을 처음 배우는 학습자에게 차근차근 알려 주듯 설명하세요. 모든 문장 종결은 "~에요/~예요"체로 쓰고 "~습니다/~입니다/~이다"체는 쓰지 마세요.
+일반 개념 질문은 "1. 먼저 알아둘 용어", "2. 시대 배경", "3. 핵심 내용", "4. 암기 포인트" 순서로 구성하고, 각 row에는 쉬운 뜻과 왜 중요한지를 함께 설명하세요.
+비교 질문은 대상별 기초 설명을 먼저 쓰고 공통점·차이점을 설명하세요. 관계 질문은 반드시 "1. 무슨 관계인지", "2. 관계의 근거", "3. 시험 포인트" 순서로 쓰고, 둘째 섹션에서 검색 근거를 바탕으로 연결 이유를 자세히 설명하세요. 검색 근거에 없는 사실은 덧붙이지 마세요."""
 
 
 @dataclass(frozen=True)
@@ -170,7 +193,7 @@ def build_structured_prompt(
 없는 내용은 만들지 말고 빈 배열로 처리하세요. 근거 부족 안내 문장은 쓰지 마세요.
 질문 의도에 맞게 필요한 수의 섹션을 직접 구성하세요.
 섹션 heading에는 번호와 질문에 맞는 제목을 함께 쓰세요.
-예: 관계 질문은 "1. 관계 개요", "2. 연결 근거", "3. 시험 포인트"처럼 구성하세요.
+관계 질문은 반드시 "1. 무슨 관계인지", "2. 관계의 근거", "3. 시험 포인트" 순서로 구성하세요. 첫 섹션에서는 두 대상의 관계를 쉬운 말로 먼저 밝히고, 둘째 섹션에서는 검색 근거를 바탕으로 연결 이유를 자세히 설명하세요.
 인물 단독 질문은 "1. 개요", "2. 주요 업적", "3. 역사적 역할" 순서로 구성하세요. 비교·관계 질문에는 이 규칙보다 해당 질문 형식을 우선하세요.
 인물 단독 질문의 답변 title은 인물명만 쓰세요. "인물명 개요", "인물명 정리"처럼 다른 말을 덧붙이지 마세요.
 인물 단독 질문의 각 표 행은 핵심 사실만 나열하지 말고, 검색 근거가 있으면 배경·내용·영향을 연결해 1~2문장으로 설명하세요.
@@ -319,6 +342,32 @@ class LLMAnswerGenerator:
         user_prompt = build_user_prompt(question, sources, style, follow_up, history, include_source_summary)
         return sanitize_answer(self._generate_openai(system_prompt, user_prompt))
 
+    def generate_stream(
+        self,
+        question: str,
+        sources: list[dict[str, Any]],
+        style: str,
+        follow_up: bool = False,
+        history: list[dict[str, str]] | None = None,
+        include_source_summary: bool = True,
+        explanation_level: str = "",
+    ) -> Iterator[str]:
+        system_prompt = (
+            FOUNDATION_EXPLANATION_SYSTEM_PROMPT if explanation_level == "foundation"
+            else CORE_EXPLANATION_SYSTEM_PROMPT if explanation_level == "core"
+            else FOLLOW_UP_SYSTEM_PROMPT if follow_up else SYSTEM_PROMPT
+        )
+        user_prompt = build_user_prompt(question, sources, style, follow_up, history, include_source_summary)
+        chunks = OpenAI().chat.completions.create(
+            model=self.config.model,
+            temperature=self.config.temperature,
+            stream=True,
+            messages=[{"role": "system", "content": system_prompt}, {"role": "user", "content": user_prompt}],
+        )
+        for chunk in chunks:
+            if chunk.choices:
+                yield chunk.choices[0].delta.content or ""
+
     def generate_structured(
         self,
         question: str,
@@ -331,14 +380,20 @@ class LLMAnswerGenerator:
         return normalize_structured_answer(extract_json_object(raw_answer))
 
     def generate_structured_stream(
-        self, question: str, sources: list[dict[str, Any]], follow_up: bool = False, history: list[dict[str, str]] | None = None
+        self, question: str, sources: list[dict[str, Any]], follow_up: bool = False, history: list[dict[str, str]] | None = None, explanation_level: str = ""
     ) -> Iterator[dict[str, Any]]:
         prompt = build_stream_structured_prompt(question, sources, follow_up, history)
+        system_prompt = (
+            FOUNDATION_STREAM_STRUCTURED_SYSTEM_PROMPT if explanation_level == "foundation"
+            else CORE_STREAM_STRUCTURED_SYSTEM_PROMPT if explanation_level == "core"
+            else CONCEPT_STREAM_STRUCTURED_SYSTEM_PROMPT if explanation_level == "concept"
+            else STREAM_STRUCTURED_SYSTEM_PROMPT
+        )
         chunks = OpenAI().chat.completions.create(
             model=self.config.model,
             temperature=self.config.temperature,
             stream=True,
-            messages=[{"role": "system", "content": STREAM_STRUCTURED_SYSTEM_PROMPT}, {"role": "user", "content": prompt}],
+            messages=[{"role": "system", "content": system_prompt}, {"role": "user", "content": prompt}],
         )
         fragments = (chunk.choices[0].delta.content or "" for chunk in chunks if chunk.choices)
         yield from self._parse_stream_events(fragments)

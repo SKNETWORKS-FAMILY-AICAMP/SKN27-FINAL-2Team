@@ -201,8 +201,10 @@ def build_problem_option_queries(question: str) -> list[str]:
     context = re.sub(r"\s+", " ", " ".join(value for value in (passage, problem, category) if value)).strip()
     if not context or not options:
         return []
-    choices = re.findall(r"(?m)^\s*\d+\.\s*(.+)$", options)
-    return [f"{context} {choice}".strip() for choice in choices]
+    selected = re.search(r"(\d+)\s*번", _problem_context_value(question, "내 답"))
+    choices = dict(re.findall(r"(?m)^\s*(\d+)\.\s*(.+)$", options))
+    selected_choice = choices.get(selected.group(1)) if selected else None
+    return [context, f"{context} {selected_choice}".strip()] if selected_choice else [context]
 
 
 def search_problem_option_sources(retriever: PgVectorHybridRetriever, question: str) -> list[Any]:
@@ -210,7 +212,7 @@ def search_problem_option_sources(retriever: PgVectorHybridRetriever, question: 
     if not queries:
         return []
     with ThreadPoolExecutor(max_workers=min(len(queries), 5)) as executor:
-        grouped_results = list(executor.map(lambda query: retriever.search(query, top_k=2), queries))
+        grouped_results = list(executor.map(lambda query: retriever.search(query, top_k=3), queries))
     deduplicated = {}
     for result in (item for group in grouped_results for item in group):
         existing = deduplicated.get(result.chunk_id)
@@ -347,9 +349,7 @@ def stream_concept_rag_answer(
     graph_context = build_graph_context(search_seed, limit=8, max_hop=graph_hop_for_question(search_seed)) if should_use_graph_context(search_seed, "concept") else None
     search_question = build_enriched_question(search_seed, graph_context) if graph_context else search_seed
     retriever = PgVectorHybridRetriever()
-    results = search_problem_option_sources(retriever, search_question) if intent == "question" else []
-    if not results:
-        results = retriever.search(search_question, top_k=max(top_k, 8 if graph_context and graph_context.get("keywords") else top_k))
+    results = retriever.search(search_question, top_k=max(top_k, 8 if graph_context and graph_context.get("keywords") else top_k))
     sources = [result_to_payload(result) for result in results]
     sources.extend(search_timeline_sources(search_question))
     retrieval_debug = build_retrieval_debug(search_seed, search_question, sources, graph_context)
@@ -360,7 +360,7 @@ def stream_concept_rag_answer(
     generator = LLMAnswerGenerator.from_env()
     answer: dict[str, Any] = {"answer_type": "textbook_note", "title": "한국사 개념 정리", "summary": "", "sections": [], "exam_points": [], "highlights": [], "source_titles": []}
     current_section: dict[str, Any] | None = None
-    for event in generator.generate_structured_stream(question, sources, follow_up=is_contextual_follow_up, history=conversation_history):
+    for event in generator.generate_structured_stream(question, sources, follow_up=is_contextual_follow_up, history=conversation_history, explanation_level="concept"):
         event_type = event["type"]
         if event_type == "meta":
             answer["title"] = str(event.get("title") or answer["title"])
@@ -502,3 +502,56 @@ def build_history_rag_answer(
         "enriched_question": search_question,
         "retrieval_debug": retrieval_debug,
     }
+
+
+def stream_question_rag_answer(
+    question: str,
+    mode: str = "history",
+    top_k: int = 8,
+    history: list[dict[str, Any]] | None = None,
+    explanation_level: str = "",
+) -> Iterator[dict[str, Any]]:
+    conversation_history = normalize_history(history)
+    search_seed = build_search_question(question, conversation_history, "question")
+    is_contextual_follow_up = search_seed != question
+    graph_context = build_graph_context(search_seed, limit=8, max_hop=graph_hop_for_question(search_seed)) if should_use_graph_context(search_seed, "question") else None
+    search_question = build_enriched_question(search_seed, graph_context) if graph_context else search_seed
+    retriever = PgVectorHybridRetriever()
+    results = search_problem_option_sources(retriever, search_question)
+    if not results:
+        results = retriever.search(search_question, top_k=top_k)
+    sources = [result_to_payload(result) for result in results]
+    sources.extend(search_timeline_sources(search_question))
+    retrieval_debug = build_retrieval_debug(search_seed, search_question, sources, graph_context)
+    if not has_enough_evidence(results, "question"):
+        yield {"type": "done", "data": not_found_answer(question, "question", graph_context)}
+        return
+
+    generator = LLMAnswerGenerator.from_env()
+    answer = {"answer_type": "follow_up_explanation", "title": "문제 해설", "summary": "", "sections": [], "exam_points": [], "highlights": [], "source_titles": []}
+    current_section = None
+    for event in generator.generate_structured_stream(question, sources, follow_up=True, history=conversation_history, explanation_level=explanation_level):
+        if event["type"] == "meta":
+            answer["title"] = str(event.get("title") or answer["title"])
+            answer["summary"] = sanitize_answer(str(event.get("summary") or ""))
+        elif event["type"] == "section":
+            current_section = {"heading": str(event.get("heading") or ""), "items": []}
+            answer["sections"].append(current_section)
+        elif event["type"] == "row" and current_section is not None:
+            current_section["items"].append({"term": str(event.get("term") or ""), "content": str(event.get("content") or "")})
+        elif event["type"] == "sources":
+            answer["source_titles"] = event.get("source_titles") if isinstance(event.get("source_titles"), list) else []
+        if event["type"] != "done":
+            yield event
+    structured_answer = normalize_structured_answer(answer)
+    result = {
+        "question": question, "mode": mode, "intent": "question", "answer_format": "structured", "answer": None,
+        "structured_answer": structured_answer, "not_found": is_insufficient_structured_answer(structured_answer),
+        "explanation_level": explanation_level,
+        "llm": {"provider": generator.config.provider, "model": generator.config.model, "temperature": generator.config.temperature},
+        "sources": sources, "graph_context": graph_context, "search_seed": search_seed,
+        "enriched_question": search_question, "retrieval_debug": retrieval_debug,
+    }
+    if result["not_found"]:
+        result = not_found_answer(question, "question", graph_context)
+    yield {"type": "done", "data": result}
