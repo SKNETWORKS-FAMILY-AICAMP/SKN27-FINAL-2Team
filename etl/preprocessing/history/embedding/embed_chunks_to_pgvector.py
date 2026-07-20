@@ -56,7 +56,6 @@ def ensure_table(conn, embedding_dimensions: int) -> None:
 
     with conn.cursor() as cur:
         cur.execute("CREATE EXTENSION IF NOT EXISTS vector")
-        cur.execute("CREATE EXTENSION IF NOT EXISTS pg_trgm")
         cur.execute("CREATE SCHEMA IF NOT EXISTS rag")
         cur.execute(
             f"""
@@ -94,18 +93,6 @@ def ensure_table(conn, embedding_dimensions: int) -> None:
         )
         cur.execute(
             """
-            CREATE INDEX IF NOT EXISTS document_chunks_text_trgm_idx
-            ON rag.document_chunks USING GIN (chunk_text gin_trgm_ops)
-            """
-        )
-        cur.execute(
-            """
-            CREATE INDEX IF NOT EXISTS document_chunks_title_trgm_idx
-            ON rag.document_chunks USING GIN (title gin_trgm_ops)
-            """
-        )
-        cur.execute(
-            """
             ALTER TABLE rag.document_chunks
             ADD COLUMN IF NOT EXISTS search_tokens TEXT NOT NULL DEFAULT ''
             """
@@ -127,8 +114,37 @@ def ensure_table(conn, embedding_dimensions: int) -> None:
     conn.commit()
 
 
-def upsert_chunks(conn, chunk_files: list[Path]) -> int:
-    rows = []
+def upsert_chunks(conn, chunk_files: list[Path], batch_size: int = 1000) -> int:
+    def flush(rows: list[tuple]) -> int:
+        if not rows:
+            return 0
+        with conn.cursor() as cur:
+            execute_values(
+                cur,
+                """
+                INSERT INTO rag.document_chunks (
+                    chunk_id, document_id, source_type, source_name, title, chunk_index,
+                    chunk_text, token_count, metadata, search_tokens
+                ) VALUES %s
+                ON CONFLICT (chunk_id) DO UPDATE SET
+                    document_id = EXCLUDED.document_id, source_type = EXCLUDED.source_type,
+                    source_name = EXCLUDED.source_name, title = EXCLUDED.title,
+                    chunk_index = EXCLUDED.chunk_index, chunk_text = EXCLUDED.chunk_text,
+                    token_count = EXCLUDED.token_count, metadata = EXCLUDED.metadata,
+                    search_tokens = EXCLUDED.search_tokens,
+                    embedding = CASE WHEN rag.document_chunks.chunk_text IS DISTINCT FROM EXCLUDED.chunk_text THEN NULL ELSE rag.document_chunks.embedding END,
+                    embedding_model = CASE WHEN rag.document_chunks.chunk_text IS DISTINCT FROM EXCLUDED.chunk_text THEN NULL ELSE rag.document_chunks.embedding_model END,
+                    embedded_at = CASE WHEN rag.document_chunks.chunk_text IS DISTINCT FROM EXCLUDED.chunk_text THEN NULL ELSE rag.document_chunks.embedded_at END,
+                    updated_at = NOW()
+                """,
+                rows,
+                page_size=batch_size,
+            )
+        conn.commit()
+        return len(rows)
+
+    rows: list[tuple] = []
+    loaded = 0
     for path in chunk_files:
         for row in load_jsonl(path):
             rows.append(
@@ -145,44 +161,11 @@ def upsert_chunks(conn, chunk_files: list[Path]) -> int:
                     mecab_search_tokens(f"{row['title']} {row['title']} {row['chunk_text']}"),
                 )
             )
-
-    if not rows:
-        return 0
-
-    with conn.cursor() as cur:
-        execute_values(
-            cur,
-            """
-            INSERT INTO rag.document_chunks (
-                chunk_id,
-                document_id,
-                source_type,
-                source_name,
-                title,
-                chunk_index,
-                chunk_text,
-                token_count,
-                metadata,
-                search_tokens
-            )
-            VALUES %s
-            ON CONFLICT (chunk_id) DO UPDATE SET
-                document_id = EXCLUDED.document_id,
-                source_type = EXCLUDED.source_type,
-                source_name = EXCLUDED.source_name,
-                title = EXCLUDED.title,
-                chunk_index = EXCLUDED.chunk_index,
-                chunk_text = EXCLUDED.chunk_text,
-                token_count = EXCLUDED.token_count,
-                metadata = EXCLUDED.metadata,
-                search_tokens = EXCLUDED.search_tokens,
-                updated_at = NOW()
-            """,
-            rows,
-            page_size=1000,
-        )
-    conn.commit()
-    return len(rows)
+            if len(rows) >= batch_size:
+                loaded += flush(rows)
+                print(f"upserted_chunks={loaded}", flush=True)
+                rows.clear()
+    return loaded + flush(rows)
 
 
 def refresh_search_tokens(conn, batch_size: int) -> int:
@@ -276,13 +259,14 @@ def delete_missing_chunks(conn, chunk_files: list[Path]) -> int:
     return deleted
 
 
-def fetch_unembedded_chunks(conn, embedding_model: str, limit: int) -> list[tuple[str, str]]:
+def fetch_unembedded_chunks(conn, embedding_model: str, limit: int, source_type: str | None = None) -> list[tuple[str, str]]:
     with conn.cursor() as cur:
         cur.execute(
             """
             SELECT chunk_id, chunk_text
             FROM rag.document_chunks
             WHERE source_type <> 'image_material'
+              AND (%s IS NULL OR source_type = %s)
               AND (
                   embedding IS NULL
                   OR embedding_model IS DISTINCT FROM %s
@@ -290,7 +274,7 @@ def fetch_unembedded_chunks(conn, embedding_model: str, limit: int) -> list[tupl
             ORDER BY id
             LIMIT %s
             """,
-            (embedding_model, limit),
+            (source_type, source_type, embedding_model, limit),
         )
         return cur.fetchall()
 
@@ -351,6 +335,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Embed processed RAG chunks into PostgreSQL pgvector")
     parser.add_argument("--processed-dir", type=Path, default=DEFAULT_PROCESSED_DIR)
     parser.add_argument("--chunk-file", action="append", default=None, help="JSONL chunk filename. Can be repeated.")
+    parser.add_argument("--source-type", help="Embed only this source type.")
     parser.add_argument("--model", default=os.getenv("EMBEDDING_MODEL", "text-embedding-3-small"))
     parser.add_argument("--dimensions", type=int, default=int(os.getenv("EMBEDDING_DIMENSIONS", "1536")))
     parser.add_argument("--batch-size", type=int, default=20)
@@ -416,7 +401,7 @@ def main() -> None:
         current_batch_size = args.batch_size
         while embedded < args.limit:
             batch_limit = min(current_batch_size, args.limit - embedded)
-            rows = fetch_unembedded_chunks(conn, args.model, batch_limit)
+            rows = fetch_unembedded_chunks(conn, args.model, batch_limit, args.source_type)
             if not rows:
                 break
 

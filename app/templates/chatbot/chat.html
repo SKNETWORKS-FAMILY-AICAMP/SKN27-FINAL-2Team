@@ -180,22 +180,29 @@
 
       try {
         const answerFormat = intent === "concept" ? "structured" : "text";
+        const payload = {
+          question,
+          display_question: displayQuestion,
+          session_id: activeSessionId,
+          mode,
+          intent,
+          answer_format: answerFormat,
+          top_k: 20,
+          conversation_history: conversationHistory,
+        };
+        if (intent === "concept") {
+          const data = await streamConceptAnswer(payload, loading);
+          data.intent = intent;
+          addMessageToActiveSession({ sender: "bot", data, intent });
+          return;
+        }
         const response = await fetch("{% url 'chatbot:rag_chat_api' %}", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             "X-CSRFToken": csrfToken,
           },
-          body: JSON.stringify({
-            question,
-            display_question: displayQuestion,
-            session_id: activeSessionId,
-            mode,
-            intent,
-            answer_format: answerFormat,
-            top_k: 5,
-            conversation_history: conversationHistory,
-          }),
+          body: JSON.stringify(payload),
         });
         const data = await response.json();
         data.intent = intent;
@@ -206,7 +213,7 @@
           return;
         }
 
-        appendBotMessage(data, true);
+        appendBotMessage(data);
         addMessageToActiveSession({ sender: "bot", data, intent });
       } catch (error) {
         loading.remove();
@@ -215,6 +222,94 @@
         sendButton.disabled = false;
         input.focus();
       }
+    }
+
+    async function streamConceptAnswer(payload, loading) {
+      const response = await fetch("{% url 'chatbot:rag_chat_stream_api' %}", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-CSRFToken": csrfToken },
+        body: JSON.stringify(payload),
+      });
+      if (!response.ok || !response.body) {
+        const data = await response.json();
+        throw new Error(data.error || "답변 생성에 실패했습니다.");
+      }
+      loading.remove();
+      const view = appendStreamingStructuredMessage();
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let result = null;
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const frames = buffer.split("\n\n");
+        buffer = frames.pop();
+        for (const frame of frames) {
+          const dataLine = frame.split("\n").find((line) => line.startsWith("data: "));
+          if (!dataLine) continue;
+          const event = JSON.parse(dataLine.slice(6));
+          if (event.type === "done") result = event.data;
+          else if (event.type === "error") throw new Error(event.error);
+          else {
+            view.apply(event);
+            if (event.type === "section" || event.type === "row") {
+              await new Promise((resolve) => setTimeout(resolve, event.type === "section" ? 260 : 180));
+            }
+          }
+        }
+      }
+      if (!result) throw new Error("답변 스트리밍이 완료되지 않았습니다.");
+      if (result.not_found) {
+        view.wrapper.remove();
+        appendBotMessage(result);
+      } else {
+        view.finish(result);
+      }
+      return result;
+    }
+
+    function appendStreamingStructuredMessage() {
+      const wrapper = document.createElement("div");
+      wrapper.className = "message bot";
+      wrapper.innerHTML = `
+        <div class="avatar"><img src="/static/images/chatbot_label.png" alt="himate" /></div>
+        <div class="bubble bot-bubble"><div class="bot-label"><span class="bot-dot"></span><span>개념 정리</span></div><article class="note"><h1 class="title"></h1><p class="summary"></p><div class="stream-sections"></div></article></div>`;
+      chatStream.appendChild(wrapper);
+      const note = wrapper.querySelector(".note");
+      const sections = wrapper.querySelector(".stream-sections");
+      let table = null;
+      return {
+        wrapper,
+        apply(event) {
+          if (event.type === "meta") {
+            note.querySelector(".title").textContent = event.title || "한국사 개념 정리";
+            note.querySelector(".summary").textContent = event.summary || "";
+          }
+          if (event.type === "section") {
+            const match = String(event.heading || "").match(/^(\d+)\.\s*(.*)$/);
+            const number = match ? match[1] : String(sections.children.length + 1);
+            const heading = match ? match[2] : event.heading;
+            const section = document.createElement("section");
+            section.className = "section";
+            section.innerHTML = `<h2 class="section-title"><span class="section-number">${escapeHtml(number)}</span><span>${escapeHtml(heading)}</span></h2><table><tbody></tbody></table>`;
+            sections.appendChild(section);
+            table = section.querySelector("tbody");
+          }
+          if (event.type === "row" && table) {
+            const row = document.createElement("tr");
+            row.innerHTML = `<th>${escapeHtml(event.term)}</th><td>${escapeHtml(event.content)}</td>`;
+            table.appendChild(row);
+          }
+          scrollToBottom();
+        },
+        finish(data) {
+          const sourceTitles = data.structured_answer?.source_titles?.length ? data.structured_answer.source_titles : (data.sources || []).slice(0, 3).map((source) => source.title);
+          note.insertAdjacentHTML("beforeend", `<section class="sources"><h2>출처</h2><ul>${sourceTitles.map((title) => `<li>${escapeHtml(title)}</li>`).join("")}</ul></section>`);
+          scrollToBottom();
+        },
+      };
     }
 
     function escapeHtml(value) {

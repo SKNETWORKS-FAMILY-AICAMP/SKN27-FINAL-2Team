@@ -63,8 +63,8 @@ RAGAS 대상은 이미지 및 학습 팁을 제외한 `concept`, `summary`, `com
 ## 측정 흐름
 
 1. 골든 질문을 읽는다.
-2. 검색 단독 속도를 측정한다. 캐시를 비워 `retriever.search()`를 호출한다.
-3. 실제 `build_history_rag_answer()`로 검색, Graph 보강, LLM 답변 생성을 수행한다.
+2. 캐시를 비운 뒤 실제 `build_history_rag_answer()`를 한 번 호출한다.
+3. 그 호출 안에서 LLM 생성 메서드의 시간을 직접 계측한다. 검색 속도는 전체 응답 시간에서 이 LLM 생성 시간을 뺀 값이다.
 4. 검색 문맥과 답변을 저장한 뒤 RAGAS 평가를 수행한다.
 5. 요약 지표와 질문별 상세 결과를 CSV/JSON으로 보관한다.
 

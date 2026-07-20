@@ -191,3 +191,155 @@ storage/postgresql/schema/init.sql
 storage/postgresql/schema/alter_apply_latest.sql
 app/question/models.py
 ```
+
+## Import ML trend TOP5 data
+
+Use this when importing:
+
+```text
+ai/ml/reports/trend_top5_for_db_2026-07-18.csv
+```
+
+Create or update the table first:
+
+```powershell
+Get-Content storage/postgresql/schema/alter_apply_latest.sql | docker exec -i skn27-postgres psql -U himate -d history_rag
+```
+
+Copy the CSV file into the PostgreSQL container:
+
+```powershell
+docker cp "C:\dev\project\SKN27-FINAL-2Team\ai\ml\reports\trend_top5_for_db_2026-07-18.csv" skn27-postgres:/tmp/trend_top5_for_db_2026-07-18.csv
+```
+
+Connect to PostgreSQL:
+
+```powershell
+docker exec -it skn27-postgres psql -U himate -d history_rag
+```
+
+Run this inside `psql`:
+
+```sql
+CREATE TEMP TABLE ml_trend_top5_import (
+    target_round INT,
+    recent5_rounds TEXT,
+    source TEXT,
+    source_name TEXT,
+    usage TEXT,
+    trend_type TEXT,
+    rank INT,
+    era TEXT,
+    topic_train TEXT,
+    topic TEXT,
+    topic_summary TEXT,
+    label TEXT,
+    combo_label TEXT,
+    combo_label_with_topic TEXT,
+    count INT,
+    ratio DOUBLE PRECISION,
+    ratio_percent DOUBLE PRECISION
+);
+
+\copy ml_trend_top5_import FROM '/tmp/trend_top5_for_db_2026-07-18.csv' WITH (FORMAT csv, HEADER true, ENCODING 'UTF8');
+
+INSERT INTO ml_trend_top5 (
+    target_round,
+    recent5_rounds,
+    source,
+    source_name,
+    usage_text,
+    trend_type,
+    rank_no,
+    era,
+    topic_train,
+    topic,
+    topic_summary,
+    label,
+    combo_label,
+    combo_label_with_topic,
+    count_value,
+    ratio,
+    ratio_percent
+)
+SELECT
+    target_round,
+    recent5_rounds,
+    source,
+    source_name,
+    usage,
+    trend_type,
+    rank,
+    era,
+    topic_train,
+    topic,
+    topic_summary,
+    label,
+    combo_label,
+    combo_label_with_topic,
+    count,
+    ratio,
+    ratio_percent
+FROM ml_trend_top5_import
+ON CONFLICT (target_round, source, trend_type, rank_no)
+DO UPDATE SET
+    recent5_rounds = EXCLUDED.recent5_rounds,
+    source_name = EXCLUDED.source_name,
+    usage_text = EXCLUDED.usage_text,
+    era = EXCLUDED.era,
+    topic_train = EXCLUDED.topic_train,
+    topic = EXCLUDED.topic,
+    topic_summary = EXCLUDED.topic_summary,
+    label = EXCLUDED.label,
+    combo_label = EXCLUDED.combo_label,
+    combo_label_with_topic = EXCLUDED.combo_label_with_topic,
+    count_value = EXCLUDED.count_value,
+    ratio = EXCLUDED.ratio,
+    ratio_percent = EXCLUDED.ratio_percent;
+```
+
+Check import count:
+
+```sql
+SELECT COUNT(*)
+FROM ml_trend_top5;
+```
+
+Expected result:
+
+```text
+480
+```
+
+Check recent trend rows:
+
+```sql
+SELECT
+    target_round,
+    trend_type,
+    source,
+    rank_no,
+    era,
+    topic_train,
+    topic,
+    label,
+    combo_label_with_topic,
+    count_value,
+    ratio_percent
+FROM ml_trend_top5
+WHERE source = 'recent5_actual'
+ORDER BY target_round, trend_type, rank_no;
+```
+
+Usage notes:
+
+```text
+source = recent5_actual  : recent 5-round actual-label trend rows
+source = predicted       : model-classified rows for validation
+source = actual          : target-round actual-label rows for comparison
+
+trend_type = era_topic_train : era + integrated topic TOP5
+trend_type = era             : era TOP5
+trend_type = topic_train     : integrated topic TOP5
+trend_type = topic           : detailed topic TOP5
+```

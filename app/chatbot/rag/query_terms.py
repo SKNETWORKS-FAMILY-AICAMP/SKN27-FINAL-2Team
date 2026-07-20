@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import re
 
+from .korean_tokenizer import mecab_search_tokens
 
-TOKEN_PATTERN = re.compile(r"[가-힣A-Za-z0-9一-龥]+")
 STOPWORDS = {
     "설명",
     "알려줘",
@@ -27,7 +27,6 @@ QUERY_EXPANSIONS = {
     "직계": ["직계제", "直啓", "직계아문"],
     "의정부서사제": ["의정부", "서사제", "署事"],
     "조선전기": ["조선 초기", "조선 초기의"],
-    "전기": ["초기"],
     "정치": ["정치구조", "통치", "관료", "의정부", "육조"],
     "전성기": ["광개토", "광개토대왕", "장수왕", "남진"],
     "고구려": ["광개토", "광개토대왕", "장수왕"],
@@ -48,13 +47,7 @@ QUERY_EXPANSIONS = {
 
 
 def tokenize(text: str) -> list[str]:
-    tokens = [token.lower() for token in TOKEN_PATTERN.findall(text or "")]
-    normalized = []
-    for token in tokens:
-        token = re.sub(r"(이야|인가|이란|은|는|이|가|을|를|의|에|와|과)$", "", token)
-        if len(token) > 1 and token not in STOPWORDS:
-            normalized.append(token)
-    return normalized
+    return [token for token in mecab_search_tokens(text or "").split() if token not in STOPWORDS]
 
 
 def expand_query_tokens(query: str, tokens: list[str]) -> list[str]:

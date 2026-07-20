@@ -25,7 +25,7 @@ except ImportError:
         return func
 
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
 load_dotenv(PROJECT_ROOT / ".env")
 DEFAULT_GOLDEN = PROJECT_ROOT / "etl" / "preprocessing" / "history" / "embedding" / "golden_questions.jsonl"
 DEFAULT_OUT = PROJECT_ROOT / "etl" / "preprocessing" / "history" / "embedding" / "service_eval_results"
@@ -34,6 +34,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from app.chatbot.graph_service import build_graph_context
+from app.chatbot import rag_service as rag_service_module
 from app.chatbot.rag.pgvector_retriever import PgVectorHybridRetriever, cached_pg_search
 from app.chatbot.rag_service import build_history_rag_answer
 
@@ -95,20 +96,40 @@ def evaluate_latency(queries: list[str]) -> list[Metric]:
     search_values = []
     generation_values = []
     total_values = []
-    retriever = PgVectorHybridRetriever()
     for query in queries:
-        cached_pg_search.cache_clear()
-        start = time.perf_counter()
-        retriever.search(query, top_k=5)
-        search_sec = time.perf_counter() - start
+        llm_sec = 0.0
+        original_generate = rag_service_module.LLMAnswerGenerator.generate
+        original_generate_structured = rag_service_module.LLMAnswerGenerator.generate_structured
 
+        def timed_generate(*args, **kwargs):
+            nonlocal llm_sec
+            start = time.perf_counter()
+            try:
+                return original_generate(*args, **kwargs)
+            finally:
+                llm_sec += time.perf_counter() - start
+
+        def timed_generate_structured(*args, **kwargs):
+            nonlocal llm_sec
+            start = time.perf_counter()
+            try:
+                return original_generate_structured(*args, **kwargs)
+            finally:
+                llm_sec += time.perf_counter() - start
+
+        rag_service_module.LLMAnswerGenerator.generate = timed_generate
+        rag_service_module.LLMAnswerGenerator.generate_structured = timed_generate_structured
         cached_pg_search.cache_clear()
         start = time.perf_counter()
-        build_history_rag_answer(query, intent="concept", answer_format="structured", top_k=5)
+        try:
+            build_history_rag_answer(query, intent="concept", answer_format="structured", top_k=5)
+        finally:
+            rag_service_module.LLMAnswerGenerator.generate = original_generate
+            rag_service_module.LLMAnswerGenerator.generate_structured = original_generate_structured
         total_sec = time.perf_counter() - start
 
-        search_values.append(search_sec)
-        generation_values.append(max(0.0, total_sec - search_sec))
+        search_values.append(max(0.0, total_sec - llm_sec))
+        generation_values.append(llm_sec)
         total_values.append(total_sec)
 
     search_avg = sum(search_values) / len(search_values) if search_values else 0.0
@@ -180,6 +201,7 @@ def evaluate_ragas_metrics(questions: list[dict], limit: int, debug_path: Path |
         from ragas.llms import LangchainLLMWrapper
         from ragas.metrics import answer_relevancy, context_precision, context_recall, faithfulness
         from langchain_openai import ChatOpenAI
+        from openai import APIConnectionError, APITimeoutError, RateLimitError
     except ImportError as exc:
         return [
             Metric("RAGAS Context Precision", "검색 문맥 중 질문과 관련 있는 문맥 비율", f"N/A ({exc.name} 미설치)", "0.80 이상", None, "RAGAS Framework (Context Precision)"),
@@ -244,8 +266,9 @@ def evaluate_ragas_metrics(questions: list[dict], limit: int, debug_path: Path |
                 temperature=0,
             )
         )
+        transient_exceptions = (IndexError, RateLimitError, APITimeoutError, APIConnectionError)
         last_error = None
-        for _ in range(3):
+        for attempt in range(3):
             try:
                 result = evaluate(
                     dataset,
@@ -255,8 +278,10 @@ def evaluate_ragas_metrics(questions: list[dict], limit: int, debug_path: Path |
                     batch_size=1,
                 )
                 break
-            except IndexError as exc:
+            except transient_exceptions as exc:
                 last_error = exc
+                if attempt < 2:
+                    time.sleep(2 ** attempt)
         else:
             raise last_error
         if debug_path:
@@ -356,10 +381,10 @@ def append_history(rows: list[dict[str, str]], path: Path) -> None:
     run_at = datetime.now().isoformat(timespec="seconds")
     version = current_version()
     fieldnames = ["run_at", *version, *rows[0]]
-    exists = path.exists()
+    needs_header = not path.exists() or path.stat().st_size == 0
     with path.open("a", encoding="utf-8-sig", newline="") as fp:
         writer = csv.DictWriter(fp, fieldnames=fieldnames)
-        if not exists:
+        if needs_header:
             writer.writeheader()
         for row in rows:
             writer.writerow({"run_at": run_at, **version, **row})

@@ -6,6 +6,7 @@ import re
 import urllib.error
 import urllib.request
 from dataclasses import dataclass
+from collections.abc import Iterator
 from typing import Any
 
 from dotenv import load_dotenv
@@ -38,6 +39,13 @@ STRUCTURED_SYSTEM_PROMPT = """당신은 한국사능력검정시험을 준비하
 summary에는 검색 근거로 확인되는 핵심 내용만 쓰고, 근거 부족 안내 문장은 쓰지 마세요.
 한자나 한문 원문은 그대로 쓰지 말고, 현대 한국어 한글 표현으로 풀어 쓰세요.
 exam_points는 항상 빈 배열로 두세요."""
+
+STREAM_STRUCTURED_SYSTEM_PROMPT = """당신은 한국사능력검정시험을 준비하는 학습자를 돕는 한국사 튜터입니다.
+반드시 제공된 검색 근거 안에서만 답변하세요.
+한 줄에 JSON 객체 하나씩만 출력하세요. Markdown 코드블록이나 다른 문장은 쓰지 마세요.
+반환 순서는 meta, section, row(여러 개 가능), section, row..., sources, done입니다.
+meta는 title과 summary, section은 heading, row는 term과 content, sources는 source_titles 배열을 가집니다.
+한자나 한문 원문은 현대 한국어 한글 표현으로 풀어 쓰세요."""
 
 
 @dataclass(frozen=True)
@@ -154,10 +162,16 @@ def build_structured_prompt(
 문자열 값 안에서 중요한 키워드는 별도 Markdown 없이 원문 키워드만 쓰세요.
 한자나 한문 원문은 그대로 쓰지 말고, 현대 한국어 한글 표현으로 풀어 쓰세요.
 없는 내용은 만들지 말고 빈 배열로 처리하세요. 근거 부족 안내 문장은 쓰지 마세요.
-질문 의도에 맞게 2~4개 섹션을 직접 구성하세요.
+질문 의도에 맞게 필요한 수의 섹션을 직접 구성하세요.
 섹션 heading에는 번호와 질문에 맞는 제목을 함께 쓰세요.
 예: 관계 질문은 "1. 관계 개요", "2. 연결 근거", "3. 시험 포인트"처럼 구성하세요.
-예: 비교 질문은 "1. 공통점", "2. 차이점", "3. 시험 포인트"처럼 구성하세요.
+인물 단독 질문은 "1. 개요", "2. 주요 업적", "3. 역사적 역할" 순서로 구성하세요. 비교·관계 질문에는 이 규칙보다 해당 질문 형식을 우선하세요.
+인물 단독 질문의 답변 title은 인물명만 쓰세요. "인물명 개요", "인물명 정리"처럼 다른 말을 덧붙이지 마세요.
+인물 단독 질문의 각 표 행은 핵심 사실만 나열하지 말고, 검색 근거가 있으면 배경·내용·영향을 연결해 1~2문장으로 설명하세요.
+검색 근거에 해당 내용이 전혀 없을 때만 그 섹션을 생략하고, 빈 표를 만들지 마세요.
+예: 비교 질문은 비교 대상별 설명을 먼저 배치한 뒤 공통점과 차이점을 정리하세요.
+비교 대상이 3개라면 "1. 첫 번째 키워드", "2. 두 번째 키워드", "3. 세 번째 키워드", "4. 공통점", "5. 차이점" 순서로 구성하세요.
+각 비교 대상 섹션에는 그 대상의 핵심 내용만, 공통점과 차이점 섹션에는 대상들을 직접 비교한 내용만 넣으세요.
 예: 개념 질문은 검색 근거에 맞는 주제별 제목으로 구성하세요.
 각 항목의 설명은 반드시 해당 섹션 제목과 직접 관련된 내용만 쓰세요.
 
@@ -177,6 +191,21 @@ def build_structured_prompt(
   "highlights": ["강조할 핵심 키워드"],
   "source_titles": ["사용한 출처 title"]
 }}"""
+
+
+def build_stream_structured_prompt(question: str, sources: list[dict[str, Any]], follow_up: bool, history: list[dict[str, str]] | None = None) -> str:
+    prompt = build_structured_prompt(question, sources, follow_up, history)
+    return prompt.replace(
+        "아래 JSON 스키마를 정확히 지켜서 JSON 객체 하나만 반환하세요.",
+        "아래 정보를 JSON Lines 이벤트로 나누어 반환하세요. 이벤트마다 한 줄의 JSON 객체만 반환하세요.",
+    ) + """
+
+이벤트 예시:
+{"type":"meta","title":"답변 제목","summary":"한두 문장 요약"}
+{"type":"section","heading":"1. 섹션 제목"}
+{"type":"row","term":"핵심어","content":"설명"}
+{"type":"sources","source_titles":["사용한 출처 title"]}
+{"type":"done"}"""
 
 
 def sanitize_answer(answer: str) -> str:
@@ -214,75 +243,13 @@ def extract_json_object(text: str) -> dict[str, Any]:
     return parsed
 
 
-EXAM_POINT_BLOCK_TERMS = (
-    "단정",
-    "근거",
-    "부족",
-    "확실",
-    "추정",
-    "이름",
-    "부인",
-    "어머니",
-    "아버지",
-    "낳았다",
-    "나온다",
-    "제공된",
-    "검색",
-    "출처",
-)
-EXAM_POINT_ALLOW_TERMS = (
-    "한능검",
-    "시험",
-    "출제",
-    "암기",
-    "시대",
-    "왕",
-    "정책",
-    "제도",
-    "사건",
-    "개혁",
-    "전쟁",
-    "운동",
-    "조약",
-    "문화",
-    "경제",
-    "정치",
-    "사회",
-    "불교",
-    "유교",
-    "토지",
-    "세금",
-    "관청",
-    "업적",
-    "비교",
-    "순서",
-    "흐름",
-)
-
-
-def filter_exam_points(points: list[Any]) -> list[str]:
-    filtered: list[str] = []
-    for point in points:
-        text = re.sub(r"\s+", " ", str(point or "")).strip()
-        if not text:
-            continue
-        if any(term in text for term in EXAM_POINT_BLOCK_TERMS) and not any(
-            term in text for term in EXAM_POINT_ALLOW_TERMS
-        ):
-            continue
-        if text not in filtered:
-            filtered.append(text)
-    return filtered[:5]
-
-
 def normalize_structured_answer(value: dict[str, Any]) -> dict[str, Any]:
-    exam_points = value.get("exam_points") if isinstance(value.get("exam_points"), list) else []
     return {
         "answer_type": str(value.get("answer_type") or "textbook_note"),
         "title": str(value.get("title") or "한국사 개념 정리"),
         "summary": sanitize_answer(str(value.get("summary") or "")),
         "sections": value.get("sections") if isinstance(value.get("sections"), list) else [],
-        "exam_points": filter_exam_points(exam_points),
+        "exam_points": value.get("exam_points") if isinstance(value.get("exam_points"), list) else [],
         "highlights": value.get("highlights") if isinstance(value.get("highlights"), list) else [],
         "source_titles": value.get("source_titles") if isinstance(value.get("source_titles"), list) else [],
     }
@@ -338,23 +305,66 @@ class LLMAnswerGenerator:
     ) -> dict[str, Any]:
         user_prompt = build_structured_prompt(question, sources, follow_up, history)
         if self.config.provider == "openai":
-            raw_answer = self._generate_openai(STRUCTURED_SYSTEM_PROMPT, user_prompt)
+            raw_answer = self._generate_openai(STRUCTURED_SYSTEM_PROMPT, user_prompt, json_mode=True)
         elif self.config.provider == "ollama":
             raw_answer = self._generate_ollama(STRUCTURED_SYSTEM_PROMPT, user_prompt)
         else:
             raise ValueError(f"지원하지 않는 provider입니다: {self.config.provider}")
         return normalize_structured_answer(extract_json_object(raw_answer))
 
-    def _generate_openai(self, system_prompt: str, user_prompt: str) -> str:
+    def generate_structured_stream(
+        self, question: str, sources: list[dict[str, Any]], follow_up: bool = False, history: list[dict[str, str]] | None = None
+    ) -> Iterator[dict[str, Any]]:
+        prompt = build_stream_structured_prompt(question, sources, follow_up, history)
+        if self.config.provider == "openai":
+            chunks = OpenAI().chat.completions.create(
+                model=self.config.model,
+                temperature=self.config.temperature,
+                stream=True,
+                messages=[{"role": "system", "content": STREAM_STRUCTURED_SYSTEM_PROMPT}, {"role": "user", "content": prompt}],
+            )
+            fragments = (chunk.choices[0].delta.content or "" for chunk in chunks if chunk.choices)
+        elif self.config.provider == "ollama":
+            fragments = self._generate_ollama_stream(STREAM_STRUCTURED_SYSTEM_PROMPT, prompt)
+        else:
+            raise ValueError(f"지원하지 않는 provider입니다: {self.config.provider}")
+        yield from self._parse_stream_events(fragments)
+
+    @staticmethod
+    def _parse_stream_events(fragments: Iterator[str]) -> Iterator[dict[str, Any]]:
+        buffer = ""
+        for fragment in fragments:
+            buffer += fragment
+            while "\n" in buffer:
+                line, buffer = buffer.split("\n", 1)
+                try:
+                    event = json.loads(line.strip())
+                except json.JSONDecodeError:
+                    continue
+                if isinstance(event, dict) and event.get("type") in {"meta", "section", "row", "sources", "done"}:
+                    yield event
+
+    def _generate_ollama_stream(self, system_prompt: str, user_prompt: str) -> Iterator[str]:
+        payload = {"model": self.config.model, "stream": True, "messages": [{"role": "system", "content": system_prompt}, {"role": "user", "content": user_prompt}], "options": {"temperature": self.config.temperature}}
+        request = urllib.request.Request(f"{self.config.ollama_base_url}/api/chat", data=json.dumps(payload, ensure_ascii=False).encode("utf-8"), headers={"Content-Type": "application/json"}, method="POST")
+        with urllib.request.urlopen(request, timeout=120) as response:
+            for line in response:
+                data = json.loads(line.decode("utf-8"))
+                yield data.get("message", {}).get("content") or ""
+
+    def _generate_openai(self, system_prompt: str, user_prompt: str, json_mode: bool = False) -> str:
         client = OpenAI()
-        response = client.chat.completions.create(
-            model=self.config.model,
-            temperature=self.config.temperature,
-            messages=[
+        kwargs: dict[str, Any] = {
+            "model": self.config.model,
+            "temperature": self.config.temperature,
+            "messages": [
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt},
             ],
-        )
+        }
+        if json_mode:
+            kwargs["response_format"] = {"type": "json_object"}
+        response = client.chat.completions.create(**kwargs)
         return (response.choices[0].message.content or "").strip()
 
     def _generate_ollama(self, system_prompt: str, user_prompt: str) -> str:

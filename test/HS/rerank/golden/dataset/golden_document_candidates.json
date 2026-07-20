@@ -1,0 +1,2522 @@
+[
+  {
+    "id": "GQ001",
+    "query": "조선 전기 6조 직계제 설명해줘",
+    "expected_era": "조선 전기",
+    "answer_candidate_document_ids": [],
+    "candidates": [],
+    "era_rejected_document_count": 92
+  },
+  {
+    "id": "GQ002",
+    "query": "조선 전기 정치 제도 정리해줘",
+    "expected_era": "조선 전기",
+    "answer_candidate_document_ids": [],
+    "candidates": [],
+    "era_rejected_document_count": 92
+  },
+  {
+    "id": "GQ003",
+    "query": "태종과 세종의 통치 체제 차이 알려줘",
+    "expected_era": "조선 전기",
+    "answer_candidate_document_ids": [],
+    "candidates": [],
+    "era_rejected_document_count": 92
+  },
+  {
+    "id": "GQ004",
+    "query": "훈민정음 창제 배경 설명해줘",
+    "expected_era": "조선 전기",
+    "answer_candidate_document_ids": [],
+    "candidates": [],
+    "era_rejected_document_count": 92
+  },
+  {
+    "id": "GQ005",
+    "query": "경국대전이 왜 중요한지 알려줘",
+    "expected_era": "조선 전기",
+    "answer_candidate_document_ids": [],
+    "candidates": [
+      {
+        "document_id": "aks_E0003652",
+        "title": "고산도(高山道)",
+        "document_eras": [
+          "조선 전기",
+          "조선 후기"
+        ],
+        "matched_keywords": [
+          "성종"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      }
+    ],
+    "era_rejected_document_count": 92
+  },
+  {
+    "id": "GQ006",
+    "query": "사림이 성장한 배경 설명해줘",
+    "expected_era": [
+      "조선 전기",
+      "조선 후기"
+    ],
+    "answer_candidate_document_ids": [],
+    "candidates": [
+      {
+        "document_id": "aks_E0002755",
+        "title": "경자분소사건(庚子焚疏事件)",
+        "document_eras": [
+          "조선 후기"
+        ],
+        "matched_keywords": [
+          "사림"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "aks_E0003652",
+        "title": "고산도(高山道)",
+        "document_eras": [
+          "조선 전기",
+          "조선 후기"
+        ],
+        "matched_keywords": [
+          "성종"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "aks_E0033382",
+        "title": "신종교(新宗敎)",
+        "document_eras": [
+          "조선 후기",
+          "현대"
+        ],
+        "matched_keywords": [
+          "성종"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      }
+    ],
+    "era_rejected_document_count": 73
+  },
+  {
+    "id": "GQ007",
+    "query": "붕당 정치가 생긴 이유가 뭐야",
+    "expected_era": "조선 중기",
+    "answer_candidate_document_ids": [],
+    "candidates": [],
+    "era_rejected_document_count": 100
+  },
+  {
+    "id": "GQ008",
+    "query": "임진왜란 이후 조선 사회 변화 정리해줘",
+    "expected_era": "조선 후기",
+    "answer_candidate_document_ids": [
+      "aks_E0028976"
+    ],
+    "candidates": [
+      {
+        "document_id": "aks_E0028976",
+        "title": "선혜청(宣惠廳)",
+        "document_eras": [
+          "조선 후기"
+        ],
+        "matched_keywords": [
+          "비변사",
+          "대동법"
+        ],
+        "keyword_coverage": 0.5,
+        "is_answer_candidate": true
+      },
+      {
+        "document_id": "nh_036_0020_0010_0020_0020",
+        "title": "공동납체제로의 전환과 18∼19세기 호적 운영의 변화",
+        "document_eras": [
+          "조선 후기"
+        ],
+        "matched_keywords": [
+          "임진왜란"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "nh_035_0040_0030_0030_0010",
+        "title": "악조와 음악양식 및 기보법 > 악조의 역사적 변천",
+        "document_eras": [
+          "조선 후기"
+        ],
+        "matched_keywords": [
+          "임진왜란"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      }
+    ],
+    "era_rejected_document_count": 74
+  },
+  {
+    "id": "GQ009",
+    "query": "대동법이 뭔지 쉽게 설명해줘",
+    "expected_era": "조선 후기",
+    "answer_candidate_document_ids": [
+      "aks_E0028976"
+    ],
+    "candidates": [
+      {
+        "document_id": "aks_E0028976",
+        "title": "선혜청(宣惠廳)",
+        "document_eras": [
+          "조선 후기"
+        ],
+        "matched_keywords": [
+          "대동법",
+          "광해군"
+        ],
+        "keyword_coverage": 0.5,
+        "is_answer_candidate": true
+      },
+      {
+        "document_id": "aks_E0002755",
+        "title": "경자분소사건(庚子焚疏事件)",
+        "document_eras": [
+          "조선 후기"
+        ],
+        "matched_keywords": [
+          "광해군"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "aks_E0007886",
+        "title": "금암집(琴岩集)",
+        "document_eras": [
+          "조선 후기"
+        ],
+        "matched_keywords": [
+          "광해군"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "aks_E0067441",
+        "title": "해남 고산유고 목판 일괄(海南 孤山遺稿 木板 一括)",
+        "document_eras": [
+          "조선 전기",
+          "조선 후기"
+        ],
+        "matched_keywords": [
+          "광해군"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      }
+    ],
+    "era_rejected_document_count": 74
+  },
+  {
+    "id": "GQ010",
+    "query": "영정법과 대동법 차이 알려줘",
+    "expected_era": "조선 후기",
+    "answer_candidate_document_ids": [],
+    "candidates": [
+      {
+        "document_id": "aks_E0028976",
+        "title": "선혜청(宣惠廳)",
+        "document_eras": [
+          "조선 후기"
+        ],
+        "matched_keywords": [
+          "대동법"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      }
+    ],
+    "era_rejected_document_count": 74
+  },
+  {
+    "id": "GQ011",
+    "query": "전시과 제도가 뭐야",
+    "expected_era": "고려 시대",
+    "answer_candidate_document_ids": [],
+    "candidates": [
+      {
+        "document_id": "nh_049_0040_0050_0050_0020",
+        "title": "고려공산청년회의 결성과 조직 변화",
+        "document_eras": [
+          "고려"
+        ],
+        "matched_keywords": [
+          "고려"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "aks_E0006792",
+        "title": "궁원보(宮院寶)",
+        "document_eras": [
+          "고려 전기",
+          "고려 후기"
+        ],
+        "matched_keywords": [
+          "고려"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "hm_065_0020",
+        "title": "망이·망소이의 난",
+        "document_eras": [
+          "고려"
+        ],
+        "matched_keywords": [
+          "고려"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "aks_E0023221",
+        "title": "부여 보광사지 대보광선사비(扶餘 普光寺址 大普光禪師碑)",
+        "document_eras": [
+          "고려 후기"
+        ],
+        "matched_keywords": [
+          "고려"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "nh_015_0020_0010_0120",
+        "title": "신분제도의 성격",
+        "document_eras": [
+          "고려"
+        ],
+        "matched_keywords": [
+          "고려"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "aks_E0039933",
+        "title": "우사낭중(右司郞中)",
+        "document_eras": [
+          "고려 전기",
+          "고려 후기"
+        ],
+        "matched_keywords": [
+          "고려"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "aks_E0041937",
+        "title": "유품(流品)",
+        "document_eras": [
+          "고려 전기"
+        ],
+        "matched_keywords": [
+          "고려"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "aks_E0042896",
+        "title": "은청광록대부(銀靑光祿大夫)",
+        "document_eras": [
+          "고려 전기",
+          "고려 후기"
+        ],
+        "matched_keywords": [
+          "고려"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "aks_E0050527",
+        "title": "정안(政案)",
+        "document_eras": [
+          "고려 전기"
+        ],
+        "matched_keywords": [
+          "고려"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "ki_040_05800",
+        "title": "합천 해인사 대장경판 일부",
+        "document_eras": [
+          "고려"
+        ],
+        "matched_keywords": [
+          "고려"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      }
+    ],
+    "era_rejected_document_count": 89
+  },
+  {
+    "id": "GQ012",
+    "query": "고려의 토지 제도 흐름 정리해줘",
+    "expected_era": "고려 시대",
+    "answer_candidate_document_ids": [],
+    "candidates": [],
+    "era_rejected_document_count": 89
+  },
+  {
+    "id": "GQ013",
+    "query": "문벌 귀족 사회의 특징 알려줘",
+    "expected_era": "고려 시대",
+    "answer_candidate_document_ids": [],
+    "candidates": [],
+    "era_rejected_document_count": 89
+  },
+  {
+    "id": "GQ014",
+    "query": "무신 정변이 일어난 배경 설명해줘",
+    "expected_era": "고려 시대",
+    "answer_candidate_document_ids": [],
+    "candidates": [],
+    "era_rejected_document_count": 89
+  },
+  {
+    "id": "GQ015",
+    "query": "권문세족과 신진 사대부 차이 알려줘",
+    "expected_era": "고려 시대",
+    "answer_candidate_document_ids": [],
+    "candidates": [],
+    "era_rejected_document_count": 89
+  },
+  {
+    "id": "GQ016",
+    "query": "고려 말 과전법이 왜 시행됐어",
+    "expected_era": "고려 시대",
+    "answer_candidate_document_ids": [],
+    "candidates": [],
+    "era_rejected_document_count": 89
+  },
+  {
+    "id": "GQ017",
+    "query": "고려 불교 정책 정리해줘",
+    "expected_era": "고려 시대",
+    "answer_candidate_document_ids": [],
+    "candidates": [],
+    "era_rejected_document_count": 89
+  },
+  {
+    "id": "GQ018",
+    "query": "팔만대장경 만든 이유 알려줘",
+    "expected_era": "고려 시대",
+    "answer_candidate_document_ids": [
+      "ki_040_05800"
+    ],
+    "candidates": [
+      {
+        "document_id": "ki_040_05800",
+        "title": "합천 해인사 대장경판 일부",
+        "document_eras": [
+          "고려"
+        ],
+        "matched_keywords": [
+          "팔만대장경",
+          "대장경"
+        ],
+        "keyword_coverage": 0.5,
+        "is_answer_candidate": true
+      }
+    ],
+    "era_rejected_document_count": 89
+  },
+  {
+    "id": "GQ019",
+    "query": "삼국 통일 과정 정리해줘",
+    "expected_era": "삼국 시대",
+    "answer_candidate_document_ids": [
+      "nh_005_0050_0010_0010_0020_0020",
+      "hm_009_0060",
+      "aks_E0040878"
+    ],
+    "candidates": [
+      {
+        "document_id": "nh_005_0050_0010_0010_0020_0020",
+        "title": "관직",
+        "document_eras": [
+          "삼국"
+        ],
+        "matched_keywords": [
+          "신라",
+          "백제",
+          "고구려"
+        ],
+        "keyword_coverage": 0.75,
+        "is_answer_candidate": true
+      },
+      {
+        "document_id": "hm_009_0060",
+        "title": "충주 고구려비와 중원 지역",
+        "document_eras": [
+          "삼국"
+        ],
+        "matched_keywords": [
+          "신라",
+          "백제",
+          "고구려"
+        ],
+        "keyword_coverage": 0.75,
+        "is_answer_candidate": true
+      },
+      {
+        "document_id": "aks_E0040878",
+        "title": "원측(圓測)",
+        "document_eras": [
+          "신라",
+          "통일 신라"
+        ],
+        "matched_keywords": [
+          "신라",
+          "고구려"
+        ],
+        "keyword_coverage": 0.5,
+        "is_answer_candidate": true
+      },
+      {
+        "document_id": "aks_E0011985",
+        "title": "남소성(南蘇城)",
+        "document_eras": [
+          "고구려",
+          "삼국"
+        ],
+        "matched_keywords": [
+          "고구려"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "aks_E0013605",
+        "title": "산청 단속사지 동 삼층석탑(山淸 斷俗寺址 東 三層石塔)",
+        "document_eras": [
+          "신라",
+          "통일 신라"
+        ],
+        "matched_keywords": [
+          "신라"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "aks_E0029355",
+        "title": "성산가야(星山加耶)",
+        "document_eras": [
+          "가야",
+          "삼국"
+        ],
+        "matched_keywords": [
+          "신라"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "hm_001_0080",
+        "title": "위만조선 멸망 후 군현의 설치와 전개",
+        "document_eras": [
+          "삼국",
+          "선사"
+        ],
+        "matched_keywords": [
+          "고구려"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "aks_E0003858",
+        "title": "의성 고운사 석조 여래 좌상(義城 孤雲寺 石造 如來 坐像)",
+        "document_eras": [
+          "신라",
+          "통일 신라"
+        ],
+        "matched_keywords": [
+          "신라"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "aks_E0053941",
+        "title": "중천왕(中川王)",
+        "document_eras": [
+          "고구려",
+          "삼국"
+        ],
+        "matched_keywords": [
+          "고구려"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      }
+    ],
+    "era_rejected_document_count": 88
+  },
+  {
+    "id": "GQ020",
+    "query": "고구려의 전성기 왕과 업적 알려줘",
+    "expected_era": "삼국 시대",
+    "answer_candidate_document_ids": [],
+    "candidates": [],
+    "era_rejected_document_count": 88
+  },
+  {
+    "id": "GQ021",
+    "query": "백제 문화의 특징 설명해줘",
+    "expected_era": "삼국 시대",
+    "answer_candidate_document_ids": [],
+    "candidates": [
+      {
+        "document_id": "nh_005_0050_0010_0010_0020_0020",
+        "title": "관직",
+        "document_eras": [
+          "삼국"
+        ],
+        "matched_keywords": [
+          "백제"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "aks_E0040878",
+        "title": "원측(圓測)",
+        "document_eras": [
+          "신라",
+          "통일 신라"
+        ],
+        "matched_keywords": [
+          "불교"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "hm_009_0060",
+        "title": "충주 고구려비와 중원 지역",
+        "document_eras": [
+          "삼국"
+        ],
+        "matched_keywords": [
+          "백제"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      }
+    ],
+    "era_rejected_document_count": 88
+  },
+  {
+    "id": "GQ022",
+    "query": "신라 골품제가 뭔지 알려줘",
+    "expected_era": "삼국 시대",
+    "answer_candidate_document_ids": [],
+    "candidates": [
+      {
+        "document_id": "nh_005_0050_0010_0010_0020_0020",
+        "title": "관직",
+        "document_eras": [
+          "삼국"
+        ],
+        "matched_keywords": [
+          "신라"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "aks_E0013605",
+        "title": "산청 단속사지 동 삼층석탑(山淸 斷俗寺址 東 三層石塔)",
+        "document_eras": [
+          "신라",
+          "통일 신라"
+        ],
+        "matched_keywords": [
+          "신라"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "aks_E0029355",
+        "title": "성산가야(星山加耶)",
+        "document_eras": [
+          "가야",
+          "삼국"
+        ],
+        "matched_keywords": [
+          "신라"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "aks_E0040878",
+        "title": "원측(圓測)",
+        "document_eras": [
+          "신라",
+          "통일 신라"
+        ],
+        "matched_keywords": [
+          "신라"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "aks_E0003858",
+        "title": "의성 고운사 석조 여래 좌상(義城 孤雲寺 石造 如來 坐像)",
+        "document_eras": [
+          "신라",
+          "통일 신라"
+        ],
+        "matched_keywords": [
+          "신라"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "hm_009_0060",
+        "title": "충주 고구려비와 중원 지역",
+        "document_eras": [
+          "삼국"
+        ],
+        "matched_keywords": [
+          "신라"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      }
+    ],
+    "era_rejected_document_count": 88
+  },
+  {
+    "id": "GQ023",
+    "query": "발해가 고구려를 계승했다는 근거 알려줘",
+    "expected_era": [
+      "통일 신라와 발해",
+      "삼국 시대"
+    ],
+    "answer_candidate_document_ids": [
+      "aks_E0053941"
+    ],
+    "candidates": [
+      {
+        "document_id": "aks_E0053941",
+        "title": "중천왕(中川王)",
+        "document_eras": [
+          "고구려",
+          "삼국"
+        ],
+        "matched_keywords": [
+          "고구려",
+          "계승"
+        ],
+        "keyword_coverage": 0.5,
+        "is_answer_candidate": true
+      },
+      {
+        "document_id": "nh_005_0050_0010_0010_0020_0020",
+        "title": "관직",
+        "document_eras": [
+          "삼국"
+        ],
+        "matched_keywords": [
+          "고구려"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "aks_E0011985",
+        "title": "남소성(南蘇城)",
+        "document_eras": [
+          "고구려",
+          "삼국"
+        ],
+        "matched_keywords": [
+          "고구려"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "aks_E0040878",
+        "title": "원측(圓測)",
+        "document_eras": [
+          "신라",
+          "통일 신라"
+        ],
+        "matched_keywords": [
+          "고구려"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "hm_001_0080",
+        "title": "위만조선 멸망 후 군현의 설치와 전개",
+        "document_eras": [
+          "삼국",
+          "선사"
+        ],
+        "matched_keywords": [
+          "고구려"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "hm_009_0060",
+        "title": "충주 고구려비와 중원 지역",
+        "document_eras": [
+          "삼국"
+        ],
+        "matched_keywords": [
+          "고구려"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      }
+    ],
+    "era_rejected_document_count": 88
+  },
+  {
+    "id": "GQ024",
+    "query": "통일 신라의 민정문서가 보여주는 내용은 뭐야",
+    "expected_era": "통일 신라와 발해",
+    "answer_candidate_document_ids": [],
+    "candidates": [],
+    "era_rejected_document_count": 94
+  },
+  {
+    "id": "GQ025",
+    "query": "연천 전곡리 유적 사진 보여줘",
+    "expected_era": "선사",
+    "answer_candidate_document_ids": [],
+    "candidates": [],
+    "era_rejected_document_count": 97
+  },
+  {
+    "id": "GQ026",
+    "query": "구석기 시대 대표 유물 이미지 찾아줘",
+    "expected_era": "선사",
+    "answer_candidate_document_ids": [],
+    "candidates": [],
+    "era_rejected_document_count": 97
+  },
+  {
+    "id": "GQ027",
+    "query": "빗살무늬 토기 사진 자료 있어?",
+    "expected_era": "선사",
+    "answer_candidate_document_ids": [],
+    "candidates": [
+      {
+        "document_id": "aks_E0039708",
+        "title": "용천 왕산리 유적(龍川 王山里 遺蹟)",
+        "document_eras": [
+          "선사"
+        ],
+        "matched_keywords": [
+          "토기"
+        ],
+        "keyword_coverage": 0.333,
+        "is_answer_candidate": false
+      }
+    ],
+    "era_rejected_document_count": 97
+  },
+  {
+    "id": "GQ028",
+    "query": "고인돌 사진 보여줘",
+    "expected_era": [
+      "삼국 이전",
+      "선사"
+    ],
+    "answer_candidate_document_ids": [],
+    "candidates": [
+      {
+        "document_id": "aks_E0013076",
+        "title": "농경문 청동기(農耕文 靑銅器)",
+        "document_eras": [
+          "선사"
+        ],
+        "matched_keywords": [
+          "청동기"
+        ],
+        "keyword_coverage": 0.333,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "aks_E0029355",
+        "title": "성산가야(星山加耶)",
+        "document_eras": [
+          "가야",
+          "삼국"
+        ],
+        "matched_keywords": [
+          "무덤"
+        ],
+        "keyword_coverage": 0.333,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "aks_E0039708",
+        "title": "용천 왕산리 유적(龍川 王山里 遺蹟)",
+        "document_eras": [
+          "선사"
+        ],
+        "matched_keywords": [
+          "청동기"
+        ],
+        "keyword_coverage": 0.333,
+        "is_answer_candidate": false
+      }
+    ],
+    "era_rejected_document_count": 86
+  },
+  {
+    "id": "GQ029",
+    "query": "무령왕릉 관련 이미지 찾아줘",
+    "expected_era": "삼국 시대",
+    "answer_candidate_document_ids": [],
+    "candidates": [
+      {
+        "document_id": "nh_005_0050_0010_0010_0020_0020",
+        "title": "관직",
+        "document_eras": [
+          "삼국"
+        ],
+        "matched_keywords": [
+          "백제"
+        ],
+        "keyword_coverage": 0.333,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "aks_E0053941",
+        "title": "중천왕(中川王)",
+        "document_eras": [
+          "고구려",
+          "삼국"
+        ],
+        "matched_keywords": [
+          "공주"
+        ],
+        "keyword_coverage": 0.333,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "hm_009_0060",
+        "title": "충주 고구려비와 중원 지역",
+        "document_eras": [
+          "삼국"
+        ],
+        "matched_keywords": [
+          "백제"
+        ],
+        "keyword_coverage": 0.333,
+        "is_answer_candidate": false
+      }
+    ],
+    "era_rejected_document_count": 88
+  },
+  {
+    "id": "GQ030",
+    "query": "첨성대 사진과 설명 알려줘",
+    "expected_era": "삼국 시대",
+    "answer_candidate_document_ids": [],
+    "candidates": [
+      {
+        "document_id": "nh_005_0050_0010_0010_0020_0020",
+        "title": "관직",
+        "document_eras": [
+          "삼국"
+        ],
+        "matched_keywords": [
+          "신라"
+        ],
+        "keyword_coverage": 0.333,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "aks_E0013605",
+        "title": "산청 단속사지 동 삼층석탑(山淸 斷俗寺址 東 三層石塔)",
+        "document_eras": [
+          "신라",
+          "통일 신라"
+        ],
+        "matched_keywords": [
+          "신라"
+        ],
+        "keyword_coverage": 0.333,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "aks_E0029355",
+        "title": "성산가야(星山加耶)",
+        "document_eras": [
+          "가야",
+          "삼국"
+        ],
+        "matched_keywords": [
+          "신라"
+        ],
+        "keyword_coverage": 0.333,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "aks_E0040878",
+        "title": "원측(圓測)",
+        "document_eras": [
+          "신라",
+          "통일 신라"
+        ],
+        "matched_keywords": [
+          "신라"
+        ],
+        "keyword_coverage": 0.333,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "aks_E0003858",
+        "title": "의성 고운사 석조 여래 좌상(義城 孤雲寺 石造 如來 坐像)",
+        "document_eras": [
+          "신라",
+          "통일 신라"
+        ],
+        "matched_keywords": [
+          "신라"
+        ],
+        "keyword_coverage": 0.333,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "hm_009_0060",
+        "title": "충주 고구려비와 중원 지역",
+        "document_eras": [
+          "삼국"
+        ],
+        "matched_keywords": [
+          "신라"
+        ],
+        "keyword_coverage": 0.333,
+        "is_answer_candidate": false
+      }
+    ],
+    "era_rejected_document_count": 88
+  },
+  {
+    "id": "GQ031",
+    "query": "고려청자 이미지 보여줘",
+    "expected_era": "고려 시대",
+    "answer_candidate_document_ids": [],
+    "candidates": [
+      {
+        "document_id": "nh_049_0040_0050_0050_0020",
+        "title": "고려공산청년회의 결성과 조직 변화",
+        "document_eras": [
+          "고려"
+        ],
+        "matched_keywords": [
+          "청자"
+        ],
+        "keyword_coverage": 0.333,
+        "is_answer_candidate": false
+      }
+    ],
+    "era_rejected_document_count": 89
+  },
+  {
+    "id": "GQ032",
+    "query": "훈민정음 해례본 이미지 자료 찾아줘",
+    "expected_era": [
+      "조선 전기",
+      "조선"
+    ],
+    "answer_candidate_document_ids": [],
+    "candidates": [],
+    "era_rejected_document_count": 92
+  },
+  {
+    "id": "GQ033",
+    "query": "독립협회 활동 정리해줘",
+    "expected_era": "근대",
+    "answer_candidate_document_ids": [],
+    "candidates": [],
+    "era_rejected_document_count": 93
+  },
+  {
+    "id": "GQ034",
+    "query": "갑오개혁 내용 요약해줘",
+    "expected_era": [
+      "근대",
+      "개항기",
+      "갑오개혁"
+    ],
+    "answer_candidate_document_ids": [],
+    "candidates": [],
+    "era_rejected_document_count": 99
+  },
+  {
+    "id": "GQ035",
+    "query": "을사늑약이 왜 중요한 사건이야",
+    "expected_era": "근대",
+    "answer_candidate_document_ids": [],
+    "candidates": [],
+    "era_rejected_document_count": 93
+  },
+  {
+    "id": "GQ036",
+    "query": "3.1 운동 배경과 영향 알려줘",
+    "expected_era": "근대",
+    "answer_candidate_document_ids": [],
+    "candidates": [],
+    "era_rejected_document_count": 93
+  },
+  {
+    "id": "GQ037",
+    "query": "대한민국 임시정부의 활동 설명해줘",
+    "expected_era": "근대",
+    "answer_candidate_document_ids": [],
+    "candidates": [
+      {
+        "document_id": "aks_E0033539",
+        "title": "신한혁명당(新韓革命黨)",
+        "document_eras": [
+          "일제강점기"
+        ],
+        "matched_keywords": [
+          "상하이"
+        ],
+        "keyword_coverage": 0.333,
+        "is_answer_candidate": false
+      }
+    ],
+    "era_rejected_document_count": 93
+  },
+  {
+    "id": "GQ038",
+    "query": "광복 이후 좌우 합작 운동 설명해줘",
+    "expected_era": "현대",
+    "answer_candidate_document_ids": [],
+    "candidates": [],
+    "era_rejected_document_count": 76
+  },
+  {
+    "id": "GQ039",
+    "query": "6월 민주 항쟁이 뭐야",
+    "expected_era": "현대",
+    "answer_candidate_document_ids": [],
+    "candidates": [],
+    "era_rejected_document_count": 76
+  },
+  {
+    "id": "GQ040",
+    "query": "한국사능력검정시험에서 조선 전기 정치는 어떻게 외우면 좋아?",
+    "expected_era": "조선 전기",
+    "answer_candidate_document_ids": [],
+    "candidates": [
+      {
+        "document_id": "aks_E0003652",
+        "title": "고산도(高山道)",
+        "document_eras": [
+          "조선 전기",
+          "조선 후기"
+        ],
+        "matched_keywords": [
+          "성종"
+        ],
+        "keyword_coverage": 0.2,
+        "is_answer_candidate": false
+      }
+    ],
+    "era_rejected_document_count": 92
+  },
+  {
+    "id": "GQ041",
+    "query": "세종대왕알려줘",
+    "expected_era": "조선 전기",
+    "answer_candidate_document_ids": [],
+    "candidates": [],
+    "era_rejected_document_count": 92
+  },
+  {
+    "id": "GQ042",
+    "query": "장영실 업적 알려줘",
+    "expected_era": "조선 전기",
+    "answer_candidate_document_ids": [],
+    "candidates": [],
+    "era_rejected_document_count": 92
+  },
+  {
+    "id": "GQ043",
+    "query": "권율 장군에 대해서 알려줘",
+    "expected_era": "조선 전기",
+    "answer_candidate_document_ids": [],
+    "candidates": [],
+    "era_rejected_document_count": 92
+  },
+  {
+    "id": "GQ044",
+    "query": "왕건의 고려 건국 과정 정리해줘",
+    "expected_era": "고려 시대",
+    "answer_candidate_document_ids": [
+      "aks_E0042387"
+    ],
+    "candidates": [
+      {
+        "document_id": "aks_E0042387",
+        "title": "윤선(尹瑄)",
+        "document_eras": [
+          "고려 전기"
+        ],
+        "matched_keywords": [
+          "왕건",
+          "궁예"
+        ],
+        "keyword_coverage": 0.5,
+        "is_answer_candidate": true
+      },
+      {
+        "document_id": "nh_049_0040_0050_0050_0020",
+        "title": "고려공산청년회의 결성과 조직 변화",
+        "document_eras": [
+          "고려"
+        ],
+        "matched_keywords": [
+          "고려"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "aks_E0006792",
+        "title": "궁원보(宮院寶)",
+        "document_eras": [
+          "고려 전기",
+          "고려 후기"
+        ],
+        "matched_keywords": [
+          "고려"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "hm_065_0020",
+        "title": "망이·망소이의 난",
+        "document_eras": [
+          "고려"
+        ],
+        "matched_keywords": [
+          "고려"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "aks_E0023221",
+        "title": "부여 보광사지 대보광선사비(扶餘 普光寺址 大普光禪師碑)",
+        "document_eras": [
+          "고려 후기"
+        ],
+        "matched_keywords": [
+          "고려"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "nh_015_0020_0010_0120",
+        "title": "신분제도의 성격",
+        "document_eras": [
+          "고려"
+        ],
+        "matched_keywords": [
+          "고려"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "aks_E0039933",
+        "title": "우사낭중(右司郞中)",
+        "document_eras": [
+          "고려 전기",
+          "고려 후기"
+        ],
+        "matched_keywords": [
+          "고려"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "aks_E0041937",
+        "title": "유품(流品)",
+        "document_eras": [
+          "고려 전기"
+        ],
+        "matched_keywords": [
+          "고려"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "aks_E0042896",
+        "title": "은청광록대부(銀靑光祿大夫)",
+        "document_eras": [
+          "고려 전기",
+          "고려 후기"
+        ],
+        "matched_keywords": [
+          "고려"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "aks_E0050527",
+        "title": "정안(政案)",
+        "document_eras": [
+          "고려 전기"
+        ],
+        "matched_keywords": [
+          "고려"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "ki_040_05800",
+        "title": "합천 해인사 대장경판 일부",
+        "document_eras": [
+          "고려"
+        ],
+        "matched_keywords": [
+          "고려"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      }
+    ],
+    "era_rejected_document_count": 89
+  },
+  {
+    "id": "GQ045",
+    "query": "광종의 개혁 정치 알려줘",
+    "expected_era": "고려 시대",
+    "answer_candidate_document_ids": [],
+    "candidates": [
+      {
+        "document_id": "aks_E0050527",
+        "title": "정안(政案)",
+        "document_eras": [
+          "고려 전기"
+        ],
+        "matched_keywords": [
+          "왕권"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      }
+    ],
+    "era_rejected_document_count": 89
+  },
+  {
+    "id": "GQ046",
+    "query": "고려 성종의 통치 제도 설명해줘",
+    "expected_era": "고려 시대",
+    "answer_candidate_document_ids": [],
+    "candidates": [
+      {
+        "document_id": "aks_E0039933",
+        "title": "우사낭중(右司郞中)",
+        "document_eras": [
+          "고려 전기",
+          "고려 후기"
+        ],
+        "matched_keywords": [
+          "성종"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "aks_E0041937",
+        "title": "유품(流品)",
+        "document_eras": [
+          "고려 전기"
+        ],
+        "matched_keywords": [
+          "성종"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "aks_E0042896",
+        "title": "은청광록대부(銀靑光祿大夫)",
+        "document_eras": [
+          "고려 전기",
+          "고려 후기"
+        ],
+        "matched_keywords": [
+          "성종"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      }
+    ],
+    "era_rejected_document_count": 89
+  },
+  {
+    "id": "GQ047",
+    "query": "이성계가 조선을 세운 배경 알려줘",
+    "expected_era": [
+      "고려 시대",
+      "조선 전기"
+    ],
+    "answer_candidate_document_ids": [],
+    "candidates": [
+      {
+        "document_id": "aks_E0003652",
+        "title": "고산도(高山道)",
+        "document_eras": [
+          "조선 전기",
+          "조선 후기"
+        ],
+        "matched_keywords": [
+          "조선"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "aks_E0011337",
+        "title": "나막신",
+        "document_eras": [
+          "조선 전기",
+          "조선 후기"
+        ],
+        "matched_keywords": [
+          "조선"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "aks_E0069742",
+        "title": "상교정본 자비도량참법 권4～6(詳校正本 慈悲道場懺法 卷四～六)",
+        "document_eras": [
+          "조선 전기"
+        ],
+        "matched_keywords": [
+          "조선"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "aks_E0030900",
+        "title": "송시영(宋時榮)",
+        "document_eras": [
+          "조선 전기",
+          "조선 후기"
+        ],
+        "matched_keywords": [
+          "조선"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "aks_E0052395",
+        "title": "조영복 초상(趙榮福 肖像)",
+        "document_eras": [
+          "조선 전기",
+          "조선 후기"
+        ],
+        "matched_keywords": [
+          "조선"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "aks_E0067441",
+        "title": "해남 고산유고 목판 일괄(海南 孤山遺稿 木板 一括)",
+        "document_eras": [
+          "조선 전기",
+          "조선 후기"
+        ],
+        "matched_keywords": [
+          "조선"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "aks_E0065182",
+        "title": "황산도(黃山道)",
+        "document_eras": [
+          "조선 전기",
+          "조선 후기"
+        ],
+        "matched_keywords": [
+          "조선"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      }
+    ],
+    "era_rejected_document_count": 92
+  },
+  {
+    "id": "GQ048",
+    "query": "실학의 역사적 의미 설명해줘",
+    "expected_era": "조선 후기",
+    "answer_candidate_document_ids": [],
+    "candidates": [
+      {
+        "document_id": "aks_E0028976",
+        "title": "선혜청(宣惠廳)",
+        "document_eras": [
+          "조선 후기"
+        ],
+        "matched_keywords": [
+          "개혁"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      }
+    ],
+    "era_rejected_document_count": 74
+  },
+  {
+    "id": "GQ049",
+    "query": "동학 농민 운동의 전개 과정 알려줘",
+    "expected_era": "근대",
+    "answer_candidate_document_ids": [],
+    "candidates": [],
+    "era_rejected_document_count": 93
+  },
+  {
+    "id": "GQ050",
+    "query": "일제 강점기 문화 통치 특징 정리해줘",
+    "expected_era": "일제 강점기",
+    "answer_candidate_document_ids": [],
+    "candidates": [],
+    "era_rejected_document_count": 94
+  },
+  {
+    "id": "GQ051",
+    "query": "조선 건국 과정을 핵심만 요약해줘",
+    "expected_era": [
+      "고려 시대",
+      "조선 전기"
+    ],
+    "answer_candidate_document_ids": [],
+    "candidates": [],
+    "era_rejected_document_count": 92
+  },
+  {
+    "id": "GQ052",
+    "query": "세종 시대의 문화 정책을 요약해줘",
+    "expected_era": "조선 전기",
+    "answer_candidate_document_ids": [],
+    "candidates": [],
+    "era_rejected_document_count": 92
+  },
+  {
+    "id": "GQ053",
+    "query": "임진왜란 전개 과정을 요약해줘",
+    "expected_era": "조선 후기",
+    "answer_candidate_document_ids": [],
+    "candidates": [
+      {
+        "document_id": "nh_036_0020_0010_0020_0020",
+        "title": "공동납체제로의 전환과 18∼19세기 호적 운영의 변화",
+        "document_eras": [
+          "조선 후기"
+        ],
+        "matched_keywords": [
+          "임진왜란"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "nh_035_0040_0030_0030_0010",
+        "title": "악조와 음악양식 및 기보법 > 악조의 역사적 변천",
+        "document_eras": [
+          "조선 후기"
+        ],
+        "matched_keywords": [
+          "임진왜란"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      }
+    ],
+    "era_rejected_document_count": 74
+  },
+  {
+    "id": "GQ054",
+    "query": "고려 무신 정권의 흐름을 요약해줘",
+    "expected_era": "고려 시대",
+    "answer_candidate_document_ids": [],
+    "candidates": [],
+    "era_rejected_document_count": 89
+  },
+  {
+    "id": "GQ055",
+    "query": "삼국의 중앙 집권화 과정을 요약해줘",
+    "expected_era": "삼국 시대",
+    "answer_candidate_document_ids": [
+      "nh_005_0050_0010_0010_0020_0020",
+      "hm_009_0060",
+      "aks_E0040878"
+    ],
+    "candidates": [
+      {
+        "document_id": "nh_005_0050_0010_0010_0020_0020",
+        "title": "관직",
+        "document_eras": [
+          "삼국"
+        ],
+        "matched_keywords": [
+          "고구려",
+          "백제",
+          "신라",
+          "중앙 집권"
+        ],
+        "keyword_coverage": 1.0,
+        "is_answer_candidate": true
+      },
+      {
+        "document_id": "hm_009_0060",
+        "title": "충주 고구려비와 중원 지역",
+        "document_eras": [
+          "삼국"
+        ],
+        "matched_keywords": [
+          "고구려",
+          "백제",
+          "신라"
+        ],
+        "keyword_coverage": 0.75,
+        "is_answer_candidate": true
+      },
+      {
+        "document_id": "aks_E0040878",
+        "title": "원측(圓測)",
+        "document_eras": [
+          "신라",
+          "통일 신라"
+        ],
+        "matched_keywords": [
+          "고구려",
+          "신라"
+        ],
+        "keyword_coverage": 0.5,
+        "is_answer_candidate": true
+      },
+      {
+        "document_id": "aks_E0011985",
+        "title": "남소성(南蘇城)",
+        "document_eras": [
+          "고구려",
+          "삼국"
+        ],
+        "matched_keywords": [
+          "고구려"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "aks_E0013605",
+        "title": "산청 단속사지 동 삼층석탑(山淸 斷俗寺址 東 三層石塔)",
+        "document_eras": [
+          "신라",
+          "통일 신라"
+        ],
+        "matched_keywords": [
+          "신라"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "aks_E0029355",
+        "title": "성산가야(星山加耶)",
+        "document_eras": [
+          "가야",
+          "삼국"
+        ],
+        "matched_keywords": [
+          "신라"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "hm_001_0080",
+        "title": "위만조선 멸망 후 군현의 설치와 전개",
+        "document_eras": [
+          "삼국",
+          "선사"
+        ],
+        "matched_keywords": [
+          "고구려"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "aks_E0003858",
+        "title": "의성 고운사 석조 여래 좌상(義城 孤雲寺 石造 如來 坐像)",
+        "document_eras": [
+          "신라",
+          "통일 신라"
+        ],
+        "matched_keywords": [
+          "신라"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "aks_E0053941",
+        "title": "중천왕(中川王)",
+        "document_eras": [
+          "고구려",
+          "삼국"
+        ],
+        "matched_keywords": [
+          "고구려"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      }
+    ],
+    "era_rejected_document_count": 88
+  },
+  {
+    "id": "GQ056",
+    "query": "갑오개혁의 주요 내용을 요약해줘",
+    "expected_era": "근대",
+    "answer_candidate_document_ids": [],
+    "candidates": [],
+    "era_rejected_document_count": 93
+  },
+  {
+    "id": "GQ057",
+    "query": "광복 이후 민주화 운동 흐름을 요약해줘",
+    "expected_era": "현대",
+    "answer_candidate_document_ids": [],
+    "candidates": [],
+    "era_rejected_document_count": 76
+  },
+  {
+    "id": "GQ058",
+    "query": "발해의 건국과 발전 과정을 요약해줘",
+    "expected_era": "통일 신라와 발해",
+    "answer_candidate_document_ids": [],
+    "candidates": [
+      {
+        "document_id": "aks_E0040878",
+        "title": "원측(圓測)",
+        "document_eras": [
+          "신라",
+          "통일 신라"
+        ],
+        "matched_keywords": [
+          "고구려"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      }
+    ],
+    "era_rejected_document_count": 94
+  },
+  {
+    "id": "GQ059",
+    "query": "의정부서사제와 6조 직계제의 차이 알려줘",
+    "expected_era": "조선 전기",
+    "answer_candidate_document_ids": [],
+    "candidates": [],
+    "era_rejected_document_count": 92
+  },
+  {
+    "id": "GQ060",
+    "query": "훈구와 사림의 차이 알려줘",
+    "expected_era": "조선 전기",
+    "answer_candidate_document_ids": [],
+    "candidates": [],
+    "era_rejected_document_count": 92
+  },
+  {
+    "id": "GQ061",
+    "query": "전시과와 과전법의 차이 알려줘",
+    "expected_era": "고려 시대",
+    "answer_candidate_document_ids": [],
+    "candidates": [],
+    "era_rejected_document_count": 89
+  },
+  {
+    "id": "GQ062",
+    "query": "문벌 귀족 사회와 무신 정권의 차이 알려줘",
+    "expected_era": "고려 시대",
+    "answer_candidate_document_ids": [],
+    "candidates": [],
+    "era_rejected_document_count": 89
+  },
+  {
+    "id": "GQ063",
+    "query": "광종과 성종의 개혁 정치를 비교해줘",
+    "expected_era": "고려 시대",
+    "answer_candidate_document_ids": [],
+    "candidates": [
+      {
+        "document_id": "aks_E0039933",
+        "title": "우사낭중(右司郞中)",
+        "document_eras": [
+          "고려 전기",
+          "고려 후기"
+        ],
+        "matched_keywords": [
+          "성종"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "aks_E0041937",
+        "title": "유품(流品)",
+        "document_eras": [
+          "고려 전기"
+        ],
+        "matched_keywords": [
+          "성종"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "aks_E0042896",
+        "title": "은청광록대부(銀靑光祿大夫)",
+        "document_eras": [
+          "고려 전기",
+          "고려 후기"
+        ],
+        "matched_keywords": [
+          "성종"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      }
+    ],
+    "era_rejected_document_count": 89
+  },
+  {
+    "id": "GQ064",
+    "query": "고구려와 백제 문화의 차이 알려줘",
+    "expected_era": "삼국 시대",
+    "answer_candidate_document_ids": [
+      "nh_005_0050_0010_0010_0020_0020",
+      "aks_E0040878",
+      "hm_009_0060"
+    ],
+    "candidates": [
+      {
+        "document_id": "nh_005_0050_0010_0010_0020_0020",
+        "title": "관직",
+        "document_eras": [
+          "삼국"
+        ],
+        "matched_keywords": [
+          "고구려",
+          "백제"
+        ],
+        "keyword_coverage": 0.5,
+        "is_answer_candidate": true
+      },
+      {
+        "document_id": "aks_E0040878",
+        "title": "원측(圓測)",
+        "document_eras": [
+          "신라",
+          "통일 신라"
+        ],
+        "matched_keywords": [
+          "고구려",
+          "불교"
+        ],
+        "keyword_coverage": 0.5,
+        "is_answer_candidate": true
+      },
+      {
+        "document_id": "hm_009_0060",
+        "title": "충주 고구려비와 중원 지역",
+        "document_eras": [
+          "삼국"
+        ],
+        "matched_keywords": [
+          "고구려",
+          "백제"
+        ],
+        "keyword_coverage": 0.5,
+        "is_answer_candidate": true
+      },
+      {
+        "document_id": "aks_E0041392",
+        "title": "경주 98호 남분 유리병 및 잔(慶州 九十八號 南墳 琉璃甁 및 盞)",
+        "document_eras": [
+          "삼국",
+          "신라"
+        ],
+        "matched_keywords": [
+          "문화"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "aks_E0011985",
+        "title": "남소성(南蘇城)",
+        "document_eras": [
+          "고구려",
+          "삼국"
+        ],
+        "matched_keywords": [
+          "고구려"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "aks_E0013605",
+        "title": "산청 단속사지 동 삼층석탑(山淸 斷俗寺址 東 三層石塔)",
+        "document_eras": [
+          "신라",
+          "통일 신라"
+        ],
+        "matched_keywords": [
+          "문화"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "hm_001_0080",
+        "title": "위만조선 멸망 후 군현의 설치와 전개",
+        "document_eras": [
+          "삼국",
+          "선사"
+        ],
+        "matched_keywords": [
+          "고구려"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "aks_E0053941",
+        "title": "중천왕(中川王)",
+        "document_eras": [
+          "고구려",
+          "삼국"
+        ],
+        "matched_keywords": [
+          "고구려"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      }
+    ],
+    "era_rejected_document_count": 88
+  },
+  {
+    "id": "GQ065",
+    "query": "신라와 발해의 통치 체제를 비교해줘",
+    "expected_era": "통일 신라와 발해",
+    "answer_candidate_document_ids": [],
+    "candidates": [
+      {
+        "document_id": "aks_E0013605",
+        "title": "산청 단속사지 동 삼층석탑(山淸 斷俗寺址 東 三層石塔)",
+        "document_eras": [
+          "신라",
+          "통일 신라"
+        ],
+        "matched_keywords": [
+          "신라"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "aks_E0040878",
+        "title": "원측(圓測)",
+        "document_eras": [
+          "신라",
+          "통일 신라"
+        ],
+        "matched_keywords": [
+          "신라"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "aks_E0003858",
+        "title": "의성 고운사 석조 여래 좌상(義城 孤雲寺 石造 如來 坐像)",
+        "document_eras": [
+          "신라",
+          "통일 신라"
+        ],
+        "matched_keywords": [
+          "신라"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      }
+    ],
+    "era_rejected_document_count": 94
+  },
+  {
+    "id": "GQ066",
+    "query": "삼국 통일과 후삼국 통일의 차이 알려줘",
+    "expected_era": [
+      "삼국 시대",
+      "고려 시대"
+    ],
+    "answer_candidate_document_ids": [],
+    "candidates": [
+      {
+        "document_id": "nh_005_0050_0010_0010_0020_0020",
+        "title": "관직",
+        "document_eras": [
+          "삼국"
+        ],
+        "matched_keywords": [
+          "신라"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "aks_E0013605",
+        "title": "산청 단속사지 동 삼층석탑(山淸 斷俗寺址 東 三層石塔)",
+        "document_eras": [
+          "신라",
+          "통일 신라"
+        ],
+        "matched_keywords": [
+          "신라"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "aks_E0029355",
+        "title": "성산가야(星山加耶)",
+        "document_eras": [
+          "가야",
+          "삼국"
+        ],
+        "matched_keywords": [
+          "신라"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "nh_015_0020_0010_0120",
+        "title": "신분제도의 성격",
+        "document_eras": [
+          "고려"
+        ],
+        "matched_keywords": [
+          "신라"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "aks_E0040878",
+        "title": "원측(圓測)",
+        "document_eras": [
+          "신라",
+          "통일 신라"
+        ],
+        "matched_keywords": [
+          "신라"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "aks_E0041937",
+        "title": "유품(流品)",
+        "document_eras": [
+          "고려 전기"
+        ],
+        "matched_keywords": [
+          "신라"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "aks_E0042387",
+        "title": "윤선(尹瑄)",
+        "document_eras": [
+          "고려 전기"
+        ],
+        "matched_keywords": [
+          "왕건"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "aks_E0003858",
+        "title": "의성 고운사 석조 여래 좌상(義城 孤雲寺 石造 如來 坐像)",
+        "document_eras": [
+          "신라",
+          "통일 신라"
+        ],
+        "matched_keywords": [
+          "신라"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "hm_009_0060",
+        "title": "충주 고구려비와 중원 지역",
+        "document_eras": [
+          "삼국"
+        ],
+        "matched_keywords": [
+          "신라"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      }
+    ],
+    "era_rejected_document_count": 77
+  },
+  {
+    "id": "GQ067",
+    "query": "갑오개혁과 광무개혁의 차이 알려줘",
+    "expected_era": "근대",
+    "answer_candidate_document_ids": [],
+    "candidates": [],
+    "era_rejected_document_count": 93
+  },
+  {
+    "id": "GQ068",
+    "query": "3.1 운동과 6월 민주 항쟁의 공통점과 차이 알려줘",
+    "expected_era": [
+      "근대",
+      "현대"
+    ],
+    "answer_candidate_document_ids": [],
+    "candidates": [
+      {
+        "document_id": "aks_E0043433",
+        "title": "의학(醫學)",
+        "document_eras": [
+          "현대"
+        ],
+        "matched_keywords": [
+          "시민"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      }
+    ],
+    "era_rejected_document_count": 69
+  },
+  {
+    "id": "GQ069",
+    "query": "독립협회와 대한자강회의 차이 알려줘",
+    "expected_era": "근대",
+    "answer_candidate_document_ids": [],
+    "candidates": [],
+    "era_rejected_document_count": 93
+  },
+  {
+    "id": "GQ070",
+    "query": "정도전과 정몽주의 정치 노선 차이 알려줘",
+    "expected_era": [
+      "고려 시대",
+      "조선 전기"
+    ],
+    "answer_candidate_document_ids": [],
+    "candidates": [
+      {
+        "document_id": "aks_E0069742",
+        "title": "상교정본 자비도량참법 권4～6(詳校正本 慈悲道場懺法 卷四～六)",
+        "document_eras": [
+          "조선 전기"
+        ],
+        "matched_keywords": [
+          "고려"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      }
+    ],
+    "era_rejected_document_count": 92
+  },
+  {
+    "id": "GQ071",
+    "query": "위화도 회군이 조선 건국의 배경이라는 근거 알려줘",
+    "expected_era": [
+      "고려 시대",
+      "조선 전기"
+    ],
+    "answer_candidate_document_ids": [],
+    "candidates": [],
+    "era_rejected_document_count": 92
+  },
+  {
+    "id": "GQ072",
+    "query": "훈민정음이 백성을 위한 문자라는 근거 알려줘",
+    "expected_era": "조선 전기",
+    "answer_candidate_document_ids": [],
+    "candidates": [
+      {
+        "document_id": "aks_E0069742",
+        "title": "상교정본 자비도량참법 권4～6(詳校正本 慈悲道場懺法 卷四～六)",
+        "document_eras": [
+          "조선 전기"
+        ],
+        "matched_keywords": [
+          "한자"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      }
+    ],
+    "era_rejected_document_count": 92
+  },
+  {
+    "id": "GQ073",
+    "query": "팔만대장경 제작 목적의 근거 알려줘",
+    "expected_era": "고려 시대",
+    "answer_candidate_document_ids": [],
+    "candidates": [
+      {
+        "document_id": "ki_040_05800",
+        "title": "합천 해인사 대장경판 일부",
+        "document_eras": [
+          "고려"
+        ],
+        "matched_keywords": [
+          "팔만대장경"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      }
+    ],
+    "era_rejected_document_count": 89
+  },
+  {
+    "id": "GQ074",
+    "query": "무령왕릉이 백제의 대외 교류를 보여주는 근거 알려줘",
+    "expected_era": "삼국 시대",
+    "answer_candidate_document_ids": [],
+    "candidates": [
+      {
+        "document_id": "aks_E0041392",
+        "title": "경주 98호 남분 유리병 및 잔(慶州 九十八號 南墳 琉璃甁 및 盞)",
+        "document_eras": [
+          "삼국",
+          "신라"
+        ],
+        "matched_keywords": [
+          "교류"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "nh_005_0050_0010_0010_0020_0020",
+        "title": "관직",
+        "document_eras": [
+          "삼국"
+        ],
+        "matched_keywords": [
+          "백제"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "hm_009_0060",
+        "title": "충주 고구려비와 중원 지역",
+        "document_eras": [
+          "삼국"
+        ],
+        "matched_keywords": [
+          "백제"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      }
+    ],
+    "era_rejected_document_count": 88
+  },
+  {
+    "id": "GQ075",
+    "query": "광개토대왕릉비가 고구려 전성기의 근거가 되는 이유 알려줘",
+    "expected_era": "삼국 시대",
+    "answer_candidate_document_ids": [],
+    "candidates": [
+      {
+        "document_id": "nh_005_0050_0010_0010_0020_0020",
+        "title": "관직",
+        "document_eras": [
+          "삼국"
+        ],
+        "matched_keywords": [
+          "고구려"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "aks_E0011985",
+        "title": "남소성(南蘇城)",
+        "document_eras": [
+          "고구려",
+          "삼국"
+        ],
+        "matched_keywords": [
+          "고구려"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "aks_E0040878",
+        "title": "원측(圓測)",
+        "document_eras": [
+          "신라",
+          "통일 신라"
+        ],
+        "matched_keywords": [
+          "고구려"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "hm_001_0080",
+        "title": "위만조선 멸망 후 군현의 설치와 전개",
+        "document_eras": [
+          "삼국",
+          "선사"
+        ],
+        "matched_keywords": [
+          "고구려"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "aks_E0053941",
+        "title": "중천왕(中川王)",
+        "document_eras": [
+          "고구려",
+          "삼국"
+        ],
+        "matched_keywords": [
+          "고구려"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "hm_009_0060",
+        "title": "충주 고구려비와 중원 지역",
+        "document_eras": [
+          "삼국"
+        ],
+        "matched_keywords": [
+          "고구려"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      }
+    ],
+    "era_rejected_document_count": 88
+  },
+  {
+    "id": "GQ076",
+    "query": "민정문서가 통일 신라 촌락의 모습을 보여주는 근거 알려줘",
+    "expected_era": "통일 신라와 발해",
+    "answer_candidate_document_ids": [],
+    "candidates": [
+      {
+        "document_id": "aks_E0013605",
+        "title": "산청 단속사지 동 삼층석탑(山淸 斷俗寺址 東 三層石塔)",
+        "document_eras": [
+          "신라",
+          "통일 신라"
+        ],
+        "matched_keywords": [
+          "통일 신라"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "aks_E0040878",
+        "title": "원측(圓測)",
+        "document_eras": [
+          "신라",
+          "통일 신라"
+        ],
+        "matched_keywords": [
+          "통일 신라"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      },
+      {
+        "document_id": "aks_E0003858",
+        "title": "의성 고운사 석조 여래 좌상(義城 孤雲寺 石造 如來 坐像)",
+        "document_eras": [
+          "신라",
+          "통일 신라"
+        ],
+        "matched_keywords": [
+          "통일 신라"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      }
+    ],
+    "era_rejected_document_count": 94
+  },
+  {
+    "id": "GQ077",
+    "query": "발해가 고구려를 계승했다는 추가 근거 알려줘",
+    "expected_era": "통일 신라와 발해",
+    "answer_candidate_document_ids": [],
+    "candidates": [
+      {
+        "document_id": "aks_E0040878",
+        "title": "원측(圓測)",
+        "document_eras": [
+          "신라",
+          "통일 신라"
+        ],
+        "matched_keywords": [
+          "고구려"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      }
+    ],
+    "era_rejected_document_count": 94
+  },
+  {
+    "id": "GQ078",
+    "query": "독도 영유권을 보여주는 역사 자료의 근거 알려줘",
+    "expected_era": "조선 후기",
+    "answer_candidate_document_ids": [],
+    "candidates": [],
+    "era_rejected_document_count": 74
+  },
+  {
+    "id": "GQ079",
+    "query": "을사늑약이 국권 피탈의 과정이라는 근거 알려줘",
+    "expected_era": "근대",
+    "answer_candidate_document_ids": [],
+    "candidates": [],
+    "era_rejected_document_count": 93
+  },
+  {
+    "id": "GQ080",
+    "query": "3.1 운동이 민족 운동의 전환점이라는 근거 알려줘",
+    "expected_era": "근대",
+    "answer_candidate_document_ids": [],
+    "candidates": [],
+    "era_rejected_document_count": 93
+  },
+  {
+    "id": "GQ081",
+    "query": "6월 민주 항쟁이 민주화의 전환점이라는 근거 알려줘",
+    "expected_era": "현대",
+    "answer_candidate_document_ids": [],
+    "candidates": [],
+    "era_rejected_document_count": 76
+  },
+  {
+    "id": "GQ082",
+    "query": "동학 농민 운동이 사회 개혁 요구였다는 근거 알려줘",
+    "expected_era": "근대",
+    "answer_candidate_document_ids": [],
+    "candidates": [],
+    "era_rejected_document_count": 93
+  },
+  {
+    "id": "GQ083",
+    "query": "경국대전이 조선 통치 체제의 근거가 되는 이유 알려줘",
+    "expected_era": "조선 전기",
+    "answer_candidate_document_ids": [],
+    "candidates": [
+      {
+        "document_id": "aks_E0003652",
+        "title": "고산도(高山道)",
+        "document_eras": [
+          "조선 전기",
+          "조선 후기"
+        ],
+        "matched_keywords": [
+          "성종"
+        ],
+        "keyword_coverage": 0.25,
+        "is_answer_candidate": false
+      }
+    ],
+    "era_rejected_document_count": 92
+  }
+]
