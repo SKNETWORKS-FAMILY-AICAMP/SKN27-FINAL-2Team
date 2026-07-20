@@ -11,6 +11,16 @@ from analytics.service.weekly_report.llm import (
     generate_report_content,
     validate_ai_content,
 )
+from analytics.service.weekly_report.relation_evidence import (
+    ChoiceRelationResolver,
+    ResolvedChoiceRelation,
+    ResolvedRelationFact,
+    WrongChoiceCandidate,
+    build_confusion_patterns,
+    build_weekly_confusion_patterns,
+    build_wrong_choice_candidates,
+    load_wrong_choice_candidates,
+)
 from analytics.service.weekly_report.service import (
     build_fallback_content,
     build_pending_report,
@@ -26,9 +36,16 @@ from analytics.service.weekly_report.worker import (
 
 __all__ = [
     "WeeklyReportConfig",
+    "ChoiceRelationResolver",
+    "ResolvedChoiceRelation",
+    "ResolvedRelationFact",
+    "WrongChoiceCandidate",
+    "build_confusion_patterns",
     "build_fallback_content",
     "build_pending_report",
     "build_report_result",
+    "build_weekly_confusion_patterns",
+    "build_wrong_choice_candidates",
     "call_validator",
     "call_writer",
     "claim_report",
@@ -38,6 +55,7 @@ __all__ = [
     "get_weekly_report_config",
     "render_report_dto",
     "is_next_plan_recovery_candidate",
+    "load_wrong_choice_candidates",
     "schedule_report_retry",
     "validate_ai_content",
 ]

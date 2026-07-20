@@ -2,10 +2,14 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 from unittest import TestCase
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 from analytics.service.study_plan.planner import PriorityTarget
-from analytics.service.weekly_report.llm import generate_report_content, validate_ai_content
+from analytics.service.weekly_report.llm import (
+    generate_default_report_content,
+    generate_report_content,
+    validate_ai_content,
+)
 from analytics.service.weekly_report.service import (
     build_fallback_content,
     build_pending_report,
@@ -69,6 +73,44 @@ class WeeklyReportAnalysisTests(TestCase):
         self.assertEqual(result["timeSummary"][0]["qType"], "사료")
         self.assertEqual([item["groupKeyId"] for item in result["nextPlanTargets"]], ["target-a", "target-b"])
         self.assertEqual(result["comparison"]["scoreChange"], 6.0)
+        self.assertEqual(result["assessment"]["evidenceId"], "assessment-current")
+        self.assertEqual(result["comparison"]["evidenceId"], "comparison-baseline")
+        self.assertEqual(result["planProgress"]["evidenceId"], "plan-progress")
+        self.assertEqual(result["confusionPatterns"], [])
+
+    def test_result_includes_prevalidated_confusion_patterns(self) -> None:
+        confusion_pattern = {
+            "evidenceId": "confusion-1",
+            "correctFact": {
+                "subjectLabel": "광해군",
+                "objectLabel": "대동법",
+            },
+            "selectedFact": {
+                "subjectLabel": "영조",
+                "objectLabel": "균역법",
+            },
+            "repeatCount": 2,
+        }
+
+        report = build_report_result(
+            self.assessment,
+            None,
+            self.progress,
+            [],
+            {},
+            [],
+            [],
+            self.snapshot_at,
+            False,
+            "personalized",
+            True,
+            confusion_patterns=[confusion_pattern],
+        )
+
+        self.assertEqual(
+            report["result"]["confusionPatterns"],
+            [confusion_pattern],
+        )
 
     def test_no_baseline_and_no_previous_weekly_is_first_week(self) -> None:
         report = build_report_result(
@@ -208,7 +250,11 @@ class WeeklyReportAnalysisTests(TestCase):
 class WeeklyReportLlmGuardTests(TestCase):
     def setUp(self) -> None:
         self.result = {
-            "assessment": {"score": 82, "totalScore": 100},
+            "assessment": {
+                "evidenceId": "assessment-current",
+                "score": 82,
+                "totalScore": 100,
+            },
             "strengths": [
                 {"evidenceId": "strength-1", "label": "조선 정치", "sampleCount": 10}
             ],
@@ -216,6 +262,7 @@ class WeeklyReportLlmGuardTests(TestCase):
                 {"evidenceId": "priority-1", "label": "근현대 사회", "sampleCount": 8}
             ],
             "timeSummary": [],
+            "confusionPatterns": [],
             "nextPlanTargets": [],
         }
         self.valid_content = {
@@ -233,6 +280,46 @@ class WeeklyReportLlmGuardTests(TestCase):
 
     def test_guard_accepts_supported_content(self) -> None:
         self.assertEqual(validate_ai_content(self.valid_content, self.result), [])
+
+    def test_guard_accepts_relation_grounded_confusion_report(self) -> None:
+        result = {
+            **self.result,
+            "confusionPatterns": [
+                {
+                    "evidenceId": "confusion-1",
+                    "correctFact": {
+                        "subjectLabel": "광해군",
+                        "objectLabel": "대동법",
+                    },
+                    "selectedFact": {
+                        "subjectLabel": "영조",
+                        "objectLabel": "균역법",
+                    },
+                    "repeatCount": 2,
+                    "comparisonDimensions": ["시행 왕", "세금 대상", "시행 목적"],
+                }
+            ],
+        }
+        candidate = {
+            "comment": {
+                "text": (
+                    "광해군과 대동법의 관계를 영조와 균역법의 관계와 반복해서 "
+                    "혼동했어요."
+                ),
+                "evidenceIds": ["confusion-1"],
+            },
+            "tips": [
+                {
+                    "text": (
+                        "두 정책을 시행 왕, 세금 대상, 시행 목적 기준으로 나란히 "
+                        "비교해 보세요."
+                    ),
+                    "evidenceIds": ["confusion-1"],
+                }
+            ],
+        }
+
+        self.assertEqual(validate_ai_content(candidate, result), [])
 
     def test_guard_rejects_unknown_evidence_number_and_forbidden_phrase(self) -> None:
         candidate = {
@@ -252,6 +339,67 @@ class WeeklyReportLlmGuardTests(TestCase):
         candidate = {**self.valid_content, "score": 100}
 
         self.assertIn("UNKNOWN_FIELD", validate_ai_content(candidate, self.result))
+
+    def test_guard_rejects_internal_schema_names_in_user_text(self) -> None:
+        candidate = {
+            "comment": {
+                "text": "조선 정치가 strengths로 제시됐습니다.",
+                "evidenceIds": ["strength-1"],
+            },
+            "tips": [],
+        }
+
+        self.assertIn(
+            "COMMENT_FORBIDDEN_PHRASE",
+            validate_ai_content(candidate, self.result),
+        )
+
+    def test_guard_binds_numbers_to_cited_evidence(self) -> None:
+        strength_candidate = {
+            "comment": {
+                "text": "표본은 8개입니다.",
+                "evidenceIds": ["strength-1"],
+            },
+            "tips": [],
+        }
+        priority_candidate = {
+            "comment": {
+                "text": "표본은 8개입니다.",
+                "evidenceIds": ["priority-1"],
+            },
+            "tips": [],
+        }
+
+        self.assertIn(
+            "COMMENT_UNSUPPORTED_NUMBER",
+            validate_ai_content(strength_candidate, self.result),
+        )
+        self.assertNotIn(
+            "COMMENT_UNSUPPORTED_NUMBER",
+            validate_ai_content(priority_candidate, self.result),
+        )
+
+    def test_guard_requires_summary_evidence_for_summary_numbers(self) -> None:
+        unsupported_candidate = {
+            "comment": {"text": "이번 점수는 82점입니다.", "evidenceIds": []},
+            "tips": [],
+        }
+        supported_candidate = {
+            "comment": {
+                "text": "이번 점수는 82점입니다.",
+                "evidenceIds": ["assessment-current"],
+            },
+            "tips": [],
+        }
+
+        self.assertIn(
+            "COMMENT_UNSUPPORTED_NUMBER",
+            validate_ai_content(unsupported_candidate, self.result),
+        )
+        self.assertNotIn(
+            "COMMENT_UNSUPPORTED_NUMBER",
+            validate_ai_content(supported_candidate, self.result),
+        )
 
     def test_guard_failure_uses_fallback_without_validator_call(self) -> None:
         writer = Mock(
@@ -296,12 +444,60 @@ class WeeklyReportLlmGuardTests(TestCase):
         writer.assert_called_once()
         validator.assert_called_once()
 
+    def test_default_generation_routes_to_langgraph_with_report_type(self) -> None:
+        expected_content = {
+            "comment": {"text": "리포트", "evidenceIds": []},
+            "tips": [],
+            "fallbackUsed": False,
+            "validation": {"guard": "passed", "validator": "passed"},
+        }
+        with patch(
+            "analytics.service.weekly_report.graph.generate_graph_report_content",
+            return_value=expected_content,
+        ) as graph_generation:
+            content = generate_default_report_content(
+                self.result,
+                report_type="weekly",
+            )
+
+        self.assertEqual(content, expected_content)
+        self.assertEqual(graph_generation.call_args.kwargs["report_type"], "weekly")
+
     def test_fallback_uses_available_evidence_and_tip_limit(self) -> None:
         content = build_fallback_content(self.result)
 
         self.assertTrue(content["fallbackUsed"])
         self.assertEqual(content["comment"]["evidenceIds"], ["strength-1"])
         self.assertLessEqual(len(content["tips"]), 3)
+
+    def test_fallback_prioritizes_repeated_relation_confusion_evidence(self) -> None:
+        result = {
+            **self.result,
+            "confusionPatterns": [
+                {
+                    "evidenceId": "confusion-1",
+                    "correctFact": {
+                        "subjectLabel": "광해군",
+                        "objectLabel": "대동법",
+                    },
+                    "selectedFact": {
+                        "subjectLabel": "영조",
+                        "objectLabel": "균역법",
+                    },
+                    "comparisonDimensions": ["시행 왕", "세금 대상", "시행 목적"],
+                }
+            ],
+        }
+
+        content = build_fallback_content(result)
+
+        self.assertTrue(content["fallbackUsed"])
+        self.assertEqual(content["comment"]["evidenceIds"], ["confusion-1"])
+        self.assertIn("광해군", content["comment"]["text"])
+        self.assertIn("대동법", content["comment"]["text"])
+        self.assertIn("영조", content["comment"]["text"])
+        self.assertIn("균역법", content["comment"]["text"])
+        self.assertEqual(content["tips"][0]["evidenceIds"], ["confusion-1"])
 
 
 class WeeklyReportWorkerStateTests(TestCase):
@@ -333,7 +529,7 @@ class WeeklyReportWorkerStateTests(TestCase):
 
     def test_stuck_running_report_is_recovered(self) -> None:
         claimed = claim_report(self.report, self.now)["report"]
-        recovered = claim_report(claimed, self.now.replace(minute=6))
+        recovered = claim_report(claimed, self.now.replace(minute=8))
 
         self.assertTrue(recovered["changed"])
         self.assertEqual(recovered["report"]["status"], "pending")

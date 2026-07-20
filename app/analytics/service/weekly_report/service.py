@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import html
 import statistics
+from copy import deepcopy
 from datetime import datetime, timezone
 from typing import Mapping, Sequence
 
@@ -25,6 +26,7 @@ def build_report_result(
     generation_reason: str | None,
     has_previous_weekly_review: bool,
     config: WeeklyReportConfig | None = None,
+    confusion_patterns: Sequence[Mapping[str, object]] | None = None,
 ) -> dict[str, object]:
     resolved_config = config or get_weekly_report_config()
     completion_rate = float(plan_progress.get("completionRate") or 0.0)
@@ -38,6 +40,12 @@ def build_report_result(
     )
     time_summary = _build_time_summary(time_records, resolved_config)
     next_targets = _select_next_plan_targets(priority_targets, resolved_config)
+    assessment_result = dict(assessment)
+    assessment_result["evidenceId"] = "assessment-current"
+    comparison_result = _build_comparison(assessment, baseline)
+    comparison_result["evidenceId"] = "comparison-baseline"
+    progress_result = dict(plan_progress)
+    progress_result["evidenceId"] = "plan-progress"
     report_type = "weekly"
     if generation_reason == "diagnostic" or not has_previous_weekly_review:
         report_type = "first_week"
@@ -46,12 +54,18 @@ def build_report_result(
         "result": {
             "snapshotAt": _format_utc(snapshot_at),
             "recoveredSnapshot": bool(recovered_snapshot),
-            "assessment": dict(assessment),
-            "comparison": _build_comparison(assessment, baseline),
-            "planProgress": dict(plan_progress),
+            "assessment": assessment_result,
+            "comparison": comparison_result,
+            "planProgress": progress_result,
             "strengths": strengths,
             "priorityImprovements": improvements,
             "timeSummary": time_summary,
+            "confusionPatterns": [
+                deepcopy(dict(pattern))
+                for pattern in (confusion_patterns or [])[
+                    : resolved_config.maximum_confusion_pattern_count
+                ]
+            ],
             "nextPlanTargets": next_targets,
         },
     }
@@ -107,9 +121,29 @@ def build_fallback_content(
     strengths = result.get("strengths") or []
     improvements = result.get("priorityImprovements") or []
     time_summary = result.get("timeSummary") or []
+    confusion_patterns = result.get("confusionPatterns") or []
     comment_text = resolved_config.fallback_neutral_comment
     comment_evidence_ids: list[str] = []
-    if strengths:
+    confusion_pattern = confusion_patterns[0] if confusion_patterns else {}
+    correct_fact = confusion_pattern.get("correctFact") or {}
+    selected_fact = confusion_pattern.get("selectedFact") or {}
+    has_confusion_labels = (
+        isinstance(correct_fact, Mapping)
+        and isinstance(selected_fact, Mapping)
+        and bool(correct_fact.get("subjectLabel"))
+        and bool(correct_fact.get("objectLabel"))
+        and bool(selected_fact.get("subjectLabel"))
+        and bool(selected_fact.get("objectLabel"))
+    )
+    if has_confusion_labels:
+        comment_text = resolved_config.fallback_confusion_comment.format(
+            correct_subject=correct_fact["subjectLabel"],
+            correct_object=correct_fact["objectLabel"],
+            selected_subject=selected_fact["subjectLabel"],
+            selected_object=selected_fact["objectLabel"],
+        )
+        comment_evidence_ids = [str(confusion_pattern["evidenceId"])]
+    elif strengths:
         comment_text = resolved_config.fallback_improving_comment.format(
             label=strengths[0]["label"],
         )
@@ -121,7 +155,26 @@ def build_fallback_content(
         comment_evidence_ids = [str(improvements[0]["evidenceId"])]
 
     tips: list[dict[str, object]] = []
+    if has_confusion_labels:
+        comparison_dimensions = [
+            str(item)
+            for item in confusion_pattern.get("comparisonDimensions") or []
+            if str(item).strip()
+        ]
+        confusion_tip_text = resolved_config.fallback_confusion_general_tip
+        if comparison_dimensions:
+            confusion_tip_text = resolved_config.fallback_confusion_tip.format(
+                dimensions="·".join(comparison_dimensions),
+            )
+        tips.append(
+            {
+                "text": confusion_tip_text,
+                "evidenceIds": [str(confusion_pattern["evidenceId"])],
+            }
+        )
     for item in improvements:
+        if len(tips) >= resolved_config.maximum_tip_count:
+            break
         tips.append(
             {
                 "text": resolved_config.fallback_priority_tip.format(label=item["label"]),

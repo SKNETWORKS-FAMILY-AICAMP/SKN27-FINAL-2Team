@@ -584,12 +584,14 @@ era=%EC%A1%B0%EC%84%A0|topic=a%3Db%7Cc|qType=%EC%82%AC%EB%A3%8C
 - 유형별 풀이시간 요약
 - 다음 계획 대상
 
-AI 작성 에이전트가 만드는 값:
+AI 에이전트는 LangGraph 그래프에서 네 개로 분리한다.
 
-- 코멘트 1개
-- 설정 최대 개수 안의 학습 팁
+- Evidence Analyst: 코드가 선별한 근거만 해석한다.
+- Study Coach: 해석을 실행 가능한 복습 행동으로 바꾼다.
+- Report Writer: 코멘트 1개와 설정 최대 개수 안의 학습 팁을 작성한다.
+- Report Critic: 초안을 원본 결과와 대조해 근거 이탈·과장·어조·실행 가능성을 판정한다.
 
-AI 검증 에이전트는 작성 문장이 제공된 근거에서 벗어나지 않았는지 판정한다. 어떤 AI도 숫자·취약 판정·계획 대상을 만들거나 변경하지 않는다.
+어떤 AI도 숫자·취약 판정·계획 대상을 만들거나 변경하지 않는다.
 
 결정 결과 선정 규칙:
 
@@ -598,6 +600,7 @@ AI 검증 에이전트는 작성 문장이 제공된 근거에서 벗어나지 �
 | 좋아진 영역(`strengths`) | 추세가 개선이고 두 추세 구간 모두 최소 표본 충족 | 추세 차이 오름차순, 유효 표본 내림차순 | 3 |
 | 우선 보완 영역(`priorityImprovements`) | 현재 상태가 취약 | 취약 점수, 반복 오답, 유효 표본 내림차순 | 3 |
 | 풀이시간 요약(`timeSummary`) | 유형별 사용자 중앙 풀이시간 표본 5개 이상이며 기준 대비 1.3배 이상 | 시간 비율 내림차순 | 2 |
+| 반복 혼동(`confusionPatterns`) | 정답·선택 관계가 단일 관계로 확정되고 같은 관계 오답 2회 이상 | 반복 수 내림차순 | 3 |
 | 다음 계획 대상(`nextPlanTargets`) | 1.13의 계획 후보 | 계획 우선순위 내림차순 | 3 |
 
 좋아진 영역·우선 보완 영역·다음 계획 대상의 분석 단위는 시대+주제로 통일한다. 유형은 풀이시간 요약에 사용하고, 3중 조합은 취약점 상세 화면의 근거 탐색용으로만 유지한다.
@@ -624,6 +627,7 @@ AI 검증 에이전트는 작성 문장이 제공된 근거에서 벗어나지 �
 - 세션·계획·블록 연결과 전체 제출을 확인한다.
 - 같은 평가 세션이 이미 등록되어 있으면 기존 JSON을 반환한다.
 - 점수·비교·완료율·분석을 계산해 결과(`result`)로 고정한다.
+- 반복 혼동 근거(`confusionPatterns`)는 worker가 claim한 뒤 결정 코드가 선택지 문맥과 관계 resolver로 준비한다. resolver 미연결·관계 모호·반복 미달이면 빈 배열이다.
 - 제출 트랜잭션이 길어지는지 응답 시간을 관측한다. 기준 초과가 확인되면 분석만 worker로 옮기는 변경을 별도 검토한다.
 
 비교 대상 우선순위:
@@ -651,23 +655,27 @@ AI 검증 에이전트는 작성 문장이 제공된 근거에서 벗어나지 �
       "score": 82,
       "totalScore": 100,
       "correctCount": 41,
-      "totalCount": 50
+      "totalCount": 50,
+      "evidenceId": "assessment-current"
     },
     "comparison": {
       "status": "AVAILABLE",
       "baselineType": "weekly_review",
       "baselineSessionId": 98,
       "previousScore": 76,
-      "scoreChange": 6
+      "scoreChange": 6,
+      "evidenceId": "comparison-baseline"
     },
     "planProgress": {
       "completedLearningBlocks": 10,
       "totalLearningBlocks": 12,
-      "completionRate": 0.833
+      "completionRate": 0.833,
+      "evidenceId": "plan-progress"
     },
     "strengths": [],
     "priorityImprovements": [],
     "timeSummary": [],
+    "confusionPatterns": [],
     "nextPlanTargets": []
   },
   "content": {
@@ -687,7 +695,7 @@ AI 검증 에이전트는 작성 문장이 제공된 근거에서 벗어나지 �
     "studyPlanId": null,
     "blockedReason": null
   },
-  "version": "weekly-report-v1",
+  "version": "weekly-report-v2-langgraph",
   "model": "configured-model",
   "createdAt": "2026-07-19T12:00:00Z",
   "readyAt": null
@@ -760,36 +768,28 @@ JSON 주의사항:
 8. 다음 계획의 일시적 인프라 오류는 다음 계획을 `pending`으로 유지하고 worker 실행 가능 시각을 뒤로 미룬다. 후보 부족 같은 영구 오류만 `failed`로 저장한다.
 9. 완료된 주간평가 세션과 계획·블록 연결이 있지만 리포트 JSON이 SQL `NULL`인 행을 주기적으로 조회해 `recoveredSnapshot=true`인 `pending` JSON을 등록한다.
 
-단일 worker이므로 lease token과 heartbeat는 사용하지 않는다. LLM 호출마다 60초 제한을 적용하고 작업 처리 5분 초과를 정지 기준으로 사용한다. 최대 작업 시도는 3회이며 인프라 오류는 30초, 120초 뒤 다시 시도한다. 이 값은 worker 설정 버전에 둔다. 여러 worker가 필요해지면 JSON 열 기반 작업 큐를 확장하지 않고 별도 작업 테이블을 다시 설계한다.
+단일 worker이므로 lease token과 heartbeat는 사용하지 않는다. LLM 호출마다 60초 제한을 적용하고 작업 처리 7분(420초) 초과를 정지 기준으로 사용한다. 최대 작업 시도는 3회이며 인프라 오류는 30초, 120초 뒤 다시 시도한다. 이 값은 worker 설정 버전에 둔다. 여러 worker가 필요해지면 JSON 열 기반 작업 큐를 확장하지 않고 별도 작업 테이블을 다시 설계한다.
 
 ### 2.5 AI 작성·검증
 
-작성 AI 입력:
-
-- 리포트 유형
-- 저장된 계산 결과(`result`)
-- 허용 근거 번호
-- 표현 정책과 금지 표현
-
-작성 AI 출력은 구조화 JSON으로 받는다. 코드 검증 항목:
-
-- 코멘트·팁 필드와 길이
-- 입력에 존재하는 근거 번호만 사용
-- 입력에 없는 숫자·원인 추측 금지
-- 표본 부족을 확정 취약으로 표현하지 않음
-- 비난·낙인·합격 보장 표현 금지
-
-코드 검증을 통과한 결과만 검증 AI에 보낸다. 검증 AI는 근거 이탈, 과장, 어조, 실행 가능성을 판정한다.
+AI 문장은 LangGraph 그래프가 만든다. 정상 경로는 다음과 같다.
 
 ```text
-작성 AI 1회
-→ 코드 검증
-→ 검증 AI 1회
-→ 성공이면 AI 문장
-→ 어느 단계든 실패하면 기본 문장
+Evidence Analyst (400 토큰)
+→ Study Coach (400 토큰)
+→ Report Writer (600 토큰)
+→ 코드 검증(Code Guard)
+→ Report Critic (300 토큰)
+→ 통과면 AI 문장
 ```
 
-재작성은 하지 않는다. AI 호출은 리포트당 최대 두 번이다. AI 호출 실패는 리포트 실패가 아니라 기본 문장 사용(`fallbackUsed=true`)으로 처리하고 상태를 `ready`로 만든다.
+- 각 에이전트는 LangChain `create_agent`와 Pydantic 구조화 출력으로 호출한다.
+- Analyst·Coach의 중간 출력도 코드가 근거 번호·근거별 숫자·금지 표현 기준으로 검증한다.
+- Code Guard 검사 항목: 코멘트·팁 필드와 길이(240자/160자), 입력에 존재하는 근거 번호만 사용, 인용한 근거에 없는 숫자 금지, 비난·낙인·합격 보장 표현 금지, 내부 JSON 필드명 노출 금지.
+- Code Guard 위반 또는 Critic 거절이면 수정 피드백과 함께 Writer부터 재작성한다. 재작성은 최대 1회다.
+- 따라서 LLM 호출은 정상 4회, 재작성 시 최대 6회다.
+- provider 내부 자동 재시도는 사용하지 않고 호출마다 60초 제한을 적용한다.
+- 에이전트 호출·스키마 오류 또는 재작성 소진 시 기본 문장(`fallbackUsed=true`)으로 전환하고 상태를 `ready`로 만든다. AI 실패는 리포트 실패가 아니다.
 
 ### 2.6 다음 계획
 
@@ -824,7 +824,10 @@ app/analytics/service/
   weekly_report/
     config.py       # 버전 설정
     service.py      # 수집·분석·렌더링·다음 계획 연결
-    llm.py          # 작성·검증 AI와 코드 검증
+    relation_evidence.py  # 선택지 문맥·반복 혼동 근거 준비
+    agents.py       # LangChain 에이전트 4종과 구조화 출력 스키마
+    graph.py        # LangGraph 파이프라인·재작성·fallback 분기
+    llm.py          # 코드 검증(Code Guard)·근거 검증
     worker.py       # claim·재시도·정지 복구
 app/analytics/management/commands/
   run_ai_worker.py
@@ -1006,7 +1009,7 @@ shadow·canary 없이 직접 전환한다. 기존 계획 데이터를 다른 테
 
 - 단일 worker claim·자동 재시도·정지 복구
 - AI 없이 기본 문장 리포트 E2E
-- 작성 AI·코드 검증·검증 AI 연결
+- Analyst·Coach·Writer·Critic 그래프와 코드 검증 연결
 - 다음 계획 자동 생성·보류·재확인
 
 통과 조건: AI 실패에도 `ready`, 중복 리포트·계획 없음, 정지 작업 복구.
@@ -1100,10 +1103,10 @@ shadow·canary 없이 직접 전환한다. 기존 계획 데이터를 다른 테
 - 주간평가 중복 제출에도 같은 계획의 리포트 JSON 하나
 - 완료율 `0.833` 저장과 화면 `83.3%` 표시
 - 비교 평가 없음은 `INSUFFICIENT_BASELINE`과 변화량 `null`
-- 작성 AI 최대 1회, 검증 AI 최대 1회, 재작성 없음
+- 정상 LLM 호출 4회, Guard·Critic 거절 시 Writer부터 재작성 최대 1회(호출 최대 6회)
 - 좋아진 영역·보완 영역·시간 요약·다음 계획 대상이 2.1의 조건·정렬·최대 개수와 일치함
 - 원본 계획 생성 이유가 없더라도 이전 주간평가가 없으면 `first_week`, 있으면 `weekly`임
-- 작성·코드 검증·검증 AI 각각의 실패가 기본 문장 `ready`로 종료
+- 에이전트 호출·스키마 오류와 재작성 소진이 기본 문장 `ready`로 종료
 - `pending → running → ready`, 자동 재시도는 `pending + availableAt`
 - 정지 `running` 회수와 최대 시도 초과 `failed`
 - 화면 DTO를 조회 시 생성하고 `renderedReport` 미저장

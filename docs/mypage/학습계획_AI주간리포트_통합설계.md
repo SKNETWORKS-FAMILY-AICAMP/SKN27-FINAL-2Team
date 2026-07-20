@@ -158,6 +158,7 @@ flowchart LR
 - 계획 완료율과 완료 블록 수
 - 좋아진 영역과 아직 약한 영역
 - 반복 오답과 유형별 풀이시간 요약
+- 정답·선택 관계가 하나로 확정된 반복 혼동 근거(최대 3개, 관계 resolver 연결 후)
 - 다음 계획 대상
 
 AI가 작성하는 내용:
@@ -174,32 +175,33 @@ sequenceDiagram
     participant D as diagnosis
     participant A as analytics
     participant W as 단일 worker
-    participant L1 as 작성 AI
-    participant L2 as 검증 AI
+    participant G as LangGraph 그래프
+    participant L as AI 에이전트 4종
 
     D->>A: 주간평가 제출 완료 전달
     A->>A: 결과·분석 사본 저장(status=pending)
     W->>A: 계획 행 claim(status=running)
-    W->>L1: 근거 기반 코멘트·팁 요청
-    L1-->>W: 구조화 문장
-    W->>W: 코드 검증
-    alt 코드 검증 통과
-        W->>L2: 근거·어조 검증
-        L2-->>W: 판정
+    W->>W: 근거 준비(선택지 문맥·관계 근거)
+    W->>G: 그래프 실행
+    G->>L: Analyst 해석 → Coach 추천 → Writer 작성
+    G->>G: 코드 검증(Code Guard)
+    G->>L: Critic 대조 판정
+    opt Guard·Critic 거절, 재작성 1회 남음
+        G->>L: Writer부터 재작성
     end
-    alt 모든 검증 통과
-        W->>A: AI 문장 저장(status=ready)
-    else 호출 또는 검증 실패
-        W->>A: 기본 문장 저장(status=ready)
+    alt Critic 통과
+        G-->>W: AI 문장
+    else 호출·스키마 오류 또는 재작성 소진
+        G-->>W: 기본 문장(fallback)
     end
+    W->>A: 문장 저장(status=ready)
     W->>A: 다음 계획 생성 또는 보류
 ```
 
-- 작성 AI는 최대 한 번 호출한다.
-- 작성 결과는 코드가 필드·근거 번호·숫자·금지 표현을 검사한다.
-- 코드 검증을 통과한 경우에만 검증 AI를 최대 한 번 호출한다.
-- 재작성 루프는 없다. 어느 단계든 실패하면 즉시 규칙 기반 기본 문장으로 전환한다.
-- 따라서 리포트 한 건의 AI 호출은 최대 두 번이다.
+- 정상 경로는 Evidence Analyst → Study Coach → Report Writer → 코드 검증(Code Guard) → Report Critic이며 LLM 호출은 4회다.
+- Analyst·Coach의 중간 출력도 코드가 근거 번호·근거별 숫자·금지 표현 기준으로 검증한다.
+- Code Guard 위반 또는 Critic 거절이면 수정 피드백과 함께 Writer부터 재작성한다. 재작성은 최대 1회이며 리포트 한 건의 LLM 호출은 최대 6회다.
+- 에이전트 호출·구조화 출력 오류 또는 재작성 소진 시 즉시 규칙 기반 기본 문장으로 전환한다.
 - 점수·취약점·다음 계획 대상은 AI가 만들거나 수정하지 못한다.
 
 ### 3.3 저장과 상태
@@ -309,7 +311,7 @@ analytics 개발은 먼저 할 수 있지만, question·diagnosis 연동 E2E와 
 ### 4단계 — 리포트
 
 - 계산 결과 고정, 단일 worker, 정지 작업 복구
-- 작성 AI 1회, 코드 검증, 검증 AI 1회, 기본 문장
+- Analyst·Coach·Writer·Critic 그래프 연결, 코드 검증, 재작성 최대 1회, 기본 문장
 - 다음 계획 자동 생성·보류·재확인
 
 ### 5단계 — 화면·전환

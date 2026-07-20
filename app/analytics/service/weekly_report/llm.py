@@ -43,13 +43,15 @@ def generate_report_content(
 def generate_default_report_content(
     result: Mapping[str, object],
     config: WeeklyReportConfig | None = None,
+    report_type: str | None = None,
 ) -> dict[str, object]:
+    from analytics.service.weekly_report.graph import generate_graph_report_content
+
     resolved_config = config or get_weekly_report_config()
-    return generate_report_content(
+    return generate_graph_report_content(
         result,
-        lambda facts: call_writer(facts, resolved_config),
-        lambda candidate, facts: call_validator(candidate, facts, resolved_config),
-        resolved_config,
+        config=resolved_config,
+        report_type=report_type,
     )
 
 
@@ -143,7 +145,10 @@ def validate_ai_content(
         errors.append("TIP_COUNT_EXCEEDED")
 
     allowed_evidence_ids = _collect_evidence_ids(result)
-    allowed_numbers = set(re.findall(r"-?\d+(?:\.\d+)?", json.dumps(result, ensure_ascii=False)))
+    forbidden_user_text = (
+        resolved_config.forbidden_phrases
+        + resolved_config.forbidden_output_tokens
+    )
     items: list[tuple[str, object, int]] = [("comment", comment, resolved_config.maximum_comment_length)]
     items.extend(("tip", item, resolved_config.maximum_tip_length) for item in tips)
     for item_type, item, maximum_length in items:
@@ -163,22 +168,115 @@ def validate_ai_content(
         if any(str(evidence_id) not in allowed_evidence_ids for evidence_id in evidence_ids):
             errors.append(f"{item_type.upper()}_UNKNOWN_EVIDENCE")
         text_numbers = set(re.findall(r"-?\d+(?:\.\d+)?", text))
+        allowed_numbers = _collect_allowed_numbers(result, evidence_ids)
         if not text_numbers.issubset(allowed_numbers):
             errors.append(f"{item_type.upper()}_UNSUPPORTED_NUMBER")
-        if any(phrase in text for phrase in resolved_config.forbidden_phrases):
+        if any(phrase in text for phrase in forbidden_user_text):
             errors.append(f"{item_type.upper()}_FORBIDDEN_PHRASE")
     return list(dict.fromkeys(errors))
 
 
-def _collect_evidence_ids(result: Mapping[str, object]) -> set[str]:
-    evidence_ids: set[str] = set()
-    for field_name in (
-        "strengths",
-        "priorityImprovements",
-        "timeSummary",
-        "nextPlanTargets",
-    ):
-        for item in result.get(field_name) or []:
+def validate_grounded_statements(
+    statements: list[object],
+    result: Mapping[str, object],
+    config: WeeklyReportConfig | None = None,
+    evidence_fields: tuple[str, ...] | None = None,
+) -> list[str]:
+    resolved_config = config or get_weekly_report_config()
+    errors: list[str] = []
+    allowed_evidence_ids = _collect_evidence_ids(result, evidence_fields)
+    for index, statement in enumerate(statements):
+        error_prefix = f"STATEMENT_{index + 1}"
+        if not isinstance(statement, Mapping):
+            errors.append(f"{error_prefix}_INVALID")
+            continue
+        text = statement.get("text")
+        evidence_ids = statement.get("evidenceIds")
+        if not isinstance(text, str) or not text.strip():
+            errors.append(f"{error_prefix}_TEXT_REQUIRED")
+            continue
+        if not isinstance(evidence_ids, list):
+            errors.append(f"{error_prefix}_EVIDENCE_REQUIRED")
+            continue
+        if any(str(evidence_id) not in allowed_evidence_ids for evidence_id in evidence_ids):
+            errors.append(f"{error_prefix}_UNKNOWN_EVIDENCE")
+        text_numbers = set(re.findall(r"-?\d+(?:\.\d+)?", text))
+        allowed_numbers = _collect_allowed_numbers(
+            result,
+            evidence_ids,
+            evidence_fields,
+        )
+        if not text_numbers.issubset(allowed_numbers):
+            errors.append(f"{error_prefix}_UNSUPPORTED_NUMBER")
+        if any(phrase in text for phrase in resolved_config.forbidden_phrases):
+            errors.append(f"{error_prefix}_FORBIDDEN_PHRASE")
+    return list(dict.fromkeys(errors))
+
+
+def _collect_evidence_ids(
+    result: Mapping[str, object],
+    evidence_fields: tuple[str, ...] | None = None,
+) -> set[str]:
+    return set(_collect_evidence_items(result, evidence_fields))
+
+
+def _collect_evidence_items(
+    result: Mapping[str, object],
+    evidence_fields: tuple[str, ...] | None = None,
+) -> dict[str, Mapping[str, object]]:
+    evidence_items: dict[str, Mapping[str, object]] = {}
+    resolved_fields = evidence_fields
+    if resolved_fields is None:
+        resolved_fields = (
+            "assessment",
+            "comparison",
+            "planProgress",
+            "strengths",
+            "priorityImprovements",
+            "timeSummary",
+            "confusionPatterns",
+            "nextPlanTargets",
+        )
+    for field_name in resolved_fields:
+        field_value = result.get(field_name)
+        items: list[object] = []
+        if isinstance(field_value, Mapping):
+            items = [field_value]
+        elif isinstance(field_value, list):
+            items = field_value
+        for item in items:
             if isinstance(item, Mapping) and item.get("evidenceId"):
-                evidence_ids.add(str(item["evidenceId"]))
-    return evidence_ids
+                evidence_items[str(item["evidenceId"])] = item
+    return evidence_items
+
+
+def _collect_allowed_numbers(
+    result: Mapping[str, object],
+    evidence_ids: list[object],
+    evidence_fields: tuple[str, ...] | None = None,
+) -> set[str]:
+    values: list[object] = []
+    evidence_items = _collect_evidence_items(result, evidence_fields)
+    for evidence_id in evidence_ids:
+        evidence_item = evidence_items.get(str(evidence_id))
+        if evidence_item is not None:
+            values.append(evidence_item)
+    return _collect_numeric_literals(values)
+
+
+def _collect_numeric_literals(value: object) -> set[str]:
+    if isinstance(value, bool) or value is None:
+        return set()
+    if isinstance(value, (int, float)):
+        return set(re.findall(r"-?\d+(?:\.\d+)?", str(value)))
+    if isinstance(value, Mapping):
+        numbers: set[str] = set()
+        for nested_value in value.values():
+            numbers.update(_collect_numeric_literals(nested_value))
+        return numbers
+    if isinstance(value, (list, tuple)):
+        numbers = set()
+        for nested_value in value:
+            numbers.update(_collect_numeric_literals(nested_value))
+        return numbers
+    return set()
