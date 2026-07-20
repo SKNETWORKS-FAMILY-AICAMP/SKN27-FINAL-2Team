@@ -18,7 +18,7 @@ from question.models import QuestionOptions, SolveRecords
 from user.views import build_session_display_map
 
 from .models import ChatMessages, ChatSessions
-from .rag_service import build_history_rag_answer, stream_concept_rag_answer
+from .rag_service import build_history_rag_answer, stream_concept_rag_answer, stream_question_rag_answer
 
 
 logger = logging.getLogger(__name__)
@@ -96,6 +96,11 @@ def rag_chat_api(request):
     conversation_history = payload.get("conversation_history")
     if not isinstance(conversation_history, list):
         conversation_history = []
+    try:
+        problem_session_id = int(payload.get("problem_session_id"))
+    except (TypeError, ValueError):
+        problem_session_id = None
+    explanation_level = "foundation" if intent == "question" and payload.get("foundation_explanation") is True else "core" if intent == "question" else ""
 
     try:
         result = build_history_rag_answer(
@@ -106,6 +111,7 @@ def rag_chat_api(request):
             follow_up=follow_up,
             top_k=top_k,
             history=conversation_history,
+            explanation_level=explanation_level,
         )
     except Exception:
         logger.exception("RAG 답변 생성 실패")
@@ -136,11 +142,24 @@ def rag_chat_stream_api(request):
     session_id = str(payload.get("session_id") or "").strip()
     display_question = str(payload.get("display_question") or question).strip()
     history = payload.get("conversation_history") if isinstance(payload.get("conversation_history"), list) else []
+    try:
+        problem_session_id = int(payload.get("problem_session_id"))
+    except (TypeError, ValueError):
+        problem_session_id = None
+    intent = payload.get("intent") or "concept"
+    explanation_level = "foundation" if intent == "question" and payload.get("foundation_explanation") is True else "core" if intent == "question" else ""
 
     def stream():
         try:
-            for event in stream_concept_rag_answer(question, mode=payload.get("mode") or "history", top_k=top_k, history=history):
+            answer_stream = (
+                stream_question_rag_answer(question, mode=payload.get("mode") or "history", top_k=top_k, history=history, explanation_level=explanation_level)
+                if intent == "question"
+                else stream_concept_rag_answer(question, mode=payload.get("mode") or "history", top_k=top_k, history=history)
+            )
+            for event in answer_stream:
                 if event["type"] == "done":
+                    if intent == "question":
+                        event["data"]["problem_session_id"] = problem_session_id
                     try:
                         save_chat_turn(request, session_id, display_question, event["data"])
                     except Exception:
