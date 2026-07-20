@@ -9,7 +9,7 @@ from typing import Any
 from dotenv import load_dotenv
 
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 load_dotenv(PROJECT_ROOT / ".env")
@@ -71,7 +71,7 @@ def measure(question: str, intent: str, answer_format: str, top_k: int) -> dict[
         timings["timeline_sec"] = elapsed(start)
 
         start = time.perf_counter()
-        enough = has_enough_evidence(results, intent, timeline_sources, search_seed != question)
+        enough = has_enough_evidence(results, intent)
         timings["evidence_check_sec"] = elapsed(start)
         if not enough:
             timings["llm_generation_sec"] = 0.0

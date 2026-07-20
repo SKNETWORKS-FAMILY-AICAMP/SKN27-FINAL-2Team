@@ -72,13 +72,12 @@ flowchart TD
 
 ```python
 MIN_KEYWORD_SCORE = 0.12
-MIN_COMBINED_SCORE = 0.70
-FOLLOW_UP_MIN_COMBINED_SCORE = 0.50
+MIN_VECTOR_SCORE = 0.35
 ```
 
-상위 검색 결과가 `keyword_score >= 0.12`이고 `score >= 0.70`일 때만 충분한 근거로 판단한다. 기준에 미달하면 LLM을 호출하지 않고 `"검색 결과가 없습니다."`를 반환한다.
+상위 검색 결과 중 하나라도 `keyword_score >= 0.12` 또는 `vector_score >= 0.35`이면 충분한 근거로 판단한다. RRF `score`는 순위용 값이므로 근거 임계값에 사용하지 않는다. 기준에 미달하면 LLM을 호출하지 않고 `"검색 결과가 없습니다."`를 반환한다.
 
-단, `조금 더`, `자세히`, `왜`, `어떻게`처럼 직전 대화 맥락을 확장하는 후속 질문은 이전 사용자 질문을 함께 검색하고, 통합 점수 기준을 `0.50`으로 완화한다.
+연표는 답변 문맥에만 추가하며, 근거 충족 판정에는 사용하지 않는다.
 
 이미지 검색은 점수 외에도 `source_type = 'image_material'`이며 `thumbnail_url` 또는 `original_image_url`이 있어야 성공으로 본다.
 
@@ -208,6 +207,6 @@ LANGSMITH_PROJECT=history-rag-evaluation
 - pgvector 인덱스 생성 여부 확인
 - Neo4j 연결 여부 확인
 - `CHAT_TEMPERATURE=0` 확인
-- 검색 기준 `MIN_KEYWORD_SCORE=0.12`, `MIN_COMBINED_SCORE=0.70`, `FOLLOW_UP_MIN_COMBINED_SCORE=0.50` 확인
+- 검색 기준 `MIN_KEYWORD_SCORE=0.12`, `MIN_VECTOR_SCORE=0.35` 확인
 - 기준 미달 시 `"검색 결과가 없습니다."`로 fallback 되는지 확인
 - 같은 개념 질문을 반복했을 때 답변 형식이 유지되는지 확인

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 import re
-from dataclasses import dataclass, replace
+from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
 from typing import Any
@@ -14,6 +14,16 @@ from psycopg2.extras import RealDictCursor
 
 from .korean_tokenizer import mecab_search_tokens
 from .query_terms import expand_query_tokens, tokenize
+from .reranker import get_reranker, rerank_results
+from .retrieval_rules import (
+    HISTORY_STOPWORDS,
+    OVERVIEW_IGNORE_TERMS,
+    OVERVIEW_TERMS,
+    build_bm25_query,
+    is_generic_overview_query,
+    normalize_query_spacing,
+    overview_focus_terms,
+)
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
@@ -22,181 +32,7 @@ TIMELINE_ERAS = ("고대", "고려", "조선", "근대", "현대")
 TIMELINE_FIELDS = ("인물", "사건", "조직·단체", "조직", "단체", "유물·유적", "유물", "유적")
 IMAGE_QUERY_TERMS = ("이미지", "사진", "그림", "유물", "유적", "자료", "찾아줘", "보여줘", "조회")
 IMAGE_TITLE_IGNORE_TERMS = set(IMAGE_QUERY_TERMS) | {"시대", "대표", "관련", "설명"}
-OVERVIEW_TERMS = ("정리", "요약", "흐름", "개념", "설명", "알려", "누구", "뭐야", "무엇", "내용", "왜", "이유", "중요", "중요한", "중요성", "업적", "정책", "대해", "대한", "대해서")
-REQUEST_SUFFIX_TERMS = tuple(
-    sorted(
-        {
-            *IMAGE_QUERY_TERMS,
-            *OVERVIEW_TERMS,
-            "알려줘",
-            "설명해줘",
-            "정리해줘",
-            "요약해줘",
-            "보여달라",
-            "보여줄래",
-        },
-        key=len,
-        reverse=True,
-    )
-)
-OVERVIEW_IGNORE_TERMS = {
-    "정리",
-    "요약",
-    "흐름",
-    "개념",
-    "설명",
-    "설명해줘",
-    "알려",
-    "알려줘",
-    "누구",
-    "뭐",
-    "무엇",
-    "업적",
-    "정책",
-    "대해",
-    "대한",
-    "대해서",
-    "조회",
-    "역사적",
-    "역사적으로",
-    "의미",
-    "의의",
-    "이유",
-    "왜",
-    "어떤",
-    "있는지",
-    "중요",
-    "중요성",
-    "중요한",
-    "중요한지",
-    "차이",
-    "비교",
-    "대비",
-    "특징",
-    "내용",
-    "보여주",
-    "보여주는",
-    "사건",
-    "사건이야",
-    "유명한",
-    "대표",
-    "대표적",
-    "대표적인",
-    "주요",
-}
-GENERIC_OVERVIEW_CONTEXT_TERMS = (
-    "개요",
-    "핵심 내용",
-    "특징",
-    "배경",
-    "의의",
-    "업적",
-    "활동",
-    "시대",
-    "관련 내용",
-    "한능검",
-)
-ACHIEVEMENT_CONTEXT_TERMS = (
-    "창제",
-    "설치",
-    "정비",
-    "편찬",
-    "제작",
-    "반포",
-    "개혁",
-    "발명",
-    "시행",
-)
-ACHIEVEMENT_QUERY_TERMS = ("업적", "정책", "활동")
-HONORIFIC_SUFFIXES = ("대왕",)
-SINGLE_CHAR_FOCUS_TERMS = {"왕"}
-
-HISTORY_STOPWORDS = {
-    "조선", "고려", "신라", "백제", "고구려", "가야", "발해", 
-    "전기", "후기", "중기", "초기", "말기", "시대", "국가", "나라", "역사", "한국", 
-    "인물", "사건", "조직", "단체", "유물", "유적", "정리", "요약", "설명", "개념",
-    "왕", "대왕"
-}
-BM25_IGNORE_TERMS = HISTORY_STOPWORDS | OVERVIEW_IGNORE_TERMS
 COMPARISON_JOIN_TERMS = ("와", "과", "이랑", "하고", "및")
-
-
-def normalize_query_spacing(question: str) -> str:
-    value = re.sub(r"\s+", " ", question or "").strip()
-    for term in REQUEST_SUFFIX_TERMS:
-        value = re.sub(
-            rf"(?<=[가-힣A-Za-z0-9])({re.escape(term)})(?=$|\s|[?.!,])",
-            r" \1",
-            value,
-        )
-    return re.sub(r"\s+", " ", value).strip()
-
-
-def overview_focus_terms(question: str) -> tuple[str, ...]:
-    question = normalize_query_spacing(question)
-    tokens = tokenize(question)
-    compact_question = re.sub(r"[^\w\s]", " ", question)
-    tokens.extend(
-        term
-        for term in SINGLE_CHAR_FOCUS_TERMS
-        if re.search(rf"(?<!\S){re.escape(term)}(?:은|는|이|가|을|를|의|에)?(?!\S)", compact_question)
-    )
-    terms: list[str] = []
-    for token in tokens:
-        normalized = token.strip()
-        if (len(normalized) < 2 and normalized not in SINGLE_CHAR_FOCUS_TERMS) or normalized in OVERVIEW_IGNORE_TERMS:
-            continue
-        if terms and re.search(rf"{re.escape(normalized)}에\s*(대해|대한|대해서)", question):
-            continue
-        if normalized.endswith("에") and len(normalized) > 2:
-            if terms:
-                continue
-            normalized = normalized[:-1]
-        if normalized.endswith("은") or normalized.endswith("는"):
-            normalized = normalized[:-1]
-        if normalized in OVERVIEW_IGNORE_TERMS:
-            continue
-        candidates = [normalized]
-        for suffix in HONORIFIC_SUFFIXES:
-            if len(normalized) > len(suffix) + 1 and normalized.endswith(suffix):
-                candidates.append(normalized[: -len(suffix)])
-        for candidate in candidates:
-            if candidate and candidate not in terms:
-                terms.append(candidate)
-    return tuple(terms[:4])
-
-
-def is_generic_overview_query(question: str, focus_terms: tuple[str, ...]) -> bool:
-    question = normalize_query_spacing(question)
-    if not focus_terms:
-        return False
-    return any(term in question for term in OVERVIEW_TERMS)
-
-
-def build_keyword_question(
-    question: str,
-    focus_terms: tuple[str, ...] = (),
-    extra_terms: tuple[str, ...] = GENERIC_OVERVIEW_CONTEXT_TERMS,
-) -> str:
-    terms = [question, *focus_terms]
-    terms.extend(extra_terms)
-    if any(term in question for term in ACHIEVEMENT_QUERY_TERMS):
-        terms.extend(ACHIEVEMENT_CONTEXT_TERMS)
-    return " ".join(dict.fromkeys(term for term in terms if term))
-
-
-def build_bm25_query(focus_terms: tuple[str, ...], fallback: str) -> str:
-    terms: list[str] = []
-    for term in focus_terms:
-        variants = [term]
-        for suffix in HONORIFIC_SUFFIXES:
-            if len(term) > len(suffix) + 1 and term.endswith(suffix):
-                variants.insert(0, term[: -len(suffix)])
-        for candidate in variants:
-            if len(candidate) >= 2 and candidate not in BM25_IGNORE_TERMS:
-                terms.append(candidate)
-                break
-    return " ".join(dict.fromkeys(terms)) or fallback
 
 
 @dataclass(frozen=True)
@@ -211,33 +47,6 @@ class PgSearchResult:
     vector_score: float
     keyword_score: float
     score: float
-
-
-@lru_cache(maxsize=1)
-def get_reranker():
-    model_name = os.getenv("RAG_RERANKER_MODEL", "BAAI/bge-reranker-v2-m3")
-    try:
-        from sentence_transformers import CrossEncoder
-    except ImportError:
-        return None
-    return CrossEncoder(model_name)
-
-
-def rerank_results(question: str, rows: list[PgSearchResult], top_k: int) -> list[PgSearchResult]:
-    if os.getenv("RAG_RERANKER_ENABLED", "").lower() not in {"1", "true", "yes"}:
-        return rows[:top_k]
-    model = get_reranker()
-    if model is None:
-        return rows[:top_k]
-
-    pairs = [(question, f"{row.title}\n{compact_text(row.chunk_text, 900)}") for row in rows]
-    scores = model.predict(pairs)
-    ranked = sorted(
-        (replace(row, score=float(score)) for row, score in zip(rows, scores)),
-        key=lambda row: row.score,
-        reverse=True,
-    )
-    return ranked[:top_k]
 
 
 def load_env() -> None:
@@ -396,17 +205,35 @@ def diversify_rows(rows: list[dict[str, Any]], limit: int) -> list[dict[str, Any
     return selected
 
 
+def prioritize_focus_rows(rows: list[dict[str, Any]], focus_terms: tuple[str, ...]) -> list[dict[str, Any]]:
+    terms = [
+        term
+        for term in focus_terms
+        if term not in OVERVIEW_IGNORE_TERMS and not term.endswith(("해줘", "알려줘"))
+    ]
+    if not terms:
+        return rows
+    def focus_hits(row: dict[str, Any]) -> int:
+        text = f"{row.get('title') or ''} {row.get('chunk_text') or ''}"
+        return sum(term in text for term in terms)
+
+    return sorted(rows, key=focus_hits, reverse=True)
+
+
 class PgVectorHybridRetriever:
     def __init__(
         self,
         model: str | None = None,
         dimensions: int | None = None,
-        candidate_pool: int = 50,
+        candidate_pool: int | None = None,
+        rerank_pool: int | None = None,
     ) -> None:
         load_env()
         self.model = model or os.getenv("EMBEDDING_MODEL", "text-embedding-3-small")
         self.dimensions = dimensions if dimensions is not None else int(os.getenv("EMBEDDING_DIMENSIONS", "1536"))
-        self.candidate_pool = candidate_pool
+        self.candidate_pool = candidate_pool if candidate_pool is not None else int(os.getenv("RAG_RETRIEVAL_CANDIDATE_POOL", "50"))
+        configured_rerank_pool = rerank_pool if rerank_pool is not None else int(os.getenv("RAG_RERANK_CANDIDATE_POOL", "0"))
+        self.rerank_pool = configured_rerank_pool or None
 
     def search_images(self, question: str, top_k: int = 5) -> list[PgSearchResult]:
         title_tokens = image_title_tokens(question)
@@ -480,6 +307,7 @@ class PgVectorHybridRetriever:
                 self.model,
                 self.dimensions,
                 self.candidate_pool,
+                self.rerank_pool,
             )
         )
 
@@ -494,20 +322,15 @@ class PgVectorHybridRetriever:
 
         focus_terms = overview_focus_terms(question)
         generic_overview_query = is_generic_overview_query(question, focus_terms)
-        keyword_question = build_keyword_question(
-            question,
-            focus_terms if generic_overview_query else (),
-            GENERIC_OVERVIEW_CONTEXT_TERMS if generic_overview_query else (),
-        )
         keyword_filter = focus_terms[0] if focus_terms else question
         embedding_question = question  # 임베딩용 벡터 쿼리는 순수 원본 질문 사용하여 희석 방지
         embedding = vector_literal(embed_query(embedding_question, self.model, self.dimensions))
         overview_query = any(term in question for term in OVERVIEW_TERMS)
         use_reranker = os.getenv("RAG_RERANKER_ENABLED", "").lower() in {"1", "true", "yes"}
         use_bm25 = os.getenv("RAG_BM25_ENABLED", "true").lower() in {"1", "true", "yes"}
-        use_trigram = os.getenv("RAG_TRIGRAM_ENABLED", "true").lower() in {"1", "true", "yes"}
-        final_limit = max(top_k * 5, top_k) if generic_overview_query or use_reranker else top_k
-        keyword_candidate_pool = self.candidate_pool
+        final_limit = max(top_k, self.rerank_pool) if use_reranker and self.rerank_pool else (
+            max(top_k * 5, top_k) if generic_overview_query or use_reranker else top_k
+        )
         bm25_candidate_pool = self.candidate_pool
 
         # 불용어(Stopwords)를 걸러낸 정밀한 focus_terms 추출
@@ -522,20 +345,7 @@ class PgVectorHybridRetriever:
             bm25_query = " OR ".join(bm25_query.split())
             bm25_tsquery_function = "websearch_to_tsquery"
 
-        def build_where(relaxed: bool = False) -> tuple[str, list[Any]]:
-            where_parts = ["embedding IS NOT NULL"]
-            params: list[Any] = []
-            if not generic_overview_query or not filtered_focus_terms:
-                return " AND ".join(where_parts), params
-
-            term_sql = "(title ILIKE %s OR chunk_text ILIKE %s)"
-            # 첫 단어 제목 한정 조건 등 과도한 필터를 완화하여 OR 매칭을 통해 Recall 확보
-            where_parts.append("(" + " OR ".join(term_sql for _ in filtered_focus_terms) + ")")
-            for term in filtered_focus_terms:
-                params.extend([f"%{term}%", f"%{term}%"])
-            return " AND ".join(where_parts), params
-
-        where_sql, params = build_where()
+        where_sql = "embedding IS NOT NULL"
 
         focus_match_sql = "FALSE"
         focus_match_params: list[Any] = []
@@ -546,41 +356,9 @@ class PgVectorHybridRetriever:
             for term in filtered_focus_terms:
                 like_term = f"%{term}%"
                 focus_match_params.extend([like_term, like_term])
+        bm25_focus_hit = "1" if generic_overview_query and filtered_focus_terms else "0"
         bm25_cte_sql = ""
         bm25_union_sql = ""
-        trigram_cte_sql = ""
-        trigram_union_sql = ""
-        if use_trigram:
-            trigram_cte_sql = f"""
-        ,
-        keyword_candidates AS (
-            SELECT
-                id,
-                chunk_id,
-                source_type,
-                0.0::float AS vector_score,
-                (
-                    similarity(title, %s) * 1.5
-                    + similarity(chunk_text, %s) * 0.5
-                    + CASE WHEN title ILIKE %s THEN 0.5 ELSE 0.0 END
-                    + CASE WHEN chunk_text ILIKE %s THEN 0.2 ELSE 0.0 END
-                ) AS keyword_score,
-                CASE WHEN %s AND ({focus_match_sql}) THEN 1 ELSE 0 END AS focus_hit
-            FROM rag.document_chunks
-            WHERE {where_sql}
-              AND (title %% %s OR chunk_text %% %s)
-            ORDER BY keyword_score DESC
-            LIMIT %s
-        ),
-        keyword_ranked AS (
-            SELECT *, row_number() OVER (ORDER BY keyword_score DESC) AS channel_rank
-            FROM keyword_candidates
-        )
-            """
-            trigram_union_sql = """
-            UNION ALL
-            SELECT * FROM keyword_ranked
-            """
         if use_bm25:
             bm25_cte_sql = f"""
         ,
@@ -591,7 +369,7 @@ class PgVectorHybridRetriever:
                 source_type,
                 0.0::float AS vector_score,
                 ts_rank_cd(search_vector, {bm25_tsquery_function}('simple', %s)) * 2.0 AS keyword_score,
-                CASE WHEN %s AND ({focus_match_sql}) THEN 1 ELSE 0 END AS focus_hit
+                {bm25_focus_hit} AS focus_hit
             FROM rag.document_chunks
             WHERE {where_sql}
               AND search_vector @@ {bm25_tsquery_function}('simple', %s)
@@ -626,11 +404,9 @@ class PgVectorHybridRetriever:
             SELECT *, row_number() OVER (ORDER BY vector_score DESC) AS channel_rank
             FROM vector_candidates
         )
-        {trigram_cte_sql}
         {bm25_cte_sql},
         merged_candidates AS (
             SELECT * FROM vector_ranked
-            {trigram_union_sql}
             {bm25_union_sql}
         ),
         candidates AS (
@@ -655,7 +431,7 @@ class PgVectorHybridRetriever:
                 (
                     rrf_score
                     + CASE
-                        WHEN %s AND source_type = 'historical_overview' THEN 0.0005
+                        WHEN %s AND source_type = 'aks_encyclopedia' THEN 0.0005
                         WHEN %s AND source_type = 'historical_source' THEN -0.00015
                         ELSE 0.0
                       END
@@ -684,7 +460,7 @@ class PgVectorHybridRetriever:
         ORDER BY ranked.score DESC
         """
 
-        def query_params(where_params: list[Any]) -> list[Any]:
+        def query_params() -> list[Any]:
             return [
                 embedding,
                 generic_overview_query,
@@ -693,26 +469,7 @@ class PgVectorHybridRetriever:
                 self.candidate_pool,
                 *(
                     [
-                        keyword_question,
-                        keyword_question,
-                        f"%{question}%",
-                        f"%{question}%",
-                        generic_overview_query,
-                        *focus_match_params,
-                        *where_params,
-                        keyword_filter,
-                        keyword_filter,
-                        keyword_candidate_pool,
-                    ]
-                    if use_trigram
-                    else []
-                ),
-                *(
-                    [
                         bm25_query,
-                        generic_overview_query,
-                        *focus_match_params,
-                        *where_params,
                         bm25_query,
                         bm25_candidate_pool,
                     ]
@@ -730,18 +487,14 @@ class PgVectorHybridRetriever:
             with conn:
                 with conn.cursor(cursor_factory=RealDictCursor) as cur:
                     cur.execute("SET LOCAL hnsw.ef_search = 120")
-                    cur.execute("SET LOCAL pg_trgm.similarity_threshold = 0.18")
-                    cur.execute(sql, query_params(params))
+                    cur.execute(sql, query_params())
                     rows = cur.fetchall()
-                    if not rows and generic_overview_query and len(focus_terms) > 1:
-                        relaxed_where_sql, relaxed_params = build_where(relaxed=True)
-                        relaxed_sql = sql.replace(f"WHERE {where_sql}", f"WHERE {relaxed_where_sql}")
-                        cur.execute(relaxed_sql, query_params(relaxed_params))
-                        rows = cur.fetchall()
         finally:
             conn.close()
 
-        rows = diversify_rows(rows, top_k) if generic_overview_query else rows
+        if generic_overview_query:
+            diversity_limit = final_limit if use_reranker and self.rerank_pool else top_k
+            rows = diversify_rows(prioritize_focus_rows(rows, focus_terms), diversity_limit)
         results = [
             PgSearchResult(
                 chunk_id=row["chunk_id"],
@@ -757,8 +510,6 @@ class PgVectorHybridRetriever:
             )
             for row in rows
         ]
-        if generic_overview_query:
-            return results[:top_k]
         return rerank_results(question, results, top_k)
 
 
@@ -769,10 +520,11 @@ def cached_pg_search(
     model: str,
     dimensions: int | None,
     candidate_pool: int,
+    rerank_pool: int | None,
 ) -> tuple[PgSearchResult, ...]:
     if not question:
         return ()
-    return tuple(PgVectorHybridRetriever(model, dimensions, candidate_pool)._search_uncached(question, top_k))
+    return tuple(PgVectorHybridRetriever(model, dimensions, candidate_pool, rerank_pool)._search_uncached(question, top_k))
 
 
 def result_to_payload(result: PgSearchResult) -> dict[str, Any]:

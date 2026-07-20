@@ -154,10 +154,12 @@ def build_structured_prompt(
 문자열 값 안에서 중요한 키워드는 별도 Markdown 없이 원문 키워드만 쓰세요.
 한자나 한문 원문은 그대로 쓰지 말고, 현대 한국어 한글 표현으로 풀어 쓰세요.
 없는 내용은 만들지 말고 빈 배열로 처리하세요. 근거 부족 안내 문장은 쓰지 마세요.
-질문 의도에 맞게 2~4개 섹션을 직접 구성하세요.
+질문 의도에 맞게 필요한 수의 섹션을 직접 구성하세요.
 섹션 heading에는 번호와 질문에 맞는 제목을 함께 쓰세요.
 예: 관계 질문은 "1. 관계 개요", "2. 연결 근거", "3. 시험 포인트"처럼 구성하세요.
-예: 비교 질문은 "1. 공통점", "2. 차이점", "3. 시험 포인트"처럼 구성하세요.
+예: 비교 질문은 비교 대상별 설명을 먼저 배치한 뒤 공통점과 차이점을 정리하세요.
+비교 대상이 3개라면 "1. 첫 번째 키워드", "2. 두 번째 키워드", "3. 세 번째 키워드", "4. 공통점", "5. 차이점" 순서로 구성하세요.
+각 비교 대상 섹션에는 그 대상의 핵심 내용만, 공통점과 차이점 섹션에는 대상들을 직접 비교한 내용만 넣으세요.
 예: 개념 질문은 검색 근거에 맞는 주제별 제목으로 구성하세요.
 각 항목의 설명은 반드시 해당 섹션 제목과 직접 관련된 내용만 쓰세요.
 
@@ -214,75 +216,13 @@ def extract_json_object(text: str) -> dict[str, Any]:
     return parsed
 
 
-EXAM_POINT_BLOCK_TERMS = (
-    "단정",
-    "근거",
-    "부족",
-    "확실",
-    "추정",
-    "이름",
-    "부인",
-    "어머니",
-    "아버지",
-    "낳았다",
-    "나온다",
-    "제공된",
-    "검색",
-    "출처",
-)
-EXAM_POINT_ALLOW_TERMS = (
-    "한능검",
-    "시험",
-    "출제",
-    "암기",
-    "시대",
-    "왕",
-    "정책",
-    "제도",
-    "사건",
-    "개혁",
-    "전쟁",
-    "운동",
-    "조약",
-    "문화",
-    "경제",
-    "정치",
-    "사회",
-    "불교",
-    "유교",
-    "토지",
-    "세금",
-    "관청",
-    "업적",
-    "비교",
-    "순서",
-    "흐름",
-)
-
-
-def filter_exam_points(points: list[Any]) -> list[str]:
-    filtered: list[str] = []
-    for point in points:
-        text = re.sub(r"\s+", " ", str(point or "")).strip()
-        if not text:
-            continue
-        if any(term in text for term in EXAM_POINT_BLOCK_TERMS) and not any(
-            term in text for term in EXAM_POINT_ALLOW_TERMS
-        ):
-            continue
-        if text not in filtered:
-            filtered.append(text)
-    return filtered[:5]
-
-
 def normalize_structured_answer(value: dict[str, Any]) -> dict[str, Any]:
-    exam_points = value.get("exam_points") if isinstance(value.get("exam_points"), list) else []
     return {
         "answer_type": str(value.get("answer_type") or "textbook_note"),
         "title": str(value.get("title") or "한국사 개념 정리"),
         "summary": sanitize_answer(str(value.get("summary") or "")),
         "sections": value.get("sections") if isinstance(value.get("sections"), list) else [],
-        "exam_points": filter_exam_points(exam_points),
+        "exam_points": value.get("exam_points") if isinstance(value.get("exam_points"), list) else [],
         "highlights": value.get("highlights") if isinstance(value.get("highlights"), list) else [],
         "source_titles": value.get("source_titles") if isinstance(value.get("source_titles"), list) else [],
     }
@@ -338,23 +278,26 @@ class LLMAnswerGenerator:
     ) -> dict[str, Any]:
         user_prompt = build_structured_prompt(question, sources, follow_up, history)
         if self.config.provider == "openai":
-            raw_answer = self._generate_openai(STRUCTURED_SYSTEM_PROMPT, user_prompt)
+            raw_answer = self._generate_openai(STRUCTURED_SYSTEM_PROMPT, user_prompt, json_mode=True)
         elif self.config.provider == "ollama":
             raw_answer = self._generate_ollama(STRUCTURED_SYSTEM_PROMPT, user_prompt)
         else:
             raise ValueError(f"지원하지 않는 provider입니다: {self.config.provider}")
         return normalize_structured_answer(extract_json_object(raw_answer))
 
-    def _generate_openai(self, system_prompt: str, user_prompt: str) -> str:
+    def _generate_openai(self, system_prompt: str, user_prompt: str, json_mode: bool = False) -> str:
         client = OpenAI()
-        response = client.chat.completions.create(
-            model=self.config.model,
-            temperature=self.config.temperature,
-            messages=[
+        kwargs: dict[str, Any] = {
+            "model": self.config.model,
+            "temperature": self.config.temperature,
+            "messages": [
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt},
             ],
-        )
+        }
+        if json_mode:
+            kwargs["response_format"] = {"type": "json_object"}
+        response = client.chat.completions.create(**kwargs)
         return (response.choices[0].message.content or "").strip()
 
     def _generate_ollama(self, system_prompt: str, user_prompt: str) -> str:
