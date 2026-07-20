@@ -187,8 +187,9 @@
           mode,
           intent,
           answer_format: answerFormat,
-          top_k: 20,
+          top_k: intent === "question" ? 8 : 20,
           conversation_history: conversationHistory,
+          problem_session_id: options.problemSessionId || null,
         };
         if (intent === "concept") {
           const data = await streamConceptAnswer(payload, loading);
@@ -562,7 +563,7 @@
               submitChatQuestion(
                 buildProblemCustomQuestion(problem, customQuestion),
                 customQuestion,
-                { intent: "question", historyContext: customQuestion },
+                { intent: "question", historyContext: customQuestion, problemSessionId: problem.session_id },
               );
               inlineInput.value = "";
             };
@@ -581,7 +582,7 @@
           submitChatQuestion(
             buildProblemContext(problem, fixedProblemSolvePrompt()),
             "문제 풀이보기",
-            { intent: "question", historyContext: "문제 풀이보기" },
+            { intent: "question", historyContext: "문제 풀이보기", problemSessionId: problem.session_id },
           );
         });
       });

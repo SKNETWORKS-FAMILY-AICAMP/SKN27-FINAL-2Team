@@ -36,6 +36,7 @@ def measure(question: str, intent: str, answer_format: str, top_k: int) -> dict[
     timings: dict[str, Any] = {"question": question, "intent": intent}
     total_start = time.perf_counter()
     original_embed_query = retriever_module.embed_query
+    original_rerank_results = retriever_module.rerank_results
 
     def timed_embed_query(*args, **kwargs):
         start = time.perf_counter()
@@ -45,6 +46,15 @@ def measure(question: str, intent: str, answer_format: str, top_k: int) -> dict[
             timings["embedding_sec"] = elapsed(start)
 
     retriever_module.embed_query = timed_embed_query
+
+    def timed_rerank_results(*args, **kwargs):
+        start = time.perf_counter()
+        try:
+            return original_rerank_results(*args, **kwargs)
+        finally:
+            timings["rerank_sec"] = elapsed(start)
+
+    retriever_module.rerank_results = timed_rerank_results
     try:
         start = time.perf_counter()
         intent = normalize_intent(intent, answer_format)
@@ -62,7 +72,8 @@ def measure(question: str, intent: str, answer_format: str, top_k: int) -> dict[
         results = PgVectorHybridRetriever().search(search_question, top_k=top_k)
         timings["pgvector_search_sec"] = elapsed(start)
         timings.setdefault("embedding_sec", 0.0)
-        timings["db_and_rerank_sec"] = round(timings["pgvector_search_sec"] - timings["embedding_sec"], 3)
+        timings.setdefault("rerank_sec", 0.0)
+        timings["retrieval_sec"] = max(0.0, round(timings["pgvector_search_sec"] - timings["embedding_sec"] - timings["rerank_sec"], 3))
 
         start = time.perf_counter()
         sources = [result_to_payload(result) for result in results]
@@ -97,6 +108,7 @@ def measure(question: str, intent: str, answer_format: str, top_k: int) -> dict[
         return timings
     finally:
         retriever_module.embed_query = original_embed_query
+        retriever_module.rerank_results = original_rerank_results
 
 
 def main() -> None:
@@ -104,7 +116,7 @@ def main() -> None:
     parser.add_argument("question", nargs="?", default="세종대왕 업적 알려줘")
     parser.add_argument("--intent", default="concept", choices=["concept", "question", "image"])
     parser.add_argument("--answer-format", default="structured", choices=["structured", "text"])
-    parser.add_argument("--top-k", type=int, default=5)
+    parser.add_argument("--top-k", type=int, default=20)
     args = parser.parse_args()
 
     result = measure(args.question, args.intent, args.answer_format, args.top_k)

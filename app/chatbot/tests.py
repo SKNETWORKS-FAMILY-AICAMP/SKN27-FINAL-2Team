@@ -5,7 +5,9 @@ from unittest.mock import patch
 from django.test import RequestFactory, TestCase
 from django.urls import reverse
 
-from .views import rag_chat_api, rag_chat_stream_api
+from .rag.llm_answer_generator import LLMAnswerGenerator, normalize_structured_answer, sanitize_answer
+from .rag_service import build_problem_option_queries
+from .views import explanation_level_for_score, rag_chat_api, rag_chat_stream_api
 
 
 class ChatbotApiTests(TestCase):
@@ -20,6 +22,35 @@ class ChatbotApiTests(TestCase):
     def test_top_k_rejects_invalid_value(self):
         response = rag_chat_api(self.request({"question": "세종대왕", "top_k": "abc"}))
         self.assertEqual(response.status_code, 400)
+
+    def test_explanation_level_uses_diagnosis_total_score(self):
+        self.assertEqual(explanation_level_for_score(59), "foundation")
+        self.assertEqual(explanation_level_for_score(60), "core")
+
+    def test_sanitize_preserves_positive_sufficient_evidence(self):
+        self.assertEqual(sanitize_answer("유물은 충분한 근거를 확인할 수 있다."), "유물은 충분한 근거를 확인할 수 있다.")
+        self.assertEqual(sanitize_answer("판단할 충분한 근거가 없다."), "")
+
+    def test_structured_answer_sanitizes_items_and_stream_keeps_final_event(self):
+        answer = normalize_structured_answer({"sections": [{"heading": "근거 부족", "items": [{"content": "설명할 만큼의 근거가 없다."}]}], "highlights": ["정상"]})
+        self.assertEqual(answer["sections"][0]["heading"], "")
+        self.assertEqual(answer["sections"][0]["items"][0]["content"], "")
+        self.assertEqual(list(LLMAnswerGenerator._parse_stream_events(iter(['{"type":"done"}']))), [{"type": "done"}])
+
+    def test_problem_option_queries_keep_context_for_each_choice(self):
+        queries = build_problem_option_queries("[지문] 수가 고구려를 침공했다.\n[문제] 이후 사실은?\n[보기]\n1. 을지문덕\n2. 연개소문\n[정답] 2번\n[분류] 고대 / 정치")
+        self.assertEqual(len(queries), 2)
+        self.assertTrue(all("수가 고구려를 침공했다" in query and "이후 사실은" in query for query in queries))
+        self.assertTrue(any("연개소문" in query for query in queries))
+
+    @patch("chatbot.views.save_chat_turn")
+    @patch("chatbot.views.personalized_explanation_level", return_value="foundation")
+    @patch("chatbot.views.build_history_rag_answer", return_value={"answer": "정상"})
+    def test_problem_question_receives_personalized_instruction(self, build_answer, _instruction, _save_chat_turn):
+        response = rag_chat_api(self.request({"question": "문제 풀이", "intent": "question", "problem_session_id": 12}))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(build_answer.call_args.kwargs["explanation_level"], "foundation")
+        _instruction.assert_called_once_with(self.request({}).user, 12)
 
     @patch("chatbot.views.save_chat_turn")
     @patch("chatbot.views.build_history_rag_answer", return_value={"answer": "정상"})

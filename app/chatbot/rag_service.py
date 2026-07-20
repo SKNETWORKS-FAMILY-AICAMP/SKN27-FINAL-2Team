@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 from collections.abc import Iterator
+from concurrent.futures import ThreadPoolExecutor
 from typing import Any
 
 from .graph_service import build_graph_context
@@ -187,6 +188,37 @@ def is_problem_context_question(question: str) -> bool:
     return bool(re.search(r"\d+\s*번", question)) or any(term in question for term in PROBLEM_CONTEXT_TERMS)
 
 
+def _problem_context_value(question: str, label: str) -> str:
+    match = re.search(rf"\[{re.escape(label)}\]\s*(.*?)(?=\n\[[^\]]+\]|\Z)", question, re.DOTALL)
+    return match.group(1).strip() if match else ""
+
+
+def build_problem_option_queries(question: str) -> list[str]:
+    problem = _problem_context_value(question, "문제")
+    passage = _problem_context_value(question, "지문")
+    category = _problem_context_value(question, "분류")
+    options = _problem_context_value(question, "보기")
+    context = re.sub(r"\s+", " ", " ".join(value for value in (passage, problem, category) if value)).strip()
+    if not context or not options:
+        return []
+    choices = re.findall(r"(?m)^\s*\d+\.\s*(.+)$", options)
+    return [f"{context} {choice}".strip() for choice in choices]
+
+
+def search_problem_option_sources(retriever: PgVectorHybridRetriever, question: str) -> list[Any]:
+    queries = build_problem_option_queries(question)
+    if not queries:
+        return []
+    with ThreadPoolExecutor(max_workers=min(len(queries), 5)) as executor:
+        grouped_results = list(executor.map(lambda query: retriever.search(query, top_k=2), queries))
+    deduplicated = {}
+    for result in (item for group in grouped_results for item in group):
+        existing = deduplicated.get(result.chunk_id)
+        if existing is None or result.score > existing.score:
+            deduplicated[result.chunk_id] = result
+    return sorted(deduplicated.values(), key=lambda result: result.score, reverse=True)
+
+
 def normalize_history(history: list[dict[str, Any]] | None, max_turns: int = 5) -> list[dict[str, str]]:
     if not history:
         return []
@@ -315,7 +347,9 @@ def stream_concept_rag_answer(
     graph_context = build_graph_context(search_seed, limit=8, max_hop=graph_hop_for_question(search_seed)) if should_use_graph_context(search_seed, "concept") else None
     search_question = build_enriched_question(search_seed, graph_context) if graph_context else search_seed
     retriever = PgVectorHybridRetriever()
-    results = retriever.search(search_question, top_k=max(top_k, 8 if graph_context and graph_context.get("keywords") else top_k))
+    results = search_problem_option_sources(retriever, search_question) if intent == "question" else []
+    if not results:
+        results = retriever.search(search_question, top_k=max(top_k, 8 if graph_context and graph_context.get("keywords") else top_k))
     sources = [result_to_payload(result) for result in results]
     sources.extend(search_timeline_sources(search_question))
     retrieval_debug = build_retrieval_debug(search_seed, search_question, sources, graph_context)
@@ -361,6 +395,7 @@ def build_history_rag_answer(
     follow_up: bool = False,
     top_k: int = 20,
     history: list[dict[str, Any]] | None = None,
+    explanation_level: str = "",
 ) -> dict[str, Any]:
     intent = normalize_intent(intent, answer_format)
     conversation_history = normalize_history(history)
@@ -439,6 +474,7 @@ def build_history_rag_answer(
             follow_up=follow_up or mode == "question" or is_contextual_follow_up,
             history=conversation_history,
             include_source_summary=not short_fact and intent not in {"question", "image"},
+            explanation_level=explanation_level,
         )
         if is_insufficient_text_answer(answer):
             result = not_found_answer(question, intent, graph_context)

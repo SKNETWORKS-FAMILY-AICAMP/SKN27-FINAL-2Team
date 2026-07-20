@@ -1,0 +1,9 @@
+﻿평가 항목,지표 정의,측정 결과,통과 기준,통과 여부,검증 방법
+연결성(Graph),노드 간 탐색 성공률,100.0%,95% 이상,PASS,Cypher Query 성능 테스트 및 접속 조사
+검색 속도,LLM 생성 제외 쿼리 평균 소요 시간,23.61s,2.0s 이내,FAIL,pgvector/Graph 검색 지연시간 측정
+LLM 답변 생성 속도,검색 이후 답변 생성 평균 소요 시간,4.05s,5.0s 이내,PASS,전체 응답 시간 - 검색 시간
+전체 응답 속도,LLM 생성 포함 평균 응답 시간,27.66s,7.0s 이내,FAIL,서비스 RAG 전체 호출 지연시간 측정
+RAGAS Context Precision,검색 문맥 중 질문과 관련 있는 문맥 비율,0.80,0.80 이상,FAIL,RAGAS Framework (Context Precision)
+RAGAS Context Recall,정답에 필요한 근거를 검색 문맥이 포함하는지 평가,0.86,0.80 이상,PASS,RAGAS Framework (Context Recall)
+RAGAS Faithfulness,답변이 검색 근거에 충실한지 평가,0.89,0.80 이상,PASS,RAGAS Framework (Faithfulness)
+RAGAS Answer Relevance,답변이 질문 의도에 적합한지 평가,0.80,0.80 이상,PASS,RAGAS Framework (Answer Relevance)

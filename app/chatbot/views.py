@@ -14,7 +14,7 @@ from django.db import transaction
 from django.views.decorators.http import require_GET
 from django.views.decorators.http import require_POST
 
-from question.models import QuestionOptions, SolveRecords
+from question.models import QuestionOptions, SolveRecords, SolveSessions
 from user.views import build_session_display_map
 
 from .models import ChatMessages, ChatSessions
@@ -22,6 +22,22 @@ from .rag_service import build_history_rag_answer, stream_concept_rag_answer
 
 
 logger = logging.getLogger(__name__)
+
+
+def explanation_level_for_score(total_score: int | None) -> str:
+    if total_score is None:
+        return ""
+    if total_score < 60:
+        return "foundation"
+    return "core"
+
+
+def personalized_explanation_level(user, problem_session_id: int | None = None) -> str:
+    sessions = SolveSessions.objects.filter(user=user, session_type="diagnostic", status="completed")
+    total_score = sessions.filter(session_id=problem_session_id).values_list("total_score", flat=True).first() if problem_session_id else None
+    if total_score is None:
+        total_score = sessions.order_by("-session_id").values_list("total_score", flat=True).first()
+    return explanation_level_for_score(total_score)
 
 
 @login_required
@@ -96,6 +112,11 @@ def rag_chat_api(request):
     conversation_history = payload.get("conversation_history")
     if not isinstance(conversation_history, list):
         conversation_history = []
+    try:
+        problem_session_id = int(payload.get("problem_session_id"))
+    except (TypeError, ValueError):
+        problem_session_id = None
+    explanation_level = personalized_explanation_level(request.user, problem_session_id) if intent == "question" else ""
 
     try:
         result = build_history_rag_answer(
@@ -106,6 +127,7 @@ def rag_chat_api(request):
             follow_up=follow_up,
             top_k=top_k,
             history=conversation_history,
+            explanation_level=explanation_level,
         )
     except Exception:
         logger.exception("RAG 답변 생성 실패")
