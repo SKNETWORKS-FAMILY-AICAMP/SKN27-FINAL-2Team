@@ -6,20 +6,26 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).resolve().parent / "terms"))
 
 from get_history_terms import count_terms
+from match_names import match_names, print_match_report
 from prep_thesaurus import (
     calculate_coverage,
     find_homonym_candidates,
+    load_encyclopedia_terms,
     prep_thesaurus,
     print_coverage_report,
     print_homonym_report,
     save_thesaurus_json,
 )
+from scan_definitions import print_scan_report, scan_definitions
 
 
 def run_preprocessing_pipeline(
     exam_json_path: str,
     thesaurus_csv_path: str,
     output_dir: str,
+    encyclopedia_jsonl_path: str = "",
+    itkc_people_csv_path: str = "",
+    itkc_events_csv_path: str = "",
     batch_size: int = 20,
     limit: int = 0,
     max_retries: int = 2,
@@ -32,7 +38,9 @@ def run_preprocessing_pipeline(
     coverage_json_output: str = "",
 ) -> dict[str, object]:
     """
-    기출문제 전처리부터 용어 추출, 시소러스 변환, 커버리지 비교까지 실행한다.
+    기출문제 전처리부터 용어 추출, 시소러스 변환, 커버리지 비교,
+    백과사전·ITKC 이름 매칭, definition 스캔까지 실행한다.
+    이름 매칭·definition 스캔은 백과사전과 ITKC 경로가 모두 있을 때만 수행한다.
     """
     exam_path = Path(exam_json_path)
     thesaurus_path = Path(thesaurus_csv_path)
@@ -42,6 +50,18 @@ def run_preprocessing_pipeline(
         raise FileNotFoundError(f"기출문제 JSON을 찾을 수 없습니다: {exam_path}")
     if not thesaurus_path.is_file():
         raise FileNotFoundError(f"시소러스 CSV를 찾을 수 없습니다: {thesaurus_path}")
+    if encyclopedia_jsonl_path and not Path(encyclopedia_jsonl_path).is_file():
+        raise FileNotFoundError(
+            f"백과사전 JSONL을 찾을 수 없습니다: {encyclopedia_jsonl_path}"
+        )
+    if itkc_people_csv_path and not Path(itkc_people_csv_path).is_file():
+        raise FileNotFoundError(
+            f"ITKC 인물 CSV를 찾을 수 없습니다: {itkc_people_csv_path}"
+        )
+    if itkc_events_csv_path and not Path(itkc_events_csv_path).is_file():
+        raise FileNotFoundError(
+            f"ITKC 사건 CSV를 찾을 수 없습니다: {itkc_events_csv_path}"
+        )
     if batch_size <= 0:
         raise ValueError("LLM 호출당 문항 수는 1 이상이어야 합니다.")
     if limit < 0:
@@ -76,16 +96,21 @@ def run_preprocessing_pipeline(
     if coverage_json_output:
         coverage_report_path = Path(coverage_json_output)
 
+    name_matches_path = json_directory / "term_name_matches.json"
+    definition_scan_path = json_directory / "definition_scan_matches.json"
+
     for destination in [
         checkpoint_path,
         extracted_json_path,
         extracted_csv_path,
         thesaurus_json_path,
         coverage_report_path,
+        name_matches_path,
+        definition_scan_path,
     ]:
         destination.parent.mkdir(parents=True, exist_ok=True)
 
-    print("[1/3] 기출문제 전처리 및 역사 용어 추출")
+    print("[1/5] 기출문제 전처리 및 역사 용어 추출")
     extracted_term_df = count_terms(
         str(exam_path),
         batch_size=batch_size,
@@ -102,7 +127,7 @@ def run_preprocessing_pipeline(
     )
     print(f"기출문제 용어 집계 CSV 저장 완료: {extracted_csv_path}")
 
-    print("[2/3] 한국 역사 용어 시소러스 변환")
+    print("[2/5] 한국 역사 용어 시소러스 변환")
     thesaurus_df = prep_thesaurus(str(thesaurus_path))
     homonym_candidates = find_homonym_candidates(thesaurus_df)
     print_homonym_report(homonym_candidates, display_limit)
@@ -112,11 +137,16 @@ def run_preprocessing_pipeline(
         f"({len(thesaurus_df)}개 용어)"
     )
 
-    print("[3/3] 전체 역사 용어 커버리지 비교")
+    print("[3/5] 전체 역사 용어 커버리지 비교")
+    encyclopedia_reference: dict[str, str] = {}
+    if encyclopedia_jsonl_path:
+        encyclopedia_reference = load_encyclopedia_terms(encyclopedia_jsonl_path)
+        print(f"백과사전 표제어·이칭 로드: {len(encyclopedia_reference)}개 키")
     coverage_report = calculate_coverage(
         extracted_term_df,
         thesaurus_df,
         threshold=threshold,
+        encyclopedia_terms=encyclopedia_reference,
     )
     print_coverage_report(coverage_report, display_limit)
 
@@ -128,6 +158,35 @@ def run_preprocessing_pipeline(
             indent=4,
         )
     print(f"커버리지 보고서 저장 완료: {coverage_report_path}")
+
+    can_match_names = bool(
+        encyclopedia_jsonl_path and itkc_people_csv_path and itkc_events_csv_path
+    )
+    if not can_match_names:
+        print("[4/5][5/5] 건너뜀: 백과사전 JSONL과 ITKC CSV 경로가 모두 필요합니다.")
+        return coverage_report
+
+    print("[4/5] 백과사전·ITKC 이름 매칭")
+    name_match_results = match_names(
+        terms_csv=str(extracted_csv_path),
+        encyclopedia_jsonl=encyclopedia_jsonl_path,
+        itkc_people_csv=itkc_people_csv_path,
+        itkc_events_csv=itkc_events_csv_path,
+    )
+    print_match_report(name_match_results)
+    with name_matches_path.open("w", encoding="utf-8") as output_file:
+        dump(name_match_results, output_file, ensure_ascii=False, indent=2)
+    print(f"이름 매칭 결과 저장 완료: {name_matches_path}")
+
+    print("[5/5] 미매칭 용어 definition 스캔")
+    definition_scan_results = scan_definitions(
+        match_json=str(name_matches_path),
+        encyclopedia_jsonl=encyclopedia_jsonl_path,
+    )
+    print_scan_report(definition_scan_results)
+    with definition_scan_path.open("w", encoding="utf-8") as output_file:
+        dump(definition_scan_results, output_file, ensure_ascii=False, indent=2)
+    print(f"definition 스캔 결과 저장 완료: {definition_scan_path}")
     return coverage_report
 
 
@@ -160,6 +219,21 @@ if __name__ == "__main__":
         nargs="?",
         default="",
         help="파이프라인 결과 저장 폴더",
+    )
+    parser.add_argument(
+        "--encyclopedia-jsonl",
+        default="",
+        help="백과사전 JSONL 경로 (미커버 용어를 표제어·이칭으로 2차 매칭)",
+    )
+    parser.add_argument(
+        "--itkc-people",
+        default="",
+        help="ITKC 인물 CSV 경로 (이름 매칭 단계에서 사용)",
+    )
+    parser.add_argument(
+        "--itkc-events",
+        default="",
+        help="ITKC 사건 CSV 경로 (이름 매칭 단계에서 사용)",
     )
     parser.add_argument(
         "--batch-size",
@@ -240,10 +314,34 @@ if __name__ == "__main__":
     if not output_dir:
         output_dir = str(Path(__file__).resolve().parent / "output")
 
+    encyclopedia_jsonl = cli_args.encyclopedia_jsonl
+    if not encyclopedia_jsonl:
+        default_encyclopedia = (
+            project_root / "etl" / "raw_data" / "한국민족문화대백과사전" / "articles_detail.jsonl"
+        )
+        if default_encyclopedia.is_file():
+            encyclopedia_jsonl = str(default_encyclopedia)
+
+    itkc_directory = project_root / "etl" / "raw_data" / "한국고전종합DB_관계망"
+    itkc_people_csv = cli_args.itkc_people
+    if not itkc_people_csv:
+        default_people = itkc_directory / "itkc_people.csv"
+        if default_people.is_file():
+            itkc_people_csv = str(default_people)
+
+    itkc_events_csv = cli_args.itkc_events
+    if not itkc_events_csv:
+        default_events = itkc_directory / "itkc_events.csv"
+        if default_events.is_file():
+            itkc_events_csv = str(default_events)
+
     run_preprocessing_pipeline(
         exam_json_path=exam_json_path,
         thesaurus_csv_path=thesaurus_csv_path,
         output_dir=output_dir,
+        encyclopedia_jsonl_path=encyclopedia_jsonl,
+        itkc_people_csv_path=itkc_people_csv,
+        itkc_events_csv_path=itkc_events_csv,
         batch_size=cli_args.batch_size,
         limit=cli_args.limit,
         max_retries=cli_args.retries,
