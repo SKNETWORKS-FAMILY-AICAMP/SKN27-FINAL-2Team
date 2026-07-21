@@ -8,6 +8,21 @@ from statistics import mean
 from typing import Any
 
 
+ERROR_TYPE_KO = {
+    "ANSWER_LENGTH_BIAS": "정답 길이 편향",
+    "ANSWER_IN_PASSAGE": "정답 지문/질문 포함",
+    "NO_ANSWER_CANDIDATE": "정답 후보 없음",
+    "MULTIPLE_ANSWER_CANDIDATES": "복수 정답 후보",
+    "ANSWER_CANDIDATE_COUNT_ERROR": "정답 후보 개수 오류",
+    "ANSWER_KEY_MISMATCH": "표시 정답 불일치",
+    "ANSWER_FORMAT_ERROR": "정답 형식 오류",
+}
+
+
+def issue_label(issue_type: str) -> str:
+    return f"{issue_type} ({ERROR_TYPE_KO.get(issue_type, '한글 설명 없음')})"
+
+
 def normalize_text(text: str) -> str:
     return re.sub(r"\s+", "", str(text or "")).lower()
 
@@ -51,6 +66,7 @@ def check_answer_length_bias(
 
     return {
         "type": "ANSWER_LENGTH_BIAS",
+        "type_ko": ERROR_TYPE_KO["ANSWER_LENGTH_BIAS"],
         "message": "정답 선지가 다른 선지에 비해 유독 길거나 짧음",
         "answer_length": answer_len,
         "other_avg_length": round(avg_other_len, 2),
@@ -82,6 +98,7 @@ def check_answer_in_passage(row: dict[str, Any]) -> dict[str, Any] | None:
 
     return {
         "type": "ANSWER_IN_PASSAGE",
+        "type_ko": ERROR_TYPE_KO["ANSWER_IN_PASSAGE"],
         "message": "정답 선지 원문이 지문 또는 질문에 포함됨",
         "found_in": found_in,
     }
@@ -102,14 +119,18 @@ def check_answer_candidate_count(
         if float(prob) >= threshold
     ]
 
-    if len(candidate_numbers) == 1:
+    candidate_count = len(candidate_numbers)
+    if candidate_count == 1:
         return None
 
+    issue_type = "NO_ANSWER_CANDIDATE" if candidate_count == 0 else "MULTIPLE_ANSWER_CANDIDATES"
+
     return {
-        "type": "ANSWER_CANDIDATE_COUNT_ERROR",
+        "type": issue_type,
+        "type_ko": ERROR_TYPE_KO[issue_type],
         "message": "정답 후보가 0개이거나 2개 이상임",
         "threshold": threshold,
-        "candidate_count": len(candidate_numbers),
+        "candidate_count": candidate_count,
         "candidate_numbers": candidate_numbers,
         "answer_probs": probs,
     }
@@ -140,6 +161,7 @@ def check_answer_key_mismatch(
 
     return {
         "type": "ANSWER_KEY_MISMATCH",
+        "type_ko": ERROR_TYPE_KO["ANSWER_KEY_MISMATCH"],
         "message": "정답 후보는 1개지만 표시 정답과 다름",
         "given_answer": given_answer,
         "predicted_answer": predicted_answer,
@@ -162,6 +184,7 @@ def review_question(row: dict[str, Any], *, threshold: float = 0.5) -> dict[str,
     return {
         "id": row.get("id") or row.get("question_id"),
         "label": 0 if issues else 1,
+        "issue_labels": [issue_label(issue["type"]) for issue in issues],
         "issues": issues,
     }
 
