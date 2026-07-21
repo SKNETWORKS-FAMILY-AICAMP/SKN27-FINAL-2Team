@@ -6,6 +6,7 @@ from datetime import date
 from typing import Mapping, Sequence
 
 from analytics.service.study_plan.config import get_study_plan_config as get_versioned_config
+from analytics.service.study_plan.dto import is_completion_block, parse_plan_items
 from analytics.service.study_plan.service import (
     InitialStudyPlanConfigUnavailable,
     complete_study_plan_block_by_id as complete_block_by_id,
@@ -56,6 +57,38 @@ def ensure_today_study_plan(
     if study_plan is None:
         return []
     return [study_plan]
+
+
+def calculate_record_based_plan_progress(
+    user_id: int,
+    study_plan: object,
+) -> dict[str, object]:
+    """Return the legacy chart contract from the versioned plan projection."""
+    plan_items = parse_plan_items(study_plan.study_plan_items)
+    completion_rate = float(study_plan.completion_rate or 0.0)
+    active_plan = get_active_study_plan_dto(user_id)
+    if active_plan and active_plan.get("studyPlanId") == study_plan.studyplan_id:
+        plan_items = active_plan.get("plans", [])
+        completion_rate = float(active_plan.get("completionRate") or 0.0)
+
+    target_count = sum(
+        1
+        for day_plan in plan_items
+        for block in day_plan.get("blocks", [])
+        if is_completion_block(block)
+    )
+    achieved_count = round(target_count * completion_rate)
+    return {
+        "summary": {
+            "targetCount": target_count,
+            "achievedCount": achieved_count,
+            "remainingCount": max(target_count - achieved_count, 0),
+            "completionRate": completion_rate,
+            "completionPercent": round(completion_rate * 100),
+            "periodLabel": "",
+        },
+        "block_progress": {},
+    }
 
 
 def complete_study_plan_block_by_id(
