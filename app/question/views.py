@@ -17,6 +17,7 @@ from analytics.service.studyplan import (
     get_study_plan_info,
     is_weekly_review_plan_block,
 )
+from user.models import UserAccounts
 from .models import QuestionOptions, Questions, SolveRecords, SolveSessions
 from .serializers import (
     FilterOptionsResponse,
@@ -139,7 +140,7 @@ def _base_question_queryset():
 
 
 def _delete_other_in_progress_sessions(user_id, current_session_id=None):
-    old_session_queryset = SolveSessions.objects.filter(
+    old_session_queryset = SolveSessions.objects.select_for_update().filter(
         user_id=user_id,
         session_type=PRACTICE_SESSION_TYPE,
         status=IN_PROGRESS_SESSION_STATUS,
@@ -155,6 +156,11 @@ def _delete_other_in_progress_sessions(user_id, current_session_id=None):
 
     SolveRecords.objects.filter(session_id__in=old_session_ids).delete()
     SolveSessions.objects.filter(session_id__in=old_session_ids).delete()
+
+
+def _lock_user_for_practice_start(user_id):
+    # 같은 사용자의 문제풀이 시작 요청을 사용자 행 기준으로 직렬화한다.
+    return UserAccounts.objects.select_for_update().get(user_id=user_id)
 
 
 # 특정 컬럼의 고유 값을 목록으로 반환한다.
@@ -778,6 +784,7 @@ def question_start(request):
     session = None
     if user_id is not None:
         with transaction.atomic():
+            _lock_user_for_practice_start(user_id)
             _delete_other_in_progress_sessions(user_id)
             session = SolveSessions.objects.create(
                 user_id=user_id,
@@ -1363,6 +1370,7 @@ def wrong_note_start(request):
     questions = list(Questions.objects.filter(question_id__in=selected_ids))
     questions.sort(key=lambda question: selected_ids.index(question.question_id))
     with transaction.atomic():
+        _lock_user_for_practice_start(user_id)
         _delete_other_in_progress_sessions(user_id)
         session = SolveSessions.objects.create(
             user_id=user_id,
