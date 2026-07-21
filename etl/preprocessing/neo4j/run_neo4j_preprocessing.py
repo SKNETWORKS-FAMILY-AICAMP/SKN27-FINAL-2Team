@@ -1,631 +1,501 @@
-"""
-Neo4j CSV 전처리 파이프라인을 한 번에 실행한다.
-
-모든 단계는 후보 import 디렉터리에서 실행하며, 검증을 통과한 결과만
-최종 import 디렉터리로 안전하게 승격한다.
-"""
-
-import argparse
-import csv
-import json
-import os
-import re
-import shutil
-import subprocess
 import sys
-from contextlib import contextmanager
-from datetime import datetime, timezone
+from argparse import ArgumentParser
+from json import dump
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent / "scripts"))
+sys.path.append(str(Path(__file__).resolve().parent / "terms"))
 
-from neo4j_common import resolve_default_import_dir, resolve_project_root
-
-
-def parse_args():
-    parser = argparse.ArgumentParser(
-        description="Neo4j 전처리 CSV 생성 스크립트를 순서대로 실행한다."
-    )
-    parser.add_argument(
-        "--python-path",
-        type=Path,
-        default=None,
-        help="실행에 사용할 Python 경로. 지정하지 않으면 현재 Python을 사용한다.",
-    )
-    parser.add_argument(
-        "--promote-existing",
-        action="store_true",
-        help=(
-            "완료 marker가 있는 기존 후보 import를 재생성 없이 검증하고 "
-            "최종 import로 승격한다. bind mount 사용자는 컨테이너를 먼저 중지해야 한다."
-        ),
-    )
-
-    return parser.parse_args()
-
-
-def build_import_output_dirs(import_dir):
-    return {
-        "nodes_dir": import_dir / "nodes",
-        "relations_dir": import_dir / "relations",
-    }
+from common import load_pipeline_policy
+from entity_resolution.build_resolution_package import (
+    build_resolution_tables,
+    summarize_resolution_tables,
+    write_resolution_package,
+)
+from entity_resolution.semantic_review import (
+    build_term_review_tasks,
+    write_jsonl,
+)
+from get_history_terms import count_terms
+from match_names import match_names, print_match_report
+from prep_thesaurus import (
+    calculate_coverage,
+    find_homonym_candidates,
+    load_encyclopedia_terms,
+    prep_thesaurus,
+    print_coverage_report,
+    print_homonym_report,
+    save_thesaurus_json,
+)
+from prep_json import prep_json
+from scan_definitions import print_scan_report, scan_definitions
 
 
-def build_generated_csv_dirs(script_dir, import_dir):
-    import_output_dirs = build_import_output_dirs(import_dir)
+def resolve_pipeline_paths(
+    exam_json_path: str = "",
+    thesaurus_csv_path: str = "",
+    output_dir: str = "",
+    encyclopedia_jsonl_path: str = "",
+    itkc_people_csv_path: str = "",
+    itkc_events_csv_path: str = "",
+) -> dict[str, str]:
+    """명시된 경로를 우선하고 비어 있는 입력만 프로젝트 기본 경로로 채운다."""
+    project_root = Path(__file__).resolve().parents[3]
+    neo4j_root = Path(__file__).resolve().parent
+    resolved_exam_path = exam_json_path
+    if not resolved_exam_path:
+        resolved_exam_path = str(project_root / "ai" / "ml" / "ML_han_v1.json")
 
-    return [
-        script_dir / "normalized",
-        script_dir / "dictionary",
-        script_dir / "staging",
-        script_dir / "mapping",
-        import_output_dirs["nodes_dir"],
-        import_output_dirs["relations_dir"],
-    ]
-
-
-def build_preserved_staging_csv_names():
-    return {
-        "term_era_candidate.csv",
-    }
-
-
-def should_preserve_generated_csv(csv_path, generated_csv_dir, script_dir):
-    staging_dir = (script_dir / "staging").resolve()
-
-    if generated_csv_dir.resolve() != staging_dir:
-        return False
-
-    return csv_path.name in build_preserved_staging_csv_names()
-
-
-def resolve_project_path(target_path, project_root):
-    resolved_path = target_path.resolve()
-    resolved_root = project_root.resolve()
-
-    try:
-        resolved_path.relative_to(resolved_root)
-    except ValueError as exc:
-        raise ValueError(
-            f"CSV cleanup target is outside project root: {resolved_path}"
-        ) from exc
-
-    return resolved_path
-
-
-def remove_generated_directory(directory_path, project_root):
-    resolved_path = resolve_project_path(directory_path, project_root)
-
-    if resolved_path.exists():
-        shutil.rmtree(resolved_path)
-
-
-@contextmanager
-def hold_runner_lock(lock_path):
-    lock_path.parent.mkdir(parents=True, exist_ok=True)
-    lock_handle = lock_path.open("a+b")
-    lock_module = None
-    lock_kind = None
-
-    if lock_path.stat().st_size == 0:
-        lock_handle.write(b"0")
-        lock_handle.flush()
-
-    lock_handle.seek(0)
-
-    try:
-        import msvcrt
-
-        lock_module = msvcrt
-        lock_kind = "msvcrt"
-        lock_module.locking(lock_handle.fileno(), lock_module.LK_NBLCK, 1)
-    except ImportError:
-        try:
-            import fcntl
-
-            lock_module = fcntl
-            lock_kind = "fcntl"
-            lock_module.flock(
-                lock_handle.fileno(),
-                lock_module.LOCK_EX | lock_module.LOCK_NB,
-            )
-        except ImportError as exc:
-            lock_handle.close()
-            raise RuntimeError(
-                "No supported file-locking module is available on this platform."
-            ) from exc
-        except OSError as exc:
-            lock_handle.close()
-            raise RuntimeError(
-                "Another Neo4j preprocessing runner is already active."
-            ) from exc
-    except OSError as exc:
-        lock_handle.close()
-        raise RuntimeError(
-            "다른 Neo4j 전처리 runner가 실행 중입니다. 완료 후 다시 실행하세요."
-        ) from exc
-
-    try:
-        yield
-    finally:
-        if lock_kind == "msvcrt":
-            lock_handle.seek(0)
-            lock_module.locking(lock_handle.fileno(), lock_module.LK_UNLCK, 1)
-        elif lock_kind == "fcntl":
-            lock_module.flock(lock_handle.fileno(), lock_module.LOCK_UN)
-
-        lock_handle.close()
-
-
-def recover_interrupted_promotion(
-    final_import_dir,
-    candidate_import_dir,
-    backup_import_dir,
-    project_root,
-):
-    manifest_name = ".preprocessing_complete.json"
-
-    if backup_import_dir.exists() and not final_import_dir.exists():
-        print(
-            f"[RECOVER] restoring previous import: {backup_import_dir}",
-            flush=True,
+    resolved_thesaurus_path = thesaurus_csv_path
+    if not resolved_thesaurus_path:
+        thesaurus_candidates = list(
+            (project_root / "etl" / "raw_data").glob("*20211028*.csv")
         )
-        backup_import_dir.rename(final_import_dir)
-
-    if backup_import_dir.exists() and final_import_dir.exists():
-        final_manifest_path = final_import_dir / manifest_name
-
-        if not final_manifest_path.exists():
-            raise RuntimeError(
-                "최종 import와 이전 백업이 함께 남아 있지만 완료 marker가 없습니다. "
-                "자동 삭제하지 않고 중단합니다."
+        if len(thesaurus_candidates) != 1:
+            raise FileNotFoundError(
+                "시소러스 CSV를 하나로 확정할 수 없습니다. "
+                "경로를 인자로 지정하세요."
             )
-
-        try:
-            final_manifest = json.loads(
-                final_manifest_path.read_text(encoding="utf-8")
-            )
-        except (OSError, json.JSONDecodeError) as exc:
-            raise RuntimeError(
-                "최종 import의 완료 marker를 읽을 수 없어 이전 백업을 "
-                "자동 삭제하지 않습니다."
-            ) from exc
-
-        if final_manifest.get("status") != "complete":
-            raise RuntimeError(
-                "최종 import의 완료 marker 상태가 complete가 아니어서 이전 "
-                "백업을 자동 삭제하지 않습니다."
-            )
-
-        print(f"[RECOVER] removing completed backup: {backup_import_dir}", flush=True)
-        remove_generated_directory(backup_import_dir, project_root)
-
-    candidate_is_complete = False
-
-    if candidate_import_dir.exists():
-        candidate_manifest_path = candidate_import_dir / manifest_name
-
-        if candidate_manifest_path.exists():
-            try:
-                candidate_manifest = json.loads(
-                    candidate_manifest_path.read_text(encoding="utf-8")
-                )
-            except (OSError, json.JSONDecodeError) as exc:
-                raise RuntimeError(
-                    "후보 import의 완료 marker를 읽을 수 없어 자동 삭제하지 않습니다."
-                ) from exc
-
-            if candidate_manifest.get("status") != "complete":
-                raise RuntimeError(
-                    "후보 import의 완료 marker 상태가 complete가 아니어서 "
-                    "자동 삭제하지 않습니다."
-                )
-
-            candidate_is_complete = True
-            print(
-                f"[RECOVER] preserving completed candidate: {candidate_import_dir}",
-                flush=True,
-            )
-
-    if candidate_import_dir.exists() and not candidate_is_complete:
-        print(
-            f"[RECOVER] removing incomplete candidate: {candidate_import_dir}",
-            flush=True,
-        )
-        remove_generated_directory(candidate_import_dir, project_root)
-
-    return candidate_is_complete
-
-
-def remove_existing_csv_outputs(script_dir, project_root, candidate_import_dir):
-    deleted_count = 0
-    generated_csv_dirs = build_generated_csv_dirs(script_dir, candidate_import_dir)
-
-    print("", flush=True)
-    print("[CLEAN] removing existing generated Neo4j CSV files", flush=True)
-
-    for generated_csv_dir in generated_csv_dirs:
-        resolved_dir = resolve_project_path(generated_csv_dir, project_root)
-
-        if not resolved_dir.exists():
-            continue
-
-        for csv_path in sorted(resolved_dir.glob("*.csv")):
-            if should_preserve_generated_csv(csv_path, generated_csv_dir, script_dir):
-                print(f"preserved: {csv_path.resolve()}", flush=True)
-                continue
-
-            resolved_csv_path = resolve_project_path(csv_path, project_root)
-            resolved_csv_path.unlink()
-            deleted_count += 1
-            print(f"removed: {resolved_csv_path}", flush=True)
-
-    print(f"[CLEAN] removed {deleted_count} CSV files", flush=True)
-
-
-def build_pipeline_steps(script_dir, import_dir):
-    step_dir = script_dir / "scripts"
-    import_output_dirs = build_import_output_dirs(import_dir)
-
-    return [
-        {
-            "step_name": "1. raw 데이터 정규화",
-            "script_path": step_dir / "normalize_raw_data.py",
-        },
-        {
-            "step_name": "2. 1차 사전 생성",
-            "script_path": step_dir / "make_base_dictionaries.py",
-        },
-        {
-            "step_name": "3. mapping/staging 생성",
-            "script_path": step_dir / "make_mapping_tables.py",
-        },
-        {
-            "step_name": "4. 최종 graph node/relation 생성",
-            "script_path": step_dir / "make_graph_csv.py",
-            "extra_args": [
-                "--nodes-dir",
-                import_output_dirs["nodes_dir"],
-                "--relations-dir",
-                import_output_dirs["relations_dir"],
-            ],
-        },
-        {
-            "step_name": "5. Theme/Era/EntityType 상위 레이어 생성",
-            "script_path": step_dir / "make_theme_era_csv.py",
-            "extra_args": [
-                "--nodes-dir",
-                import_output_dirs["nodes_dir"],
-                "--relations-dir",
-                import_output_dirs["relations_dir"],
-            ],
-        },
-        {
-            "step_name": "6. AKS canonical/source graph data",
-            "script_path": step_dir / "make_aks_graph_csv.py",
-            "extra_args": [
-                "--nodes-dir",
-                import_output_dirs["nodes_dir"],
-                "--relations-dir",
-                import_output_dirs["relations_dir"],
-            ],
-        },
-        {
-            "step_name": "7. AKS polity/reign graph data",
-            "script_path": step_dir / "make_aks_reign_graph_csv.py",
-            "extra_args": [
-                "--nodes-dir",
-                import_output_dirs["nodes_dir"],
-                "--relations-dir",
-                import_output_dirs["relations_dir"],
-            ],
-        },
-        {
-            "step_name": "8. AKS curated royal action graph data",
-            "script_path": step_dir / "make_aks_royal_action_csv.py",
-            "extra_args": [
-                "--nodes-dir",
-                import_output_dirs["nodes_dir"],
-                "--relations-dir",
-                import_output_dirs["relations_dir"],
-            ],
-        },
-        {
-            "step_name": "9. AKS cultural heritage classification data",
-            "script_path": step_dir / "make_aks_heritage_csv.py",
-            "extra_args": [
-                "--nodes-dir",
-                import_output_dirs["nodes_dir"],
-            ],
-        },
-        {
-            "step_name": "10. Source image nodes and depicts relations",
-            "script_path": step_dir / "make_source_image_csv.py",
-            "extra_args": [
-                "--nodes-dir",
-                import_output_dirs["nodes_dir"],
-                "--relations-dir",
-                import_output_dirs["relations_dir"],
-            ],
-        },
-        {
-            "step_name": "11. Inscription content and source text graph data",
-            "script_path": step_dir / "make_inscription_content_csv.py",
-            "extra_args": [
-                "--nodes-dir",
-                import_output_dirs["nodes_dir"],
-                "--relations-dir",
-                import_output_dirs["relations_dir"],
-            ],
-        },
-        {
-            "step_name": "12. Positive and negative graph QA",
-            "script_path": step_dir / "validate_graph_qa.py",
-            "extra_args": [
-                "--nodes-dir",
-                import_output_dirs["nodes_dir"],
-                "--relations-dir",
-                import_output_dirs["relations_dir"],
-            ],
-        },
-    ]
-
-
-def build_step_command(python_path, script_path, extra_args):
-    command = [str(python_path), str(script_path), "--save"]
-    command.extend([str(arg) for arg in extra_args])
-
-    return command
-
-
-def run_pipeline_step(step, python_path, child_environment):
-    script_path = step["script_path"]
-    extra_args = step.get("extra_args", [])
-    command = build_step_command(python_path, script_path, extra_args)
-
-    print("", flush=True)
-    print(f"[START] {step['step_name']}", flush=True)
-    print(f"script: {script_path}", flush=True)
-
-    completed_process = subprocess.run(
-        command,
-        cwd=script_path.parent,
-        env=child_environment,
-        check=False,
-    )
-
-    if completed_process.returncode != 0:
-        raise RuntimeError(
-            f"[FAILED] {step['step_name']} failed with exit code "
-            f"{completed_process.returncode}"
-        )
-
-    print(f"[DONE] {step['step_name']}", flush=True)
-
-
-def resolve_python_path(args):
-    python_path = args.python_path
-
-    if python_path is None:
-        python_path = Path(sys.executable)
-
-    return python_path
-
-
-def extract_declared_import_csv_paths(project_root):
-    schema_dir = project_root / "storage" / "neo4j" / "schema"
-    schema_paths = [
-        schema_dir / "history_graph_import_nodes.cypher",
-        schema_dir / "history_graph_import_relations.cypher",
-    ]
-    csv_pattern = re.compile(r"file:///((?:nodes|relations)/[^'\"\r\n]+\.csv)")
-    declared_csv_paths = set()
-
-    for schema_path in schema_paths:
-        if not schema_path.exists():
-            raise FileNotFoundError(f"Neo4j import Cypher가 없습니다: {schema_path}")
-
-        schema_text = schema_path.read_text(encoding="utf-8-sig")
-        declared_csv_paths.update(csv_pattern.findall(schema_text))
-
-    if len(declared_csv_paths) == 0:
-        raise RuntimeError("Neo4j import Cypher에서 CSV 선언을 찾지 못했습니다.")
-
-    return sorted(declared_csv_paths), schema_paths
-
-
-def validate_candidate_import(candidate_import_dir, declared_csv_paths):
-    resolved_candidate_dir = candidate_import_dir.resolve()
-    validation_errors = []
-
-    for relative_csv_path in declared_csv_paths:
-        csv_path = (candidate_import_dir / Path(relative_csv_path)).resolve()
-
-        try:
-            csv_path.relative_to(resolved_candidate_dir)
-        except ValueError:
-            validation_errors.append(f"허용 범위를 벗어난 CSV 선언: {relative_csv_path}")
-            continue
-
-        if not csv_path.exists():
-            validation_errors.append(f"CSV 없음: {relative_csv_path}")
-            continue
-
-        with csv_path.open("r", encoding="utf-8-sig", newline="") as csv_file:
-            header = next(csv.reader(csv_file), None)
-
-        if header is None or len(header) == 0:
-            validation_errors.append(f"CSV header 없음: {relative_csv_path}")
-            continue
-
-        if any(column_name.strip() == "" for column_name in header):
-            validation_errors.append(f"CSV header 빈 컬럼명: {relative_csv_path}")
-
-    if len(validation_errors) > 0:
-        error_text = "\n".join(f"- {error}" for error in validation_errors)
-        raise RuntimeError(f"후보 import 검증 실패:\n{error_text}")
-
-    print(
-        f"[VALIDATE] {len(declared_csv_paths)} declared CSV files passed",
-        flush=True,
-    )
-
-
-def write_completion_manifest(candidate_import_dir, declared_csv_paths, schema_paths):
-    manifest_path = candidate_import_dir / ".preprocessing_complete.json"
-    manifest = {
-        "status": "complete",
-        "completed_at": datetime.now(timezone.utc).isoformat(),
-        "schema_files": [str(path.name) for path in schema_paths],
-        "declared_csv_files": declared_csv_paths,
-    }
-
-    with manifest_path.open("w", encoding="utf-8") as manifest_file:
-        json.dump(manifest, manifest_file, ensure_ascii=False, indent=2)
-        manifest_file.write("\n")
-        manifest_file.flush()
-        os.fsync(manifest_file.fileno())
-
-    print(f"[VALIDATE] completion marker: {manifest_path}", flush=True)
-
-
-def promote_candidate_import(
-    final_import_dir,
-    candidate_import_dir,
-    backup_import_dir,
-    project_root,
-):
-    if backup_import_dir.exists():
-        raise RuntimeError(f"이전 import 백업이 아직 남아 있습니다: {backup_import_dir}")
-
-    previous_import_moved = False
-
-    try:
-        if final_import_dir.exists():
-            final_import_dir.rename(backup_import_dir)
-            previous_import_moved = True
-
-        candidate_import_dir.rename(final_import_dir)
-    except Exception as exc:
-        if previous_import_moved and not final_import_dir.exists():
-            backup_import_dir.rename(final_import_dir)
-
-        if isinstance(exc, PermissionError):
-            raise RuntimeError(
-                "검증 완료 후보를 최종 import로 승격할 수 없습니다. "
-                "실행 중인 Neo4j 컨테이너가 final import를 bind mount 중이면 "
-                "컨테이너를 중지한 뒤 --promote-existing으로 다시 실행하세요. "
-                f"후보는 보존했습니다: {candidate_import_dir}"
-            ) from exc
-
-        raise
-
-    if backup_import_dir.exists():
-        try:
-            remove_generated_directory(backup_import_dir, project_root)
-        except OSError:
-            print(
-                f"[WARN] 승격은 완료됐지만 이전 백업을 삭제하지 못했습니다: "
-                f"{backup_import_dir}",
-                flush=True,
-            )
-
-    print(f"[PROMOTE] candidate -> final: {final_import_dir}", flush=True)
-    print(
-        "[NOTICE] Neo4j가 final import 디렉터리를 bind mount 중이었다면 "
-        "LOAD CSV 전에 새 파일 노출을 확인하고, 보이지 않으면 컨테이너를 재시작하세요.",
-        flush=True,
-    )
-
-
-def main():
-    args = parse_args()
-    script_dir = Path(__file__).resolve().parent
-    project_root = resolve_project_root(script_dir)
-    python_path = resolve_python_path(args)
-    final_import_dir = resolve_default_import_dir(project_root)
-    candidate_import_dir = final_import_dir.with_name(
-        f".{final_import_dir.name}.building"
-    )
-    backup_import_dir = final_import_dir.with_name(
-        f".{final_import_dir.name}.previous"
-    )
-    lock_path = final_import_dir.parent / ".neo4j_preprocessing.lock"
-
-    print("Neo4j preprocessing pipeline", flush=True)
-    print(f"python: {python_path}", flush=True)
-    print(f"project_root: {project_root}", flush=True)
-    print(f"candidate_import: {candidate_import_dir}", flush=True)
-    print(f"final_import: {final_import_dir}", flush=True)
-    print("mode: safe candidate build", flush=True)
-
-    with hold_runner_lock(lock_path):
-        candidate_is_complete = recover_interrupted_promotion(
-            final_import_dir,
-            candidate_import_dir,
-            backup_import_dir,
-            project_root,
-        )
-
-        if args.promote_existing:
-            if not candidate_is_complete:
-                raise RuntimeError(
-                    "승격할 검증 완료 후보 import가 없습니다: "
-                    f"{candidate_import_dir}"
-                )
-
-            declared_csv_paths, _ = extract_declared_import_csv_paths(project_root)
-            validate_candidate_import(candidate_import_dir, declared_csv_paths)
-            promote_candidate_import(
-                final_import_dir,
-                candidate_import_dir,
-                backup_import_dir,
-                project_root,
-            )
-            print("", flush=True)
-            print("[DONE] completed candidate promoted", flush=True)
-            return
-
-        if candidate_is_complete:
-            raise RuntimeError(
-                "검증 완료 후보 import가 보존되어 있습니다. 재생성하지 않고 "
-                "승격하려면 final import의 bind mount를 해제한 뒤 "
-                "--promote-existing으로 실행하세요."
-            )
-
-        candidate_import_dir.mkdir(parents=True, exist_ok=False)
-        pipeline_steps = build_pipeline_steps(script_dir, candidate_import_dir)
-        child_environment = os.environ.copy()
-        child_environment["NEO4J_IMPORT_DIR"] = str(candidate_import_dir.resolve())
-
-        remove_existing_csv_outputs(
-            script_dir,
-            project_root,
-            candidate_import_dir,
-        )
-
-        for step in pipeline_steps:
-            run_pipeline_step(step, python_path, child_environment)
-
-        declared_csv_paths, schema_paths = extract_declared_import_csv_paths(
+        resolved_thesaurus_path = str(thesaurus_candidates[0])
+
+    resolved_output_dir = output_dir
+    if not resolved_output_dir:
+        resolved_output_dir = str(neo4j_root / "output")
+
+    resolved_encyclopedia_path = encyclopedia_jsonl_path
+    if not resolved_encyclopedia_path:
+        default_encyclopedia = (
             project_root
+            / "etl"
+            / "raw_data"
+            / "한국민족문화대백과사전"
+            / "articles_detail.jsonl"
         )
-        validate_candidate_import(candidate_import_dir, declared_csv_paths)
-        write_completion_manifest(
-            candidate_import_dir,
-            declared_csv_paths,
-            schema_paths,
-        )
-        promote_candidate_import(
-            final_import_dir,
-            candidate_import_dir,
-            backup_import_dir,
-            project_root,
-        )
+        if default_encyclopedia.is_file():
+            resolved_encyclopedia_path = str(default_encyclopedia)
 
-    print("", flush=True)
-    print("[DONE] all Neo4j preprocessing CSV steps completed", flush=True)
+    itkc_directory = (
+        project_root / "etl" / "raw_data" / "한국고전종합DB_관계망"
+    )
+    resolved_people_path = itkc_people_csv_path
+    if not resolved_people_path:
+        default_people = itkc_directory / "itkc_people.csv"
+        if default_people.is_file():
+            resolved_people_path = str(default_people)
+
+    resolved_events_path = itkc_events_csv_path
+    if not resolved_events_path:
+        default_events = itkc_directory / "itkc_events.csv"
+        if default_events.is_file():
+            resolved_events_path = str(default_events)
+
+    return {
+        "exam_json_path": resolved_exam_path,
+        "thesaurus_csv_path": resolved_thesaurus_path,
+        "output_dir": resolved_output_dir,
+        "encyclopedia_jsonl_path": resolved_encyclopedia_path,
+        "itkc_people_csv_path": resolved_people_path,
+        "itkc_events_csv_path": resolved_events_path,
+    }
+
+
+def resolve_stage_output_paths(
+    output_dir: str,
+    policy: dict,
+    checkpoint_output: str = "",
+    extracted_json_output: str = "",
+    extracted_csv_output: str = "",
+    thesaurus_json_output: str = "",
+    coverage_json_output: str = "",
+) -> dict[str, Path]:
+    """설정의 업무 단계별 폴더와 파일명으로 출력 경로를 구성한다."""
+    output_root = Path(output_dir)
+    layout = policy["output_layout"]
+    directory_names = layout["directories"]
+    file_names = layout["files"]
+    internal_directory_name = layout["internal_directory"]
+    term_directory = output_root / directory_names["term_extraction"]
+    retrieval_directory = output_root / directory_names[
+        "candidate_retrieval"
+    ]
+    term_internal_directory = term_directory / internal_directory_name
+    retrieval_internal_directory = (
+        retrieval_directory / internal_directory_name
+    )
+    review_directory = output_root / directory_names["llm_review"]
+    paths = {
+        "term_checkpoint": term_internal_directory
+        / file_names["term_checkpoint"],
+        "extracted_terms_json": term_internal_directory
+        / file_names["extracted_terms_json"],
+        "extracted_terms_csv": term_directory
+        / file_names["extracted_terms_csv"],
+        "normalized_thesaurus": term_internal_directory
+        / file_names["normalized_thesaurus"],
+        "coverage_report": retrieval_directory
+        / file_names["coverage_report"],
+        "name_matches": retrieval_internal_directory
+        / file_names["name_matches"],
+        "definition_matches": retrieval_internal_directory
+        / file_names["definition_matches"],
+        "entity_resolution_directory": output_root
+        / directory_names["entity_resolution"],
+        "llm_review_directory": review_directory,
+        "final_identity_directory": output_root
+        / directory_names["final_identity"],
+        "term_review_tasks": review_directory
+        / policy["entity_resolution"]["semantic_review"]["term_task_file"],
+    }
+    overrides = {
+        "term_checkpoint": checkpoint_output,
+        "extracted_terms_json": extracted_json_output,
+        "extracted_terms_csv": extracted_csv_output,
+        "normalized_thesaurus": thesaurus_json_output,
+        "coverage_report": coverage_json_output,
+    }
+    for path_name, override_path in overrides.items():
+        if override_path:
+            paths[path_name] = Path(override_path)
+    return paths
+
+
+def run_preprocessing_pipeline(
+    exam_json_path: str,
+    thesaurus_csv_path: str,
+    output_dir: str,
+    encyclopedia_jsonl_path: str = "",
+    itkc_people_csv_path: str = "",
+    itkc_events_csv_path: str = "",
+    batch_size: int = 20,
+    limit: int = 0,
+    max_retries: int = 2,
+    threshold: float = 90.0,
+    display_limit: int = 20,
+    checkpoint_output: str = "",
+    extracted_json_output: str = "",
+    extracted_csv_output: str = "",
+    thesaurus_json_output: str = "",
+    coverage_json_output: str = "",
+    policy_path: str = "",
+) -> dict[str, object]:
+    """
+    기출문제 전처리부터 용어 추출, 시소러스 변환, 커버리지 비교,
+    백과사전·ITKC 이름 매칭, definition 스캔까지 실행한다.
+    이름 매칭·definition 스캔은 백과사전과 ITKC 경로가 모두 있을 때만 수행한다.
+    """
+    exam_path = Path(exam_json_path)
+    thesaurus_path = Path(thesaurus_csv_path)
+    output_directory = Path(output_dir)
+    resolved_policy_path = Path(policy_path)
+    if not policy_path:
+        resolved_policy_path = (
+            Path(__file__).resolve().parent
+            / "config"
+            / "resolution_policy.json"
+        )
+    pipeline_policy = load_pipeline_policy(str(resolved_policy_path))
+
+    if not exam_path.is_file():
+        raise FileNotFoundError(f"기출문제 JSON을 찾을 수 없습니다: {exam_path}")
+    if not thesaurus_path.is_file():
+        raise FileNotFoundError(f"시소러스 CSV를 찾을 수 없습니다: {thesaurus_path}")
+    if encyclopedia_jsonl_path and not Path(encyclopedia_jsonl_path).is_file():
+        raise FileNotFoundError(
+            f"백과사전 JSONL을 찾을 수 없습니다: {encyclopedia_jsonl_path}"
+        )
+    if itkc_people_csv_path and not Path(itkc_people_csv_path).is_file():
+        raise FileNotFoundError(
+            f"ITKC 인물 CSV를 찾을 수 없습니다: {itkc_people_csv_path}"
+        )
+    if itkc_events_csv_path and not Path(itkc_events_csv_path).is_file():
+        raise FileNotFoundError(
+            f"ITKC 사건 CSV를 찾을 수 없습니다: {itkc_events_csv_path}"
+        )
+    if batch_size <= 0:
+        raise ValueError("LLM 호출당 문항 수는 1 이상이어야 합니다.")
+    if limit < 0:
+        raise ValueError("문항 제한 개수는 0 이상이어야 합니다.")
+    if max_retries < 0:
+        raise ValueError("재시도 횟수는 0 이상이어야 합니다.")
+    if display_limit <= 0:
+        raise ValueError("표시 개수는 1 이상이어야 합니다.")
+
+    output_paths = resolve_stage_output_paths(
+        str(output_directory),
+        pipeline_policy,
+        checkpoint_output=checkpoint_output,
+        extracted_json_output=extracted_json_output,
+        extracted_csv_output=extracted_csv_output,
+        thesaurus_json_output=thesaurus_json_output,
+        coverage_json_output=coverage_json_output,
+    )
+    for destination in output_paths.values():
+        if destination.suffix:
+            destination.parent.mkdir(parents=True, exist_ok=True)
+        elif not destination.suffix:
+            destination.mkdir(parents=True, exist_ok=True)
+    checkpoint_path = output_paths["term_checkpoint"]
+    extracted_json_path = output_paths["extracted_terms_json"]
+    extracted_csv_path = output_paths["extracted_terms_csv"]
+    thesaurus_json_path = output_paths["normalized_thesaurus"]
+    coverage_report_path = output_paths["coverage_report"]
+    name_matches_path = output_paths["name_matches"]
+    definition_scan_path = output_paths["definition_matches"]
+
+    print("[1/6] 기출문제 전처리 및 역사 용어 추출")
+    extracted_term_df = count_terms(
+        str(exam_path),
+        batch_size=batch_size,
+        limit=limit,
+        checkpoint_path=str(checkpoint_path),
+        max_retries=max_retries,
+        thesaurus_path=str(thesaurus_path),
+        raw_output=str(extracted_json_path),
+        model_config=pipeline_policy["term_extraction"],
+        policy_version=pipeline_policy["policy_version"],
+    )
+    extracted_term_df.to_csv(
+        extracted_csv_path,
+        index=False,
+        encoding="utf-8-sig",
+    )
+    print(f"기출문제 용어 집계 CSV 저장 완료: {extracted_csv_path}")
+
+    print("[2/6] 한국 역사 용어 시소러스 변환")
+    thesaurus_df = prep_thesaurus(str(thesaurus_path))
+    homonym_candidates = find_homonym_candidates(thesaurus_df)
+    print_homonym_report(homonym_candidates, display_limit)
+    save_thesaurus_json(thesaurus_df, str(thesaurus_json_path))
+    print(
+        f"시소러스 JSON 저장 완료: {thesaurus_json_path} "
+        f"({len(thesaurus_df)}개 용어)"
+    )
+
+    print("[3/6] 전체 역사 용어 커버리지 비교")
+    encyclopedia_reference: dict[str, str] = {}
+    if encyclopedia_jsonl_path:
+        encyclopedia_reference = load_encyclopedia_terms(encyclopedia_jsonl_path)
+        print(f"백과사전 표제어·이칭 로드: {len(encyclopedia_reference)}개 키")
+    coverage_report = calculate_coverage(
+        extracted_term_df,
+        thesaurus_df,
+        policy=pipeline_policy,
+        threshold=threshold,
+        encyclopedia_terms=encyclopedia_reference,
+    )
+    print_coverage_report(coverage_report, display_limit)
+
+    with coverage_report_path.open("w", encoding="utf-8") as output_file:
+        dump(
+            coverage_report,
+            output_file,
+            ensure_ascii=False,
+            indent=4,
+        )
+    print(f"커버리지 보고서 저장 완료: {coverage_report_path}")
+
+    can_match_names = bool(
+        encyclopedia_jsonl_path and itkc_people_csv_path and itkc_events_csv_path
+    )
+    if not can_match_names:
+        print(
+            "[4/6][5/6][6/6] 건너뜀: "
+            "백과사전 JSONL과 ITKC CSV 경로가 모두 필요합니다."
+        )
+        return coverage_report
+
+    print("[4/6] 백과사전·ITKC 이름 매칭")
+    name_match_results = match_names(
+        terms_csv=str(extracted_csv_path),
+        thesaurus_csv=str(thesaurus_path),
+        encyclopedia_jsonl=encyclopedia_jsonl_path,
+        itkc_people_csv=itkc_people_csv_path,
+        itkc_events_csv=itkc_events_csv_path,
+        policy=pipeline_policy,
+    )
+    print_match_report(name_match_results)
+    with name_matches_path.open("w", encoding="utf-8") as output_file:
+        dump(name_match_results, output_file, ensure_ascii=False, indent=2)
+    print(f"이름 매칭 결과 저장 완료: {name_matches_path}")
+
+    print("[5/6] 미매칭 용어 definition 스캔")
+    definition_scan_results = scan_definitions(
+        match_json=str(name_matches_path),
+        encyclopedia_jsonl=encyclopedia_jsonl_path,
+        policy=pipeline_policy,
+    )
+    print_scan_report(definition_scan_results)
+    with definition_scan_path.open("w", encoding="utf-8") as output_file:
+        dump(definition_scan_results, output_file, ensure_ascii=False, indent=2)
+    print(f"definition 스캔 결과 저장 완료: {definition_scan_path}")
+
+    print("[6/6] 문항별 Entity Resolution staging CSV 생성")
+    resolution_tables = build_resolution_tables(
+        name_match_results,
+        definition_scan_results,
+        prep_json(str(exam_path)),
+        pipeline_policy,
+    )
+    resolution_output_dir = output_paths["entity_resolution_directory"]
+    resolution_paths = write_resolution_package(
+        resolution_tables,
+        str(resolution_output_dir),
+        pipeline_policy,
+    )
+    resolution_summary = summarize_resolution_tables(resolution_tables)
+    print(f"Entity Resolution staging 요약: {resolution_summary}")
+    print(f"Entity Resolution CSV 저장 완료: {resolution_paths}")
+    term_review_tasks = build_term_review_tasks(
+        resolution_tables,
+        pipeline_policy,
+    )
+    review_output_dir = output_paths["llm_review_directory"]
+    term_task_path = output_paths["term_review_tasks"]
+    write_jsonl(term_review_tasks, str(term_task_path))
+    print(
+        "Entity Resolution term review task 저장 완료: "
+        f"{len(term_review_tasks)}건, {term_task_path}"
+    )
+    return coverage_report
 
 
 if __name__ == "__main__":
-    main()
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(errors="replace")
+
+    parser = ArgumentParser(
+        description=(
+            "기출문제 전처리·역사 용어 추출·시소러스 커버리지 비교 파이프라인"
+        )
+    )
+    parser.add_argument(
+        "exam_json_path",
+        metavar="기출문제_json",
+        nargs="?",
+        default="",
+        help="OCR 기출문제 JSON 경로",
+    )
+    parser.add_argument(
+        "thesaurus_csv_path",
+        metavar="시소러스_csv",
+        nargs="?",
+        default="",
+        help="한국 역사 용어 시소러스 CSV 경로",
+    )
+    parser.add_argument(
+        "output_dir",
+        metavar="출력_폴더",
+        nargs="?",
+        default="",
+        help="파이프라인 결과 저장 폴더",
+    )
+    parser.add_argument(
+        "--encyclopedia-jsonl",
+        default="",
+        help="백과사전 JSONL 경로 (미커버 용어를 표제어·이칭으로 2차 매칭)",
+    )
+    parser.add_argument(
+        "--itkc-people",
+        default="",
+        help="ITKC 인물 CSV 경로 (이름 매칭 단계에서 사용)",
+    )
+    parser.add_argument(
+        "--itkc-events",
+        default="",
+        help="ITKC 사건 CSV 경로 (이름 매칭 단계에서 사용)",
+    )
+    parser.add_argument(
+        "--batch-size",
+        type=int,
+        default=20,
+        help="LLM 호출 한 번에 처리할 문항 수",
+    )
+    parser.add_argument(
+        "--limit",
+        type=int,
+        default=0,
+        help="처리할 문항 수(0이면 전체)",
+    )
+    parser.add_argument(
+        "--retries",
+        type=int,
+        default=2,
+        help="배치 실패 시 재시도 횟수",
+    )
+    parser.add_argument(
+        "--threshold",
+        type=float,
+        default=90.0,
+        help="시소러스 사용 판정 커버리지 임계치",
+    )
+    parser.add_argument(
+        "--display-limit",
+        type=int,
+        default=20,
+        help="동명이인 후보와 미커버 용어 표시 개수",
+    )
+    parser.add_argument(
+        "--checkpoint-output",
+        default="",
+        help="배치 체크포인트 JSONL 저장 경로",
+    )
+    parser.add_argument(
+        "--extracted-json-output",
+        default="",
+        help="문항별 추출 용어 JSON 저장 경로",
+    )
+    parser.add_argument(
+        "--extracted-csv-output",
+        default="",
+        help="추출 용어 집계 CSV 저장 경로",
+    )
+    parser.add_argument(
+        "--thesaurus-json-output",
+        default="",
+        help="변환한 시소러스 JSON 저장 경로",
+    )
+    parser.add_argument(
+        "--coverage-json-output",
+        default="",
+        help="커버리지 보고서 JSON 저장 경로",
+    )
+    parser.add_argument(
+        "--policy",
+        default=str(
+            Path(__file__).resolve().parent
+            / "config"
+            / "resolution_policy.json"
+        ),
+        help="용어 추출·후보 생성·검증 정책 JSON 경로",
+    )
+    cli_args = parser.parse_args()
+
+    pipeline_paths = resolve_pipeline_paths(
+        exam_json_path=cli_args.exam_json_path,
+        thesaurus_csv_path=cli_args.thesaurus_csv_path,
+        output_dir=cli_args.output_dir,
+        encyclopedia_jsonl_path=cli_args.encyclopedia_jsonl,
+        itkc_people_csv_path=cli_args.itkc_people,
+        itkc_events_csv_path=cli_args.itkc_events,
+    )
+
+    run_preprocessing_pipeline(
+        exam_json_path=pipeline_paths["exam_json_path"],
+        thesaurus_csv_path=pipeline_paths["thesaurus_csv_path"],
+        output_dir=pipeline_paths["output_dir"],
+        encyclopedia_jsonl_path=pipeline_paths[
+            "encyclopedia_jsonl_path"
+        ],
+        itkc_people_csv_path=pipeline_paths["itkc_people_csv_path"],
+        itkc_events_csv_path=pipeline_paths["itkc_events_csv_path"],
+        batch_size=cli_args.batch_size,
+        limit=cli_args.limit,
+        max_retries=cli_args.retries,
+        threshold=cli_args.threshold,
+        display_limit=cli_args.display_limit,
+        checkpoint_output=cli_args.checkpoint_output,
+        extracted_json_output=cli_args.extracted_json_output,
+        extracted_csv_output=cli_args.extracted_csv_output,
+        thesaurus_json_output=cli_args.thesaurus_json_output,
+        coverage_json_output=cli_args.coverage_json_output,
+        policy_path=cli_args.policy,
+    )

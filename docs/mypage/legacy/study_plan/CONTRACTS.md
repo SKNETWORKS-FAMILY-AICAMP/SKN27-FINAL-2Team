@@ -344,3 +344,39 @@ v2 전환 전에 다음을 golden test로 고정한다.
 - progress의 user·plan·block 음성 사례
 
 의도적으로 바꾸는 동작은 CUTOVER.md의 승인 목록에만 기록한다.
+
+## 15. 표시 계약
+
+서버가 계산해 내려주는 표시 projection의 기준이다. 클라이언트는 이 값을 저장하지
+않으며, 상태 계산은 서비스 함수가 담당하고 view는 호출 순서만 담당한다.
+
+### 블록 버튼
+
+`canStart = (plan_date == 오늘 local date) AND (block status가 terminal이 아님)`.
+미래·과거 날짜 블록은 시작할 수 없고, 과거 날짜 화면은 기록 확인 전용이다.
+
+| 블록 상태 | 표시 |
+|---|---|
+| 오늘 scheduled practice·weekly_review | 문제 풀기 |
+| 오늘 scheduled review | 복습 완료 버튼 |
+| 과거 미완료 (rollover 대상) | "오늘로 이월됨" 또는 비활성화 |
+| completed practice·review | 완료 |
+| completed weekly_review | 주간 평가 완료 (재시작 불가) |
+| 미래 scheduled | 예정 |
+| weekly_review missed | 미응시 (시작 차단) |
+
+### 학습 플래너 패널 헤딩 (리포트·다음 계획 상태)
+
+상태 원천은 `GET /analytics/study-plan/report/status/`다. 주간평가 미응시 표시는
+리포트 상태 표시와 혼용하지 않는다.
+
+| 상태 | 표시 |
+|---|---|
+| 주간평가 미제출 | 표시 없음 |
+| WEEKLY_REPORT job 진행 중 (QUEUED/RUNNING/RETRY) | "AI 리포트 생성 중" 배지 |
+| report READY + NEXT_PLAN 진행 중 | "리포트 보기" + "다음 주 계획 생성 중" 배지 |
+| report READY + 새 계획 active | "리포트 보기" + "다음 주 계획이 준비됐어요" |
+| NEXT_PLAN BLOCKED (IN_PROGRESS_SESSION) | "리포트 보기" + 진행 중 학습 완료·취소 안내 |
+| NEXT_PLAN CANCELLED (SOURCE_PLAN_SUPERSEDED) | "리포트 보기"만 유지 (계획은 사용자가 이미 교체) |
+| report FAILED 또는 NEXT_PLAN DEAD | 실패 배지 + [다시 생성] 버튼 (report/retry) |
+| 주간평가 미응시 | "평가 미응시" 배지 (버튼 없음, 새 계획 생성 유도) |

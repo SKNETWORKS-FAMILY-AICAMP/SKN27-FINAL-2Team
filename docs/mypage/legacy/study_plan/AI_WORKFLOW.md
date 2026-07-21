@@ -4,7 +4,7 @@
 - 구현 상태: 미구현
 - 최종 검토일: 2026-07-14
 
-이 문서는 기존 weekly_review_ai_report_plan.md를 대체한다. v2는 다수의 자율 에이전트가 아니라 결정론 서비스와 제한된 LLM 노드를 조합한 단계형 AI workflow다.
+이 문서가 주간 리포트 workflow의 단일 기준이다. 구 문서 weekly_review_ai_report_plan.md는 유니크 내용(비교 baseline 선택 규칙, 마이페이지 비교 표시 정책, 초기 설정 참고값, 플래너 헤딩 표시 계약)을 이 문서와 CONTRACTS.md로 이관한 뒤 삭제했다(2026-07-16). v2는 다수의 자율 에이전트가 아니라 결정론 서비스와 제한된 LLM 노드를 조합한 단계형 AI workflow다.
 
 ## 1. 핵심 결정
 
@@ -289,6 +289,27 @@ graph 내부 rewrite 횟수와 job attempt_count는 분리한다. 이전 실행 
 
 최초 snapshot 저장은 report → job 순서로 잠그는 짧은 transaction에서 RUNNING·lease_token을 다시 확인한 뒤 collected_facts가 null일 때만 수행한다. 이미 값이 있으면 digest를 검증하고 재사용한다. 재시도는 같은 report snapshot을 사용하며 stale lease는 이를 덮어쓸 수 없다. 원천 data가 사후 변경되면 새 report version을 명시적으로 생성하지 않는 한 기존 결과를 조용히 바꾸지 않는다.
 
+### 비교 baseline 선택 규칙
+
+- 기준은 이번 주간평가보다 이전에 완료된 주간평가(`review_type='weekly_review'`)
+  중 최신 1건이다.
+- 없으면 일반 진단평가(`session_type='diagnostic'`, `review_type IS NULL`) 중
+  최신 1건을 첫 주기 기준으로 사용한다.
+- 둘 다 없으면 임의 세션을 고르지 않고
+  `analysis_result.comparison.status = 'INSUFFICIENT_BASELINE'`으로 남긴다.
+- 후보가 여러 개면 `recorded_date DESC, session_id DESC` 정렬로 하나만 선택한다.
+
+### 마이페이지 비교 표시 정책
+
+- 주간평가를 비교 대상에서 제외하지 않는다. 첫 주기는 직전 진단평가 → 1주차
+  주간평가, 이후 주기는 이전 주간평가 → 이번 주간평가로 비교한다.
+- `review_type`으로 일반 진단평가와 주간평가를 구분하고 화면 라벨도 각각 표시한다.
+- 주중 일반 학습의 정답률·풀이 수와 주간평가 기반 오답률·리포트 지표는 섞지 않는다.
+- 유형별 오답률 카드는 최신 완료 주간평가 기록을 우선 사용하고, 완료 주간평가가
+  없을 때만 최근 7일 학습 기록으로 fallback한다.
+- report READY 이후에는 같은 주간평가의 rendered_report 지표를 화면 원천으로 쓰고,
+  record 직접 집계는 검증 fallback으로 유지한다.
+
 ## 9. AI subgraph
 
 LangGraph state는 typed schema를 사용한다.
@@ -427,6 +448,15 @@ versioned config에서 관리:
 - 추천과 Writer를 target별 개별 call로 무제한 분리하지 않음
 - budget 초과는 status DEAD, last_error_code BUDGET_EXCEEDED
 - model usage는 ai_job_runs에 기록
+
+v1 설계에서 가져온 초기 참고값 (v2 worker 기준 실측 후 재캘리브레이션 대상):
+
+- top_weak_limit 3, top_improved_limit 3
+- graph 재작성 상한: write 2회, recommend 1회
+- recommend_min_score 0.70 (챗봇 MIN_COMBINED_SCORE와 동일 출발값, RAGAS로 캘리브레이션)
+- job attempt 상한: WEEKLY_REPORT 3, NEXT_PLAN 2
+- lease 10분
+- improved_review_ratio 0.2
 
 ## 15. 보안
 

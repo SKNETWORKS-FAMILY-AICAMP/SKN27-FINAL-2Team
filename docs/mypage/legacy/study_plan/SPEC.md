@@ -4,7 +4,7 @@
 - 구현 상태: 미구현
 - 최종 검토일: 2026-07-14
 
-이 문서는 학습계획 v2의 단일 정책 기준이다. 기존 study_plan_policy.md와 학습계획_설계.md는 배경 참고용이며 충돌할 경우 이 문서를 따른다.
+이 문서는 학습계획 v2의 단일 정책 기준이다. 구 문서 study_plan_policy.md와 학습계획_설계.md는 유니크 정책(기간별 가중치 프리셋, 표시 계약 등)을 이 문서와 CONTRACTS.md로 이관한 뒤 삭제했다(2026-07-16, docs/drafts/학습계획_AI리포트_정의_재검토.md 참조).
 
 ## 1. 목표
 
@@ -235,6 +235,11 @@ PlannerInput은 다음 snapshot을 포함한다.
     )
 
 - 가중치와 threshold는 versioned config에서 읽는다.
+- 가중치 세트는 남은 기간 프리셋으로 선택한다. 생성 시점의 `exam_date - anchor`
+  구간(예: 7일 이하 / 8~21일 / 22일 이상 / exam_date 없음)에 따라 config의
+  구간→가중치 매핑에서 하나를 고르고, 선택된 프리셋은 config_snapshot에 남긴다.
+  짧은 구간일수록 Wprediction 비중을, 긴 구간일수록 Wweak 비중을 높이는 것이
+  기본 방향이다. 계획 기간이 최대 7일인 것과 무관하게 남은 기간 전체로 판단한다.
 - timeBurden는 평균 풀이 시간을 기본 시간으로 나눈 뒤 1로 제한한다.
 - 정렬은 priority 내림차순, weakness 내림차순, prediction 내림차순, groupKeyId 오름차순이다.
 - focus_kind는 점수 구성과 출처를 나타내며 API 라우팅에 사용하지 않는다.
@@ -277,14 +282,21 @@ Question pool 검증이 실패하면 filter를 조용히 완화하거나 임의 
 
 - 7일 계획의 마지막 날에 정확히 1개 배치한다.
 - 마지막 날은 평가 전용이며 practice·review를 함께 배치하지 않는다.
-- 50문항·100점·80분은 v1 제안값이며 versioned assessment blueprint 승인 후 적용한다.
+- 규격은 50문항·100점·80분, 배점은 1점×10 + 2점×30 + 3점×10이다
+  (기출 75·76·77회와 동일 규격, `docs/drafts/기출_분포_조사_75_76_77.md` 3장).
 - 하루 일반 학습 시간과 별개인 평가 capacity로 취급한다.
 - 일반 diagnosis와 weekly_review는 같은 blueprint version을 사용해야 비교가 가능하다.
 - blueprint는 상호배타적인 stratum별 filter, 문항 수, 배점 quota를 정의한다.
 - 각 축의 독립 비율만 맞추는 방식은 교차 분포 충돌을 만들 수 있으므로 사용하지 않는다.
+- stratum은 서비스 era 10개 단일 축이다. quota 초안은 기출 3회 분포 근거로
+  선사 1 / 고조선 1 / 초기국가 1 / 삼국 4 / 남북국 3 / 고려 9 / 조선 9 /
+  개항기 7 / 일제강점기 10 / 현대 5 = 50
+  (근거와 재배분 규칙은 `docs/drafts/기출_분포_조사_75_76_77.md` 7장).
+- topic·난이도는 stratum 내 2차 soft 조건으로만 사용하고 quota로 강제하지 않는다.
 - question pool이 quota를 충족하지 못하면 명시적으로 실패한다.
+- 적용 선행조건: Questions 적재 후 era별 pool 조사에서 각 stratum이
+  quota × 여유배수(versioned config)를 충족해야 한다.
 - 저장된 seed와 question_id hash를 사용해 동일 blueprint 실행을 재현할 수 있어야 한다.
-- 실제 stratum과 quota는 question inventory 분포 조사 후 별도 승인한다.
 
 ## 12. 진행률
 
@@ -385,7 +397,7 @@ v1의 삭제는 실제로 workload를 줄이지 않고 대체 block을 넣으므
 - 계획 기간과 learning day 수
 - daily fallback minutes
 - block 수·시간·문항 min/max
-- priority 가중치와 threshold
+- priority 가중치와 threshold (남은 기간 구간별 프리셋 매핑 포함)
 - review offset
 - rollover overload multiplier
 - replace 제한
@@ -424,5 +436,5 @@ Plan에는 사용한 config version과 snapshot을 저장해 재현성을 보장
 - 진행 중 session이 있으면 계획 활성화 보류
 - plan 연결 session 이어풀기·취소 상태와 diagnosis 자동 삭제 범위
 - 7일 plan의 6일 학습 + 1일 평가
-- 실제 weekly assessment stratum·quota
+- weekly assessment stratum·quota — 초안 확정(11장), Questions 적재 후 pool 검증으로 최종 승인
 - config 저장 위치와 변경 승인 절차

@@ -63,7 +63,6 @@ def calculate_record_based_plan_progress(
     user_id: int,
     study_plan: object,
 ) -> dict[str, object]:
-    """Return the legacy chart contract from the versioned plan projection."""
     plan_items = parse_plan_items(study_plan.study_plan_items)
     completion_rate = float(study_plan.completion_rate or 0.0)
     active_plan = get_active_study_plan_dto(user_id)
