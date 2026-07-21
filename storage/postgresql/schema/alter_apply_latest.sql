@@ -210,7 +210,25 @@ ALTER TABLE study_plan_mypage
     ADD COLUMN IF NOT EXISTS end_date DATE NULL,
     ADD COLUMN IF NOT EXISTS completion_rate DOUBLE PRECISION NOT NULL DEFAULT 0,
     ADD COLUMN IF NOT EXISTS archived_at TIMESTAMPTZ NULL,
-    ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ NULL;
+    ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ NULL,
+    ADD COLUMN IF NOT EXISTS weekly_report_data JSONB NULL;
+
+DO $$
+BEGIN
+    ALTER TABLE study_plan_mypage
+        DROP CONSTRAINT IF EXISTS study_plan_mypage_weekly_report_data_object_check;
+
+    ALTER TABLE study_plan_mypage
+        ADD CONSTRAINT study_plan_mypage_weekly_report_data_object_check
+        CHECK (
+            weekly_report_data IS NULL
+            OR COALESCE(
+                jsonb_typeof(weekly_report_data) = 'object',
+                FALSE
+            )
+        );
+END
+$$;
 
 CREATE UNIQUE INDEX IF NOT EXISTS study_plan_mypage_user_active_uidx
     ON study_plan_mypage(user_id)
