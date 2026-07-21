@@ -94,7 +94,7 @@ flowchart TD
 
 ## 7. 답변 생성과 일관성
 
-LLM은 OpenAI 또는 Ollama를 사용하며, 제공된 검색 근거 밖의 내용을 만들지 않습니다. 개념 답변은 JSON 구조를 표 카드로 렌더링하고, 실제 스트리밍에서는 `meta → section → row → done` 순서로 전송합니다.
+LLM은 OpenAI를 사용하며, 제공된 검색 근거 밖의 내용을 만들지 않습니다. 개념 답변은 JSON 구조를 표 카드로 렌더링하고, 실제 스트리밍에서는 `meta → section → row → done` 순서로 전송합니다.
 
 운영 시에는 `CHAT_TEMPERATURE=0`을 권장합니다. 근거 부족 안내 문구를 답변 본문에 노출하지 않고 fallback 처리하며, 출처는 최종 카드에 표시합니다.
 
