@@ -1,6 +1,7 @@
 import json
 from datetime import date, timedelta
 from uuid import uuid4
+from zoneinfo import ZoneInfo
 
 from django.db import IntegrityError, transaction
 from django.db.models import Max
@@ -24,6 +25,9 @@ from question.models import SolveRecords
 from user.models import UserAccounts
 
 
+SEOUL_TZ = ZoneInfo("Asia/Seoul")
+
+
 class StudyPlanBlockDeleteLimitExceeded(Exception):
     pass
 
@@ -42,6 +46,16 @@ class StudyPlanExtraBlockCompletionRequired(Exception):
 
 class StudyPlanGenerationUnavailable(Exception):
     pass
+
+
+BLOCK_TERMINAL_ERROR = {
+    "code": "BLOCK_TERMINAL",
+    "error": "이미 종료된 학습계획 블록입니다.",
+}
+BLOCK_NOT_DUE_ERROR = {
+    "code": "BLOCK_NOT_DUE",
+    "error": "오늘 진행할 수 없는 학습계획 블록입니다.",
+}
 
 
 def get_user_study_info(user_id):
@@ -1088,6 +1102,106 @@ def is_study_plan_block_completed(block):
     return bool(block.get("isAchieved") or block.get("isCompleted"))
 
 
+def get_seoul_localdate():
+    return timezone.now().astimezone(SEOUL_TZ).date()
+
+
+def validate_study_plan_block_start(user_id, study_plan_id, block_id, execution_path):
+    """
+    계획 블록에 연결된 새 세션을 시작할 수 있는지 검증한다.
+
+    종료 상태는 예정일보다 먼저 판정한다. 반환값의 error가 None이면
+    같은 딕셔너리의 study_plan, day_plan, block을 사용해 세션 생성을 이어간다.
+    """
+    study_plan = get_active_study_plans(user_id).filter(studyplan_id=study_plan_id).first()
+    if study_plan is None:
+        return {
+            "study_plan": None,
+            "day_plan": None,
+            "block": None,
+            "error": {"error": "활성 학습계획을 찾을 수 없습니다."},
+            "status_code": 400,
+        }
+
+    plan_items = parse_study_plan_items(study_plan.study_plan_items)
+    progress_data = calculate_record_based_plan_progress(user_id, study_plan)
+    block_progress = progress_data["block_progress"]
+    today = get_seoul_localdate()
+
+    for day_index, day_plan in enumerate(plan_items):
+        plan_date = parse_study_plan_day_date(day_plan)
+        for block_index, block in enumerate(day_plan.get("blocks", [])):
+            if str(block.get("blockId")) != str(block_id):
+                continue
+
+            progress = block_progress.get((day_index, block_index), {})
+            terminal_error = get_study_plan_block_terminal_error(block, progress)
+            if terminal_error is not None:
+                return {
+                    "study_plan": study_plan,
+                    "day_plan": day_plan,
+                    "block": block,
+                    "error": terminal_error,
+                    "status_code": 409,
+                }
+
+            if plan_date != today:
+                return {
+                    "study_plan": study_plan,
+                    "day_plan": day_plan,
+                    "block": block,
+                    "error": BLOCK_NOT_DUE_ERROR,
+                    "status_code": 409,
+                }
+
+            path_error = get_study_plan_block_path_error(block, execution_path)
+            if path_error is not None:
+                return {
+                    "study_plan": study_plan,
+                    "day_plan": day_plan,
+                    "block": block,
+                    "error": path_error,
+                    "status_code": 400,
+                }
+
+            return {
+                "study_plan": study_plan,
+                "day_plan": day_plan,
+                "block": block,
+                "error": None,
+                "status_code": None,
+            }
+
+    return {
+        "study_plan": study_plan,
+        "day_plan": None,
+        "block": None,
+        "error": {"error": "학습계획 블록을 찾을 수 없습니다."},
+        "status_code": 400,
+    }
+
+
+def get_study_plan_block_terminal_error(block, progress):
+    status_value = str(block.get("status") or block.get("state") or "").lower()
+    if status_value in {"completed", "missed", "canceled", "cancelled"}:
+        return BLOCK_TERMINAL_ERROR
+    if block.get("isMissed") or block.get("isCanceled") or block.get("isCancelled"):
+        return BLOCK_TERMINAL_ERROR
+    if bool(block.get("isCompleted")) or bool(progress.get("isAchieved")):
+        return BLOCK_TERMINAL_ERROR
+
+    return None
+
+
+def get_study_plan_block_path_error(block, execution_path):
+    if execution_path == "question" and is_weekly_review_plan_block(block):
+        return {"error": "weekly_review 블록은 진단평가 API로 시작해야 합니다."}
+    if execution_path == "weekly_review" and not is_weekly_review_plan_block(block):
+        return {"error": "주간평가 블록이 아닙니다."}
+
+    return None
+
+
 def get_planned_target_keys(plan_items):
     target_keys = set()
     for day_plan in plan_items:
@@ -1155,11 +1269,10 @@ def complete_study_plan_block_by_id(user_id, study_plan_id, block_id, is_complet
         return None
 
     with transaction.atomic():
-        study_plan = (
-            get_active_study_plans(user_id, lock=True)
-            .filter(studyplan_id=study_plan_id)
-            .first()
-        )
+        study_plan = StudyPlanMypage.objects.select_for_update().filter(
+            user_id=user_id,
+            studyplan_id=study_plan_id,
+        ).first()
         if study_plan is None:
             return None
 

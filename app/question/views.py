@@ -2,6 +2,7 @@ import json
 import random
 from datetime import date
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 from django.db import models, transaction
 from django.shortcuts import render
@@ -15,7 +16,7 @@ from analytics.service.display import build_planner_summary
 from analytics.service.studyplan import (
     complete_study_plan_block_by_id,
     get_study_plan_info,
-    is_weekly_review_plan_block,
+    validate_study_plan_block_start,
 )
 from user.models import UserAccounts
 from .models import QuestionOptions, Questions, SolveRecords, SolveSessions
@@ -37,6 +38,7 @@ PRACTICE_SESSION_TYPE = "practice"
 GUEST_DAILY_COUNT = 10
 IN_PROGRESS_SESSION_STATUS = "in_progress"
 COMPLETED_SESSION_STATUS = "completed"
+SEOUL_TZ = ZoneInfo("Asia/Seoul")
 GUEST_QUESTION_BASE_DATE = date(2026, 6, 23)
 TIME_LIMIT_SECONDS_BY_COUNT = {
     50: 80 * 60,
@@ -161,6 +163,11 @@ def _delete_other_in_progress_sessions(user_id, current_session_id=None):
 def _lock_user_for_practice_start(user_id):
     # 같은 사용자의 문제풀이 시작 요청을 사용자 행 기준으로 직렬화한다.
     return UserAccounts.objects.select_for_update().get(user_id=user_id)
+
+
+def _seoul_recorded_date():
+    # 학습일은 세션 생성 시각을 서울 시간으로 변환한 현지 날짜로 저장한다.
+    return timezone.now().astimezone(SEOUL_TZ).date()
 
 
 # 특정 컬럼의 고유 값을 목록으로 반환한다.
@@ -436,10 +443,6 @@ def _complete_practice_study_plan_block(session, user_id):
 
     study_plan_id = study_plan_record["studyplan_id"]
     block_id = study_plan_record["study_plan_block_id"]
-    block, _block_error = _find_study_plan_block(user_id, study_plan_id, block_id)
-    if block is None or is_weekly_review_plan_block(block):
-        return None
-
     return complete_study_plan_block_by_id(user_id, study_plan_id, block_id, True)
 
 
@@ -662,22 +665,26 @@ def question_start(request):
 
     study_plan_block = None
     if user_id is not None:
-        study_plan_block, study_plan_error = _find_study_plan_block(
-            user_id,
-            data.get("studyplan_id"),
-            data.get("study_plan_block_id"),
-        )
-        if study_plan_error:
-            return Response(study_plan_error, status=status.HTTP_400_BAD_REQUEST)
-        if (
-            data["generation_mode"] == "study_plan"
-            and study_plan_block is not None
-            and is_weekly_review_plan_block(study_plan_block)
-        ):
-            return Response(
-                {"error": "weekly_review 블록은 진단평가 API로 시작해야 합니다."},
-                status=status.HTTP_400_BAD_REQUEST,
+        if data.get("studyplan_id") or data.get("study_plan_block_id"):
+            if not data.get("studyplan_id") or not data.get("study_plan_block_id"):
+                return Response(
+                    {
+                        "error": "학습계획 문제를 시작하려면 studyplan_id와 study_plan_block_id가 모두 필요합니다.",
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            validation_result = validate_study_plan_block_start(
+                user_id,
+                data.get("studyplan_id"),
+                data.get("study_plan_block_id"),
+                "question",
             )
+            if validation_result["error"]:
+                return Response(
+                    validation_result["error"],
+                    status=validation_result["status_code"],
+                )
+            study_plan_block = validation_result["block"]
     generation_context_label = _question_generation_context_label(data, study_plan_block)
 
     qs = _base_question_queryset()
@@ -792,7 +799,7 @@ def question_start(request):
                 total_count=count,
                 elapsed_sec=0,
                 status=IN_PROGRESS_SESSION_STATUS,
-                recorded_date=date.today(),
+                recorded_date=_seoul_recorded_date(),
             )
             SolveRecords.objects.bulk_create([
                 SolveRecords(
@@ -1378,7 +1385,7 @@ def wrong_note_start(request):
             total_count=len(questions),
             elapsed_sec=0,
             status=IN_PROGRESS_SESSION_STATUS,
-            recorded_date=date.today(),
+            recorded_date=_seoul_recorded_date(),
         )
         SolveRecords.objects.bulk_create([
             SolveRecords(
