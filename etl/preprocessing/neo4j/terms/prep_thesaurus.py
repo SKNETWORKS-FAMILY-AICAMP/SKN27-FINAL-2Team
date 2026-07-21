@@ -9,7 +9,7 @@ import pandas as pd
 
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 
-from common import normalize_history_term
+from common import load_pipeline_policy, normalize_history_term
 
 
 def read_short_number(digits: str) -> str:
@@ -109,7 +109,15 @@ def load_encyclopedia_terms(jsonl_path: str) -> dict[str, str]:
         aliases = row.get("articleAliases") or []
         if not isinstance(aliases, list):
             aliases = []
-        names = [headword] + [alias for alias in aliases if isinstance(alias, str)]
+        alias_names: list[str] = []
+        for alias in aliases:
+            if isinstance(alias, str) and alias.strip():
+                alias_names.append(alias.strip())
+            elif isinstance(alias, dict):
+                alias_word = str(alias.get("word") or "").strip()
+                if alias_word:
+                    alias_names.append(alias_word)
+        names = [headword] + alias_names
         for name in names:
             key = build_match_key(name)
             if key and key not in reference:
@@ -130,42 +138,61 @@ def find_key_with_prefix(sorted_keys: list[str], prefix: str, max_tail: int) -> 
     return None
 
 
-def find_affix_matches(terms: set[str], reference_keys: set[str]) -> dict[str, str]:
+def find_affix_matches(
+    terms: set[str],
+    reference_keys: set[str],
+    minimum_length: int,
+    maximum_difference: int,
+) -> dict[str, str]:
     """
-    표기 길이가 다른 용어를 접두·접미 포함으로 매칭한다.
-    - 접두 매칭: 추출어가 기준 표제어의 접두어이고 꼬리가 3글자 이하
-      (운요호 -> 운요호사건, 청산리 -> 청산리대첩)
-    - 접미 매칭: 추출어가 기준 표제어의 접미어이고 머리가 3글자 이하
-      (경천사지십층석탑 -> 개성경천사지십층석탑)
-    2글자 이하 용어는 오탐이 많아 제외한다 (남성 -> 남성록 방지).
+    외부 정책의 최소 길이와 최대 길이 차이를 적용해 양방향 접두·접미 매칭한다.
+    추출어가 더 짧은 경우와 원천 표제어가 더 짧은 경우를 모두 후보로 인정한다.
     """
-    max_affix = 3
     sorted_forward = sorted(reference_keys)
     sorted_backward = sorted(key[::-1] for key in reference_keys)
     matches: dict[str, str] = {}
     for term in terms:
-        if len(term) < 3:
+        if len(term) < minimum_length:
             continue
-        found = find_key_with_prefix(sorted_forward, term, max_affix)
+        found = find_key_with_prefix(sorted_forward, term, maximum_difference)
         if found is None:
-            reversed_found = find_key_with_prefix(sorted_backward, term[::-1], max_affix)
+            reversed_found = find_key_with_prefix(
+                sorted_backward,
+                term[::-1],
+                maximum_difference,
+            )
             if reversed_found is not None:
                 found = reversed_found[::-1]
+        if found is None:
+            for difference in range(1, maximum_difference + 1):
+                if len(term) - difference < minimum_length:
+                    continue
+                prefix_candidate = term[:-difference]
+                suffix_candidate = term[difference:]
+                if prefix_candidate in reference_keys:
+                    found = prefix_candidate
+                    break
+                if suffix_candidate in reference_keys:
+                    found = suffix_candidate
+                    break
         if found is not None:
             matches[term] = found
     return matches
 
 
-def is_noise_term(term: str) -> bool:
+def is_noise_term(term: str, noise_policy: dict) -> bool:
     """
     문장형 서술이나 한 글자 일반어가 용어로 잘못 추출된 경우를 판정한다.
     ('도둑질한 자에게 12배로 배상하게 하였다', '왕' 등)
     """
     stripped = str(term).strip()
-    if len(stripped.replace(" ", "")) <= 1:
+    if len(stripped.replace(" ", "")) < noise_policy["minimum_compact_length"]:
         return True
-    sentence_endings = ("하였다", "되었다", "있다", "이다", "한다", "했다", "됐다", "인다")
-    if stripped.count(" ") >= 2 and stripped.endswith(sentence_endings):
+    sentence_endings = tuple(noise_policy["sentence_endings"])
+    if (
+        stripped.count(" ") >= noise_policy["minimum_sentence_spaces"]
+        and stripped.endswith(sentence_endings)
+    ):
         return True
     return False
 
@@ -312,6 +339,7 @@ def load_extracted_terms(json_path: str) -> pd.DataFrame:
 def calculate_coverage(
     extracted_df: pd.DataFrame,
     thesaurus_df: pd.DataFrame,
+    policy: dict,
     threshold: float = 90.0,
     encyclopedia_terms: dict[str, str] | None = None,
 ) -> dict[str, object]:
@@ -330,7 +358,9 @@ def calculate_coverage(
         raise ValueError("시소러스 DataFrame에 canonical_term 컬럼이 없습니다.")
 
     extracted_terms_df = extracted_df.dropna(subset=["canonical_term"]).copy()
-    noise_mask = extracted_terms_df["canonical_term"].map(is_noise_term)
+    noise_mask = extracted_terms_df["canonical_term"].map(
+        lambda term: is_noise_term(term, policy["noise"])
+    )
     noise_names = sorted(set(extracted_terms_df.loc[noise_mask, "canonical_term"]))
     extracted_terms_df = extracted_terms_df.loc[~noise_mask].copy()
     thesaurus_terms_df = thesaurus_df.dropna(subset=["canonical_term"]).copy()
@@ -350,6 +380,8 @@ def calculate_coverage(
     partial_matches = find_affix_matches(
         extracted_terms.difference(exact_covered),
         thesaurus_terms,
+        minimum_length=policy["coverage"]["minimum_affix_length"],
+        maximum_difference=policy["coverage"]["maximum_affix_difference"],
     )
 
     covered_terms = exact_covered.union(partial_matches.keys())
@@ -365,6 +397,8 @@ def calculate_coverage(
     encyclopedia_affix = find_affix_matches(
         remaining_terms.difference(encyclopedia_covered.keys()),
         set(encyclopedia_reference.keys()),
+        minimum_length=policy["coverage"]["minimum_affix_length"],
+        maximum_difference=policy["coverage"]["maximum_affix_difference"],
     )
     for term, reference_key in encyclopedia_affix.items():
         encyclopedia_covered[term] = encyclopedia_reference[reference_key]
@@ -407,6 +441,10 @@ def calculate_coverage(
         "coverage_percent": coverage_percent,
         "threshold": threshold,
         "meets_threshold": coverage_percent >= threshold,
+        "coverage_scope": "normalized_name_exact_and_bidirectional_affix",
+        "uncovered_interpretation": "NAME_ONLY_UNCOVERED_NOT_SOURCE_ABSENT",
+        "resolution_policy_version": policy["policy_version"],
+        "normalization_policy_version": policy["normalization_policy_version"],
         "partial_matches": partial_match_names,
         "encyclopedia_matches": encyclopedia_match_names,
         "uncovered_terms": uncovered_names,
@@ -436,8 +474,8 @@ def print_coverage_report(report: dict[str, object], display_limit: int) -> None
     print(f"백과사전 커버 용어: {report['encyclopedia_covered_count']}개 (표제어·이칭 2차 매칭)")
     print(f"전체 커버 용어: {report['covered_count']}개")
     print(f"노이즈 제외 용어: {report['noise_filtered_count']}개 (문장형·한 글자)")
-    print(f"미커버 용어: {report['uncovered_count']}개")
-    print(f"커버리지: {report['coverage_percent']:.2f}%")
+    print(f"이름 기준 미커버 용어: {report['uncovered_count']}개")
+    print(f"이름 기준 커버리지: {report['coverage_percent']:.2f}%")
     decision = "사용 보류"
     if report["meets_threshold"]:
         decision = "사용 가능"
@@ -445,7 +483,10 @@ def print_coverage_report(report: dict[str, object], display_limit: int) -> None
 
     uncovered_terms = report["uncovered_terms"]
     if uncovered_terms:
-        print(f"미커버 용어 예시: {uncovered_terms[:display_limit]}")
+        print(
+            "이름 기준 미커버 예시(원천 부재 의미 아님): "
+            f"{uncovered_terms[:display_limit]}"
+        )
 
 
 if __name__ == "__main__":
@@ -479,7 +520,17 @@ if __name__ == "__main__":
         default=20,
         help="후보 및 미커버 용어 표시 개수",
     )
+    parser.add_argument(
+        "--policy",
+        default=str(
+            Path(__file__).resolve().parent.parent
+            / "config"
+            / "resolution_policy.json"
+        ),
+        help="정규화·후보 생성 정책 JSON 경로",
+    )
     cli_args = parser.parse_args()
+    pipeline_policy = load_pipeline_policy(cli_args.policy)
 
     prepared_df = prep_thesaurus(cli_args.csv_path)
     homonym_candidates = find_homonym_candidates(prepared_df)
@@ -498,6 +549,7 @@ if __name__ == "__main__":
         coverage_report = calculate_coverage(
             exam_term_df,
             prepared_df,
+            policy=pipeline_policy,
             threshold=cli_args.threshold,
             encyclopedia_terms=encyclopedia_reference,
         )

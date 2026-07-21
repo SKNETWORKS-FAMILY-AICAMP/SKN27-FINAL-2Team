@@ -277,6 +277,24 @@ Neo4j 결과는 최소한 다음을 반환한다.
 | `07_runtime_generation_pipeline.md` | 런타임 연결 지점과 실패 처리 |
 | `08_validation_and_roadmap.md` | 품질 gate와 구현 순서 |
 | `09_graph_design_rationale_and_query_guide.md` | 설계 이유, 노드·관계 의미, 챗봇·오답 조회 방법과 주의사항 |
+| `10_entity_resolution_candidate_eda.md` | 실제 후보 검색·문항별 ER staging 분포와 자동 승인 한계 |
+| `11_entity_resolution_gold_set.md` | 100건 층화 골든셋 표본, 검수 계약, 평가 지표와 실행 방법 |
 
 `neo4j_preprocessing_eda_notes.md`와 `neo4j_관계_정규화_점검.md`는 현재 구현 감사 문서다.
 목표 스키마가 이미 구현됐다는 뜻이 아니다.
+
+전체 실행은 `run_neo4j_preprocessing.py`, 격리된 소량 실행은
+`run_neo4j_preprocessing_test.py`를 사용한다. 소량 실행 결과는 `output/test_run` 아래에만
+저장된다. 운영·테스트 모두 `01_term_extraction`부터 `05_final_identity`까지 같은 업무 단계
+폴더 구조를 사용한다. 단계 루트에는 사람이 확인할 결과만 두고 체크포인트·상세 후보표·
+모델 중간 산출물은 각 단계의 `internal`에 둔다. 각 파일 설명은
+`etl/preprocessing/neo4j/output/README.md`에 있다.
+
+검수된 골든셋 case·candidate CSV는 `entity_resolution/import_gold_set.py`로 읽으며, 원본 gold task와
+식별자를 대조한 뒤 완료되고 모순 없는 case만 평가용 decision JSONL로 변환한다.
+골든셋 검수본과 관련 task·검증 결과는 일반 runtime output과 분리해
+`etl/preprocessing/neo4j/goldset`에서 관리한다. 사람이 작성하는 CSV만 `human_review_csv`에
+두고, 원본 snapshot·검증·모델 판정·평가 산출물은 `goldset/internal`에 둔다.
+`entity_resolution/execute_term_review.py`는 strict JSON Schema 출력과 버전 호환 checkpoint로
+term task를 실행하고, `entity_resolution/evaluate_term_review.py`는 사람 gold와 후보 역할·
+identity cluster·case 상태를 비교한다. 실제 API 호출 전에는 `--dry-run`으로 범위를 확인한다.

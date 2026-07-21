@@ -8,11 +8,14 @@ import pandas as pd
 
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 
-from common import get_historyterm_llm
+from common import get_historyterm_llm, load_pipeline_policy
 from prep_json import prep_json
 
 
-def get_history_terms(problems: list[dict]) -> list[dict]:
+def get_history_terms(
+    problems: list[dict],
+    model_config: dict,
+) -> list[dict]:
     """
     여러 한국사 시험 문항을 한 번의 LLM 호출로 처리해 용어를 추출하는 함수
     problems: [{"problem_id": ..., "full_text": ...}] 목록
@@ -134,7 +137,7 @@ def get_history_terms(problems: list[dict]) -> list[dict]:
 [문항 목록]
 """ + problem_blocks
 
-    llm = get_historyterm_llm()
+    llm = get_historyterm_llm(model_config)
     response = llm.invoke(prompt)
 
     content = response.content.strip()
@@ -180,6 +183,8 @@ def count_terms(
     max_retries: int = 2,
     thesaurus_path: str = "",
     raw_output: str = "",
+    model_config: dict | None = None,
+    policy_version: str = "",
 ) -> pd.DataFrame:
     """
     기출문제 json을 전처리(prep_json)한 뒤 용어를 추출해 집계하는 함수
@@ -194,6 +199,11 @@ def count_terms(
     - 같은 단어(공백 차이 무시)는 하나로 합침
     - count: 해당 용어가 등장한 문항 수 / problem_ids: 등장 문항 id 목록
     """
+    if model_config is None:
+        raise ValueError("용어 추출 모델 설정이 필요합니다.")
+    if not policy_version:
+        raise ValueError("용어 추출 정책 버전이 필요합니다.")
+
     df = prep_json(json_path)
     if limit > 0:
         df = df.head(limit)
@@ -206,11 +216,33 @@ def count_terms(
     # 체크포인트에서 이미 처리된 문항 결과 불러오기
     results_by_problem: dict[str, list[dict]] = {}
     checkpoint = Path(checkpoint_path)
+    incompatible_checkpoint_batches = 0
     if checkpoint.exists():
         for line in checkpoint.read_text(encoding="utf-8").splitlines():
-            for item in loads(line)["results"]:
+            checkpoint_batch = loads(line)
+            same_model = (
+                checkpoint_batch.get("extraction_model")
+                == model_config["model"]
+            )
+            same_reasoning = (
+                checkpoint_batch.get("extraction_reasoning_effort")
+                == model_config["reasoning_effort"]
+            )
+            same_policy = (
+                checkpoint_batch.get("extraction_policy_version")
+                == policy_version
+            )
+            if not same_model or not same_reasoning or not same_policy:
+                incompatible_checkpoint_batches += 1
+                continue
+            for item in checkpoint_batch["results"]:
                 results_by_problem.setdefault(item["problem_id"], item["terms"])
         print(f"체크포인트 발견: {len(results_by_problem)}문항 결과 재사용")
+        if incompatible_checkpoint_batches > 0:
+            print(
+                "모델·정책 버전이 다른 체크포인트 배치 제외: "
+                f"{incompatible_checkpoint_batches}개"
+            )
 
     remaining = df[~df["problem_id"].isin(results_by_problem.keys())]
     failed_batches = 0
@@ -226,7 +258,7 @@ def count_terms(
             results = None
             for attempt in range(1, max_retries + 2):
                 try:
-                    results = get_history_terms(problems)
+                    results = get_history_terms(problems, model_config)
                     break
                 except Exception as error:
                     print(f"배치 실패 (시도 {attempt}/{max_retries + 1}): {error}")
@@ -236,7 +268,15 @@ def count_terms(
                 print(f"배치 건너뜀: {batch_df['problem_id'].iloc[0]} 외 {len(batch_df) - 1}건")
                 continue
 
-            checkpoint_file.write(dumps({"results": results}, ensure_ascii=False) + "\n")
+            checkpoint_record = {
+                "extraction_model": model_config["model"],
+                "extraction_reasoning_effort": model_config["reasoning_effort"],
+                "extraction_policy_version": policy_version,
+                "results": results,
+            }
+            checkpoint_file.write(
+                dumps(checkpoint_record, ensure_ascii=False) + "\n"
+            )
             checkpoint_file.flush()
             for item in results:
                 results_by_problem.setdefault(item["problem_id"], item["terms"])
@@ -250,7 +290,7 @@ def count_terms(
         print(f"실패한 배치 {failed_batches}개 — 같은 명령을 다시 실행하면 실패분만 재시도함")
 
     # 전체 결과 집계 (환각 필터 포함)
-    aggregated: dict[str, dict] = {}
+    aggregated: dict[tuple[str, str], dict] = {}
     hallucinated: list[dict] = []
     filtered_by_problem: list[dict] = []
 
@@ -265,7 +305,7 @@ def count_terms(
         if problem_id not in results_by_problem:
             continue
         compact_text = normalize_for_match(row.full_text)
-        seen_in_problem: set[str] = set()
+        seen_in_problem: set[tuple[str, str]] = set()
         problem_terms: list[dict] = []
 
         for term in results_by_problem[problem_id]:
@@ -303,7 +343,10 @@ def count_terms(
                 hallucinated.append({"problem_id": problem_id, "raw_term": term["raw_term"]})
                 continue
 
-            key = term["canonical_term"].replace(" ", "")
+            key = (
+                term["canonical_term"].replace(" ", ""),
+                term["category"],
+            )
             if key in seen_in_problem:
                 continue
             seen_in_problem.add(key)
@@ -318,6 +361,11 @@ def count_terms(
                     "category": term["category"],
                     "count": 1,
                     "problem_ids": [problem_id],
+                    "extraction_model": model_config["model"],
+                    "extraction_reasoning_effort": model_config[
+                        "reasoning_effort"
+                    ],
+                    "extraction_policy_version": policy_version,
                 }
 
         filtered_by_problem.append({"problem_id": problem_id, "terms": problem_terms})
@@ -335,6 +383,9 @@ def count_terms(
     result = pd.DataFrame(aggregated.values())
     result = result.sort_values("count", ascending=False)
     result = result.reset_index(drop=True)
+    result["problem_ids"] = result["problem_ids"].map(
+        lambda problem_ids: dumps(problem_ids, ensure_ascii=False)
+    )
     return result
 
 
@@ -348,7 +399,17 @@ if __name__ == "__main__":
     parser.add_argument("--retries", type=int, default=2, help="배치 실패 시 재시도 횟수")
     parser.add_argument("--thesaurus", default="", help="시소러스 csv 경로 (오탈자 구제용)")
     parser.add_argument("--raw-output", default="", help="문항별 용어 json 저장 경로")
+    parser.add_argument(
+        "--policy",
+        default=str(
+            Path(__file__).resolve().parent.parent
+            / "config"
+            / "resolution_policy.json"
+        ),
+        help="용어 추출 모델 정책 JSON 경로",
+    )
     cli_args = parser.parse_args()
+    pipeline_policy = load_pipeline_policy(cli_args.policy)
 
     term_df = count_terms(
         cli_args.json_path,
@@ -358,6 +419,8 @@ if __name__ == "__main__":
         max_retries=cli_args.retries,
         thesaurus_path=cli_args.thesaurus,
         raw_output=cli_args.raw_output,
+        model_config=pipeline_policy["term_extraction"],
+        policy_version=pipeline_policy["policy_version"],
     )
     print(term_df.head(20))
     print(f"고유 용어 수: {len(term_df)}")
