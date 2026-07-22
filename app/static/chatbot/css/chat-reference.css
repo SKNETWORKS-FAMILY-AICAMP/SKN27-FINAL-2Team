@@ -19,6 +19,10 @@ body:has(.chat-page) { overflow: hidden; background: #fbfaf5 !important; }
 
 /* Keep only the original chatbot character; other logo and decorative images stay hidden. */
 .chat-page .chat-stream > .message.bot { display: grid !important; grid-template-columns: 66px minmax(0, 1fr) !important; gap: 18px !important; max-width: 730px !important; }
+.chat-page .chat-stream > .message.bot { max-width: 980px !important; }.chat-page .chat-stream > .message.bot > .bot-bubble { max-width: 900px !important; }
+.chat-page .problem-note .section { margin-top: 20px; }.chat-page .problem-note .section-title,
+.chat-page .problem-note .foundation-details summary { gap: 7px; margin: 0 0 8px; color: #1e1e1e; font-size: 17px; font-weight: 800; line-height: 1.4; }.chat-page .problem-note .section-number { color: #1e1e1e; font-size: 18px; font-weight: 800; }.chat-page .problem-note table { border-top: 1px solid #cddbd3; border-bottom: 1px solid #cddbd3; background: #fffdf9; }.chat-page .problem-note tr + tr { border-top-color: #e7ece8; }.chat-page .problem-note th,
+.chat-page .problem-note td { padding: 10px 12px; font-size: 14px; line-height: 1.6; color: #1e1e1e; }.chat-page .problem-note th { width: 150px; border-right-color: #e0e8e2; background: #f5f8f5; }.chat-page .problem-note .foundation-details { width: 100%; margin: 0; border-color: #d8e3dc; background: #f8faf8; }.chat-page .problem-note .foundation-details summary { display: flex; align-items: center; padding: 12px 14px; margin: 0; cursor: pointer; }
 .chat-page .chat-stream > .message.bot > .avatar { width: 66px !important; height: 66px !important; display: block !important; overflow: hidden !important; border: 1px solid #e5dccf !important; border-radius: 50% !important; background: #fff !important; }
 .chat-page .chat-stream > .message.bot > .avatar img { width: 100% !important; height: 100% !important; display: block !important; object-fit: contain !important; }
 
@@ -58,3 +62,4 @@ body:has(.chat-page) { overflow: hidden; background: #fbfaf5 !important; }
   background: #fffdfa !important;
 }
 .chat-page .chat-stream > .message.bot > .typing-bubble span { background: #4a6b5d !important; }
+.chat-page .foundation-explanation-button { margin: 18px 0 0; padding: 9px 14px; border: 1px solid #bfcfc4; border-radius: 7px; background: #fffdfa; color: #1e1e1e; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }.chat-page .foundation-explanation-button:hover { background: #f4f8f4; }.chat-page .foundation-explanation-button:disabled { opacity: .6; cursor: wait; }

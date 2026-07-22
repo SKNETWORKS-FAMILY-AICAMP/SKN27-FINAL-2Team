@@ -2523,6 +2523,12 @@ body {
   .chat-page .chat-sidebar-toggle { display: none; }
 }
 
+.chat-page .foundation-details { width: calc(100% - 76px); box-sizing: border-box; min-width: 0; margin: 0 38px 25px; border: 1px solid #d9e4dc; border-radius: 10px; background: #f8fbf8; }
+.chat-page .foundation-details summary { padding: 13px 16px; cursor: pointer; color: #315f4d; font-weight: 800; }
+.chat-page .foundation-details .markdown-answer,
+.chat-page .foundation-details .markdown-answer * { min-width: 0; box-sizing: border-box; white-space: normal !important; word-break: break-word !important; overflow-wrap: anywhere !important; }
+.chat-page .foundation-details .markdown-answer { padding: 0 16px 16px !important; }
+
 /* Composer's problem picker uses the same red seal treatment as the rest of the chat. */
 .chat-page .problem-picker-trigger {
   border: 2px solid #4A6B5D !important;
