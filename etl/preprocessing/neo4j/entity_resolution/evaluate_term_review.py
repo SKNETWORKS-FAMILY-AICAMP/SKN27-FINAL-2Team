@@ -1,6 +1,6 @@
 from argparse import ArgumentParser
 from collections import Counter
-from json import dumps
+from json import dumps, loads
 from pathlib import Path
 import sys
 
@@ -221,8 +221,9 @@ def evaluate_term_decisions(
     gold_tasks: list[dict],
     gold_case_outcomes: pd.DataFrame,
     policy: dict,
+    verified_decision_tables: dict[str, pd.DataFrame] | None = None,
 ) -> dict[str, object]:
-    """사람 gold와 LLM 결정을 역할·identity cluster·case 단위로 비교한다."""
+    """사람 gold와 LLM 제안 및 검증 게이트 결과를 단계별로 비교한다."""
     gold_policy = policy["entity_resolution"]["semantic_review"]["gold_set"]
     evaluation_policy = policy["entity_resolution"]["semantic_review"][
         "gold_evaluation"
@@ -279,11 +280,50 @@ def evaluate_term_decisions(
             }
         )
 
+    gate_evaluation_available = verified_decision_tables is not None
+    gate_status_by_task_id: dict[str, str] = {}
+    accepted_clusters_by_case_id: dict[str, set[frozenset[str]]] = {}
+    gate_error_codes_by_case_id: dict[str, list[str]] = {}
+    if verified_decision_tables is not None:
+        gate_decisions = verified_decision_tables[
+            "term_resolution_decisions"
+        ]
+        for row in gate_decisions.to_dict("records"):
+            gate_status_by_task_id[str(row["term_review_task_id"])] = str(
+                row["verification_status"]
+            )
+        accepted_alternatives = verified_decision_tables[
+            "reviewed_canonical_alternatives"
+        ]
+        for row in accepted_alternatives.to_dict("records"):
+            case_id = str(row["resolution_case_id"])
+            member_ids = frozenset(
+                str(candidate_id)
+                for candidate_id in loads(row["source_candidate_ids_json"])
+            )
+            accepted_clusters_by_case_id.setdefault(case_id, set()).add(
+                member_ids
+            )
+        gate_errors = verified_decision_tables[
+            "term_decision_validation_errors"
+        ]
+        for row in gate_errors.to_dict("records"):
+            case_id = str(row["resolution_case_id"])
+            gate_error_codes_by_case_id.setdefault(case_id, []).append(
+                str(row["error_code"])
+            )
+
     confusion: Counter = Counter()
     case_rows: list[dict] = []
     pair_true_positive = 0
     pair_false_positive = 0
     pair_false_negative = 0
+    verified_pair_true_positive = 0
+    verified_pair_false_positive = 0
+    verified_pair_false_negative = 0
+    blocked_proposal_false_positive = 0
+    deferred_gold_identity_pairs = 0
+    gate_status_counts: Counter = Counter()
     for task_id, gold_decision in gold_by_task_id.items():
         task = task_by_id.get(task_id)
         if task is None:
@@ -350,6 +390,15 @@ def evaluate_term_decisions(
             "gold_requires_problem_review": "",
             "predicted_requires_problem_review": "",
             "problem_review_match": False,
+            "gate_evaluated": False,
+            "gate_verification_status": "",
+            "gate_error_codes_json": "[]",
+            "accepted_cluster_exact_match": "",
+            "accepted_pair_true_positive": "",
+            "accepted_pair_false_positive": "",
+            "accepted_pair_false_negative": "",
+            "blocked_proposal_false_merge_count": "",
+            "deferred_gold_identity_pair_count": "",
         }
         if predicted_decision is None:
             errors.append(
@@ -411,6 +460,62 @@ def evaluate_term_decisions(
         predicted_problem_review = "NO"
         if len(predicted_clusters) > 1:
             predicted_problem_review = "YES"
+        gate_values: dict[str, object] = {}
+        if gate_evaluation_available:
+            case_id = str(gold_decision["resolution_case_id"])
+            gate_status = gate_status_by_task_id.get(
+                task_id,
+                "MISSING_GATE_RESULT",
+            )
+            gate_status_counts[gate_status] += 1
+            accepted_clusters = accepted_clusters_by_case_id.get(
+                case_id,
+                set(),
+            )
+            accepted_pairs = extract_cluster_pairs(accepted_clusters)
+            accepted_true_positive = len(
+                gold_pairs.intersection(accepted_pairs)
+            )
+            accepted_false_positive = len(
+                accepted_pairs.difference(gold_pairs)
+            )
+            accepted_false_negative: int | str = ""
+            accepted_cluster_exact: bool | str = ""
+            deferred_pair_count = 0
+            if gate_status == "VERIFIED":
+                accepted_false_negative = len(
+                    gold_pairs.difference(accepted_pairs)
+                )
+                accepted_cluster_exact = gold_clusters == accepted_clusters
+                verified_pair_true_positive += accepted_true_positive
+                verified_pair_false_positive += accepted_false_positive
+                verified_pair_false_negative += accepted_false_negative
+            elif gate_status != "VERIFIED":
+                deferred_pair_count = len(gold_pairs)
+                deferred_gold_identity_pairs += deferred_pair_count
+            blocked_false_positive = max(
+                0,
+                case_pair_false_positive - accepted_false_positive,
+            )
+            blocked_proposal_false_positive += blocked_false_positive
+            gate_values = {
+                "gate_evaluated": True,
+                "gate_verification_status": gate_status,
+                "gate_error_codes_json": dumps(
+                    sorted(
+                        set(gate_error_codes_by_case_id.get(case_id, []))
+                    ),
+                    ensure_ascii=False,
+                ),
+                "accepted_cluster_exact_match": accepted_cluster_exact,
+                "accepted_pair_true_positive": accepted_true_positive,
+                "accepted_pair_false_positive": accepted_false_positive,
+                "accepted_pair_false_negative": accepted_false_negative,
+                "blocked_proposal_false_merge_count": (
+                    blocked_false_positive
+                ),
+                "deferred_gold_identity_pair_count": deferred_pair_count,
+            }
         base_case_row.update(
             {
                 "prediction_valid": True,
@@ -430,6 +535,7 @@ def evaluate_term_decisions(
                 and gold_problem_review == predicted_problem_review,
             }
         )
+        base_case_row.update(gate_values)
         case_rows.append(base_case_row)
 
     case_result_columns = [
@@ -456,6 +562,15 @@ def evaluate_term_decisions(
         "gold_requires_problem_review",
         "predicted_requires_problem_review",
         "problem_review_match",
+        "gate_evaluated",
+        "gate_verification_status",
+        "gate_error_codes_json",
+        "accepted_cluster_exact_match",
+        "accepted_pair_true_positive",
+        "accepted_pair_false_positive",
+        "accepted_pair_false_negative",
+        "blocked_proposal_false_merge_count",
+        "deferred_gold_identity_pair_count",
     ]
     case_results = pd.DataFrame(case_rows, columns=case_result_columns)
     valid_case_results = case_results.loc[
@@ -485,6 +600,21 @@ def evaluate_term_decisions(
     pair_f1 = safe_divide(
         2 * pair_precision * pair_recall,
         pair_precision + pair_recall,
+        zero_value,
+    )
+    verified_pair_precision = safe_divide(
+        verified_pair_true_positive,
+        verified_pair_true_positive + verified_pair_false_positive,
+        zero_value,
+    )
+    verified_pair_recall = safe_divide(
+        verified_pair_true_positive,
+        verified_pair_true_positive + verified_pair_false_negative,
+        zero_value,
+    )
+    verified_pair_f1 = safe_divide(
+        2 * verified_pair_precision * verified_pair_recall,
+        verified_pair_precision + verified_pair_recall,
         zero_value,
     )
     macro_f1 = zero_value
@@ -528,6 +658,22 @@ def evaluate_term_decisions(
         "identity_pair_f1": pair_f1,
         "false_merge_pair_count": pair_false_positive,
         "false_split_pair_count": pair_false_negative,
+        "proposal_identity_pair_precision": pair_precision,
+        "proposal_identity_pair_recall": pair_recall,
+        "proposal_identity_pair_f1": pair_f1,
+        "proposal_false_merge_pair_count": pair_false_positive,
+        "proposal_false_split_pair_count": pair_false_negative,
+        "gate_evaluation_available": gate_evaluation_available,
+        "gate_verification_status_counts": dict(gate_status_counts),
+        "verified_identity_pair_precision": verified_pair_precision,
+        "verified_identity_pair_recall": verified_pair_recall,
+        "verified_identity_pair_f1": verified_pair_f1,
+        "verified_false_merge_pair_count": verified_pair_false_positive,
+        "verified_false_split_pair_count": verified_pair_false_negative,
+        "blocked_proposal_false_merge_pair_count": (
+            blocked_proposal_false_positive
+        ),
+        "deferred_gold_identity_pair_count": deferred_gold_identity_pairs,
         "link_status_accuracy": safe_divide(
             int(link_rows["link_status_match"].sum()),
             len(link_rows),

@@ -135,6 +135,13 @@ def build_source_candidate_features(
             ),
             separators,
         )
+        # 통시대·미상처럼 특정 시대를 가리키지 않는 원천 값은 빈값으로 취급한다
+        excluded_era_values = set(feature_policy.get("era_excluded_values", []))
+        era_values = [
+            value
+            for value in era_values
+            if value.strip() not in excluded_era_values
+        ]
         era_tokens = sorted(
             {
                 build_match_key(value)

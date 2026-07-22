@@ -9,7 +9,7 @@ import pandas as pd
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 
 from common import load_pipeline_policy
-from entity_resolution.build_gold_set import calculate_file_sha256
+from goldset.build_gold_set import calculate_file_sha256
 from entity_resolution.semantic_review import (
     collect_classified_sources,
     load_jsonl,
@@ -33,6 +33,32 @@ def load_json_schema(input_path: str) -> dict:
     if not isinstance(schema, dict):
         raise ValueError("term decision schema는 JSON 객체여야 합니다.")
     return schema
+
+
+def validate_structured_output_schema(
+    schema: dict,
+    policy: dict,
+) -> list[str]:
+    """Responses API strict 출력에서 금지된 schema 키워드의 위치를 찾는다."""
+    schema_policy = policy["entity_resolution"]["semantic_review"][
+        "structured_output_schema"
+    ]
+    unsupported_keywords = set(schema_policy["unsupported_keywords"])
+    errors: list[str] = []
+
+    def visit_schema(value, path: str) -> None:
+        if isinstance(value, dict):
+            for key, child_value in value.items():
+                child_path = f"{path}.{key}"
+                if key in unsupported_keywords:
+                    errors.append(child_path)
+                visit_schema(child_value, child_path)
+        elif isinstance(value, list):
+            for item_index, child_value in enumerate(value):
+                visit_schema(child_value, f"{path}[{item_index}]")
+
+    visit_schema(schema, "$")
+    return errors
 
 
 def apply_controlled_decision_fields(
@@ -250,6 +276,13 @@ def execute_term_review_tasks(
     requester=request_term_decision,
 ) -> dict[str, object]:
     """성공 응답을 즉시 checkpoint에 기록하며 term task를 순차 실행한다."""
+    schema_errors = validate_structured_output_schema(schema, policy)
+    if schema_errors:
+        raise ValueError(
+            "OpenAI strict Structured Outputs에서 지원하지 않는 JSON Schema "
+            "키워드가 있습니다: "
+            + ", ".join(schema_errors)
+        )
     selected_tasks = select_execution_tasks(tasks, limit)
     tasks_by_id = {
         task["term_review_task_id"]: task for task in selected_tasks
@@ -489,6 +522,17 @@ if __name__ == "__main__":
     output_directory = Path(cli_args.output_dir)
     checkpoint_file = output_directory / executor_policy["checkpoint_file"]
     task_records = load_jsonl(cli_args.tasks)
+    decision_schema = load_json_schema(cli_args.schema)
+    schema_errors = validate_structured_output_schema(
+        decision_schema,
+        pipeline_policy,
+    )
+    if schema_errors:
+        raise ValueError(
+            "OpenAI strict Structured Outputs에서 지원하지 않는 JSON Schema "
+            "키워드가 있습니다: "
+            + ", ".join(schema_errors)
+        )
     if cli_args.dry_run:
         plan = build_execution_plan(
             task_records,
@@ -499,7 +543,6 @@ if __name__ == "__main__":
         print(dumps(plan, ensure_ascii=False, indent=2))
         raise SystemExit(0)
     review_prompt = load_text_file(cli_args.prompt)
-    decision_schema = load_json_schema(cli_args.schema)
     openai_client = create_openai_client(pipeline_policy)
     result = execute_term_review_tasks(
         task_records,

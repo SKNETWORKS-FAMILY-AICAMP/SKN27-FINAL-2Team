@@ -1,0 +1,265 @@
+{
+  "entity_resolution": {
+    "entity_type_mapping": {
+      "인물": "Person",
+      "사건": "Event",
+      "국가": "Polity",
+      "왕조": "Polity",
+      "제도": "Concept",
+      "정책": "Concept",
+      "단체": "Organization",
+      "기관": "Institution",
+      "문헌": "Work",
+      "문화재": "Heritage",
+      "조약": "Work",
+      "사상": "Concept",
+      "지명": "Place",
+      "유물": "Heritage",
+      "유적": "Heritage"
+    },
+    "candidate_collections": {
+      "encyclopedia": "aks_name",
+      "thesaurus": "thesaurus",
+      "itkc_people": "itkc_person",
+      "itkc_events": "itkc_event"
+    },
+    "definition_candidate_channel": "aks_definition",
+    "initial_link_status": {
+      "noise": "REJECTED",
+      "invalid_category": "REJECTED",
+      "candidate_found": "AMBIGUOUS",
+      "candidate_not_found": "UNRESOLVED"
+    },
+    "review_reason": {
+      "noise": "EXTRACTION_NOISE",
+      "invalid_category": "INVALID_EXTRACTION_CATEGORY",
+      "candidate_found": "CANDIDATE_VERIFICATION_REQUIRED",
+      "candidate_not_found": "NO_SOURCE_CANDIDATE"
+    },
+    "review_method": {
+      "invalid_category": "reextract_term",
+      "multiple_candidates": "llm_per_problem",
+      "single_candidate": "llm_term",
+      "candidate_not_found": "source_enrichment"
+    },
+    "proposal_status": "PROPOSED",
+    "review_status": "PENDING",
+    "link_status_vocabulary": [
+      "ACCEPTED",
+      "AMBIGUOUS",
+      "UNRESOLVED",
+      "REJECTED"
+    ],
+    "category_compatibility_status": {
+      "compatible": "COMPATIBLE",
+      "conflict": "CONFLICT",
+      "unknown": "UNKNOWN"
+    },
+    "source_candidate_role_vocabulary": [
+      "IDENTITY_MEMBER",
+      "EVIDENCE_ONLY",
+      "ALTERNATIVE_ENTITY",
+      "REJECTED",
+      "AMBIGUOUS"
+    ],
+    "source_feature_policy": {
+      "value_separators": [
+        "|",
+        "/",
+        ",",
+        ";",
+        "·",
+        ">"
+      ],
+      "sources": {
+        "AKS": {
+          "name_fields": [
+            "headword",
+            "aliases"
+          ],
+          "hanja_fields": [
+            "origin",
+            "headword_origin",
+            "aliases"
+          ],
+          "era_fields": [
+            "era"
+          ],
+          "type_field": "primary_type_part",
+          "type_mapping": {
+            "인물": "Person",
+            "사건": "Event",
+            "단체": "Organization",
+            "제도": "Concept",
+            "의례·행사": "Event",
+            "지명": "Place",
+            "유적": "Heritage",
+            "물품": "Heritage",
+            "문헌": "Work",
+            "작품": "Work",
+            "개념": "Concept"
+          }
+        },
+        "THESAURUS": {
+          "name_fields": [
+            "term_name"
+          ],
+          "hanja_fields": [
+            "hanja"
+          ],
+          "era_fields": [
+            "era"
+          ],
+          "type_field": "thesaurus_category",
+          "type_mapping": {
+            "인명": "Person",
+            "지명": "Place",
+            "서명": "Work",
+            "문화재": "Heritage"
+          }
+        },
+        "ITKC_PERSON": {
+          "name_fields": [
+            "name"
+          ],
+          "hanja_fields": [
+            "hanja"
+          ],
+          "era_fields": [],
+          "birth_year_field": "birth_year",
+          "death_year_field": "death_year",
+          "bonkwan_fields": [
+            "bonkwan"
+          ],
+          "default_entity_type": "Person"
+        },
+        "ITKC_EVENT": {
+          "name_fields": [
+            "event_name"
+          ],
+          "hanja_fields": [],
+          "era_fields": [
+            "period",
+            "event_date"
+          ],
+          "default_entity_type": "Event"
+        }
+      },
+      "era_excluded_values": [
+        "통시대",
+        "미상",
+        "시대미상",
+        "불명"
+      ]
+    },
+    "pair_signal_policy": {
+      "minimum_independent_signals": 2,
+      "minimum_disambiguating_signals": 1,
+      "required_signals": [
+        "normalized_name_match"
+      ],
+      "disambiguating_signals": [
+        "hanja_match",
+        "lifespan_match",
+        "era_overlap",
+        "bonkwan_match"
+      ],
+      "strong_conflicts": [
+        "entity_type_conflict",
+        "birth_year_conflict",
+        "death_year_conflict"
+      ],
+      "allow_same_source_merge": false,
+      "year_tolerance": 0
+    },
+    "canonical_registry": {
+      "registry_version": "canonical-registry-v1",
+      "canonical_id_prefix": "canonical:",
+      "active_status": "ACTIVE",
+      "minimum_automatic_identity_members": 2,
+      "accepted_resolution_method": "verified_multi_source_cluster",
+      "output_files": {
+        "canonical_registry": "canonical_entity_registry.csv",
+        "canonical_entity_nodes": "neo4j_canonical_entity_nodes.csv",
+        "source_record_nodes": "neo4j_source_record_nodes.csv",
+        "entity_name_nodes": "neo4j_entity_name_nodes.csv",
+        "source_record_resolutions": "neo4j_source_to_entity_relationships.csv",
+        "entity_name_references": "neo4j_name_to_entity_relationships.csv",
+        "final_problem_assignments": "exam_problem_entity_assignments_final.csv",
+        "canonical_acceptance_review_queue": "single_source_entities_requiring_approval.csv"
+      }
+    },
+    "identifier_policy": {
+      "hash_algorithm": "sha256",
+      "digest_length": 20,
+      "resolution_case_prefix": "resolution-case:",
+      "source_candidate_prefix": "source-candidate:",
+      "source_candidate_pair_prefix": "source-candidate-pair:",
+      "canonical_alternative_prefix": "canonical-alternative:",
+      "term_review_task_prefix": "term-review-task:",
+      "term_decision_prefix": "term-decision:",
+      "problem_review_task_prefix": "problem-review-task:",
+      "problem_decision_prefix": "problem-decision:",
+      "gold_case_prefix": "gold-case:",
+      "related_resolution_case_prefix": "related-resolution-case:",
+      "related_entity_task_prefix": "related-entity-task:",
+      "entity_name_prefix": "entity-name:",
+      "canonical_acceptance_review_prefix": "canonical-acceptance-review:",
+      "problem_assignment_prefix": "problem-assignment:",
+      "review_queue_prefix": "resolution-review:"
+    },
+    "related_entity_resolution": {
+      "queue_status": "PROPOSED",
+      "seed_retrieval_method": "human_related_entity_seed",
+      "seed_retrieval_score": 1.0,
+      "manual_review": {
+        "input_file": "goldset/human_review_csv/related_entity_manual_review.csv",
+        "validation_error_file": "related_entity_manual_review_errors.csv",
+        "statuses": {
+          "pending": "PENDING",
+          "verified": "VERIFIED",
+          "rejected": "REJECTED"
+        },
+        "verification_methods": {
+          "automatic": "AUTOMATIC_GATE",
+          "human": "HUMAN_REVIEW",
+          "pending": "PENDING_HUMAN_REVIEW",
+          "invalid": "VALIDATION_FAILED"
+        }
+      },
+      "final_identity": {
+        "default_output_directory": "goldset/final_identity",
+        "selection_file": "related_entity_canonical_selections.csv",
+        "selection_method": "verified_related_entity_seed"
+      },
+      "source_collection_by_source": {
+        "AKS": "encyclopedia",
+        "THESAURUS": "thesaurus",
+        "ITKC_PERSON": "itkc_people",
+        "ITKC_EVENT": "itkc_events"
+      },
+      "default_output_directory": "goldset/internal/related_entity",
+      "output_files": {
+        "terms": "related_entity_terms.csv",
+        "name_matches": "name_match_candidates.json",
+        "definition_matches": "definition_match_candidates.json",
+        "body_mention_matches": "body_mention_candidates.json",
+        "resolution_package": ".",
+        "term_review_tasks": "related_entity_review_tasks.jsonl",
+        "manifest": "related_entity_resolution_manifest.json"
+      }
+    },
+    "output_files": {
+      "resolution_cases": "entity_cases.csv",
+      "source_record_candidates": "candidate_source_records.csv",
+      "source_candidate_features": "candidate_comparison_features.csv",
+      "source_candidate_pair_signals": "candidate_pair_merge_signals.csv",
+      "canonical_alternative_clusters": "proposed_entity_groups.csv",
+      "canonical_cluster_members": "proposed_entity_group_members.csv",
+      "problem_contexts": "exam_problem_contexts.csv",
+      "problem_resolution_assignments": "exam_problem_entity_assignments_draft.csv",
+      "review_queue": "cases_requiring_review.csv"
+    },
+    "body_mention_candidate_channel": "aks_body_mention"
+  }
+}

@@ -301,7 +301,7 @@ EntityType의 쌍 신호와 충돌 검사를 구현했지만, 다음 검사는 �
 `AMBIGUOUS` case를 대상으로 다음 파일을 생성했다.
 
 ```text
-output/04_llm_review/internal/term_identity_review_tasks.jsonl
+output/internal/model_review/term_identity_review_tasks.jsonl
 ```
 
 | 항목 | 값 |
@@ -367,38 +367,38 @@ decision 파일이 없으므로 `reviewed_canonical_alternatives`, 영구 `canon
 ```powershell
 # 1. term review task 생성
 python etl/preprocessing/neo4j/entity_resolution/semantic_review.py `
-  etl/preprocessing/neo4j/output/03_entity_resolution `
-  etl/preprocessing/neo4j/output/04_llm_review
+  etl/preprocessing/neo4j/output/internal/entity_resolution `
+  etl/preprocessing/neo4j/output/internal/model_review
 
 # 2. API 호출 전 실행 규모와 checkpoint 확인
 python etl/preprocessing/neo4j/entity_resolution/execute_term_review.py `
-  etl/preprocessing/neo4j/output/04_llm_review/internal/term_identity_review_tasks.jsonl `
-  etl/preprocessing/neo4j/output/04_llm_review/internal/model_predictions `
+  etl/preprocessing/neo4j/output/internal/model_review/term_identity_review_tasks.jsonl `
+  etl/preprocessing/neo4j/output/internal/model_review `
   --dry-run
 
 # 3. 골든셋 평가를 통과한 뒤 전체 term decision 실행
 python etl/preprocessing/neo4j/entity_resolution/execute_term_review.py `
-  etl/preprocessing/neo4j/output/04_llm_review/internal/term_identity_review_tasks.jsonl `
-  etl/preprocessing/neo4j/output/04_llm_review/internal/model_predictions
+  etl/preprocessing/neo4j/output/internal/model_review/term_identity_review_tasks.jsonl `
+  etl/preprocessing/neo4j/output/internal/model_review
 
 # 4. LLM이 작성한 term decision 검증
 python etl/preprocessing/neo4j/entity_resolution/semantic_review.py `
-  etl/preprocessing/neo4j/output/03_entity_resolution `
-  etl/preprocessing/neo4j/output/04_llm_review `
-  --decisions etl/preprocessing/neo4j/output/04_llm_review/internal/model_predictions/term_identity_model_decisions.jsonl
+  etl/preprocessing/neo4j/output/internal/entity_resolution `
+  etl/preprocessing/neo4j/output/internal/model_review `
+  --decisions etl/preprocessing/neo4j/output/internal/model_review/term_identity_model_decisions.jsonl
 
 # 5. 검증된 term 결과로 문항별 대안 선택 task 생성·검증
 python etl/preprocessing/neo4j/entity_resolution/problem_review.py `
-  etl/preprocessing/neo4j/output/03_entity_resolution `
-  etl/preprocessing/neo4j/output/04_llm_review `
-  --decisions etl/preprocessing/neo4j/output/04_llm_review/internal/model_predictions/problem_entity_model_decisions.jsonl
+  etl/preprocessing/neo4j/output/internal/entity_resolution `
+  etl/preprocessing/neo4j/output/internal/model_review `
+  --decisions etl/preprocessing/neo4j/output/internal/model_review/problem_entity_model_decisions.jsonl
 
 # 6. registry 및 Neo4j identity import CSV 생성
 python etl/preprocessing/neo4j/entity_resolution/finalize_entity_resolution.py `
-  etl/preprocessing/neo4j/output/03_entity_resolution `
-  etl/preprocessing/neo4j/output/04_llm_review `
-  etl/preprocessing/neo4j/output/05_final_identity `
-  --registry etl/preprocessing/neo4j/output/05_final_identity/canonical_entity_registry.csv
+  etl/preprocessing/neo4j/output/internal/entity_resolution `
+  etl/preprocessing/neo4j/output/internal/model_review `
+  etl/preprocessing/neo4j/output/final_identity `
+  --registry etl/preprocessing/neo4j/output/final_identity/canonical_entity_registry.csv
 ```
 
 결정 JSON Schema와 판정 prompt는 각각 `config/schemas`, `config/prompts`에 있으며 특정 역사
@@ -443,12 +443,12 @@ runner와 같은 `run_preprocessing_pipeline()`을 재사용하는 별도 진입
 ```powershell
 # 경로·모델·실행량만 확인하며 LLM과 파일 출력을 실행하지 않음
 .\.venv\Scripts\python.exe `
-  etl/preprocessing/neo4j/run_neo4j_preprocessing_test.py `
+  etl/preprocessing/neo4j/run_preprocessing_test.py `
   --dry-run
 
 # 설정 기본값 또는 CLI에서 지정한 소량 문항 실행
 .\.venv\Scripts\python.exe `
-  etl/preprocessing/neo4j/run_neo4j_preprocessing_test.py `
+  etl/preprocessing/neo4j/run_preprocessing_test.py `
   --limit 20 `
   --batch-size 10
 ```

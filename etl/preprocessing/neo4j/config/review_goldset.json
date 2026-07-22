@@ -1,0 +1,264 @@
+{
+  "entity_resolution": {
+    "semantic_review": {
+      "prompt_version": "entity-semantic-review-v1",
+      "problem_prompt_version": "problem-entity-selection-v1",
+      "term_model": {
+        "model": "gpt-5.6-terra",
+        "temperature": 0,
+        "reasoning_effort": "high",
+        "send_temperature": false
+      },
+      "problem_model": {
+        "model": "gpt-5.6-sol",
+        "temperature": 0,
+        "reasoning_effort": "high"
+      },
+      "term_task_link_statuses": [
+        "AMBIGUOUS"
+      ],
+      "maximum_problem_contexts_per_term_task": 3,
+      "maximum_source_context_characters": 1600,
+      "source_context_fields": {
+        "AKS": [
+          "headword",
+          "aliases",
+          "origin",
+          "headword_origin",
+          "primary_type",
+          "era",
+          "definition",
+          "snippet"
+        ],
+        "THESAURUS": [
+          "term_name",
+          "hanja",
+          "era",
+          "thesaurus_category",
+          "description",
+          "term_year",
+          "term_remark"
+        ],
+        "ITKC_PERSON": [
+          "name",
+          "hanja",
+          "birth_year",
+          "death_year",
+          "bonkwan",
+          "ja",
+          "ho",
+          "father"
+        ],
+        "ITKC_EVENT": [
+          "event_name",
+          "subject_category",
+          "period",
+          "event_date",
+          "related_event"
+        ]
+      },
+      "decision_status_input": "PROPOSED",
+      "decision_verification_statuses": [
+        "VERIFIED",
+        "NEEDS_MANUAL_REVIEW",
+        "INVALID"
+      ],
+      "term_source_alignment": {
+        "automatic_acceptance_modes": [
+          "normalized_exact",
+          "bidirectional_containment",
+          "character_multiset_match",
+          "ordered_subsequence_expansion"
+        ]
+      },
+      "structured_output_schema": {
+        "unsupported_keywords": [
+          "uniqueItems",
+          "allOf",
+          "not",
+          "dependentRequired",
+          "dependentSchemas",
+          "if",
+          "then",
+          "else"
+        ]
+      },
+      "term_task_file": "term_identity_review_tasks.jsonl",
+      "term_executor": {
+        "maximum_output_tokens": 8000,
+        "timeout_seconds": 180,
+        "maximum_retries": 2,
+        "store_response": false,
+        "service_tier": "auto",
+        "checkpoint_file": "term_identity_review_checkpoint.jsonl",
+        "decision_file": "term_identity_model_decisions.jsonl",
+        "failure_file": "term_identity_model_failures.csv",
+        "run_manifest_file": "term_identity_model_run_manifest.json"
+      },
+      "gold_evaluation": {
+        "zero_division_value": 0,
+        "output_files": {
+          "metrics": "model_vs_gold_metrics.json",
+          "case_results": "model_vs_gold_case_results.csv",
+          "role_metrics": "model_vs_gold_candidate_role_metrics.csv",
+          "stratum_metrics": "model_vs_gold_group_metrics.csv",
+          "evaluation_errors": "model_vs_gold_evaluation_errors.csv"
+        }
+      },
+      "term_decision_input_file": "term_identity_model_decisions.jsonl",
+      "term_decision_output_files": {
+        "term_resolution_decisions": "verified_term_review_summary.csv",
+        "reviewed_canonical_alternatives": "verified_entity_alternatives.csv",
+        "reviewed_source_roles": "verified_candidate_roles.csv",
+        "term_decision_validation_errors": "term_review_validation_errors.csv"
+      },
+      "problem_task_file": "problem_entity_choice_tasks.jsonl",
+      "problem_decision_input_file": "problem_entity_model_decisions.jsonl",
+      "problem_decision_output_files": {
+        "problem_resolution_decisions": "verified_problem_review_summary.csv",
+        "verified_problem_assignments": "verified_problem_entity_assignments.csv",
+        "problem_decision_validation_errors": "problem_review_validation_errors.csv"
+      },
+      "gold_set": {
+        "workflow": {
+          "annotation_directory": "goldset/human_review_csv",
+          "gold_task_file": "goldset/internal/source/gold_review_tasks.jsonl",
+          "validation_directory": "goldset/internal/evaluation",
+          "model_prediction_directory": "goldset/internal/model",
+          "evaluation_directory": "goldset/internal/evaluation",
+          "related_model_prediction_directory": "goldset/internal/related_entity",
+          "term_review_prompt": "config/prompts/term_resolution_review.md",
+          "term_review_schema": "config/schemas/term_resolution_decision.schema.json",
+          "manifest_file": "goldset_workflow_manifest.json"
+        },
+        "selection_policy_version": "entity-resolution-gold-pilot-v2",
+        "default_output_directory": "goldset/internal/source",
+        "review_csv_directory": "goldset/human_review_csv",
+        "sample_size": 20,
+        "minimum_cases_per_category": 1,
+        "maximum_candidates_per_pilot_case": 10,
+        "deterministic_seed": "entity-resolution-gold-pilot-v2",
+        "candidate_count_buckets": [
+          {
+            "name": "C01_02",
+            "minimum": 1,
+            "maximum": 2
+          },
+          {
+            "name": "C03_05",
+            "minimum": 3,
+            "maximum": 5
+          },
+          {
+            "name": "C06_09",
+            "minimum": 6,
+            "maximum": 9
+          },
+          {
+            "name": "C10",
+            "minimum": 10,
+            "maximum": 10
+          },
+          {
+            "name": "C11_PLUS",
+            "minimum": 11,
+            "maximum": null
+          }
+        ],
+        "retrieval_profile_labels": {
+          "exact_only": "EXACT_ONLY",
+          "exact_and_expanded": "EXACT_AND_EXPANDED",
+          "expanded_only": "EXPANDED_ONLY"
+        },
+        "exact_retrieval_method": "exact",
+        "multi_source_confidence_tier": "MULTI_SOURCE_SUPPORTED",
+        "annotation_vocabulary": {
+          "candidate_roles": [
+            "IDENTITY_MEMBER",
+            "EVIDENCE_ONLY",
+            "REJECTED",
+            "AMBIGUOUS"
+          ],
+          "link_statuses": [
+            "ACCEPTED",
+            "AMBIGUOUS",
+            "UNRESOLVED",
+            "REJECTED"
+          ],
+          "review_statuses": [
+            "NOT_STARTED",
+            "IN_PROGRESS",
+            "COMPLETE",
+            "NEEDS_DISCUSSION"
+          ],
+          "entity_types": [
+            "Person",
+            "Event",
+            "Institution",
+            "Heritage",
+            "Work",
+            "Organization",
+            "Place",
+            "Polity",
+            "Concept"
+          ]
+        },
+        "importer": {
+          "case_sheet": "Case Review",
+          "candidate_sheet": "Candidate Labels",
+          "csv_input_files": {
+            "case_annotations": "human_review_cases.csv",
+            "candidate_annotations": "human_review_candidates.csv"
+          },
+          "required_completion_status": "COMPLETE",
+          "initial_review_status": "NOT_STARTED",
+          "implicit_candidate_role": "REJECTED",
+          "overwrite_protection": {
+            "case_annotation_fields": [
+              "gold_link_status",
+              "requires_problem_review",
+              "gold_decision_reason",
+              "reviewer"
+            ],
+            "case_status_field": "case_review_status",
+            "candidate_annotation_fields": [
+              "gold_candidate_role",
+              "gold_alternative_key",
+              "gold_display_name",
+              "gold_entity_type",
+              "gold_related_entity_key",
+              "gold_related_display_name",
+              "gold_related_entity_type",
+              "gold_reason",
+              "reviewer"
+            ],
+            "candidate_status_field": "candidate_review_status"
+          },
+          "requires_problem_review_values": [
+            "YES",
+            "NO"
+          ],
+          "decision_status": "PROPOSED",
+          "review_model": "human_gold_adjudication",
+          "prompt_version": "entity-resolution-gold-annotation-v2",
+          "alternative_reason_separator": " | ",
+          "output_files": {
+            "gold_decisions": "human_gold_decisions.jsonl",
+            "related_entity_tasks": "related_entity_resolution_tasks.jsonl",
+            "gold_case_outcomes": "human_gold_case_outcomes.csv",
+            "validation_errors": "goldset_validation_errors.csv",
+            "import_manifest": "goldset_import_manifest.json"
+          }
+        },
+        "output_files": {
+          "gold_tasks": "gold_review_tasks.jsonl",
+          "case_annotations": "gold_case_labels_template.csv",
+          "candidate_annotations": "gold_candidate_labels_template.csv",
+          "code_baseline": "rule_based_baseline.csv",
+          "distribution": "gold_sample_distribution.csv",
+          "manifest": "gold_sample_manifest.json"
+        }
+      }
+    }
+  }
+}

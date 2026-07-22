@@ -164,6 +164,50 @@ class ResolutionPackageTest(unittest.TestCase):
         channels = json.loads(first.iloc[0]["retrieval_channels_json"])
         self.assertEqual(set(channels), {"aks_name", "aks_definition"})
 
+    def test_body_mention_channel_is_preserved_with_same_source_record(self):
+        candidate = self.make_candidate(
+            "AKS:ARTICLE:E1:sha256-test",
+            "E1",
+        )
+        match_results = [
+            {
+                "canonical_term": "진묘수",
+                "category": "유물",
+                "problem_ids": ["question-1"],
+                "is_noise": False,
+                "encyclopedia": [candidate],
+                "thesaurus": [],
+                "itkc_people": [],
+                "itkc_events": [],
+            }
+        ]
+        body_candidate = dict(candidate)
+        body_candidate["retrieval_method"] = "body_mention"
+        body_candidate["retrieval_methods"] = ["body_mention"]
+        body_candidate["retrieval_score"] = 1.0
+        body_results = [
+            {
+                "canonical_term": "진묘수",
+                "category": "유물",
+                "candidates": [body_candidate],
+            }
+        ]
+        contexts = pd.DataFrame(
+            [{"problem_id": "question-1", "full_text": "진묘수 문항"}]
+        )
+
+        tables = self.build_resolution_tables(
+            match_results,
+            [],
+            contexts,
+            self.policy,
+            body_mention_results=body_results,
+        )
+
+        row = tables["source_record_candidates"].iloc[0]
+        channels = set(json.loads(row["retrieval_channels_json"]))
+        self.assertEqual(channels, {"aks_name", "aks_body_mention"})
+
     def test_noise_is_not_added_to_review_queue(self):
         tables = self.build_fixture_tables()
         review_queue = tables["review_queue"]

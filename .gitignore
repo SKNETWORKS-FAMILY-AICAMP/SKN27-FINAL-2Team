@@ -316,6 +316,9 @@ etl/raw_data/한국민족문화대백과사전/articles_detail.jsonl
 etl/preprocessing/neo4j/output/**/*.json
 etl/preprocessing/neo4j/output/**/*.jsonl
 
+# Entity Resolution goldset runtime snapshots, checkpoints, and evaluations
+etl/preprocessing/neo4j/goldset/internal/**
+
 # Generated AKS encyclopedia RAG artifacts
 etl/preprocessing/history/processed/aks_encyclopedia.chunks.jsonl
 etl/preprocessing/history/processed/aks_encyclopedia.documents.jsonl

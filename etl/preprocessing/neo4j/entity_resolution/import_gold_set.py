@@ -14,8 +14,11 @@ import pandas as pd
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 
 from common import load_pipeline_policy
-from entity_resolution.build_gold_set import calculate_file_sha256
+from goldset.build_gold_set import calculate_file_sha256
 from entity_resolution.semantic_review import load_jsonl, write_jsonl
+from entity_resolution.related_entity_resolution import (
+    build_related_entity_tasks,
+)
 
 
 def load_shared_strings(archive: ZipFile) -> list[str]:
@@ -338,24 +341,10 @@ def validate_candidate_annotation(
     gold_policy: dict,
     errors: list[dict],
 ) -> None:
-    """후보 역할과 대안 입력값의 완결성·일관성을 검사한다."""
+    """후보 역할과 동일·관련 엔티티 입력값의 완결성을 검사한다."""
     gold_case_id = row["gold_case_id"]
     candidate_id = row["source_candidate_id"]
     annotation_vocabulary = gold_policy["annotation_vocabulary"]
-    importer_policy = gold_policy["importer"]
-    required_status = str(importer_policy["required_completion_status"])
-    review_status = row["candidate_review_status"]
-    if review_status != required_status:
-        add_import_error(
-            errors,
-            gold_case_id,
-            "CANDIDATE",
-            candidate_id,
-            "INCOMPLETE",
-            "CANDIDATE_REVIEW_NOT_COMPLETE",
-            review_status or "EMPTY",
-        )
-        return
     role = row["gold_candidate_role"]
     allowed_roles = set(annotation_vocabulary["candidate_roles"])
     if role not in allowed_roles:
@@ -368,44 +357,28 @@ def validate_candidate_annotation(
             "INVALID_GOLD_CANDIDATE_ROLE",
             role or "EMPTY",
         )
-    if not row["gold_reason"]:
-        add_import_error(
-            errors,
-            gold_case_id,
-            "CANDIDATE",
-            candidate_id,
-            "ERROR",
-            "MISSING_GOLD_REASON",
-            "후보 판정 근거가 필요합니다.",
-        )
-    if not row["reviewer"]:
-        add_import_error(
-            errors,
-            gold_case_id,
-            "CANDIDATE",
-            candidate_id,
-            "ERROR",
-            "MISSING_CANDIDATE_REVIEWER",
-            "후보 검수자 식별자가 필요합니다.",
-        )
     alternative_fields = [
         "gold_alternative_key",
         "gold_display_name",
         "gold_entity_type",
     ]
+    related_entity_fields = [
+        "gold_related_entity_key",
+        "gold_related_display_name",
+        "gold_related_entity_type",
+    ]
     if role == "IDENTITY_MEMBER":
-        for field_name in alternative_fields:
-            if not row[field_name]:
-                add_import_error(
-                    errors,
-                    gold_case_id,
-                    "CANDIDATE",
-                    candidate_id,
-                    "ERROR",
-                    "MISSING_IDENTITY_ALTERNATIVE_FIELD",
-                    field_name,
-                )
-        if row["gold_entity_type"] not in set(
+        if not row["gold_alternative_key"]:
+            add_import_error(
+                errors,
+                gold_case_id,
+                "CANDIDATE",
+                candidate_id,
+                "ERROR",
+                "MISSING_IDENTITY_ALTERNATIVE_FIELD",
+                "gold_alternative_key",
+            )
+        if row["gold_entity_type"] and row["gold_entity_type"] not in set(
             annotation_vocabulary["entity_types"]
         ):
             add_import_error(
@@ -417,7 +390,22 @@ def validate_candidate_annotation(
                 "INVALID_GOLD_ENTITY_TYPE",
                 row["gold_entity_type"] or "EMPTY",
             )
-    elif role in allowed_roles:
+        populated_related_fields = [
+            field_name
+            for field_name in related_entity_fields
+            if row[field_name]
+        ]
+        if populated_related_fields:
+            add_import_error(
+                errors,
+                gold_case_id,
+                "CANDIDATE",
+                candidate_id,
+                "ERROR",
+                "IDENTITY_RELATED_ENTITY_FIELDS_PRESENT",
+                ",".join(populated_related_fields),
+            )
+    elif role == "EVIDENCE_ONLY":
         populated_fields = [
             field_name
             for field_name in alternative_fields
@@ -433,6 +421,51 @@ def validate_candidate_annotation(
                 "NON_IDENTITY_ALTERNATIVE_FIELDS_PRESENT",
                 ",".join(populated_fields),
             )
+        populated_related_fields = [
+            field_name
+            for field_name in related_entity_fields
+            if row[field_name]
+        ]
+        if populated_related_fields and not row["gold_related_entity_key"]:
+            add_import_error(
+                errors,
+                gold_case_id,
+                "CANDIDATE",
+                candidate_id,
+                "ERROR",
+                "MISSING_RELATED_ENTITY_KEY",
+                "gold_related_entity_key",
+            )
+        if (
+            row["gold_related_entity_type"]
+            and row["gold_related_entity_type"]
+            not in set(annotation_vocabulary["entity_types"])
+        ):
+            add_import_error(
+                errors,
+                gold_case_id,
+                "CANDIDATE",
+                candidate_id,
+                "ERROR",
+                "INVALID_RELATED_ENTITY_TYPE",
+                row["gold_related_entity_type"],
+            )
+    elif role in allowed_roles:
+        populated_fields = [
+            field_name
+            for field_name in [*alternative_fields, *related_entity_fields]
+            if row[field_name]
+        ]
+        if populated_fields:
+            add_import_error(
+                errors,
+                gold_case_id,
+                "CANDIDATE",
+                candidate_id,
+                "ERROR",
+                "UNSUPPORTED_ROLE_ENTITY_FIELDS_PRESENT",
+                ",".join(populated_fields),
+            )
 
 
 def build_case_decision(
@@ -445,12 +478,20 @@ def build_case_decision(
     importer_policy = gold_policy["importer"]
     gold_case_id = case_row["gold_case_id"]
     grouped_identity_rows: dict[str, list[dict[str, str]]] = defaultdict(list)
+    grouped_related_entity_rows: dict[
+        str,
+        list[dict[str, str]],
+    ] = defaultdict(list)
     role_rows: dict[str, list[dict[str, str]]] = defaultdict(list)
     for row in candidate_rows:
         role = row["gold_candidate_role"]
         role_rows[role].append(row)
         if role == "IDENTITY_MEMBER":
             grouped_identity_rows[row["gold_alternative_key"]].append(row)
+        elif role == "EVIDENCE_ONLY" and row["gold_related_entity_key"]:
+            grouped_related_entity_rows[
+                row["gold_related_entity_key"]
+            ].append(row)
 
     proposed_alternatives: list[dict] = []
     for alternative_key in sorted(grouped_identity_rows):
@@ -458,8 +499,16 @@ def build_case_decision(
             grouped_identity_rows[alternative_key],
             key=lambda row: row["source_candidate_id"],
         )
-        display_names = {row["gold_display_name"] for row in members}
-        entity_types = {row["gold_entity_type"] for row in members}
+        display_names = {
+            row["gold_display_name"]
+            for row in members
+            if row["gold_display_name"]
+        }
+        entity_types = {
+            row["gold_entity_type"]
+            for row in members
+            if row["gold_entity_type"]
+        }
         if len(display_names) != 1:
             add_import_error(
                 errors,
@@ -480,7 +529,13 @@ def build_case_decision(
                 "INCONSISTENT_ALTERNATIVE_ENTITY_TYPE",
                 dumps(sorted(entity_types), ensure_ascii=False),
             )
-        reasons = sorted({row["gold_reason"] for row in members})
+        reasons = sorted(
+            {
+                row["gold_reason"]
+                for row in members
+                if row["gold_reason"]
+            }
+        )
         display_name = ""
         entity_type = ""
         if display_names:
@@ -496,7 +551,70 @@ def build_case_decision(
                 ],
                 "reason": str(
                     importer_policy["alternative_reason_separator"]
-                ).join(reasons),
+                ).join(reasons) or case_row["gold_decision_reason"],
+            }
+        )
+
+    proposed_related_entities: list[dict] = []
+    for related_entity_key in sorted(grouped_related_entity_rows):
+        members = sorted(
+            grouped_related_entity_rows[related_entity_key],
+            key=lambda row: row["source_candidate_id"],
+        )
+        display_names = {
+            row["gold_related_display_name"]
+            for row in members
+            if row["gold_related_display_name"]
+        }
+        entity_types = {
+            row["gold_related_entity_type"]
+            for row in members
+            if row["gold_related_entity_type"]
+        }
+        if len(display_names) != 1:
+            add_import_error(
+                errors,
+                gold_case_id,
+                "RELATED_ENTITY",
+                related_entity_key,
+                "ERROR",
+                "INCONSISTENT_RELATED_ENTITY_DISPLAY_NAME",
+                dumps(sorted(display_names), ensure_ascii=False),
+            )
+        if len(entity_types) != 1:
+            add_import_error(
+                errors,
+                gold_case_id,
+                "RELATED_ENTITY",
+                related_entity_key,
+                "ERROR",
+                "INCONSISTENT_RELATED_ENTITY_TYPE",
+                dumps(sorted(entity_types), ensure_ascii=False),
+            )
+        reasons = sorted(
+            {
+                row["gold_reason"]
+                for row in members
+                if row["gold_reason"]
+            }
+        )
+        display_name = ""
+        entity_type = ""
+        if display_names:
+            display_name = sorted(display_names)[0]
+        if entity_types:
+            entity_type = sorted(entity_types)[0]
+        proposed_related_entities.append(
+            {
+                "related_entity_key": related_entity_key,
+                "display_name": display_name,
+                "entity_type": entity_type,
+                "evidence_source_candidate_ids": [
+                    row["source_candidate_id"] for row in members
+                ],
+                "reason": str(
+                    importer_policy["alternative_reason_separator"]
+                ).join(reasons) or case_row["gold_decision_reason"],
             }
         )
 
@@ -568,7 +686,8 @@ def build_case_decision(
         classified_sources[field_name] = [
             {
                 "source_candidate_id": row["source_candidate_id"],
-                "reason": row["gold_reason"],
+                "reason": row["gold_reason"]
+                or case_row["gold_decision_reason"],
             }
             for row in sorted(
                 role_rows[role],
@@ -582,6 +701,7 @@ def build_case_decision(
         "review_model": importer_policy["review_model"],
         "prompt_version": importer_policy["prompt_version"],
         "proposed_alternatives": proposed_alternatives,
+        "proposed_related_entities": proposed_related_entities,
         **classified_sources,
         "decision_reason": case_row["gold_decision_reason"],
     }
@@ -593,6 +713,7 @@ def build_case_decision(
         "gold_link_status": link_status,
         "requires_problem_review": case_row["requires_problem_review"],
         "alternative_count": len(proposed_alternatives),
+        "related_entity_count": len(proposed_related_entities),
         "reviewer": case_row["reviewer"],
         "case_review_status": case_row["case_review_status"],
         "gold_decision_reason": case_row["gold_decision_reason"],
@@ -637,9 +758,10 @@ def import_gold_annotations(
         "gold_alternative_key",
         "gold_display_name",
         "gold_entity_type",
+        "gold_related_entity_key",
+        "gold_related_display_name",
+        "gold_related_entity_type",
         "gold_reason",
-        "reviewer",
-        "candidate_review_status",
     ]
     require_columns(case_rows, required_case_columns, importer_policy["case_sheet"])
     require_columns(
@@ -838,7 +960,20 @@ def import_gold_annotations(
                 "CANDIDATE_COUNT_MISMATCH",
                 f"expected={expected_candidate_count}, observed={case_row['candidate_count']}",
             )
+        normalized_observed_rows: list[dict[str, str]] = []
+        case_is_complete = (
+            case_row["case_review_status"] == required_status
+        )
         for candidate_row in observed_rows:
+            normalized_candidate_row = dict(candidate_row)
+            if (
+                case_is_complete
+                and not normalized_candidate_row["gold_candidate_role"]
+            ):
+                normalized_candidate_row["gold_candidate_role"] = str(
+                    importer_policy["implicit_candidate_role"]
+                )
+            normalized_observed_rows.append(normalized_candidate_row)
             candidate_id = candidate_row["source_candidate_id"]
             expected_candidate = expected_candidates.get(candidate_id)
             if expected_candidate is None:
@@ -857,11 +992,12 @@ def import_gold_annotations(
                 "CANDIDATE",
                 candidate_id,
             )
-            validate_candidate_annotation(
-                candidate_row,
-                gold_policy,
-                errors,
-            )
+            if case_is_complete:
+                validate_candidate_annotation(
+                    normalized_candidate_row,
+                    gold_policy,
+                    errors,
+                )
 
         case_error_count_before_decision = sum(
             1 for error in errors if error["gold_case_id"] == gold_case_id
@@ -869,7 +1005,7 @@ def import_gold_annotations(
         if case_error_count_before_decision == 0:
             decision, outcome = build_case_decision(
                 case_row,
-                observed_rows,
+                normalized_observed_rows,
                 gold_policy,
                 errors,
             )
@@ -896,14 +1032,21 @@ def import_gold_annotations(
         "gold_link_status",
         "requires_problem_review",
         "alternative_count",
+        "related_entity_count",
         "reviewer",
         "case_review_status",
         "gold_decision_reason",
     ]
     errors_table = pd.DataFrame(errors, columns=error_columns)
     outcomes_table = pd.DataFrame(outcomes, columns=outcome_columns)
+    related_entity_tasks = build_related_entity_tasks(
+        decisions,
+        gold_tasks,
+        policy,
+    )
     return {
         "gold_decisions": decisions,
+        "related_entity_tasks": related_entity_tasks,
         "gold_case_outcomes": outcomes_table,
         "validation_errors": errors_table,
     }
@@ -927,9 +1070,14 @@ def write_gold_import_outputs(
         for name, filename in importer_policy["output_files"].items()
     }
     decisions = outputs["gold_decisions"]
+    related_entity_tasks = outputs["related_entity_tasks"]
     outcomes = outputs["gold_case_outcomes"]
     validation_errors = outputs["validation_errors"]
     write_jsonl(decisions, str(output_paths["gold_decisions"]))
+    write_jsonl(
+        related_entity_tasks,
+        str(output_paths["related_entity_tasks"]),
+    )
     outcomes.to_csv(
         output_paths["gold_case_outcomes"],
         index=False,
@@ -963,6 +1111,7 @@ def write_gold_import_outputs(
         "task_path": str(Path(task_path).resolve()),
         "task_sha256": calculate_file_sha256(task_path),
         "valid_decision_count": len(decisions),
+        "related_entity_task_count": len(related_entity_tasks),
         "validation_error_count": len(validation_errors),
         "validation_severity_counts": severity_counts,
         "ready_for_evaluation": validation_errors.empty,

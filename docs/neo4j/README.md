@@ -284,11 +284,15 @@ Neo4j 결과는 최소한 다음을 반환한다.
 목표 스키마가 이미 구현됐다는 뜻이 아니다.
 
 전체 실행은 `run_neo4j_preprocessing.py`, 격리된 소량 실행은
-`run_neo4j_preprocessing_test.py`를 사용한다. 소량 실행 결과는 `output/test_run` 아래에만
-저장된다. 운영·테스트 모두 `01_term_extraction`부터 `05_final_identity`까지 같은 업무 단계
-폴더 구조를 사용한다. 단계 루트에는 사람이 확인할 결과만 두고 체크포인트·상세 후보표·
-모델 중간 산출물은 각 단계의 `internal`에 둔다. 각 파일 설명은
+`run_preprocessing_test.py`를 사용한다. 소량 실행 결과는 `output/test_run` 아래에만
+저장된다. 운영·테스트 모두 사람이 확인할 `review`·`final_identity`와 자동 생성되는
+`internal`을 분리한다. 체크포인트·상세 후보표·모델 중간 산출물은 `internal`의 기능별
+하위 폴더에 둔다. 각 파일 설명은
 `etl/preprocessing/neo4j/output/README.md`에 있다.
+
+사람 검수가 끝난 골든셋의 import·모델 평가·관련 엔티티 2차 판정도 같은 진입점에서
+`run_neo4j_preprocessing.py --goldset`으로 실행한다. API 호출 전 검증은 `--dry-run`을
+함께 지정한다.
 
 검수된 골든셋 case·candidate CSV는 `entity_resolution/import_gold_set.py`로 읽으며, 원본 gold task와
 식별자를 대조한 뒤 완료되고 모순 없는 case만 평가용 decision JSONL로 변환한다.

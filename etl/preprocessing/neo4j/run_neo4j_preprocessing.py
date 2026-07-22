@@ -1,6 +1,6 @@
 import sys
 from argparse import ArgumentParser
-from json import dump
+from json import dump, dumps
 from pathlib import Path
 
 sys.path.append(str(Path(__file__).resolve().parent / "terms"))
@@ -27,6 +27,7 @@ from prep_thesaurus import (
     save_thesaurus_json,
 )
 from prep_json import prep_json
+from scan_body_mentions import print_mention_report, scan_body_mentions
 from scan_definitions import print_scan_report, scan_definitions
 
 
@@ -112,37 +113,40 @@ def resolve_stage_output_paths(
     layout = policy["output_layout"]
     directory_names = layout["directories"]
     file_names = layout["files"]
-    internal_directory_name = layout["internal_directory"]
-    term_directory = output_root / directory_names["term_extraction"]
-    retrieval_directory = output_root / directory_names[
-        "candidate_retrieval"
-    ]
-    term_internal_directory = term_directory / internal_directory_name
-    retrieval_internal_directory = (
-        retrieval_directory / internal_directory_name
+    review_directory = output_root / directory_names["review"]
+    internal_directory = output_root / directory_names["internal"]
+    term_directory = internal_directory / directory_names["term_extraction"]
+    retrieval_directory = (
+        internal_directory / directory_names["candidate_retrieval"]
     )
-    review_directory = output_root / directory_names["llm_review"]
+    resolution_directory = (
+        internal_directory / directory_names["entity_resolution"]
+    )
+    model_review_directory = (
+        internal_directory / directory_names["model_review"]
+    )
     paths = {
-        "term_checkpoint": term_internal_directory
-        / file_names["term_checkpoint"],
-        "extracted_terms_json": term_internal_directory
+        "term_checkpoint": term_directory / file_names["term_checkpoint"],
+        "extracted_terms_json": term_directory
         / file_names["extracted_terms_json"],
-        "extracted_terms_csv": term_directory
+        "extracted_terms_csv": review_directory
         / file_names["extracted_terms_csv"],
-        "normalized_thesaurus": term_internal_directory
+        "normalized_thesaurus": term_directory
         / file_names["normalized_thesaurus"],
-        "coverage_report": retrieval_directory
+        "coverage_report": review_directory
         / file_names["coverage_report"],
-        "name_matches": retrieval_internal_directory
-        / file_names["name_matches"],
-        "definition_matches": retrieval_internal_directory
+        "name_matches": retrieval_directory / file_names["name_matches"],
+        "definition_matches": retrieval_directory
         / file_names["definition_matches"],
-        "entity_resolution_directory": output_root
-        / directory_names["entity_resolution"],
-        "llm_review_directory": review_directory,
+        "body_mention_matches": retrieval_directory
+        / file_names["body_mention_matches"],
+        "entity_resolution_directory": resolution_directory,
+        "entity_resolution_review_queue": review_directory
+        / policy["entity_resolution"]["output_files"]["review_queue"],
+        "llm_review_directory": model_review_directory,
         "final_identity_directory": output_root
         / directory_names["final_identity"],
-        "term_review_tasks": review_directory
+        "term_review_tasks": model_review_directory
         / policy["entity_resolution"]["semantic_review"]["term_task_file"],
     }
     overrides = {
@@ -179,8 +183,8 @@ def run_preprocessing_pipeline(
 ) -> dict[str, object]:
     """
     기출문제 전처리부터 용어 추출, 시소러스 변환, 커버리지 비교,
-    백과사전·ITKC 이름 매칭, definition 스캔까지 실행한다.
-    이름 매칭·definition 스캔은 백과사전과 ITKC 경로가 모두 있을 때만 수행한다.
+    백과사전·ITKC 이름 매칭과 AKS definition·body 보강 검색까지 실행한다.
+    원천 후보 검색은 백과사전과 ITKC 경로가 모두 있을 때만 수행한다.
     """
     exam_path = Path(exam_json_path)
     thesaurus_path = Path(thesaurus_csv_path)
@@ -240,8 +244,9 @@ def run_preprocessing_pipeline(
     coverage_report_path = output_paths["coverage_report"]
     name_matches_path = output_paths["name_matches"]
     definition_scan_path = output_paths["definition_matches"]
+    body_mention_path = output_paths["body_mention_matches"]
 
-    print("[1/6] 기출문제 전처리 및 역사 용어 추출")
+    print("[1/7] 기출문제 전처리 및 역사 용어 추출")
     extracted_term_df = count_terms(
         str(exam_path),
         batch_size=batch_size,
@@ -260,7 +265,7 @@ def run_preprocessing_pipeline(
     )
     print(f"기출문제 용어 집계 CSV 저장 완료: {extracted_csv_path}")
 
-    print("[2/6] 한국 역사 용어 시소러스 변환")
+    print("[2/7] 한국 역사 용어 시소러스 변환")
     thesaurus_df = prep_thesaurus(str(thesaurus_path))
     homonym_candidates = find_homonym_candidates(thesaurus_df)
     print_homonym_report(homonym_candidates, display_limit)
@@ -270,7 +275,7 @@ def run_preprocessing_pipeline(
         f"({len(thesaurus_df)}개 용어)"
     )
 
-    print("[3/6] 전체 역사 용어 커버리지 비교")
+    print("[3/7] 전체 역사 용어 커버리지 비교")
     encyclopedia_reference: dict[str, str] = {}
     if encyclopedia_jsonl_path:
         encyclopedia_reference = load_encyclopedia_terms(encyclopedia_jsonl_path)
@@ -298,12 +303,12 @@ def run_preprocessing_pipeline(
     )
     if not can_match_names:
         print(
-            "[4/6][5/6][6/6] 건너뜀: "
+            "[4/7][5/7][6/7][7/7] 건너뜀: "
             "백과사전 JSONL과 ITKC CSV 경로가 모두 필요합니다."
         )
         return coverage_report
 
-    print("[4/6] 백과사전·ITKC 이름 매칭")
+    print("[4/7] 백과사전·ITKC 이름 매칭")
     name_match_results = match_names(
         terms_csv=str(extracted_csv_path),
         thesaurus_csv=str(thesaurus_path),
@@ -317,7 +322,7 @@ def run_preprocessing_pipeline(
         dump(name_match_results, output_file, ensure_ascii=False, indent=2)
     print(f"이름 매칭 결과 저장 완료: {name_matches_path}")
 
-    print("[5/6] 미매칭 용어 definition 스캔")
+    print("[5/7] AKS 정확 이름 미발견 용어 definition 보강")
     definition_scan_results = scan_definitions(
         match_json=str(name_matches_path),
         encyclopedia_jsonl=encyclopedia_jsonl_path,
@@ -328,18 +333,35 @@ def run_preprocessing_pipeline(
         dump(definition_scan_results, output_file, ensure_ascii=False, indent=2)
     print(f"definition 스캔 결과 저장 완료: {definition_scan_path}")
 
-    print("[6/6] 문항별 Entity Resolution staging CSV 생성")
+    print("[6/7] AKS 정확 이름 미발견 용어 본문 언급 보강")
+    body_mention_results = scan_body_mentions(
+        match_json=str(name_matches_path),
+        encyclopedia_jsonl=encyclopedia_jsonl_path,
+        policy=pipeline_policy,
+    )
+    print_mention_report(body_mention_results, display_limit)
+    with body_mention_path.open("w", encoding="utf-8") as output_file:
+        dump(body_mention_results, output_file, ensure_ascii=False, indent=2)
+    print(f"본문 언급 검색 결과 저장 완료: {body_mention_path}")
+
+    print("[7/7] 문항별 Entity Resolution staging CSV 생성")
     resolution_tables = build_resolution_tables(
         name_match_results,
         definition_scan_results,
         prep_json(str(exam_path)),
         pipeline_policy,
+        body_mention_results=body_mention_results,
     )
     resolution_output_dir = output_paths["entity_resolution_directory"]
     resolution_paths = write_resolution_package(
         resolution_tables,
         str(resolution_output_dir),
         pipeline_policy,
+        output_path_overrides={
+            "review_queue": output_paths[
+                "entity_resolution_review_queue"
+            ]
+        },
     )
     resolution_summary = summarize_resolution_tables(resolution_tables)
     print(f"Entity Resolution staging 요약: {resolution_summary}")
@@ -372,7 +394,7 @@ if __name__ == "__main__":
         metavar="기출문제_json",
         nargs="?",
         default="",
-        help="OCR 기출문제 JSON 경로",
+        help="상류에서 전달받은 기출문제 JSON 경로",
     )
     parser.add_argument(
         "thesaurus_csv_path",
@@ -459,6 +481,41 @@ if __name__ == "__main__":
         help="커버리지 보고서 JSON 저장 경로",
     )
     parser.add_argument(
+        "--goldset",
+        action="store_true",
+        help=(
+            "사람 검수 골든셋 import·모델 평가·관련 엔티티 2차 판정을 "
+            "한 번에 실행"
+        ),
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="골든셋 검증과 실행 예정 건수만 확인하고 API·파일 출력을 생략",
+    )
+    parser.add_argument(
+        "--gold-annotations",
+        default="",
+        help="사람이 작성한 골든셋 CSV 폴더 경로",
+    )
+    parser.add_argument(
+        "--gold-tasks",
+        default="",
+        help="골든셋 원본 review task JSONL 경로",
+    )
+    parser.add_argument(
+        "--gold-review-limit",
+        type=int,
+        default=0,
+        help="골든셋 모델 판정 건수, 0이면 전체",
+    )
+    parser.add_argument(
+        "--related-review-limit",
+        type=int,
+        default=0,
+        help="관련 엔티티 모델 판정 건수, 0이면 전체",
+    )
+    parser.add_argument(
         "--policy",
         default=str(
             Path(__file__).resolve().parent
@@ -477,6 +534,31 @@ if __name__ == "__main__":
         itkc_people_csv_path=cli_args.itkc_people,
         itkc_events_csv_path=cli_args.itkc_events,
     )
+
+    if cli_args.goldset:
+        from entity_resolution.goldset_workflow import run_goldset_workflow
+
+        goldset_result = run_goldset_workflow(
+            neo4j_root=str(Path(__file__).resolve().parent),
+            thesaurus_csv_path=pipeline_paths["thesaurus_csv_path"],
+            encyclopedia_jsonl_path=pipeline_paths[
+                "encyclopedia_jsonl_path"
+            ],
+            itkc_people_csv_path=pipeline_paths["itkc_people_csv_path"],
+            itkc_events_csv_path=pipeline_paths["itkc_events_csv_path"],
+            policy_path=cli_args.policy,
+            annotation_directory=cli_args.gold_annotations,
+            gold_task_file=cli_args.gold_tasks,
+            gold_review_limit=cli_args.gold_review_limit,
+            related_review_limit=cli_args.related_review_limit,
+            maximum_retries=cli_args.retries,
+            dry_run=cli_args.dry_run,
+        )
+        print(dumps(goldset_result, ensure_ascii=False, indent=2))
+        successful_statuses = {"READY", "COMPLETED"}
+        if goldset_result["status"] not in successful_statuses:
+            raise SystemExit(1)
+        raise SystemExit(0)
 
     run_preprocessing_pipeline(
         exam_json_path=pipeline_paths["exam_json_path"],

@@ -1,4 +1,5 @@
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -18,13 +19,27 @@ class SemanticReviewTest(unittest.TestCase):
             build_resolution_tables,
         )
         from entity_resolution.semantic_review import (
+            build_validation_tables_from_review_tasks,
             build_term_review_tasks,
             validate_term_decisions,
+        )
+        from entity_resolution.manual_term_review import (
+            build_manual_review_table,
+            prepare_manual_decisions,
         )
 
         cls.build_resolution_tables = staticmethod(build_resolution_tables)
         cls.build_term_review_tasks = staticmethod(build_term_review_tasks)
+        cls.build_validation_tables_from_review_tasks = staticmethod(
+            build_validation_tables_from_review_tasks
+        )
         cls.validate_term_decisions = staticmethod(validate_term_decisions)
+        cls.build_manual_review_table = staticmethod(
+            build_manual_review_table
+        )
+        cls.prepare_manual_decisions = staticmethod(
+            prepare_manual_decisions
+        )
         cls.policy = load_pipeline_policy(
             str(neo4j_root / "config" / "resolution_policy.json")
         )
@@ -204,6 +219,31 @@ class SemanticReviewTest(unittest.TestCase):
             {"IDENTITY_MEMBER", "EVIDENCE_ONLY"},
         )
 
+        tasks[0]["canonical_term"] = "unrelated-upstream-input"
+        tasks[0]["term_variants"] = ["unrelated-upstream-input"]
+        alignment_outputs = self.validate_term_decisions(
+            [decision],
+            tasks,
+            tables,
+            self.policy,
+        )
+        alignment_summary = alignment_outputs[
+            "term_resolution_decisions"
+        ].iloc[0]
+        alignment_error_codes = set(
+            alignment_outputs["term_decision_validation_errors"][
+                "error_code"
+            ]
+        )
+        self.assertEqual(
+            alignment_summary["verification_status"],
+            "NEEDS_MANUAL_REVIEW",
+        )
+        self.assertIn(
+            "TERM_SOURCE_ALIGNMENT_REVIEW_REQUIRED",
+            alignment_error_codes,
+        )
+
     def test_candidate_omission_is_invalid(self):
         tables, tasks = self.build_fixture()
         decision = self.make_decision(tasks[0])
@@ -253,6 +293,24 @@ class SemanticReviewTest(unittest.TestCase):
             "STRONG_PAIR_CONFLICT",
             set(outputs["term_decision_validation_errors"]["error_code"]),
         )
+        manually_reviewed_outputs = self.validate_term_decisions(
+            [decision],
+            tasks,
+            tables,
+            self.policy,
+            manual_verifications={
+                tasks[0]["resolution_case_id"]: {
+                    "reviewer": "tester",
+                    "reviewed_at": "2026-07-22T00:00:00+00:00",
+                }
+            },
+        )
+        self.assertEqual(
+            manually_reviewed_outputs["term_resolution_decisions"].iloc[0][
+                "verification_status"
+            ],
+            "INVALID",
+        )
 
     def test_insufficient_pair_signal_requires_manual_review(self):
         tables, tasks = self.build_fixture(include_weak_person=True)
@@ -265,10 +323,13 @@ class SemanticReviewTest(unittest.TestCase):
             "identity_member_source_candidate_ids"
         ].append(candidate_ids["ITKC_PERSON"])
 
+        reconstructed_tables = self.build_validation_tables_from_review_tasks(
+            tasks
+        )
         outputs = self.validate_term_decisions(
             [decision],
             tasks,
-            tables,
+            reconstructed_tables,
             self.policy,
         )
 
@@ -282,6 +343,59 @@ class SemanticReviewTest(unittest.TestCase):
             "INSUFFICIENT_PAIR_EVIDENCE",
             set(outputs["term_decision_validation_errors"]["error_code"]),
         )
+
+    def test_completed_manual_review_promotes_safe_model_proposal(self):
+        tables, tasks = self.build_fixture(include_weak_person=True)
+        decision = self.make_decision(tasks[0])
+        candidate_ids = {
+            item["source"]: item["source_candidate_id"]
+            for item in tasks[0]["source_candidates"]
+        }
+        decision["proposed_alternatives"][0][
+            "identity_member_source_candidate_ids"
+        ].append(candidate_ids["ITKC_PERSON"])
+        automatic_outputs = self.validate_term_decisions(
+            [decision],
+            tasks,
+            tables,
+            self.policy,
+        )
+
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            review_path = str(
+                Path(temporary_directory) / "related_manual_review.csv"
+            )
+            review_table = self.build_manual_review_table(
+                [decision],
+                tasks,
+                automatic_outputs,
+                review_path,
+                self.policy,
+            )
+
+        review_table.at[0, "manual_status"] = "VERIFIED"
+        review_table.at[0, "manual_reason"] = "사람이 동일 인물로 확인함"
+        review_table.at[0, "reviewer"] = "tester"
+        prepared = self.prepare_manual_decisions(
+            review_table,
+            [decision],
+            tasks,
+            automatic_outputs,
+            self.policy,
+        )
+        reviewed_outputs = self.validate_term_decisions(
+            prepared["decisions"],
+            tasks,
+            tables,
+            self.policy,
+            manual_verifications=prepared["manual_verifications"],
+        )
+
+        summary = reviewed_outputs["term_resolution_decisions"].iloc[0]
+        self.assertTrue(prepared["validation_errors"].empty)
+        self.assertEqual(summary["verification_status"], "VERIFIED")
+        self.assertEqual(summary["verification_method"], "HUMAN_REVIEW")
+        self.assertEqual(summary["verified_by"], "tester")
 
     def test_remaining_ambiguous_source_requires_manual_review(self):
         tables, tasks = self.build_fixture()

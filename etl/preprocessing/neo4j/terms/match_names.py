@@ -302,7 +302,7 @@ def match_names(
     추출 용어를 AKS·시소러스·ITKC와 고재현율 후보 검색한다.
     후보는 항상 PROPOSED이며 이 단계에서 CanonicalEntity 병합을 확정하지 않는다.
     """
-    term_df = pd.read_csv(terms_csv, encoding="utf-8-sig")
+    term_df = pd.read_csv(terms_csv, encoding="utf-8-sig").fillna("")
     term_records = term_df.to_dict("records")
     term_keys = {
         record["canonical_term"]: build_match_key(record["canonical_term"])
@@ -375,7 +375,10 @@ def match_names(
     results: list[dict] = []
     for record in term_records:
         term = record["canonical_term"]
-        category = record["category"]
+        category = str(record.get("category") or "")
+        entity_type_proposal = str(
+            record.get("entity_type_proposal") or ""
+        )
         key = term_keys.get(term, "")
         encyclopedia = encyclopedia_results.get(term)
         thesaurus = thesaurus_results.get(term)
@@ -386,17 +389,20 @@ def match_names(
         encyclopedia_via = None
         if encyclopedia:
             encyclopedia_via = encyclopedia["via"]
-            encyclopedia_candidates = [
-                {
-                    **candidate,
-                    "category_mismatch": not is_category_compatible(
+            for candidate in encyclopedia["candidates"]:
+                category_mismatch = None
+                if category:
+                    category_mismatch = not is_category_compatible(
                         category,
                         candidate["primary_type_part"],
                         policy["category_compatibility"],
-                    ),
-                }
-                for candidate in encyclopedia["candidates"]
-            ]
+                    )
+                encyclopedia_candidates.append(
+                    {
+                        **candidate,
+                        "category_mismatch": category_mismatch,
+                    }
+                )
             encyclopedia_candidates.sort(
                 key=lambda candidate: (
                     candidate["category_mismatch"],
@@ -420,7 +426,17 @@ def match_names(
             {
                 "canonical_term": term,
                 "category": category,
-                "problem_count": int(record["count"]),
+                "entity_type_proposal": entity_type_proposal,
+                "input_resolution_case_id": str(
+                    record.get("input_resolution_case_id") or ""
+                ),
+                "related_entity_task_id": str(
+                    record.get("related_entity_task_id") or ""
+                ),
+                "related_entity_origin_json": str(
+                    record.get("related_entity_origin_json") or ""
+                ),
+                "problem_count": int(record.get("count") or 0),
                 "problem_ids": parse_problem_ids(record.get("problem_ids", "")),
                 "extraction_model": str(record.get("extraction_model") or ""),
                 "extraction_reasoning_effort": str(

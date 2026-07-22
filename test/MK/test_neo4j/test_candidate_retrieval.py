@@ -19,12 +19,24 @@ class CandidateRetrievalRegressionTest(unittest.TestCase):
         from candidate_retrieval import build_search_index, retrieve_candidates
         from common import load_pipeline_policy
         from match_names import build_encyclopedia_index, parse_problem_ids
+        from scan_body_mentions import (
+            build_anchor_automaton,
+            find_anchor_entry_indexes,
+            scan_body_mentions,
+        )
+        from scan_definitions import collect_aks_enrichment_terms
         import get_history_terms as history_terms_module
 
         cls.retrieve_candidates = staticmethod(retrieve_candidates)
         cls.build_search_index = staticmethod(build_search_index)
         cls.build_encyclopedia_index = staticmethod(build_encyclopedia_index)
         cls.parse_problem_ids = staticmethod(parse_problem_ids)
+        cls.scan_body_mentions = staticmethod(scan_body_mentions)
+        cls.build_anchor_automaton = staticmethod(build_anchor_automaton)
+        cls.find_anchor_entry_indexes = staticmethod(find_anchor_entry_indexes)
+        cls.collect_aks_enrichment_terms = staticmethod(
+            collect_aks_enrichment_terms
+        )
         cls.history_terms_module = history_terms_module
         policy_path = neo4j_root / "config" / "resolution_policy.json"
         cls.policy = load_pipeline_policy(str(policy_path))
@@ -145,6 +157,43 @@ class CandidateRetrievalRegressionTest(unittest.TestCase):
             all(candidate["retrieval_method"] == "exact" for candidate in candidates)
         )
 
+    def test_exact_candidate_prunes_low_score_expansions(self):
+        records = [
+            {
+                "search_names": ["민며느리제"],
+                "search_text": "혼인 풍속",
+                "payload": {"source_record_id": "THESAURUS:TERM:EXACT"},
+            },
+            {
+                "search_names": ["민며느리"],
+                "search_text": "민며느리 혼인 풍속",
+                "payload": {"source_record_id": "THESAURUS:TERM:RELATED"},
+            },
+            {
+                "search_names": ["살림잘하는며느리"],
+                "search_text": "며느리의 살림 솜씨에 대한 설화",
+                "payload": {"source_record_id": "THESAURUS:TERM:UNRELATED"},
+            },
+        ]
+        search_index = self.build_search_index(
+            records,
+            self.policy["candidate_retrieval"],
+        )
+
+        candidates = self.retrieve_candidates(
+            term="민며느리제",
+            search_index=search_index,
+            retrieval_policy=self.policy["candidate_retrieval"],
+            policy_version=self.policy["policy_version"],
+        )
+
+        source_ids = {
+            candidate["source_record_id"] for candidate in candidates
+        }
+        self.assertIn("THESAURUS:TERM:EXACT", source_ids)
+        self.assertIn("THESAURUS:TERM:RELATED", source_ids)
+        self.assertNotIn("THESAURUS:TERM:UNRELATED", source_ids)
+
     def test_problem_ids_support_json_and_legacy_list_text(self):
         expected = ["question-1", "question-2"]
         self.assertEqual(
@@ -212,6 +261,130 @@ class CandidateRetrievalRegressionTest(unittest.TestCase):
         self.assertTrue(
             all(isinstance(json.loads(value), list) for value in result["problem_ids"])
         )
+
+    def test_weak_aks_candidate_does_not_block_enrichment(self):
+        match_results = [
+            {
+                "canonical_term": "진묘수",
+                "category": "유물",
+                "is_noise": False,
+                "encyclopedia": [
+                    {
+                        "retrieval_method": "name_ngram",
+                        "retrieval_methods": ["name_ngram"],
+                    }
+                ],
+                "thesaurus": [
+                    {
+                        "retrieval_method": "exact",
+                        "retrieval_methods": ["exact"],
+                    }
+                ],
+            },
+            {
+                "canonical_term": "정확 표제어",
+                "category": "유물",
+                "is_noise": False,
+                "encyclopedia": [
+                    {
+                        "retrieval_method": "exact",
+                        "retrieval_methods": ["exact"],
+                    }
+                ],
+            },
+        ]
+
+        targets = self.collect_aks_enrichment_terms(
+            match_results,
+            self.policy["candidate_retrieval"],
+        )
+
+        self.assertEqual(
+            targets,
+            [{"canonical_term": "진묘수", "category": "유물"}],
+        )
+
+    def test_body_mention_scan_finds_jinmyosu_source_record(self):
+        match_results = [
+            {
+                "canonical_term": "진묘수",
+                "category": "유물",
+                "is_noise": False,
+                "encyclopedia": [
+                    {
+                        "retrieval_method": "name_ngram",
+                        "retrieval_methods": ["name_ngram"],
+                    }
+                ],
+            }
+        ]
+        article = {
+            "eid": "E0028448",
+            "headword": "무령왕릉 석수",
+            "origin": "武寧王陵 石獸",
+            "headwordOrigin": "무령왕릉 석수(武寧王陵 石獸)",
+            "primaryTypePartA": "유적",
+            "primaryType": "유적",
+            "era": "고대/삼국/백제",
+            "definition": "백제시대의 석수.",
+            "body": "무령왕릉의 연도 중앙에 놓인 진묘수(鎭墓獸)의 하나이다.",
+            "articleAliases": [],
+        }
+        mismatched_article = {
+            "eid": "E_MISMATCH",
+            "headword": "관련 없는 설화",
+            "primaryTypePartA": "개념",
+            "primaryType": "개념",
+            "era": "미상",
+            "definition": "관련 없는 설화.",
+            "body": "이 설화의 문장에 진묘수가 언급된다.",
+            "articleAliases": [],
+        }
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            temporary_root = Path(temporary_directory)
+            match_path = temporary_root / "name_matches.json"
+            article_path = temporary_root / "articles.jsonl"
+            match_path.write_text(
+                json.dumps(match_results, ensure_ascii=False),
+                encoding="utf-8",
+            )
+            article_path.write_text(
+                "\n".join(
+                    [
+                        json.dumps(article, ensure_ascii=False),
+                        json.dumps(mismatched_article, ensure_ascii=False),
+                    ]
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            results = self.scan_body_mentions(
+                str(match_path),
+                str(article_path),
+                self.policy,
+            )
+
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]["body_mention_hit_count"], 1)
+        candidate = results[0]["candidates"][0]
+        self.assertEqual(candidate["source_id"], "E0028448")
+        self.assertEqual(candidate["headword"], "무령왕릉 석수")
+        self.assertEqual(candidate["retrieval_method"], "body_mention")
+        self.assertIn("진묘수", candidate["snippet"])
+
+    def test_body_anchor_index_preserves_overlapping_terms(self):
+        entries = [
+            {"anchor": "진묘수"},
+            {"anchor": "묘수"},
+        ]
+        automaton = self.build_anchor_automaton(entries)
+
+        indexes = self.find_anchor_entry_indexes(
+            "무령왕릉의진묘수이다",
+            automaton,
+        )
+
+        self.assertEqual(indexes, {0, 1})
 
 
 if __name__ == "__main__":

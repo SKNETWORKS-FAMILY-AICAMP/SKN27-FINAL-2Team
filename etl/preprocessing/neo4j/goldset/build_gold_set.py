@@ -151,13 +151,33 @@ def select_gold_tasks(tasks: list[dict], policy: dict) -> list[dict]:
         "conflict_present",
     ]
     minimum_per_category = int(gold_policy["minimum_cases_per_category"])
+    maximum_candidates = int(
+        gold_policy["maximum_candidates_per_pilot_case"]
+    )
     selected: list[dict] = []
     selected_task_ids: set[str] = set()
     for category in categories:
         if len(selected) >= sample_size:
             break
+        category_records = [
+            record
+            for record in records_by_category[category]
+            if record["profile"]["candidate_count"] <= maximum_candidates
+        ]
+        if not category_records:
+            category_records = sorted(
+                records_by_category[category],
+                key=lambda record: (
+                    record["profile"]["candidate_count"],
+                    create_stable_rank(
+                        seed,
+                        "category-fallback",
+                        record["task"]["term_review_task_id"],
+                    ),
+                ),
+            )
         category_order = order_records_by_strata(
-            records_by_category[category],
+            category_records,
             within_category_fields,
             seed,
         )
@@ -173,6 +193,7 @@ def select_gold_tasks(tasks: list[dict], policy: dict) -> list[dict]:
         record
         for record in profiled_records
         if record["task"]["term_review_task_id"] not in selected_task_ids
+        and record["profile"]["candidate_count"] <= maximum_candidates
     ]
     remaining_order = order_records_by_strata(
         remaining_records,
@@ -183,6 +204,28 @@ def select_gold_tasks(tasks: list[dict], policy: dict) -> list[dict]:
         if len(selected) >= sample_size:
             break
         selected.append(record)
+        selected_task_ids.add(record["task"]["term_review_task_id"])
+    if len(selected) < sample_size:
+        fallback_records = [
+            record
+            for record in profiled_records
+            if record["task"]["term_review_task_id"]
+            not in selected_task_ids
+        ]
+        fallback_records.sort(
+            key=lambda record: (
+                record["profile"]["candidate_count"],
+                create_stable_rank(
+                    seed,
+                    "sample-fallback",
+                    record["task"]["term_review_task_id"],
+                ),
+            )
+        )
+        for record in fallback_records:
+            if len(selected) >= sample_size:
+                break
+            selected.append(record)
     return selected
 
 
@@ -334,9 +377,10 @@ def build_candidate_annotations(
                     "gold_alternative_key": "",
                     "gold_display_name": "",
                     "gold_entity_type": "",
+                    "gold_related_entity_key": "",
+                    "gold_related_display_name": "",
+                    "gold_related_entity_type": "",
                     "gold_reason": "",
-                    "reviewer": "",
-                    "candidate_review_status": "NOT_STARTED",
                 }
             )
             alternative_id = candidate["code_canonical_alternative_id"]
@@ -414,14 +458,80 @@ def calculate_file_sha256(input_path: str) -> str:
     return digest.hexdigest()
 
 
+def annotation_file_has_started(
+    annotation_path: Path,
+    annotation_fields: list[str],
+    status_field: str,
+    initial_status: str,
+) -> bool:
+    """기존 검수 CSV에 사람이 입력한 값이 있는지 확인한다."""
+    if not annotation_path.is_file():
+        return False
+    annotations = pd.read_csv(
+        annotation_path,
+        encoding="utf-8-sig",
+        dtype=str,
+        keep_default_na=False,
+    )
+    for field_name in annotation_fields:
+        if field_name not in annotations.columns:
+            continue
+        if annotations[field_name].str.strip().ne("").any():
+            return True
+    if status_field and status_field in annotations.columns:
+        statuses = annotations[status_field].str.strip()
+        started_statuses = statuses[~statuses.isin({"", initial_status})]
+        if not started_statuses.empty:
+            return True
+    return False
+
+
+def protect_started_review_files(
+    case_path: Path,
+    candidate_path: Path,
+    gold_policy: dict,
+    allow_review_overwrite: bool,
+) -> None:
+    """검수가 시작된 사람 작성 CSV의 실수 덮어쓰기를 막는다."""
+    if allow_review_overwrite:
+        return
+    importer_policy = gold_policy["importer"]
+    protection_policy = importer_policy["overwrite_protection"]
+    initial_status = str(importer_policy["initial_review_status"])
+    case_started = annotation_file_has_started(
+        case_path,
+        protection_policy["case_annotation_fields"],
+        str(protection_policy["case_status_field"]),
+        initial_status,
+    )
+    candidate_started = annotation_file_has_started(
+        candidate_path,
+        protection_policy["candidate_annotation_fields"],
+        str(protection_policy["candidate_status_field"]),
+        initial_status,
+    )
+    if case_started or candidate_started:
+        raise FileExistsError(
+            "검수가 시작된 골든셋 CSV는 자동으로 덮어쓸 수 없습니다. "
+            "내용을 확인한 뒤 --force-overwrite-review를 명시하세요."
+        )
+
+
 def write_gold_set(
     all_tasks: list[dict],
     input_path: str,
     output_dir: str,
     policy: dict,
     generated_at: str = "",
+    review_output_dir: str = "",
+    allow_review_overwrite: bool = False,
 ) -> dict[str, str]:
-    """표본 task·검수 CSV·분포·감사 manifest를 한 번에 저장한다."""
+    """
+    표본 task·검수 CSV·분포·감사 manifest를 한 번에 저장한다.
+    review_output_dir를 주면 검수용 case·candidate CSV는 그 폴더에
+    importer 입력 파일명(human_review_*.csv)으로 저장한다.
+    검수가 시작된 기존 CSV는 명시적 허용 없이는 덮어쓰지 않는다.
+    """
     gold_policy = policy["entity_resolution"]["semantic_review"]["gold_set"]
     selected = select_gold_tasks(all_tasks, policy)
     gold_tasks = build_gold_task_records(selected, policy)
@@ -437,6 +547,22 @@ def write_gold_set(
         name: output_directory / filename
         for name, filename in output_files.items()
     }
+    if review_output_dir:
+        review_directory = Path(review_output_dir)
+        review_directory.mkdir(parents=True, exist_ok=True)
+        review_file_names = gold_policy["importer"]["csv_input_files"]
+        output_paths["case_annotations"] = (
+            review_directory / review_file_names["case_annotations"]
+        )
+        output_paths["candidate_annotations"] = (
+            review_directory / review_file_names["candidate_annotations"]
+        )
+        protect_started_review_files(
+            output_paths["case_annotations"],
+            output_paths["candidate_annotations"],
+            gold_policy,
+            allow_review_overwrite,
+        )
     write_jsonl(gold_tasks, str(output_paths["gold_tasks"]))
     case_annotations.to_csv(
         output_paths["case_annotations"],
@@ -486,8 +612,18 @@ if __name__ == "__main__":
     parser = ArgumentParser(
         description="Entity Resolution term task에서 층화 골든셋 검수 파일 생성"
     )
-    parser.add_argument("input_tasks", help="term review task JSONL 경로")
-    parser.add_argument("output_dir", help="골든셋 출력 디렉터리")
+    parser.add_argument(
+        "input_tasks",
+        nargs="?",
+        default="",
+        help="term review task JSONL 경로 (생략하면 본 실행 출력 경로 사용)",
+    )
+    parser.add_argument(
+        "output_dir",
+        nargs="?",
+        default="",
+        help="골든셋 출력 디렉터리 (생략하면 정책의 default_output_directory 사용)",
+    )
     parser.add_argument(
         "--policy",
         default=str(
@@ -497,13 +633,55 @@ if __name__ == "__main__":
         ),
         help="Entity Resolution 정책 JSON 경로",
     )
+    parser.add_argument(
+        "--force-overwrite-review",
+        action="store_true",
+        help="검수가 시작된 human_review_csv도 확인 후 강제로 다시 생성",
+    )
     cli_args = parser.parse_args()
     pipeline_policy = load_pipeline_policy(cli_args.policy)
-    term_tasks = load_jsonl(cli_args.input_tasks)
+    gold_set_policy = pipeline_policy["entity_resolution"]["semantic_review"][
+        "gold_set"
+    ]
+    input_tasks_argument = cli_args.input_tasks
+    if not input_tasks_argument:
+        # 본 실행 파이프라인의 term task 출력 경로를 정책 레이아웃에서 조립한다
+        neo4j_root = Path(__file__).resolve().parent.parent
+        output_layout = pipeline_policy["output_layout"]
+        input_tasks_path = (
+            neo4j_root
+            / output_layout["default_output_root"]
+            / output_layout["directories"]["llm_review"]
+            / pipeline_policy["entity_resolution"]["semantic_review"][
+                "term_task_file"
+            ]
+        )
+        if not input_tasks_path.is_file():
+            raise FileNotFoundError(
+                f"term task JSONL이 없습니다: {input_tasks_path}\n"
+                "run_neo4j_preprocessing.py를 먼저 실행하거나 경로를 인자로 지정하세요."
+            )
+        input_tasks_argument = str(input_tasks_path)
+
+    output_directory_argument = cli_args.output_dir
+    review_directory_argument = ""
+    if not output_directory_argument:
+        # 인자 생략 시: 내부 산출물은 snapshot 폴더에, 검수 CSV는
+        # human_review_csv에 importer 파일명으로 저장한다 (기존 검수본 덮어씀)
+        neo4j_root = Path(__file__).resolve().parent.parent
+        output_directory_argument = str(
+            neo4j_root / gold_set_policy["default_output_directory"]
+        )
+        review_directory_argument = str(
+            neo4j_root / gold_set_policy["review_csv_directory"]
+        )
+    term_tasks = load_jsonl(input_tasks_argument)
     written_paths = write_gold_set(
         term_tasks,
-        cli_args.input_tasks,
-        cli_args.output_dir,
+        input_tasks_argument,
+        output_directory_argument,
         pipeline_policy,
+        review_output_dir=review_directory_argument,
+        allow_review_overwrite=cli_args.force_overwrite_review,
     )
     print(dumps(written_paths, ensure_ascii=False, indent=2))

@@ -159,7 +159,7 @@ def normalize_for_match(text: str) -> str:
 def fuzzy_in_text(term: str, text: str, allowed_errors: int) -> bool:
     """
     term이 text 안에 등장하는지 검사하는 함수
-    OCR 오탈자를 감안해 같은 길이 구간에서 allowed_errors 글자까지 달라도 등장으로 인정
+    상류 입력의 오탈자를 감안해 같은 길이 구간에서 allowed_errors 글자까지 달라도 등장으로 인정
     """
     if term in text:
         return True

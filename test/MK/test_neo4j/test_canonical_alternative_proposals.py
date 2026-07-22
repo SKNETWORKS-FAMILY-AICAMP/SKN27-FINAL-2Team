@@ -260,6 +260,39 @@ class CanonicalAlternativeProposalTest(unittest.TestCase):
             set(members["source_candidate_id"]),
         )
 
+    def test_non_specific_era_value_is_not_a_merge_signal(self):
+        candidates = [
+            self.make_candidate(
+                "candidate-aks",
+                "AKS",
+                {
+                    "headword": "동명이인",
+                    "era": "통시대",
+                    "primary_type_part": "인물",
+                },
+            ),
+            self.make_candidate(
+                "candidate-thesaurus",
+                "THESAURUS",
+                {
+                    "term_name": "동명이인",
+                    "era": "통시대",
+                    "thesaurus_category": "인명",
+                },
+            ),
+        ]
+
+        tables = self.build_tables(candidates)
+
+        features = tables["source_candidate_features"]
+        self.assertTrue(
+            all(json.loads(value) == [] for value in features["era_values_json"])
+        )
+        pair = tables["source_candidate_pair_signals"].iloc[0]
+        signals = set(json.loads(pair["signal_dimensions_json"]))
+        self.assertNotIn("era_overlap", signals)
+        self.assertFalse(bool(pair["merge_eligible"]))
+
     def test_canonical_alternative_ids_are_stable(self):
         candidates = [
             self.make_candidate(

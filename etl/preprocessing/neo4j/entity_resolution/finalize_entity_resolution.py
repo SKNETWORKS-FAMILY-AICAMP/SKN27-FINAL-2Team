@@ -73,6 +73,8 @@ def finalize_entity_resolution(
     policy: dict,
     uuid_factory=uuid4,
     timestamp: str = "",
+    preselected_alternative_methods: dict[str, str] | None = None,
+    manually_approved_alternative_ids: set[str] | None = None,
 ) -> dict[str, pd.DataFrame]:
     """검증된 identity만 registry와 Neo4j import용 테이블로 승격한다."""
     resolution_policy = policy["entity_resolution"]
@@ -124,12 +126,23 @@ def finalize_entity_resolution(
         if row["verification_status"] == "VERIFIED"
     }
     selected_alternative_ids: set[str] = set()
+    selection_method_by_alternative: dict[str, str] = {}
     for assignment in verified_problem_assignments.to_dict("records"):
         if assignment["verification_status"] != "VERIFIED":
             continue
-        selected_alternative_ids.update(
-            loads(assignment["selected_canonical_alternative_ids_json"])
+        assignment_alternative_ids = loads(
+            assignment["selected_canonical_alternative_ids_json"]
         )
+        selected_alternative_ids.update(assignment_alternative_ids)
+        for alternative_id in assignment_alternative_ids:
+            selection_method_by_alternative[alternative_id] = (
+                "verified_problem_assignment"
+            )
+    for alternative_id, selection_method in (
+        preselected_alternative_methods or {}
+    ).items():
+        selected_alternative_ids.add(alternative_id)
+        selection_method_by_alternative[alternative_id] = selection_method
     unknown_alternative_ids = selected_alternative_ids.difference(
         alternative_by_id
     )
@@ -146,6 +159,7 @@ def finalize_entity_resolution(
     minimum_members = int(
         registry_policy["minimum_automatic_identity_members"]
     )
+    manually_approved_ids = manually_approved_alternative_ids or set()
     for alternative_id in sorted(selected_alternative_ids):
         alternative = alternative_by_id[alternative_id]
         member_ids = loads(alternative["source_candidate_ids_json"])
@@ -160,8 +174,12 @@ def finalize_entity_resolution(
         merge_gate_passed = (
             str(alternative["merge_gate_passed"]).lower() == "true"
         )
-        if (
+        below_automatic_member_minimum = (
             len(member_ids) < minimum_members
+            and alternative_id not in manually_approved_ids
+        )
+        if (
+            below_automatic_member_minimum
             or not merge_gate_passed
             or not all_roles_are_identity
         ):
@@ -175,6 +193,15 @@ def finalize_entity_resolution(
                     "canonical_acceptance_review_id": review_id,
                     "canonical_alternative_id": alternative_id,
                     "resolution_case_id": alternative["resolution_case_id"],
+                    "canonical_term": case_by_id[
+                        alternative["resolution_case_id"]
+                    ]["canonical_term"],
+                    "display_name": alternative["display_name_proposal"],
+                    "entity_type": alternative["entity_type_proposal"],
+                    "identity_member_source_ids_json": dumps(
+                        sorted(source_record_ids),
+                        ensure_ascii=False,
+                    ),
                     "review_reason": "AUTOMATIC_ACCEPTANCE_GATE_NOT_SATISFIED",
                     "member_count": len(member_ids),
                     "review_status": "PENDING",
@@ -201,6 +228,15 @@ def finalize_entity_resolution(
                     "canonical_acceptance_review_id": review_id,
                     "canonical_alternative_id": alternative_id,
                     "resolution_case_id": alternative["resolution_case_id"],
+                    "canonical_term": case_by_id[
+                        alternative["resolution_case_id"]
+                    ]["canonical_term"],
+                    "display_name": alternative["display_name_proposal"],
+                    "entity_type": alternative["entity_type_proposal"],
+                    "identity_member_source_ids_json": dumps(
+                        sorted(source_record_ids),
+                        ensure_ascii=False,
+                    ),
                     "review_reason": "MULTIPLE_CANONICAL_REGISTRY_OVERLAP",
                     "member_count": len(member_ids),
                     "review_status": "PENDING",
@@ -226,6 +262,19 @@ def finalize_entity_resolution(
                         "resolution_case_id": alternative[
                             "resolution_case_id"
                         ],
+                        "canonical_term": case_by_id[
+                            alternative["resolution_case_id"]
+                        ]["canonical_term"],
+                        "display_name": alternative[
+                            "display_name_proposal"
+                        ],
+                        "entity_type": alternative[
+                            "entity_type_proposal"
+                        ],
+                        "identity_member_source_ids_json": dumps(
+                            sorted(source_record_ids),
+                            ensure_ascii=False,
+                        ),
                         "review_reason": "CANONICAL_REGISTRY_ENTITY_TYPE_CONFLICT",
                         "member_count": len(member_ids),
                         "review_status": "PENDING",
@@ -304,7 +353,10 @@ def finalize_entity_resolution(
                 "source_record_id": source_record_id,
                 "canonical_id": canonical_id,
                 "match_status": "ACCEPTED",
-                "method": registry_policy["accepted_resolution_method"],
+                "method": selection_method_by_alternative.get(
+                    alternative_id,
+                    registry_policy["accepted_resolution_method"],
+                ),
                 "version": policy["policy_version"],
                 "term_decision_id": alternative["term_decision_id"],
             }
@@ -342,7 +394,7 @@ def finalize_entity_resolution(
                 "entity_name_id": entity_name_id,
                 "canonical_id": canonical_id,
                 "match_status": "ACCEPTED",
-                "method": "verified_problem_assignment",
+                "method": selection_method_by_alternative[alternative_id],
                 "version": policy["policy_version"],
             }
 
@@ -432,6 +484,10 @@ def finalize_entity_resolution(
         "canonical_acceptance_review_id",
         "canonical_alternative_id",
         "resolution_case_id",
+        "canonical_term",
+        "display_name",
+        "entity_type",
+        "identity_member_source_ids_json",
         "review_reason",
         "member_count",
         "review_status",

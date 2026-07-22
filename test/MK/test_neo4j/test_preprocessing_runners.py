@@ -17,7 +17,10 @@ class PreprocessingRunnerTest(unittest.TestCase):
             resolve_pipeline_paths,
             resolve_stage_output_paths,
         )
-        from run_neo4j_preprocessing_test import (
+        from entity_resolution.goldset_workflow import (
+            resolve_goldset_workflow_paths,
+        )
+        from run_preprocessing_test import (
             resolve_test_output_directory,
         )
 
@@ -25,6 +28,9 @@ class PreprocessingRunnerTest(unittest.TestCase):
         cls.resolve_pipeline_paths = staticmethod(resolve_pipeline_paths)
         cls.resolve_stage_output_paths = staticmethod(
             resolve_stage_output_paths
+        )
+        cls.resolve_goldset_workflow_paths = staticmethod(
+            resolve_goldset_workflow_paths
         )
         cls.resolve_test_output_directory = staticmethod(
             resolve_test_output_directory
@@ -87,39 +93,73 @@ class PreprocessingRunnerTest(unittest.TestCase):
 
         self.assertEqual(
             paths["extracted_terms_csv"],
-            Path("pipeline-output/01_term_extraction/unique_exam_terms.csv"),
+            Path("pipeline-output/review/unique_exam_terms.csv"),
         )
         self.assertEqual(
             paths["term_checkpoint"],
             Path(
-                "pipeline-output/01_term_extraction/internal/"
+                "pipeline-output/internal/term_extraction/"
                 "term_extraction_checkpoint.jsonl"
             ),
         )
         self.assertEqual(
             paths["coverage_report"],
             Path(
-                "pipeline-output/02_candidate_retrieval/"
+                "pipeline-output/review/"
                 "source_coverage_report.json"
             ),
         )
         self.assertEqual(
             paths["name_matches"],
             Path(
-                "pipeline-output/02_candidate_retrieval/internal/"
+                "pipeline-output/internal/candidate_retrieval/"
                 "name_match_candidates.json"
             ),
         )
         self.assertEqual(
+            paths["body_mention_matches"],
+            Path(
+                "pipeline-output/internal/candidate_retrieval/"
+                "body_mention_candidates.json"
+            ),
+        )
+        self.assertEqual(
             paths["entity_resolution_directory"],
-            Path("pipeline-output/03_entity_resolution"),
+            Path("pipeline-output/internal/entity_resolution"),
+        )
+        self.assertEqual(
+            paths["entity_resolution_review_queue"],
+            Path("pipeline-output/review/cases_requiring_review.csv"),
         )
         self.assertEqual(
             paths["term_review_tasks"],
             Path(
-                "pipeline-output/04_llm_review/internal/"
+                "pipeline-output/internal/model_review/"
                 "term_identity_review_tasks.jsonl"
             ),
+        )
+
+    def test_goldset_workflow_paths_stay_under_goldset_internal(self):
+        policy = self.load_pipeline_policy(
+            str(self.neo4j_root / "config" / "resolution_policy.json")
+        )
+        paths = self.resolve_goldset_workflow_paths(
+            self.neo4j_root,
+            policy,
+        )
+
+        self.assertEqual(
+            paths["annotation_directory"],
+            (self.neo4j_root / "goldset" / "human_review_csv").resolve(),
+        )
+        self.assertEqual(
+            paths["related_model_prediction_directory"],
+            (
+                self.neo4j_root
+                / "goldset"
+                / "internal"
+                / "related_entity"
+            ).resolve(),
         )
 
 

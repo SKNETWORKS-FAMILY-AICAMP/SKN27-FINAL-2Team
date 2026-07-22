@@ -9,7 +9,7 @@ import pandas as pd
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 sys.path.append(str(Path(__file__).resolve().parent.parent / "terms"))
 
-from common import load_pipeline_policy
+from common import load_pipeline_policy, normalize_history_term
 from entity_resolution.identifiers import create_stable_id
 
 
@@ -216,27 +216,38 @@ def build_term_review_tasks(
             [case_id, semantic_policy["prompt_version"]],
             identifier_policy,
         )
-        tasks.append(
-            {
-                "term_review_task_id": task_id,
-                "resolution_case_id": case_id,
-                "canonical_term": case["canonical_term"],
-                "term_variants": loads(case["term_variants_json"]),
-                "category": case["category"],
-                "entity_type_proposal": case["entity_type_proposal"],
-                "problem_count": int(case["problem_count"]),
-                "problem_context_samples": problem_contexts,
-                "source_candidates": candidate_items,
-                "code_canonical_alternatives": code_alternatives,
-                "relevant_pair_signals": relevant_pairs,
-                "required_decision_status": semantic_policy[
-                    "decision_status_input"
-                ],
-                "review_model": semantic_policy["term_model"]["model"],
-                "prompt_version": semantic_policy["prompt_version"],
-                "resolution_policy_version": policy["policy_version"],
-            }
+        task = {
+            "term_review_task_id": task_id,
+            "resolution_case_id": case_id,
+            "canonical_term": case["canonical_term"],
+            "term_variants": loads(case["term_variants_json"]),
+            "category": case["category"],
+            "entity_type_proposal": case["entity_type_proposal"],
+            "problem_count": int(case["problem_count"]),
+            "problem_context_samples": problem_contexts,
+            "source_candidates": candidate_items,
+            "code_canonical_alternatives": code_alternatives,
+            "relevant_pair_signals": relevant_pairs,
+            "required_decision_status": semantic_policy[
+                "decision_status_input"
+            ],
+            "review_model": semantic_policy["term_model"]["model"],
+            "prompt_version": semantic_policy["prompt_version"],
+            "resolution_policy_version": policy["policy_version"],
+        }
+        related_entity_task_id = str(
+            case.get("related_entity_task_id") or ""
         )
+        related_entity_origin_json = str(
+            case.get("related_entity_origin_json") or ""
+        )
+        if related_entity_task_id:
+            task["related_entity_task_id"] = related_entity_task_id
+        if related_entity_origin_json:
+            task["related_entity_origin"] = loads(
+                related_entity_origin_json
+            )
+        tasks.append(task)
     return tasks
 
 
@@ -350,6 +361,32 @@ def validate_decision_shape(decision: dict) -> list[str]:
             "reason"
         ):
             messages.append("canonical 대안 reason이 필요합니다.")
+    proposed_related_entities = decision.get("proposed_related_entities", [])
+    if not isinstance(proposed_related_entities, list):
+        messages.append("proposed_related_entities: 배열이 필요합니다.")
+        proposed_related_entities = []
+    for related_entity in proposed_related_entities:
+        if not isinstance(related_entity, dict):
+            messages.append("proposed_related_entities 항목은 객체여야 합니다.")
+            continue
+        evidence_ids = related_entity.get("evidence_source_candidate_ids")
+        if not isinstance(evidence_ids, list) or not evidence_ids:
+            messages.append(
+                "관련 엔티티에는 비어 있지 않은 근거 후보 ID 배열이 필요합니다."
+            )
+        required_related_strings = [
+            "related_entity_key",
+            "display_name",
+            "entity_type",
+            "reason",
+        ]
+        for field_name in required_related_strings:
+            if not isinstance(related_entity.get(field_name), str) or not (
+                related_entity.get(field_name)
+            ):
+                messages.append(
+                    f"관련 엔티티 {field_name}이 필요합니다."
+                )
     for field_name in [
         "evidence_only_sources",
         "rejected_sources",
@@ -388,16 +425,153 @@ def add_validation_error(
     )
 
 
+def build_validation_tables_from_review_tasks(
+    tasks: list[dict],
+) -> dict[str, pd.DataFrame]:
+    """review task에 포함된 후보·pair 신호로 검증 게이트 입력을 재구성한다."""
+    candidate_by_id: dict[str, dict] = {}
+    pair_rows: list[dict] = []
+    for task in tasks:
+        case_id = str(task["resolution_case_id"])
+        task_candidates = task.get("source_candidates", [])
+        for candidate in task_candidates:
+            candidate_id = str(candidate["source_candidate_id"])
+            candidate_by_id[candidate_id] = {
+                "source_candidate_id": candidate_id,
+                "source_record_id": str(candidate["source_record_id"]),
+                "category_compatibility": str(
+                    candidate.get("category_compatibility") or ""
+                ),
+            }
+        relevant_pair_by_ids = {
+            frozenset(
+                [
+                    str(pair["left_source_candidate_id"]),
+                    str(pair["right_source_candidate_id"]),
+                ]
+            ): pair
+            for pair in task.get("relevant_pair_signals", [])
+        }
+        candidate_ids = sorted(
+            str(candidate["source_candidate_id"])
+            for candidate in task_candidates
+        )
+        for left_id, right_id in combinations(candidate_ids, 2):
+            pair = relevant_pair_by_ids.get(frozenset([left_id, right_id]))
+            conflicts: list[str] = []
+            merge_eligible = False
+            if pair is not None:
+                conflicts = list(pair.get("conflicts", []))
+                merge_eligible = bool(pair.get("merge_eligible"))
+            pair_rows.append(
+                {
+                    "resolution_case_id": case_id,
+                    "left_source_candidate_id": left_id,
+                    "right_source_candidate_id": right_id,
+                    "conflict_signals_json": dumps(
+                        conflicts,
+                        ensure_ascii=False,
+                    ),
+                    "merge_eligible": merge_eligible,
+                }
+            )
+    return {
+        "source_record_candidates": pd.DataFrame(
+            list(candidate_by_id.values()),
+            columns=[
+                "source_candidate_id",
+                "source_record_id",
+                "category_compatibility",
+            ],
+        ),
+        "source_candidate_pair_signals": pd.DataFrame(
+            pair_rows,
+            columns=[
+                "resolution_case_id",
+                "left_source_candidate_id",
+                "right_source_candidate_id",
+                "conflict_signals_json",
+                "merge_eligible",
+            ],
+        ),
+    }
+
+
+def collect_term_source_alignment_modes(
+    task: dict,
+    member_ids: list[str],
+) -> set[str]:
+    """입력 용어와 identity member 원천명 사이의 일반화된 정합성을 계산한다."""
+    term_values = [task.get("canonical_term", "")]
+    term_values.extend(task.get("term_variants", []))
+    normalized_terms: set[str] = set()
+    for value in term_values:
+        if not value:
+            continue
+        normalized_value = normalize_history_term(value)
+        if normalized_value:
+            normalized_terms.add(normalized_value)
+    candidate_by_id = {
+        str(candidate["source_candidate_id"]): candidate
+        for candidate in task.get("source_candidates", [])
+    }
+    alignment_modes: set[str] = set()
+    for member_id in member_ids:
+        candidate = candidate_by_id.get(str(member_id))
+        if candidate is None:
+            continue
+        candidate_values = [candidate.get("matched_name", "")]
+        candidate_values.extend(candidate.get("normalized_names", []))
+        normalized_candidate_names: set[str] = set()
+        for value in candidate_values:
+            if not value:
+                continue
+            normalized_value = normalize_history_term(value)
+            if normalized_value:
+                normalized_candidate_names.add(normalized_value)
+        for term_name in normalized_terms:
+            for candidate_name in normalized_candidate_names:
+                if term_name == candidate_name:
+                    alignment_modes.add("normalized_exact")
+                    continue
+                if term_name in candidate_name or candidate_name in term_name:
+                    alignment_modes.add("bidirectional_containment")
+                    continue
+                if sorted(term_name) == sorted(candidate_name):
+                    alignment_modes.add("character_multiset_match")
+                    continue
+                matched_character_count = 0
+                for character in candidate_name:
+                    if (
+                        matched_character_count < len(term_name)
+                        and character == term_name[matched_character_count]
+                    ):
+                        matched_character_count += 1
+                if matched_character_count == len(term_name):
+                    alignment_modes.add("ordered_subsequence_expansion")
+    return alignment_modes
+
+
 def validate_term_decisions(
     decisions: list[dict],
     tasks: list[dict],
     tables: dict[str, pd.DataFrame],
     policy: dict,
+    manual_verifications: dict[str, dict] | None = None,
 ) -> dict[str, pd.DataFrame]:
     """LLM의 PROPOSED term 결정을 검증하고 VERIFIED 결과만 평탄화한다."""
     resolution_policy = policy["entity_resolution"]
     semantic_policy = resolution_policy["semantic_review"]
     identifier_policy = resolution_policy["identifier_policy"]
+    manual_review_policy = resolution_policy["related_entity_resolution"][
+        "manual_review"
+    ]
+    term_alignment_policy = semantic_policy["term_source_alignment"]
+    automatic_alignment_modes = set(
+        term_alignment_policy["automatic_acceptance_modes"]
+    )
+    verification_methods = manual_review_policy["verification_methods"]
+    manual_verification_by_case = manual_verifications or {}
     task_by_id = {task["term_review_task_id"]: task for task in tasks}
     candidate_rows = {
         str(row["source_candidate_id"]): row
@@ -418,6 +592,8 @@ def validate_term_decisions(
     for decision_sequence, decision in enumerate(decisions, start=1):
         task_id = str(decision.get("term_review_task_id") or "")
         case_id = str(decision.get("resolution_case_id") or "")
+        manual_verification = manual_verification_by_case.get(case_id, {})
+        manual_override = bool(manual_verification)
         decision_id = create_stable_id(
             identifier_policy["term_decision_prefix"],
             [
@@ -583,6 +759,37 @@ def validate_term_decisions(
                 identifier_policy,
             )
             alternative_specs.append((alternative, alternative_id))
+            alignment_modes: set[str] = set()
+            if task is not None:
+                alignment_modes = collect_term_source_alignment_modes(
+                    task,
+                    member_ids,
+                )
+            if (
+                task is not None
+                and not alignment_modes.intersection(
+                    automatic_alignment_modes
+                )
+                and not manual_override
+            ):
+                add_validation_error(
+                    error_rows,
+                    decision_id,
+                    case_id,
+                    "NEEDS_MANUAL_REVIEW",
+                    "TERM_SOURCE_ALIGNMENT_REVIEW_REQUIRED",
+                    dumps(
+                        {
+                            "canonical_term": task["canonical_term"],
+                            "identity_member_source_candidate_ids": member_ids,
+                            "observed_alignment_modes": sorted(
+                                alignment_modes
+                            ),
+                        },
+                        ensure_ascii=False,
+                    ),
+                )
+                manual_review = True
             allowed_entity_types = set(
                 resolution_policy["entity_type_mapping"].values()
             )
@@ -598,7 +805,10 @@ def validate_term_decisions(
                 )
                 invalid = True
             if task is not None and task["entity_type_proposal"]:
-                if alternative_entity_type != task["entity_type_proposal"]:
+                if (
+                    alternative_entity_type != task["entity_type_proposal"]
+                    and not manual_override
+                ):
                     add_validation_error(
                         error_rows,
                         decision_id,
@@ -647,7 +857,10 @@ def validate_term_decisions(
                     )
                     invalid = True
                     continue
-                if str(pair["merge_eligible"]).lower() != "true":
+                if (
+                    str(pair["merge_eligible"]).lower() != "true"
+                    and not manual_override
+                ):
                     add_validation_error(
                         error_rows,
                         decision_id,
@@ -676,6 +889,18 @@ def validate_term_decisions(
         if invalid:
             verification_status = "INVALID"
 
+        verification_method = verification_methods["automatic"]
+        verified_by = ""
+        verified_at = ""
+        if verification_status == "VERIFIED" and manual_override:
+            verification_method = verification_methods["human"]
+            verified_by = str(manual_verification.get("reviewer") or "")
+            verified_at = str(manual_verification.get("reviewed_at") or "")
+        elif verification_status == "NEEDS_MANUAL_REVIEW":
+            verification_method = verification_methods["pending"]
+        elif verification_status == "INVALID":
+            verification_method = verification_methods["invalid"]
+
         evidence_only_sources = decision.get("evidence_only_sources")
         rejected_sources = decision.get("rejected_sources")
         ambiguous_sources = decision.get("ambiguous_sources")
@@ -702,6 +927,9 @@ def validate_term_decisions(
                 "decision_reason": decision.get("decision_reason", ""),
                 "review_model": decision.get("review_model", ""),
                 "prompt_version": decision.get("prompt_version", ""),
+                "verification_method": verification_method,
+                "verified_by": verified_by,
+                "verified_at": verified_at,
                 "resolution_policy_version": policy["policy_version"],
             }
         )
@@ -735,6 +963,9 @@ def validate_term_decisions(
                     "member_count": len(member_ids),
                     "merge_gate_passed": True,
                     "verification_status": "VERIFIED",
+                    "verification_method": verification_method,
+                    "verified_by": verified_by,
+                    "verified_at": verified_at,
                     "term_decision_id": decision_id,
                     "decision_reason": alternative["reason"],
                     "resolution_policy_version": policy["policy_version"],
@@ -757,6 +988,9 @@ def validate_term_decisions(
                     ),
                     "verified_role": role,
                     "verification_status": "VERIFIED",
+                    "verification_method": verification_method,
+                    "verified_by": verified_by,
+                    "verified_at": verified_at,
                     "term_decision_id": decision_id,
                     "role_reason": role_reason,
                     "resolution_policy_version": policy["policy_version"],
@@ -777,6 +1011,9 @@ def validate_term_decisions(
             "decision_reason",
             "review_model",
             "prompt_version",
+            "verification_method",
+            "verified_by",
+            "verified_at",
             "resolution_policy_version",
         ],
         "reviewed_canonical_alternatives": [
@@ -790,6 +1027,9 @@ def validate_term_decisions(
             "member_count",
             "merge_gate_passed",
             "verification_status",
+            "verification_method",
+            "verified_by",
+            "verified_at",
             "term_decision_id",
             "decision_reason",
             "resolution_policy_version",
@@ -801,6 +1041,9 @@ def validate_term_decisions(
             "canonical_alternative_id",
             "verified_role",
             "verification_status",
+            "verification_method",
+            "verified_by",
+            "verified_at",
             "term_decision_id",
             "role_reason",
             "resolution_policy_version",

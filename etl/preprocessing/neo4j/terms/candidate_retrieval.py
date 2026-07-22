@@ -115,6 +115,8 @@ def retrieve_candidates(
     weights = retrieval_policy["score_weights"]
     minimum_containment_length = retrieval_policy["minimum_containment_length"]
     containment_length_power = retrieval_policy["containment_length_power"]
+    reverse_minimum_length = retrieval_policy["reverse_containment_minimum_length"]
+    reverse_minimum_ratio = retrieval_policy["reverse_containment_minimum_ratio"]
     minimum_score = retrieval_policy["minimum_score"]
     candidates: list[dict] = []
     for entry_id in evaluated_ids:
@@ -141,12 +143,26 @@ def retrieve_candidates(
                     / character_denominator
                 )
 
+            # 정방향: 용어가 표제어에 포함 (운요호 -> 운요호사건)
+            # 역방향: 표제어가 용어에 포함 (짧은 표제어의 오탐이 많아
+            #   '묘수' ⊂ '진묘수' 같은 매칭을 막기 위해 길이·비율 조건을 더 건다)
             shorter_length = min(len(query_key), len(name_key))
-            contains = query_key in name_key or name_key in query_key
-            current_containment = 0.0
-            if contains and shorter_length >= minimum_containment_length:
-                longer_length = max(len(query_key), len(name_key))
+            longer_length = max(len(query_key), len(name_key))
+            length_ratio = 0.0
+            if longer_length > 0:
                 length_ratio = shorter_length / longer_length
+            forward_contains = (
+                query_key in name_key
+                and shorter_length >= minimum_containment_length
+            )
+            reverse_contains = (
+                name_key in query_key
+                and name_key != query_key
+                and len(name_key) >= reverse_minimum_length
+                and length_ratio >= reverse_minimum_ratio
+            )
+            current_containment = 0.0
+            if forward_contains or reverse_contains:
                 current_containment = length_ratio ** containment_length_power
 
             name_rank = (
@@ -173,6 +189,14 @@ def retrieve_candidates(
             query_ngram_groups,
             entry["description_key"],
         )
+        # 용어 전체가 설명 문장에 그대로 등장하면 강한 신호로 별도 가산한다
+        # ('진묘수'처럼 표제어가 다른 이름(무령왕릉 석수)인 문서를 설명으로 잡는 채널)
+        description_containment = 0.0
+        if (
+            len(query_key) >= minimum_containment_length
+            and query_key in entry["description_key"]
+        ):
+            description_containment = 1.0
         is_exact = query_key == best_name_key
         score = (
             containment * weights["bidirectional_containment"]
@@ -180,6 +204,7 @@ def retrieve_candidates(
             + best_sequence_similarity * weights["name_sequence_similarity"]
             + best_character_overlap * weights["name_character_overlap"]
             + description_coverage * weights["description_ngram_coverage"]
+            + description_containment * weights["description_containment"]
         )
         if is_exact:
             score = 1.0
@@ -193,13 +218,17 @@ def retrieve_candidates(
             methods.append("bidirectional_containment")
         if best_name_coverage > 0.0 and not is_exact:
             methods.append("name_ngram")
+        if description_containment > 0.0 and not is_exact:
+            methods.append("description_containment")
         if description_coverage > 0.0 and not is_exact:
             methods.append("description_ngram")
         if best_sequence_similarity > 0.0 and not is_exact:
             methods.append("sequence_similarity")
 
         matched_field = "name"
-        if (
+        if not is_exact and description_containment > 0.0:
+            matched_field = "description"
+        elif (
             not is_exact
             and description_coverage > containment
             and description_coverage > best_name_coverage
@@ -209,6 +238,8 @@ def retrieve_candidates(
         primary_method = "sequence_similarity"
         if is_exact:
             primary_method = "exact"
+        elif description_containment > 0.0 and containment == 0.0:
+            primary_method = "description_containment"
         elif containment > 0.0:
             primary_method = "bidirectional_containment"
         elif matched_field == "description":
@@ -230,6 +261,7 @@ def retrieve_candidates(
                     "name_sequence_similarity": round(best_sequence_similarity, 6),
                     "name_character_overlap": round(best_character_overlap, 6),
                     "description_ngram_coverage": round(description_coverage, 6),
+                    "description_containment": round(description_containment, 6),
                 },
                 "verification_status": "PROPOSED",
                 "retrieval_policy_version": policy_version,
@@ -256,5 +288,14 @@ def retrieve_candidates(
         for candidate in candidates
         if candidate["retrieval_method"] != "exact"
     ]
+    if exact_candidates:
+        minimum_expanded_score = retrieval_policy[
+            "minimum_expanded_score_with_exact_candidate"
+        ]
+        fuzzy_candidates = [
+            candidate
+            for candidate in fuzzy_candidates
+            if candidate["retrieval_score"] >= minimum_expanded_score
+        ]
     fuzzy_limit = max(candidate_limit - len(exact_candidates), 0)
     return exact_candidates + fuzzy_candidates[:fuzzy_limit]

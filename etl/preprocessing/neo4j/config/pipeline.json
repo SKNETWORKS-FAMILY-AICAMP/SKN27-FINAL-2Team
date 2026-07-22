@@ -1,0 +1,45 @@
+{
+  "policy_version": "entity-resolution-candidate-v2.4",
+  "normalization_policy_version": "history-term-v2.0",
+  "source_release": {
+    "hash_algorithm": "sha256",
+    "digest_length": 16,
+    "chunk_size_bytes": 1048576
+  },
+  "term_extraction": {
+    "model": "gpt-5.6-terra",
+    "temperature": 0,
+    "reasoning_effort": "none"
+  },
+  "output_layout": {
+    "version": "neo4j-output-layout-v2",
+    "default_output_root": "output",
+    "directories": {
+      "review": "review",
+      "final_identity": "final_identity",
+      "internal": "internal",
+      "term_extraction": "term_extraction",
+      "candidate_retrieval": "candidate_retrieval",
+      "entity_resolution": "entity_resolution",
+      "model_review": "model_review"
+    },
+    "files": {
+      "term_checkpoint": "term_extraction_checkpoint.jsonl",
+      "extracted_terms_json": "exam_terms_by_problem.json",
+      "extracted_terms_csv": "unique_exam_terms.csv",
+      "normalized_thesaurus": "normalized_history_thesaurus.json",
+      "coverage_report": "source_coverage_report.json",
+      "name_matches": "name_match_candidates.json",
+      "definition_matches": "definition_match_candidates.json",
+      "body_mention_matches": "body_mention_candidates.json"
+    }
+  },
+  "test_run": {
+    "output_subdirectory": "test_run",
+    "limit": 20,
+    "batch_size": 10,
+    "max_retries": 1,
+    "coverage_threshold": 90,
+    "display_limit": 20
+  }
+}

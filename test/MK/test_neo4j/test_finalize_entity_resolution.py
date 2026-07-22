@@ -178,6 +178,27 @@ class FinalizeEntityResolutionTest(unittest.TestCase):
         self.assertEqual(final_assignments.iloc[0]["link_status"], "ACCEPTED")
         self.assertEqual(len(outputs["entity_name_nodes"]), 2)
 
+        preselected_outputs = self.finalize(
+            resolution_tables,
+            term_tables,
+            assignments.iloc[0:0],
+            self.load_registry(""),
+            self.policy,
+            uuid_factory=lambda: "uuid-preselected",
+            timestamp="2026-07-21T00:00:00+00:00",
+            preselected_alternative_methods={
+                "alternative-1": "verified_related_entity_seed"
+            },
+        )
+        self.assertEqual(len(preselected_outputs["canonical_registry"]), 1)
+        self.assertTrue(
+            preselected_outputs["final_problem_assignments"].empty
+        )
+        self.assertEqual(
+            set(preselected_outputs["entity_name_references"]["method"]),
+            {"verified_related_entity_seed"},
+        )
+
     def test_evidence_only_source_does_not_resolve_to_canonical(self):
         resolution_tables, term_tables, assignments = self.build_fixture()
 
@@ -216,6 +237,29 @@ class FinalizeEntityResolutionTest(unittest.TestCase):
         self.assertEqual(
             outputs["final_problem_assignments"].iloc[0]["link_status"],
             "AMBIGUOUS",
+        )
+
+        manually_approved_outputs = self.finalize(
+            resolution_tables,
+            term_tables,
+            assignments.iloc[0:0],
+            self.load_registry(""),
+            self.policy,
+            uuid_factory=lambda: "uuid-manual",
+            timestamp="2026-07-21T00:00:00+00:00",
+            preselected_alternative_methods={
+                "alternative-1": "verified_related_entity_seed"
+            },
+            manually_approved_alternative_ids={"alternative-1"},
+        )
+        self.assertEqual(
+            len(manually_approved_outputs["canonical_registry"]),
+            1,
+        )
+        self.assertTrue(
+            manually_approved_outputs[
+                "canonical_acceptance_review_queue"
+            ].empty
         )
 
     def test_registry_id_is_reused_when_one_source_record_persists(self):

@@ -5,6 +5,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
+import pandas as pd
+
 
 class GoldSetTest(unittest.TestCase):
     @classmethod
@@ -14,7 +16,7 @@ class GoldSetTest(unittest.TestCase):
         sys.path.insert(0, str(neo4j_root))
 
         from common import load_pipeline_policy
-        from entity_resolution.build_gold_set import (
+        from goldset.build_gold_set import (
             build_candidate_annotations,
             build_gold_task_records,
             select_gold_tasks,
@@ -124,6 +126,7 @@ class GoldSetTest(unittest.TestCase):
         ]
         gold_policy["sample_size"] = 6
         gold_policy["minimum_cases_per_category"] = 1
+        gold_policy["maximum_candidates_per_pilot_case"] = 3
         return policy
 
     def make_tasks(self) -> list[dict]:
@@ -165,6 +168,12 @@ class GoldSetTest(unittest.TestCase):
             {record["profile"]["category"] for record in selected},
             {"인물", "사건", "제도"},
         )
+        self.assertTrue(
+            all(
+                record["profile"]["candidate_count"] <= 3
+                for record in selected
+            )
+        )
 
     def test_annotation_is_blind_and_preserves_candidate_evidence(self):
         policy = self.make_policy()
@@ -175,7 +184,12 @@ class GoldSetTest(unittest.TestCase):
 
         self.assertNotIn("code_proposed_role", annotations.columns)
         self.assertIn("code_proposed_role", baseline.columns)
+        self.assertNotIn("reviewer", annotations.columns)
+        self.assertNotIn("candidate_review_status", annotations.columns)
         self.assertTrue((annotations["gold_candidate_role"] == "").all())
+        self.assertIn("gold_related_entity_key", annotations.columns)
+        self.assertIn("gold_related_display_name", annotations.columns)
+        self.assertIn("gold_related_entity_type", annotations.columns)
         self.assertTrue(
             annotations["candidate_pair_signals_json"].map(loads).map(
                 lambda value: isinstance(value, list)
@@ -210,6 +224,53 @@ class GoldSetTest(unittest.TestCase):
             self.assertEqual(
                 manifest["generated_at"],
                 "2026-07-21T00:00:00+00:00",
+            )
+
+    def test_started_human_review_requires_explicit_overwrite(self):
+        tasks = self.make_tasks()
+        policy = self.make_policy()
+        with tempfile.TemporaryDirectory() as temp_dir:
+            input_path = Path(temp_dir) / "tasks.jsonl"
+            output_dir = Path(temp_dir) / "internal"
+            review_dir = Path(temp_dir) / "review"
+            self.write_jsonl(tasks, str(input_path))
+            paths = self.write_gold_set(
+                tasks,
+                str(input_path),
+                str(output_dir),
+                policy,
+                review_output_dir=str(review_dir),
+            )
+            case_path = Path(paths["case_annotations"])
+            cases = pd.read_csv(
+                case_path,
+                encoding="utf-8-sig",
+                dtype=str,
+                keep_default_na=False,
+            )
+            cases.loc[0, "case_review_status"] = "IN_PROGRESS"
+            cases.to_csv(
+                case_path,
+                index=False,
+                encoding="utf-8-sig",
+            )
+
+            with self.assertRaises(FileExistsError):
+                self.write_gold_set(
+                    tasks,
+                    str(input_path),
+                    str(output_dir),
+                    policy,
+                    review_output_dir=str(review_dir),
+                )
+
+            self.write_gold_set(
+                tasks,
+                str(input_path),
+                str(output_dir),
+                policy,
+                review_output_dir=str(review_dir),
+                allow_review_overwrite=True,
             )
 
 

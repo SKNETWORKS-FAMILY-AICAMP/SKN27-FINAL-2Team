@@ -113,13 +113,18 @@ class TermReviewEvaluationTest(unittest.TestCase):
             ]
         )
 
-    def evaluate(self, predicted_decisions: list[dict]) -> dict[str, object]:
+    def evaluate(
+        self,
+        predicted_decisions: list[dict],
+        verified_decision_tables: dict[str, pd.DataFrame] | None = None,
+    ) -> dict[str, object]:
         return self.evaluate_term_decisions(
             [self.make_gold_decision()],
             predicted_decisions,
             [self.make_task()],
             self.make_outcomes(),
             self.policy,
+            verified_decision_tables=verified_decision_tables,
         )
 
     def test_exact_prediction_scores_one_and_outputs_all_files(self):
@@ -151,13 +156,50 @@ class TermReviewEvaluationTest(unittest.TestCase):
             ["candidate-d"],
             [],
         )
-        metrics = self.evaluate([prediction])["metrics"]
+        verified_decision_tables = {
+            "term_resolution_decisions": pd.DataFrame(
+                [
+                    {
+                        "term_review_task_id": "task-1",
+                        "verification_status": "INVALID",
+                    }
+                ]
+            ),
+            "reviewed_canonical_alternatives": pd.DataFrame(
+                columns=[
+                    "resolution_case_id",
+                    "source_candidate_ids_json",
+                ]
+            ),
+            "term_decision_validation_errors": pd.DataFrame(
+                [
+                    {
+                        "resolution_case_id": "case-1",
+                        "error_code": "CATEGORY_CONFLICT_IDENTITY_MEMBER",
+                    }
+                ]
+            ),
+        }
+        outputs = self.evaluate(
+            [prediction],
+            verified_decision_tables=verified_decision_tables,
+        )
+        metrics = outputs["metrics"]
+        case_result = outputs["case_results"].iloc[0]
 
         self.assertEqual(metrics["false_merge_pair_count"], 2)
         self.assertEqual(metrics["false_split_pair_count"], 0)
         self.assertAlmostEqual(metrics["identity_pair_precision"], 1 / 3)
         self.assertEqual(metrics["identity_pair_recall"], 1.0)
         self.assertEqual(metrics["candidate_role_accuracy"], 0.75)
+        self.assertEqual(metrics["verified_false_merge_pair_count"], 0)
+        self.assertEqual(
+            metrics["blocked_proposal_false_merge_pair_count"],
+            2,
+        )
+        self.assertEqual(case_result["gate_verification_status"], "INVALID")
+        self.assertEqual(metrics["verified_false_split_pair_count"], 0)
+        self.assertEqual(metrics["deferred_gold_identity_pair_count"], 1)
 
     def test_false_split_is_counted_even_when_candidate_roles_match(self):
         prediction = self.make_decision(
