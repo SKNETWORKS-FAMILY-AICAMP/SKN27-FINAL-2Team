@@ -242,3 +242,39 @@ BEGIN
         DROP TABLE user_study_profiles;
     END IF;
 END $$;
+
+-- ml_trend_top5: recent trend TOP5 rows for study-plan and question-generation flows.
+-- Import source: ai/ml/reports/trend_top5_for_db_2026-07-18.csv
+CREATE TABLE IF NOT EXISTS ml_trend_top5 (
+    trend_id               BIGSERIAL       PRIMARY KEY,
+    target_round           INT             NOT NULL,
+    recent5_rounds         VARCHAR(20)     NOT NULL,
+    source                 VARCHAR(50)     NOT NULL,
+    source_name            VARCHAR(100)    NULL,
+    usage_text             VARCHAR(255)    NULL,
+    trend_type             VARCHAR(50)     NOT NULL,
+    rank_no                INT             NOT NULL,
+    era                    VARCHAR(50)     NULL,
+    topic_train            VARCHAR(50)     NULL,
+    topic                  VARCHAR(50)     NULL,
+    topic_summary          VARCHAR(255)    NULL,
+    label                  VARCHAR(100)    NULL,
+    combo_label            VARCHAR(100)    NULL,
+    combo_label_with_topic VARCHAR(255)    NULL,
+    count_value            INT             NOT NULL,
+    ratio                  DOUBLE PRECISION NULL,
+    ratio_percent          DOUBLE PRECISION NULL,
+    created_at             TIMESTAMP       NOT NULL DEFAULT NOW(),
+    CONSTRAINT ml_trend_top5_source_check
+        CHECK (source IN ('recent5_actual', 'predicted', 'actual')),
+    CONSTRAINT ml_trend_top5_trend_type_check
+        CHECK (trend_type IN ('era_topic_train', 'era', 'topic_train', 'topic')),
+    CONSTRAINT ml_trend_top5_rank_check
+        CHECK (rank_no BETWEEN 1 AND 5)
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS ml_trend_top5_round_source_type_rank_uidx
+    ON ml_trend_top5(target_round, source, trend_type, rank_no);
+
+CREATE INDEX IF NOT EXISTS ml_trend_top5_lookup_idx
+    ON ml_trend_top5(target_round, source, trend_type);

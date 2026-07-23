@@ -258,7 +258,9 @@ def build_weakness_summary(user, today=None):
 
 
 def build_weakness_trend_label(trend, config):
-    trend_value = trend.get("value")
+    trend_value = trend
+    if isinstance(trend, dict):
+        trend_value = trend.get("value")
     if trend_value == config["trend_worsening"]:
         return "악화"
     elif trend_value == config["trend_improving"]:

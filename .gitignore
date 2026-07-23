@@ -295,7 +295,6 @@ $RECYCLE.BIN/
 
 postgres_data/
 
-
 # Neo4j preprocessing generated CSV files
 etl/preprocessing/neo4j/**/*.csv
 !etl/preprocessing/neo4j/seed/
@@ -314,3 +313,11 @@ storage/neo4j/neo4j_import/.preprocessing_complete.json
 # AKS encyclopedia API outputs
 etl/raw_data/한국민족문화대백과사전/articles_list.jsonl
 etl/raw_data/한국민족문화대백과사전/articles_detail.jsonl
+
+# Neo4j preprocessing runtime JSON and checkpoint files
+etl/preprocessing/neo4j/output/**/*.json
+etl/preprocessing/neo4j/output/**/*.jsonl
+
+# Generated AKS encyclopedia RAG artifacts
+etl/preprocessing/history/processed/aks_encyclopedia.chunks.jsonl
+etl/preprocessing/history/processed/aks_encyclopedia.documents.jsonl

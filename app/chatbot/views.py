@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 import json
+import logging
 import urllib.error
 import urllib.parse
 import urllib.request
 
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, StreamingHttpResponse
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from django.utils import timezone
@@ -17,7 +18,10 @@ from question.models import QuestionOptions, SolveRecords
 from user.views import build_session_display_map
 
 from .models import ChatMessages, ChatSessions
-from .rag_service import build_history_rag_answer
+from .rag_service import build_history_rag_answer, stream_concept_rag_answer, stream_question_rag_answer
+
+
+logger = logging.getLogger(__name__)
 
 
 @login_required
@@ -83,12 +87,20 @@ def rag_chat_api(request):
     intent = payload.get("intent") or "concept"
     answer_format = payload.get("answer_format") or "structured"
     follow_up = bool(payload.get("follow_up", False))
-    top_k = int(payload.get("top_k") or 5)
+    try:
+        top_k = min(max(int(payload.get("top_k") or 20), 1), 20)
+    except (TypeError, ValueError):
+        return JsonResponse({"error": "top_k 값이 올바르지 않습니다."}, status=400)
     session_id = str(payload.get("session_id") or "").strip()
     display_question = str(payload.get("display_question") or question).strip()
     conversation_history = payload.get("conversation_history")
     if not isinstance(conversation_history, list):
         conversation_history = []
+    try:
+        problem_session_id = int(payload.get("problem_session_id"))
+    except (TypeError, ValueError):
+        problem_session_id = None
+    explanation_level = "foundation" if intent == "question" and payload.get("foundation_explanation") is True else "core" if intent == "question" else ""
 
     try:
         result = build_history_rag_answer(
@@ -99,18 +111,68 @@ def rag_chat_api(request):
             follow_up=follow_up,
             top_k=top_k,
             history=conversation_history,
+            explanation_level=explanation_level,
         )
-    except Exception as exc:
-        return JsonResponse(
-            {
-                "error": "RAG 답변 생성 중 오류가 발생했습니다.",
-                "detail": str(exc),
-            },
-            status=500,
-        )
+    except Exception:
+        logger.exception("RAG 답변 생성 실패")
+        return JsonResponse({"error": "RAG 답변 생성 중 오류가 발생했습니다."}, status=500)
 
-    save_chat_turn(request, session_id, display_question, result)
+    try:
+        save_chat_turn(request, session_id, display_question, result)
+    except Exception:
+        logger.exception("채팅 기록 저장 실패 session_id=%s", session_id)
     return JsonResponse(result, json_dumps_params={"ensure_ascii": False})
+
+
+@require_POST
+def rag_chat_stream_api(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "로그인이 필요합니다."}, status=401)
+    try:
+        payload = json.loads(request.body.decode("utf-8"))
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "요청 JSON 형식이 올바르지 않습니다."}, status=400)
+    question = str(payload.get("question") or "").strip()
+    if not question:
+        return JsonResponse({"error": "질문을 입력해 주세요."}, status=400)
+    try:
+        top_k = min(max(int(payload.get("top_k") or 20), 1), 20)
+    except (TypeError, ValueError):
+        return JsonResponse({"error": "top_k 값이 올바르지 않습니다."}, status=400)
+    session_id = str(payload.get("session_id") or "").strip()
+    display_question = str(payload.get("display_question") or question).strip()
+    history = payload.get("conversation_history") if isinstance(payload.get("conversation_history"), list) else []
+    try:
+        problem_session_id = int(payload.get("problem_session_id"))
+    except (TypeError, ValueError):
+        problem_session_id = None
+    intent = payload.get("intent") or "concept"
+    explanation_level = "foundation" if intent == "question" and payload.get("foundation_explanation") is True else "core" if intent == "question" else ""
+
+    def stream():
+        try:
+            answer_stream = (
+                stream_question_rag_answer(question, mode=payload.get("mode") or "history", top_k=top_k, history=history, explanation_level=explanation_level)
+                if intent == "question"
+                else stream_concept_rag_answer(question, mode=payload.get("mode") or "history", top_k=top_k, history=history)
+            )
+            for event in answer_stream:
+                if event["type"] == "done":
+                    if intent == "question":
+                        event["data"]["problem_session_id"] = problem_session_id
+                    try:
+                        save_chat_turn(request, session_id, display_question, event["data"])
+                    except Exception:
+                        logger.exception("채팅 기록 저장 실패 session_id=%s", session_id)
+                yield f"event: {event['type']}\ndata: {json.dumps(event, ensure_ascii=False)}\n\n"
+        except Exception:
+            logger.exception("RAG 스트리밍 답변 생성 실패")
+            yield 'event: error\ndata: {"error":"RAG 답변 생성 중 오류가 발생했습니다."}\n\n'
+
+    response = StreamingHttpResponse(stream(), content_type="text/event-stream; charset=utf-8")
+    response["Cache-Control"] = "no-cache"
+    response["X-Accel-Buffering"] = "no"
+    return response
 
 
 @login_required
@@ -170,6 +232,7 @@ def solved_problem_options_api(request):
     return JsonResponse({"problems": problems}, json_dumps_params={"ensure_ascii": False})
 
 
+@login_required
 @require_GET
 def image_proxy(request):
     url = (request.GET.get("url") or "").strip()
@@ -190,10 +253,8 @@ def image_proxy(request):
         with urllib.request.urlopen(req, timeout=45) as response:
             content = response.read()
             content_type = response.headers.get("Content-Type", "image/jpeg")
-    except (urllib.error.URLError, TimeoutError) as exc:
-        return JsonResponse(
-            {"error": "이미지를 불러오지 못했습니다.", "detail": str(exc)},
-            status=502,
-        )
+    except (urllib.error.URLError, TimeoutError):
+        logger.exception("이미지 프록시 요청 실패")
+        return JsonResponse({"error": "이미지를 불러오지 못했습니다."}, status=502)
 
     return HttpResponse(content, content_type=content_type)

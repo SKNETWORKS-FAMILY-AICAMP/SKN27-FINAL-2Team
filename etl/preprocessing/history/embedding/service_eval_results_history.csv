@@ -317,3 +317,147 @@
 2026-07-15T09:02:51,feature-chatbot,e84cca5,Y,RAGAS Context Recall,정답에 필요한 근거를 검색 문맥이 포함하는지 평가,0.92,0.80 이상,PASS,RAGAS Framework (Context Recall)
 2026-07-15T09:02:51,feature-chatbot,e84cca5,Y,RAGAS Faithfulness,답변이 검색 근거에 충실한지 평가,0.86,0.80 이상,PASS,RAGAS Framework (Faithfulness)
 2026-07-15T09:02:51,feature-chatbot,e84cca5,Y,RAGAS Answer Relevance,답변이 질문 의도에 적합한지 평가,0.77,0.80 이상,FAIL,RAGAS Framework (Answer Relevance)
+2026-07-15T10:08:25,feature-chatbot,d0c3f52,Y,연결성(Graph),노드 간 탐색 성공률,100.0%,95% 이상,PASS,Cypher Query 성능 테스트 및 접속 조사
+2026-07-15T10:08:25,feature-chatbot,d0c3f52,Y,검색 속도,LLM 생성 제외 쿼리 평균 소요 시간,1.80s,2.0s 이내,PASS,pgvector/Graph 검색 지연시간 측정
+2026-07-15T10:08:25,feature-chatbot,d0c3f52,Y,LLM 답변 생성 속도,검색 이후 답변 생성 평균 소요 시간,2.75s,5.0s 이내,PASS,전체 응답 시간 - 검색 시간
+2026-07-15T10:08:25,feature-chatbot,d0c3f52,Y,전체 응답 속도,LLM 생성 포함 평균 응답 시간,4.55s,7.0s 이내,PASS,서비스 RAG 전체 호출 지연시간 측정
+2026-07-15T10:08:25,feature-chatbot,d0c3f52,Y,RAGAS Context Precision,검색 문맥 중 질문과 관련 있는 문맥 비율,0.67,0.80 이상,FAIL,RAGAS Framework (Context Precision)
+2026-07-15T10:08:25,feature-chatbot,d0c3f52,Y,RAGAS Context Recall,정답에 필요한 근거를 검색 문맥이 포함하는지 평가,0.86,0.80 이상,PASS,RAGAS Framework (Context Recall)
+2026-07-15T10:08:25,feature-chatbot,d0c3f52,Y,RAGAS Faithfulness,답변이 검색 근거에 충실한지 평가,0.87,0.80 이상,PASS,RAGAS Framework (Faithfulness)
+2026-07-15T10:08:25,feature-chatbot,d0c3f52,Y,RAGAS Answer Relevance,답변이 질문 의도에 적합한지 평가,0.80,0.80 이상,PASS,RAGAS Framework (Answer Relevance)
+2026-07-15T12:44:08,feature-chatbot,d0c3f52,Y,연결성(Graph),노드 간 탐색 성공률,100.0%,95% 이상,PASS,Cypher Query 성능 테스트 및 접속 조사
+2026-07-15T12:44:08,feature-chatbot,d0c3f52,Y,검색 속도,LLM 생성 제외 쿼리 평균 소요 시간,26.50s,2.0s 이내,FAIL,pgvector/Graph 검색 지연시간 측정
+2026-07-15T12:44:08,feature-chatbot,d0c3f52,Y,LLM 답변 생성 속도,검색 이후 답변 생성 평균 소요 시간,10.39s,5.0s 이내,FAIL,전체 응답 시간 - 검색 시간
+2026-07-15T12:44:08,feature-chatbot,d0c3f52,Y,전체 응답 속도,LLM 생성 포함 평균 응답 시간,35.45s,7.0s 이내,FAIL,서비스 RAG 전체 호출 지연시간 측정
+2026-07-15T12:44:08,feature-chatbot,d0c3f52,Y,RAGAS Context Precision,검색 문맥 중 질문과 관련 있는 문맥 비율,0.88,0.80 이상,PASS,RAGAS Framework (Context Precision)
+2026-07-15T12:44:08,feature-chatbot,d0c3f52,Y,RAGAS Context Recall,정답에 필요한 근거를 검색 문맥이 포함하는지 평가,0.97,0.80 이상,PASS,RAGAS Framework (Context Recall)
+2026-07-15T12:44:08,feature-chatbot,d0c3f52,Y,RAGAS Faithfulness,답변이 검색 근거에 충실한지 평가,0.56,0.80 이상,FAIL,RAGAS Framework (Faithfulness)
+2026-07-15T12:44:08,feature-chatbot,d0c3f52,Y,RAGAS Answer Relevance,답변이 질문 의도에 적합한지 평가,0.47,0.80 이상,FAIL,RAGAS Framework (Answer Relevance)
+2026-07-15T12:47:01,feature-chatbot,d0c3f52,Y,연결성(Graph),노드 간 탐색 성공률,100.0%,95% 이상,PASS,Cypher Query 성능 테스트 및 접속 조사
+2026-07-15T12:47:01,feature-chatbot,d0c3f52,Y,검색 속도,LLM 생성 제외 쿼리 평균 소요 시간,33.77s,2.0s 이내,FAIL,pgvector/Graph 검색 지연시간 측정
+2026-07-15T12:47:01,feature-chatbot,d0c3f52,Y,LLM 답변 생성 속도,검색 이후 답변 생성 평균 소요 시간,6.59s,5.0s 이내,FAIL,전체 응답 시간 - 검색 시간
+2026-07-15T12:47:01,feature-chatbot,d0c3f52,Y,전체 응답 속도,LLM 생성 포함 평균 응답 시간,38.99s,7.0s 이내,FAIL,서비스 RAG 전체 호출 지연시간 측정
+2026-07-15T12:47:01,feature-chatbot,d0c3f52,Y,RAGAS Context Precision,검색 문맥 중 질문과 관련 있는 문맥 비율,0.87,0.80 이상,PASS,RAGAS Framework (Context Precision)
+2026-07-15T12:47:01,feature-chatbot,d0c3f52,Y,RAGAS Context Recall,정답에 필요한 근거를 검색 문맥이 포함하는지 평가,0.97,0.80 이상,PASS,RAGAS Framework (Context Recall)
+2026-07-15T12:47:01,feature-chatbot,d0c3f52,Y,RAGAS Faithfulness,답변이 검색 근거에 충실한지 평가,0.56,0.80 이상,FAIL,RAGAS Framework (Faithfulness)
+2026-07-15T12:47:01,feature-chatbot,d0c3f52,Y,RAGAS Answer Relevance,답변이 질문 의도에 적합한지 평가,0.47,0.80 이상,FAIL,RAGAS Framework (Answer Relevance)
+2026-07-15T13:28:23,feature-chatbot,d0c3f52,Y,연결성(Graph),노드 간 탐색 성공률,100.0%,95% 이상,PASS,Cypher Query 성능 테스트 및 접속 조사
+2026-07-15T13:28:23,feature-chatbot,d0c3f52,Y,검색 속도,LLM 생성 제외 쿼리 평균 소요 시간,27.80s,2.0s 이내,FAIL,pgvector/Graph 검색 지연시간 측정
+2026-07-15T13:28:23,feature-chatbot,d0c3f52,Y,LLM 답변 생성 속도,검색 이후 답변 생성 평균 소요 시간,11.59s,5.0s 이내,FAIL,전체 응답 시간 - 검색 시간
+2026-07-15T13:28:23,feature-chatbot,d0c3f52,Y,전체 응답 속도,LLM 생성 포함 평균 응답 시간,35.04s,7.0s 이내,FAIL,서비스 RAG 전체 호출 지연시간 측정
+2026-07-15T13:28:23,feature-chatbot,d0c3f52,Y,RAGAS Context Precision,검색 문맥 중 질문과 관련 있는 문맥 비율,0.87,0.80 이상,PASS,RAGAS Framework (Context Precision)
+2026-07-15T13:28:23,feature-chatbot,d0c3f52,Y,RAGAS Context Recall,정답에 필요한 근거를 검색 문맥이 포함하는지 평가,0.88,0.80 이상,PASS,RAGAS Framework (Context Recall)
+2026-07-15T13:28:23,feature-chatbot,d0c3f52,Y,RAGAS Faithfulness,답변이 검색 근거에 충실한지 평가,0.48,0.80 이상,FAIL,RAGAS Framework (Faithfulness)
+2026-07-15T13:28:23,feature-chatbot,d0c3f52,Y,RAGAS Answer Relevance,답변이 질문 의도에 적합한지 평가,0.43,0.80 이상,FAIL,RAGAS Framework (Answer Relevance)
+2026-07-15T14:38:51,feature-chatbot,d0c3f52,Y,연결성(Graph),노드 간 탐색 성공률,100.0%,95% 이상,PASS,Cypher Query 성능 테스트 및 접속 조사
+2026-07-15T14:38:51,feature-chatbot,d0c3f52,Y,검색 속도,LLM 생성 제외 쿼리 평균 소요 시간,12.13s,2.0s 이내,FAIL,pgvector/Graph 검색 지연시간 측정
+2026-07-15T14:38:51,feature-chatbot,d0c3f52,Y,LLM 답변 생성 속도,검색 이후 답변 생성 평균 소요 시간,8.68s,5.0s 이내,FAIL,전체 응답 시간 - 검색 시간
+2026-07-15T14:38:51,feature-chatbot,d0c3f52,Y,전체 응답 속도,LLM 생성 포함 평균 응답 시간,20.79s,7.0s 이내,FAIL,서비스 RAG 전체 호출 지연시간 측정
+2026-07-15T14:38:51,feature-chatbot,d0c3f52,Y,RAGAS Context Precision,검색 문맥 중 질문과 관련 있는 문맥 비율,0.82,0.80 이상,PASS,RAGAS Framework (Context Precision)
+2026-07-15T14:38:51,feature-chatbot,d0c3f52,Y,RAGAS Context Recall,정답에 필요한 근거를 검색 문맥이 포함하는지 평가,0.87,0.80 이상,PASS,RAGAS Framework (Context Recall)
+2026-07-15T14:38:51,feature-chatbot,d0c3f52,Y,RAGAS Faithfulness,답변이 검색 근거에 충실한지 평가,0.91,0.80 이상,PASS,RAGAS Framework (Faithfulness)
+2026-07-15T14:38:51,feature-chatbot,d0c3f52,Y,RAGAS Answer Relevance,답변이 질문 의도에 적합한지 평가,0.81,0.80 이상,PASS,RAGAS Framework (Answer Relevance)
+2026-07-15T16:42:15,feature-chatbot,b65d248,Y,연결성(Graph),노드 간 탐색 성공률,100.0%,95% 이상,PASS,Cypher Query 성능 테스트 및 접속 조사
+2026-07-15T16:42:15,feature-chatbot,b65d248,Y,검색 속도,LLM 생성 제외 쿼리 평균 소요 시간,1.73s,2.0s 이내,PASS,pgvector/Graph 검색 지연시간 측정
+2026-07-15T16:42:15,feature-chatbot,b65d248,Y,LLM 답변 생성 속도,검색 이후 답변 생성 평균 소요 시간,4.74s,5.0s 이내,PASS,전체 응답 시간 - 검색 시간
+2026-07-15T16:42:15,feature-chatbot,b65d248,Y,전체 응답 속도,LLM 생성 포함 평균 응답 시간,6.47s,7.0s 이내,PASS,서비스 RAG 전체 호출 지연시간 측정
+2026-07-15T16:42:15,feature-chatbot,b65d248,Y,RAGAS Context Precision,검색 문맥 중 질문과 관련 있는 문맥 비율,0.66,0.80 이상,FAIL,RAGAS Framework (Context Precision)
+2026-07-15T16:42:15,feature-chatbot,b65d248,Y,RAGAS Context Recall,정답에 필요한 근거를 검색 문맥이 포함하는지 평가,0.88,0.80 이상,PASS,RAGAS Framework (Context Recall)
+2026-07-15T16:42:15,feature-chatbot,b65d248,Y,RAGAS Faithfulness,답변이 검색 근거에 충실한지 평가,0.90,0.80 이상,PASS,RAGAS Framework (Faithfulness)
+2026-07-15T16:42:15,feature-chatbot,b65d248,Y,RAGAS Answer Relevance,답변이 질문 의도에 적합한지 평가,0.81,0.80 이상,PASS,RAGAS Framework (Answer Relevance)
+2026-07-15T19:13:13,feature-chatbot,b65d248,Y,연결성(Graph),노드 간 탐색 성공률,100.0%,95% 이상,PASS,Cypher Query 성능 테스트 및 접속 조사
+2026-07-15T19:13:13,feature-chatbot,b65d248,Y,검색 속도,LLM 생성 제외 쿼리 평균 소요 시간,1.96s,2.0s 이내,PASS,pgvector/Graph 검색 지연시간 측정
+2026-07-15T19:13:13,feature-chatbot,b65d248,Y,LLM 답변 생성 속도,검색 이후 답변 생성 평균 소요 시간,4.05s,5.0s 이내,PASS,전체 응답 시간 - 검색 시간
+2026-07-15T19:13:13,feature-chatbot,b65d248,Y,전체 응답 속도,LLM 생성 포함 평균 응답 시간,6.02s,7.0s 이내,PASS,서비스 RAG 전체 호출 지연시간 측정
+2026-07-15T19:13:13,feature-chatbot,b65d248,Y,RAGAS Context Precision,검색 문맥 중 질문과 관련 있는 문맥 비율,0.69,0.80 이상,FAIL,RAGAS Framework (Context Precision)
+2026-07-15T19:13:13,feature-chatbot,b65d248,Y,RAGAS Context Recall,정답에 필요한 근거를 검색 문맥이 포함하는지 평가,0.89,0.80 이상,PASS,RAGAS Framework (Context Recall)
+2026-07-15T19:13:13,feature-chatbot,b65d248,Y,RAGAS Faithfulness,답변이 검색 근거에 충실한지 평가,0.86,0.80 이상,PASS,RAGAS Framework (Faithfulness)
+2026-07-15T19:13:13,feature-chatbot,b65d248,Y,RAGAS Answer Relevance,답변이 질문 의도에 적합한지 평가,0.79,0.80 이상,FAIL,RAGAS Framework (Answer Relevance)
+2026-07-15T22:42:16,feature-chatbot,b65d248,Y,연결성(Graph),노드 간 탐색 성공률,100.0%,95% 이상,PASS,Cypher Query 성능 테스트 및 접속 조사
+2026-07-15T22:42:16,feature-chatbot,b65d248,Y,검색 속도,LLM 생성 제외 쿼리 평균 소요 시간,23.75s,2.0s 이내,FAIL,pgvector/Graph 검색 지연시간 측정
+2026-07-15T22:42:16,feature-chatbot,b65d248,Y,LLM 답변 생성 속도,검색 이후 답변 생성 평균 소요 시간,4.18s,5.0s 이내,PASS,전체 응답 시간 - 검색 시간
+2026-07-15T22:42:16,feature-chatbot,b65d248,Y,전체 응답 속도,LLM 생성 포함 평균 응답 시간,27.92s,7.0s 이내,FAIL,서비스 RAG 전체 호출 지연시간 측정
+2026-07-15T22:42:16,feature-chatbot,b65d248,Y,RAGAS Context Precision,검색 문맥 중 질문과 관련 있는 문맥 비율,0.75,0.80 이상,FAIL,RAGAS Framework (Context Precision)
+2026-07-15T22:42:16,feature-chatbot,b65d248,Y,RAGAS Context Recall,정답에 필요한 근거를 검색 문맥이 포함하는지 평가,0.88,0.80 이상,PASS,RAGAS Framework (Context Recall)
+2026-07-15T22:42:16,feature-chatbot,b65d248,Y,RAGAS Faithfulness,답변이 검색 근거에 충실한지 평가,0.90,0.80 이상,PASS,RAGAS Framework (Faithfulness)
+2026-07-15T22:42:16,feature-chatbot,b65d248,Y,RAGAS Answer Relevance,답변이 질문 의도에 적합한지 평가,0.78,0.80 이상,FAIL,RAGAS Framework (Answer Relevance)
+2026-07-16T00:28:12,feature-chatbot,b65d248,Y,연결성(Graph),노드 간 탐색 성공률,100.0%,95% 이상,PASS,Cypher Query 성능 테스트 및 접속 조사
+2026-07-16T00:28:12,feature-chatbot,b65d248,Y,검색 속도,LLM 생성 제외 쿼리 평균 소요 시간,18.45s,2.0s 이내,FAIL,pgvector/Graph 검색 지연시간 측정
+2026-07-16T00:28:12,feature-chatbot,b65d248,Y,LLM 답변 생성 속도,검색 이후 답변 생성 평균 소요 시간,4.58s,5.0s 이내,PASS,전체 응답 시간 - 검색 시간
+2026-07-16T00:28:12,feature-chatbot,b65d248,Y,전체 응답 속도,LLM 생성 포함 평균 응답 시간,23.03s,7.0s 이내,FAIL,서비스 RAG 전체 호출 지연시간 측정
+2026-07-16T00:28:12,feature-chatbot,b65d248,Y,RAGAS Context Precision,검색 문맥 중 질문과 관련 있는 문맥 비율,0.79,0.80 이상,FAIL,RAGAS Framework (Context Precision)
+2026-07-16T00:28:12,feature-chatbot,b65d248,Y,RAGAS Context Recall,정답에 필요한 근거를 검색 문맥이 포함하는지 평가,0.86,0.80 이상,PASS,RAGAS Framework (Context Recall)
+2026-07-16T00:28:12,feature-chatbot,b65d248,Y,RAGAS Faithfulness,답변이 검색 근거에 충실한지 평가,0.92,0.80 이상,PASS,RAGAS Framework (Faithfulness)
+2026-07-16T00:28:12,feature-chatbot,b65d248,Y,RAGAS Answer Relevance,답변이 질문 의도에 적합한지 평가,0.79,0.80 이상,FAIL,RAGAS Framework (Answer Relevance)
+2026-07-16T12:29:27,feature-chatbot,b65d248,Y,연결성(Graph),노드 간 탐색 성공률,100.0%,95% 이상,PASS,Cypher Query 성능 테스트 및 접속 조사
+2026-07-16T12:29:27,feature-chatbot,b65d248,Y,검색 속도,LLM 생성 제외 쿼리 평균 소요 시간,2.29s,2.0s 이내,FAIL,pgvector/Graph 검색 지연시간 측정
+2026-07-16T12:29:27,feature-chatbot,b65d248,Y,LLM 답변 생성 속도,검색 이후 답변 생성 평균 소요 시간,4.40s,5.0s 이내,PASS,전체 응답 시간 - 검색 시간
+2026-07-16T12:29:27,feature-chatbot,b65d248,Y,전체 응답 속도,LLM 생성 포함 평균 응답 시간,6.69s,7.0s 이내,PASS,서비스 RAG 전체 호출 지연시간 측정
+2026-07-16T12:29:27,feature-chatbot,b65d248,Y,RAGAS Context Precision,검색 문맥 중 질문과 관련 있는 문맥 비율,0.70,0.80 이상,FAIL,RAGAS Framework (Context Precision)
+2026-07-16T12:29:27,feature-chatbot,b65d248,Y,RAGAS Context Recall,정답에 필요한 근거를 검색 문맥이 포함하는지 평가,0.87,0.80 이상,PASS,RAGAS Framework (Context Recall)
+2026-07-16T12:29:27,feature-chatbot,b65d248,Y,RAGAS Faithfulness,답변이 검색 근거에 충실한지 평가,0.89,0.80 이상,PASS,RAGAS Framework (Faithfulness)
+2026-07-16T12:29:27,feature-chatbot,b65d248,Y,RAGAS Answer Relevance,답변이 질문 의도에 적합한지 평가,0.80,0.80 이상,FAIL,RAGAS Framework (Answer Relevance)
+2026-07-16T17:43:20,feature-chatbot,b65d248,Y,연결성(Graph),노드 간 탐색 성공률,100.0%,95% 이상,PASS,Cypher Query 성능 테스트 및 접속 조사
+2026-07-16T17:43:20,feature-chatbot,b65d248,Y,검색 속도,LLM 생성 제외 쿼리 평균 소요 시간,2.09s,2.0s 이내,FAIL,pgvector/Graph 검색 지연시간 측정
+2026-07-16T17:43:20,feature-chatbot,b65d248,Y,LLM 답변 생성 속도,검색 이후 답변 생성 평균 소요 시간,5.06s,5.0s 이내,FAIL,전체 응답 시간 - 검색 시간
+2026-07-16T17:43:20,feature-chatbot,b65d248,Y,전체 응답 속도,LLM 생성 포함 평균 응답 시간,7.15s,7.0s 이내,FAIL,서비스 RAG 전체 호출 지연시간 측정
+2026-07-16T17:43:20,feature-chatbot,b65d248,Y,RAGAS Context Precision,검색 문맥 중 질문과 관련 있는 문맥 비율,0.70,0.80 이상,FAIL,RAGAS Framework (Context Precision)
+2026-07-16T17:43:20,feature-chatbot,b65d248,Y,RAGAS Context Recall,정답에 필요한 근거를 검색 문맥이 포함하는지 평가,0.84,0.80 이상,PASS,RAGAS Framework (Context Recall)
+2026-07-16T17:43:20,feature-chatbot,b65d248,Y,RAGAS Faithfulness,답변이 검색 근거에 충실한지 평가,0.89,0.80 이상,PASS,RAGAS Framework (Faithfulness)
+2026-07-16T17:43:20,feature-chatbot,b65d248,Y,RAGAS Answer Relevance,답변이 질문 의도에 적합한지 평가,0.81,0.80 이상,PASS,RAGAS Framework (Answer Relevance)
+2026-07-17T12:12:45,feature-chatbot,25de77e,Y,연결성(Graph),노드 간 탐색 성공률,100.0%,95% 이상,PASS,Cypher Query 성능 테스트 및 접속 조사
+2026-07-17T12:12:45,feature-chatbot,25de77e,Y,검색 속도,LLM 생성 제외 쿼리 평균 소요 시간,4.17s,2.0s 이내,FAIL,pgvector/Graph 검색 지연시간 측정
+2026-07-17T12:12:45,feature-chatbot,25de77e,Y,LLM 답변 생성 속도,검색 이후 답변 생성 평균 소요 시간,3.44s,5.0s 이내,PASS,전체 응답 시간 - 검색 시간
+2026-07-17T12:12:45,feature-chatbot,25de77e,Y,전체 응답 속도,LLM 생성 포함 평균 응답 시간,7.60s,7.0s 이내,FAIL,서비스 RAG 전체 호출 지연시간 측정
+2026-07-17T12:12:45,feature-chatbot,25de77e,Y,RAGAS Context Precision,검색 문맥 중 질문과 관련 있는 문맥 비율,0.67,0.80 이상,FAIL,RAGAS Framework (Context Precision)
+2026-07-17T12:12:45,feature-chatbot,25de77e,Y,RAGAS Context Recall,정답에 필요한 근거를 검색 문맥이 포함하는지 평가,0.85,0.80 이상,PASS,RAGAS Framework (Context Recall)
+2026-07-17T12:12:45,feature-chatbot,25de77e,Y,RAGAS Faithfulness,답변이 검색 근거에 충실한지 평가,0.93,0.80 이상,PASS,RAGAS Framework (Faithfulness)
+2026-07-17T12:12:45,feature-chatbot,25de77e,Y,RAGAS Answer Relevance,답변이 질문 의도에 적합한지 평가,0.81,0.80 이상,PASS,RAGAS Framework (Answer Relevance)
+2026-07-17T14:14:59,feature-chatbot,25de77e,Y,연결성(Graph),노드 간 탐색 성공률,100.0%,95% 이상,PASS,Cypher Query 성능 테스트 및 접속 조사
+2026-07-17T14:14:59,feature-chatbot,25de77e,Y,검색 속도,LLM 생성 제외 쿼리 평균 소요 시간,4.10s,2.0s 이내,FAIL,pgvector/Graph 검색 지연시간 측정
+2026-07-17T14:14:59,feature-chatbot,25de77e,Y,LLM 답변 생성 속도,검색 이후 답변 생성 평균 소요 시간,3.79s,5.0s 이내,PASS,전체 응답 시간 - 검색 시간
+2026-07-17T14:14:59,feature-chatbot,25de77e,Y,전체 응답 속도,LLM 생성 포함 평균 응답 시간,7.88s,7.0s 이내,FAIL,서비스 RAG 전체 호출 지연시간 측정
+2026-07-17T14:14:59,feature-chatbot,25de77e,Y,RAGAS Context Precision,검색 문맥 중 질문과 관련 있는 문맥 비율,0.68,0.80 이상,FAIL,RAGAS Framework (Context Precision)
+2026-07-17T14:14:59,feature-chatbot,25de77e,Y,RAGAS Context Recall,정답에 필요한 근거를 검색 문맥이 포함하는지 평가,0.88,0.80 이상,PASS,RAGAS Framework (Context Recall)
+2026-07-17T14:14:59,feature-chatbot,25de77e,Y,RAGAS Faithfulness,답변이 검색 근거에 충실한지 평가,0.90,0.80 이상,PASS,RAGAS Framework (Faithfulness)
+2026-07-17T14:14:59,feature-chatbot,25de77e,Y,RAGAS Answer Relevance,답변이 질문 의도에 적합한지 평가,0.81,0.80 이상,PASS,RAGAS Framework (Answer Relevance)
+2026-07-17T16:43:37,feature-chatbot,25de77e,Y,연결성(Graph),노드 간 탐색 성공률,100.0%,95% 이상,PASS,Cypher Query 성능 테스트 및 접속 조사
+2026-07-17T16:43:37,feature-chatbot,25de77e,Y,검색 속도,LLM 생성 제외 쿼리 평균 소요 시간,2.64s,2.0s 이내,FAIL,pgvector/Graph 검색 지연시간 측정
+2026-07-17T16:43:37,feature-chatbot,25de77e,Y,LLM 답변 생성 속도,검색 이후 답변 생성 평균 소요 시간,3.88s,5.0s 이내,PASS,전체 응답 시간 - 검색 시간
+2026-07-17T16:43:37,feature-chatbot,25de77e,Y,전체 응답 속도,LLM 생성 포함 평균 응답 시간,6.51s,7.0s 이내,PASS,서비스 RAG 전체 호출 지연시간 측정
+2026-07-17T16:43:37,feature-chatbot,25de77e,Y,RAGAS Context Precision,검색 문맥 중 질문과 관련 있는 문맥 비율,0.73,0.80 이상,FAIL,RAGAS Framework (Context Precision)
+2026-07-17T16:43:37,feature-chatbot,25de77e,Y,RAGAS Context Recall,정답에 필요한 근거를 검색 문맥이 포함하는지 평가,0.86,0.80 이상,PASS,RAGAS Framework (Context Recall)
+2026-07-17T16:43:37,feature-chatbot,25de77e,Y,RAGAS Faithfulness,답변이 검색 근거에 충실한지 평가,0.90,0.80 이상,PASS,RAGAS Framework (Faithfulness)
+2026-07-17T16:43:37,feature-chatbot,25de77e,Y,RAGAS Answer Relevance,답변이 질문 의도에 적합한지 평가,0.81,0.80 이상,PASS,RAGAS Framework (Answer Relevance)
+2026-07-17T20:31:24,feature-chatbot,25de77e,Y,연결성(Graph),노드 간 탐색 성공률,100.0%,95% 이상,PASS,Cypher Query 성능 테스트 및 접속 조사
+2026-07-17T20:31:24,feature-chatbot,25de77e,Y,검색 속도,LLM 생성 제외 쿼리 평균 소요 시간,3.74s,2.0s 이내,FAIL,pgvector/Graph 검색 지연시간 측정
+2026-07-17T20:31:24,feature-chatbot,25de77e,Y,LLM 답변 생성 속도,검색 이후 답변 생성 평균 소요 시간,3.93s,5.0s 이내,PASS,전체 응답 시간 - 검색 시간
+2026-07-17T20:31:24,feature-chatbot,25de77e,Y,전체 응답 속도,LLM 생성 포함 평균 응답 시간,7.68s,7.0s 이내,FAIL,서비스 RAG 전체 호출 지연시간 측정
+2026-07-17T20:31:24,feature-chatbot,25de77e,Y,RAGAS Context Precision,검색 문맥 중 질문과 관련 있는 문맥 비율,0.73,0.80 이상,FAIL,RAGAS Framework (Context Precision)
+2026-07-17T20:31:24,feature-chatbot,25de77e,Y,RAGAS Context Recall,정답에 필요한 근거를 검색 문맥이 포함하는지 평가,0.87,0.80 이상,PASS,RAGAS Framework (Context Recall)
+2026-07-17T20:31:24,feature-chatbot,25de77e,Y,RAGAS Faithfulness,답변이 검색 근거에 충실한지 평가,0.91,0.80 이상,PASS,RAGAS Framework (Faithfulness)
+2026-07-17T20:31:24,feature-chatbot,25de77e,Y,RAGAS Answer Relevance,답변이 질문 의도에 적합한지 평가,0.81,0.80 이상,PASS,RAGAS Framework (Answer Relevance)
+2026-07-18T10:56:12,feature-chatbot,6e49fb7,Y,연결성(Graph),노드 간 탐색 성공률,100.0%,95% 이상,PASS,Cypher Query 성능 테스트 및 접속 조사
+2026-07-18T10:56:12,feature-chatbot,6e49fb7,Y,검색 속도,LLM 생성 제외 쿼리 평균 소요 시간,47.69s,2.0s 이내,FAIL,pgvector/Graph 검색 지연시간 측정
+2026-07-18T10:56:12,feature-chatbot,6e49fb7,Y,LLM 답변 생성 속도,검색 이후 답변 생성 평균 소요 시간,4.00s,5.0s 이내,PASS,전체 응답 시간 - 검색 시간
+2026-07-18T10:56:12,feature-chatbot,6e49fb7,Y,전체 응답 속도,LLM 생성 포함 평균 응답 시간,51.69s,7.0s 이내,FAIL,서비스 RAG 전체 호출 지연시간 측정
+2026-07-18T10:56:12,feature-chatbot,6e49fb7,Y,RAGAS Context Precision,검색 문맥 중 질문과 관련 있는 문맥 비율,0.90,0.80 이상,PASS,RAGAS Framework (Context Precision)
+2026-07-18T10:56:12,feature-chatbot,6e49fb7,Y,RAGAS Context Recall,정답에 필요한 근거를 검색 문맥이 포함하는지 평가,0.89,0.80 이상,PASS,RAGAS Framework (Context Recall)
+2026-07-18T10:56:12,feature-chatbot,6e49fb7,Y,RAGAS Faithfulness,답변이 검색 근거에 충실한지 평가,0.75,0.80 이상,FAIL,RAGAS Framework (Faithfulness)
+2026-07-18T10:56:12,feature-chatbot,6e49fb7,Y,RAGAS Answer Relevance,답변이 질문 의도에 적합한지 평가,0.76,0.80 이상,FAIL,RAGAS Framework (Answer Relevance)
+2026-07-18T13:42:26,feature-chatbot,6e49fb7,Y,연결성(Graph),노드 간 탐색 성공률,100.0%,95% 이상,PASS,Cypher Query 성능 테스트 및 접속 조사
+2026-07-18T13:42:26,feature-chatbot,6e49fb7,Y,검색 속도,LLM 생성 제외 쿼리 평균 소요 시간,3.59s,2.0s 이내,FAIL,pgvector/Graph 검색 지연시간 측정
+2026-07-18T13:42:26,feature-chatbot,6e49fb7,Y,LLM 답변 생성 속도,검색 이후 답변 생성 평균 소요 시간,3.29s,5.0s 이내,PASS,전체 응답 시간 - 검색 시간
+2026-07-18T13:42:26,feature-chatbot,6e49fb7,Y,전체 응답 속도,LLM 생성 포함 평균 응답 시간,6.87s,7.0s 이내,PASS,서비스 RAG 전체 호출 지연시간 측정
+2026-07-18T13:42:26,feature-chatbot,6e49fb7,Y,RAGAS Context Precision,검색 문맥 중 질문과 관련 있는 문맥 비율,0.70,0.80 이상,FAIL,RAGAS Framework (Context Precision)
+2026-07-18T13:42:26,feature-chatbot,6e49fb7,Y,RAGAS Context Recall,정답에 필요한 근거를 검색 문맥이 포함하는지 평가,0.90,0.80 이상,PASS,RAGAS Framework (Context Recall)
+2026-07-18T13:42:26,feature-chatbot,6e49fb7,Y,RAGAS Faithfulness,답변이 검색 근거에 충실한지 평가,0.91,0.80 이상,PASS,RAGAS Framework (Faithfulness)
+2026-07-18T13:42:26,feature-chatbot,6e49fb7,Y,RAGAS Answer Relevance,답변이 질문 의도에 적합한지 평가,0.82,0.80 이상,PASS,RAGAS Framework (Answer Relevance)
+2026-07-18T14:01:48,feature-chatbot,6e49fb7,Y,연결성(Graph),노드 간 탐색 성공률,100.0%,95% 이상,PASS,Cypher Query 성능 테스트 및 접속 조사
+2026-07-18T14:01:48,feature-chatbot,6e49fb7,Y,검색 속도,LLM 생성 제외 쿼리 평균 소요 시간,23.15s,2.0s 이내,FAIL,pgvector/Graph 검색 지연시간 측정
+2026-07-18T14:01:48,feature-chatbot,6e49fb7,Y,LLM 답변 생성 속도,검색 이후 답변 생성 평균 소요 시간,3.47s,5.0s 이내,PASS,전체 응답 시간 - 검색 시간
+2026-07-18T14:01:48,feature-chatbot,6e49fb7,Y,전체 응답 속도,LLM 생성 포함 평균 응답 시간,26.62s,7.0s 이내,FAIL,서비스 RAG 전체 호출 지연시간 측정
+2026-07-18T14:01:48,feature-chatbot,6e49fb7,Y,RAGAS Context Precision,검색 문맥 중 질문과 관련 있는 문맥 비율,0.83,0.80 이상,PASS,RAGAS Framework (Context Precision)
+2026-07-18T14:01:48,feature-chatbot,6e49fb7,Y,RAGAS Context Recall,정답에 필요한 근거를 검색 문맥이 포함하는지 평가,0.87,0.80 이상,PASS,RAGAS Framework (Context Recall)
+2026-07-18T14:01:48,feature-chatbot,6e49fb7,Y,RAGAS Faithfulness,답변이 검색 근거에 충실한지 평가,0.94,0.80 이상,PASS,RAGAS Framework (Faithfulness)
+2026-07-18T14:01:48,feature-chatbot,6e49fb7,Y,RAGAS Answer Relevance,답변이 질문 의도에 적합한지 평가,0.82,0.80 이상,PASS,RAGAS Framework (Answer Relevance)

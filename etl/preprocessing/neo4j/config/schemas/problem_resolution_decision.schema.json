@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ProblemResolutionDecision",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "problem_review_task_id",
+    "problem_assignment_id",
+    "resolution_case_id",
+    "decision_status",
+    "review_model",
+    "prompt_version",
+    "selection_mode",
+    "selected_canonical_alternative_ids",
+    "reason"
+  ],
+  "properties": {
+    "problem_review_task_id": {"type": "string", "minLength": 1},
+    "problem_assignment_id": {"type": "string", "minLength": 1},
+    "resolution_case_id": {"type": "string", "minLength": 1},
+    "decision_status": {"type": "string", "const": "PROPOSED"},
+    "review_model": {"type": "string", "minLength": 1},
+    "prompt_version": {"type": "string", "minLength": 1},
+    "selection_mode": {
+      "type": "string",
+      "enum": ["SINGLE", "MULTIPLE", "AMBIGUOUS", "NONE"]
+    },
+    "selected_canonical_alternative_ids": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "reason": {"type": "string", "minLength": 1}
+  }
+}
