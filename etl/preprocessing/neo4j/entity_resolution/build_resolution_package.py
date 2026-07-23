@@ -315,16 +315,23 @@ def build_resolution_tables(
         match_results,
         resolution_policy,
     )
-    context_by_problem = {
-        str(row.problem_id): str(row.full_text)
-        for row in problem_context_df.itertuples()
-    }
+    context_by_problem: dict[str, dict] = {}
+    for context in problem_context_df.to_dict("records"):
+        problem_id = str(context["problem_id"])
+        extraction_text = str(
+            context.get("extraction_text")
+            or context.get("full_text")
+            or ""
+        )
+        context_by_problem[problem_id] = {
+            **context,
+            "extraction_text": extraction_text,
+        }
 
     case_rows: list[dict] = []
     candidate_rows: list[dict] = []
     assignment_rows: list[dict] = []
     review_rows: list[dict] = []
-    referenced_problem_ids: set[str] = set()
 
     for match_item in merged_match_results:
         term = match_item["canonical_term"]
@@ -434,7 +441,6 @@ def build_resolution_tables(
             for row in current_candidate_rows
         ]
         for problem_id in problem_ids:
-            referenced_problem_ids.add(problem_id)
             assignment_id = create_stable_id(
                 identifier_policy["problem_assignment_prefix"],
                 [problem_id, case_id],
@@ -497,13 +503,43 @@ def build_resolution_tables(
             )
 
     context_rows: list[dict] = []
-    for problem_id in sorted(referenced_problem_ids):
-        full_text = context_by_problem.get(problem_id, "")
+    exact_status = policy["text_preprocessing"][
+        "input_text_match_status"
+    ]["exact"]
+    for problem_id in sorted(context_by_problem):
+        context = context_by_problem[problem_id]
+        extraction_text = context["extraction_text"]
+        match_status = str(
+            context.get("input_text_match_status") or exact_status
+        )
+        duplicate_group_id = str(
+            context.get("duplicate_text_group_id") or ""
+        )
+        requires_detail = (
+            match_status != exact_status or bool(duplicate_group_id)
+        )
+        input_text_original = ""
+        reconstructed_stem = ""
+        if requires_detail:
+            input_text_original = str(
+                context.get("input_text_original") or ""
+            )
+            reconstructed_stem = str(
+                context.get("reconstructed_stem") or ""
+            )
         context_rows.append(
             {
                 "problem_id": problem_id,
-                "full_text": full_text,
-                "context_available": bool(full_text),
+                "extraction_text": extraction_text,
+                "input_text_original": input_text_original,
+                "reconstructed_stem": reconstructed_stem,
+                "input_text_match_status": match_status,
+                "duplicate_text_group_id": duplicate_group_id,
+                "text_policy_version": str(
+                    context.get("text_policy_version")
+                    or policy["text_preprocessing"]["version"]
+                ),
+                "context_available": bool(extraction_text),
                 "normalization_policy_version": policy[
                     "normalization_policy_version"
                 ],
@@ -517,7 +553,12 @@ def build_resolution_tables(
             context_rows,
             columns=[
                 "problem_id",
-                "full_text",
+                "extraction_text",
+                "input_text_original",
+                "reconstructed_stem",
+                "input_text_match_status",
+                "duplicate_text_group_id",
+                "text_policy_version",
                 "context_available",
                 "normalization_policy_version",
             ],
@@ -832,7 +873,10 @@ def run_resolution_package(
         with body_mention_path.open("r", encoding="utf-8") as body_file:
             body_mention_results = load(body_file)
 
-    problem_context_df = prep_json(exam_json)
+    problem_context_df = prep_json(
+        exam_json,
+        policy["text_preprocessing"],
+    )
     tables = build_resolution_tables(
         match_results,
         definition_results,

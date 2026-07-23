@@ -21,6 +21,7 @@ class PreprocessingRunnerTest(unittest.TestCase):
             resolve_goldset_workflow_paths,
         )
         from run_preprocessing_test import (
+            resolve_shared_thesaurus_path,
             resolve_test_output_directory,
         )
 
@@ -34,6 +35,9 @@ class PreprocessingRunnerTest(unittest.TestCase):
         )
         cls.resolve_test_output_directory = staticmethod(
             resolve_test_output_directory
+        )
+        cls.resolve_shared_thesaurus_path = staticmethod(
+            resolve_shared_thesaurus_path
         )
 
     def test_explicit_pipeline_paths_are_preserved(self):
@@ -103,6 +107,13 @@ class PreprocessingRunnerTest(unittest.TestCase):
             ),
         )
         self.assertEqual(
+            paths["normalized_thesaurus"],
+            Path(
+                "pipeline-output/internal/shared/"
+                "normalized_history_thesaurus.json"
+            ),
+        )
+        self.assertEqual(
             paths["coverage_report"],
             Path(
                 "pipeline-output/review/"
@@ -137,6 +148,32 @@ class PreprocessingRunnerTest(unittest.TestCase):
                 "pipeline-output/internal/model_review/"
                 "term_identity_review_tasks.jsonl"
             ),
+        )
+
+    def test_test_run_uses_the_shared_normalized_thesaurus(self):
+        policy = self.load_pipeline_policy(
+            str(self.neo4j_root / "config" / "resolution_policy.json")
+        )
+
+        shared_path = self.resolve_shared_thesaurus_path(
+            self.neo4j_root,
+            policy,
+        )
+
+        self.assertEqual(
+            Path(shared_path),
+            (
+                self.neo4j_root
+                / "output"
+                / "internal"
+                / "shared"
+                / "normalized_history_thesaurus.json"
+            ).resolve(),
+        )
+        self.assertFalse(
+            policy["output_retention"][
+                "keep_candidate_retrieval_cache_after_resolution"
+            ]
         )
 
     def test_goldset_workflow_paths_stay_under_goldset_internal(self):

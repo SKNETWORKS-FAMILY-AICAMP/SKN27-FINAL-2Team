@@ -27,6 +27,24 @@ def resolve_test_output_directory(
     return str(output_directory)
 
 
+def resolve_shared_thesaurus_path(neo4j_root: Path, policy: dict) -> str:
+    """운영·테스트가 함께 사용하는 정규화 시소러스 경로를 반환한다."""
+    layout = policy["output_layout"]
+    directories = layout["directories"]
+    shared_directory = (
+        neo4j_root
+        / "output"
+        / directories["internal"]
+        / directories["shared"]
+    )
+    return str(
+        (
+            shared_directory
+            / layout["files"]["normalized_thesaurus"]
+        ).resolve()
+    )
+
+
 def main() -> None:
     """설정의 소량 실행값을 사용해 운영 파이프라인을 격리 출력으로 실행한다."""
     neo4j_root = Path(__file__).resolve().parent
@@ -109,6 +127,10 @@ def main() -> None:
         neo4j_root,
         output_subdirectory,
     )
+    shared_thesaurus_path = resolve_shared_thesaurus_path(
+        neo4j_root,
+        pipeline_policy,
+    )
 
     limit = int(test_policy["limit"])
     if cli_args.limit is not None:
@@ -144,6 +166,7 @@ def main() -> None:
         "max_retries": max_retries,
         "threshold": threshold,
         "display_limit": display_limit,
+        "shared_thesaurus_path": shared_thesaurus_path,
         "policy_path": str(Path(cli_args.policy).resolve()),
     }
     print("Neo4j 전처리 소량 테스트 설정")
@@ -166,6 +189,7 @@ def main() -> None:
         max_retries=max_retries,
         threshold=threshold,
         display_limit=display_limit,
+        thesaurus_json_output=shared_thesaurus_path,
         policy_path=cli_args.policy,
     )
 

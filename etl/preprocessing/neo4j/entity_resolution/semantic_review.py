@@ -117,9 +117,16 @@ def build_term_review_tasks(
     clusters = tables["canonical_alternative_clusters"]
     members = tables["canonical_cluster_members"]
     contexts = tables["problem_contexts"]
+    context_column = ""
+    if "extraction_text" in contexts.columns:
+        context_column = "extraction_text"
+    elif "full_text" in contexts.columns:
+        context_column = "full_text"
+    if not context_column:
+        raise ValueError("problem_contexts에 extraction_text가 없습니다.")
     context_by_problem = {
-        str(row.problem_id): str(row.full_text)
-        for row in contexts.itertuples()
+        str(row["problem_id"]): str(row[context_column])
+        for row in contexts.to_dict("records")
     }
     feature_by_candidate = {
         str(row["source_candidate_id"]): row

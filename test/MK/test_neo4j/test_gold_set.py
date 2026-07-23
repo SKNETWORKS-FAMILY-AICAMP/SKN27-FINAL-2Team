@@ -19,6 +19,7 @@ class GoldSetTest(unittest.TestCase):
         from goldset.build_gold_set import (
             build_candidate_annotations,
             build_gold_task_records,
+            extend_gold_set_review,
             select_gold_tasks,
             write_gold_set,
         )
@@ -28,6 +29,7 @@ class GoldSetTest(unittest.TestCase):
             build_candidate_annotations
         )
         cls.build_gold_task_records = staticmethod(build_gold_task_records)
+        cls.extend_gold_set_review = staticmethod(extend_gold_set_review)
         cls.select_gold_tasks = staticmethod(select_gold_tasks)
         cls.write_gold_set = staticmethod(write_gold_set)
         cls.write_jsonl = staticmethod(write_jsonl)
@@ -271,6 +273,121 @@ class GoldSetTest(unittest.TestCase):
                 policy,
                 review_output_dir=str(review_dir),
                 allow_review_overwrite=True,
+            )
+
+    def test_extend_preserves_existing_review_and_is_idempotent(self):
+        tasks = self.make_tasks()
+        initial_policy = self.make_policy()
+        initial_policy["entity_resolution"]["semantic_review"]["gold_set"][
+            "sample_size"
+        ] = 2
+        target_policy = self.make_policy()
+        with tempfile.TemporaryDirectory() as temp_dir:
+            input_path = Path(temp_dir) / "tasks.jsonl"
+            output_dir = Path(temp_dir) / "internal"
+            review_dir = Path(temp_dir) / "review"
+            self.write_jsonl(tasks, str(input_path))
+            paths = self.write_gold_set(
+                tasks,
+                str(input_path),
+                str(output_dir),
+                initial_policy,
+                review_output_dir=str(review_dir),
+            )
+            case_path = Path(paths["case_annotations"])
+            candidate_path = Path(paths["candidate_annotations"])
+            cases = pd.read_csv(
+                case_path,
+                encoding="utf-8-sig",
+                dtype=str,
+                keep_default_na=False,
+            )
+            candidates = pd.read_csv(
+                candidate_path,
+                encoding="utf-8-sig",
+                dtype=str,
+                keep_default_na=False,
+            )
+            cases.loc[0, "gold_link_status"] = "ACCEPTED"
+            cases.loc[0, "gold_decision_reason"] = "기존 검수 결과"
+            cases.loc[0, "reviewer"] = "tester"
+            cases.loc[0, "case_review_status"] = "COMPLETE"
+            candidates.loc[0, "gold_candidate_role"] = "IDENTITY_MEMBER"
+            cases.to_csv(case_path, index=False, encoding="utf-8-sig")
+            candidates.to_csv(
+                candidate_path,
+                index=False,
+                encoding="utf-8-sig",
+            )
+            preserved_cases = cases.copy()
+            preserved_candidates = candidates.copy()
+
+            extended_paths = self.extend_gold_set_review(
+                tasks,
+                str(input_path),
+                str(output_dir),
+                target_policy,
+                str(review_dir),
+                generated_at="2026-07-23T00:00:00+00:00",
+            )
+
+            extended_cases = pd.read_csv(
+                extended_paths["case_annotations"],
+                encoding="utf-8-sig",
+                dtype=str,
+                keep_default_na=False,
+            )
+            extended_candidates = pd.read_csv(
+                extended_paths["candidate_annotations"],
+                encoding="utf-8-sig",
+                dtype=str,
+                keep_default_na=False,
+            )
+            pd.testing.assert_frame_equal(
+                extended_cases.iloc[:2].reset_index(drop=True),
+                preserved_cases.reset_index(drop=True),
+            )
+            pd.testing.assert_frame_equal(
+                extended_candidates.iloc[
+                    : len(preserved_candidates)
+                ].reset_index(drop=True),
+                preserved_candidates.reset_index(drop=True),
+            )
+            self.assertEqual(len(extended_cases), 6)
+            self.assertEqual(
+                extended_cases["term_review_task_id"].nunique(),
+                6,
+            )
+            self.assertTrue(
+                (
+                    extended_cases.iloc[2:]["case_review_status"]
+                    == "NOT_STARTED"
+                ).all()
+            )
+            manifest = loads(
+                Path(extended_paths["manifest"]).read_text(encoding="utf-8")
+            )
+            self.assertEqual(manifest["preserved_existing_case_count"], 2)
+            self.assertEqual(manifest["preserved_completed_case_count"], 1)
+            self.assertEqual(manifest["appended_pending_case_count"], 4)
+
+            output_bytes = {
+                name: Path(path).read_bytes()
+                for name, path in extended_paths.items()
+            }
+            self.extend_gold_set_review(
+                tasks,
+                str(input_path),
+                str(output_dir),
+                target_policy,
+                str(review_dir),
+            )
+            self.assertEqual(
+                output_bytes,
+                {
+                    name: Path(path).read_bytes()
+                    for name, path in extended_paths.items()
+                },
             )
 
 

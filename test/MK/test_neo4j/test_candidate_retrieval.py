@@ -208,8 +208,16 @@ class CandidateRetrievalRegressionTest(unittest.TestCase):
     def test_same_term_with_different_categories_is_not_aggregated(self):
         exam_df = pd.DataFrame(
             [
-                {"problem_id": "question-1", "full_text": "한성"},
-                {"problem_id": "question-2", "full_text": "한성"},
+                {
+                    "problem_id": "question-1",
+                    "extraction_text": "한성 지명",
+                    "full_text": "한성 지명",
+                },
+                {
+                    "problem_id": "question-2",
+                    "extraction_text": "한성 제도",
+                    "full_text": "한성 제도",
+                },
             ]
         )
         extracted = [
@@ -254,12 +262,107 @@ class CandidateRetrievalRegressionTest(unittest.TestCase):
                         "reasoning_effort": "none",
                     },
                     policy_version="test-policy",
+                    text_policy=self.policy["text_preprocessing"],
                 )
 
         self.assertEqual(len(result), 2)
         self.assertEqual(set(result["category"]), {"지명", "제도"})
         self.assertTrue(
             all(isinstance(json.loads(value), list) for value in result["problem_ids"])
+        )
+
+    def test_same_extraction_text_uses_one_llm_input_and_keeps_problem_ids(self):
+        exam_df = pd.DataFrame(
+            [
+                {
+                    "problem_id": "question-1",
+                    "extraction_text": "한성",
+                    "full_text": "한성",
+                },
+                {
+                    "problem_id": "question-2",
+                    "extraction_text": "한성",
+                    "full_text": "한성",
+                },
+                {
+                    "problem_id": "question-3",
+                    "extraction_text": "부여",
+                    "full_text": "부여",
+                },
+            ]
+        )
+        extracted = [
+            {
+                "problem_id": "question-1",
+                "terms": [
+                    {
+                        "raw_term": "한성",
+                        "canonical_term": "한성",
+                        "category": "지명",
+                    }
+                ],
+            },
+            {
+                "problem_id": "question-3",
+                "terms": [
+                    {
+                        "raw_term": "부여",
+                        "canonical_term": "부여",
+                        "category": "국가",
+                    }
+                ],
+            },
+        ]
+
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            checkpoint_path = Path(temporary_directory) / "checkpoint.jsonl"
+            raw_output_path = Path(temporary_directory) / "terms.json"
+            with (
+                patch.object(self.history_terms_module, "prep_json", return_value=exam_df),
+                patch.object(
+                    self.history_terms_module,
+                    "get_history_terms",
+                    return_value=extracted,
+                ) as mocked_extractor,
+            ):
+                result = self.history_terms_module.count_terms(
+                    "exam.json",
+                    batch_size=20,
+                    checkpoint_path=str(checkpoint_path),
+                    raw_output=str(raw_output_path),
+                    model_config={
+                        "model": "test-model",
+                        "temperature": 0,
+                        "reasoning_effort": "none",
+                    },
+                    policy_version="test-policy",
+                    text_policy=self.policy["text_preprocessing"],
+                )
+
+            requested_problems = mocked_extractor.call_args.args[0]
+            self.assertEqual(
+                [problem["problem_id"] for problem in requested_problems],
+                ["question-1", "question-3"],
+            )
+            raw_results = json.loads(raw_output_path.read_text(encoding="utf-8"))
+            checkpoint_record = json.loads(
+                checkpoint_path.read_text(encoding="utf-8").strip()
+            )
+
+        hanseong = result[result["canonical_term"] == "한성"].iloc[0]
+        self.assertEqual(hanseong["count"], 2)
+        self.assertEqual(
+            json.loads(hanseong["problem_ids"]),
+            ["question-1", "question-2"],
+        )
+        self.assertEqual(
+            {item["problem_id"] for item in raw_results},
+            {"question-1", "question-2", "question-3"},
+        )
+        self.assertEqual(len(checkpoint_record["results"]), 3)
+        self.assertEqual(
+            checkpoint_record["text_policy_version"],
+            self.policy["text_preprocessing"]["version"],
         )
 
     def test_weak_aks_candidate_does_not_block_enrichment(self):

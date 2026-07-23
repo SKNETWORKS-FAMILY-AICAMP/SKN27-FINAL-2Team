@@ -134,7 +134,7 @@
         "selection_policy_version": "entity-resolution-gold-pilot-v2",
         "default_output_directory": "goldset/internal/source",
         "review_csv_directory": "goldset/human_review_csv",
-        "sample_size": 20,
+        "sample_size": 100,
         "minimum_cases_per_category": 1,
         "maximum_candidates_per_pilot_case": 10,
         "deterministic_seed": "entity-resolution-gold-pilot-v2",

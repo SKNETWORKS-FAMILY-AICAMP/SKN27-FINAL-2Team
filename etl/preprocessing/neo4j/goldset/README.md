@@ -21,12 +21,49 @@
 저장되므로 같은 정책·모델로 재실행해도 완료 건을 다시 호출하지 않는다. 아래 개별 명령은
 특정 단계만 다시 확인할 때 사용한다.
 
+## 표본 생성·확장
+
+현재 term task에서 활성 검수본을 정책 목표인 100개까지 안전하게 확장할 때는 인자 없이
+실행한다.
+
+```powershell
+.\.venv\Scripts\python.exe `
+  etl/preprocessing/neo4j/goldset/build_gold_set.py
+```
+
+이 명령은 기존 20개 회귀 case와 사람이 입력한 모든 셀을 보존한다. 기존
+`term_review_task_id`를 현재 모집단에서 제외하고 부족한 수만 `NOT_STARTED`로 추가하며,
+이미 100개이면 파일을 수정하지 않는다.
+
+| 이 명령의 출력 | 의미 |
+|---|---|
+| `human_review_csv/human_review_cases.csv` | 사람이 검수할 case. 기존 행 뒤에 신규 행이 추가된다. |
+| `human_review_csv/human_review_candidates.csv` | 각 case의 원천 후보와 사람 판정 입력란 |
+| `internal/source/gold_review_tasks.jsonl` | 기존 회귀 task snapshot과 신규 task snapshot |
+| `internal/source/gold_*_template.csv` | 사람 입력을 제외한 재생성용 빈 양식 |
+| `internal/source/rule_based_baseline.csv` | 코드 제안 baseline. 블라인드 검수 전에는 보지 않는다. |
+| `internal/source/gold_sample_distribution.csv` | 현재 모집단과 100개 표본의 층별 분포 |
+| `internal/source/gold_sample_manifest.json` | 입력 hash, 보존·추가 건수, 생성 정책과 경로 |
+
+활성 검수본을 건드리지 않고 새 100개 표본만 비교하려면 입력과 별도 출력 폴더를 함께
+명시한다. 이 모드는 지정 폴더에 snapshot과 빈 양식만 만든다.
+
+```powershell
+.\.venv\Scripts\python.exe `
+  etl/preprocessing/neo4j/goldset/build_gold_set.py `
+  etl/preprocessing/neo4j/output/internal/model_review/term_identity_review_tasks.jsonl `
+  etl/preprocessing/neo4j/goldset/internal/source_v2
+```
+
+`--force-overwrite-review`는 활성 검수본 전체를 새 표본으로 교체할 때만 사용하는
+명시적 초기화 옵션이다. 일반적인 표본 확대에는 사용하지 않는다.
+
 사람이 실제로 작성할 파일은 `human_review_csv` 안에 있다. 최초 골든셋 검수는 두 CSV로
 진행하고, 관련 엔티티 자동 게이트가 보류한 건이 있으면 세 번째 CSV가 자동 생성된다.
 
 | 위치 | 의미 |
 |---|---|
-| `human_review_csv/human_review_cases.csv` | 용어 case 20건의 최종 상태·공통 근거·검수자 입력 |
+| `human_review_csv/human_review_cases.csv` | 용어 case 100건의 최종 상태·공통 근거·검수자 입력. `1`~`20`은 완료, `21`~`100`은 신규 검수 대상 |
 | `human_review_csv/human_review_candidates.csv` | 정답·근거·애매 후보의 역할, 동일 실체 묶음, `EVIDENCE_ONLY`의 별도 관련 엔티티 입력. 빈 역할은 case 완료 시 `REJECTED` |
 | `human_review_csv/related_entity_manual_review.csv` | 관련 엔티티 모델 판정 중 자동 게이트가 보류한 case 승인·수정. 최초 `--goldset` 실행 뒤 생성 |
 | `final_identity` | seed 원천이 속한 검증 대안만 승격한 관련 엔티티 canonical registry와 Neo4j identity CSV |

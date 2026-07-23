@@ -24,14 +24,30 @@
 
 | 폴더 | 내용 |
 |---|---|
-| `internal/term_extraction` | 문항별 추출 결과, 추출 checkpoint, 정규화 시소러스 |
-| `internal/candidate_retrieval` | 이름·definition·본문 언급 검색의 원천 후보 JSON |
+| `internal/shared` | 운영·소량 테스트가 함께 사용하는 정규화 시소러스 |
+| `internal/term_extraction` | 문항별 추출 결과와 추출 checkpoint |
+| `internal/candidate_retrieval` | 중단 복구용 원천 후보 JSON. ER staging 생성 성공 후 자동 정리 |
 | `internal/entity_resolution` | case, SourceRecord 후보, 비교 신호, 제안 실체 그룹, 문항 배정 초안 |
 | `internal/model_review` | 모델 입력 task, checkpoint, 판정 및 검증 중간 결과 |
 
 `internal/candidate_retrieval`의 세 후보 JSON은 모두 `PROPOSED`다. 이 후보가
 `internal/entity_resolution`에서 SourceRecord 단위로 합쳐지고, 최종 검토 대상만
-`review/cases_requiring_review.csv`에 나온다.
+`review/cases_requiring_review.csv`에 나온다. 세 후보 JSON은 ER staging에서 다시
+생성할 수 있으므로 staging 저장이 완료되면 장기 보존하지 않는다.
+
+문항 텍스트 검증 정보는 별도 감사 파일을 만들지 않고
+`internal/entity_resolution/exam_problem_contexts.csv`에 기록한다. 정상 문항은 상태와
+정책 버전만 남기고, 원본·재구성 stem은 충돌 문항과 실제 중복 그룹에만 기록한다.
+
+## Windows PowerShell에서 JSON 확인
+
+JSON 산출물은 UTF-8로 저장한다. Windows PowerShell에서는 기본 인코딩으로 읽으면
+한글이 깨지고 `ConvertFrom-Json`이 실패할 수 있으므로 `-Encoding UTF8`을 지정한다.
+
+```powershell
+$path = "etl/preprocessing/neo4j/output/test_run/internal/term_extraction/exam_terms_by_problem.json"
+(Get-Content -Raw -Encoding UTF8 $path | ConvertFrom-Json).Count
+```
 
 사람이 작성하는 골든셋은 runtime output이 아니므로 인접한 `../goldset`에서 관리한다.
 골든셋에서 파생한 관련 엔티티 최종 identity CSV는 `../goldset/final_identity`에 생성한다.

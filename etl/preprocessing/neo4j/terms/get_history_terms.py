@@ -175,6 +175,29 @@ def fuzzy_in_text(term: str, text: str, allowed_errors: int) -> bool:
     return False
 
 
+def expand_results_to_duplicate_problems(
+    results: list[dict],
+    problem_ids_by_representative: dict[str, list[str]],
+) -> list[dict]:
+    """대표 extraction_text의 추출 결과를 같은 텍스트의 모든 문항 ID로 복제한다."""
+    expanded_results: list[dict] = []
+    for item in results:
+        representative_id = str(item["problem_id"])
+        if representative_id not in problem_ids_by_representative:
+            raise ValueError(
+                "LLM 응답에 요청하지 않은 problem_id가 있습니다: "
+                f"{representative_id}"
+            )
+        for problem_id in problem_ids_by_representative[representative_id]:
+            expanded_results.append(
+                {
+                    "problem_id": problem_id,
+                    "terms": item["terms"],
+                }
+            )
+    return expanded_results
+
+
 def count_terms(
     json_path: str,
     batch_size: int = 20,
@@ -185,6 +208,7 @@ def count_terms(
     raw_output: str = "",
     model_config: dict | None = None,
     policy_version: str = "",
+    text_policy: dict | None = None,
 ) -> pd.DataFrame:
     """
     기출문제 json을 전처리(prep_json)한 뒤 용어를 추출해 집계하는 함수
@@ -196,6 +220,7 @@ def count_terms(
     - thesaurus_path: 시소러스 csv 경로. 지정하면 시소러스 등재 용어는
       오탈자 허용 폭을 넓혀 환각 필터에서 구제함
     - raw_output: 지정하면 환각 필터 통과한 문항별 용어 목록을 json으로 저장
+    - 동일 extraction_text는 대표 문항만 LLM에 전달하고 결과는 모든 problem_id에 복제
     - 같은 단어(공백 차이 무시)는 하나로 합침
     - count: 해당 용어가 등장한 문항 수 / problem_ids: 등장 문항 id 목록
     """
@@ -203,10 +228,10 @@ def count_terms(
         raise ValueError("용어 추출 모델 설정이 필요합니다.")
     if not policy_version:
         raise ValueError("용어 추출 정책 버전이 필요합니다.")
+    if text_policy is None:
+        raise ValueError("문항 텍스트 전처리 정책이 필요합니다.")
 
-    df = prep_json(json_path)
-    if limit > 0:
-        df = df.head(limit)
+    df = prep_json(json_path, text_policy, limit=limit)
 
     thesaurus_keys: set[str] = set()
     if thesaurus_path:
@@ -232,7 +257,16 @@ def count_terms(
                 checkpoint_batch.get("extraction_policy_version")
                 == policy_version
             )
-            if not same_model or not same_reasoning or not same_policy:
+            same_text_policy = (
+                checkpoint_batch.get("text_policy_version")
+                == text_policy["version"]
+            )
+            if (
+                not same_model
+                or not same_reasoning
+                or not same_policy
+                or not same_text_policy
+            ):
                 incompatible_checkpoint_batches += 1
                 continue
             for item in checkpoint_batch["results"]:
@@ -244,21 +278,54 @@ def count_terms(
                 f"{incompatible_checkpoint_batches}개"
             )
 
-    remaining = df[~df["problem_id"].isin(results_by_problem.keys())]
+    problem_ids_by_text: dict[str, list[str]] = {}
+    for row in df.itertuples():
+        problem_ids_by_text.setdefault(row.extraction_text, []).append(
+            str(row.problem_id)
+        )
+
+    for problem_ids in problem_ids_by_text.values():
+        reusable_terms = None
+        for problem_id in problem_ids:
+            if problem_id in results_by_problem:
+                reusable_terms = results_by_problem[problem_id]
+                break
+        if reusable_terms is not None:
+            for problem_id in problem_ids:
+                results_by_problem.setdefault(problem_id, reusable_terms)
+
+    representative_df = df.loc[
+        ~df["extraction_text"].duplicated(keep="first")
+    ]
+    remaining = representative_df.loc[
+        ~representative_df["problem_id"].isin(results_by_problem.keys())
+    ]
     failed_batches = 0
 
     with open(checkpoint, "a", encoding="utf-8") as checkpoint_file:
         for start in range(0, len(remaining), batch_size):
             batch_df = remaining.iloc[start:start + batch_size]
             problems = [
-                {"problem_id": row.problem_id, "full_text": row.full_text}
+                {
+                    "problem_id": row.problem_id,
+                    "full_text": row.extraction_text,
+                }
                 for row in batch_df.itertuples()
             ]
+            problem_ids_by_representative = {
+                str(row.problem_id): problem_ids_by_text[row.extraction_text]
+                for row in batch_df.itertuples()
+            }
 
             results = None
+            llm_results = None
             for attempt in range(1, max_retries + 2):
                 try:
-                    results = get_history_terms(problems, model_config)
+                    llm_results = get_history_terms(problems, model_config)
+                    results = expand_results_to_duplicate_problems(
+                        llm_results,
+                        problem_ids_by_representative,
+                    )
                     break
                 except Exception as error:
                     print(f"배치 실패 (시도 {attempt}/{max_retries + 1}): {error}")
@@ -272,6 +339,7 @@ def count_terms(
                 "extraction_model": model_config["model"],
                 "extraction_reasoning_effort": model_config["reasoning_effort"],
                 "extraction_policy_version": policy_version,
+                "text_policy_version": text_policy["version"],
                 "results": results,
             }
             checkpoint_file.write(
@@ -281,7 +349,10 @@ def count_terms(
             for item in results:
                 results_by_problem.setdefault(item["problem_id"], item["terms"])
 
-            omitted = len(batch_df) - len(results)
+            returned_representatives = {
+                str(item["problem_id"]) for item in llm_results
+            }
+            omitted = len(batch_df) - len(returned_representatives)
             if omitted > 0:
                 print(f"경고: 배치에서 {omitted}문항 응답 누락 — 재실행하면 다시 시도함")
             print(f"진행: {len(results_by_problem)}/{len(df)} 문항 처리 완료")
@@ -304,7 +375,7 @@ def count_terms(
         problem_id = row.problem_id
         if problem_id not in results_by_problem:
             continue
-        compact_text = normalize_for_match(row.full_text)
+        compact_text = normalize_for_match(row.extraction_text)
         seen_in_problem: set[tuple[str, str]] = set()
         problem_terms: list[dict] = []
 
@@ -421,6 +492,7 @@ if __name__ == "__main__":
         raw_output=cli_args.raw_output,
         model_config=pipeline_policy["term_extraction"],
         policy_version=pipeline_policy["policy_version"],
+        text_policy=pipeline_policy["text_preprocessing"],
     )
     print(term_df.head(20))
     print(f"고유 용어 수: {len(term_df)}")

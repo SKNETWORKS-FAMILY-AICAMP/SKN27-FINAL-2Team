@@ -12,7 +12,12 @@ from get_history_terms import get_history_terms
 from prep_json import prep_json
 
 
-def evaluate(golden_path: str, json_path: str, model_config: dict) -> pd.DataFrame:
+def evaluate(
+    golden_path: str,
+    json_path: str,
+    model_config: dict,
+    text_policy: dict,
+) -> pd.DataFrame:
     """
     골든셋(정답 용어 목록)과 LLM 추출 결과를 비교해 문항별 정밀도/재현율을 계산하는 함수
     - golden_path: [{"problem_id": ..., "terms": [...]}] 형식의 json
@@ -21,7 +26,7 @@ def evaluate(golden_path: str, json_path: str, model_config: dict) -> pd.DataFra
     golden = load(open(golden_path, "r", encoding="utf-8"))
     golden_ids = [entry["problem_id"] for entry in golden]
 
-    df = prep_json(json_path)
+    df = prep_json(json_path, text_policy)
     subset = df[df["problem_id"].isin(golden_ids)]
     problems = [
         {"problem_id": row.problem_id, "full_text": row.full_text}
@@ -78,6 +83,7 @@ if __name__ == "__main__":
         cli_args.golden_path,
         cli_args.json_path,
         pipeline_policy["term_extraction"],
+        pipeline_policy["text_preprocessing"],
     )
     pd.set_option("display.max_colwidth", 120)
     print(report.to_string())

@@ -20,16 +20,22 @@
 - `entity_resolution.source_feature_policy.era_excluded_values`
 - LLM 모델·timeout·retry와 골든셋 표본 크기
 
-## 골든셋 파일럿 설정
+## 골든셋 표본 설정
 
-`review_goldset.json`의 기본값은 사람 검수 부담을 확인하기 위한 20개 case 파일럿이다.
+`review_goldset.json`의 기본 목표는 기존 20개 회귀 검수 case를 보존하고,
+현재 term task 모집단에서 겹치지 않는 case를 추가한 총 100개다.
 
-- `sample_size`: 검수 case 수. 현재 `20`
+- `sample_size`: 활성 검수본의 목표 case 수. 현재 `100`
 - `minimum_cases_per_category`: 모집단에 존재하는 category별 우선 표본 수. 현재 `1`
 - `maximum_candidates_per_pilot_case`: 파일럿에서 우선 선택할 case의 최대 후보 수. 현재 `10`
 - `implicit_candidate_role`: 완료 case에서 역할이 빈 후보에 적용할 역할. 현재 `REJECTED`
 - `initial_review_status`: 아직 검수를 시작하지 않은 상태. 현재 `NOT_STARTED`
 - `overwrite_protection`: 사람 입력이 있는 CSV의 자동 덮어쓰기를 막을 컬럼 계약
+
+`build_gold_set.py`를 인자 없이 실행하면 기존 case와 후보 검수 행, 기존 task snapshot을
+그대로 두고 `term_review_task_id`가 겹치지 않는 case만 목표 수까지 추가한다. 이미
+100개 이상이면 파일을 다시 쓰지 않는다. 출력 폴더를 명시하면 활성 검수본과 분리된
+새 표본 snapshot을 만든다.
 
 후보별 검수자·완료 상태는 두지 않는다. 검수자와 완료 상태는 case CSV에서 한 번만
 기록하고, 후보 CSV에는 정답·근거·애매 후보의 역할만 입력한다.

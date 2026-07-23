@@ -3,8 +3,9 @@
 이 폴더의 CSV는 검색 결과를 그대로 승인하는 파일이 아니라, 사람이 원천 문맥을 읽고
 정답을 작성하는 골든셋 검수본이다.
 
-- `human_review_candidates.csv`: 파일럿 20개 case의 후보를 비교한다. 모든 행을 작성하지 않는다.
-- `human_review_cases.csv`: 용어 case 20건의 최종 상태·공통 근거·검수자를 기록한다.
+- `human_review_candidates.csv`: 100개 case의 후보 550행을 비교한다. 모든 행을 작성하지 않는다.
+- `human_review_cases.csv`: 용어 case 100건의 최종 상태·공통 근거·검수자를 기록한다.
+  `1`~`20`은 기존 검수 완료분이고 `21`~`100`은 신규 검수 대상이다.
 - `related_entity_manual_review.csv`: 관련 엔티티 모델 판정 중 자동 검증 게이트가 보류한
   case만 기록한다. 첫 `--goldset` 실행 뒤 자동 생성되며, 보류 건이 없으면 헤더만 남는다.
 - `case_review_status=COMPLETE`인 case에서 역할이 빈 후보는 자동으로 `REJECTED`가 된다.
@@ -33,7 +34,7 @@
 
 | 컬럼 | 의미 | 들어 있는 값·해석 |
 |---|---|---|
-| `gold_case_order` | 사람이 검수할 순서 | 파일럿에서는 `1`~`20`이다. |
+| `gold_case_order` | 사람이 검수할 순서 | 현재 확장 검수본에서는 `1`~`100`이다. |
 | `gold_case_id` | 골든셋 내부 case 식별자 | `gold-case:...` 형식. 두 CSV를 묶는 기본 키다. |
 | `term_review_task_id` | 용어 단위 의미 판정 task 식별자 | `term-review-task:...` 형식. LLM 평가 결과와 연결할 때 사용한다. |
 | `resolution_case_id` | 전체 Entity Resolution case 식별자 | `resolution-case:...` 형식. 전체 파이프라인 staging 결과와 연결한다. |
@@ -167,7 +168,7 @@ case를 `COMPLETE`로 확정하면 역할이 빈 후보는 importer가 `REJECTED
 
 | 컬럼 | 의미 | 들어 있는 값·해석 |
 |---|---|---|
-| `gold_case_order` | 사람이 검수할 순서 | 파일럿에서는 `1`~`20`이며 candidate 파일의 같은 번호와 함께 본다. |
+| `gold_case_order` | 사람이 검수할 순서 | 현재 확장 검수본에서는 `1`~`100`이며 candidate 파일의 같은 번호와 함께 본다. |
 | `gold_case_id` | 골든셋 case 식별자 | candidate 파일의 같은 ID 행들을 이 case에 연결한다. |
 | `term_review_task_id` | 용어 판정 task 식별자 | 모델 판정과 사람 정답을 비교할 때 사용한다. |
 | `resolution_case_id` | 전체 ER case 식별자 | 전체 staging 결과와 연결한다. |
@@ -300,7 +301,10 @@ case                                  -> UNRESOLVED / requires_problem_review=NO
 - 문자열 앞뒤에 불필요한 공백을 넣지 않는다.
 - 같은 대안의 표시명과 EntityType은 복사해 정확히 동일하게 맞춘다.
 - 가능하면 Cursor의 CSV 표 편집 확장 또는 CSV를 안전하게 처리하는 표 형태 편집기를 사용한다.
-- 골든셋 생성기는 사람이 입력한 값이나 `IN_PROGRESS/COMPLETE` 상태가 있으면 기본적으로 덮어쓰지 않는다.
+- 골든셋 생성기의 기본 실행은 기존 사람 입력과 `IN_PROGRESS/COMPLETE` 행을 보존하고,
+  기존 `term_review_task_id`를 제외한 신규 case만 정책 목표 수까지 추가한다.
+- `--force-overwrite-review`는 활성 검수본 전체를 새 표본으로 재생성하므로 일반 확장에는
+  사용하지 않는다.
 
 ## 8. `related_entity_manual_review.csv`
 

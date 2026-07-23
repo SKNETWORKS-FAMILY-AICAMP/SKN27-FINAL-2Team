@@ -115,6 +115,7 @@ def resolve_stage_output_paths(
     file_names = layout["files"]
     review_directory = output_root / directory_names["review"]
     internal_directory = output_root / directory_names["internal"]
+    shared_directory = internal_directory / directory_names["shared"]
     term_directory = internal_directory / directory_names["term_extraction"]
     retrieval_directory = (
         internal_directory / directory_names["candidate_retrieval"]
@@ -131,7 +132,7 @@ def resolve_stage_output_paths(
         / file_names["extracted_terms_json"],
         "extracted_terms_csv": review_directory
         / file_names["extracted_terms_csv"],
-        "normalized_thesaurus": term_directory
+        "normalized_thesaurus": shared_directory
         / file_names["normalized_thesaurus"],
         "coverage_report": review_directory
         / file_names["coverage_report"],
@@ -257,6 +258,7 @@ def run_preprocessing_pipeline(
         raw_output=str(extracted_json_path),
         model_config=pipeline_policy["term_extraction"],
         policy_version=pipeline_policy["policy_version"],
+        text_policy=pipeline_policy["text_preprocessing"],
     )
     extracted_term_df.to_csv(
         extracted_csv_path,
@@ -348,7 +350,11 @@ def run_preprocessing_pipeline(
     resolution_tables = build_resolution_tables(
         name_match_results,
         definition_scan_results,
-        prep_json(str(exam_path)),
+        prep_json(
+            str(exam_path),
+            pipeline_policy["text_preprocessing"],
+            limit=limit,
+        ),
         pipeline_policy,
         body_mention_results=body_mention_results,
     )
@@ -363,6 +369,18 @@ def run_preprocessing_pipeline(
             ]
         },
     )
+    retention_policy = pipeline_policy["output_retention"]
+    if not retention_policy[
+        "keep_candidate_retrieval_cache_after_resolution"
+    ]:
+        candidate_cache_paths = [
+            name_matches_path,
+            definition_scan_path,
+            body_mention_path,
+        ]
+        for candidate_cache_path in candidate_cache_paths:
+            candidate_cache_path.unlink(missing_ok=True)
+        print("Entity Resolution 생성 완료: 후보 검색 중간 캐시 3개 정리")
     resolution_summary = summarize_resolution_tables(resolution_tables)
     print(f"Entity Resolution staging 요약: {resolution_summary}")
     print(f"Entity Resolution CSV 저장 완료: {resolution_paths}")

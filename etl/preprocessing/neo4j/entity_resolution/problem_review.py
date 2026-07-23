@@ -42,9 +42,16 @@ def build_problem_review_inputs(
         str(row["resolution_case_id"]): row
         for row in cases.to_dict("records")
     }
+    context_column = ""
+    if "extraction_text" in contexts.columns:
+        context_column = "extraction_text"
+    elif "full_text" in contexts.columns:
+        context_column = "full_text"
+    if not context_column:
+        raise ValueError("problem_contexts에 extraction_text가 없습니다.")
     context_by_problem = {
-        str(row.problem_id): str(row.full_text)
-        for row in contexts.itertuples()
+        str(row["problem_id"]): str(row[context_column])
+        for row in contexts.to_dict("records")
     }
     alternatives_by_case: dict[str, list[dict]] = {}
     for row in reviewed_alternatives.to_dict("records"):

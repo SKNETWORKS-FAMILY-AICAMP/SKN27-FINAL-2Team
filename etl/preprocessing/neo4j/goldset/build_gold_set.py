@@ -1,5 +1,6 @@
 from argparse import ArgumentParser
 from collections import Counter
+from copy import deepcopy
 from datetime import datetime, timezone
 from hashlib import sha256
 from json import dumps
@@ -517,6 +518,91 @@ def protect_started_review_files(
         )
 
 
+def resolve_gold_output_paths(
+    output_dir: str,
+    review_output_dir: str,
+    gold_policy: dict,
+) -> dict[str, Path]:
+    """source snapshot과 선택적 사람 검수 CSV의 출력 경로를 구성한다."""
+    output_directory = Path(output_dir)
+    output_directory.mkdir(parents=True, exist_ok=True)
+    output_files = gold_policy["output_files"]
+    output_paths = {
+        name: output_directory / filename
+        for name, filename in output_files.items()
+    }
+    if review_output_dir:
+        review_directory = Path(review_output_dir)
+        review_directory.mkdir(parents=True, exist_ok=True)
+        review_file_names = gold_policy["importer"]["csv_input_files"]
+        output_paths["case_template"] = output_paths["case_annotations"]
+        output_paths["candidate_template"] = output_paths[
+            "candidate_annotations"
+        ]
+        output_paths["case_annotations"] = (
+            review_directory / review_file_names["case_annotations"]
+        )
+        output_paths["candidate_annotations"] = (
+            review_directory / review_file_names["candidate_annotations"]
+        )
+    return output_paths
+
+
+def write_gold_set_artifacts(
+    gold_tasks: list[dict],
+    case_annotations: pd.DataFrame,
+    candidate_annotations: pd.DataFrame,
+    code_baseline: pd.DataFrame,
+    distribution: pd.DataFrame,
+    manifest: dict,
+    output_paths: dict[str, Path],
+    case_template: pd.DataFrame | None = None,
+    candidate_template: pd.DataFrame | None = None,
+) -> None:
+    """검수 CSV·source snapshot·분포·manifest를 정책 경로에 저장한다."""
+    write_jsonl(gold_tasks, str(output_paths["gold_tasks"]))
+    case_annotations.to_csv(
+        output_paths["case_annotations"],
+        index=False,
+        encoding="utf-8-sig",
+    )
+    candidate_annotations.to_csv(
+        output_paths["candidate_annotations"],
+        index=False,
+        encoding="utf-8-sig",
+    )
+    code_baseline.to_csv(
+        output_paths["code_baseline"],
+        index=False,
+        encoding="utf-8-sig",
+    )
+    distribution.to_csv(
+        output_paths["distribution"],
+        index=False,
+        encoding="utf-8-sig",
+    )
+    if "case_template" in output_paths:
+        effective_case_template = case_annotations
+        if case_template is not None:
+            effective_case_template = case_template
+        effective_case_template.to_csv(
+            output_paths["case_template"],
+            index=False,
+            encoding="utf-8-sig",
+        )
+    if "candidate_template" in output_paths:
+        effective_candidate_template = candidate_annotations
+        if candidate_template is not None:
+            effective_candidate_template = candidate_template
+        effective_candidate_template.to_csv(
+            output_paths["candidate_template"],
+            index=False,
+            encoding="utf-8-sig",
+        )
+    with output_paths["manifest"].open("w", encoding="utf-8") as output_file:
+        output_file.write(dumps(manifest, ensure_ascii=False, indent=2))
+
+
 def write_gold_set(
     all_tasks: list[dict],
     input_path: str,
@@ -540,50 +626,18 @@ def write_gold_set(
         gold_tasks
     )
     distribution = build_distribution(all_tasks, gold_tasks, policy)
-    output_directory = Path(output_dir)
-    output_directory.mkdir(parents=True, exist_ok=True)
-    output_files = gold_policy["output_files"]
-    output_paths = {
-        name: output_directory / filename
-        for name, filename in output_files.items()
-    }
+    output_paths = resolve_gold_output_paths(
+        output_dir,
+        review_output_dir,
+        gold_policy,
+    )
     if review_output_dir:
-        review_directory = Path(review_output_dir)
-        review_directory.mkdir(parents=True, exist_ok=True)
-        review_file_names = gold_policy["importer"]["csv_input_files"]
-        output_paths["case_annotations"] = (
-            review_directory / review_file_names["case_annotations"]
-        )
-        output_paths["candidate_annotations"] = (
-            review_directory / review_file_names["candidate_annotations"]
-        )
         protect_started_review_files(
             output_paths["case_annotations"],
             output_paths["candidate_annotations"],
             gold_policy,
             allow_review_overwrite,
         )
-    write_jsonl(gold_tasks, str(output_paths["gold_tasks"]))
-    case_annotations.to_csv(
-        output_paths["case_annotations"],
-        index=False,
-        encoding="utf-8-sig",
-    )
-    candidate_annotations.to_csv(
-        output_paths["candidate_annotations"],
-        index=False,
-        encoding="utf-8-sig",
-    )
-    code_baseline.to_csv(
-        output_paths["code_baseline"],
-        index=False,
-        encoding="utf-8-sig",
-    )
-    distribution.to_csv(
-        output_paths["distribution"],
-        index=False,
-        encoding="utf-8-sig",
-    )
     creation_time = generated_at
     if not creation_time:
         creation_time = datetime.now(timezone.utc).isoformat()
@@ -603,8 +657,186 @@ def write_gold_set(
             name: str(path.resolve()) for name, path in output_paths.items()
         },
     }
-    with output_paths["manifest"].open("w", encoding="utf-8") as output_file:
-        output_file.write(dumps(manifest, ensure_ascii=False, indent=2))
+    write_gold_set_artifacts(
+        gold_tasks,
+        case_annotations,
+        candidate_annotations,
+        code_baseline,
+        distribution,
+        manifest,
+        output_paths,
+    )
+    return {name: str(path) for name, path in output_paths.items()}
+
+
+def extend_gold_set_review(
+    all_tasks: list[dict],
+    input_path: str,
+    output_dir: str,
+    policy: dict,
+    review_output_dir: str,
+    generated_at: str = "",
+) -> dict[str, str]:
+    """기존 검수 행을 보존하고 미중복 task를 목표 표본 수까지 추가한다."""
+    gold_policy = policy["entity_resolution"]["semantic_review"]["gold_set"]
+    output_paths = resolve_gold_output_paths(
+        output_dir,
+        review_output_dir,
+        gold_policy,
+    )
+    required_paths = [
+        output_paths["gold_tasks"],
+        output_paths["case_annotations"],
+        output_paths["candidate_annotations"],
+    ]
+    existing_path_count = sum(path.is_file() for path in required_paths)
+    if existing_path_count == 0:
+        return write_gold_set(
+            all_tasks,
+            input_path,
+            output_dir,
+            policy,
+            generated_at=generated_at,
+            review_output_dir=review_output_dir,
+        )
+    if existing_path_count != len(required_paths):
+        missing_paths = [
+            str(path) for path in required_paths if not path.is_file()
+        ]
+        raise FileNotFoundError(
+            "기존 골든셋 일부만 존재하여 안전하게 확장할 수 없습니다: "
+            + ", ".join(missing_paths)
+        )
+
+    existing_tasks = load_jsonl(str(output_paths["gold_tasks"]))
+    existing_cases = pd.read_csv(
+        output_paths["case_annotations"],
+        encoding="utf-8-sig",
+        dtype=str,
+        keep_default_na=False,
+    )
+    existing_candidates = pd.read_csv(
+        output_paths["candidate_annotations"],
+        encoding="utf-8-sig",
+        dtype=str,
+        keep_default_na=False,
+    )
+    task_id_field = "term_review_task_id"
+    case_task_ids = existing_cases[task_id_field].tolist()
+    snapshot_task_ids = [
+        str(task[task_id_field]) for task in existing_tasks
+    ]
+    if len(case_task_ids) != len(set(case_task_ids)):
+        raise ValueError("기존 검수 case에 중복 term_review_task_id가 있습니다.")
+    if len(snapshot_task_ids) != len(set(snapshot_task_ids)):
+        raise ValueError("기존 gold task snapshot에 중복 task ID가 있습니다.")
+    if case_task_ids != snapshot_task_ids:
+        raise ValueError(
+            "기존 검수 case와 gold task snapshot의 task ID 또는 순서가 "
+            "일치하지 않습니다."
+        )
+    source_candidate_ids = existing_candidates[
+        "source_candidate_id"
+    ].tolist()
+    if len(source_candidate_ids) != len(set(source_candidate_ids)):
+        raise ValueError("기존 후보 검수 CSV에 중복 source_candidate_id가 있습니다.")
+
+    target_sample_size = int(gold_policy["sample_size"])
+    existing_case_count = len(existing_cases)
+    if existing_case_count >= target_sample_size:
+        return {name: str(path) for name, path in output_paths.items()}
+
+    existing_task_id_set = set(snapshot_task_ids)
+    available_tasks = [
+        task
+        for task in all_tasks
+        if str(task[task_id_field]) not in existing_task_id_set
+    ]
+    append_count = target_sample_size - existing_case_count
+    if append_count > len(available_tasks):
+        raise ValueError(
+            f"기존 {existing_case_count}건을 제외한 task가 "
+            f"{len(available_tasks)}건뿐이라 목표 {target_sample_size}건을 "
+            "채울 수 없습니다."
+        )
+
+    append_policy = deepcopy(policy)
+    append_gold_policy = append_policy["entity_resolution"][
+        "semantic_review"
+    ]["gold_set"]
+    append_gold_policy["sample_size"] = append_count
+    selected = select_gold_tasks(available_tasks, append_policy)
+    appended_tasks = build_gold_task_records(selected, policy)
+    starting_order = 0
+    if existing_tasks:
+        starting_order = max(
+            int(task["gold_set_metadata"]["gold_case_order"])
+            for task in existing_tasks
+        )
+    for appended_order, task in enumerate(appended_tasks, start=1):
+        task["gold_set_metadata"]["gold_case_order"] = (
+            starting_order + appended_order
+        )
+
+    appended_cases = build_case_annotations(appended_tasks)
+    appended_candidates, _ = build_candidate_annotations(appended_tasks)
+    if list(appended_cases.columns) != list(existing_cases.columns):
+        raise ValueError("기존 case 검수 CSV의 열 구조가 현재 정책과 다릅니다.")
+    if list(appended_candidates.columns) != list(existing_candidates.columns):
+        raise ValueError("기존 후보 검수 CSV의 열 구조가 현재 정책과 다릅니다.")
+
+    combined_tasks = [*existing_tasks, *appended_tasks]
+    combined_cases = pd.concat(
+        [existing_cases, appended_cases],
+        ignore_index=True,
+    )
+    combined_candidates = pd.concat(
+        [existing_candidates, appended_candidates],
+        ignore_index=True,
+    )
+    blank_cases = build_case_annotations(combined_tasks)
+    blank_candidates, code_baseline = build_candidate_annotations(
+        combined_tasks
+    )
+    distribution = build_distribution(all_tasks, combined_tasks, policy)
+    creation_time = generated_at
+    if not creation_time:
+        creation_time = datetime.now(timezone.utc).isoformat()
+    manifest = {
+        "selection_policy_version": gold_policy["selection_policy_version"],
+        "resolution_policy_version": policy["policy_version"],
+        "normalization_policy_version": policy[
+            "normalization_policy_version"
+        ],
+        "input_task_path": str(Path(input_path).resolve()),
+        "input_task_sha256": calculate_file_sha256(input_path),
+        "population_case_count": len(all_tasks),
+        "sample_case_count": len(combined_tasks),
+        "sample_candidate_count": len(combined_candidates),
+        "generated_at": creation_time,
+        "snapshot_mode": "PRESERVE_REVIEWED_BASE_APPEND_CURRENT_POPULATION",
+        "preserved_existing_case_count": existing_case_count,
+        "preserved_completed_case_count": int(
+            existing_cases["case_review_status"]
+            .eq(gold_policy["importer"]["required_completion_status"])
+            .sum()
+        ),
+        "appended_pending_case_count": len(appended_tasks),
+        "output_files": {
+            name: str(path.resolve()) for name, path in output_paths.items()
+        },
+    }
+    write_gold_set_artifacts(
+        combined_tasks,
+        combined_cases,
+        combined_candidates,
+        code_baseline,
+        distribution,
+        manifest,
+        output_paths,
+        case_template=blank_cases,
+        candidate_template=blank_candidates,
+    )
     return {name: str(path) for name, path in output_paths.items()}
 
 
@@ -622,7 +854,10 @@ if __name__ == "__main__":
         "output_dir",
         nargs="?",
         default="",
-        help="골든셋 출력 디렉터리 (생략하면 정책의 default_output_directory 사용)",
+        help=(
+            "별도 골든셋 snapshot 출력 디렉터리 "
+            "(생략하면 기존 검수본을 보존하며 목표 표본 수까지 확장)"
+        ),
     )
     parser.add_argument(
         "--policy",
@@ -636,7 +871,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--force-overwrite-review",
         action="store_true",
-        help="검수가 시작된 human_review_csv도 확인 후 강제로 다시 생성",
+        help="기본 경로의 기존 human_review_csv를 강제로 새 표본으로 재생성",
     )
     cli_args = parser.parse_args()
     pipeline_policy = load_pipeline_policy(cli_args.policy)
@@ -651,7 +886,8 @@ if __name__ == "__main__":
         input_tasks_path = (
             neo4j_root
             / output_layout["default_output_root"]
-            / output_layout["directories"]["llm_review"]
+            / output_layout["directories"]["internal"]
+            / output_layout["directories"]["model_review"]
             / pipeline_policy["entity_resolution"]["semantic_review"][
                 "term_task_file"
             ]
@@ -665,9 +901,9 @@ if __name__ == "__main__":
 
     output_directory_argument = cli_args.output_dir
     review_directory_argument = ""
+    active_review_mode = not output_directory_argument
     if not output_directory_argument:
-        # 인자 생략 시: 내부 산출물은 snapshot 폴더에, 검수 CSV는
-        # human_review_csv에 importer 파일명으로 저장한다 (기존 검수본 덮어씀)
+        # 인자 생략 시 기존 검수 행을 유지하고 정책 목표까지 미중복 행만 추가한다.
         neo4j_root = Path(__file__).resolve().parent.parent
         output_directory_argument = str(
             neo4j_root / gold_set_policy["default_output_directory"]
@@ -676,12 +912,28 @@ if __name__ == "__main__":
             neo4j_root / gold_set_policy["review_csv_directory"]
         )
     term_tasks = load_jsonl(input_tasks_argument)
-    written_paths = write_gold_set(
-        term_tasks,
-        input_tasks_argument,
-        output_directory_argument,
-        pipeline_policy,
-        review_output_dir=review_directory_argument,
-        allow_review_overwrite=cli_args.force_overwrite_review,
-    )
+    if active_review_mode and not cli_args.force_overwrite_review:
+        written_paths = extend_gold_set_review(
+            term_tasks,
+            input_tasks_argument,
+            output_directory_argument,
+            pipeline_policy,
+            review_directory_argument,
+        )
+    elif active_review_mode and cli_args.force_overwrite_review:
+        written_paths = write_gold_set(
+            term_tasks,
+            input_tasks_argument,
+            output_directory_argument,
+            pipeline_policy,
+            review_output_dir=review_directory_argument,
+            allow_review_overwrite=True,
+        )
+    elif not active_review_mode:
+        written_paths = write_gold_set(
+            term_tasks,
+            input_tasks_argument,
+            output_directory_argument,
+            pipeline_policy,
+        )
     print(dumps(written_paths, ensure_ascii=False, indent=2))
