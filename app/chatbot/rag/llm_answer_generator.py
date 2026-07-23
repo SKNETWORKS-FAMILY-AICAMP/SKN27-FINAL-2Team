@@ -3,8 +3,6 @@ from __future__ import annotations
 import json
 import os
 import re
-import urllib.error
-import urllib.request
 from dataclasses import dataclass
 from collections.abc import Iterator
 from typing import Any
@@ -32,6 +30,22 @@ FOLLOW_UP_SYSTEM_PROMPT = """당신은 한국사능력검정시험을 준비하�
 마지막에 추가 질문을 유도하는 문장이나 "원하시면"으로 시작하는 제안 문장을 쓰지 마세요.
 Markdown 가로선(---)은 사용하지 마세요."""
 
+FOUNDATION_EXPLANATION_SYSTEM_PROMPT = FOLLOW_UP_SYSTEM_PROMPT + """
+
+이 사용자는 기초 해설이 필요합니다. 정답 번호나 선지 표만 제시하고 끝내면 안 됩니다.
+교과서 요약처럼 딱딱하게 쓰지 말고, 옆에서 차근차근 알려 주는 선생님처럼 상냥한 존댓말로 설명하세요. 모든 문장 종결은 "~에요/~예요"체로 쓰고 "~습니다/~입니다"체는 쓰지 마세요. "처음에는 헷갈릴 수 있지만", "이렇게 연결해서 보면 쉬워요", "이 부분만 기억해 두면 돼요"처럼 자연스러운 안내를 섞고, 틀린 선지는 "헷갈리기 쉬운 부분이에요"처럼 부담을 주지 않는 말로 안내하세요.
+반드시 다음 순서로 충분히 설명하세요.
+1. 먼저 알아둘 용어: 문제의 핵심 용어를 쉬운 말로 풀이합니다.
+2. 시대 배경: 이 사건·제도가 어떤 흐름에서 나왔는지 설명합니다.
+3. 문제 풀이: 지문과 정답이 어떻게 연결되는지 원인-과정-결과로 설명합니다.
+4. 암기 포인트: 헷갈리지 않게 한두 문장으로 정리합니다.
+5. 선지별 해설: 모든 선지가 왜 맞거나 틀리는지, 사실 오류인지 시점 오류인지 구분해 설명합니다.
+각 항목은 한 문장으로 끝내지 말고 이해에 필요한 설명을 덧붙이세요. 문제 본문의 짧은 답변·한 문장·고정 표 형식 요구와 충돌하면 이 규칙을 우선하세요."""
+
+CORE_EXPLANATION_SYSTEM_PROMPT = FOLLOW_UP_SYSTEM_PROMPT + """
+
+이 사용자는 기본 개념을 갖추고 있습니다. 검색 근거에서 확인되는 정답 근거와 선지 판단만 요점 위주로 간결하게 설명하세요. 모든 문장 종결은 "~에요/~예요"체로 쓰고 "~습니다/~입니다/~이다"체는 쓰지 마세요."""
+
 
 STRUCTURED_SYSTEM_PROMPT = """당신은 한국사능력검정시험을 준비하는 학습자를 돕는 한국사 튜터입니다.
 반드시 제공된 검색 근거 안에서만 답변하세요.
@@ -47,13 +61,28 @@ STREAM_STRUCTURED_SYSTEM_PROMPT = """당신은 한국사능력검정시험을 �
 meta는 title과 summary, section은 heading, row는 term과 content, sources는 source_titles 배열을 가집니다.
 한자나 한문 원문은 현대 한국어 한글 표현으로 풀어 쓰세요."""
 
+FOUNDATION_STREAM_STRUCTURED_SYSTEM_PROMPT = STREAM_STRUCTURED_SYSTEM_PROMPT + """
+
+이 사용자는 기초 해설이 필요합니다. 섹션을 반드시 "1. 먼저 알아둘 용어", "2. 시대 배경", "3. 문제 풀이", "4. 암기 포인트", "5. 선지별 해설" 순서로 구성하세요.
+각 row의 content는 한 문장으로 끝내지 말고 쉬운 말로 충분히 설명하세요. 교과서 요약처럼 딱딱하게 쓰지 말고, 옆에서 차근차근 알려 주는 선생님처럼 상냥한 존댓말로 안내하세요. 모든 문장 종결은 "~에요/~예요"체로 쓰고 "~습니다/~입니다"체는 쓰지 마세요. "처음에는 헷갈릴 수 있지만", "이렇게 연결해서 보면 쉬워요", "이 부분만 기억해 두면 돼요"처럼 자연스러운 안내를 섞고, 틀린 선지는 부담을 주지 않는 말로 설명하세요."""
+
+CORE_STREAM_STRUCTURED_SYSTEM_PROMPT = STREAM_STRUCTURED_SYSTEM_PROMPT + """
+
+이 사용자는 기본 개념을 갖추고 있습니다. 섹션은 "1. 정답 근거", "2. 선지 판단", "3. 암기 포인트" 순서로만 구성하세요.
+검색 근거에서 확인되는 내용만 골라 각 row를 한두 문장으로 간결하게 설명하세요. 모든 문장 종결은 "~에요/~예요"체로 쓰고 "~습니다/~입니다/~이다"체는 쓰지 마세요."""
+
+CONCEPT_STREAM_STRUCTURED_SYSTEM_PROMPT = STREAM_STRUCTURED_SYSTEM_PROMPT + """
+
+개념을 처음 배우는 학습자에게 차근차근 알려 주듯 설명하세요. 모든 문장 종결은 "~에요/~예요"체로 쓰고 "~습니다/~입니다/~이다"체는 쓰지 마세요.
+일반 개념 질문은 "1. 먼저 알아둘 용어", "2. 시대 배경", "3. 핵심 내용", "4. 암기 포인트" 순서로 구성하고, 각 row에는 쉬운 뜻과 왜 중요한지를 함께 설명하세요.
+비교 질문은 대상별 기초 설명을 먼저 쓰고 공통점·차이점을 설명하세요. 관계 질문은 반드시 "1. 무슨 관계인지", "2. 관계의 근거", "3. 시험 포인트" 순서로 쓰고, 둘째 섹션에서 검색 근거를 바탕으로 연결 이유를 자세히 설명하세요. 검색 근거에 없는 사실은 덧붙이지 마세요."""
+
 
 @dataclass(frozen=True)
 class LLMConfig:
-    provider: str
     model: str
     temperature: float = 0.0
-    ollama_base_url: str = "http://localhost:11434"
+    provider: str = "openai"
 
 
 def load_llm_env() -> None:
@@ -164,7 +193,7 @@ def build_structured_prompt(
 없는 내용은 만들지 말고 빈 배열로 처리하세요. 근거 부족 안내 문장은 쓰지 마세요.
 질문 의도에 맞게 필요한 수의 섹션을 직접 구성하세요.
 섹션 heading에는 번호와 질문에 맞는 제목을 함께 쓰세요.
-예: 관계 질문은 "1. 관계 개요", "2. 연결 근거", "3. 시험 포인트"처럼 구성하세요.
+관계 질문은 반드시 "1. 무슨 관계인지", "2. 관계의 근거", "3. 시험 포인트" 순서로 구성하세요. 첫 섹션에서는 두 대상의 관계를 쉬운 말로 먼저 밝히고, 둘째 섹션에서는 검색 근거를 바탕으로 연결 이유를 자세히 설명하세요.
 인물 단독 질문은 "1. 개요", "2. 주요 업적", "3. 역사적 역할" 순서로 구성하세요. 비교·관계 질문에는 이 규칙보다 해당 질문 형식을 우선하세요.
 인물 단독 질문의 답변 title은 인물명만 쓰세요. "인물명 개요", "인물명 정리"처럼 다른 말을 덧붙이지 마세요.
 인물 단독 질문의 각 표 행은 핵심 사실만 나열하지 말고, 검색 근거가 있으면 배경·내용·영향을 연결해 1~2문장으로 설명하세요.
@@ -217,10 +246,34 @@ def sanitize_answer(answer: str) -> str:
             continue
         if stripped.startswith("원하시면"):
             continue
-        if any(term in stripped for term in ("근거는 부족", "근거가 부족", "근거 부족", "설명할 만큼의 근거", "충분한 근거")):
+        if any(term in stripped for term in DISCLAIMER_PATTERNS):
             continue
         lines.append(line.rstrip())
     return "\n".join(lines).strip()
+
+
+# 모델이 검색 근거 부족을 이유로 답변을 회피하는 문구만 제거합니다.
+DISCLAIMER_PATTERNS = (
+    "근거는 부족",
+    "근거가 부족",
+    "근거 부족",
+    "설명할 만큼의 근거",
+    "충분한 근거가 없",
+    "충분한 근거를 찾지",
+    "충분한 근거를 확인할 수 없",
+    "충분한 근거를 확인하지 못",
+    "충분한 근거를 확인하기 어렵",
+)
+
+
+def _sanitize_value(value: Any) -> Any:
+    if isinstance(value, str):
+        return sanitize_answer(value)
+    if isinstance(value, list):
+        return [_sanitize_value(item) for item in value]
+    if isinstance(value, dict):
+        return {key: _sanitize_value(item) for key, item in value.items()}
+    return value
 
 
 def extract_json_object(text: str) -> dict[str, Any]:
@@ -246,11 +299,11 @@ def extract_json_object(text: str) -> dict[str, Any]:
 def normalize_structured_answer(value: dict[str, Any]) -> dict[str, Any]:
     return {
         "answer_type": str(value.get("answer_type") or "textbook_note"),
-        "title": str(value.get("title") or "한국사 개념 정리"),
+        "title": sanitize_answer(str(value.get("title") or "한국사 개념 정리")),
         "summary": sanitize_answer(str(value.get("summary") or "")),
-        "sections": value.get("sections") if isinstance(value.get("sections"), list) else [],
+        "sections": _sanitize_value(value.get("sections")) if isinstance(value.get("sections"), list) else [],
         "exam_points": value.get("exam_points") if isinstance(value.get("exam_points"), list) else [],
-        "highlights": value.get("highlights") if isinstance(value.get("highlights"), list) else [],
+        "highlights": _sanitize_value(value.get("highlights")) if isinstance(value.get("highlights"), list) else [],
         "source_titles": value.get("source_titles") if isinstance(value.get("source_titles"), list) else [],
     }
 
@@ -260,22 +313,14 @@ class LLMAnswerGenerator:
         self.config = config
 
     @classmethod
-    def from_env(cls, provider: str | None = None, model: str | None = None) -> "LLMAnswerGenerator":
+    def from_env(cls, model: str | None = None) -> "LLMAnswerGenerator":
         load_llm_env()
-        selected_provider = (provider or os.getenv("CHAT_LLM_PROVIDER", "openai")).lower()
-        if selected_provider == "openai":
-            selected_model = model or os.getenv("OPENAI_CHAT_MODEL", "gpt-5.4-mini")
-        elif selected_provider == "ollama":
-            selected_model = model or os.getenv("OLLAMA_CHAT_MODEL", "gemma4:2b")
-        else:
-            raise ValueError("provider는 openai 또는 ollama만 지원합니다.")
+        selected_model = model or os.getenv("OPENAI_CHAT_MODEL", "gpt-5.4-mini")
 
         return cls(
             LLMConfig(
-                provider=selected_provider,
                 model=selected_model,
                 temperature=float(os.getenv("CHAT_TEMPERATURE", "0")),
-                ollama_base_url=os.getenv("OLLAMA_BASE_URL", "http://localhost:11434").rstrip("/"),
             )
         )
 
@@ -287,14 +332,41 @@ class LLMAnswerGenerator:
         follow_up: bool = False,
         history: list[dict[str, str]] | None = None,
         include_source_summary: bool = True,
+        explanation_level: str = "",
     ) -> str:
-        system_prompt = FOLLOW_UP_SYSTEM_PROMPT if follow_up else SYSTEM_PROMPT
+        system_prompt = (
+            FOUNDATION_EXPLANATION_SYSTEM_PROMPT if explanation_level == "foundation"
+            else CORE_EXPLANATION_SYSTEM_PROMPT if explanation_level == "core"
+            else FOLLOW_UP_SYSTEM_PROMPT if follow_up else SYSTEM_PROMPT
+        )
         user_prompt = build_user_prompt(question, sources, style, follow_up, history, include_source_summary)
-        if self.config.provider == "openai":
-            return sanitize_answer(self._generate_openai(system_prompt, user_prompt))
-        if self.config.provider == "ollama":
-            return sanitize_answer(self._generate_ollama(system_prompt, user_prompt))
-        raise ValueError(f"지원하지 않는 provider입니다: {self.config.provider}")
+        return sanitize_answer(self._generate_openai(system_prompt, user_prompt))
+
+    def generate_stream(
+        self,
+        question: str,
+        sources: list[dict[str, Any]],
+        style: str,
+        follow_up: bool = False,
+        history: list[dict[str, str]] | None = None,
+        include_source_summary: bool = True,
+        explanation_level: str = "",
+    ) -> Iterator[str]:
+        system_prompt = (
+            FOUNDATION_EXPLANATION_SYSTEM_PROMPT if explanation_level == "foundation"
+            else CORE_EXPLANATION_SYSTEM_PROMPT if explanation_level == "core"
+            else FOLLOW_UP_SYSTEM_PROMPT if follow_up else SYSTEM_PROMPT
+        )
+        user_prompt = build_user_prompt(question, sources, style, follow_up, history, include_source_summary)
+        chunks = OpenAI().chat.completions.create(
+            model=self.config.model,
+            temperature=self.config.temperature,
+            stream=True,
+            messages=[{"role": "system", "content": system_prompt}, {"role": "user", "content": user_prompt}],
+        )
+        for chunk in chunks:
+            if chunk.choices:
+                yield chunk.choices[0].delta.content or ""
 
     def generate_structured(
         self,
@@ -304,30 +376,26 @@ class LLMAnswerGenerator:
         history: list[dict[str, str]] | None = None,
     ) -> dict[str, Any]:
         user_prompt = build_structured_prompt(question, sources, follow_up, history)
-        if self.config.provider == "openai":
-            raw_answer = self._generate_openai(STRUCTURED_SYSTEM_PROMPT, user_prompt, json_mode=True)
-        elif self.config.provider == "ollama":
-            raw_answer = self._generate_ollama(STRUCTURED_SYSTEM_PROMPT, user_prompt)
-        else:
-            raise ValueError(f"지원하지 않는 provider입니다: {self.config.provider}")
+        raw_answer = self._generate_openai(STRUCTURED_SYSTEM_PROMPT, user_prompt, json_mode=True)
         return normalize_structured_answer(extract_json_object(raw_answer))
 
     def generate_structured_stream(
-        self, question: str, sources: list[dict[str, Any]], follow_up: bool = False, history: list[dict[str, str]] | None = None
+        self, question: str, sources: list[dict[str, Any]], follow_up: bool = False, history: list[dict[str, str]] | None = None, explanation_level: str = ""
     ) -> Iterator[dict[str, Any]]:
         prompt = build_stream_structured_prompt(question, sources, follow_up, history)
-        if self.config.provider == "openai":
-            chunks = OpenAI().chat.completions.create(
-                model=self.config.model,
-                temperature=self.config.temperature,
-                stream=True,
-                messages=[{"role": "system", "content": STREAM_STRUCTURED_SYSTEM_PROMPT}, {"role": "user", "content": prompt}],
-            )
-            fragments = (chunk.choices[0].delta.content or "" for chunk in chunks if chunk.choices)
-        elif self.config.provider == "ollama":
-            fragments = self._generate_ollama_stream(STREAM_STRUCTURED_SYSTEM_PROMPT, prompt)
-        else:
-            raise ValueError(f"지원하지 않는 provider입니다: {self.config.provider}")
+        system_prompt = (
+            FOUNDATION_STREAM_STRUCTURED_SYSTEM_PROMPT if explanation_level == "foundation"
+            else CORE_STREAM_STRUCTURED_SYSTEM_PROMPT if explanation_level == "core"
+            else CONCEPT_STREAM_STRUCTURED_SYSTEM_PROMPT if explanation_level == "concept"
+            else STREAM_STRUCTURED_SYSTEM_PROMPT
+        )
+        chunks = OpenAI().chat.completions.create(
+            model=self.config.model,
+            temperature=self.config.temperature,
+            stream=True,
+            messages=[{"role": "system", "content": system_prompt}, {"role": "user", "content": prompt}],
+        )
+        fragments = (chunk.choices[0].delta.content or "" for chunk in chunks if chunk.choices)
         yield from self._parse_stream_events(fragments)
 
     @staticmethod
@@ -337,20 +405,21 @@ class LLMAnswerGenerator:
             buffer += fragment
             while "\n" in buffer:
                 line, buffer = buffer.split("\n", 1)
-                try:
-                    event = json.loads(line.strip())
-                except json.JSONDecodeError:
-                    continue
-                if isinstance(event, dict) and event.get("type") in {"meta", "section", "row", "sources", "done"}:
+                event = LLMAnswerGenerator._try_parse_event(line)
+                if event is not None:
                     yield event
+        if buffer.strip():
+            event = LLMAnswerGenerator._try_parse_event(buffer)
+            if event is not None:
+                yield event
 
-    def _generate_ollama_stream(self, system_prompt: str, user_prompt: str) -> Iterator[str]:
-        payload = {"model": self.config.model, "stream": True, "messages": [{"role": "system", "content": system_prompt}, {"role": "user", "content": user_prompt}], "options": {"temperature": self.config.temperature}}
-        request = urllib.request.Request(f"{self.config.ollama_base_url}/api/chat", data=json.dumps(payload, ensure_ascii=False).encode("utf-8"), headers={"Content-Type": "application/json"}, method="POST")
-        with urllib.request.urlopen(request, timeout=120) as response:
-            for line in response:
-                data = json.loads(line.decode("utf-8"))
-                yield data.get("message", {}).get("content") or ""
+    @staticmethod
+    def _try_parse_event(line: str) -> dict[str, Any] | None:
+        try:
+            event = json.loads(line.strip())
+        except json.JSONDecodeError:
+            return None
+        return event if isinstance(event, dict) and event.get("type") in {"meta", "section", "row", "sources", "done"} else None
 
     def _generate_openai(self, system_prompt: str, user_prompt: str, json_mode: bool = False) -> str:
         client = OpenAI()
@@ -366,28 +435,3 @@ class LLMAnswerGenerator:
             kwargs["response_format"] = {"type": "json_object"}
         response = client.chat.completions.create(**kwargs)
         return (response.choices[0].message.content or "").strip()
-
-    def _generate_ollama(self, system_prompt: str, user_prompt: str) -> str:
-        payload = {
-            "model": self.config.model,
-            "stream": False,
-            "messages": [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt},
-            ],
-            "options": {"temperature": self.config.temperature},
-        }
-        request = urllib.request.Request(
-            f"{self.config.ollama_base_url}/api/chat",
-            data=json.dumps(payload, ensure_ascii=False).encode("utf-8"),
-            headers={"Content-Type": "application/json"},
-            method="POST",
-        )
-        try:
-            with urllib.request.urlopen(request, timeout=120) as response:
-                data = json.loads(response.read().decode("utf-8"))
-        except urllib.error.URLError as exc:
-            raise RuntimeError(
-                f"Ollama 호출에 실패했습니다. Ollama 서버와 모델({self.config.model})이 준비됐는지 확인해 주세요."
-            ) from exc
-        return (data.get("message", {}).get("content") or "").strip()

@@ -12,6 +12,7 @@ from analytics.service.mypage import (
     build_wrong_rate_summary,
     build_wrong_type_summary,
 )
+from analytics.service.studyplan import calculate_record_based_plan_progress
 from analytics.service.taxonomy import build_target_display_label
 
 
@@ -48,6 +49,7 @@ class MypageServiceTests(SimpleTestCase):
         self.assertEqual(summary["study_streak_days"], 2)
         self.assertEqual(summary["avg_question_time"], "01:06")
         self.assertEqual(summary["avg_session_time"], "02:06")
+
 
     @patch("analytics.service.mypage.get_completed_weekly_review_sessions")
     @patch("analytics.service.mypage.get_recent_wrong_rate_period")
@@ -187,6 +189,41 @@ class MypageServiceTests(SimpleTestCase):
 
         get_user_study_info_mock.assert_called_once_with(user.user_id)
         self.assertEqual(label, "미설정")
+
+
+class StudyPlanCompatibilityTests(SimpleTestCase):
+    @patch("analytics.service.studyplan.get_active_study_plan_dto")
+    def test_record_progress_uses_versioned_active_plan_projection(
+        self,
+        get_active_study_plan_dto_mock,
+    ):
+        plan_items = [
+            {
+                "date": "2026-07-21",
+                "blocks": [
+                    {"blockId": "practice-1", "blockType": "practice"},
+                    {"blockId": "practice-2", "blockType": "practice"},
+                    {"blockId": "review", "blockType": "weekly_review"},
+                ],
+            }
+        ]
+        get_active_study_plan_dto_mock.return_value = {
+            "studyPlanId": 10,
+            "completionRate": 0.5,
+            "plans": plan_items,
+        }
+        study_plan = SimpleNamespace(
+            studyplan_id=10,
+            study_plan_items=plan_items,
+            completion_rate=0.0,
+        )
+
+        result = calculate_record_based_plan_progress(7, study_plan)
+
+        self.assertEqual(result["summary"]["targetCount"], 2)
+        self.assertEqual(result["summary"]["achievedCount"], 1)
+        self.assertEqual(result["summary"]["remainingCount"], 1)
+        self.assertEqual(result["summary"]["completionPercent"], 50)
 
 
 class DiagnosisComparisonTests(SimpleTestCase):

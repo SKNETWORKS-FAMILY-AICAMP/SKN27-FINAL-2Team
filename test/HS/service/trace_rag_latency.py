@@ -40,6 +40,7 @@ def seconds(start: float) -> float:
 def trace_query(question: str, top_k: int) -> dict[str, float | int | str]:
     timings: dict[str, float | int | str] = {"question": question}
     original_embed_query = retriever_module.embed_query
+    original_rerank_results = retriever_module.rerank_results
 
     def timed_embed_query(*args, **kwargs):
         start = time.perf_counter()
@@ -49,6 +50,15 @@ def trace_query(question: str, top_k: int) -> dict[str, float | int | str]:
             timings["embedding_sec"] = seconds(start)
 
     retriever_module.embed_query = timed_embed_query
+
+    def timed_rerank_results(*args, **kwargs):
+        start = time.perf_counter()
+        try:
+            return original_rerank_results(*args, **kwargs)
+        finally:
+            timings["rerank_sec"] = seconds(start)
+
+    retriever_module.rerank_results = timed_rerank_results
     try:
         start = time.perf_counter()
         graph_context = build_graph_context(question, limit=8) if should_use_graph_context(question, "concept") else None
@@ -60,6 +70,10 @@ def trace_query(question: str, top_k: int) -> dict[str, float | int | str]:
         results = retriever.search(search_question, top_k=top_k)
         timings["pgvector_search_sec"] = seconds(start)
         timings.setdefault("embedding_sec", 0.0)
+        timings.setdefault("rerank_sec", 0.0)
+        timings["retrieval_sec"] = max(0.0, round(
+            float(timings["pgvector_search_sec"]) - float(timings["embedding_sec"]) - float(timings["rerank_sec"]), 3
+        ))
 
         sources = [result_to_payload(result) for result in results]
         generator = LLMAnswerGenerator.from_env()
@@ -77,12 +91,13 @@ def trace_query(question: str, top_k: int) -> dict[str, float | int | str]:
         return timings
     finally:
         retriever_module.embed_query = original_embed_query
+        retriever_module.rerank_results = original_rerank_results
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Trace RAG latency by stage.")
     parser.add_argument("question", nargs="?", default="세종대왕 업적 알려줘")
-    parser.add_argument("--top-k", type=int, default=5)
+    parser.add_argument("--top-k", type=int, default=20)
     args = parser.parse_args()
 
     result = trace_query(args.question, args.top_k)
