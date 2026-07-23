@@ -6,7 +6,7 @@ from unittest.mock import patch
 from django.test import RequestFactory, TestCase
 from django.urls import reverse
 
-from .rag.llm_answer_generator import CONCEPT_STREAM_STRUCTURED_SYSTEM_PROMPT, CORE_STREAM_STRUCTURED_SYSTEM_PROMPT, FOUNDATION_EXPLANATION_SYSTEM_PROMPT, LLMAnswerGenerator, normalize_structured_answer, sanitize_answer
+from .rag.llm_answer_generator import CONCEPT_STREAM_STRUCTURED_SYSTEM_PROMPT, CORE_STREAM_STRUCTURED_SYSTEM_PROMPT, FOUNDATION_EXPLANATION_SYSTEM_PROMPT, LLMAnswerGenerator, PROMPT_SNIPPET_MAX_CHARS, normalize_structured_answer, prompt_snippet, sanitize_answer
 from .rag import reranker
 from .rag_service import build_problem_option_queries, stream_concept_rag_answer
 from .views import rag_chat_api, rag_chat_stream_api
@@ -15,6 +15,11 @@ from .views import rag_chat_api, rag_chat_stream_api
 class ChatbotApiTests(TestCase):
     def setUp(self):
         self.factory = RequestFactory()
+
+    def test_prompt_snippet_is_capped(self):
+        snippet = prompt_snippet("가" * 200)
+        self.assertEqual(len(snippet), PROMPT_SNIPPET_MAX_CHARS)
+        self.assertTrue(snippet.endswith("…"))
 
     def request(self, payload: dict):
         request = self.factory.post("/chatbot/api/rag/", data=json.dumps(payload), content_type="application/json")
