@@ -71,6 +71,20 @@ $root = "question_generation\data\production_20260723\questions"
   --output-prefix <evaluation-output-prefix>
 ```
 
+## Mixed 50-Question Exam
+
+검수·평가가 끝난 문항 풀에서 일반 선택형, 연대기형, 이미지 선지형을 섞어 50문항을 편성합니다. API를 호출하지 않으며 `standard_50.json`의 난이도·시대 분포를 그대로 채웁니다.
+
+```powershell
+.\.venv\Scripts\python.exe -m question_generation.workflows.mixed_mock_exam `
+  --standard 35 `
+  --chronology 10 `
+  --image 5 `
+  --output-dir "question_generation\outputs\mixed_50"
+```
+
+유형별 수의 합은 quota Pack의 50개와 같아야 합니다. 같은 seed와 입력은 같은 시험지를 만들며, 유형 수와 난이도·시대 quota를 동시에 채울 수 없으면 일부를 임의 대체하지 않고 실패합니다.
+
 체크포인트 구조:
 
 ```text
