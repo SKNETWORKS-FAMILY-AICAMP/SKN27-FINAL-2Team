@@ -1,0 +1,8 @@
+﻿error_code,name_ko,total,generated_audit,past_exam,answer,distractor
+PASS,통과,1784,354,1430,285,1499
+ANSWER_LENGTH_BIAS,정답 선지가 유독 길거나 짧음,45,45,0,45,0
+ANSWER_RESTATEMENT_SUSPECT,정답 선지가 지문 내용을 의미상 재진술한 의심,41,40,1,41,0
+CHOICE_FORMAT_ERROR,선지 문장/형식 오류,22,21,1,6,16
+QUESTION_CHOICE_MISMATCH,질문 요구와 선지 내용/형식이 맞지 않음,6,6,0,3,3
+ODD_DISTRACTOR,오답 선지가 너무 어색하거나 쉽게 제거되는 의심,5,5,0,0,5
+ANSWER_IN_PASSAGE,정답 선지가 지문/질문에 노출됨,4,1,3,4,0

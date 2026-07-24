@@ -1,0 +1,86 @@
+{
+  "version": "v3_holdout_generated_test",
+  "past_exam_source": "C:\\dev\\project\\SKN27-FINAL-2Team\\ai\\ml\\ML_han_v1.json",
+  "generated_source": "C:\\Users\\Playdata\\Downloads\\yj_question.json",
+  "input_data": "passage + question + one choice + is_answer",
+  "y_value": "multi-label error_codes. binary label is derived: error_codes empty => label=1 OK, non-empty => label=0 ERROR",
+  "test_purpose": "학습에 넣지 않은 팀원 생성 문제 holdout에서 실제 오류 탐지 가능성을 확인한다.",
+  "past_exam_questions": 1600,
+  "generated_questions": 1144,
+  "generated_train_questions": {
+    "questions": 945,
+    "skipped_questions": 5,
+    "real_error_rows": 9,
+    "rule_only_questions": 4
+  },
+  "generated_holdout_questions": {
+    "questions": 199,
+    "skipped_questions": 0,
+    "real_error_rows": 1,
+    "rule_only_questions": 0
+  },
+  "total_rows": 23295,
+  "train_count": 18911,
+  "test_count": 2530,
+  "synthetic_test_count": 1854,
+  "label_count": {
+    "train_error_0": 7755,
+    "train_ok_1": 11156,
+    "test_error_0": 1,
+    "test_ok_1": 2529,
+    "synthetic_test_error_0": 1854,
+    "synthetic_test_ok_1": 0
+  },
+  "error_code_count": {
+    "ANSWER_IN_PASSAGE": {
+      "train": 1297,
+      "test": 1,
+      "synthetic_test": 309
+    },
+    "ANSWER_LENGTH_BIAS": {
+      "train": 1291,
+      "test": 0,
+      "synthetic_test": 309
+    },
+    "CHOICE_GRAMMAR_ERROR": {
+      "train": 1292,
+      "test": 0,
+      "synthetic_test": 309
+    },
+    "CHOICE_STYLE_MISMATCH": {
+      "train": 1291,
+      "test": 0,
+      "synthetic_test": 309
+    },
+    "CHOICE_TOO_VAGUE": {
+      "train": 1291,
+      "test": 0,
+      "synthetic_test": 309
+    },
+    "DUPLICATE_OR_SIMILAR_CHOICE": {
+      "train": 2,
+      "test": 0,
+      "synthetic_test": 0
+    },
+    "WEIRD_DISTRACTOR": {
+      "train": 1291,
+      "test": 0,
+      "synthetic_test": 309
+    }
+  },
+  "error_code_names_ko": {
+    "ANSWER_IN_PASSAGE": "정답 노출",
+    "ANSWER_LENGTH_BIAS": "정답 선지 길이 편향",
+    "CHOICE_GRAMMAR_ERROR": "선지 문장 오류",
+    "CHOICE_STYLE_MISMATCH": "선지 형식 불일치",
+    "CHOICE_TOO_VAGUE": "선지 모호함",
+    "DUPLICATE_OR_SIMILAR_CHOICE": "선지 중복/유사",
+    "WEIRD_DISTRACTOR": "이상한 오답 선지"
+  },
+  "files": [
+    "choice_quality_train_v3.json",
+    "choice_quality_test_v3.json",
+    "choice_quality_synthetic_test_v3.json",
+    "choice_quality_data_v3.json"
+  ]
+}

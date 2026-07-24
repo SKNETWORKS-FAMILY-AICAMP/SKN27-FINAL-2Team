@@ -1,0 +1,524 @@
+{
+  "model_name": "klue/roberta-base",
+  "task": "choice_level_binary_classification",
+  "label_definition": {
+    "0": "ERROR",
+    "1": "OK"
+  },
+  "max_length": 512,
+  "epochs": 30,
+  "batch_size": 16,
+  "learning_rate": 2e-05,
+  "train_count": 6600,
+  "valid_count": 1655,
+  "test_count": 1900,
+  "input_data": "passage/material + question + one choice + is_answer",
+  "y_value": "binary label only. label=0 ERROR, label=1 OK.",
+  "error_code_note": "error_codes are auxiliary explanations, not the BERT training target.",
+  "excluded_policy": "ㄱ, ㄴ 조합형 선지와 (가) - (나) - (다) 순서형 선지는 선지 단위 오류 검수 대상에서 제외",
+  "excluded_train_count": 470,
+  "excluded_test_count": 165,
+  "reference_error_codes": [
+    "ANSWER_IN_PASSAGE",
+    "ANSWER_LENGTH_BIAS",
+    "ANSWER_RESTATEMENT_SUSPECT",
+    "CHOICE_FORMAT_ERROR",
+    "DUPLICATE_OR_SIMILAR_CHOICE",
+    "EXCLUDED_COMBO_OR_ORDER_CHOICE",
+    "NO_OR_MULTI_ANSWER",
+    "ODD_DISTRACTOR",
+    "ORDER_CHOICE_CONTEXT_REQUIRED",
+    "QUESTION_CHOICE_MISMATCH",
+    "QUESTION_MARKER_MISMATCH",
+    "WEIRD_CHOICE"
+  ],
+  "reference_error_code_names": {
+    "ANSWER_IN_PASSAGE": "정답 선지가 지문/질문에 노출됨",
+    "ANSWER_RESTATEMENT_SUSPECT": "정답 선지가 지문 내용을 의미상 재진술한 의심",
+    "ANSWER_LENGTH_BIAS": "정답 선지가 유독 길거나 짧음",
+    "CHOICE_FORMAT_ERROR": "선지 문장/형식 오류",
+    "QUESTION_CHOICE_MISMATCH": "질문 요구와 선지 내용/형식이 맞지 않음",
+    "QUESTION_MARKER_MISMATCH": "지문에 없는 표식/밑줄/(가) 등을 참조함",
+    "EXCLUDED_COMBO_OR_ORDER_CHOICE": "조합형/순서형 선지라 선지 단위 검수 제외",
+    "ORDER_CHOICE_CONTEXT_REQUIRED": "순서형/기호형 선지라 문항 단위 확인 필요",
+    "ODD_DISTRACTOR": "오답 선지가 너무 어색하거나 쉽게 제거되는 의심",
+    "WEIRD_CHOICE": "문제 맥락상 너무 이상하거나 부적절한 선지",
+    "DUPLICATE_OR_SIMILAR_CHOICE": "중복되거나 거의 같은 선지가 있음",
+    "NO_OR_MULTI_ANSWER": "정답이 없거나 2개 이상임"
+  },
+  "threshold_mode": "fixed",
+  "auto_best_threshold": 0.35,
+  "best_threshold": 0.1,
+  "history": [
+    {
+      "epoch": 1,
+      "train_loss": 0.534672,
+      "valid_loss": 0.284619,
+      "threshold": 0.05,
+      "valid_abnormal_f1": 0.807512,
+      "valid_abnormal_recall": 0.781818
+    },
+    {
+      "epoch": 2,
+      "train_loss": 0.414967,
+      "valid_loss": 0.236925,
+      "threshold": 0.95,
+      "valid_abnormal_f1": 0.819512,
+      "valid_abnormal_recall": 0.763636
+    },
+    {
+      "epoch": 3,
+      "train_loss": 0.467057,
+      "valid_loss": 0.142468,
+      "threshold": 0.95,
+      "valid_abnormal_f1": 0.837209,
+      "valid_abnormal_recall": 0.818182
+    },
+    {
+      "epoch": 4,
+      "train_loss": 0.209156,
+      "valid_loss": 0.161195,
+      "threshold": 0.95,
+      "valid_abnormal_f1": 0.825532,
+      "valid_abnormal_recall": 0.881818
+    },
+    {
+      "epoch": 5,
+      "train_loss": 0.121065,
+      "valid_loss": 0.204754,
+      "threshold": 0.35,
+      "valid_abnormal_f1": 0.875576,
+      "valid_abnormal_recall": 0.863636
+    },
+    {
+      "epoch": 6,
+      "train_loss": 0.092541,
+      "valid_loss": 0.250972,
+      "threshold": 0.1,
+      "valid_abnormal_f1": 0.832579,
+      "valid_abnormal_recall": 0.836364
+    },
+    {
+      "epoch": 7,
+      "train_loss": 0.080632,
+      "valid_loss": 0.395993,
+      "threshold": 0.05,
+      "valid_abnormal_f1": 0.831683,
+      "valid_abnormal_recall": 0.763636
+    },
+    {
+      "epoch": 8,
+      "train_loss": 0.051911,
+      "valid_loss": 0.265852,
+      "threshold": 0.6,
+      "valid_abnormal_f1": 0.793249,
+      "valid_abnormal_recall": 0.854545
+    }
+  ],
+  "valid_loss": 0.204754,
+  "test_loss": 0.189117,
+  "valid_binary_metrics": {
+    "threshold": 0.1,
+    "accuracy": 0.983082,
+    "abnormal_precision": 0.872727,
+    "abnormal_recall": 0.872727,
+    "abnormal_f1": 0.872727,
+    "ok_precision": 0.990939,
+    "ok_recall": 0.990939,
+    "ok_f1": 0.990939,
+    "confusion_matrix_labels": [
+      "ERROR_0",
+      "OK_1"
+    ],
+    "confusion_matrix": [
+      [
+        96,
+        14
+      ],
+      [
+        14,
+        1531
+      ]
+    ]
+  },
+  "test_binary_metrics": {
+    "threshold": 0.1,
+    "accuracy": 0.983684,
+    "abnormal_precision": 0.847619,
+    "abnormal_recall": 0.855769,
+    "abnormal_f1": 0.851675,
+    "ok_precision": 0.991643,
+    "ok_recall": 0.991091,
+    "ok_f1": 0.991367,
+    "confusion_matrix_labels": [
+      "ERROR_0",
+      "OK_1"
+    ],
+    "confusion_matrix": [
+      [
+        89,
+        15
+      ],
+      [
+        16,
+        1780
+      ]
+    ]
+  },
+  "test_source_metrics": {
+    "generated_audit": {
+      "threshold": 0.1,
+      "accuracy": 0.935484,
+      "abnormal_precision": 0.855769,
+      "abnormal_recall": 0.855769,
+      "abnormal_f1": 0.855769,
+      "ok_precision": 0.958449,
+      "ok_recall": 0.958449,
+      "ok_f1": 0.958449,
+      "confusion_matrix_labels": [
+        "ERROR_0",
+        "OK_1"
+      ],
+      "confusion_matrix": [
+        [
+          89,
+          15
+        ],
+        [
+          15,
+          346
+        ]
+      ],
+      "count": 465,
+      "true_error_count": 104,
+      "true_ok_count": 361
+    },
+    "past_exam": {
+      "threshold": 0.1,
+      "accuracy": 0.999303,
+      "abnormal_precision": 0.0,
+      "abnormal_recall": 0.0,
+      "abnormal_f1": 0.0,
+      "ok_precision": 1.0,
+      "ok_recall": 0.999303,
+      "ok_f1": 0.999651,
+      "confusion_matrix_labels": [
+        "ERROR_0",
+        "OK_1"
+      ],
+      "confusion_matrix": [
+        [
+          0,
+          0
+        ],
+        [
+          1,
+          1434
+        ]
+      ],
+      "count": 1435,
+      "true_error_count": 0,
+      "true_ok_count": 1435
+    }
+  },
+  "threshold_report": [
+    {
+      "threshold": 0.05,
+      "accuracy": 0.983684,
+      "abnormal_precision": 0.847619,
+      "abnormal_recall": 0.855769,
+      "abnormal_f1": 0.851675,
+      "ok_precision": 0.991643,
+      "ok_recall": 0.991091,
+      "ok_f1": 0.991367,
+      "confusion_matrix_labels": [
+        "ERROR_0",
+        "OK_1"
+      ],
+      "confusion_matrix": [
+        [
+          89,
+          15
+        ],
+        [
+          16,
+          1780
+        ]
+      ]
+    },
+    {
+      "threshold": 0.1,
+      "accuracy": 0.983684,
+      "abnormal_precision": 0.847619,
+      "abnormal_recall": 0.855769,
+      "abnormal_f1": 0.851675,
+      "ok_precision": 0.991643,
+      "ok_recall": 0.991091,
+      "ok_f1": 0.991367,
+      "confusion_matrix_labels": [
+        "ERROR_0",
+        "OK_1"
+      ],
+      "confusion_matrix": [
+        [
+          89,
+          15
+        ],
+        [
+          16,
+          1780
+        ]
+      ]
+    },
+    {
+      "threshold": 0.15,
+      "accuracy": 0.983684,
+      "abnormal_precision": 0.847619,
+      "abnormal_recall": 0.855769,
+      "abnormal_f1": 0.851675,
+      "ok_precision": 0.991643,
+      "ok_recall": 0.991091,
+      "ok_f1": 0.991367,
+      "confusion_matrix_labels": [
+        "ERROR_0",
+        "OK_1"
+      ],
+      "confusion_matrix": [
+        [
+          89,
+          15
+        ],
+        [
+          16,
+          1780
+        ]
+      ]
+    },
+    {
+      "threshold": 0.2,
+      "accuracy": 0.983684,
+      "abnormal_precision": 0.847619,
+      "abnormal_recall": 0.855769,
+      "abnormal_f1": 0.851675,
+      "ok_precision": 0.991643,
+      "ok_recall": 0.991091,
+      "ok_f1": 0.991367,
+      "confusion_matrix_labels": [
+        "ERROR_0",
+        "OK_1"
+      ],
+      "confusion_matrix": [
+        [
+          89,
+          15
+        ],
+        [
+          16,
+          1780
+        ]
+      ]
+    },
+    {
+      "threshold": 0.3,
+      "accuracy": 0.983158,
+      "abnormal_precision": 0.846154,
+      "abnormal_recall": 0.846154,
+      "abnormal_f1": 0.846154,
+      "ok_precision": 0.991091,
+      "ok_recall": 0.991091,
+      "ok_f1": 0.991091,
+      "confusion_matrix_labels": [
+        "ERROR_0",
+        "OK_1"
+      ],
+      "confusion_matrix": [
+        [
+          88,
+          16
+        ],
+        [
+          16,
+          1780
+        ]
+      ]
+    },
+    {
+      "threshold": 0.5,
+      "accuracy": 0.983158,
+      "abnormal_precision": 0.846154,
+      "abnormal_recall": 0.846154,
+      "abnormal_f1": 0.846154,
+      "ok_precision": 0.991091,
+      "ok_recall": 0.991091,
+      "ok_f1": 0.991091,
+      "confusion_matrix_labels": [
+        "ERROR_0",
+        "OK_1"
+      ],
+      "confusion_matrix": [
+        [
+          88,
+          16
+        ],
+        [
+          16,
+          1780
+        ]
+      ]
+    },
+    {
+      "threshold": 0.7,
+      "accuracy": 0.983158,
+      "abnormal_precision": 0.846154,
+      "abnormal_recall": 0.846154,
+      "abnormal_f1": 0.846154,
+      "ok_precision": 0.991091,
+      "ok_recall": 0.991091,
+      "ok_f1": 0.991091,
+      "confusion_matrix_labels": [
+        "ERROR_0",
+        "OK_1"
+      ],
+      "confusion_matrix": [
+        [
+          88,
+          16
+        ],
+        [
+          16,
+          1780
+        ]
+      ]
+    }
+  ],
+  "valid_final_metrics": {
+    "model_only": {
+      "threshold": 0.1,
+      "accuracy": 0.983082,
+      "abnormal_precision": 0.872727,
+      "abnormal_recall": 0.872727,
+      "abnormal_f1": 0.872727,
+      "ok_precision": 0.990939,
+      "ok_recall": 0.990939,
+      "ok_f1": 0.990939,
+      "confusion_matrix_labels": [
+        "ERROR_0",
+        "OK_1"
+      ],
+      "confusion_matrix": [
+        [
+          96,
+          14
+        ],
+        [
+          14,
+          1531
+        ]
+      ]
+    },
+    "final_with_rules": {
+      "accuracy": 0.981873,
+      "abnormal_precision": 0.833333,
+      "abnormal_recall": 0.909091,
+      "abnormal_f1": 0.869565,
+      "ok_precision": 0.993485,
+      "ok_recall": 0.987055,
+      "ok_f1": 0.99026,
+      "confusion_matrix_labels": [
+        "ERROR_0",
+        "OK_1"
+      ],
+      "confusion_matrix": [
+        [
+          100,
+          10
+        ],
+        [
+          20,
+          1525
+        ]
+      ]
+    },
+    "decision_source_count": {
+      "model": 67,
+      "rule": 10,
+      "model+rule": 43,
+      "advisory": 79,
+      "none": 1456
+    },
+    "known_holes": [
+      "역사적 사실성 자체는 BERT/규칙만으로 안정 검증하기 어렵다.",
+      "WEIRD_CHOICE는 새 보조 규칙으로도 설명되지 않는 마지막 fallback이다.",
+      "ANSWER_RESTATEMENT_SUSPECT는 모델이 오류로 본 정답 선지 중 지문 재진술 의심을 표시하는 보조 코드다.",
+      "ㄱ, ㄴ 조합형과 (가) - (나) - (다) 순서형은 선지 단위 오류 검수 대상에서 제외한다.",
+      "QUESTION_CHOICE_MISMATCH는 오탐이 많아 최종 오류 판정에서는 제외하고 참고코드로만 저장한다.",
+      "기출 정상 데이터 비중이 커서 팀원 생성 문제 문체와 분포 차이가 남아 있다.",
+      "오류 유형별 라벨 수가 적은 항목은 오류 코드 설명 성능이 제한된다."
+    ]
+  },
+  "test_final_metrics": {
+    "model_only": {
+      "threshold": 0.1,
+      "accuracy": 0.983684,
+      "abnormal_precision": 0.847619,
+      "abnormal_recall": 0.855769,
+      "abnormal_f1": 0.851675,
+      "ok_precision": 0.991643,
+      "ok_recall": 0.991091,
+      "ok_f1": 0.991367,
+      "confusion_matrix_labels": [
+        "ERROR_0",
+        "OK_1"
+      ],
+      "confusion_matrix": [
+        [
+          89,
+          15
+        ],
+        [
+          16,
+          1780
+        ]
+      ]
+    },
+    "final_with_rules": {
+      "accuracy": 0.985263,
+      "abnormal_precision": 0.827586,
+      "abnormal_recall": 0.923077,
+      "abnormal_f1": 0.872727,
+      "ok_precision": 0.995516,
+      "ok_recall": 0.988864,
+      "ok_f1": 0.992179,
+      "confusion_matrix_labels": [
+        "ERROR_0",
+        "OK_1"
+      ],
+      "confusion_matrix": [
+        [
+          96,
+          8
+        ],
+        [
+          20,
+          1776
+        ]
+      ]
+    },
+    "decision_source_count": {
+      "model": 47,
+      "rule": 11,
+      "model+rule": 58,
+      "advisory": 79,
+      "none": 1705
+    },
+    "known_holes": [
+      "역사적 사실성 자체는 BERT/규칙만으로 안정 검증하기 어렵다.",
+      "WEIRD_CHOICE는 새 보조 규칙으로도 설명되지 않는 마지막 fallback이다.",
+      "ANSWER_RESTATEMENT_SUSPECT는 모델이 오류로 본 정답 선지 중 지문 재진술 의심을 표시하는 보조 코드다.",
+      "ㄱ, ㄴ 조합형과 (가) - (나) - (다) 순서형은 선지 단위 오류 검수 대상에서 제외한다.",
+      "QUESTION_CHOICE_MISMATCH는 오탐이 많아 최종 오류 판정에서는 제외하고 참고코드로만 저장한다.",
+      "기출 정상 데이터 비중이 커서 팀원 생성 문제 문체와 분포 차이가 남아 있다.",
+      "오류 유형별 라벨 수가 적은 항목은 오류 코드 설명 성능이 제한된다."
+    ]
+  }
+}
