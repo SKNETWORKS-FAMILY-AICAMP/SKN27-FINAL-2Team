@@ -298,6 +298,9 @@ etl/preprocessing/neo4j/**/*.csv
 !etl/preprocessing/neo4j/seed/
 !etl/preprocessing/neo4j/seed/**/*.csv
 
+# Human-reviewed goldset CSV files are source-of-truth data
+!etl/preprocessing/neo4j/goldset/human_review_csv/*.csv
+
 # Neo4j import generated CSV files
 storage/neo4j/neo4j_import/*.csv
 storage/neo4j/neo4j_import/**/*.csv
@@ -316,8 +319,28 @@ etl/raw_data/한국민족문화대백과사전/articles_detail.jsonl
 etl/preprocessing/neo4j/output/**/*.json
 etl/preprocessing/neo4j/output/**/*.jsonl
 
+# LLM extraction and Entity Resolution responses
+!etl/preprocessing/neo4j/output/internal/term_extraction/term_extraction_checkpoint.jsonl
+!etl/preprocessing/neo4j/output/internal/model_review/term_identity_review_checkpoint.jsonl
+!etl/preprocessing/neo4j/output/internal/model_review/term_identity_model_decisions.jsonl
+!etl/preprocessing/neo4j/output/internal/model_review/term_identity_model_failures.csv
+!etl/preprocessing/neo4j/output/internal/model_review/term_identity_model_run_manifest.json
+
 # Entity Resolution goldset runtime snapshots, checkpoints, and evaluations
 etl/preprocessing/neo4j/goldset/internal/**
+
+# Goldset and related-entity LLM responses
+!etl/preprocessing/neo4j/goldset/internal/
+!etl/preprocessing/neo4j/goldset/internal/model/
+!etl/preprocessing/neo4j/goldset/internal/model/term_identity_review_checkpoint.jsonl
+!etl/preprocessing/neo4j/goldset/internal/model/term_identity_model_decisions.jsonl
+!etl/preprocessing/neo4j/goldset/internal/model/term_identity_model_failures.csv
+!etl/preprocessing/neo4j/goldset/internal/model/term_identity_model_run_manifest.json
+!etl/preprocessing/neo4j/goldset/internal/related_entity/
+!etl/preprocessing/neo4j/goldset/internal/related_entity/term_identity_review_checkpoint.jsonl
+!etl/preprocessing/neo4j/goldset/internal/related_entity/term_identity_model_decisions.jsonl
+!etl/preprocessing/neo4j/goldset/internal/related_entity/term_identity_model_failures.csv
+!etl/preprocessing/neo4j/goldset/internal/related_entity/term_identity_model_run_manifest.json
 
 # Generated AKS encyclopedia RAG artifacts
 etl/preprocessing/history/processed/aks_encyclopedia.chunks.jsonl
