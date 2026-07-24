@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>himate | 노트</title>
-  <link rel="stylesheet" href="/static/user/css/wrong_note.css" />
+  <link rel="stylesheet" href="/static/user/css/wrong_note.css?v=note-image-choice-3" />
   <link rel="stylesheet" href="/static/himate.css" />
   <link rel="stylesheet" href="/static/layout.css" />
 </head>
@@ -161,6 +161,12 @@
         .replaceAll(">", "&gt;")
         .replaceAll('"', "&quot;")
         .replaceAll("'", "&#39;");
+    }
+
+    function assetUrl(path) {
+      if (!path) return "";
+      if (/^(https?:)?\/\//.test(path) || path.startsWith("/")) return path;
+      return `/${path}`;
     }
 
     function getCookie(name) {
@@ -399,13 +405,26 @@
       resultBadge.className = `result-state ${record.isCorrect ? "correct" : "wrong"}`;
       timeSpentBadge.textContent = record.timeSpent;
       questionTitle.textContent = record.title;
-      questionSource.textContent = record.source || "별도 지문이 없는 문제입니다.";
+      const source = record.source || "별도 지문이 없는 문제입니다.";
+      const questionImage = record.questionImagePath
+        ? `<img class="note-question-image" src="${escapeHtml(assetUrl(record.questionImagePath))}" alt="문항 자료 이미지">`
+        : "";
+      questionSource.innerHTML = `${escapeHtml(source)}${questionImage}`;
+      choiceList.classList.toggle(
+        "has-image-choices",
+        record.choices.some((choice) => Boolean(choice.imagePath)),
+      );
       choiceList.innerHTML = record.choices.map((choice) => {
         const classes = [
           choice.number === record.answer ? "correct" : "",
           choice.number === record.userAnswer ? "selected" : "",
+          choice.imagePath ? "has-image" : "",
         ].filter(Boolean).join(" ");
-        return `<li class="${classes}"><span>${choice.number}</span><b>${escapeHtml(choice.content)}</b></li>`;
+        const choiceImage = choice.imagePath
+          ? `<img class="note-choice-image" src="${escapeHtml(assetUrl(choice.imagePath))}" alt="${choice.number}번 선택지 이미지">`
+          : "";
+        const choiceText = choice.content ? `<b>${escapeHtml(choice.content)}</b>` : "";
+        return `<li class="${classes}"><span>${choice.number}</span><div class="note-choice-body">${choiceImage}${choiceText}</div></li>`;
       }).join("");
 
       const wrongItems = record.wrongs?.length

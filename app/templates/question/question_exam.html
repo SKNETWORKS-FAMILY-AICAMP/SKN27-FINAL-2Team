@@ -4,8 +4,8 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>himate | {% if exam_mode == 'diagnostic' %}진단평가{% else %}문제풀이{% endif %}</title>
-  <link rel="stylesheet" href="/static/question/css/exam.css?v=exam-4" />
-  <link rel="stylesheet" href="../../static/question/css/exam.css?v=exam-4" />
+  <link rel="stylesheet" href="/static/question/css/exam.css?v=exam-image-scroll-6" />
+  <link rel="stylesheet" href="../../static/question/css/exam.css?v=exam-image-scroll-6" />
   <link rel="stylesheet" href="/static/himate.css" />
   <link rel="stylesheet" href="/static/layout.css?v=answered-marker-2" />
 </head>
@@ -144,6 +144,7 @@
     const questionTitle = document.getElementById("questionTitle");
     const questionSource = document.getElementById("questionSource");
     const choiceList = document.getElementById("choiceList");
+    const questionCard = document.querySelector(".question-card");
     const progressFill = document.getElementById("progressFill");
     const progressText = document.getElementById("progressText");
     const numberGrid = document.getElementById("numberGrid");
@@ -667,6 +668,9 @@
         ? `<img class="question-asset-image" src="${escapeHtml(assetUrl(question.questionImagePath))}" alt="문항 자료 이미지">`
         : "";
       questionSource.innerHTML = `${sourceHtml}${questionImageHtml}`;
+      const hasImageChoices = question.choices.some((choice) => Boolean(choice.imagePath));
+      choiceList.classList.toggle("has-image-choices", hasImageChoices);
+      questionCard.classList.toggle("has-image-choices", hasImageChoices);
       currentQuestionStartedAt = Date.now();
       progressFill.style.width = `${((currentIndex + 1) / questions.length) * 100}%`;
       progressText.textContent = `${currentIndex + 1} / ${questions.length}`;
@@ -678,7 +682,7 @@
           : "";
         const choiceText = choice.content ? `<b>${escapeHtml(choice.content)}</b>` : "";
         return `
-          <button type="button" class="choice${selected ? " selected" : ""}" data-choice="${number}" aria-pressed="${selected ? "true" : "false"}">
+          <button type="button" class="choice${choice.imagePath ? " has-image" : ""}${selected ? " selected" : ""}" data-choice="${number}" aria-pressed="${selected ? "true" : "false"}">
             <span>${number}</span><div class="choice-body">${choiceImage}${choiceText}</div>
           </button>
         `;

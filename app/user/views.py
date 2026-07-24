@@ -43,6 +43,7 @@ def _note_choice_display_data(session, question, options, selected_no):
         choices.append({
             "number": display_no,
             "content": option.content,
+            "imagePath": option.choice_image_path or "",
             "isAnswer": option.is_answer,
             "explanation": option.choice_explanation or "",
         })
@@ -407,6 +408,7 @@ def wrong_note(request):
             "savedAt": record.saved_at.isoformat() if record.saved_at else "",
             "title": question.content,
             "source": question.passage or question.image_caption or "",
+            "questionImagePath": question.question_image_path or "",
             "choices": choices,
             "answer": answer_no,
             "userAnswer": user_answer,
