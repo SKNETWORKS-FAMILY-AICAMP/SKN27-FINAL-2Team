@@ -224,7 +224,16 @@ CREATE TABLE IF NOT EXISTS study_plan_mypage (
     end_date            DATE            NULL,                      -- 계획 종료일
     completion_rate     DOUBLE PRECISION NOT NULL DEFAULT 0,       -- 완료율
     archived_at         TIMESTAMPTZ     NULL,                      -- 과거 계획 처리 시각
-    deleted_at          TIMESTAMPTZ     NULL                       -- 삭제 처리 시각
+    deleted_at          TIMESTAMPTZ     NULL,                      -- 삭제 처리 시각
+    weekly_report_data  JSONB           NULL,
+    CONSTRAINT study_plan_mypage_weekly_report_data_object_check
+        CHECK (
+            weekly_report_data IS NULL
+            OR COALESCE(
+                jsonb_typeof(weekly_report_data) = 'object',
+                FALSE
+            )
+        )
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS study_plan_mypage_user_active_uidx

@@ -1,32 +1,36 @@
-# PostgreSQL Setup Guide
+# PostgreSQL 설정 및 데이터 적용 가이드
 
-Run every command from the project root:
+모든 명령은 프로젝트 루트에서 실행합니다.
 
 ```powershell
 cd C:\dev\project\SKN27-FINAL-2Team
 ```
 
-## First setup
+## 1. 최초 DB 구성
 
-Create `.env` if it does not exist:
+### 1.1 `.env` 파일 생성
+
+`.env` 파일이 없다면 예시 파일을 복사합니다.
 
 ```powershell
 Copy-Item .env.example .env
 ```
 
-Start PostgreSQL:
+### 1.2 PostgreSQL 컨테이너 실행
 
 ```powershell
 docker compose -p storage --env-file .env -f storage/postgresql/docker-compose.yml up -d
 ```
 
-Create initial tables:
+### 1.3 초기 테이블 생성
+
+새 DB를 처음 구성할 때만 `init.sql`을 실행합니다.
 
 ```powershell
 Get-Content storage/postgresql/schema/init.sql | docker exec -i skn27-postgres psql -U himate -d history_rag
 ```
 
-Check Django DB connection:
+### 1.4 Django DB 연결 확인
 
 ```powershell
 cd app
@@ -34,60 +38,79 @@ python manage.py check
 cd ..
 ```
 
-## Existing DB after pull
+## 2. 기존 DB에 최신 스키마 반영
 
-기존 DB를 사용하는 경우 아래 SQL 파일 하나만 실행해서 최신 컬럼 변경사항을 반영합니다:
+이미 사용 중인 DB가 있다면 `init.sql`을 다시 실행하지 말고, 아래 SQL만 실행합니다.
 
 ```powershell
 Get-Content storage/postgresql/schema/alter_apply_latest.sql | docker exec -i skn27-postgres psql -U himate -d history_rag
 ```
 
-`alter_apply_latest.sql` applies:
+`alter_apply_latest.sql`은 여러 번 실행해도 안전하도록 작성합니다.
+
+현재 반영 대상:
 
 ```text
-exam_data table for preprocessed past exam source data
+exam_data 테이블
 questions.question_no
 questions.passage
 questions.image_caption
 questions.question_image_path
 questions.question_subtype
 questions.question_type VARCHAR(50)
-drop questions.exam_round
-drop questions.exam_level
-drop questions.visual_note
-drop questions.parse_status
+questions.exam_round 제거
+questions.exam_level 제거
+questions.visual_note 제거
+questions.parse_status 제거
 solve_sessions.recorded_date
+solve_sessions.review_type
 solve_records.time_spent_ms
-drop solve_records.time_spent_sec
+solve_records.studyplan_id
+solve_records.study_plan_block_id
+solve_records.time_spent_sec 제거
+study_plan_mypage 상태/버전/기간/완료율/보관/삭제 컬럼
+study_plan_mypage 사용자별 active 계획 유일성 인덱스
+study_plan_mypage.weekly_report_data
+ml_trend_top5 테이블
 ```
 
-## Past Exam Source Table
+## 3. 과거 시험 원본 테이블
 
-`exam_data` stores preprocessed past exam question data before it is converted
-for service tables, ML features, or RAG chunks.
+`exam_data`는 과거 기출 데이터를 서비스 테이블, ML feature, RAG chunk로 변환하기 전에 보관하는 원본성 테이블입니다.
 
-Initial import source:
+초기 import 원본:
 
 ```text
 C:\dev\project\SKN27-FINAL-2Team\ai\ml\ML_han_v1.json
 C:\dev\project\SKN27-FINAL-2Team\ai\ml\output\ml_han_features_v1.csv
 ```
 
-Current initial data uses the already-preprocessed `ML_han_v1.json` for the
-question text, material text, choices, answer choice, and answer number.
+현재 초기 데이터는 이미 전처리된 `ML_han_v1.json`을 사용합니다.
 
-The classification labels below are matched by `round_no + question_no` from
-`ml_han_features_v1.csv`, so `exam_data` follows the same labels used by the
-current ML feature dataset:
+사용 데이터:
 
 ```text
-era, topic, question_type, question_subtype
+문제 본문
+자료 본문
+선택지
+정답 선택지
+정답 번호
 ```
 
-Later versions should replace this with data extracted again from the original
-past exam files, while keeping the same `exam_data` table shape.
+분류 라벨은 `ml_han_features_v1.csv`에서 `round_no + question_no` 기준으로 매칭합니다.
 
-Main columns:
+분류 라벨:
+
+```text
+era
+topic
+question_type
+question_subtype
+```
+
+이후 버전에서는 원본 기출 파일에서 다시 추출한 데이터를 사용하되, `exam_data` 테이블 구조는 유지합니다.
+
+주요 컬럼:
 
 ```text
 round_no, question_no
@@ -99,53 +122,55 @@ has_image, image_meta_json
 answer_explanation, choice_explanations_json, explanation_source
 ```
 
-Create/update the table schema first:
+### 3.1 테이블 스키마 생성/갱신
 
 ```powershell
 Get-Content storage/postgresql/schema/alter_apply_latest.sql | docker exec -i skn27-postgres psql -U himate -d history_rag
 ```
 
-Check conversion without writing to DB:
+### 3.2 DB 저장 없이 변환 확인
 
 ```powershell
 python storage/postgresql/import_exam_data.py --dry-run
 ```
 
-Use a different feature CSV if needed:
+### 3.3 다른 feature CSV 사용
 
 ```powershell
 python storage/postgresql/import_exam_data.py --features-csv ai/ml/output/ml_han_features_v1.csv --dry-run
 ```
 
-Import all `ML_han_v1.json` rows into `exam_data`:
+### 3.4 전체 데이터 import
+
+`ML_han_v1.json` 전체 행을 `exam_data`에 저장합니다.
 
 ```powershell
 python storage/postgresql/import_exam_data.py --truncate
 ```
 
-Import only specific rounds:
+### 3.5 특정 회차만 import
 
 ```powershell
 python storage/postgresql/import_exam_data.py --rounds 74 75 76 77 --truncate
 ```
 
-Notes:
+주의사항:
 
 ```text
---truncate clears exam_data only.
-questions, question_options, solve_records are not touched.
-Rows are upserted by round_no + question_no.
+--truncate는 exam_data만 비웁니다.
+questions, question_options, solve_records는 변경하지 않습니다.
+데이터는 round_no + question_no 기준으로 upsert됩니다.
 ```
 
-## Import 78th test questions
+## 4. 78회 테스트 문제 import
 
-See:
+자세한 내용은 아래 문서를 확인합니다.
 
 ```text
 test/CJ/test_q/README.md
 ```
 
-Short command flow:
+실행 흐름:
 
 ```powershell
 python test/CJ/test_q/etl_exam_test_questions.py --answers
@@ -155,72 +180,43 @@ python test/CJ/test_q/etl_exam_test_questions.py --classify
 python test/CJ/test_q/etl_exam_test_questions.py --import-db
 ```
 
-Important: `--import-db` truncates `solve_records`, `question_options`, and `questions`.
-
-## Useful commands
-
-Check container:
-
-```powershell
-docker ps -a --filter "name=skn27-postgres"
-```
-
-Connect to DB:
-
-```powershell
-docker exec -it skn27-postgres psql -U himate -d history_rag
-```
-
-If container name conflicts:
-
-```powershell
-docker rm skn27-postgres
-docker compose -p storage --env-file .env -f storage/postgresql/docker-compose.yml up -d
-```
-
-Do not use `docker compose down -v` unless you intentionally want to remove DB data.
-
-## inspectdb
-
-Use `inspectdb` only when creating Django models from existing DB tables for the first time.
-
-For later column changes, update these files together:
+주의:
 
 ```text
-storage/postgresql/schema/init.sql
-storage/postgresql/schema/alter_apply_latest.sql
-app/question/models.py
+--import-db는 solve_records, question_options, questions를 비웁니다.
+실행 전 기존 데이터 삭제가 의도한 동작인지 반드시 확인합니다.
 ```
 
-## Import ML trend TOP5 data
+## 5. ML 최신 트렌드 TOP5 데이터 import
 
-Use this when importing:
+import 대상 CSV:
 
 ```text
 ai/ml/reports/trend_top5_for_db_2026-07-18.csv
 ```
 
-Create or update the table first:
+### 5.1 테이블 생성/갱신
 
 ```powershell
 Get-Content storage/postgresql/schema/alter_apply_latest.sql | docker exec -i skn27-postgres psql -U himate -d history_rag
 ```
 
-Copy the CSV file into the PostgreSQL container:
+### 5.2 CSV 파일을 PostgreSQL 컨테이너로 복사
 
 ```powershell
 docker cp "C:\dev\project\SKN27-FINAL-2Team\ai\ml\reports\trend_top5_for_db_2026-07-18.csv" skn27-postgres:/tmp/trend_top5_for_db_2026-07-18.csv
 ```
 
-Connect to PostgreSQL:
+### 5.3 PostgreSQL 접속
 
 ```powershell
 docker exec -it skn27-postgres psql -U himate -d history_rag
 ```
 
-Run this inside `psql`:
+### 5.4 psql 안에서 import 실행
 
 ```sql
+-- CSV를 먼저 임시 테이블로 적재합니다.
 CREATE TEMP TABLE ml_trend_top5_import (
     target_round INT,
     recent5_rounds TEXT,
@@ -241,8 +237,10 @@ CREATE TEMP TABLE ml_trend_top5_import (
     ratio_percent DOUBLE PRECISION
 );
 
+-- 컨테이너에 복사한 CSV를 임시 테이블로 읽어옵니다.
 \copy ml_trend_top5_import FROM '/tmp/trend_top5_for_db_2026-07-18.csv' WITH (FORMAT csv, HEADER true, ENCODING 'UTF8');
 
+-- 임시 테이블 데이터를 실제 서비스 테이블에 upsert합니다.
 INSERT INTO ml_trend_top5 (
     target_round,
     recent5_rounds,
@@ -298,20 +296,20 @@ DO UPDATE SET
     ratio_percent = EXCLUDED.ratio_percent;
 ```
 
-Check import count:
+### 5.5 import 건수 확인
 
 ```sql
 SELECT COUNT(*)
 FROM ml_trend_top5;
 ```
 
-Expected result:
+예상 결과:
 
 ```text
 480
 ```
 
-Check recent trend rows:
+### 5.6 최근 5회차 실제 트렌드 확인
 
 ```sql
 SELECT
@@ -331,15 +329,56 @@ WHERE source = 'recent5_actual'
 ORDER BY target_round, trend_type, rank_no;
 ```
 
-Usage notes:
+### 5.7 값 의미
 
 ```text
-source = recent5_actual  : recent 5-round actual-label trend rows
-source = predicted       : model-classified rows for validation
-source = actual          : target-round actual-label rows for comparison
+source = recent5_actual  : 최근 5회차 실제 라벨 기반 트렌드
+source = predicted       : 모델 예측 라벨 기반 검증 데이터
+source = actual          : 예측 대상 회차의 실제 라벨 비교 데이터
 
-trend_type = era_topic_train : era + integrated topic TOP5
-trend_type = era             : era TOP5
-trend_type = topic_train     : integrated topic TOP5
-trend_type = topic           : detailed topic TOP5
+trend_type = era_topic_train : 시대 + 통합 주제 TOP5
+trend_type = era             : 시대 TOP5
+trend_type = topic_train     : 통합 주제 TOP5
+trend_type = topic           : 세부 주제 TOP5
 ```
+
+## 6. 자주 쓰는 명령
+
+### 6.1 컨테이너 상태 확인
+
+```powershell
+docker ps -a --filter "name=skn27-postgres"
+```
+
+### 6.2 DB 접속
+
+```powershell
+docker exec -it skn27-postgres psql -U himate -d history_rag
+```
+
+### 6.3 컨테이너 이름 충돌 시 재생성
+
+```powershell
+docker rm skn27-postgres
+docker compose -p storage --env-file .env -f storage/postgresql/docker-compose.yml up -d
+```
+
+주의:
+
+```text
+DB 데이터를 삭제하려는 의도가 아니라면 docker compose down -v를 사용하지 않습니다.
+```
+
+## 7. inspectdb 사용 기준
+
+`inspectdb`는 기존 DB 테이블에서 Django 모델을 처음 만들 때만 사용합니다.
+
+이후 컬럼 변경은 관련 파일을 함께 직접 수정합니다.
+
+```text
+storage/postgresql/schema/init.sql
+storage/postgresql/schema/alter_apply_latest.sql
+app/question/models.py
+app/analytics/models.py
+```
+

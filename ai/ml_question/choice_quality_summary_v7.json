@@ -1,0 +1,120 @@
+{
+  "version": "v7_choice_level_refined",
+  "purpose": "선지 1개 단위로 오류 유무를 분류한다. BERT가 판단 가능한 선지 자체 오류만 학습하고, 중복/복수정답은 규칙/후처리로 분리한다.",
+  "input_data": "passage/material + question + one choice + is_answer",
+  "y_value": "binary label. label=0이면 선지 오류 있음, label=1이면 선지 오류 없음. error_codes는 보조 설명 정보다.",
+  "why": "사용자의 역할은 문항 전체 폐기가 아니라 선지의 오류 유무 판단이므로, 문항 전체 오류를 선지 오류로 억지 라벨링하지 않는다.",
+  "past_exam_source": "C:\\dev\\project\\SKN27-FINAL-2Team\\ai\\ml\\ML_han_v1.json",
+  "full_audit_source": "C:\\Users\\Playdata\\Downloads\\사용불가_문항_1144_API전수검사\\전체_1144문항_API_전수검사.json",
+  "additional_audit_source": "C:\\Users\\Playdata\\Downloads\\사용불가_문항_1144_API전수검사\\08_추가분류_511문항\\추가분류_511문항_전체.json",
+  "additional_note": "추가분류 511문항 파일은 v7 BERT 학습에는 직접 사용하지 않는다. 대부분 문항/메타데이터 단위 사유이기 때문이다.",
+  "past_exam_questions": 1600,
+  "past_exam_rows": 8000,
+  "generated_audit_summary": {
+    "source_questions": 1144,
+    "bert_supervised_questions": 479,
+    "skipped_questions": 665,
+    "rule_only_questions": 137,
+    "used_category_count": {
+      "ANSWER_FACT_EXPOSED": 368,
+      "CHOICE_FORM": 154,
+      "MISSING_MARKER": 2,
+      "local_answer_length_bias": 4,
+      "SCRIPT_META": 9
+    },
+    "rule_only_category_count": {
+      "DUPLICATE_NONUNIQUE": 49
+    },
+    "excluded_category_count": {
+      "MATERIAL_EVIDENCE_REVIEW": 51,
+      "CHOICE_FORM:no_choice_target": 3,
+      "MISSING_MARKER:no_choice_target": 4,
+      "RUNPOD_FAILURE": 5
+    },
+    "skip_reason_count": {
+      "no_bert_choice_error": 665
+    }
+  },
+  "rule_only_question_count": 137,
+  "total_rows": 10395,
+  "split_count": {
+    "train": 8400,
+    "test": 1995
+  },
+  "label_count": {
+    "0_error": 535,
+    "1_ok": 9860
+  },
+  "split_label_count": {
+    "train": {
+      "0_error": 435,
+      "1_ok": 7965
+    },
+    "test": {
+      "0_error": 100,
+      "1_ok": 1895
+    }
+  },
+  "source_type_count": {
+    "generated_audit": 2395,
+    "past_exam": 8000
+  },
+  "error_code_count": {
+    "ANSWER_IN_PASSAGE": 368,
+    "ANSWER_LENGTH_BIAS": 4,
+    "CHOICE_FORMAT_ERROR": 184,
+    "QUESTION_MARKER_MISMATCH": 2
+  },
+  "split_error_code_count": {
+    "train": {
+      "ANSWER_IN_PASSAGE": 294,
+      "ANSWER_LENGTH_BIAS": 3,
+      "CHOICE_FORMAT_ERROR": 156,
+      "QUESTION_MARKER_MISMATCH": 2
+    },
+    "test": {
+      "ANSWER_IN_PASSAGE": 74,
+      "ANSWER_LENGTH_BIAS": 1,
+      "CHOICE_FORMAT_ERROR": 28
+    }
+  },
+  "bert_error_code_names_ko": {
+    "ANSWER_IN_PASSAGE": "정답 선지가 지문/질문에 노출됨",
+    "ANSWER_LENGTH_BIAS": "정답 선지가 유독 길거나 짧음",
+    "CHOICE_FORMAT_ERROR": "선지 문장/형식 오류",
+    "QUESTION_MARKER_MISMATCH": "지문에 없는 표식/밑줄/(가) 등을 참조함"
+  },
+  "rule_only_error_code_names_ko": {
+    "DUPLICATE_OR_SIMILAR_CHOICE": "중복되거나 거의 같은 선지가 있음",
+    "NO_OR_MULTI_ANSWER": "정답이 없거나 2개 이상임"
+  },
+  "bert_target_codes": [
+    "ANSWER_IN_PASSAGE",
+    "ANSWER_LENGTH_BIAS",
+    "CHOICE_FORMAT_ERROR",
+    "QUESTION_MARKER_MISMATCH",
+    "WEIRD_CHOICE"
+  ],
+  "rule_only_codes": [
+    "DUPLICATE_OR_SIMILAR_CHOICE",
+    "NO_OR_MULTI_ANSWER"
+  ],
+  "excluded_categories": [
+    "CURRENT_PROVENANCE_GAP",
+    "DIFFICULTY_MISMATCH",
+    "EXPERIMENT_VARIANT_DUPLICATE",
+    "LOW_EXAM_QUALITY",
+    "MATERIAL_EVIDENCE_REVIEW",
+    "MISSING_DIFFICULTY_METADATA",
+    "NO_MATCH",
+    "RUNPOD_FAILURE",
+    "STEM_CONTENT_MISMATCH"
+  ],
+  "files": [
+    "choice_quality_train_v7.json",
+    "choice_quality_test_v7.json",
+    "choice_quality_data_v7.json",
+    "choice_quality_skipped_v7.json",
+    "choice_quality_rule_only_v7.json"
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "source": "C:\\dev\\project\\SKN27-FINAL-2Team\\ai\\ml\\ML_han_v1.json",
+  "total": 1600,
+  "split_count": {
+    "train": 1295,
+    "test": 305
+  },
+  "files": [
+    "mc_data.json",
+    "mc_train.json",
+    "mc_test.json"
+  ]
+}

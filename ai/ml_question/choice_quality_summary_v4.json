@@ -1,0 +1,129 @@
+{
+  "version": "v4_api_audit_1144",
+  "purpose": "기출 정상 선지와 API 전수검사로 사용불가 판정된 팀원 생성 문항을 이용해 선지 단위 2차 검수 모델을 학습한다.",
+  "input_data": "passage/material + question + one choice + is_answer",
+  "y_value": "binary label. label=0이면 이상, label=1이면 정상. error_codes는 오류 사유 표시용 보조 정보다.",
+  "why": "문제 생성 파이프라인이 통과시킨 문항 중 정답 노출, 선지 형식 오류, 정답 유일성 오류 등을 2차 보안 장치로 잡기 위함.",
+  "past_exam_source": "C:\\dev\\project\\SKN27-FINAL-2Team\\ai\\ml\\ML_han_v1.json",
+  "full_audit_source": "C:\\Users\\Playdata\\Downloads\\사용불가_문항_1144_API전수검사\\전체_1144문항_API_전수검사.json",
+  "additional_audit_source": "C:\\Users\\Playdata\\Downloads\\사용불가_문항_1144_API전수검사\\08_추가분류_511문항\\추가분류_511문항_전체.json",
+  "raw_full_category_count": {
+    "ANSWER_FACT_EXPOSED": 368,
+    "CHOICE_FORM": 165,
+    "DUPLICATE_NONUNIQUE": 137,
+    "MATERIAL_EVIDENCE_REVIEW": 133,
+    "MISSING_MARKER": 11,
+    "NO_MATCH": 511,
+    "RUNPOD_FAILURE": 7,
+    "SCRIPT_META": 11
+  },
+  "raw_additional_category_count": {
+    "CURRENT_PROVENANCE_GAP": 44,
+    "DIFFICULTY_MISMATCH": 8,
+    "EXPERIMENT_VARIANT_DUPLICATE": 343,
+    "LOW_EXAM_QUALITY": 77,
+    "MISSING_DIFFICULTY_METADATA": 3,
+    "STEM_CONTENT_MISMATCH": 36
+  },
+  "past_exam_questions": 1600,
+  "past_exam_rows": 8000,
+  "generated_audit_summary": {
+    "source_questions": 1144,
+    "supervised_questions": 692,
+    "skipped_questions": 452,
+    "weak_label_questions": 77,
+    "used_category_count": {
+      "LOW_EXAM_QUALITY": 77,
+      "ANSWER_FACT_EXPOSED": 368,
+      "CHOICE_FORM": 165,
+      "STEM_CONTENT_MISMATCH": 36,
+      "DUPLICATE_NONUNIQUE": 137,
+      "MISSING_MARKER": 11,
+      "SCRIPT_META": 11
+    },
+    "excluded_category_count": {
+      "NO_MATCH": 113,
+      "MATERIAL_EVIDENCE_REVIEW": 81,
+      "RUNPOD_FAILURE": 5
+    },
+    "skip_reason_count": {
+      "no_choice_supervision": 452
+    }
+  },
+  "total_rows": 11460,
+  "split_count": {
+    "train": 9210,
+    "test": 2250
+  },
+  "label_count": {
+    "0_error": 1277,
+    "1_ok": 10183
+  },
+  "split_label_count": {
+    "train": {
+      "0_error": 1017,
+      "1_ok": 8193
+    },
+    "test": {
+      "0_error": 260,
+      "1_ok": 1990
+    }
+  },
+  "source_type_count": {
+    "generated_audit": 3460,
+    "past_exam": 8000
+  },
+  "error_code_count": {
+    "ANSWER_IN_PASSAGE": 368,
+    "CHOICE_FORMAT_ERROR": 197,
+    "DUPLICATE_OR_SIMILAR_CHOICE": 317,
+    "NO_OR_MULTI_ANSWER": 317,
+    "QUESTION_CHOICE_MISMATCH": 36,
+    "QUESTION_FORMAT_ERROR": 47,
+    "WEIRD_CHOICE": 385
+  },
+  "split_error_code_count": {
+    "train": {
+      "ANSWER_IN_PASSAGE": 294,
+      "CHOICE_FORMAT_ERROR": 164,
+      "DUPLICATE_OR_SIMILAR_CHOICE": 245,
+      "NO_OR_MULTI_ANSWER": 245,
+      "QUESTION_CHOICE_MISMATCH": 25,
+      "QUESTION_FORMAT_ERROR": 27,
+      "WEIRD_CHOICE": 315
+    },
+    "test": {
+      "ANSWER_IN_PASSAGE": 74,
+      "CHOICE_FORMAT_ERROR": 33,
+      "DUPLICATE_OR_SIMILAR_CHOICE": 72,
+      "NO_OR_MULTI_ANSWER": 72,
+      "QUESTION_CHOICE_MISMATCH": 11,
+      "QUESTION_FORMAT_ERROR": 20,
+      "WEIRD_CHOICE": 70
+    }
+  },
+  "error_code_names_ko": {
+    "ANSWER_IN_PASSAGE": "정답 사실이 지문/질문에 노출됨",
+    "CHOICE_FORMAT_ERROR": "선지 형식/문장 완결성 오류",
+    "DUPLICATE_OR_SIMILAR_CHOICE": "중복 또는 유사 선지",
+    "NO_OR_MULTI_ANSWER": "정답이 없거나 복수 정답 가능",
+    "QUESTION_CHOICE_MISMATCH": "발문·지문·정답축 불일치",
+    "QUESTION_FORMAT_ERROR": "발문/표식 형식 오류",
+    "WEIRD_CHOICE": "시험 문항 품질 부족 또는 부적절 선지"
+  },
+  "excluded_categories": [
+    "CURRENT_PROVENANCE_GAP",
+    "DIFFICULTY_MISMATCH",
+    "EXPERIMENT_VARIANT_DUPLICATE",
+    "MATERIAL_EVIDENCE_REVIEW",
+    "MISSING_DIFFICULTY_METADATA",
+    "NO_MATCH",
+    "RUNPOD_FAILURE"
+  ],
+  "files": [
+    "choice_quality_train_v4.json",
+    "choice_quality_test_v4.json",
+    "choice_quality_data_v4.json",
+    "choice_quality_skipped_v4.json"
+  ]
+}
