@@ -263,6 +263,34 @@ link status와 문항별 재판정 여부 정확도를 별도로 계산한다. L
 오분리가 아니라 `deferred_gold_identity_pair_count`로 집계한다. macro F1은 실제 gold support가 있는 역할만
 평균한다. category·후보 수·검색 구성·다원천 지지·충돌 여부별 결과도 함께 저장한다.
 
+`proposal_identity_pair_recall`은 모델 원본 제안이 gold identity pair를 빠뜨리지 않은
+비율이다. gold pair를 모두 제안하면서 오병합 pair를 추가해도 recall은 1.0이 될 수 있으므로
+proposal precision과 false merge를 함께 확인한다.
+
+`verified_identity_pair_recall`은 `VERIFIED` case 내부의 조건부 recall이다. 게이트가 보류한
+gold pair는 FN이 아니라 `deferred_gold_identity_pair_count`로 분리되므로 전체 자동 병합
+coverage가 아니다. 전체 자동 승인 pair recall은 다음 식으로 해석한다.
+
+```text
+verified TP / (verified TP + verified FN + deferred gold pair)
+```
+
+평가 JSON은 이 값을 `auto_accepted_identity_pair_recall`로 직접 기록한다.
+자동 승인 안전성은 `auto_accepted_identity_pair_precision`, 보류 비율은
+`deferred_gold_identity_pair_rate`로 확인한다. 기존 `verified_identity_pair_*`는
+호환성을 위해 유지하고, 같은 조건부 의미를 `conditional_verified_identity_pair_*`로도
+기록한다.
+
+identity pair gate는 정책으로 두 방식을 지원한다.
+
+| 방식 | 의미 |
+|---|---|
+| `complete_graph` | 대안 안의 모든 pair가 직접 `merge_eligible=true`여야 함 |
+| `connected_graph` | 강한 충돌 없이 양성 edge로 모든 멤버가 연결되면 통과 |
+
+현재 활성 방식은 `connected_graph`다. 강한 pair 충돌과 pair 행 누락은 두 방식 모두
+`INVALID`이며, 연결 규칙은 category 충돌·term alignment·EntityType 검토를 완화하지 않는다.
+
 기출문제 용어는 상류에서 전달받은 입력이므로 이 단계에서 OCR을 수행하거나 원문을 덮어쓰지
 않는다. 모델이 입력 표기를 다른 역사 용어로 교정해 제안한 경우에도 입력 용어와 최소 한 개
 identity member 원천명 사이에 강한 이름 정합성이 없으면

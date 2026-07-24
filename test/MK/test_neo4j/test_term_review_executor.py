@@ -1,7 +1,9 @@
 import sys
 import tempfile
 import unittest
+from json import dumps, loads
 from pathlib import Path
+from types import SimpleNamespace
 
 
 class TermReviewExecutorTest(unittest.TestCase):
@@ -18,6 +20,7 @@ class TermReviewExecutorTest(unittest.TestCase):
             build_execution_plan,
             execute_term_review_tasks,
             load_json_schema,
+            request_term_decision,
             validate_executor_decision,
             validate_structured_output_schema,
         )
@@ -28,6 +31,7 @@ class TermReviewExecutorTest(unittest.TestCase):
         cls.build_execution_plan = staticmethod(build_execution_plan)
         cls.execute_term_review_tasks = staticmethod(execute_term_review_tasks)
         cls.load_json_schema = staticmethod(load_json_schema)
+        cls.request_term_decision = staticmethod(request_term_decision)
         cls.validate_executor_decision = staticmethod(
             validate_executor_decision
         )
@@ -101,6 +105,41 @@ class TermReviewExecutorTest(unittest.TestCase):
             decision["prompt_version"],
             semantic_policy["prompt_version"],
         )
+
+    def test_request_uses_current_review_metadata_without_mutating_task(self):
+        task = self.make_task(1)
+        task["review_model"] = "previous-model"
+        task["prompt_version"] = "previous-prompt"
+        semantic_policy = self.policy["entity_resolution"]["semantic_review"]
+        captured_arguments: dict = {}
+
+        class FakeResponses:
+            def create(self, **request_arguments):
+                captured_arguments.update(request_arguments)
+                return SimpleNamespace(
+                    id="response-1",
+                    output_text=dumps(
+                        self_test.make_decision(task),
+                        ensure_ascii=False,
+                    ),
+                    usage=None,
+                )
+
+        self_test = self
+        client = SimpleNamespace(responses=FakeResponses())
+        self.request_term_decision(client, task, "prompt", {}, self.policy)
+        request_task = loads(captured_arguments["input"])
+
+        self.assertEqual(
+            request_task["review_model"],
+            semantic_policy["term_model"]["model"],
+        )
+        self.assertEqual(
+            request_task["prompt_version"],
+            semantic_policy["prompt_version"],
+        )
+        self.assertEqual(task["review_model"], "previous-model")
+        self.assertEqual(task["prompt_version"], "previous-prompt")
 
     def test_missing_candidate_is_rejected_before_checkpoint(self):
         task = self.make_task(1)

@@ -245,10 +245,10 @@ $contexts |
   --dry-run
 ```
 
-현재 활성 검수본은 100개 case다. `gold_case_order` 1~20은 기존 `COMPLETE`,
-21~100은 신규 `NOT_STARTED`다. 신규 80건을 모두 검수하기 전 dry-run의
-`BLOCKED_BY_GOLD_VALIDATION`과 `CASE_REVIEW_NOT_COMPLETE: 80`은 정상이다.
-`internal/evaluation`의 기존 지표는 신규 검수·import를 마칠 때까지 이전 20건 평가 결과다.
+현재 활성 검수본은 100개 case다. 실제 완료 상태는
+`goldset/human_review_csv/human_review_cases.csv`의 `case_review_status`로 확인한다.
+미완료 case가 있으면 dry-run의 `BLOCKED_BY_GOLD_VALIDATION`과
+`CASE_REVIEW_NOT_COMPLETE`가 정상적으로 실행을 막는다.
 
 주요 확인 위치는 다음과 같다.
 
@@ -259,17 +259,76 @@ $contexts |
 | `goldset/internal/evaluation/model_vs_gold_metrics.json` | 모델 대 사람 정답 전체 지표 | 합의한 승인 기준으로 판단 |
 | `goldset/internal/evaluation/model_vs_gold_case_results.csv` | case별 오병합·오분리 원인 | 대표 실패 사례 직접 확인 |
 | `goldset/internal/evaluation/model_vs_gold_candidate_role_metrics.csv` | 후보 역할별 precision·recall·F1 | 취약 역할 확인 |
+| `goldset/human_review_csv/role_conflict_manual_review.csv` | 사람과 모델의 `EVIDENCE_ONLY`·`REJECTED` 충돌 후보 | target·원천 문맥을 재검토하고 `PENDING` 해소 |
 
 현재 정책에는 production 전체 호출을 자동 승인하는 고정 숫자 임계값이 없다. 특히 다음을
 사람이 보고 전체 term LLM 실행 여부를 승인해야 한다.
 
 - identity pair precision·recall·F1
 - false merge와 false split 사례
-- 후보 역할 정확도와 macro F1
+- 후보 역할 정확도, 원래 macro F1, weighted F1, 희소 역할 제외 macro F1과 역할별 support
 - link status 정확도
 - validation error가 비어 있는지
 
+pair 지표는 다음처럼 구분해 읽는다.
+
+| 지표 | 의미 | 주의점 |
+|---|---|---|
+| `proposal_identity_pair_recall` | 모델 원본 제안이 gold pair를 빠뜨리지 않은 비율 | 오병합이 있어도 recall은 1.0일 수 있으므로 precision과 함께 본다. |
+| `proposal_identity_pair_precision` | 모델 원본 제안 pair 중 gold와 일치한 비율 | raw proposal을 자동 병합할 수 있는지 판단하는 핵심 지표다. |
+| `verified_identity_pair_precision` | 게이트가 실제 승인한 pair의 정확도 | 자동 병합 안전성 지표다. |
+| `verified_identity_pair_recall` | `VERIFIED` case 내부에서 승인된 gold pair의 기존 조건부 recall | 보류 pair는 분모에서 제외되므로 전체 자동처리율이 아니다. |
+| `conditional_verified_identity_pair_recall` | 위 조건부 recall을 의미가 드러나는 이름으로 다시 기록 | 기존 필드와 같은 값이다. |
+| `auto_accepted_identity_pair_recall` | 전체 gold pair 중 게이트가 자동 승인한 정답 pair 비율 | 실제 무인 자동 병합 coverage로 사용한다. |
+| `auto_accepted_identity_pair_precision` | 자동 승인된 pair 중 gold와 일치한 비율 | 자동 병합 안전성으로 사용한다. |
+| `deferred_gold_identity_pair_count` | 게이트가 확정하지 않은 gold pair 수 | 전체 gold pair와 함께 자동 병합 coverage를 계산한다. |
+| `deferred_gold_identity_pair_rate` | 전체 gold pair 중 보류된 비율 | 자동화되지 않은 범위를 직접 보여 준다. |
+
+평가 JSON의 `auto_accepted_identity_pair_recall`은 다음 식으로 계산한다.
+
+```text
+자동 승인 pair recall
+= verified true positive
+  / (verified true positive + verified false negative + deferred gold pair)
+```
+
+v3 평가에서는 `24 / (24 + 0 + 35) = 0.406780`이다. 따라서
+`verified_identity_pair_recall=1.0`은 자동 승인 범위 내부에서는 오분리가 없다는 뜻이고,
+전체 gold pair의 약 40.7%가 자동 승인됐다는 뜻은 아니다.
+
+보류 원인은 `deferred_gold_pair_gate_status_counts`,
+`deferred_gold_pair_error_case_counts`, `deferred_gold_pair_error_pair_counts`에서 별도
+CSV 없이 집계해 확인한다.
+
+현재 identity pair gate는 `config/review_goldset.json`의
+`identity_pair_gate.active_evidence_mode=connected_graph`를 사용한다. 3개 이상 멤버에서
+모든 pair가 직접 양성일 필요는 없지만, 강한 충돌이 없는 `merge_eligible=true` edge로
+전체 멤버가 하나의 연결 그래프를 이뤄야 한다.
+실제 평가에 적용된 값은 metrics JSON의 `identity_pair_gate_policy_version`과
+`identity_pair_gate_evidence_mode`에서 확인한다.
+
+- 강한 pair 충돌과 pair 행 누락은 연결 여부와 관계없이 계속 `INVALID`다.
+- 2개 멤버 대안은 edge가 하나뿐이므로 기존 완전 그래프와 동일하다.
+- 회귀 비교가 필요하면 정책값을 `complete_graph`로 바꿔 같은 decision을 재평가한다.
+- v3 기준 연결 그래프 적용 후 자동 승인 precision은 1.0을 유지했고,
+  자동 승인 recall은 `0.406780 → 0.457627`로 증가했다.
+
 `--goldset` 실제 실행은 API 호출과 파일 갱신을 포함하므로 승인 후에만 `--dry-run`을 뺀다.
+프롬프트 버전이나 프롬프트 본문이 바뀌면 기존 checkpoint를 재사용하지 않으므로 dry-run의
+`pending_task_count`를 확인한 뒤 실제 호출을 승인한다.
+
+실제 `--goldset` 실행이 평가를 끝내면 같은 실행에서
+`role_conflict_manual_review.csv`가 갱신된다. 큐만 다시 만들 때는 다음 명령을 실행한다.
+같은 task·candidate에 이미 작성한 사람 입력 컬럼은 보존된다.
+
+```powershell
+.\.venv\Scripts\python.exe `
+  etl/preprocessing/neo4j/entity_resolution/role_conflict_review.py
+```
+
+이 큐는 gold를 자동 변경하지 않는다. 재검토 결과가 gold와 다르면
+`human_review_candidates.csv`의 같은 `term_review_task_id`·`source_candidate_id` 행을
+수정하고 검증을 다시 실행한다.
 
 `goldset/build_gold_set.py`는 gate 확인 명령이 아니라 표본 생성·확장 명령이다.
 운영 전처리에서 term task가 생성된 뒤 활성 검수본을 정책 목표 100건까지 맞출 때 다음처럼

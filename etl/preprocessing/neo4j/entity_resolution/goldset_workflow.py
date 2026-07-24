@@ -44,6 +44,10 @@ from entity_resolution.semantic_review import (
 from entity_resolution.related_entity_resolution import (
     select_seed_backed_alternatives,
 )
+from entity_resolution.role_conflict_review import (
+    build_role_conflict_review_table,
+    write_role_conflict_review_table,
+)
 from run_related_entity_resolution import (
     resolve_related_entity_paths,
     run_related_entity_resolution,
@@ -274,6 +278,19 @@ def run_goldset_workflow(
         evaluation_outputs,
         str(paths["evaluation_directory"]),
         policy,
+    )
+    role_conflict_review = build_role_conflict_review_table(
+        import_outputs["gold_decisions"],
+        gold_execution["decisions"],
+        gold_tasks,
+        str(paths["role_conflict_manual_review"]),
+        policy,
+    )
+    evaluation_paths["role_conflict_manual_review"] = (
+        write_role_conflict_review_table(
+            role_conflict_review,
+            str(paths["role_conflict_manual_review"]),
+        )
     )
 
     related_manifest: dict[str, object] = {

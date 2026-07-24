@@ -1,7 +1,7 @@
 {
   "entity_resolution": {
     "semantic_review": {
-      "prompt_version": "entity-semantic-review-v1",
+      "prompt_version": "entity-semantic-review-v3",
       "problem_prompt_version": "problem-entity-selection-v1",
       "term_model": {
         "model": "gpt-5.6-terra",
@@ -65,11 +65,17 @@
       ],
       "term_source_alignment": {
         "automatic_acceptance_modes": [
-          "normalized_exact",
-          "bidirectional_containment",
-          "character_multiset_match",
-          "ordered_subsequence_expansion"
-        ]
+          "normalized_exact"
+        ],
+        "require_each_identity_member": true
+      },
+      "identity_pair_gate": {
+        "policy_version": "identity-pair-gate-v2",
+        "active_evidence_mode": "connected_graph",
+        "evidence_modes": {
+          "complete": "complete_graph",
+          "connected": "connected_graph"
+        }
       },
       "structured_output_schema": {
         "unsupported_keywords": [
@@ -97,6 +103,31 @@
       },
       "gold_evaluation": {
         "zero_division_value": 0,
+        "macro_f1_excluded_roles": [
+          "AMBIGUOUS"
+        ],
+        "role_conflict_review": {
+          "compared_roles": [
+            "EVIDENCE_ONLY",
+            "REJECTED"
+          ],
+          "key_fields": [
+            "term_review_task_id",
+            "source_candidate_id"
+          ],
+          "editable_fields": [
+            "reviewed_role",
+            "review_status",
+            "manual_reason",
+            "reviewer",
+            "reviewed_at"
+          ],
+          "pending_status": "PENDING",
+          "review_statuses": [
+            "PENDING",
+            "COMPLETE"
+          ]
+        },
         "output_files": {
           "metrics": "model_vs_gold_metrics.json",
           "case_results": "model_vs_gold_case_results.csv",
@@ -127,6 +158,7 @@
           "model_prediction_directory": "goldset/internal/model",
           "evaluation_directory": "goldset/internal/evaluation",
           "related_model_prediction_directory": "goldset/internal/related_entity",
+          "role_conflict_manual_review": "goldset/human_review_csv/role_conflict_manual_review.csv",
           "term_review_prompt": "config/prompts/term_resolution_review.md",
           "term_review_schema": "config/schemas/term_resolution_decision.schema.json",
           "manifest_file": "goldset_workflow_manifest.json"

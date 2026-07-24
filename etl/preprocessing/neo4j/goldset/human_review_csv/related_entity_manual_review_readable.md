@@ -1,0 +1,10753 @@
+# 관련 엔티티 수동 검수 — 읽기용 문서
+
+> 이 파일은 `related_entity_manual_review.csv`를 사람이 읽기 쉽게 펼친 스냅샷입니다.
+> 실제 검수 결과는 원본 CSV에서 수정해야 하며, 이 Markdown을 수정해도 파이프라인에는 반영되지 않습니다.
+
+## 전체 현황
+
+- 전체 case: **59건**
+- PENDING: **56건**
+- VERIFIED: **3건**
+- JSON 파싱 오류: **0건**
+- 후보 미분류·중복 분류 오류: **0건**
+
+분류 표기: `CANONICAL`은 동일 실체, `EVIDENCE_ONLY`는 관계 근거, `REJECTED`는 무관 후보, `AMBIGUOUS`는 미확정 후보입니다.
+
+## Case 목록
+
+| 번호 | 용어 | 상태 | 게이트 사유 | 후보 | Canonical 대안 | Evidence | Rejected | Ambiguous |
+|---:|---|---|---|---:|---:|---:|---:|---:|
+| 001 | [향교](#case-001) | PENDING | AMBIGUOUS_SOURCE_REMAINS | 10 | 1 | 6 | 1 | 1 |
+| 002 | [창경궁 경춘전](#case-002) | PENDING | INSUFFICIENT_PAIR_EVIDENCE | 2 | 1 | 0 | 0 | 0 |
+| 003 | [창경궁 환경전](#case-003) | PENDING | INSUFFICIENT_PAIR_EVIDENCE | 2 | 1 | 0 | 0 | 0 |
+| 004 | [창경궁 관천대](#case-004) | PENDING | INSUFFICIENT_PAIR_EVIDENCE, TERM_SOURCE_ALIGNMENT_REVIEW_REQUIRED | 6 | 1 | 0 | 4 | 0 |
+| 005 | [창경궁 자격루](#case-005) | PENDING | INSUFFICIENT_PAIR_EVIDENCE, TERM_SOURCE_ALIGNMENT_REVIEW_REQUIRED | 6 | 1 | 0 | 4 | 0 |
+| 006 | [경상우병영](#case-006) | PENDING | TERM_SOURCE_ALIGNMENT_REVIEW_REQUIRED | 17 | 1 | 2 | 13 | 0 |
+| 007 | [초도 유적](#case-007) | PENDING | INSUFFICIENT_PAIR_EVIDENCE | 6 | 1 | 0 | 4 | 0 |
+| 008 | [상노대도패총](#case-008) | PENDING | INSUFFICIENT_PAIR_EVIDENCE, TERM_SOURCE_ALIGNMENT_REVIEW_REQUIRED | 7 | 1 | 0 | 5 | 0 |
+| 009 | [권채](#case-009) | PENDING | AMBIGUOUS_SOURCE_REMAINS | 9 | 0 | 0 | 3 | 6 |
+| 010 | [박윤덕](#case-010) | PENDING | AMBIGUOUS_SOURCE_REMAINS | 4 | 0 | 0 | 0 | 4 |
+| 011 | [강국](#case-011) | PENDING | AMBIGUOUS_SOURCE_REMAINS | 19 | 0 | 0 | 0 | 19 |
+| 012 | [만민공동회](#case-012) | PENDING | ENTITY_TYPE_REVIEW_REQUIRED | 2 | 1 | 0 | 0 | 0 |
+| 013 | [절영도](#case-013) | PENDING | INSUFFICIENT_PAIR_EVIDENCE | 4 | 1 | 1 | 1 | 0 |
+| 014 | [임진북예성남정맥](#case-014) | PENDING | INSUFFICIENT_PAIR_EVIDENCE | 2 | 1 | 0 | 0 | 0 |
+| 015 | [3강](#case-015) | PENDING | AMBIGUOUS_SOURCE_REMAINS | 24 | 0 | 0 | 0 | 24 |
+| 016 | [가야](#case-016) | PENDING | INSUFFICIENT_PAIR_EVIDENCE | 10 | 1 | 1 | 5 | 0 |
+| 017 | [조병철](#case-017) | PENDING | AMBIGUOUS_SOURCE_REMAINS | 5 | 0 | 0 | 0 | 5 |
+| 018 | [한흥근](#case-018) | PENDING | AMBIGUOUS_SOURCE_REMAINS | 2 | 0 | 0 | 0 | 2 |
+| 019 | [노인동맹단](#case-019) | VERIFIED | INSUFFICIENT_PAIR_EVIDENCE | 13 | 1 | 6 | 5 | 0 |
+| 020 | [사이토총독저격사건](#case-020) | VERIFIED | INSUFFICIENT_PAIR_EVIDENCE, TERM_SOURCE_ALIGNMENT_REVIEW_REQUIRED | 8 | 1 | 4 | 2 | 0 |
+| 021 | [정재달](#case-021) | PENDING | INSUFFICIENT_PAIR_EVIDENCE, TERM_SOURCE_ALIGNMENT_REVIEW_REQUIRED | 3 | 1 | 0 | 0 | 0 |
+| 022 | [불랑기자포](#case-022) | PENDING | INSUFFICIENT_PAIR_EVIDENCE | 4 | 1 | 0 | 2 | 0 |
+| 023 | [부여용](#case-023) | PENDING | AMBIGUOUS_SOURCE_REMAINS | 6 | 0 | 0 | 2 | 4 |
+| 024 | [국채보상단연회](#case-024) | PENDING | INSUFFICIENT_PAIR_EVIDENCE | 5 | 1 | 1 | 2 | 0 |
+| 025 | [고려일보](#case-025) | VERIFIED | ENTITY_TYPE_REVIEW_REQUIRED, INSUFFICIENT_PAIR_EVIDENCE | 4 | 1 | 1 | 1 | 0 |
+| 026 | [김흠돌](#case-026) | PENDING | INSUFFICIENT_PAIR_EVIDENCE | 5 | 1 | 2 | 0 | 0 |
+| 027 | [교정](#case-027) | PENDING | AMBIGUOUS_SOURCE_REMAINS | 22 | 0 | 0 | 21 | 1 |
+| 028 | [미국인 회사](#case-028) | PENDING | ENTITY_TYPE_REVIEW_REQUIRED, INSUFFICIENT_PAIR_EVIDENCE | 21 | 1 | 4 | 15 | 0 |
+| 029 | [미국의 소리](#case-029) | PENDING | ENTITY_TYPE_REVIEW_REQUIRED | 16 | 1 | 5 | 10 | 0 |
+| 030 | [개태도광사](#case-030) | PENDING | ENTITY_TYPE_REVIEW_REQUIRED | 3 | 1 | 0 | 1 | 0 |
+| 031 | [단군신화](#case-031) | PENDING | ENTITY_TYPE_REVIEW_REQUIRED, INSUFFICIENT_PAIR_EVIDENCE | 6 | 1 | 4 | 0 | 0 |
+| 032 | [김성원](#case-032) | PENDING | AMBIGUOUS_SOURCE_REMAINS | 14 | 0 | 0 | 0 | 14 |
+| 033 | [이휘령](#case-033) | PENDING | AMBIGUOUS_SOURCE_REMAINS | 6 | 0 | 0 | 0 | 6 |
+| 034 | [관음경](#case-034) | PENDING | ENTITY_TYPE_REVIEW_REQUIRED | 4 | 1 | 1 | 1 | 0 |
+| 035 | [지혜](#case-035) | PENDING | AMBIGUOUS_SOURCE_REMAINS | 7 | 0 | 0 | 5 | 2 |
+| 036 | [동모산성](#case-036) | PENDING | INSUFFICIENT_PAIR_EVIDENCE, TERM_SOURCE_ALIGNMENT_REVIEW_REQUIRED | 7 | 1 | 1 | 4 | 0 |
+| 037 | [땅굴](#case-037) | PENDING | ENTITY_TYPE_REVIEW_REQUIRED | 2 | 1 | 0 | 0 | 0 |
+| 038 | [비무장지대(영화)](#case-038) | PENDING | TERM_SOURCE_ALIGNMENT_REVIEW_REQUIRED | 4 | 1 | 0 | 3 | 0 |
+| 039 | [권경우](#case-039) | PENDING | AMBIGUOUS_SOURCE_REMAINS | 7 | 0 | 0 | 0 | 7 |
+| 040 | [황국신민화정책](#case-040) | PENDING | INSUFFICIENT_PAIR_EVIDENCE, TERM_SOURCE_ALIGNMENT_REVIEW_REQUIRED | 10 | 1 | 7 | 1 | 0 |
+| 041 | [연해주크라스키노성지](#case-041) | PENDING | ENTITY_TYPE_REVIEW_REQUIRED, INSUFFICIENT_PAIR_EVIDENCE, TERM_SOURCE_ALIGNMENT_REVIEW_REQUIRED | 4 | 1 | 0 | 2 | 0 |
+| 042 | [박수년](#case-042) | PENDING | AMBIGUOUS_SOURCE_REMAINS | 3 | 0 | 0 | 0 | 3 |
+| 043 | [박인계](#case-043) | PENDING | AMBIGUOUS_SOURCE_REMAINS | 2 | 0 | 0 | 0 | 2 |
+| 044 | [박봉석](#case-044) | PENDING | AMBIGUOUS_SOURCE_REMAINS | 3 | 0 | 0 | 0 | 3 |
+| 045 | [비타협적민족주의](#case-045) | PENDING | INSUFFICIENT_PAIR_EVIDENCE | 18 | 1 | 6 | 9 | 0 |
+| 046 | [민족주의사학](#case-046) | PENDING | INSUFFICIENT_PAIR_EVIDENCE | 8 | 1 | 3 | 3 | 0 |
+| 047 | [녹도목](#case-047) | PENDING | ENTITY_TYPE_REVIEW_REQUIRED | 7 | 1 | 0 | 6 | 0 |
+| 048 | [도목채](#case-048) | PENDING | ENTITY_TYPE_REVIEW_REQUIRED | 7 | 1 | 0 | 6 | 0 |
+| 049 | [단도목](#case-049) | PENDING | AMBIGUOUS_SOURCE_REMAINS | 2 | 0 | 0 | 0 | 2 |
+| 050 | [도목장](#case-050) | PENDING | ENTITY_TYPE_REVIEW_REQUIRED | 3 | 1 | 0 | 1 | 0 |
+| 051 | [봉천여조선변민교역장정](#case-051) | PENDING | ENTITY_TYPE_REVIEW_REQUIRED | 1 | 1 | 0 | 0 | 0 |
+| 052 | [국조속오례의](#case-052) | PENDING | TERM_SOURCE_ALIGNMENT_REVIEW_REQUIRED | 6 | 1 | 2 | 1 | 0 |
+| 053 | [흥부전](#case-053) | PENDING | AMBIGUOUS_SOURCE_REMAINS | 2 | 0 | 0 | 0 | 2 |
+| 054 | [동편제흥보가](#case-054) | PENDING | ENTITY_TYPE_REVIEW_REQUIRED | 6 | 1 | 1 | 4 | 0 |
+| 055 | [오효신](#case-055) | PENDING | AMBIGUOUS_SOURCE_REMAINS | 2 | 0 | 0 | 0 | 2 |
+| 056 | [6월 항쟁](#case-056) | PENDING | TERM_SOURCE_ALIGNMENT_REVIEW_REQUIRED | 6 | 1 | 0 | 3 | 0 |
+| 057 | [독립신문(1945)](#case-057) | PENDING | TERM_SOURCE_ALIGNMENT_REVIEW_REQUIRED | 15 | 1 | 0 | 13 | 0 |
+| 058 | [독립신문(1919 블라디보스토크)](#case-058) | PENDING | TERM_SOURCE_ALIGNMENT_REVIEW_REQUIRED | 4 | 1 | 0 | 2 | 0 |
+| 059 | [대한신문(1919 북간도)](#case-059) | PENDING | TERM_SOURCE_ALIGNMENT_REVIEW_REQUIRED | 8 | 1 | 0 | 6 | 0 |
+
+---
+
+<a id="case-001"></a>
+## 001. 향교 · PENDING
+
+- Case ID: `related-resolution-case:a3f5979d490c9ecfd1a2`
+- 모델 게이트: `NEEDS_MANUAL_REVIEW`
+- 검증 사유: `AMBIGUOUS_SOURCE_REMAINS`
+- 후보 수: 10개
+
+### 모델 판정 사유
+
+> 문제 문맥 표본이 없으므로 정규 용어 자체와 직접 정의가 일치하는 원천에 한정하여, 고려~조선시대 지방 유학교육 관학기관이라는 일반 제도 ‘향교’를 target으로 판정했다. 양양·동복·정의·교하·가산향교는 모두 지명 결합의 구체적 개별 시설로서 target과 동일한 일반 제도는 아니나, 원천 정의에서 해당 시설이 향교임이 명시되어 사례 관계 증거로 분류했다. 향교전은 이름의 포함·별칭 일치와 달리 장학기금이므로 제외했으며, 설명 없는 문화재 표제 항목은 동일성 또는 관계를 확정할 정보가 부족하다.
+
+### 현재 후보 분류
+
+| 역할 | 원천·표제 | Candidate ID |
+|---|---|---|
+| CANONICAL · 향교(鄕校) | AKS · 향교 | `source-candidate:f2f78ad43cdc4977ea4a` |
+| CANONICAL · 향교(鄕校) | THESAURUS · 향교 | `source-candidate:27ee82f57fd70d302eb1` |
+| AMBIGUOUS | THESAURUS · 향교 | `source-candidate:b8122e0592455008ee1e` |
+| EVIDENCE_ONLY | THESAURUS · 양양향교 | `source-candidate:a604936ab21805e2ad18` |
+| EVIDENCE_ONLY | THESAURUS · 동복향교 | `source-candidate:50d7e54c6b014a3bda7f` |
+| EVIDENCE_ONLY | THESAURUS · 정의향교 | `source-candidate:93e7618956ef5752708d` |
+| REJECTED | AKS · 섬학전 | `source-candidate:d315433dd9f789c302d0` |
+| EVIDENCE_ONLY | AKS · 교하향교 | `source-candidate:836f8d49aa45111e1d36` |
+| EVIDENCE_ONLY | AKS · 양양향교 | `source-candidate:d5e440c2f6ce69bd35d5` |
+| EVIDENCE_ONLY | AKS · 가산향교 | `source-candidate:f3ac93efdcb79e1948c7` |
+
+### Canonical 대안
+
+#### 대안 1. 향교(鄕校)
+
+- Entity type: `Institution`
+- 동일 실체 후보:
+  - `source-candidate:f2f78ad43cdc4977ea4a` — AKS · 향교
+  - `source-candidate:27ee82f57fd70d302eb1` — THESAURUS · 향교
+- 판정 근거: 문제 문맥 표본은 없으나, 정규 용어 ‘향교’는 고려·조선시대 지방의 유학교육을 위한 관학 교육기관이라는 일반 제도를 가리킨다. 두 원천은 모두 鄕校 표기, 고려~조선 시대, 지방 교육기관이라는 동일한 정의를 직접 제시한다.
+
+### Evidence only
+
+- `source-candidate:a604936ab21805e2ad18` — THESAURUS · 양양향교
+- `source-candidate:50d7e54c6b014a3bda7f` — THESAURUS · 동복향교
+- `source-candidate:93e7618956ef5752708d` — THESAURUS · 정의향교
+- `source-candidate:836f8d49aa45111e1d36` — AKS · 교하향교
+- `source-candidate:d5e440c2f6ce69bd35d5` — AKS · 양양향교
+- `source-candidate:f3ac93efdcb79e1948c7` — AKS · 가산향교
+
+### Rejected
+
+- `source-candidate:d315433dd9f789c302d0` — AKS · 섬학전
+
+### Ambiguous
+
+- `source-candidate:b8122e0592455008ee1e` — THESAURUS · 향교
+
+<details>
+<summary><strong>후보 10개의 원천 문맥 펼치기</strong></summary>
+
+#### 후보 1. 향교 · AKS
+
+- Candidate ID: `source-candidate:f2f78ad43cdc4977ea4a`
+- 현재 분류: **CANONICAL · 향교(鄕校)**
+- Source record ID: `AKS:ARTICLE:E0062880:sha256-704d8ea620c542f5`
+- Entity type: `Concept`
+- 한자: 鄕校
+- 시대: 고려, 고려 전기, 조선
+- 원천 문맥:
+  - `headword`: 향교
+  - `origin`: 鄕校
+  - `headword_origin`: 향교(鄕校)
+  - `primary_type`: 제도/법령·제도
+  - `era`: 고려/고려 전기 | 조선
+  - `definition`: 고려와 조선시대의 지방에서 유학을 교육하기 위하여 설립된 관학교육기관.
+
+#### 후보 2. 향교 · THESAURUS
+
+- Candidate ID: `source-candidate:27ee82f57fd70d302eb1`
+- 현재 분류: **CANONICAL · 향교(鄕校)**
+- Source record ID: `THESAURUS:TERM:8776:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 鄕校
+- 시대: 고려시대-조선시대
+- 원천 문맥:
+  - `term_name`: 향교
+  - `hanja`: 鄕校
+  - `era`: 고려시대-조선시대
+  - `thesaurus_category`: 교육>전근대교육기관
+  - `description`: 고려시대-조선시대의 지방 교육 기관.
+  - `term_year`: ?-?
+
+#### 후보 3. 향교 · THESAURUS
+
+- Candidate ID: `source-candidate:b8122e0592455008ee1e`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `THESAURUS:TERM:91224:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: (없음)
+- 시대: (없음)
+- 원천 문맥:
+  - `term_name`: 향교
+  - `term_remark`: 문화재
+
+#### 후보 4. 양양향교 · THESAURUS
+
+- Candidate ID: `source-candidate:a604936ab21805e2ad18`
+- 현재 분류: **EVIDENCE_ONLY**
+- Source record ID: `THESAURUS:TERM:6295895:sha256-1022516a18f91e61`
+- Entity type: `Heritage`
+- 한자: 襄陽鄕校
+- 시대: 고려후기
+- 원천 문맥:
+  - `term_name`: 양양향교
+  - `hanja`: 襄陽鄕校
+  - `era`: 고려후기
+  - `thesaurus_category`: 문화재
+  - `description`: 고려 충혜왕 때 창건한 향교로 강원도 양양군 양양읍 임천리에 있음.
+  - `term_year`: ?
+
+#### 후보 5. 동복향교 · THESAURUS
+
+- Candidate ID: `source-candidate:50d7e54c6b014a3bda7f`
+- 현재 분류: **EVIDENCE_ONLY**
+- Source record ID: `THESAURUS:TERM:10486700:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 同福鄕校
+- 시대: 조선시대
+- 원천 문맥:
+  - `term_name`: 동복향교
+  - `hanja`: 同福鄕校
+  - `era`: 조선시대
+  - `thesaurus_category`: 교육>전근대교육기관
+  - `description`: 조선시대 전라남도 화순군 동복면 연월리에 만들어진 향교.
+  - `term_year`: ?-?
+
+#### 후보 6. 정의향교 · THESAURUS
+
+- Candidate ID: `source-candidate:93e7618956ef5752708d`
+- 현재 분류: **EVIDENCE_ONLY**
+- Source record ID: `THESAURUS:TERM:10487489:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 旌義鄕校
+- 시대: 근세-현대
+- 원천 문맥:
+  - `term_name`: 정의향교
+  - `hanja`: 旌義鄕校
+  - `era`: 근세-현대
+  - `thesaurus_category`: 교육>전근대교육기관
+  - `description`: 1416년(태종 16) 제주도 성산읍 고성리에 세워진 향교.
+  - `term_year`: 1416-?
+
+#### 후보 7. 섬학전 · AKS
+
+- Candidate ID: `source-candidate:d315433dd9f789c302d0`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0029146:sha256-704d8ea620c542f5`
+- Entity type: `Concept`
+- 한자: 贍學錢
+- 시대: 고려, 고려 전기, 고려 후기
+- 원천 문맥:
+  - `headword`: 섬학전
+  - `aliases`: 향교전
+  - `origin`: 贍學錢
+  - `headword_origin`: 섬학전(贍學錢)
+  - `primary_type`: 제도/법령·제도
+  - `era`: 고려/고려 전기 | 고려/고려 후기
+  - `definition`: 고려시대 안향(安珦)의 제의에 따라 국학생(國學生)들의 학비를 보조하기 위하여 관리들이 품위에 따라 낸 장학기금(奬學基金).
+
+#### 후보 8. 교하향교 · AKS
+
+- Candidate ID: `source-candidate:836f8d49aa45111e1d36`
+- 현재 분류: **EVIDENCE_ONLY**
+- Source record ID: `AKS:ARTICLE:E0005606:sha256-704d8ea620c542f5`
+- Entity type: `Heritage`
+- 한자: 交河鄕校
+- 시대: 조선, 조선 전기
+- 원천 문맥:
+  - `headword`: 교하향교
+  - `origin`: 交河鄕校
+  - `headword_origin`: 교하향교(交河鄕校)
+  - `primary_type`: 유적/건물
+  - `era`: 조선/조선 전기
+  - `definition`: 경기도 파주시에 있는 조선전기에 창건된 향교. 교육시설.
+
+#### 후보 9. 양양향교 · AKS
+
+- Candidate ID: `source-candidate:d5e440c2f6ce69bd35d5`
+- 현재 분류: **EVIDENCE_ONLY**
+- Source record ID: `AKS:ARTICLE:E0035663:sha256-704d8ea620c542f5`
+- Entity type: `Heritage`
+- 한자: 襄陽鄕校
+- 시대: 고려, 고려 후기
+- 원천 문맥:
+  - `headword`: 양양향교
+  - `origin`: 襄陽鄕校
+  - `headword_origin`: 양양향교(襄陽鄕校)
+  - `primary_type`: 유적/건물
+  - `era`: 고려/고려 후기
+  - `definition`: 강원특별자치도 양양군 양양읍에 있는 고려후기 제28대 충혜왕 당시 창건된 향교. 교육시설.
+
+#### 후보 10. 가산향교 · AKS
+
+- Candidate ID: `source-candidate:f3ac93efdcb79e1948c7`
+- 현재 분류: **EVIDENCE_ONLY**
+- Source record ID: `AKS:ARTICLE:E0000224:sha256-704d8ea620c542f5`
+- Entity type: `Heritage`
+- 한자: 嘉山鄕校
+- 시대: 조선, 조선 전기, 조선 후기
+- 원천 문맥:
+  - `headword`: 가산향교
+  - `origin`: 嘉山鄕校
+  - `headword_origin`: 가산향교(嘉山鄕校)
+  - `primary_type`: 유적/건물
+  - `era`: 조선/조선 전기 | 조선/조선 후기
+  - `definition`: 북한 평안북도 운전군 가산면 봉두산(鳳頭山) 기슭에 있는 현유배향과 지방민 교육을 위해 설립된 향교. 교육시설.
+
+</details>
+
+### 사람 검수 입력
+
+- Manual status: `PENDING`
+- Manual reason: (미입력)
+- Reviewer: (미입력)
+- Reviewed at: (미입력)
+
+[목록으로 돌아가기](#case-목록)
+
+---
+
+<a id="case-002"></a>
+## 002. 창경궁 경춘전 · PENDING
+
+- Case ID: `related-resolution-case:79065822dfed240e7a49`
+- 모델 게이트: `NEEDS_MANUAL_REVIEW`
+- 검증 사유: `INSUFFICIENT_PAIR_EVIDENCE`
+- 후보 수: 2개
+
+### 모델 판정 사유
+
+> 두 후보는 띄어쓰기 차이만 있는 동일 명칭이며, 모두 창경궁 소속 조선시대 전각이라는 구체적 식별 단서가 일치한다. 별도의 동명 건물·확장 표제어·상이한 시대 또는 장소를 가리키는 후보는 입력에 없다.
+
+### 현재 후보 분류
+
+| 역할 | 원천·표제 | Candidate ID |
+|---|---|---|
+| CANONICAL · 창경궁 경춘전 | AKS · 창경궁 경춘전 | `source-candidate:5ebd9b1de66b9d9e4310` |
+| CANONICAL · 창경궁 경춘전 | THESAURUS · 창경궁경춘전 | `source-candidate:f82a29ff92b68049319f` |
+
+### Canonical 대안
+
+#### 대안 1. 창경궁 경춘전
+
+- Entity type: `Heritage`
+- 동일 실체 후보:
+  - `source-candidate:5ebd9b1de66b9d9e4310` — AKS · 창경궁 경춘전
+  - `source-candidate:f82a29ff92b68049319f` — THESAURUS · 창경궁경춘전
+- 판정 근거: 문제 문맥 표본은 없으나 canonical term 자체가 창경궁의 전각인 경춘전을 가리킨다. 두 원천은 모두 한자 표기 昌慶宮 景春殿/昌慶宮景春殿, 조선시대 창경궁 전각이라는 유형·소속·시대가 일치한다. AKS는 조선 후기 중건 전각으로, THESAURUS는 1484년 창건·임진왜란 후 1616년 중건·1830년 화재 뒤 1834년 재건 이력을 제시하며, 서로 충돌하지 않고 동일 건물의 건립·중건 이력을 보완한다.
+
+### Evidence only
+
+- 없음
+
+### Rejected
+
+- 없음
+
+### Ambiguous
+
+- 없음
+
+<details>
+<summary><strong>후보 2개의 원천 문맥 펼치기</strong></summary>
+
+#### 후보 1. 창경궁 경춘전 · AKS
+
+- Candidate ID: `source-candidate:5ebd9b1de66b9d9e4310`
+- 현재 분류: **CANONICAL · 창경궁 경춘전**
+- Source record ID: `AKS:ARTICLE:E0055320:sha256-704d8ea620c542f5`
+- Entity type: `Heritage`
+- 한자: 昌慶宮, 景春殿
+- 시대: 조선, 조선 후기
+- 원천 문맥:
+  - `headword`: 창경궁 경춘전
+  - `origin`: 昌慶宮 景春殿
+  - `headword_origin`: 창경궁 경춘전(昌慶宮 景春殿)
+  - `primary_type`: 유적/건물
+  - `era`: 조선/조선 후기
+  - `definition`: 서울특별시 종로구에 있는 조선후기 에 중건된 전각.
+
+#### 후보 2. 창경궁경춘전 · THESAURUS
+
+- Candidate ID: `source-candidate:f82a29ff92b68049319f`
+- 현재 분류: **CANONICAL · 창경궁 경춘전**
+- Source record ID: `THESAURUS:TERM:35662411:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 昌慶宮景春殿
+- 시대: 조선시대
+- 원천 문맥:
+  - `term_name`: 창경궁경춘전
+  - `hanja`: 昌慶宮景春殿
+  - `era`: 조선시대
+  - `thesaurus_category`: 문화·예술>미술
+  - `description`: 1484년(성종 15)에 창건된 창경궁의 전각. 정면 7칸, 측면 4칸. 임진왜란 때 불타버려 1616년(광해군 8)에 다시 지었는데, 1830년(순조 30)의 화재로 타버려 1834년에 다시 지음.
+  - `term_year`: 1484
+
+</details>
+
+### 사람 검수 입력
+
+- Manual status: `PENDING`
+- Manual reason: (미입력)
+- Reviewer: (미입력)
+- Reviewed at: (미입력)
+
+[목록으로 돌아가기](#case-목록)
+
+---
+
+<a id="case-003"></a>
+## 003. 창경궁 환경전 · PENDING
+
+- Case ID: `related-resolution-case:da6bacdadc06ea2476be`
+- 모델 게이트: `NEEDS_MANUAL_REVIEW`
+- 검증 사유: `INSUFFICIENT_PAIR_EVIDENCE`
+- 후보 수: 2개
+
+### 모델 판정 사유
+
+> 두 후보는 띄어쓰기 차이만 있는 동일 명칭 및 동일 한자 표기(昌慶宮 歡慶殿)를 공유하고, 모두 조선시대 창경궁 내 전각이라는 유형·장소·시대가 일치하므로 하나의 문화유산 실체로 병합했다. 별도의 동명 실체, 확장 표제어, 또는 target과 무관한 후보는 입력에 없다.
+
+### 현재 후보 분류
+
+| 역할 | 원천·표제 | Candidate ID |
+|---|---|---|
+| CANONICAL · 창경궁 환경전 | AKS · 창경궁 환경전 | `source-candidate:2c26de08f62d739aff2b` |
+| CANONICAL · 창경궁 환경전 | THESAURUS · 창경궁환경전 | `source-candidate:f1bc8566f7c32b9a078d` |
+
+### Canonical 대안
+
+#### 대안 1. 창경궁 환경전
+
+- Entity type: `Heritage`
+- 동일 실체 후보:
+  - `source-candidate:2c26de08f62d739aff2b` — AKS · 창경궁 환경전
+  - `source-candidate:f1bc8566f7c32b9a078d` — THESAURUS · 창경궁환경전
+- 판정 근거: 문제 문맥 표본은 없으나 canonical term과 두 원천의 표제가 모두 창경궁 환경전(昌慶宮 歡慶殿)으로 정확히 일치한다. 두 원천 모두 조선시대 창경궁의 전각을 설명하며, THESAURUS의 1484년 창건·소실 및 재건 이력은 AKS의 조선 전기 창경궁 침전 설명과 충돌하지 않고 같은 건물을 구체적으로 지시한다.
+
+### Evidence only
+
+- 없음
+
+### Rejected
+
+- 없음
+
+### Ambiguous
+
+- 없음
+
+<details>
+<summary><strong>후보 2개의 원천 문맥 펼치기</strong></summary>
+
+#### 후보 1. 창경궁 환경전 · AKS
+
+- Candidate ID: `source-candidate:2c26de08f62d739aff2b`
+- 현재 분류: **CANONICAL · 창경궁 환경전**
+- Source record ID: `AKS:ARTICLE:E0055328:sha256-704d8ea620c542f5`
+- Entity type: `Heritage`
+- 한자: 昌慶宮, 歡慶殿
+- 시대: 조선, 조선 전기
+- 원천 문맥:
+  - `headword`: 창경궁 환경전
+  - `origin`: 昌慶宮 歡慶殿
+  - `headword_origin`: 창경궁 환경전(昌慶宮 歡慶殿)
+  - `primary_type`: 유적/건물
+  - `era`: 조선/조선 전기
+  - `definition`: 서울특별시 종로구에 있는 조선전기 침전으로 사용한 전각.
+
+#### 후보 2. 창경궁환경전 · THESAURUS
+
+- Candidate ID: `source-candidate:f1bc8566f7c32b9a078d`
+- 현재 분류: **CANONICAL · 창경궁 환경전**
+- Source record ID: `THESAURUS:TERM:8393960:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 昌慶宮歡慶殿
+- 시대: 조선시대
+- 원천 문맥:
+  - `term_name`: 창경궁환경전
+  - `hanja`: 昌慶宮歡慶殿
+  - `era`: 조선시대
+  - `thesaurus_category`: 문화·예술>미술
+  - `description`: 1484년(성종 15)에 지은 창경궁의 전각 가운데 하나. 임진왜란 때 불타 1616년(광해군 8)에 재건하고, 1830년(순조 30)에 다시 불타 1834년(순조 34)에 또 지음.
+  - `term_year`: 1484
+
+</details>
+
+### 사람 검수 입력
+
+- Manual status: `PENDING`
+- Manual reason: (미입력)
+- Reviewer: (미입력)
+- Reviewed at: (미입력)
+
+[목록으로 돌아가기](#case-목록)
+
+---
+
+<a id="case-004"></a>
+## 004. 창경궁 관천대 · PENDING
+
+- Case ID: `related-resolution-case:9034d59e1e888953c3fd`
+- 모델 게이트: `NEEDS_MANUAL_REVIEW`
+- 검증 사유: `INSUFFICIENT_PAIR_EVIDENCE`, `TERM_SOURCE_ALIGNMENT_REVIEW_REQUIRED`
+- 후보 수: 6개
+
+### 모델 판정 사유
+
+> 문제 문맥 표본은 없지만 canonical term 자체 및 정확 일치 원천의 표제·한자·조선 후기 창경궁 소재 천문관측시설이라는 식별 단서에 따라 target은 창경궁 관천대이다. 관천대 단독 표제 원천은 1688년 축조·창경궁 소재라는 구체적 일치 근거로 같은 유적에 병합했다. 창경궁 자체와 창경궁 내 다른 시설·전각들은 각각 별도 실체이며, 해당 원천들이 관천대를 명시하거나 관계를 설명하지 않아 identity 또는 evidence-only로 포함하지 않았다.
+
+### 현재 후보 분류
+
+| 역할 | 원천·표제 | Candidate ID |
+|---|---|---|
+| CANONICAL · 창경궁 관천대 | AKS · 창경궁 관천대 | `source-candidate:997c4b5a8ca0ecf5de54` |
+| CANONICAL · 창경궁 관천대 | THESAURUS · 관천대 | `source-candidate:f7b5b269152a59ea5918` |
+| REJECTED | THESAURUS · 창경궁 | `source-candidate:2f89586e92d05a57b5c0` |
+| REJECTED | THESAURUS · 창경궁풍기대 | `source-candidate:9c4fda11ff111ba63a61` |
+| REJECTED | THESAURUS · 창경궁경춘전 | `source-candidate:80beecd578cd7e5bb965` |
+| REJECTED | THESAURUS · 창경궁환경전 | `source-candidate:bed626f60d200bc1832e` |
+
+### Canonical 대안
+
+#### 대안 1. 창경궁 관천대
+
+- Entity type: `Heritage`
+- 동일 실체 후보:
+  - `source-candidate:997c4b5a8ca0ecf5de54` — AKS · 창경궁 관천대
+  - `source-candidate:f7b5b269152a59ea5918` — THESAURUS · 관천대
+- 판정 근거: 두 원천 모두 조선 후기 창경궁 소재의 관천대(觀天臺)를 천문 관측 시설로 설명한다. AKS 원천은 표제와 한자가 정확히 일치하며, THESAURUS 원천도 1688년 남구만이 축조한 창경궁 소재 천문관측대라고 구체적으로 밝혀 동일 유적임을 확인한다.
+
+### Evidence only
+
+- 없음
+
+### Rejected
+
+- `source-candidate:2f89586e92d05a57b5c0` — THESAURUS · 창경궁
+- `source-candidate:9c4fda11ff111ba63a61` — THESAURUS · 창경궁풍기대
+- `source-candidate:80beecd578cd7e5bb965` — THESAURUS · 창경궁경춘전
+- `source-candidate:bed626f60d200bc1832e` — THESAURUS · 창경궁환경전
+
+### Ambiguous
+
+- 없음
+
+<details>
+<summary><strong>후보 6개의 원천 문맥 펼치기</strong></summary>
+
+#### 후보 1. 창경궁 관천대 · AKS
+
+- Candidate ID: `source-candidate:997c4b5a8ca0ecf5de54`
+- 현재 분류: **CANONICAL · 창경궁 관천대**
+- Source record ID: `AKS:ARTICLE:E0005016:sha256-704d8ea620c542f5`
+- Entity type: `Heritage`
+- 한자: 昌慶宮, 觀天臺
+- 시대: 조선, 조선 후기
+- 원천 문맥:
+  - `headword`: 창경궁 관천대
+  - `aliases`: 소간의대, 첨성대
+  - `origin`: 昌慶宮 觀天臺
+  - `headword_origin`: 창경궁 관천대(昌慶宮 觀天臺)
+  - `primary_type`: 유적/건물
+  - `era`: 조선/조선 후기
+  - `definition`: 서울특별시 종로구 창경궁에 있는 조선후기 에 축조된 천문관측소. 천문관측시설.
+
+#### 후보 2. 관천대 · THESAURUS
+
+- Candidate ID: `source-candidate:f7b5b269152a59ea5918`
+- 현재 분류: **CANONICAL · 창경궁 관천대**
+- Source record ID: `THESAURUS:TERM:35661581:sha256-1022516a18f91e61`
+- Entity type: `Heritage`
+- 한자: 觀天臺
+- 시대: 조선후기
+- 원천 문맥:
+  - `term_name`: 관천대
+  - `hanja`: 觀天臺
+  - `era`: 조선후기
+  - `thesaurus_category`: 문화재
+  - `description`: 1688년(숙종 14) 영의정 남구만(南九萬)이 축조한 천문관측대로 창경궁 소재.
+  - `term_year`: 1688
+
+#### 후보 3. 창경궁 · THESAURUS
+
+- Candidate ID: `source-candidate:2f89586e92d05a57b5c0`
+- 현재 분류: **REJECTED**
+- Source record ID: `THESAURUS:TERM:8188:sha256-1022516a18f91e61`
+- Entity type: `Heritage`
+- 한자: 昌慶宮
+- 시대: 조선전기
+- 원천 문맥:
+  - `term_name`: 창경궁
+  - `hanja`: 昌慶宮
+  - `era`: 조선전기
+  - `thesaurus_category`: 문화재
+  - `description`: 서울 종로구에 있는 조선시대의 궁궐.
+  - `term_year`: 1483
+
+#### 후보 4. 창경궁풍기대 · THESAURUS
+
+- Candidate ID: `source-candidate:9c4fda11ff111ba63a61`
+- 현재 분류: **REJECTED**
+- Source record ID: `THESAURUS:TERM:35662422:sha256-1022516a18f91e61`
+- Entity type: `Heritage`
+- 한자: 昌慶宮風旗臺
+- 시대: 조선후기
+- 원천 문맥:
+  - `term_name`: 창경궁풍기대
+  - `hanja`: 昌慶宮風旗臺
+  - `era`: 조선후기
+  - `thesaurus_category`: 문화재
+  - `description`: 1732년(영조 8) 창경궁 내에 제작된 풍향관측 석대. 화강암으로 만들었으며 높이 228㎝로 아래에 상을 조각한 대를 놓고 그 위에 구름무늬를 양각한 8각기둥을 세운 모양.
+  - `term_year`: 1732
+
+#### 후보 5. 창경궁경춘전 · THESAURUS
+
+- Candidate ID: `source-candidate:80beecd578cd7e5bb965`
+- 현재 분류: **REJECTED**
+- Source record ID: `THESAURUS:TERM:35662411:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 昌慶宮景春殿
+- 시대: 조선시대
+- 원천 문맥:
+  - `term_name`: 창경궁경춘전
+  - `hanja`: 昌慶宮景春殿
+  - `era`: 조선시대
+  - `thesaurus_category`: 문화·예술>미술
+  - `description`: 1484년(성종 15)에 창건된 창경궁의 전각. 정면 7칸, 측면 4칸. 임진왜란 때 불타버려 1616년(광해군 8)에 다시 지었는데, 1830년(순조 30)의 화재로 타버려 1834년에 다시 지음.
+  - `term_year`: 1484
+
+#### 후보 6. 창경궁환경전 · THESAURUS
+
+- Candidate ID: `source-candidate:bed626f60d200bc1832e`
+- 현재 분류: **REJECTED**
+- Source record ID: `THESAURUS:TERM:8393960:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 昌慶宮歡慶殿
+- 시대: 조선시대
+- 원천 문맥:
+  - `term_name`: 창경궁환경전
+  - `hanja`: 昌慶宮歡慶殿
+  - `era`: 조선시대
+  - `thesaurus_category`: 문화·예술>미술
+  - `description`: 1484년(성종 15)에 지은 창경궁의 전각 가운데 하나. 임진왜란 때 불타 1616년(광해군 8)에 재건하고, 1830년(순조 30)에 다시 불타 1834년(순조 34)에 또 지음.
+  - `term_year`: 1484
+
+</details>
+
+### 사람 검수 입력
+
+- Manual status: `PENDING`
+- Manual reason: (미입력)
+- Reviewer: (미입력)
+- Reviewed at: (미입력)
+
+[목록으로 돌아가기](#case-목록)
+
+---
+
+<a id="case-005"></a>
+## 005. 창경궁 자격루 · PENDING
+
+- Case ID: `related-resolution-case:49cb4ecc1d157977667f`
+- 모델 게이트: `NEEDS_MANUAL_REVIEW`
+- 검증 사유: `INSUFFICIENT_PAIR_EVIDENCE`, `TERM_SOURCE_ALIGNMENT_REVIEW_REQUIRED`
+- 후보 수: 6개
+
+### 모델 판정 사유
+
+> 문제 문맥 표본은 없지만 용어 자체의 식별 요소인 창경궁 소재 자격루와 1536년 제작 사실에 정확히 부합하는 AKS 원천 및 별칭 '보루각자격루' 원천을 동일 유물로 병합했다. 일반명 자격루는 특정 창경궁 자격루와 제작 연도·소재가 연결되지 않으며, 창경궁·경춘전·환경전은 각각 궁궐 또는 별도 전각으로서 target과의 관계 설명이 없으므로 identity 또는 evidence-only에서 제외했다.
+
+### 현재 후보 분류
+
+| 역할 | 원천·표제 | Candidate ID |
+|---|---|---|
+| CANONICAL · 창경궁 자격루 | AKS · 창경궁 자격루 | `source-candidate:d3473dc470864ce99987` |
+| REJECTED | THESAURUS · 자격루 | `source-candidate:3f9ce919b2e9ac297f3f` |
+| REJECTED | THESAURUS · 창경궁 | `source-candidate:1c04477e09fd2640e631` |
+| REJECTED | THESAURUS · 창경궁경춘전 | `source-candidate:a0c68b1859fa436009aa` |
+| CANONICAL · 창경궁 자격루 | THESAURUS · 보루각자격루 | `source-candidate:31eb52e5d65c21b0ad23` |
+| REJECTED | THESAURUS · 창경궁환경전 | `source-candidate:65dde630a7d8492266dd` |
+
+### Canonical 대안
+
+#### 대안 1. 창경궁 자격루
+
+- Entity type: `Heritage`
+- 동일 실체 후보:
+  - `source-candidate:d3473dc470864ce99987` — AKS · 창경궁 자격루
+  - `source-candidate:31eb52e5d65c21b0ad23` — THESAURUS · 보루각자격루
+- 판정 근거: 두 원천 모두 1536년(중종 31)에 제작되어 창경궁 보루각에 보관·설치된 물시계를 설명한다. AKS 원천은 표제와 한자를 '창경궁 자격루(昌慶宮 自擊漏)'로 제시하고, THESAURUS 원천은 이를 별칭인 '보루각자격루'로 제시하며 제작 연도·장소·기능이 일치한다.
+
+### Evidence only
+
+- 없음
+
+### Rejected
+
+- `source-candidate:3f9ce919b2e9ac297f3f` — THESAURUS · 자격루
+- `source-candidate:1c04477e09fd2640e631` — THESAURUS · 창경궁
+- `source-candidate:a0c68b1859fa436009aa` — THESAURUS · 창경궁경춘전
+- `source-candidate:65dde630a7d8492266dd` — THESAURUS · 창경궁환경전
+
+### Ambiguous
+
+- 없음
+
+<details>
+<summary><strong>후보 6개의 원천 문맥 펼치기</strong></summary>
+
+#### 후보 1. 창경궁 자격루 · AKS
+
+- Candidate ID: `source-candidate:d3473dc470864ce99987`
+- 현재 분류: **CANONICAL · 창경궁 자격루**
+- Source record ID: `AKS:ARTICLE:E0023287:sha256-704d8ea620c542f5`
+- Entity type: `Heritage`
+- 한자: 昌慶宮, 自擊漏
+- 시대: 조선, 조선 전기
+- 원천 문맥:
+  - `headword`: 창경궁 자격루
+  - `aliases`: 국보 제229호, 보루각 자격루
+  - `origin`: 昌慶宮 自擊漏
+  - `headword_origin`: 창경궁 자격루(昌慶宮 自擊漏)
+  - `primary_type`: 물품
+  - `era`: 조선/조선 전기
+  - `definition`: 1536년(중종 31)에 만들어진 조선시대의 물시계.
+
+#### 후보 2. 자격루 · THESAURUS
+
+- Candidate ID: `source-candidate:3f9ce919b2e9ac297f3f`
+- 현재 분류: **REJECTED**
+- Source record ID: `THESAURUS:TERM:16688:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 自擊漏
+- 시대: 조선시대
+- 원천 문맥:
+  - `term_name`: 자격루
+  - `hanja`: 自擊漏
+  - `era`: 조선시대
+  - `thesaurus_category`: 학술·과학기술>자연과학
+  - `description`: 물의 흐름을 이용하여 저절로 소리를 나게 하여 시간을 알리게 하는 물시계.
+  - `term_year`: 1434-?
+
+#### 후보 3. 창경궁 · THESAURUS
+
+- Candidate ID: `source-candidate:1c04477e09fd2640e631`
+- 현재 분류: **REJECTED**
+- Source record ID: `THESAURUS:TERM:8188:sha256-1022516a18f91e61`
+- Entity type: `Heritage`
+- 한자: 昌慶宮
+- 시대: 조선전기
+- 원천 문맥:
+  - `term_name`: 창경궁
+  - `hanja`: 昌慶宮
+  - `era`: 조선전기
+  - `thesaurus_category`: 문화재
+  - `description`: 서울 종로구에 있는 조선시대의 궁궐.
+  - `term_year`: 1483
+
+#### 후보 4. 창경궁경춘전 · THESAURUS
+
+- Candidate ID: `source-candidate:a0c68b1859fa436009aa`
+- 현재 분류: **REJECTED**
+- Source record ID: `THESAURUS:TERM:35662411:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 昌慶宮景春殿
+- 시대: 조선시대
+- 원천 문맥:
+  - `term_name`: 창경궁경춘전
+  - `hanja`: 昌慶宮景春殿
+  - `era`: 조선시대
+  - `thesaurus_category`: 문화·예술>미술
+  - `description`: 1484년(성종 15)에 창건된 창경궁의 전각. 정면 7칸, 측면 4칸. 임진왜란 때 불타버려 1616년(광해군 8)에 다시 지었는데, 1830년(순조 30)의 화재로 타버려 1834년에 다시 지음.
+  - `term_year`: 1484
+
+#### 후보 5. 보루각자격루 · THESAURUS
+
+- Candidate ID: `source-candidate:31eb52e5d65c21b0ad23`
+- 현재 분류: **CANONICAL · 창경궁 자격루**
+- Source record ID: `THESAURUS:TERM:35668021:sha256-1022516a18f91e61`
+- Entity type: `Heritage`
+- 한자: 報漏閣自擊漏
+- 시대: 조선시대
+- 원천 문맥:
+  - `term_name`: 보루각자격루
+  - `hanja`: 報漏閣自擊漏
+  - `era`: 조선시대
+  - `thesaurus_category`: 문화재
+  - `description`: 1536년(중종 31)에 만들어 창경궁에 세운 보루각에 보관된 물시계.
+  - `term_year`: 1536
+
+#### 후보 6. 창경궁환경전 · THESAURUS
+
+- Candidate ID: `source-candidate:65dde630a7d8492266dd`
+- 현재 분류: **REJECTED**
+- Source record ID: `THESAURUS:TERM:8393960:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 昌慶宮歡慶殿
+- 시대: 조선시대
+- 원천 문맥:
+  - `term_name`: 창경궁환경전
+  - `hanja`: 昌慶宮歡慶殿
+  - `era`: 조선시대
+  - `thesaurus_category`: 문화·예술>미술
+  - `description`: 1484년(성종 15)에 지은 창경궁의 전각 가운데 하나. 임진왜란 때 불타 1616년(광해군 8)에 재건하고, 1830년(순조 30)에 다시 불타 1834년(순조 34)에 또 지음.
+  - `term_year`: 1484
+
+</details>
+
+### 사람 검수 입력
+
+- Manual status: `PENDING`
+- Manual reason: (미입력)
+- Reviewer: (미입력)
+- Reviewed at: (미입력)
+
+[목록으로 돌아가기](#case-목록)
+
+---
+
+<a id="case-006"></a>
+## 006. 경상우병영 · PENDING
+
+- Case ID: `related-resolution-case:e2a9c0dcd1851041d7b8`
+- 모델 게이트: `NEEDS_MANUAL_REVIEW`
+- 검증 사유: `TERM_SOURCE_ALIGNMENT_REVIEW_REQUIRED`
+- 후보 수: 17개
+
+### 모델 판정 사유
+
+> 문제 문맥 표본은 없지만, 용어 자체와 직접 부합하는 우병영(右兵營) 정의 두 건은 경상우도 병마절도사의 주영이라는 동일한 실체를 설명하므로 하나의 canonical 대안으로 병합했다. 『진주성도』 두 건은 지도 자체가 target은 아니나 경상우병영의 1603년 창원에서 진주로의 이전을 명시하여 evidence-only로 분류했다. 경상우수영·좌병영·좌수영성지 등은 수군/육군 또는 좌·우도 및 소재가 다른 별도 병영이며, 경상우도·경상도·병영취락 등은 명칭 일부나 상위 지역·일반 개념만 겹쳐 target과의 구체적 관계 근거가 없어 identity에서 제외했다.
+
+### 현재 후보 분류
+
+| 역할 | 원천·표제 | Candidate ID |
+|---|---|---|
+| EVIDENCE_ONLY | AKS · 진주성도 | `source-candidate:c43e02d25fba34584c42` |
+| EVIDENCE_ONLY | AKS · 진주성도 | `source-candidate:eabe74ae3084c756b7f2` |
+| CANONICAL · 경상우병영(우병영, 右兵營) | AKS · 우병영 | `source-candidate:82a0c26c2eef0e845877` |
+| CANONICAL · 경상우병영(우병영, 右兵營) | THESAURUS · 우병영 | `source-candidate:10acc118d9af2ece5d76` |
+| REJECTED | THESAURUS · 경상우수영 | `source-candidate:20bbd1bbd19b10c2f4d2` |
+| REJECTED | AKS · 울산 경상좌도병영성 | `source-candidate:dd277b4de50212d07f0a` |
+| REJECTED | AKS · 경상우도 | `source-candidate:026e07eac9cee7b19e8b` |
+| REJECTED | THESAURUS · 경상우도 | `source-candidate:4d1962062eb818133fcc` |
+| REJECTED | THESAURUS · 경상감영 | `source-candidate:bc1863340e0ae3ba9b05` |
+| REJECTED | AKS · 좌병영 | `source-candidate:b7b09418715ca915b76f` |
+| REJECTED | THESAURUS · 좌병영 | `source-candidate:cc0b3ba9b366d0c0c43f` |
+| REJECTED | AKS · 경산 병영 유적 | `source-candidate:0976452f32a4555b7e97` |
+| REJECTED | AKS · 영좌병영지도 | `source-candidate:b29edb3ba7d2966c936e` |
+| REJECTED | AKS · 경상도 | `source-candidate:902f18a116e4887a31e7` |
+| REJECTED | AKS · 병영취락 | `source-candidate:e03460999976c23af53c` |
+| REJECTED | AKS · 영남지방 | `source-candidate:bc12c125ce1cfce3c418` |
+| REJECTED | AKS · 경상 좌수영성지 | `source-candidate:4878d5ce163d88089be5` |
+
+### Canonical 대안
+
+#### 대안 1. 경상우병영(우병영, 右兵營)
+
+- Entity type: `Place`
+- 동일 실체 후보:
+  - `source-candidate:82a0c26c2eef0e845877` — AKS · 우병영
+  - `source-candidate:10acc118d9af2ece5d76` — THESAURUS · 우병영
+- 판정 근거: 문제 문맥은 제공되지 않았으나 canonical term 자체가 경상우도 병마절도사의 병영을 뜻한다. 두 원천은 모두 右兵營/우병영을 조선시대 경상우도 병마절도사의 주영으로 직접 정의하며, AKS 원천은 진주 소재임까지 명시하여 경상우병영의 구체적 장소·기능과 일치한다.
+
+### Evidence only
+
+- `source-candidate:c43e02d25fba34584c42` — AKS · 진주성도
+- `source-candidate:eabe74ae3084c756b7f2` — AKS · 진주성도
+
+### Rejected
+
+- `source-candidate:20bbd1bbd19b10c2f4d2` — THESAURUS · 경상우수영
+- `source-candidate:dd277b4de50212d07f0a` — AKS · 울산 경상좌도병영성
+- `source-candidate:026e07eac9cee7b19e8b` — AKS · 경상우도
+- `source-candidate:4d1962062eb818133fcc` — THESAURUS · 경상우도
+- `source-candidate:bc1863340e0ae3ba9b05` — THESAURUS · 경상감영
+- `source-candidate:b7b09418715ca915b76f` — AKS · 좌병영
+- `source-candidate:cc0b3ba9b366d0c0c43f` — THESAURUS · 좌병영
+- `source-candidate:0976452f32a4555b7e97` — AKS · 경산 병영 유적
+- `source-candidate:b29edb3ba7d2966c936e` — AKS · 영좌병영지도
+- `source-candidate:902f18a116e4887a31e7` — AKS · 경상도
+- `source-candidate:e03460999976c23af53c` — AKS · 병영취락
+- `source-candidate:bc12c125ce1cfce3c418` — AKS · 영남지방
+- `source-candidate:4878d5ce163d88089be5` — AKS · 경상 좌수영성지
+
+### Ambiguous
+
+- 없음
+
+<details>
+<summary><strong>후보 17개의 원천 문맥 펼치기</strong></summary>
+
+#### 후보 1. 진주성도 · AKS
+
+- Candidate ID: `source-candidate:c43e02d25fba34584c42`
+- 현재 분류: **EVIDENCE_ONLY**
+- Source record ID: `AKS:ARTICLE:E0069809:sha256-704d8ea620c542f5`
+- Entity type: `Work`
+- 한자: 晉州城圖
+- 시대: 조선, 조선 후기
+- 원천 문맥:
+  - `headword`: 진주성도
+  - `origin`: 晉州城圖
+  - `headword_origin`: 진주성도(晉州城圖)
+  - `primary_type`: 문헌/고서
+  - `era`: 조선/조선 후기
+  - `definition`: 진주성(晋州城)과 주변의 경관을 재현한 조선 후기 회화식 지도.
+  - `snippet`: 왜란 때 두 차례나 큰 전투가 벌어진 고을이었다. 그 때문에 임진왜란이 끝나고 1603년(선조 36) 경상우병영이 창원에서 진주로 이전되었고, 경상우병마절도사가 일정 기간 동안 진주목사를 겸임하였다. 이후
+
+#### 후보 2. 진주성도 · AKS
+
+- Candidate ID: `source-candidate:eabe74ae3084c756b7f2`
+- 현재 분류: **EVIDENCE_ONLY**
+- Source record ID: `AKS:ARTICLE:E0075648:sha256-704d8ea620c542f5`
+- Entity type: `Work`
+- 한자: 晋州城圖
+- 시대: 조선, 조선 후기
+- 원천 문맥:
+  - `headword`: 진주성도
+  - `origin`: 晋州城圖
+  - `headword_origin`: 진주성도(晋州城圖)
+  - `primary_type`: 문헌/고서
+  - `era`: 조선/조선 후기
+  - `definition`: 진주성(晋州城) 내외의 경관을 10폭의 병풍에 재현한 19세기 회화식 지도.
+  - `snippet`: 중요한 군사적 요충지로서 임진왜란 때는 2차례 큰 전투가 벌어진 곳이었다. 1603년(선조 36) 경상우병영이 창원에서 진주로 이전되었고, 경상우병마절도사가 일정 기간 동안 진주목사를 겸임하였다. 이후
+
+#### 후보 3. 우병영 · AKS
+
+- Candidate ID: `source-candidate:82a0c26c2eef0e845877`
+- 현재 분류: **CANONICAL · 경상우병영(우병영, 右兵營)**
+- Source record ID: `AKS:ARTICLE:E0039901:sha256-704d8ea620c542f5`
+- Entity type: `Concept`
+- 한자: 右兵營
+- 시대: 조선, 조선 전기, 조선 후기
+- 원천 문맥:
+  - `headword`: 우병영
+  - `origin`: 右兵營
+  - `headword_origin`: 우병영(右兵營)
+  - `primary_type`: 제도/법령·제도
+  - `era`: 조선/조선 전기 | 조선/조선 후기
+  - `definition`: 조선시대 경상우도(慶常右道) 진주에 있었던 병마절도사(兵馬節度使)의 주영(駐營).
+
+#### 후보 4. 우병영 · THESAURUS
+
+- Candidate ID: `source-candidate:10acc118d9af2ece5d76`
+- 현재 분류: **CANONICAL · 경상우병영(우병영, 右兵營)**
+- Source record ID: `THESAURUS:TERM:6301289:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 右兵營
+- 시대: 조선시대
+- 원천 문맥:
+  - `term_name`: 우병영
+  - `hanja`: 右兵營
+  - `era`: 조선시대
+  - `thesaurus_category`: 국방·군사>군사방어시설
+  - `description`: 1407년(태종 7)에 설치한  경상우도(慶常右道) 병마절도사(兵馬節度使)의 주영(駐營).
+  - `term_year`: 1407-?
+
+#### 후보 5. 경상우수영 · THESAURUS
+
+- Candidate ID: `source-candidate:20bbd1bbd19b10c2f4d2`
+- 현재 분류: **REJECTED**
+- Source record ID: `THESAURUS:TERM:37754411:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 慶尙右水營
+- 시대: 조선시대
+- 원천 문맥:
+  - `term_name`: 경상우수영
+  - `hanja`: 慶尙右水營
+  - `era`: 조선시대
+  - `thesaurus_category`: 국방·군사>군사방어시설
+  - `description`: 경상우도 수군절도사가 근무하는 수군의 주진(主鎭).
+  - `term_year`: 1465-1907
+
+#### 후보 6. 울산 경상좌도병영성 · AKS
+
+- Candidate ID: `source-candidate:dd277b4de50212d07f0a`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0040472:sha256-704d8ea620c542f5`
+- Entity type: `Heritage`
+- 한자: 蔚山, 慶尙左道兵營城
+- 시대: 조선, 조선 전기, 조선 후기
+- 원천 문맥:
+  - `headword`: 울산 경상좌도병영성
+  - `aliases`: 울산병영성, 울산좌병영성, 경상좌도병마절제사영성
+  - `origin`: 蔚山 慶尙左道兵營城
+  - `headword_origin`: 울산 경상좌도병영성(蔚山 慶尙左道兵營城)
+  - `primary_type`: 유적
+  - `era`: 조선/조선 전기 | 조선/조선 후기
+  - `definition`: 울산광역시 중구에 소재하는 조선시대 경상좌도 병영이 설치된 영진 보성.
+
+#### 후보 7. 경상우도 · AKS
+
+- Candidate ID: `source-candidate:026e07eac9cee7b19e8b`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0002522:sha256-704d8ea620c542f5`
+- Entity type: `Concept`
+- 한자: 慶尙右道
+- 시대: 조선, 조선 전기, 조선 후기
+- 원천 문맥:
+  - `headword`: 경상우도
+  - `origin`: 慶尙右道
+  - `headword_origin`: 경상우도(慶尙右道)
+  - `primary_type`: 제도/법령·제도
+  - `era`: 조선/조선 전기 | 조선/조선 후기
+  - `definition`: 조선시대에 경상도 지방의 행정구역을 동·서로 나누었을 때 경상도 서부 지역의 행정구역.
+
+#### 후보 8. 경상우도 · THESAURUS
+
+- Candidate ID: `source-candidate:4d1962062eb818133fcc`
+- 현재 분류: **REJECTED**
+- Source record ID: `THESAURUS:TERM:24408:sha256-1022516a18f91e61`
+- Entity type: `Place`
+- 한자: 慶尙右道
+- 시대: 조선시대
+- 원천 문맥:
+  - `term_name`: 경상우도
+  - `hanja`: 慶尙右道
+  - `era`: 조선시대
+  - `thesaurus_category`: 지명
+  - `description`: 조선시대 경상도 지방의 행정 구역을 동서로 나누었을 때 낙동강 서부 지역.
+  - `term_year`: 1407-?
+
+#### 후보 9. 경상감영 · THESAURUS
+
+- Candidate ID: `source-candidate:bc1863340e0ae3ba9b05`
+- 현재 분류: **REJECTED**
+- Source record ID: `THESAURUS:TERM:14949:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 慶尙監營
+- 시대: 조선시대
+- 원천 문맥:
+  - `term_name`: 경상감영
+  - `hanja`: 慶尙監營
+  - `era`: 조선시대
+  - `thesaurus_category`: 정치·행정·법제>행정>지방행정기구
+  - `description`: 경상도 관찰사가 집무하던 관아로 때때로 경상도 자체를 지칭하는 의미로도 쓰임.
+  - `term_year`: ?-?
+
+#### 후보 10. 좌병영 · AKS
+
+- Candidate ID: `source-candidate:b7b09418715ca915b76f`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0053060:sha256-704d8ea620c542f5`
+- Entity type: `Concept`
+- 한자: 左兵營
+- 시대: 조선, 조선 전기, 조선 후기
+- 원천 문맥:
+  - `headword`: 좌병영
+  - `origin`: 左兵營
+  - `headword_origin`: 좌병영(左兵營)
+  - `primary_type`: 제도/법령·제도
+  - `era`: 조선/조선 전기 | 조선/조선 후기
+  - `definition`: 조선시대 경상좌도 울산에 있었던 병마절도사(兵馬節度使)의 주둔 병영.
+
+#### 후보 11. 좌병영 · THESAURUS
+
+- Candidate ID: `source-candidate:cc0b3ba9b366d0c0c43f`
+- 현재 분류: **REJECTED**
+- Source record ID: `THESAURUS:TERM:6301285:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 左兵營
+- 시대: 조선시대
+- 원천 문맥:
+  - `term_name`: 좌병영
+  - `hanja`: 左兵營
+  - `era`: 조선시대
+  - `thesaurus_category`: 국방·군사>군사방어시설
+  - `description`: 1407년(태종 7) 경상좌도 울산에 설치한 병마절도사(兵馬節度使)의 병영.
+  - `term_year`: 1407-?
+
+#### 후보 12. 경산 병영 유적 · AKS
+
+- Candidate ID: `source-candidate:0976452f32a4555b7e97`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0035173:sha256-704d8ea620c542f5`
+- Entity type: `Heritage`
+- 한자: 慶山, 兵營, 遺蹟
+- 시대: 고대, 삼국, 신라
+- 원천 문맥:
+  - `headword`: 경산 병영 유적
+  - `origin`: 慶山 兵營 遺蹟
+  - `headword_origin`: 경산 병영 유적(慶山 兵營 遺蹟)
+  - `primary_type`: 유적
+  - `era`: 고대/삼국/신라
+  - `definition`: 경상북도 경산시 압량읍에 있는 삼국시대 신라의 김유신 관련 사적지. 연무장.
+
+#### 후보 13. 영좌병영지도 · AKS
+
+- Candidate ID: `source-candidate:b29edb3ba7d2966c936e`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0037685:sha256-704d8ea620c542f5`
+- Entity type: `Work`
+- 한자: 嶺左兵營地圖
+- 시대: 조선, 조선 후기
+- 원천 문맥:
+  - `headword`: 영좌병영지도
+  - `origin`: 嶺左兵營地圖
+  - `headword_origin`: 영좌병영지도(嶺左兵營地圖)
+  - `primary_type`: 문헌/고서
+  - `era`: 조선/조선 후기
+  - `definition`: 조선후기 경상도 울산도호부에 있던 좌병영성 일대를 그린 지도. 고지도.
+
+#### 후보 14. 경상도 · AKS
+
+- Candidate ID: `source-candidate:902f18a116e4887a31e7`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0002512:sha256-704d8ea620c542f5`
+- Entity type: `Place`
+- 한자: 慶尙道
+- 시대: (없음)
+- 원천 문맥:
+  - `headword`: 경상도
+  - `origin`: 慶尙道
+  - `headword_origin`: 경상도(慶尙道)
+  - `primary_type`: 지명/고지명
+  - `era`: 미상
+  - `definition`: 경상남도와 경상북도를 합하여 부르는 지명.
+
+#### 후보 15. 병영취락 · AKS
+
+- Candidate ID: `source-candidate:e03460999976c23af53c`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0023128:sha256-704d8ea620c542f5`
+- Entity type: `Concept`
+- 한자: 兵營聚落
+- 시대: 조선, 조선 전기, 조선 후기
+- 원천 문맥:
+  - `headword`: 병영취락
+  - `aliases`: 병영촌
+  - `origin`: 兵營聚落
+  - `headword_origin`: 병영취락(兵營聚落)
+  - `primary_type`: 개념
+  - `era`: 조선/조선 전기 | 조선/조선 후기
+  - `definition`: 조선시대에 병마절도사가 주둔한 병영을 중심으로 형성된 취락. 병영촌.
+
+#### 후보 16. 영남지방 · AKS
+
+- Candidate ID: `source-candidate:bc12c125ce1cfce3c418`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0037274:sha256-704d8ea620c542f5`
+- Entity type: `Place`
+- 한자: 嶺南地方, 嶠南地方
+- 시대: 현대
+- 원천 문맥:
+  - `headword`: 영남지방
+  - `aliases`: 교남지방(嶠南地方), 경상도
+  - `origin`: 嶺南地方
+  - `headword_origin`: 영남지방(嶺南地方)
+  - `primary_type`: 지명/행정지명·마을
+  - `era`: 현대
+  - `definition`: 부산광역시, 대구광역시, 울산광역시와 경상남도, 경상북도를 아우르는 경상도의 별칭.
+
+#### 후보 17. 경상 좌수영성지 · AKS
+
+- Candidate ID: `source-candidate:4878d5ce163d88089be5`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0053097:sha256-704d8ea620c542f5`
+- Entity type: `Heritage`
+- 한자: 慶尙, 左水營城址
+- 시대: 조선, 조선 전기, 조선 후기
+- 원천 문맥:
+  - `headword`: 경상 좌수영성지
+  - `origin`: 慶尙 左水營城址
+  - `headword_origin`: 경상 좌수영성지(慶尙 左水營城址)
+  - `primary_type`: 유적/터
+  - `era`: 조선/조선 전기 | 조선/조선 후기
+  - `definition`: 부산광역시 수영구 수영동·망미동 일대에 있는 조선시대 경상좌도 수군절도사의 성곽터.
+
+</details>
+
+### 사람 검수 입력
+
+- Manual status: `PENDING`
+- Manual reason: (미입력)
+- Reviewer: (미입력)
+- Reviewed at: (미입력)
+
+[목록으로 돌아가기](#case-목록)
+
+---
+
+<a id="case-007"></a>
+## 007. 초도 유적 · PENDING
+
+- Case ID: `related-resolution-case:e02cca2b32f08ebf9563`
+- 모델 게이트: `NEEDS_MANUAL_REVIEW`
+- 검증 사유: `INSUFFICIENT_PAIR_EVIDENCE`
+- 후보 수: 6개
+
+### 모델 판정 사유
+
+> 문제 문맥 표본은 제공되지 않았으나, canonical term과 정확히 일치하는 두 후보는 한자 草島遺蹟, 함경북도 나진시 초도리라는 구체적 위치, 조개더미와 집자리 유적이라는 성격이 일치하여 하나의 초도 유적으로 병합했다. 고성초도리유적은 초도리라는 지명 부분이 겹치더라도 강원도 고성의 별도 유적이고, 중도·마도·늑도 유적은 서로 다른 섬 지명 유적으로서 명칭 형태만 유사하므로 identity 대안에서 제외했다.
+
+### 현재 후보 분류
+
+| 역할 | 원천·표제 | Candidate ID |
+|---|---|---|
+| CANONICAL · 초도 유적(草島遺蹟) | AKS · 초도 유적 | `source-candidate:1d4122e76a5f979357a1` |
+| CANONICAL · 초도 유적(草島遺蹟) | THESAURUS · 초도유적 | `source-candidate:324e5ef1b64910fb1998` |
+| REJECTED | THESAURUS · 고성초도리유적 | `source-candidate:ebd7c8fe04a1dccd310c` |
+| REJECTED | THESAURUS · 중도유적 | `source-candidate:f8f062f86f9aac69bf1f` |
+| REJECTED | THESAURUS · 마도유적 | `source-candidate:9e5ae3752334c155dd50` |
+| REJECTED | THESAURUS · 늑도유적 | `source-candidate:40de69b44803ca5ddaa3` |
+
+### Canonical 대안
+
+#### 대안 1. 초도 유적(草島遺蹟)
+
+- Entity type: `Heritage`
+- 동일 실체 후보:
+  - `source-candidate:1d4122e76a5f979357a1` — AKS · 초도 유적
+  - `source-candidate:324e5ef1b64910fb1998` — THESAURUS · 초도유적
+- 판정 근거: 두 원천은 모두 초도 유적(草島遺蹟)을 함경북도 나진시 초도리 소재의 선사시대 조개더미·집자리 유적으로 설명한다. AKS 원천의 석기시대 이후 집터·석기·토기 출토 조개더미 설명과 THESAURUS 원천의 신석기 말~청동기 조개더미·집자리 설명은 명칭, 한자, 위치 및 유적 성격이 구체적으로 일치한다.
+
+### Evidence only
+
+- 없음
+
+### Rejected
+
+- `source-candidate:ebd7c8fe04a1dccd310c` — THESAURUS · 고성초도리유적
+- `source-candidate:f8f062f86f9aac69bf1f` — THESAURUS · 중도유적
+- `source-candidate:9e5ae3752334c155dd50` — THESAURUS · 마도유적
+- `source-candidate:40de69b44803ca5ddaa3` — THESAURUS · 늑도유적
+
+### Ambiguous
+
+- 없음
+
+<details>
+<summary><strong>후보 6개의 원천 문맥 펼치기</strong></summary>
+
+#### 후보 1. 초도 유적 · AKS
+
+- Candidate ID: `source-candidate:1d4122e76a5f979357a1`
+- 현재 분류: **CANONICAL · 초도 유적(草島遺蹟)**
+- Source record ID: `AKS:ARTICLE:E0056967:sha256-704d8ea620c542f5`
+- Entity type: `Heritage`
+- 한자: 草島, 遺蹟
+- 시대: 선사, 석기
+- 원천 문맥:
+  - `headword`: 초도 유적
+  - `origin`: 草島 遺蹟
+  - `headword_origin`: 초도 유적(草島 遺蹟)
+  - `primary_type`: 유적
+  - `era`: 선사/석기
+  - `definition`: 북한 함경북도 나진시에 있는 석기시대 이후 집터와 석기류·토기류 등이 출토된 조개더미.
+
+#### 후보 2. 초도유적 · THESAURUS
+
+- Candidate ID: `source-candidate:324e5ef1b64910fb1998`
+- 현재 분류: **CANONICAL · 초도 유적(草島遺蹟)**
+- Source record ID: `THESAURUS:TERM:7973:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 草島遺蹟
+- 시대: 선사시대
+- 원천 문맥:
+  - `term_name`: 초도유적
+  - `hanja`: 草島遺蹟
+  - `era`: 선사시대
+  - `thesaurus_category`: 문화·예술>유적
+  - `description`: 신석기시대 말기에서 청동기시대에 이르는 조개더미와 집자리 유적으로 함경북도 나진시 초도리에 있음.
+  - `term_year`: ?-?
+
+#### 후보 3. 고성초도리유적 · THESAURUS
+
+- Candidate ID: `source-candidate:ebd7c8fe04a1dccd310c`
+- 현재 분류: **REJECTED**
+- Source record ID: `THESAURUS:TERM:12609662:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 高城草島里遺蹟
+- 시대: 선사시대
+- 원천 문맥:
+  - `term_name`: 고성초도리유적
+  - `hanja`: 高城草島里遺蹟
+  - `era`: 선사시대
+  - `thesaurus_category`: 문화·예술>유적
+  - `description`: 청동기시대의 민무늬토기유물산포지와 4기의 고인돌 유적. 강원도 고성군 현내면 초도리 화진포호 북한에 있음.
+  - `term_year`: ?-?
+
+#### 후보 4. 중도유적 · THESAURUS
+
+- Candidate ID: `source-candidate:f8f062f86f9aac69bf1f`
+- 현재 분류: **REJECTED**
+- Source record ID: `THESAURUS:TERM:14789:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 中島遺蹟
+- 시대: 선사시대-고대
+- 원천 문맥:
+  - `term_name`: 중도유적
+  - `hanja`: 中島遺蹟
+  - `era`: 선사시대-고대
+  - `thesaurus_category`: 문화·예술>유적
+  - `description`: 청동기시대에서 삼국시대에 이르는 고인돌, 돌무지무덤, 집자리 등의 유적으로 강원도 춘천시 중도동의 중도에 있음.
+  - `term_year`: ?-?
+
+#### 후보 5. 마도유적 · THESAURUS
+
+- Candidate ID: `source-candidate:9e5ae3752334c155dd50`
+- 현재 분류: **REJECTED**
+- Source record ID: `THESAURUS:TERM:21029770:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 馬島遺蹟
+- 시대: 초기철기시대
+- 원천 문맥:
+  - `term_name`: 마도유적
+  - `hanja`: 馬島遺蹟
+  - `era`: 초기철기시대
+  - `thesaurus_category`: 문화·예술>유적
+  - `description`: 초기철기시대의 유적으로 경상남도 사천시 마도동의 마도에 있음.
+  - `term_year`: ?-?
+
+#### 후보 6. 늑도유적 · THESAURUS
+
+- Candidate ID: `source-candidate:40de69b44803ca5ddaa3`
+- 현재 분류: **REJECTED**
+- Source record ID: `THESAURUS:TERM:2983:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 勒島遺蹟
+- 시대: 청동기시대-초기철기시대
+- 원천 문맥:
+  - `term_name`: 늑도유적
+  - `hanja`: 勒島遺蹟
+  - `era`: 청동기시대-초기철기시대
+  - `thesaurus_category`: 문화·예술>유적
+  - `description`: 청동기시대 말기에서 초기철기시대에 이르는 조개무지, 집자리, 무덤 등의 복합유적으로 경상남도 삼천포시 늑도에 있음.
+  - `term_year`: ?-?
+
+</details>
+
+### 사람 검수 입력
+
+- Manual status: `PENDING`
+- Manual reason: (미입력)
+- Reviewer: (미입력)
+- Reviewed at: (미입력)
+
+[목록으로 돌아가기](#case-목록)
+
+---
+
+<a id="case-008"></a>
+## 008. 상노대도패총 · PENDING
+
+- Case ID: `related-resolution-case:f30d5c387c16d82d4111`
+- 모델 게이트: `NEEDS_MANUAL_REVIEW`
+- 검증 사유: `INSUFFICIENT_PAIR_EVIDENCE`, `TERM_SOURCE_ALIGNMENT_REVIEW_REQUIRED`
+- 후보 수: 7개
+
+### 모델 판정 사유
+
+> 문제 문맥 표본은 없지만 canonical term인 상노대도패총을 target으로 삼았다. 정확히 일치하는 AKS 패총 항목과, 같은 통영 욕지면 노대리의 신석기 조개무지로 특정되는 상노대도유적만 동일 유적으로 묶었다. 상노대도 지명 후보들은 유적과 다른 유형의 섬이며 해당 원천 안에 패총과의 관계가 명시되지 않아 제외했고, 시도·송도·조도패총은 별도 지역의 동종 유적일 뿐 target이 아니다.
+
+### 현재 후보 분류
+
+| 역할 | 원천·표제 | Candidate ID |
+|---|---|---|
+| CANONICAL · 상노대도 패총 | AKS · 상노대도 패총 | `source-candidate:a82e494ab0846c429873` |
+| REJECTED | AKS · 상노대도 | `source-candidate:e937f576d328a6c6058e` |
+| REJECTED | THESAURUS · 상노대도 | `source-candidate:a17e7fcbd9b9dc7f0b43` |
+| CANONICAL · 상노대도 패총 | THESAURUS · 상노대도유적 | `source-candidate:6dfe8341c6a0ec9130bf` |
+| REJECTED | THESAURUS · 시도패총 | `source-candidate:2e3268f3c8fffb3c816a` |
+| REJECTED | THESAURUS · 송도패총 | `source-candidate:2b6800efe4949ebe61ea` |
+| REJECTED | THESAURUS · 조도패총 | `source-candidate:2dbba88ec4b0b4b7ab50` |
+
+### Canonical 대안
+
+#### 대안 1. 상노대도 패총
+
+- Entity type: `Heritage`
+- 동일 실체 후보:
+  - `source-candidate:a82e494ab0846c429873` — AKS · 상노대도 패총
+  - `source-candidate:6dfe8341c6a0ec9130bf` — THESAURUS · 상노대도유적
+- 판정 근거: 용어 자체가 상노대도 패총이며, AKS 후보는 경남 통영시 욕지면의 신석기시대 조개더미로 직접 정의한다. 상노대도유적 후보도 같은 경남 통영군 욕지면 노대리의 신석기시대 조개무지 유적으로 설명하여, 명칭 차이에도 장소·시대·유적 유형이 구체적으로 일치한다.
+
+### Evidence only
+
+- 없음
+
+### Rejected
+
+- `source-candidate:e937f576d328a6c6058e` — AKS · 상노대도
+- `source-candidate:a17e7fcbd9b9dc7f0b43` — THESAURUS · 상노대도
+- `source-candidate:2e3268f3c8fffb3c816a` — THESAURUS · 시도패총
+- `source-candidate:2b6800efe4949ebe61ea` — THESAURUS · 송도패총
+- `source-candidate:2dbba88ec4b0b4b7ab50` — THESAURUS · 조도패총
+
+### Ambiguous
+
+- 없음
+
+<details>
+<summary><strong>후보 7개의 원천 문맥 펼치기</strong></summary>
+
+#### 후보 1. 상노대도 패총 · AKS
+
+- Candidate ID: `source-candidate:a82e494ab0846c429873`
+- 현재 분류: **CANONICAL · 상노대도 패총**
+- Source record ID: `AKS:ARTICLE:E0027032:sha256-704d8ea620c542f5`
+- Entity type: `Heritage`
+- 한자: 上老大島, 貝塚
+- 시대: 선사, 석기
+- 원천 문맥:
+  - `headword`: 상노대도 패총
+  - `origin`: 上老大島 貝塚
+  - `headword_origin`: 상노대도 패총(上老大島 貝塚)
+  - `primary_type`: 유적
+  - `era`: 선사/석기
+  - `definition`: 경상남도 통영시 욕지면에 있는 석기시대 신석기의 즐문토기·석기 등이 출토된 조개더미.
+
+#### 후보 2. 상노대도 · AKS
+
+- Candidate ID: `source-candidate:e937f576d328a6c6058e`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0027031:sha256-704d8ea620c542f5`
+- Entity type: `Place`
+- 한자: 上老大島
+- 시대: (없음)
+- 원천 문맥:
+  - `headword`: 상노대도
+  - `aliases`: 노태도, 사오대섬, 웃노대섬
+  - `origin`: 上老大島
+  - `headword_origin`: 상노대도(上老大島)
+  - `primary_type`: 지명/자연지명
+  - `era`: 미상
+  - `definition`: 경상남도 통영시 욕지면 노대리에 있는 섬.
+
+#### 후보 3. 상노대도 · THESAURUS
+
+- Candidate ID: `source-candidate:a17e7fcbd9b9dc7f0b43`
+- 현재 분류: **REJECTED**
+- Source record ID: `THESAURUS:TERM:24665:sha256-1022516a18f91e61`
+- Entity type: `Place`
+- 한자: 上老大島
+- 시대: (없음)
+- 원천 문맥:
+  - `term_name`: 상노대도
+  - `hanja`: 上老大島
+  - `era`: 통시대
+  - `thesaurus_category`: 지명
+  - `description`: 경상남도 통영군 욕지면에 속하는 섬.
+  - `term_year`: ?
+
+#### 후보 4. 상노대도유적 · THESAURUS
+
+- Candidate ID: `source-candidate:6dfe8341c6a0ec9130bf`
+- 현재 분류: **CANONICAL · 상노대도 패총**
+- Source record ID: `THESAURUS:TERM:14075:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 上老大島遺蹟
+- 시대: 신석기시대
+- 원천 문맥:
+  - `term_name`: 상노대도유적
+  - `hanja`: 上老大島遺蹟
+  - `era`: 신석기시대
+  - `thesaurus_category`: 문화·예술>유적
+  - `description`: 신석기시대 조개무지 유적으로 경상남도 통영군 욕지면 노대리에 있음.
+  - `term_year`: ?-?
+
+#### 후보 5. 시도패총 · THESAURUS
+
+- Candidate ID: `source-candidate:2e3268f3c8fffb3c816a`
+- 현재 분류: **REJECTED**
+- Source record ID: `THESAURUS:TERM:13556:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 矢島貝塚
+- 시대: 선사시대
+- 원천 문맥:
+  - `term_name`: 시도패총
+  - `hanja`: 矢島貝塚
+  - `era`: 선사시대
+  - `thesaurus_category`: 문화·예술>유적
+  - `description`: 신석기시대와 초기철기시대의 조개무지 유적으로 인천광역시 옹진군 북도면 시도리에 있음.
+  - `term_year`: ?-?
+
+#### 후보 6. 송도패총 · THESAURUS
+
+- Candidate ID: `source-candidate:2b6800efe4949ebe61ea`
+- 현재 분류: **REJECTED**
+- Source record ID: `THESAURUS:TERM:14439:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 松島貝塚
+- 시대: 신석기시대
+- 원천 문맥:
+  - `term_name`: 송도패총
+  - `hanja`: 松島貝塚
+  - `era`: 신석기시대
+  - `thesaurus_category`: 문화·예술>유적
+  - `description`: 신석기시대 조개무지 유적으로 전라남도 여천군 돌산읍 군내리에 있음.
+  - `term_year`: ?-?
+
+#### 후보 7. 조도패총 · THESAURUS
+
+- Candidate ID: `source-candidate:2dbba88ec4b0b4b7ab50`
+- 현재 분류: **REJECTED**
+- Source record ID: `THESAURUS:TERM:18711:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 朝島貝塚
+- 시대: 고대
+- 원천 문맥:
+  - `term_name`: 조도패총
+  - `hanja`: 朝島貝塚
+  - `era`: 고대
+  - `thesaurus_category`: 문화·예술>유적
+  - `description`: 초기철기시대에서 원삼국시대에 이르는 조개무지 유적으로 부산광역시 영도구 동삼동 하리 조도(아치섬)에 있음.
+  - `term_year`: ?-?
+
+</details>
+
+### 사람 검수 입력
+
+- Manual status: `PENDING`
+- Manual reason: (미입력)
+- Reviewer: (미입력)
+- Reviewed at: (미입력)
+
+[목록으로 돌아가기](#case-목록)
+
+---
+
+<a id="case-009"></a>
+## 009. 권채 · PENDING
+
+- Case ID: `related-resolution-case:3ef00c9f2f31a1d931f3`
+- 모델 게이트: `NEEDS_MANUAL_REVIEW`
+- 검증 사유: `AMBIGUOUS_SOURCE_REMAINS`
+- 후보 수: 9개
+
+### 모델 판정 사유
+
+> problem_count가 0이고 problem_context_samples도 비어 있어, 용어 권채가 가리키는 실제 기출문제 target을 식별할 단서가 없다. 따라서 조선 전기 권채(權採·여서·1399~1438) 관련 세 직접 인물 원천은 서로 동일 인물로 보이지만 canonical target 대안으로 확정하지 않았고, 1557~1599년 권채(權采)는 명백히 별도 동명 인물로 보이나 target 여부를 판정할 수 없어 함께 ambiguous로 분류했다. 작성도론은 권채(權採)를 저자로 명시하는 별도 문헌이나, target 부재 때문에 관계 증거로 확정할 수 없다. 재산권, 권채근, 환은 권채 target과의 명시적 관계 없는 검색 오탐 또는 부분 명칭 일치이므로 제외했다.
+
+### 현재 후보 분류
+
+| 역할 | 원천·표제 | Candidate ID |
+|---|---|---|
+| AMBIGUOUS | AKS · 권채 | `source-candidate:ecd9b8fc8b91753b3573` |
+| AMBIGUOUS | ITKC_PERSON · 권채 | `source-candidate:7298c3ee93e8d1547df2` |
+| AMBIGUOUS | ITKC_PERSON · 권채 | `source-candidate:8b56dbb2757cb82a67d2` |
+| AMBIGUOUS | ITKC_PERSON · 권채 | `source-candidate:892b18817d000ab533c2` |
+| AMBIGUOUS | THESAURUS · 권채 | `source-candidate:af2fa8ad40ed551e8801` |
+| REJECTED | THESAURUS · 재산권 | `source-candidate:c292f49bc868710973f0` |
+| REJECTED | AKS · 권채근 | `source-candidate:d8330a3532df67d4b124` |
+| AMBIGUOUS | THESAURUS · 작성도론 | `source-candidate:540a87badcf16fac468d` |
+| REJECTED | THESAURUS · 환 | `source-candidate:9c3a41076df88050555b` |
+
+### Canonical 대안
+
+- 없음
+### Evidence only
+
+- 없음
+
+### Rejected
+
+- `source-candidate:c292f49bc868710973f0` — THESAURUS · 재산권
+- `source-candidate:d8330a3532df67d4b124` — AKS · 권채근
+- `source-candidate:9c3a41076df88050555b` — THESAURUS · 환
+
+### Ambiguous
+
+- `source-candidate:ecd9b8fc8b91753b3573` — AKS · 권채
+- `source-candidate:7298c3ee93e8d1547df2` — ITKC_PERSON · 권채
+- `source-candidate:8b56dbb2757cb82a67d2` — ITKC_PERSON · 권채
+- `source-candidate:892b18817d000ab533c2` — ITKC_PERSON · 권채
+- `source-candidate:af2fa8ad40ed551e8801` — THESAURUS · 권채
+- `source-candidate:540a87badcf16fac468d` — THESAURUS · 작성도론
+
+<details>
+<summary><strong>후보 9개의 원천 문맥 펼치기</strong></summary>
+
+#### 후보 1. 권채 · AKS
+
+- Candidate ID: `source-candidate:ecd9b8fc8b91753b3573`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `AKS:ARTICLE:E0007102:sha256-704d8ea620c542f5`
+- Entity type: `Person`
+- 한자: 權採, 汝鋤
+- 시대: 조선, 조선 전기
+- 원천 문맥:
+  - `headword`: 권채
+  - `aliases`: 여서(汝鋤)
+  - `origin`: 權採
+  - `headword_origin`: 권채(權採)
+  - `primary_type`: 인물/전통 인물
+  - `era`: 조선/조선 전기
+  - `definition`: 조선 전기에, 대사성, 우승지 등을 역임한 문신.
+
+#### 후보 2. 권채 · ITKC_PERSON
+
+- Candidate ID: `source-candidate:7298c3ee93e8d1547df2`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `ITKC:PERSON:P003757:sha256-2bfbf7f8ab4b1538`
+- Entity type: `Person`
+- 한자: 權採
+- 시대: (없음)
+- 원천 문맥:
+  - `name`: 권채
+  - `hanja`: 權採
+  - `birth_year`: 1399
+  - `death_year`: 1438
+  - `bonkwan`: 안동(安東)
+  - `ja`: 여서(汝鋤)
+  - `father`: 권우(權遇)
+
+#### 후보 3. 권채 · ITKC_PERSON
+
+- Candidate ID: `source-candidate:8b56dbb2757cb82a67d2`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `ITKC:PERSON:P003758:sha256-2bfbf7f8ab4b1538`
+- Entity type: `Person`
+- 한자: 權采
+- 시대: (없음)
+- 원천 문맥:
+  - `name`: 권채
+  - `hanja`: 權采
+  - `birth_year`: 1557
+  - `death_year`: 1599
+  - `bonkwan`: 안동(安東)
+  - `ja`: 공량(公亮)
+  - `ho`: 송암(松巖)
+
+#### 후보 4. 권채 · ITKC_PERSON
+
+- Candidate ID: `source-candidate:892b18817d000ab533c2`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `ITKC:PERSON:P003759:sha256-2bfbf7f8ab4b1538`
+- Entity type: `Person`
+- 한자: 權
+- 시대: (없음)
+- 원천 문맥:
+  - `name`: 권채
+  - `hanja`: 權
+  - `bonkwan`: 안동(安東)
+  - `father`: 권복(權復)
+
+#### 후보 5. 권채 · THESAURUS
+
+- Candidate ID: `source-candidate:af2fa8ad40ed551e8801`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `THESAURUS:TERM:21685:sha256-1022516a18f91e61`
+- Entity type: `Person`
+- 한자: 權採
+- 시대: 조선전기
+- 원천 문맥:
+  - `term_name`: 권채
+  - `hanja`: 權採
+  - `era`: 조선전기
+  - `thesaurus_category`: 인명
+  - `description`: 1433년(세종 15)에 왕명으로 ≪향약집성방(鄕藥集成方)≫을 편찬한 조선초기 문신·학자.
+  - `term_year`: 1399-1438
+
+#### 후보 6. 재산권 · THESAURUS
+
+- Candidate ID: `source-candidate:c292f49bc868710973f0`
+- 현재 분류: **REJECTED**
+- Source record ID: `THESAURUS:TERM:18881749:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 財産權
+- 시대: 현대
+- 원천 문맥:
+  - `term_name`: 재산권
+  - `hanja`: 財産權
+  - `era`: 현대
+  - `thesaurus_category`: 학술·과학기술>사회과학
+  - `description`: 사법상·공법상의 경제적 가치가 있는 모든 권리. 소유권을 비롯한 물권·채권·무체재산권·영업권 및 특별법상의 광업권·어업권·특허권·저작권과 공법적 성격을 가진 수리권·하천점유권 등을 모두 포함한 개념.
+  - `term_year`: ?-?
+
+#### 후보 7. 권채근 · AKS
+
+- Candidate ID: `source-candidate:d8330a3532df67d4b124`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0075724:sha256-704d8ea620c542f5`
+- Entity type: `Person`
+- 한자: 權采根
+- 시대: 근대, 개항기, 일제강점기
+- 원천 문맥:
+  - `headword`: 권채근
+  - `origin`: 權采根
+  - `headword_origin`: 권채근(權采根)
+  - `primary_type`: 인물/근현대 인물
+  - `era`: 근대/개항기 | 근대/일제강점기
+  - `definition`: 일제강점기 때, 경상남도 진주의 독립만세시위를 주도한 혐의로 체포되어 옥중에서 순국한 독립운동가.
+
+#### 후보 8. 작성도론 · THESAURUS
+
+- Candidate ID: `source-candidate:540a87badcf16fac468d`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `THESAURUS:TERM:12612229:sha256-1022516a18f91e61`
+- Entity type: `Work`
+- 한자: 作聖圖論
+- 시대: 조선전기
+- 원천 문맥:
+  - `term_name`: 작성도론
+  - `hanja`: 作聖圖論
+  - `era`: 조선전기
+  - `thesaurus_category`: 서명
+  - `description`: 조선 전기의 문신·학자인 권채(權採)가 권근(權近)이 쓴 ≪입학도설(入學圖說)≫과 송나라 주희(朱熹)가 편저한 ≪중용장구≫·≪대학장구≫·≪혹문≫ 등의 설을 참작하여 성인과 범인을 구분, 해석한 책. 불분권 1책. 목판본.
+  - `term_year`: 1454
+
+#### 후보 9. 환 · THESAURUS
+
+- Candidate ID: `source-candidate:9c3a41076df88050555b`
+- 현재 분류: **REJECTED**
+- Source record ID: `THESAURUS:TERM:35661058:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 煥
+- 시대: 조선시대
+- 원천 문맥:
+  - `term_name`: 환
+  - `hanja`: 煥
+  - `era`: 조선시대
+  - `thesaurus_category`: 재정·금융>화폐·금융
+  - `description`: 조선시대 개성상인(開城商人)을 중심으로 활용된 원격자간의 채권·채무의 결제 및 그 밖의 송금 등을 현금의 수송 없이 처리하는 신용화폐.
+  - `term_year`: ?-?
+
+</details>
+
+### 사람 검수 입력
+
+- Manual status: `PENDING`
+- Manual reason: (미입력)
+- Reviewer: (미입력)
+- Reviewed at: (미입력)
+
+[목록으로 돌아가기](#case-목록)
+
+---
+
+<a id="case-010"></a>
+## 010. 박윤덕 · PENDING
+
+- Case ID: `related-resolution-case:aa3950d1b0583e9026ad`
+- 모델 게이트: `NEEDS_MANUAL_REVIEW`
+- 검증 사유: `AMBIGUOUS_SOURCE_REMAINS`
+- 후보 수: 4개
+
+### 모델 판정 사유
+
+> 문제 수가 0이고 problem_context_samples가 비어 있어 기출문제가 가리키는 target 실체의 시대·활동·저술 등 식별 단서를 추출할 수 없다. 따라서 동명이인 가능성을 배제한 박윤덕 인물 identity를 제안할 수 없으며, 박윤덕을 편찬자로 언급한 별도 문헌 후보도 target과의 관계 분류를 확정할 수 없다.
+
+### 현재 후보 분류
+
+| 역할 | 원천·표제 | Candidate ID |
+|---|---|---|
+| AMBIGUOUS | AKS · 박윤덕 | `source-candidate:81d145918c65ebe0e439` |
+| AMBIGUOUS | THESAURUS · 박윤덕 | `source-candidate:752d431111833f45579a` |
+| AMBIGUOUS | THESAURUS · 향약집성방 | `source-candidate:b963fcb164284d5a5c57` |
+| AMBIGUOUS | THESAURUS · 향약채취월령 | `source-candidate:9275aecc2ddf067eb378` |
+
+### Canonical 대안
+
+- 없음
+### Evidence only
+
+- 없음
+
+### Rejected
+
+- 없음
+
+### Ambiguous
+
+- `source-candidate:81d145918c65ebe0e439` — AKS · 박윤덕
+- `source-candidate:752d431111833f45579a` — THESAURUS · 박윤덕
+- `source-candidate:b963fcb164284d5a5c57` — THESAURUS · 향약집성방
+- `source-candidate:9275aecc2ddf067eb378` — THESAURUS · 향약채취월령
+
+<details>
+<summary><strong>후보 4개의 원천 문맥 펼치기</strong></summary>
+
+#### 후보 1. 박윤덕 · AKS
+
+- Candidate ID: `source-candidate:81d145918c65ebe0e439`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `AKS:ARTICLE:E0021014:sha256-704d8ea620c542f5`
+- Entity type: `Person`
+- 한자: 朴允德
+- 시대: 조선, 조선 전기
+- 원천 문맥:
+  - `headword`: 박윤덕
+  - `origin`: 朴允德
+  - `headword_origin`: 박윤덕(朴允德)
+  - `primary_type`: 인물/전통 인물
+  - `era`: 조선/조선 전기
+  - `definition`: 조선전기 전의감주부, 전의감부정 등을 역임한 의관.
+
+#### 후보 2. 박윤덕 · THESAURUS
+
+- Candidate ID: `source-candidate:752d431111833f45579a`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `THESAURUS:TERM:8397975:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 朴允德
+- 시대: 조선전기
+- 원천 문맥:
+  - `term_name`: 박윤덕
+  - `hanja`: 朴允德
+  - `era`: 조선전기
+  - `thesaurus_category`: 인명>성격별>학자>의·약학
+  - `description`: 조선 태종-세종대에 활동한 의관. 노중례(盧重禮) 등과 《향약채취월령(鄕藥採取月令)》·《향약집성방》등을 편찬하는데 참여함.
+  - `term_year`: ?
+
+#### 후보 3. 향약집성방 · THESAURUS
+
+- Candidate ID: `source-candidate:b963fcb164284d5a5c57`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `THESAURUS:TERM:25715:sha256-1022516a18f91e61`
+- Entity type: `Work`
+- 한자: 鄕藥集成方
+- 시대: 조선전기
+- 원천 문맥:
+  - `term_name`: 향약집성방
+  - `hanja`: 鄕藥集成方
+  - `era`: 조선전기
+  - `thesaurus_category`: 서명
+  - `description`: 유효통(兪孝通), 노중례(盧重禮), 박윤덕(朴允德) 등이 편찬한 향약(鄕藥)과 한방(韓方)에 관한 책.
+  - `term_year`: 1431
+
+#### 후보 4. 향약채취월령 · THESAURUS
+
+- Candidate ID: `source-candidate:9275aecc2ddf067eb378`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `THESAURUS:TERM:25716:sha256-1022516a18f91e61`
+- Entity type: `Work`
+- 한자: 鄕藥採取月令
+- 시대: 조선전기
+- 원천 문맥:
+  - `term_name`: 향약채취월령
+  - `hanja`: 鄕藥採取月令
+  - `era`: 조선전기
+  - `thesaurus_category`: 서명
+  - `description`: 향약의 올바른 채취·감별·재배·수납 등을 위해 유효통(兪孝通)·노중례(盧重禮)·박윤덕(朴允德) 등이 간행한 의약서. 1권 1책, 필사본.
+  - `term_year`: 1431
+
+</details>
+
+### 사람 검수 입력
+
+- Manual status: `PENDING`
+- Manual reason: (미입력)
+- Reviewer: (미입력)
+- Reviewed at: (미입력)
+
+[목록으로 돌아가기](#case-목록)
+
+---
+
+<a id="case-011"></a>
+## 011. 강국 · PENDING
+
+- Case ID: `related-resolution-case:e383b46bfb8ad1e3ff95`
+- 모델 게이트: `NEEDS_MANUAL_REVIEW`
+- 검증 사유: `AMBIGUOUS_SOURCE_REMAINS`
+- 후보 수: 19개
+
+### 모델 판정 사유
+
+> problem_count가 0이고 problem_context_samples가 비어 있어 기출문제가 가리키는 target 실체의 시대·유형·장소·주체 단서가 전혀 없다. 따라서 정확 일치 후보인 강국(康國)을 포함하여 각 후보가 target 자체인지, 별도 실체의 관계 근거인지, 단순 동명·포함어 검색 오탐인지 target 중심으로 확정할 수 없다. 특히 이강국·박강국·강국승·강국진 등의 인명, 강성대국·강국기 등의 확장 또는 별도 개념, 스포츠강국 등의 일반 용례는 문맥이 있다면 identity에서 제외될 가능성이 높지만, 현 입력만으로는 target 대비 분류를 확정할 수 없어 모두 AMBIGUOUS로 보류한다.
+
+### 현재 후보 분류
+
+| 역할 | 원천·표제 | Candidate ID |
+|---|---|---|
+| AMBIGUOUS | THESAURUS · 강국 | `source-candidate:d125b9017d2e45f25a51` |
+| AMBIGUOUS | AKS · 국의 향 | `source-candidate:e5db7f3032f5e9b4dd9b` |
+| AMBIGUOUS | AKS · 김수임 간첩 사건 | `source-candidate:565510fe2efab115cf2f` |
+| AMBIGUOUS | AKS · 삼국시대 | `source-candidate:655b9f8ca431f207c9d0` |
+| AMBIGUOUS | AKS · 서울아시아경기대회 | `source-candidate:4fef72e4fbd389289d66` |
+| AMBIGUOUS | AKS · 이강국 | `source-candidate:0ccc97c94123859961c1` |
+| AMBIGUOUS | THESAURUS · 강성대국 | `source-candidate:e85a03e14d613788565c` |
+| AMBIGUOUS | AKS · 강국진 | `source-candidate:7135f09a18dd00053720` |
+| AMBIGUOUS | AKS · 박강국 | `source-candidate:0ba8b085e2627cf71d60` |
+| AMBIGUOUS | AKS · 강국승 | `source-candidate:a57272af6035433d462c` |
+| AMBIGUOUS | THESAURUS · 강국기 | `source-candidate:bd99a4d9f2b360e41853` |
+| AMBIGUOUS | THESAURUS · 이강국 | `source-candidate:a796a8695168cbaaa805` |
+| AMBIGUOUS | THESAURUS · 대한국민혈성단 | `source-candidate:12517c61711d187fb786` |
+| AMBIGUOUS | AKS · 4·25체육단 | `source-candidate:d4630bc670ecf8b539b8` |
+| AMBIGUOUS | AKS · 고정옥 | `source-candidate:b919010f047b596a49d1` |
+| AMBIGUOUS | AKS · 신흥 | `source-candidate:5efeb3714cbfe2d5963e` |
+| AMBIGUOUS | AKS · 부산항일학생의거 | `source-candidate:019b72648db6e5927d8f` |
+| AMBIGUOUS | AKS · 김양림 | `source-candidate:9fee508009237178e2fc` |
+| AMBIGUOUS | AKS · 금강 국수나무 | `source-candidate:9df3f471d473023168d5` |
+
+### Canonical 대안
+
+- 없음
+### Evidence only
+
+- 없음
+
+### Rejected
+
+- 없음
+
+### Ambiguous
+
+- `source-candidate:d125b9017d2e45f25a51` — THESAURUS · 강국
+- `source-candidate:e5db7f3032f5e9b4dd9b` — AKS · 국의 향
+- `source-candidate:565510fe2efab115cf2f` — AKS · 김수임 간첩 사건
+- `source-candidate:655b9f8ca431f207c9d0` — AKS · 삼국시대
+- `source-candidate:4fef72e4fbd389289d66` — AKS · 서울아시아경기대회
+- `source-candidate:0ccc97c94123859961c1` — AKS · 이강국
+- `source-candidate:e85a03e14d613788565c` — THESAURUS · 강성대국
+- `source-candidate:7135f09a18dd00053720` — AKS · 강국진
+- `source-candidate:0ba8b085e2627cf71d60` — AKS · 박강국
+- `source-candidate:a57272af6035433d462c` — AKS · 강국승
+- `source-candidate:bd99a4d9f2b360e41853` — THESAURUS · 강국기
+- `source-candidate:a796a8695168cbaaa805` — THESAURUS · 이강국
+- `source-candidate:12517c61711d187fb786` — THESAURUS · 대한국민혈성단
+- `source-candidate:d4630bc670ecf8b539b8` — AKS · 4·25체육단
+- `source-candidate:b919010f047b596a49d1` — AKS · 고정옥
+- `source-candidate:5efeb3714cbfe2d5963e` — AKS · 신흥
+- `source-candidate:019b72648db6e5927d8f` — AKS · 부산항일학생의거
+- `source-candidate:9fee508009237178e2fc` — AKS · 김양림
+- `source-candidate:9df3f471d473023168d5` — AKS · 금강 국수나무
+
+<details>
+<summary><strong>후보 19개의 원천 문맥 펼치기</strong></summary>
+
+#### 후보 1. 강국 · THESAURUS
+
+- Candidate ID: `source-candidate:d125b9017d2e45f25a51`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `THESAURUS:TERM:12596188:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 康國
+- 시대: 삼국시대-고려시대
+- 원천 문맥:
+  - `term_name`: 강국
+  - `hanja`: 康國
+  - `era`: 삼국시대-고려시대
+  - `thesaurus_category`: 역사일반>국가
+  - `description`: 중국 남북조시대부터 1220년까지 중앙아시아에 존속한 국가. 지금의 우즈베키스탄 사마르칸트주에 위치한 중앙아시아의 최고(最古) 도시로 비단길의 중계무역지로 번창함.
+  - `term_year`: ?-1220
+
+#### 후보 2. 국의 향 · AKS
+
+- Candidate ID: `source-candidate:e5db7f3032f5e9b4dd9b`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `AKS:ARTICLE:E0006419:sha256-704d8ea620c542f5`
+- Entity type: `Work`
+- 한자: 菊, 香
+- 시대: 근대, 일제강점기
+- 원천 문맥:
+  - `headword`: 국의 향
+  - `origin`: 菊의 香
+  - `headword_origin`: 국의 향(菊의 香)
+  - `primary_type`: 작품/문학
+  - `era`: 근대/일제강점기
+  - `definition`: 조중환(趙重桓)이 지은 신소설.
+  - `snippet`: 재 · 발표되었으며, 1914년 유일서관(唯一書館)에서 단행본 상 · 하권으로 간행하였다. # 내용 여학생 강국희는 남산 밑 초가에서 눈먼 아버지를 모시고 사는 마음씨 착한 처녀이다. 강국희에게는 장래를 약속
+
+#### 후보 3. 김수임 간첩 사건 · AKS
+
+- Candidate ID: `source-candidate:565510fe2efab115cf2f`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `AKS:ARTICLE:E0009575:sha256-704d8ea620c542f5`
+- Entity type: `Event`
+- 한자: 金壽任, 間諜, 事件
+- 시대: 현대
+- 원천 문맥:
+  - `headword`: 김수임 간첩 사건
+  - `origin`: 金壽任 間諜 事件
+  - `headword_origin`: 김수임 간첩 사건(金壽任 間諜 事件)
+  - `primary_type`: 사건/사건·사고
+  - `era`: 현대
+  - `definition`: 1950년 2월 초 김수임이 북한의 주요 인사를 월북시켰다는 점과 기밀문서를 북한에 유출했다는 혐의로 체포되어, 북한의 간첩으로 몰려 6월 28일 사형당한 사건.
+  - `snippet`: 첫째, 미군철수계획 등 미군의 중요 기밀문서를 북한에 유출했다는 점과 둘째, 남로당 주요 인사인 이강국이 월북하는데 도움을 주었다는 점, 셋째 북한에서 제조한 위조지폐를 서울로 운반했다는 것, 넷째, 남
+
+#### 후보 4. 삼국시대 · AKS
+
+- Candidate ID: `source-candidate:655b9f8ca431f207c9d0`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `AKS:ARTICLE:E0026481:sha256-704d8ea620c542f5`
+- Entity type: `Concept`
+- 한자: 三國時代
+- 시대: 고대, 삼국
+- 원천 문맥:
+  - `headword`: 삼국시대
+  - `aliases`: 삼국시기
+  - `origin`: 三國時代
+  - `headword_origin`: 삼국시대(三國時代)
+  - `primary_type`: 개념
+  - `era`: 고대/삼국
+  - `definition`: 고구려 · 백제 · 신라의 세 나라가 정립하였던 한국사의 한 시기.
+  - `snippet`: 기 전성기를 맞은 고구려를 저지하기에는 역부족이었다. 5~6세기 중반 동아시아에서는 절대적인 강국이 없었다. 북위를 비롯한 북조(北朝)의 여러 나라가 가장 강성하였지만, 남조(南朝)의 여러 나라[송(宋) · 제
+
+#### 후보 5. 서울아시아경기대회 · AKS
+
+- Candidate ID: `source-candidate:4fef72e4fbd389289d66`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `AKS:ARTICLE:E0028033:sha256-704d8ea620c542f5`
+- Entity type: `Event`
+- 한자: 競技大會
+- 시대: 현대
+- 원천 문맥:
+  - `headword`: 서울아시아경기대회
+  - `origin`: 서울Asia競技大會
+  - `headword_origin`: 서울아시아경기대회(서울Asia競技大會)
+  - `primary_type`: 의례·행사/행사
+  - `era`: 현대
+  - `definition`: 1986년 9월 20일부터 10월 5일까지 서울에서 개최된 제10회 아시아 경기대회. 국제종합경기대회.
+  - `snippet`: 하여 예상 목표보다 훨씬 좋은 성적으로 [중국](E0053702)에 이어 종합 2위로 아시아 스포츠강국의 위치를 굳혔다. 그 동안 중국이 불참한 역대 대회에서 우리나라는 두 차례 2위를 하였으나 [일본](E
+
+#### 후보 6. 이강국 · AKS
+
+- Candidate ID: `source-candidate:0ccc97c94123859961c1`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `AKS:ARTICLE:E0043492:sha256-704d8ea620c542f5`
+- Entity type: `Person`
+- 한자: 李康國, 李愚漢
+- 시대: 근대, 대한제국기, 현대
+- 원천 문맥:
+  - `headword`: 이강국
+  - `aliases`: 이우한(李愚漢)
+  - `origin`: 李康國
+  - `headword_origin`: 이강국(李康國)
+  - `primary_type`: 인물/근현대 인물
+  - `era`: 근대/대한제국기 | 현대
+  - `definition`: 해방 이후 건국준비위원회 서기장, 민주주의민족전선 상임위원 등을 역임한 사회주의운동가. 정치인.
+  - `snippet`: 생애 및 활동 사항 이강국은 경기도 양주(楊州) 출신으로 1906년 양반 이기택(李起澤)의 2남으로 출생하였다. 이후 가족이
+
+#### 후보 7. 강성대국 · THESAURUS
+
+- Candidate ID: `source-candidate:e85a03e14d613788565c`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `THESAURUS:TERM:29368391:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 强盛大國
+- 시대: (없음)
+- 원천 문맥:
+  - `term_name`: 강성대국
+  - `hanja`: 强盛大國
+  - `thesaurus_category`: 외교·국제관계>북한>정치·행정·법제(북한)
+  - `description`: 1998년 8월 22일 김정일 시대의 본격 개막을 앞두고 북한이 제시한 국가전략목표의 하나로, 정치의 강국, 군사의 강국, 경제의 강국 건설논리를 핵심내용으로 함.
+
+#### 후보 8. 강국진 · AKS
+
+- Candidate ID: `source-candidate:7135f09a18dd00053720`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `AKS:ARTICLE:E0001001:sha256-704d8ea620c542f5`
+- Entity type: `Person`
+- 한자: 姜國鎭
+- 시대: 근대, 일제강점기, 현대
+- 원천 문맥:
+  - `headword`: 강국진
+  - `origin`: 姜國鎭
+  - `headword_origin`: 강국진(姜國鎭)
+  - `primary_type`: 인물/근현대 인물
+  - `era`: 근대/일제강점기 | 현대
+  - `definition`: 「비닐우산과 촛불이 있는 해프닝」, 「한강변의 타살」, 「역사의 빛」 등의 작품을 그린 화가.
+
+#### 후보 9. 박강국 · AKS
+
+- Candidate ID: `source-candidate:0ba8b085e2627cf71d60`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `AKS:ARTICLE:E0020505:sha256-704d8ea620c542f5`
+- Entity type: `Person`
+- 한자: 朴强國
+- 시대: 고대, 남북국, 통일신라
+- 원천 문맥:
+  - `headword`: 박강국
+  - `origin`: 朴强國
+  - `headword_origin`: 박강국(朴强國)
+  - `primary_type`: 인물/전통 인물
+  - `era`: 고대/남북국/통일신라
+  - `definition`: 남북국시대 통일신라의 사찬으로서 일본에 파견된 사신.
+
+#### 후보 10. 강국승 · AKS
+
+- Candidate ID: `source-candidate:a57272af6035433d462c`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `AKS:ARTICLE:E0070455:sha256-704d8ea620c542f5`
+- Entity type: `Person`
+- 한자: 康國升, 衛社輔佐功臣
+- 시대: 고려, 고려 후기
+- 원천 문맥:
+  - `headword`: 강국승
+  - `aliases`: 위사보좌공신(衛社輔佐功臣)
+  - `origin`: 康國升
+  - `headword_origin`: 강국승(康國升)
+  - `primary_type`: 인물/전통 인물
+  - `era`: 고려/고려 후기
+  - `definition`: 고려 후기, 무오정변을 통해 최씨 무신정권을 붕괴시켜 위사보좌공신에 책록된 공신이자 무신.
+
+#### 후보 11. 강국기 · THESAURUS
+
+- Candidate ID: `source-candidate:bd99a4d9f2b360e41853`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `THESAURUS:TERM:12593453:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 康國伎
+- 시대: 삼국시대
+- 원천 문맥:
+  - `term_name`: 강국기
+  - `hanja`: 康國伎
+  - `era`: 삼국시대
+  - `thesaurus_category`: 외교·국제관계>중국>종교·문화(중국)
+  - `description`: 수(隋)나라 대업(大業:605-616)시대에 제정된 구부기(九部伎) 중 사마르칸트(Samarkand)의 음악.
+  - `term_year`: 605-616
+
+#### 후보 12. 이강국 · THESAURUS
+
+- Candidate ID: `source-candidate:a796a8695168cbaaa805`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `THESAURUS:TERM:48242216:sha256-1022516a18f91e61`
+- Entity type: `Person`
+- 한자: 李康國
+- 시대: 현대
+- 원천 문맥:
+  - `term_name`: 이강국
+  - `hanja`: 李康國
+  - `era`: 현대
+  - `thesaurus_category`: 인명
+  - `description`: 일제시기-현대의 공산주의 운동가·정치인. 경기도 양주 출생.
+  - `term_year`: 1906-1953
+
+#### 후보 13. 대한국민혈성단 · THESAURUS
+
+- Candidate ID: `source-candidate:12517c61711d187fb786`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `THESAURUS:TERM:23074925:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 大韓國民血誠團
+- 시대: 일제시기
+- 원천 문맥:
+  - `term_name`: 대한국민혈성단
+  - `hanja`: 大韓國民血誠團
+  - `era`: 일제시기
+  - `thesaurus_category`: 사회운동·독립운동>독립운동>민족주의운동(독립)
+  - `description`: 1920년 강국모(姜國模)가 남만주에서 이동해온 독립단원 80명으로 러시아 연해주 추풍의 한인농촌 자피우거에서 조직한 무장독립운동단체.
+  - `term_year`: 1920-?
+
+#### 후보 14. 4·25체육단 · AKS
+
+- Candidate ID: `source-candidate:d4630bc670ecf8b539b8`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `AKS:ARTICLE:E0074284:sha256-704d8ea620c542f5`
+- Entity type: `Organization`
+- 한자: 四二五體育團
+- 시대: 현대
+- 원천 문맥:
+  - `headword`: 4·25체육단
+  - `aliases`: 4·25국방체육선수단, 4·25선수단, 4·25체육선수단
+  - `origin`: 四二五體育團
+  - `headword_origin`: 4·25체육단(四二五體育團)
+  - `primary_type`: 단체
+  - `era`: 현대
+  - `definition`: 북한을 체육 강국으로 만들기 위해 설립된 단체.
+
+#### 후보 15. 고정옥 · AKS
+
+- Candidate ID: `source-candidate:b919010f047b596a49d1`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `AKS:ARTICLE:E0003927:sha256-704d8ea620c542f5`
+- Entity type: `Person`
+- 한자: 高晶玉
+- 시대: 근대, 일제강점기, 현대
+- 원천 문맥:
+  - `headword`: 고정옥
+  - `aliases`: 고위민
+  - `origin`: 高晶玉
+  - `headword_origin`: 고정옥(高晶玉)
+  - `primary_type`: 인물/근현대 인물
+  - `era`: 근대/일제강점기 | 현대
+  - `definition`: 서울대학교 사범대학 교수를 재임하며 우리어문학회 회원으로 활동하였고, 『조선민요연구』, 『국어국문학요강』, 『국문학개론』 등을 저술하는 등 조선민요에 대한 연구 업적을 남긴 국문학자.
+
+#### 후보 16. 신흥 · AKS
+
+- Candidate ID: `source-candidate:5efeb3714cbfe2d5963e`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `AKS:ARTICLE:E0033604:sha256-704d8ea620c542f5`
+- Entity type: `Work`
+- 한자: 新興
+- 시대: 근대, 일제강점기
+- 원천 문맥:
+  - `headword`: 신흥
+  - `origin`: 新興
+  - `headword_origin`: 신흥(新興)
+  - `primary_type`: 문헌/연속간행물
+  - `era`: 근대/일제강점기
+  - `definition`: 1929년에, 배상하·이강국 등 경성제국대학 법문학부 출신들이 창간한 학술 잡지.
+
+#### 후보 17. 부산항일학생의거 · AKS
+
+- Candidate ID: `source-candidate:019b72648db6e5927d8f`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `AKS:ARTICLE:E0078093:sha256-704d8ea620c542f5`
+- Entity type: `Event`
+- 한자: 釜山抗日學生義擧
+- 시대: 근대, 일제강점기
+- 원천 문맥:
+  - `headword`: 부산항일학생의거
+  - `aliases`: 노다이사건
+  - `origin`: 釜山抗日學生義擧
+  - `headword_origin`: 부산항일학생의거(釜山抗日學生義擧)
+  - `primary_type`: 사건/사회운동
+  - `era`: 근대/일제강점기
+  - `definition`: 1940년 부산에서 열린 경남학도전력증강국방경기대회에서 일본인 심판 노다이의 부당 행위에 항의하여 일어난 항일학생운동.
+
+#### 후보 18. 김양림 · AKS
+
+- Candidate ID: `source-candidate:9fee508009237178e2fc`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `AKS:ARTICLE:E0079527:sha256-704d8ea620c542f5`
+- Entity type: `Person`
+- 한자: 金良琳
+- 시대: 고대, 남북국, 통일신라
+- 원천 문맥:
+  - `headword`: 김양림
+  - `origin`: 金良琳
+  - `headword_origin`: 김양림(金良琳)
+  - `primary_type`: 인물/전통 인물
+  - `era`: 고대/남북국/통일신라
+  - `definition`: 남북국시대 통일신라의 사찬 박강국·김충선 등과 일본에 사신으로 파견된 왕자.
+
+#### 후보 19. 금강 국수나무 · AKS
+
+- Candidate ID: `source-candidate:9df3f471d473023168d5`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `AKS:ARTICLE:E0007500:sha256-704d8ea620c542f5`
+- Entity type: `(빈 값)`
+- 한자: 金剛
+- 시대: 현대
+- 원천 문맥:
+  - `headword`: 금강 국수나무
+  - `origin`: 金剛 국수나무
+  - `headword_origin`: 금강 국수나무(金剛 국수나무)
+  - `primary_type`: 생물/식물
+  - `era`: 현대
+  - `definition`: 북한이 지정한 천연기념물의 하나. .
+
+</details>
+
+### 사람 검수 입력
+
+- Manual status: `PENDING`
+- Manual reason: (미입력)
+- Reviewer: (미입력)
+- Reviewed at: (미입력)
+
+[목록으로 돌아가기](#case-목록)
+
+---
+
+<a id="case-012"></a>
+## 012. 만민공동회 · PENDING
+
+- Case ID: `related-resolution-case:2d1102aa81050047485a`
+- 모델 게이트: `NEEDS_MANUAL_REVIEW`
+- 검증 사유: `ENTITY_TYPE_REVIEW_REQUIRED`
+- 후보 수: 2개
+
+### 모델 판정 사유
+
+> 두 후보는 단순 명칭 일치뿐 아니라 동일 한자, 1898년이라는 시기, 열강의 이권 침탈 반대 및 정치·민권 개혁 요구라는 대회의 목적이 일치하여 하나의 만민공동회 사건으로 병합한다. 입력에는 동명인 별도 사건·기관·문헌이나 확장 표제어 후보가 없어 제외할 후보는 없다.
+
+### 현재 후보 분류
+
+| 역할 | 원천·표제 | Candidate ID |
+|---|---|---|
+| CANONICAL · 만민공동회 | AKS · 만민공동회 | `source-candidate:b7c6706be7d69df384fd` |
+| CANONICAL · 만민공동회 | THESAURUS · 만민공동회 | `source-candidate:152e58809594c9c6a35f` |
+
+### Canonical 대안
+
+#### 대안 1. 만민공동회
+
+- Entity type: `Event`
+- 동일 실체 후보:
+  - `source-candidate:b7c6706be7d69df384fd` — AKS · 만민공동회
+  - `source-candidate:152e58809594c9c6a35f` — THESAURUS · 만민공동회
+- 판정 근거: 문제 문맥 표본은 없으나 canonical term 자체가 만민공동회이며, 두 원천 모두 한자 萬民共同會와 1898년 대한제국기 민중 대회라는 구체적 식별 정보를 제시한다. AKS는 열강의 이권 침탈 반대와 자주독립·자유민권 신장을 위한 대회로, THESAURUS는 독립협회 주최의 이권 침탈 방지·정치 개혁 요구 대회로 설명하여 동일한 1898년 만민공동회를 직접 설명한다.
+
+### Evidence only
+
+- 없음
+
+### Rejected
+
+- 없음
+
+### Ambiguous
+
+- 없음
+
+<details>
+<summary><strong>후보 2개의 원천 문맥 펼치기</strong></summary>
+
+#### 후보 1. 만민공동회 · AKS
+
+- Candidate ID: `source-candidate:b7c6706be7d69df384fd`
+- 현재 분류: **CANONICAL · 만민공동회**
+- Source record ID: `AKS:ARTICLE:E0017594:sha256-704d8ea620c542f5`
+- Entity type: `Event`
+- 한자: 萬民共同會
+- 시대: 근대, 대한제국기
+- 원천 문맥:
+  - `headword`: 만민공동회
+  - `origin`: 萬民共同會
+  - `headword_origin`: 만민공동회(萬民共同會)
+  - `primary_type`: 사건/사건·사고
+  - `era`: 근대/대한제국기
+  - `definition`: 1898년 열강의 이권 침탈에 대항하여 자주 독립의 수호와 자유 민권의 신장을 위해 조직, 개최되었던 민중 대회.
+
+#### 후보 2. 만민공동회 · THESAURUS
+
+- Candidate ID: `source-candidate:152e58809594c9c6a35f`
+- 현재 분류: **CANONICAL · 만민공동회**
+- Source record ID: `THESAURUS:TERM:3723:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 萬民共同會
+- 시대: 근대
+- 원천 문맥:
+  - `term_name`: 만민공동회
+  - `hanja`: 萬民共同會
+  - `era`: 근대
+  - `thesaurus_category`: 사회운동·독립운동>사회운동>계몽운동
+  - `description`: 1898년에 3월에 독립협회 주최로 열강의 이권 침탈방지와 정치 개혁을 요구한 민중 대회.
+  - `term_year`: 1898
+
+</details>
+
+### 사람 검수 입력
+
+- Manual status: `PENDING`
+- Manual reason: (미입력)
+- Reviewer: (미입력)
+- Reviewed at: (미입력)
+
+[목록으로 돌아가기](#case-목록)
+
+---
+
+<a id="case-013"></a>
+## 013. 절영도 · PENDING
+
+- Case ID: `related-resolution-case:196a7f3cbba9686e9539`
+- 모델 게이트: `NEEDS_MANUAL_REVIEW`
+- 검증 사유: `INSUFFICIENT_PAIR_EVIDENCE`
+- 후보 수: 4개
+
+### 모델 판정 사유
+
+> 직접적인 절영도 지명 후보 가운데 부산의 섬, 조선시대 진 설치 및 현 영도라는 일치 단서를 갖춘 두 원천만 동일한 역사 지명 실체로 병합했다. 영도구는 별도의 현대 행정구역이므로 절영도 자체의 identity로 병합하지 않고 명시된 지명·공간 관계에 한정했다. 절영도등대는 지명을 포함한 별도 시설이며, 원천에 섬과의 관계 설명이 없어 제외했다.
+
+### 현재 후보 분류
+
+| 역할 | 원천·표제 | Candidate ID |
+|---|---|---|
+| CANONICAL · 절영도(絶影島, 현 영도) | AKS · 영도 | `source-candidate:3f5ada9f2ad942683844` |
+| CANONICAL · 절영도(絶影島, 현 영도) | THESAURUS · 절영도 | `source-candidate:a5488ef3d404b5d7427d` |
+| REJECTED | THESAURUS · 절영도등대 | `source-candidate:70a504fd799b489e5adb` |
+| EVIDENCE_ONLY | AKS · 영도구 | `source-candidate:f5f5bfac07337d34a449` |
+
+### Canonical 대안
+
+#### 대안 1. 절영도(絶影島, 현 영도)
+
+- Entity type: `Place`
+- 동일 실체 후보:
+  - `source-candidate:3f5ada9f2ad942683844` — AKS · 영도
+  - `source-candidate:a5488ef3d404b5d7427d` — THESAURUS · 절영도
+- 판정 근거: 문제 문맥은 제공되지 않았으나, 두 원천은 모두 부산의 섬이라는 지명 실체를 직접 설명한다. AKS 원천은 현 지명 영도(影島)의 별칭으로 절영도를 제시하고, THESAURUS 원천은 절영도(絶影島)를 부산 소속의 조선시대 군사 요충 섬으로 설명하여 역사 지명 절영도와 현 영도의 동일한 섬을 가리키는 구체적 일치 근거가 있다.
+
+### Evidence only
+
+- `source-candidate:f5f5bfac07337d34a449` — AKS · 영도구
+
+### Rejected
+
+- `source-candidate:70a504fd799b489e5adb` — THESAURUS · 절영도등대
+
+### Ambiguous
+
+- 없음
+
+<details>
+<summary><strong>후보 4개의 원천 문맥 펼치기</strong></summary>
+
+#### 후보 1. 영도 · AKS
+
+- Candidate ID: `source-candidate:3f5ada9f2ad942683844`
+- 현재 분류: **CANONICAL · 절영도(絶影島, 현 영도)**
+- Source record ID: `AKS:ARTICLE:E0037296:sha256-704d8ea620c542f5`
+- Entity type: `Place`
+- 한자: 影島
+- 시대: (없음)
+- 원천 문맥:
+  - `headword`: 영도
+  - `aliases`: 절영도
+  - `origin`: 影島
+  - `headword_origin`: 영도(影島)
+  - `primary_type`: 지명/자연지명
+  - `era`: 미상
+  - `definition`: 부산광역시 영도구에 있는 섬.
+
+#### 후보 2. 절영도 · THESAURUS
+
+- Candidate ID: `source-candidate:a5488ef3d404b5d7427d`
+- 현재 분류: **CANONICAL · 절영도(絶影島, 현 영도)**
+- Source record ID: `THESAURUS:TERM:37758207:sha256-1022516a18f91e61`
+- Entity type: `Place`
+- 한자: 絶影島
+- 시대: (없음)
+- 원천 문맥:
+  - `term_name`: 절영도
+  - `hanja`: 絶影島
+  - `thesaurus_category`: 지명
+  - `description`: 경상남도 부산에 속한 섬으로, 조선시대에는 진(鎭)이 설치되어 군사적 요충지였음.
+  - `term_year`: 통시대
+
+#### 후보 3. 절영도등대 · THESAURUS
+
+- Candidate ID: `source-candidate:70a504fd799b489e5adb`
+- 현재 분류: **REJECTED**
+- Source record ID: `THESAURUS:TERM:14681898:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 絶影島燈帶
+- 시대: 근대
+- 원천 문맥:
+  - `term_name`: 절영도등대
+  - `hanja`: 絶影島燈帶
+  - `era`: 근대
+  - `thesaurus_category`: 교통·통신>교통기관·단체
+  - `description`: 1906년 12월 부산항구(釜山港口)에 초점(初點)한 등대.
+  - `term_year`: 1906
+
+#### 후보 4. 영도구 · AKS
+
+- Candidate ID: `source-candidate:f5f5bfac07337d34a449`
+- 현재 분류: **EVIDENCE_ONLY**
+- Source record ID: `AKS:ARTICLE:E0067012:sha256-704d8ea620c542f5`
+- Entity type: `Place`
+- 한자: 影島區, 絶影島, 牧島
+- 시대: 현대
+- 원천 문맥:
+  - `headword`: 영도구
+  - `aliases`: 절영도(絶影島), 목도(牧島)
+  - `origin`: 影島區
+  - `headword_origin`: 영도구(影島區)
+  - `primary_type`: 지명/행정지명·마을
+  - `era`: 현대
+  - `definition`: 부산광역시 남부의 단일 도서로 구성된 구.
+
+</details>
+
+### 사람 검수 입력
+
+- Manual status: `PENDING`
+- Manual reason: (미입력)
+- Reviewer: (미입력)
+- Reviewed at: (미입력)
+
+[목록으로 돌아가기](#case-목록)
+
+---
+
+<a id="case-014"></a>
+## 014. 임진북예성남정맥 · PENDING
+
+- Case ID: `related-resolution-case:05e796159cbb1aa46e9f`
+- 모델 게이트: `NEEDS_MANUAL_REVIEW`
+- 검증 사유: `INSUFFICIENT_PAIR_EVIDENCE`
+- 후보 수: 2개
+
+### 모델 판정 사유
+
+> 문제 문맥 표본은 없으나 canonical term 자체와 두 정확일치 후보의 지명·한자·산줄기 위치 및 기능 설명이 구체적으로 일치하므로 하나의 산줄기 지명 실체로 병합한다. 입력 후보에는 별도 동명 실체, 확장 표제어, 또는 target과 관계만 있는 원천이 없다.
+
+### 현재 후보 분류
+
+| 역할 | 원천·표제 | Candidate ID |
+|---|---|---|
+| CANONICAL · 임진북예성남정맥(臨津北禮成南正脈) | AKS · 임진북예성남정맥 | `source-candidate:25697904ab57016b91ec` |
+| CANONICAL · 임진북예성남정맥(臨津北禮成南正脈) | THESAURUS · 임진북예성남정맥 | `source-candidate:6fda183c28be5b0925aa` |
+
+### Canonical 대안
+
+#### 대안 1. 임진북예성남정맥(臨津北禮成南正脈)
+
+- Entity type: `Place`
+- 동일 실체 후보:
+  - `source-candidate:25697904ab57016b91ec` — AKS · 임진북예성남정맥
+  - `source-candidate:6fda183c28be5b0925aa` — THESAURUS · 임진북예성남정맥
+- 판정 근거: 두 후보 모두 정확히 ‘임진북예성남정맥’ 및 같은 한자 표기를 제시하며, 해서정맥에서 서남쪽으로 이어져 임진강과 예성강을 동서로 가르는 산줄기라는 동일한 지리적·기능적 식별 단서를 설명한다. AKS 후보의 상세 정의와 THESAURUS 후보의 조선후기 『산경표』 수록 설명은 같은 산줄기 지명을 가리킨다.
+
+### Evidence only
+
+- 없음
+
+### Rejected
+
+- 없음
+
+### Ambiguous
+
+- 없음
+
+<details>
+<summary><strong>후보 2개의 원천 문맥 펼치기</strong></summary>
+
+#### 후보 1. 임진북예성남정맥 · AKS
+
+- Candidate ID: `source-candidate:25697904ab57016b91ec`
+- 현재 분류: **CANONICAL · 임진북예성남정맥(臨津北禮成南正脈)**
+- Source record ID: `AKS:ARTICLE:E0047671:sha256-704d8ea620c542f5`
+- Entity type: `Place`
+- 한자: 臨津北禮成南正脈
+- 시대: (없음)
+- 원천 문맥:
+  - `headword`: 임진북예성남정맥
+  - `origin`: 臨津北禮成南正脈
+  - `headword_origin`: 임진북예성남정맥(臨津北禮成南正脈)
+  - `primary_type`: 지명/고지명
+  - `era`: 미상
+  - `definition`: 원산만의 서쪽으로 흘러든 백두대간의 두류산(頭流山)에서 갈라져 황해도 서쪽 장산곶까지 한반도의 북부지방과 중부지방의 자연스러운 경계를 이룬 해서정맥에서 다시 서남쪽으로 흘러 임진강과 예성강을 동서로 갈라놓은 산줄기의 옛 이름.
+
+#### 후보 2. 임진북예성남정맥 · THESAURUS
+
+- Candidate ID: `source-candidate:6fda183c28be5b0925aa`
+- 현재 분류: **CANONICAL · 임진북예성남정맥(臨津北禮成南正脈)**
+- Source record ID: `THESAURUS:TERM:14686751:sha256-1022516a18f91e61`
+- Entity type: `Place`
+- 한자: 臨津北禮成南正脈
+- 시대: 조선후기
+- 원천 문맥:
+  - `term_name`: 임진북예성남정맥
+  - `hanja`: 臨津北禮成南正脈
+  - `era`: 조선후기
+  - `thesaurus_category`: 지명
+  - `description`: 조선후기 ≪산경표≫에 나오는 산줄기 이름의 하나. 해서정맥에서 서남쪽으로 흘러 임진강과 예성강을 동서로 갈라놓음.
+  - `term_year`: ?
+
+</details>
+
+### 사람 검수 입력
+
+- Manual status: `PENDING`
+- Manual reason: (미입력)
+- Reviewer: (미입력)
+- Reviewed at: (미입력)
+
+[목록으로 돌아가기](#case-목록)
+
+---
+
+<a id="case-015"></a>
+## 015. 3강 · PENDING
+
+- Case ID: `related-resolution-case:4725a7ce6ab7e694a8df`
+- 모델 게이트: `NEEDS_MANUAL_REVIEW`
+- 검증 사유: `AMBIGUOUS_SOURCE_REMAINS`
+- 후보 수: 24개
+
+### 모델 판정 사유
+
+> problem_count가 0이고 problem_context_samples도 비어 있어 기출문제가 실제로 가리키는 target 실체를 식별할 단서가 없다. 따라서 동일 표기이나 서로 다른 불교 승직 삼강(三綱), 유교 윤리 삼강(三綱), 한양 남쪽의 삼강(三江), 강화 인근의 삼강(三江) 중 어느 것을 canonical target으로 삼을 수 없다. 삼강록·삼강행실도·삼강문·삼강서원 등 확장 표제어와 body-mention 후보도 target이 확정되지 않아 identity, 관계 근거 자료, 검색 오탐 중 어느 분류인지 확정할 수 없으므로 canonical 대안이나 일괄 거절로 처리하지 않았다.
+
+### 현재 후보 분류
+
+| 역할 | 원천·표제 | Candidate ID |
+|---|---|---|
+| AMBIGUOUS | THESAURUS · 3강 | `source-candidate:d374a97ef2395f01c5a7` |
+| AMBIGUOUS | THESAURUS · 3강 | `source-candidate:9cc3bff3ebbd2be4a2b6` |
+| AMBIGUOUS | THESAURUS · 3강 | `source-candidate:932fb49fb1c0e67fe6da` |
+| AMBIGUOUS | THESAURUS · 3강 | `source-candidate:80cb461437cae60bcc30` |
+| AMBIGUOUS | THESAURUS · 삼강록 | `source-candidate:c7f00e598869b3fb3430` |
+| AMBIGUOUS | AKS · 강진 | `source-candidate:fb75cb00fda253507480` |
+| AMBIGUOUS | AKS · 강화군 | `source-candidate:63dee099e25a0d73fa50` |
+| AMBIGUOUS | AKS · 경연 | `source-candidate:7aab6362e1af4d493860` |
+| AMBIGUOUS | AKS · 경포대 | `source-candidate:d3a6c7f351f3544b8c01` |
+| AMBIGUOUS | AKS · 두륜산 대흥사 | `source-candidate:d30743acbb8f249e0dca` |
+| AMBIGUOUS | AKS · 삼강록속 | `source-candidate:a2d2a7be8e2133d67a23` |
+| AMBIGUOUS | AKS · 고씨삼강문 | `source-candidate:f2ce7634d126cf1249a6` |
+| AMBIGUOUS | AKS · 삼강행실도 | `source-candidate:222b42eb8903fbaacc38` |
+| AMBIGUOUS | AKS · 속수삼강록 | `source-candidate:bb097902bda9f4070ca5` |
+| AMBIGUOUS | AKS · 양씨 삼강문 | `source-candidate:e4c4a54ff8ffe50b52fd` |
+| AMBIGUOUS | AKS · 삼강행실도 | `source-candidate:53ce11e2aa56a9b84deb` |
+| AMBIGUOUS | AKS · 속삼강행실도 | `source-candidate:fe629587bb42c400ca10` |
+| AMBIGUOUS | AKS · 동국신속삼강행실도 | `source-candidate:7ac9e6b6163f10795bd9` |
+| AMBIGUOUS | AKS · 대학강목잠 | `source-candidate:602aa0664779fd26860b` |
+| AMBIGUOUS | AKS · 해삼 | `source-candidate:39e9542c65d4177d73e5` |
+| AMBIGUOUS | AKS · 도감전 | `source-candidate:f10640be753a2daf1cc0` |
+| AMBIGUOUS | AKS · 삼강록 | `source-candidate:6bd3ded37ed350ca9cee` |
+| AMBIGUOUS | AKS · 삼강서원 | `source-candidate:db8bf6de55dad858026d` |
+| AMBIGUOUS | AKS · 삼강서원 | `source-candidate:d980ef7db7ee6321a385` |
+
+### Canonical 대안
+
+- 없음
+### Evidence only
+
+- 없음
+
+### Rejected
+
+- 없음
+
+### Ambiguous
+
+- `source-candidate:d374a97ef2395f01c5a7` — THESAURUS · 3강
+- `source-candidate:9cc3bff3ebbd2be4a2b6` — THESAURUS · 3강
+- `source-candidate:932fb49fb1c0e67fe6da` — THESAURUS · 3강
+- `source-candidate:80cb461437cae60bcc30` — THESAURUS · 3강
+- `source-candidate:c7f00e598869b3fb3430` — THESAURUS · 삼강록
+- `source-candidate:fb75cb00fda253507480` — AKS · 강진
+- `source-candidate:63dee099e25a0d73fa50` — AKS · 강화군
+- `source-candidate:7aab6362e1af4d493860` — AKS · 경연
+- `source-candidate:d3a6c7f351f3544b8c01` — AKS · 경포대
+- `source-candidate:d30743acbb8f249e0dca` — AKS · 두륜산 대흥사
+- `source-candidate:a2d2a7be8e2133d67a23` — AKS · 삼강록속
+- `source-candidate:f2ce7634d126cf1249a6` — AKS · 고씨삼강문
+- `source-candidate:222b42eb8903fbaacc38` — AKS · 삼강행실도
+- `source-candidate:bb097902bda9f4070ca5` — AKS · 속수삼강록
+- `source-candidate:e4c4a54ff8ffe50b52fd` — AKS · 양씨 삼강문
+- `source-candidate:53ce11e2aa56a9b84deb` — AKS · 삼강행실도
+- `source-candidate:fe629587bb42c400ca10` — AKS · 속삼강행실도
+- `source-candidate:7ac9e6b6163f10795bd9` — AKS · 동국신속삼강행실도
+- `source-candidate:602aa0664779fd26860b` — AKS · 대학강목잠
+- `source-candidate:39e9542c65d4177d73e5` — AKS · 해삼
+- `source-candidate:f10640be753a2daf1cc0` — AKS · 도감전
+- `source-candidate:6bd3ded37ed350ca9cee` — AKS · 삼강록
+- `source-candidate:db8bf6de55dad858026d` — AKS · 삼강서원
+- `source-candidate:d980ef7db7ee6321a385` — AKS · 삼강서원
+
+<details>
+<summary><strong>후보 24개의 원천 문맥 펼치기</strong></summary>
+
+#### 후보 1. 3강 · THESAURUS
+
+- Candidate ID: `source-candidate:d374a97ef2395f01c5a7`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `THESAURUS:TERM:19165:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 三綱
+- 시대: 고대
+- 원천 문맥:
+  - `term_name`: 3강
+  - `hanja`: 三綱
+  - `era`: 고대
+  - `thesaurus_category`: 전통사상·종교>불교>불교종파·용어
+  - `description`: 신라시대 절에 딸린 3가지의 승직(僧職).
+  - `term_year`: ?-?
+  - `term_remark`: 불교
+
+#### 후보 2. 3강 · THESAURUS
+
+- Candidate ID: `source-candidate:9cc3bff3ebbd2be4a2b6`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `THESAURUS:TERM:21026174:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 三綱
+- 시대: (없음)
+- 원천 문맥:
+  - `term_name`: 3강
+  - `hanja`: 三綱
+  - `era`: 통시대
+  - `thesaurus_category`: 전통사상·종교>유교>유교사상·신앙
+  - `description`: 유교 윤리에서의 세 가지 기본 강령.
+  - `term_year`: ?-?
+  - `term_remark`: 유교
+
+#### 후보 3. 3강 · THESAURUS
+
+- Candidate ID: `source-candidate:932fb49fb1c0e67fe6da`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `THESAURUS:TERM:24340:sha256-1022516a18f91e61`
+- Entity type: `Place`
+- 한자: 三江
+- 시대: 조선시대
+- 원천 문맥:
+  - `term_name`: 3강
+  - `hanja`: 三江
+  - `era`: 조선시대
+  - `thesaurus_category`: 지명
+  - `description`: 조선시대 한양(漢陽) 남쪽을 흐르는 한강(漢江) 구간을 나누어 부르던 이름. 협의의 한강, 용산강(龍山江), 서강(西江)을 말함.
+  - `term_year`: 1392-1876
+  - `term_remark`: 한강
+
+#### 후보 4. 3강 · THESAURUS
+
+- Candidate ID: `source-candidate:80cb461437cae60bcc30`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `THESAURUS:TERM:24343:sha256-1022516a18f91e61`
+- Entity type: `Place`
+- 한자: 三江
+- 시대: 조선시대
+- 원천 문맥:
+  - `term_name`: 3강
+  - `hanja`: 三江
+  - `era`: 조선시대
+  - `thesaurus_category`: 지명
+  - `description`: 조선시대 강화도로 흘러드는 한강(漢江), 임진강(臨津江), 예성강(禮成江)을 일컫던 말.
+  - `term_year`: 1392-1876
+  - `term_remark`: 강화
+
+#### 후보 5. 삼강록 · THESAURUS
+
+- Candidate ID: `source-candidate:c7f00e598869b3fb3430`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `THESAURUS:TERM:25124:sha256-1022516a18f91e61`
+- Entity type: `Work`
+- 한자: 三綱錄
+- 시대: 조선후기
+- 원천 문맥:
+  - `term_name`: 삼강록
+  - `hanja`: 三綱錄
+  - `era`: 조선후기
+  - `thesaurus_category`: 서명
+  - `description`: 1776년(영조 52)부터 1783년(정조 7) 매 식년(式年)마다 각 도에서 충(忠)·효(孝)·열(烈)의 삼강에 뛰어난 사람을 뽑은 책.
+  - `term_year`: 조선시대
+
+#### 후보 6. 강진 · AKS
+
+- Candidate ID: `source-candidate:fb75cb00fda253507480`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `AKS:ARTICLE:E0001403:sha256-704d8ea620c542f5`
+- Entity type: `Person`
+- 한자: 姜溍, 對山, 進汝
+- 시대: 조선, 조선 후기
+- 원천 문맥:
+  - `headword`: 강진
+  - `aliases`: 대산(對山), 진여(進汝)
+  - `origin`: 姜溍
+  - `headword_origin`: 강진(姜溍)
+  - `primary_type`: 인물/전통 인물
+  - `era`: 조선/조선 후기
+  - `definition`: 조선 후기 규장각검서관, 안협현감 등을 역임한 문신.
+  - `snippet`: 043866)을 위문하였으며, 그해 다시 규장각검서관으로 복직하였다. 이후 1847년(헌종 13) 강원도 안협현감(安峽縣監)이 되었으며, 1853년(철종 4) 안협현감에서 물러난 뒤, 1858년(철종
+
+#### 후보 7. 강화군 · AKS
+
+- Candidate ID: `source-candidate:63dee099e25a0d73fa50`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `AKS:ARTICLE:E0001503:sha256-704d8ea620c542f5`
+- Entity type: `Place`
+- 한자: 江華郡
+- 시대: 현대
+- 원천 문맥:
+  - `headword`: 강화군
+  - `origin`: 江華郡
+  - `headword_origin`: 강화군(江華郡)
+  - `primary_type`: 지명/행정지명·마을
+  - `era`: 현대
+  - `definition`: 인천광역시 북서부 한강의 입구 황해에 위치한 군.
+  - `snippet`: 령해 해구군이라 개칭했고, 790년(원성왕 6)혈구진이라는 군진을 설치하였다. 940년(태조 23) 강화로 개칭하고 현을 두었는데, 이 때 비로소 강화라는 이름이 등장하게 되었다. 몽고의 제2차 침입 직
+
+#### 후보 8. 경연 · AKS
+
+- Candidate ID: `source-candidate:7aab6362e1af4d493860`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `AKS:ARTICLE:E0002681:sha256-704d8ea620c542f5`
+- Entity type: `Concept`
+- 한자: 經筵, 經幄, 經帷
+- 시대: 고려, 고려 전기, 조선
+- 원천 문맥:
+  - `headword`: 경연
+  - `aliases`: 경악(經幄), 경유(經帷)
+  - `origin`: 經筵
+  - `headword_origin`: 경연(經筵)
+  - `primary_type`: 제도/법령·제도
+  - `era`: 고려/고려 전기 | 조선
+  - `definition`: 고려시대부터 조선시대까지, 국왕과 신하들이 유학 경전, 역사서 등을 강론하면서 학문과 시무를 논하던 일.
+  - `snippet`: 서 비롯되었다. 당나라 때는 한림원(翰林院)에 시강학사(侍講學士), 시독학사(侍讀學士)를 두는 등 어전[^3] 강의가 제도화되었다. 유학이 발달한 송나라 때는 경연관 직제가 더욱 정비되어 강의 교재가 풍부해졌
+
+#### 후보 9. 경포대 · AKS
+
+- Candidate ID: `source-candidate:d3a6c7f351f3544b8c01`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `AKS:ARTICLE:E0002980:sha256-704d8ea620c542f5`
+- Entity type: `Heritage`
+- 한자: 鏡浦臺
+- 시대: 고려, 고려 후기
+- 원천 문맥:
+  - `headword`: 경포대
+  - `origin`: 鏡浦臺
+  - `headword_origin`: 경포대(鏡浦臺)
+  - `primary_type`: 유적/건물
+  - `era`: 고려/고려 후기
+  - `definition`: 강원도 강릉시에 있는 고려후기 강원도 존무사 박숙정이 건립한 누정. 누각·조경건축물.
+  - `snippet`: 내용 정면 5칸, 측면 5칸의 팔작지붕건물. 2019년 보물로 지정되었다. 1326년(충숙왕 13) 강원도 존무사(存撫使) 박숙정(朴淑貞)에 의하여 신라 사선(四仙)이 놀던 방해정 뒷산 인월사(印月寺) 터에
+
+#### 후보 10. 두륜산 대흥사 · AKS
+
+- Candidate ID: `source-candidate:d30743acbb8f249e0dca`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `AKS:ARTICLE:E0015277:sha256-704d8ea620c542f5`
+- Entity type: `Heritage`
+- 한자: 頭輪山, 大興寺, 大芚寺
+- 시대: 고대, 삼국, 신라
+- 원천 문맥:
+  - `headword`: 두륜산 대흥사
+  - `aliases`: 대둔사(大芚寺), 한듬절
+  - `origin`: 頭輪山 大興寺
+  - `headword_origin`: 두륜산 대흥사(頭輪山 大興寺)
+  - `primary_type`: 유적/건물
+  - `era`: 고대/삼국/신라
+  - `definition`: 전라남도 해남군 삼산면 두륜산(頭輪山)에 있는 서산대사의 의발이 전해지는 사찰.
+  - `snippet`: 각 12명이 기록되어 있지만 『대둔사지』 편찬 이후 종사와 강사에 1명씩을 추가하여, 13종사와 13강사로 널리 알려져 있다. 13종사는 [풍담 의심(1592~1665)](E0043311) - [취여 삼우(16
+
+#### 후보 11. 삼강록속 · AKS
+
+- Candidate ID: `source-candidate:a2d2a7be8e2133d67a23`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `AKS:ARTICLE:E0026447:sha256-704d8ea620c542f5`
+- Entity type: `Work`
+- 한자: 三綱錄續
+- 시대: 조선, 조선 후기
+- 원천 문맥:
+  - `headword`: 삼강록속
+  - `origin`: 三綱錄續
+  - `headword_origin`: 삼강록속(三綱錄續)
+  - `primary_type`: 문헌/고서
+  - `era`: 조선/조선 후기
+  - `definition`: 조선 후기, 삼강 행실로 현창할 만한 충신, 효자, 열녀의 사적을 식년 단위로 기록하여 간행된 책.
+
+#### 후보 12. 고씨삼강문 · AKS
+
+- Candidate ID: `source-candidate:f2ce7634d126cf1249a6`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `AKS:ARTICLE:E0003793:sha256-704d8ea620c542f5`
+- Entity type: `Heritage`
+- 한자: 高氏三綱門
+- 시대: 조선, 조선 후기
+- 원천 문맥:
+  - `headword`: 고씨삼강문
+  - `origin`: 高氏三綱門
+  - `headword_origin`: 고씨삼강문(高氏三綱門)
+  - `primary_type`: 유적/건물
+  - `era`: 조선/조선 후기
+  - `definition`: 조선 중기의 문관·의병장인 고경명(1533∼1592) 일가 7명의 충효열 삼강문.
+
+#### 후보 13. 삼강행실도 · AKS
+
+- Candidate ID: `source-candidate:222b42eb8903fbaacc38`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `AKS:ARTICLE:E0026452:sha256-704d8ea620c542f5`
+- Entity type: `Work`
+- 한자: 三綱行實圖
+- 시대: 조선, 조선 전기, 조선 후기
+- 원천 문맥:
+  - `headword`: 삼강행실도
+  - `origin`: 三綱行實圖
+  - `headword_origin`: 삼강행실도(三綱行實圖)
+  - `primary_type`: 문헌/고서
+  - `era`: 조선/조선 전기 | 조선/조선 후기
+  - `definition`: 1434년 직제학 설순 등이 왕명으로 우리나라와 중국의 서적에서 군신·부자·부부의 삼강에 모범이 될만한 충신·효자·열녀의 행실을 모아 편찬한 언행록. 교훈서.
+
+#### 후보 14. 속수삼강록 · AKS
+
+- Candidate ID: `source-candidate:bb097902bda9f4070ca5`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `AKS:ARTICLE:E0030423:sha256-704d8ea620c542f5`
+- Entity type: `Work`
+- 한자: 續修三綱錄
+- 시대: 근대, 대한제국기
+- 원천 문맥:
+  - `headword`: 속수삼강록
+  - `origin`: 續修三綱錄
+  - `headword_origin`: 속수삼강록(續修三綱錄)
+  - `primary_type`: 문헌/고서
+  - `era`: 근대/대한제국기
+  - `definition`: 1904년부터 1909년까지 경약소에서 정은채가 전국 13도의 충신·효자·열부의 전기를 수집하여 편찬한 교훈서. 삼강록.
+
+#### 후보 15. 양씨 삼강문 · AKS
+
+- Candidate ID: `source-candidate:e4c4a54ff8ffe50b52fd`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `AKS:ARTICLE:E0035637:sha256-704d8ea620c542f5`
+- Entity type: `Heritage`
+- 한자: 梁氏, 三綱門
+- 시대: 조선, 조선 후기
+- 원천 문맥:
+  - `headword`: 양씨 삼강문
+  - `origin`: 梁氏 三綱門
+  - `headword_origin`: 양씨 삼강문(梁氏 三綱門)
+  - `primary_type`: 유적/건물
+  - `era`: 조선/조선 후기
+  - `definition`: 광주광역시 광산구 박효동에 있는 조선의 문신이며 임진왜란 때 활약한 양산숙 일가 6명의 충효열 삼강문.
+
+#### 후보 16. 삼강행실도 · AKS
+
+- Candidate ID: `source-candidate:53ce11e2aa56a9b84deb`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `AKS:ARTICLE:E0075641:sha256-704d8ea620c542f5`
+- Entity type: `Work`
+- 한자: 三綱行實道
+- 시대: 조선, 조선 전기
+- 원천 문맥:
+  - `headword`: 삼강행실도
+  - `origin`: 三綱行實道
+  - `headword_origin`: 삼강행실도(三綱行實道)
+  - `primary_type`: 문헌/고서
+  - `era`: 조선/조선 전기
+  - `definition`: 조선전기 직제학 설순 등이 왕명으로 삼강(三綱)의 모범이 될 만한 우리나라와 중국의 충신·효자·열녀의 행실을 모아 만든 언행록. 교훈서.
+
+#### 후보 17. 속삼강행실도 · AKS
+
+- Candidate ID: `source-candidate:fe629587bb42c400ca10`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `AKS:ARTICLE:E0030419:sha256-704d8ea620c542f5`
+- Entity type: `Work`
+- 한자: 續三綱行實圖
+- 시대: 조선, 조선 전기, 조선 후기
+- 원천 문맥:
+  - `headword`: 속삼강행실도
+  - `origin`: 續三綱行實圖
+  - `headword_origin`: 속삼강행실도(續三綱行實圖)
+  - `primary_type`: 문헌/고서
+  - `era`: 조선/조선 전기 | 조선/조선 후기
+  - `definition`: 조선전기 문신·학자 신용개 『삼강행실도』의 속편으로 1514년에 편찬한 교훈서. 행실도.
+
+#### 후보 18. 동국신속삼강행실도 · AKS
+
+- Candidate ID: `source-candidate:7ac9e6b6163f10795bd9`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `AKS:ARTICLE:E0016275:sha256-704d8ea620c542f5`
+- Entity type: `Work`
+- 한자: 東國新續三綱行實圖
+- 시대: 조선, 조선 후기
+- 원천 문맥:
+  - `headword`: 동국신속삼강행실도
+  - `origin`: 東國新續三綱行實圖
+  - `headword_origin`: 동국신속삼강행실도(東國新續三綱行實圖)
+  - `primary_type`: 문헌/고서
+  - `era`: 조선/조선 후기
+  - `definition`: 조선시대 때의 문신, 이성 등이 왕명을 받아 『삼강행실도』·『속삼강행실도』의 속편으로 편찬한 1617년에 18권 18책으로 간행한 예서.
+
+#### 후보 19. 대학강목잠 · AKS
+
+- Candidate ID: `source-candidate:602aa0664779fd26860b`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `AKS:ARTICLE:E0014888:sha256-704d8ea620c542f5`
+- Entity type: `Work`
+- 한자: 大學綱目箴, 大學三綱八目箴
+- 시대: 조선, 조선 전기
+- 원천 문맥:
+  - `headword`: 대학강목잠
+  - `aliases`: 대학삼강팔목잠(大學三綱八目箴)
+  - `origin`: 大學綱目箴
+  - `headword_origin`: 대학강목잠(大學綱目箴)
+  - `primary_type`: 문헌/고서
+  - `era`: 조선/조선 전기
+  - `definition`: 조선전기 문신·학자 유숭조가 『대학』의 삼강령과 팔조목을 시행하는 방편으로 1511년에 간행한 교훈서. 잠언집.
+
+#### 후보 20. 해삼 · AKS
+
+- Candidate ID: `source-candidate:39e9542c65d4177d73e5`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `AKS:ARTICLE:E0062606:sha256-704d8ea620c542f5`
+- Entity type: `(빈 값)`
+- 한자: 海蔘
+- 시대: 현대
+- 원천 문맥:
+  - `headword`: 해삼
+  - `origin`: 海蔘
+  - `headword_origin`: 해삼(海蔘)
+  - `primary_type`: 생물/동물
+  - `era`: 현대
+  - `definition`: 해삼강에 속하는 극피동물의 총칭.
+
+#### 후보 21. 도감전 · AKS
+
+- Candidate ID: `source-candidate:f10640be753a2daf1cc0`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `AKS:ARTICLE:E0015478:sha256-704d8ea620c542f5`
+- Entity type: `Concept`
+- 한자: 道監典
+- 시대: 고대, 남북국, 통일신라
+- 원천 문맥:
+  - `headword`: 도감전
+  - `aliases`: 삼강전
+  - `origin`: 道監典
+  - `headword_origin`: 도감전(道監典)
+  - `primary_type`: 제도/법령·제도
+  - `era`: 고대/남북국/통일신라
+  - `definition`: 신라 하대의 관서로서 특히 불사(佛事)의 조영을 위해 승관(僧官)들로 편성한 공사감독기관.
+
+#### 후보 22. 삼강록 · AKS
+
+- Candidate ID: `source-candidate:6bd3ded37ed350ca9cee`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `AKS:ARTICLE:E0026446:sha256-704d8ea620c542f5`
+- Entity type: `Work`
+- 한자: 三綱錄
+- 시대: 조선, 조선 전기, 조선 후기
+- 원천 문맥:
+  - `headword`: 삼강록
+  - `origin`: 三綱錄
+  - `headword_origin`: 삼강록(三綱錄)
+  - `primary_type`: 문헌/고서
+  - `era`: 조선/조선 전기 | 조선/조선 후기
+  - `definition`: 조선시대. 충·효·열로 현창할 만한 사람들을 가려서 간행 배포한 문헌.
+
+#### 후보 23. 삼강서원 · AKS
+
+- Candidate ID: `source-candidate:db8bf6de55dad858026d`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `AKS:ARTICLE:E0026449:sha256-704d8ea620c542f5`
+- Entity type: `Heritage`
+- 한자: 三江書院
+- 시대: 조선, 조선 전기
+- 원천 문맥:
+  - `headword`: 삼강서원
+  - `origin`: 三江書院
+  - `headword_origin`: 삼강서원(三江書院)
+  - `primary_type`: 유적/건물
+  - `era`: 조선/조선 전기
+  - `definition`: 경상남도 밀양시 삼랑진읍에 있었던 조선전기 민구현 등 5현과 관련된 서원.
+
+#### 후보 24. 삼강서원 · AKS
+
+- Candidate ID: `source-candidate:d980ef7db7ee6321a385`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `AKS:ARTICLE:E0026450:sha256-704d8ea620c542f5`
+- Entity type: `Heritage`
+- 한자: 三江書院
+- 시대: 조선, 조선 후기
+- 원천 문맥:
+  - `headword`: 삼강서원
+  - `origin`: 三江書院
+  - `headword_origin`: 삼강서원(三江書院)
+  - `primary_type`: 유적/건물
+  - `era`: 조선/조선 후기
+  - `definition`: 경상북도 예천군 풍양면에 있었던 조선후기 정몽주 등 3인의 선현을 추모하기 위해 창건한 서원.
+
+</details>
+
+### 사람 검수 입력
+
+- Manual status: `PENDING`
+- Manual reason: (미입력)
+- Reviewer: (미입력)
+- Reviewed at: (미입력)
+
+[목록으로 돌아가기](#case-목록)
+
+---
+
+<a id="case-016"></a>
+## 016. 가야 · PENDING
+
+- Case ID: `related-resolution-case:30dcd53fc2837ff95398`
+- 모델 게이트: `NEEDS_MANUAL_REVIEW`
+- 검증 사유: `INSUFFICIENT_PAIR_EVIDENCE`
+- 후보 수: 10개
+
+### 모델 판정 사유
+
+> 문제 문맥 표본은 제공되지 않았으나, 입력의 정치체 제안 및 후보들의 일치하는 시대·지역·정의에 따라 용어의 중심 실체를 고대 낙동강 유역의 가야 여러 나라 연합으로 판정하였다. 임나는 가야 또는 금관가야의 별칭이라는 명시적 관계가 있으나 지시 범위가 일반 가야와 금관가야 사이에 갈릴 수 있어 관계 근거로만 분류했다. 가야산·가야금 및 문화재 표기는 동명 또는 포함어·별도 유형일 뿐, 원천 문맥에 정치체 가야와의 구체적 관계가 없으므로 identity에서 제외했다.
+
+### 현재 후보 분류
+
+| 역할 | 원천·표제 | Candidate ID |
+|---|---|---|
+| CANONICAL · 가야 | AKS · 가야 | `source-candidate:02fb2ead4ea4f132aa08` |
+| EVIDENCE_ONLY | AKS · 임나 | `source-candidate:ab1ec9c5002bff77a564` |
+| CANONICAL · 가야 | THESAURUS · 가야 | `source-candidate:e2c607954ed0c0a593ad` |
+| CANONICAL · 가야 | THESAURUS · 가야 | `source-candidate:b050517e19cb8f3d4d61` |
+| CANONICAL · 가야 | THESAURUS · 가야 | `source-candidate:9358ec3db0172f7cecc3` |
+| REJECTED | THESAURUS · 가야 | `source-candidate:a69c6d85b8d4b3d3f5c5` |
+| REJECTED | THESAURUS · 가야산 | `source-candidate:28f7458abac7f2d9bf17` |
+| REJECTED | AKS · 가야금 | `source-candidate:c1f38ba0e65b1335b7c0` |
+| REJECTED | AKS · 가야산 | `source-candidate:cddb49b9048d36baca02` |
+| REJECTED | AKS · 가야산 | `source-candidate:103915e7759264f8e1f9` |
+
+### Canonical 대안
+
+#### 대안 1. 가야
+
+- Entity type: `Polity`
+- 동일 실체 후보:
+  - `source-candidate:02fb2ead4ea4f132aa08` — AKS · 가야
+  - `source-candidate:e2c607954ed0c0a593ad` — THESAURUS · 가야
+  - `source-candidate:b050517e19cb8f3d4d61` — THESAURUS · 가야
+  - `source-candidate:9358ec3db0172f7cecc3` — THESAURUS · 가야
+- 판정 근거: 정치체로서의 가야를 가리킨다. AKS 가야 항목은 기원전 1세기~6세기 경남·경북 일부의 여러 소국 연합이라고 정의하고, THESAURUS 항목들은 기원 전후~562년 낙동강 하류의 여러 국가 총칭이라고 명시한다. 네 원천은 시대·공간·정치체 성격이 일치하며, 인명·지명이라는 일부 색인 비고와 달리 본문 정의 자체가 동일한 고대 가야 정치체를 직접 설명한다.
+
+### Evidence only
+
+- `source-candidate:ab1ec9c5002bff77a564` — AKS · 임나
+
+### Rejected
+
+- `source-candidate:a69c6d85b8d4b3d3f5c5` — THESAURUS · 가야
+- `source-candidate:28f7458abac7f2d9bf17` — THESAURUS · 가야산
+- `source-candidate:c1f38ba0e65b1335b7c0` — AKS · 가야금
+- `source-candidate:cddb49b9048d36baca02` — AKS · 가야산
+- `source-candidate:103915e7759264f8e1f9` — AKS · 가야산
+
+### Ambiguous
+
+- 없음
+
+<details>
+<summary><strong>후보 10개의 원천 문맥 펼치기</strong></summary>
+
+#### 후보 1. 가야 · AKS
+
+- Candidate ID: `source-candidate:02fb2ead4ea4f132aa08`
+- 현재 분류: **CANONICAL · 가야**
+- Source record ID: `AKS:ARTICLE:E0000257:sha256-704d8ea620c542f5`
+- Entity type: `Place`
+- 한자: 加耶, 伽倻, 伽耶, 狗邪, 加羅, 駕洛, 任那
+- 시대: 고대, 삼국, 가야
+- 원천 문맥:
+  - `headword`: 가야
+  - `aliases`: 가야(伽倻), 가야(伽耶), 구야(狗邪), 가라(加羅), 가락(駕洛), 임나(任那)
+  - `origin`: 加耶
+  - `headword_origin`: 가야(加耶)
+  - `primary_type`: 지명/고지명
+  - `era`: 고대/삼국/가야
+  - `definition`: 서기전 1세기~서기 6세기, 경상남도와 경상북도 일부에서 형성된 작은 나라들의 연합.
+
+#### 후보 2. 임나 · AKS
+
+- Candidate ID: `source-candidate:ab1ec9c5002bff77a564`
+- 현재 분류: **EVIDENCE_ONLY**
+- Source record ID: `AKS:ARTICLE:E0047413:sha256-704d8ea620c542f5`
+- Entity type: `Concept`
+- 한자: 任那
+- 시대: 고대, 삼국, 가야
+- 원천 문맥:
+  - `headword`: 임나
+  - `aliases`: 가야, 금관가야, 대가야
+  - `origin`: 任那
+  - `headword_origin`: 임나(任那)
+  - `primary_type`: 개념
+  - `era`: 고대/삼국/가야
+  - `definition`: 가야 혹은 금관가야를 달리 부르던 이름.
+
+#### 후보 3. 가야 · THESAURUS
+
+- Candidate ID: `source-candidate:e2c607954ed0c0a593ad`
+- 현재 분류: **CANONICAL · 가야**
+- Source record ID: `THESAURUS:TERM:1052:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 伽耶
+- 시대: 삼국시대
+- 원천 문맥:
+  - `term_name`: 가야
+  - `hanja`: 伽耶
+  - `era`: 삼국시대
+  - `thesaurus_category`: 역사일반>국가>고대국가
+  - `description`: 기원 전후부터 562년까지 낙동강 하류지역에 있던 여러 국가의 총칭 또는 그 지역에 위치한 각 국가들의 명칭.
+  - `term_year`: ?-562
+
+#### 후보 4. 가야 · THESAURUS
+
+- Candidate ID: `source-candidate:b050517e19cb8f3d4d61`
+- 현재 분류: **CANONICAL · 가야**
+- Source record ID: `THESAURUS:TERM:90280:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: (없음)
+- 시대: (없음)
+- 원천 문맥:
+  - `term_name`: 가야
+  - `description`: 기원 전후부터 562년까지 낙동강 하류지역에 있던 여러 국가의 총칭 또는 그 지역에 위치한 각 국가들의 명칭.
+  - `term_remark`: 인명
+
+#### 후보 5. 가야 · THESAURUS
+
+- Candidate ID: `source-candidate:9358ec3db0172f7cecc3`
+- 현재 분류: **CANONICAL · 가야**
+- Source record ID: `THESAURUS:TERM:90396:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: (없음)
+- 시대: (없음)
+- 원천 문맥:
+  - `term_name`: 가야
+  - `description`: 기원 전후부터 562년까지 낙동강 하류지역에 있던 여러 국가의 총칭 또는 그 지역에 위치한 각 국가들의 명칭.
+  - `term_remark`: 지명
+
+#### 후보 6. 가야 · THESAURUS
+
+- Candidate ID: `source-candidate:a69c6d85b8d4b3d3f5c5`
+- 현재 분류: **REJECTED**
+- Source record ID: `THESAURUS:TERM:91426:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: (없음)
+- 시대: (없음)
+- 원천 문맥:
+  - `term_name`: 가야
+  - `term_remark`: 문화재
+
+#### 후보 7. 가야산 · THESAURUS
+
+- Candidate ID: `source-candidate:28f7458abac7f2d9bf17`
+- 현재 분류: **REJECTED**
+- Source record ID: `THESAURUS:TERM:20979360:sha256-1022516a18f91e61`
+- Entity type: `Place`
+- 한자: 伽倻山
+- 시대: (없음)
+- 원천 문맥:
+  - `term_name`: 가야산
+  - `hanja`: 伽倻山
+  - `era`: 통시대
+  - `thesaurus_category`: 지명
+  - `description`: 경상남도 합천군 가야면·가천면·수륜면과 경상북도 성주군에 걸쳐 있는 산. 높이 1,430m.
+  - `term_year`: ?
+
+#### 후보 8. 가야금 · AKS
+
+- Candidate ID: `source-candidate:c1f38ba0e65b1335b7c0`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0000261:sha256-704d8ea620c542f5`
+- Entity type: `Heritage`
+- 한자: 伽倻琴
+- 시대: (없음)
+- 원천 문맥:
+  - `headword`: 가야금
+  - `aliases`: 가야고, 가얏고
+  - `origin`: 伽倻琴
+  - `headword_origin`: 가야금(伽倻琴)
+  - `primary_type`: 물품
+  - `era`: 미상
+  - `definition`: 우리나라 고유의 대표적인 현악기.
+
+#### 후보 9. 가야산 · AKS
+
+- Candidate ID: `source-candidate:cddb49b9048d36baca02`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0000272:sha256-704d8ea620c542f5`
+- Entity type: `Place`
+- 한자: 伽倻山
+- 시대: (없음)
+- 원천 문맥:
+  - `headword`: 가야산
+  - `aliases`: 우두산, 설산, 상왕산, 중향산, 기달산, 지달산
+  - `origin`: 伽倻山
+  - `headword_origin`: 가야산(伽倻山)
+  - `primary_type`: 지명/자연지명
+  - `era`: 미상
+  - `definition`: 경상남도 합천군 가야면과 경상북도 성주군 가천면 및 수륜면에 걸쳐 있는 산.
+
+#### 후보 10. 가야산 · AKS
+
+- Candidate ID: `source-candidate:103915e7759264f8e1f9`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0000273:sha256-704d8ea620c542f5`
+- Entity type: `Place`
+- 한자: 伽倻山, 象王山
+- 시대: (없음)
+- 원천 문맥:
+  - `headword`: 가야산
+  - `aliases`: 상왕산(象王山)
+  - `origin`: 伽倻山
+  - `headword_origin`: 가야산(伽倻山)
+  - `primary_type`: 지명/자연지명
+  - `era`: 미상
+  - `definition`: 충청남도 서산시 해미면과 예산군 덕산면에 걸쳐 있는 높이 678m의 산.
+
+</details>
+
+### 사람 검수 입력
+
+- Manual status: `PENDING`
+- Manual reason: (미입력)
+- Reviewer: (미입력)
+- Reviewed at: (미입력)
+
+[목록으로 돌아가기](#case-목록)
+
+---
+
+<a id="case-017"></a>
+## 017. 조병철 · PENDING
+
+- Case ID: `related-resolution-case:03b7e3544f47d87ab2f3`
+- 모델 게이트: `NEEDS_MANUAL_REVIEW`
+- 검증 사유: `AMBIGUOUS_SOURCE_REMAINS`
+- 후보 수: 5개
+
+### 모델 판정 사유
+
+> problem_count가 0이고 problem_context_samples가 비어 있어, 동명 인물들 가운데 어느 조병철이 실제 기출문제 target인지 식별할 수 없다. 후보들은 한자·시대·활동이 서로 다른 최소 세 인물(趙秉轍 문신, 趙炳喆 독립운동가, 曺秉哲 문인)로 구분되며, 각 동일 한자·활동 맥락의 후보쌍은 서로 병합 가능해 보이더라도 target 문맥 부재 상태에서 canonical 대안으로 제안할 수 없다.
+
+### 현재 후보 분류
+
+| 역할 | 원천·표제 | Candidate ID |
+|---|---|---|
+| AMBIGUOUS | AKS · 조병철 | `source-candidate:3bdfb140176feedfccc2` |
+| AMBIGUOUS | AKS · 조병철 | `source-candidate:50191999add34a19d4f6` |
+| AMBIGUOUS | ITKC_PERSON · 조병철 | `source-candidate:9c8f48934198c920c996` |
+| AMBIGUOUS | THESAURUS · 조병철 | `source-candidate:b78f658142437ace8371` |
+| AMBIGUOUS | THESAURUS · 조병철 | `source-candidate:b0967187cd711f145da1` |
+
+### Canonical 대안
+
+- 없음
+### Evidence only
+
+- 없음
+
+### Rejected
+
+- 없음
+
+### Ambiguous
+
+- `source-candidate:3bdfb140176feedfccc2` — AKS · 조병철
+- `source-candidate:50191999add34a19d4f6` — AKS · 조병철
+- `source-candidate:9c8f48934198c920c996` — ITKC_PERSON · 조병철
+- `source-candidate:b78f658142437ace8371` — THESAURUS · 조병철
+- `source-candidate:b0967187cd711f145da1` — THESAURUS · 조병철
+
+<details>
+<summary><strong>후보 5개의 원천 문맥 펼치기</strong></summary>
+
+#### 후보 1. 조병철 · AKS
+
+- Candidate ID: `source-candidate:3bdfb140176feedfccc2`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `AKS:ARTICLE:E0051808:sha256-704d8ea620c542f5`
+- Entity type: `Person`
+- 한자: 趙秉轍, 稚田
+- 시대: 조선, 조선 후기, 근대, 개항기
+- 원천 문맥:
+  - `headword`: 조병철
+  - `aliases`: 치전(稚田)
+  - `origin`: 趙秉轍
+  - `headword_origin`: 조병철(趙秉轍)
+  - `primary_type`: 인물/근현대 인물
+  - `era`: 조선/조선 후기 | 근대/개항기
+  - `definition`: 개항기 때, 한성부판윤, 지춘추관사, 예조판서 등을 역임한 문신.
+
+#### 후보 2. 조병철 · AKS
+
+- Candidate ID: `source-candidate:50191999add34a19d4f6`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `AKS:ARTICLE:E0051809:sha256-704d8ea620c542f5`
+- Entity type: `Person`
+- 한자: 趙炳喆
+- 시대: 근대, 개항기, 일제강점기
+- 원천 문맥:
+  - `headword`: 조병철
+  - `origin`: 趙炳喆
+  - `headword_origin`: 조병철(趙炳喆)
+  - `primary_type`: 인물/근현대 인물
+  - `era`: 근대/개항기 | 근대/일제강점기
+  - `definition`: 일제강점기 때, 사이토 총독 저격사건에 가담하여 강우규에게 폭탄을 제공한 독립운동가.
+
+#### 후보 3. 조병철 · ITKC_PERSON
+
+- Candidate ID: `source-candidate:9c8f48934198c920c996`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `ITKC:PERSON:P056321:sha256-2bfbf7f8ab4b1538`
+- Entity type: `Person`
+- 한자: 曺秉哲
+- 시대: (없음)
+- 원천 문맥:
+  - `name`: 조병철
+  - `hanja`: 曺秉哲
+  - `birth_year`: 1895
+  - `death_year`: 1982
+  - `bonkwan`: 창녕(昌寧)
+  - `ja`: 명수(明叟)
+  - `ho`: 설헌(雪軒)
+
+#### 후보 4. 조병철 · THESAURUS
+
+- Candidate ID: `source-candidate:b78f658142437ace8371`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `THESAURUS:TERM:21037628:sha256-1022516a18f91e61`
+- Entity type: `Person`
+- 한자: 趙炳喆
+- 시대: 일제시기
+- 원천 문맥:
+  - `term_name`: 조병철
+  - `hanja`: 趙炳喆
+  - `era`: 일제시기
+  - `thesaurus_category`: 인명
+  - `description`: 일제시기의 독립운동가. 함경남도 원산 출신. 1919년 9월 강우규(姜宇奎)가 사이토(齋藤實)총독을 암살하려는 계획을 알고 폭탄을 제공함.
+  - `term_year`: 1891-1936
+
+#### 후보 5. 조병철 · THESAURUS
+
+- Candidate ID: `source-candidate:b0967187cd711f145da1`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `THESAURUS:TERM:21037634:sha256-1022516a18f91e61`
+- Entity type: `Person`
+- 한자: 趙秉轍
+- 시대: 조선후기
+- 원천 문맥:
+  - `term_name`: 조병철
+  - `hanja`: 趙秉轍
+  - `era`: 조선후기
+  - `thesaurus_category`: 인명
+  - `description`: 조선후기-개항기의 문신. 본관은 풍양(豊壤). 황해도관찰사로 재직 중 1889년(고종 26) 인천거류 일본상인들의 곡물 구입에 대해 방곡령을 실시함.
+  - `term_year`: 1826-?
+
+</details>
+
+### 사람 검수 입력
+
+- Manual status: `PENDING`
+- Manual reason: (미입력)
+- Reviewer: (미입력)
+- Reviewed at: (미입력)
+
+[목록으로 돌아가기](#case-목록)
+
+---
+
+<a id="case-018"></a>
+## 018. 한흥근 · PENDING
+
+- Case ID: `related-resolution-case:8494ed43c3e643892273`
+- 모델 게이트: `NEEDS_MANUAL_REVIEW`
+- 검증 사유: `AMBIGUOUS_SOURCE_REMAINS`
+- 후보 수: 2개
+
+### 모델 판정 사유
+
+> 기출문제 문맥 및 target 식별 단서가 전혀 제공되지 않았으므로, 두 후보가 서로 동일한 한흥근 독립운동가를 가리키는 정황이 있어도 그것이 이 검토 건의 실제 기출 target이라고 확정할 수 없다. 따라서 canonical 대안은 제안하지 않고 모든 후보를 AMBIGUOUS로 분류한다.
+
+### 현재 후보 분류
+
+| 역할 | 원천·표제 | Candidate ID |
+|---|---|---|
+| AMBIGUOUS | AKS · 한흥근 | `source-candidate:36c9cc05e259467e7ddc` |
+| AMBIGUOUS | THESAURUS · 한흥근 | `source-candidate:671a474ceed14c41295c` |
+
+### Canonical 대안
+
+- 없음
+### Evidence only
+
+- 없음
+
+### Rejected
+
+- 없음
+
+### Ambiguous
+
+- `source-candidate:36c9cc05e259467e7ddc` — AKS · 한흥근
+- `source-candidate:671a474ceed14c41295c` — THESAURUS · 한흥근
+
+<details>
+<summary><strong>후보 2개의 원천 문맥 펼치기</strong></summary>
+
+#### 후보 1. 한흥근 · AKS
+
+- Candidate ID: `source-candidate:36c9cc05e259467e7ddc`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `AKS:ARTICLE:E0062093:sha256-704d8ea620c542f5`
+- Entity type: `Person`
+- 한자: 韓興根, 白岩
+- 시대: 근대, 개항기, 현대
+- 원천 문맥:
+  - `headword`: 한흥근
+  - `aliases`: 백암(白岩)
+  - `origin`: 韓興根
+  - `headword_origin`: 한흥근(韓興根)
+  - `primary_type`: 인물/근현대 인물
+  - `era`: 근대/개항기 | 현대
+  - `definition`: 일제강점기 때, 만주와 러시아 일대에서 항일유격대를 조직하여 항일무력투쟁을 전개한 독립운동가.
+
+#### 후보 2. 한흥근 · THESAURUS
+
+- Candidate ID: `source-candidate:671a474ceed14c41295c`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `THESAURUS:TERM:23921:sha256-1022516a18f91e61`
+- Entity type: `Person`
+- 한자: 韓興根
+- 시대: 일제시기
+- 원천 문맥:
+  - `term_name`: 한흥근
+  - `hanja`: 韓興根
+  - `era`: 일제시기
+  - `thesaurus_category`: 인명
+  - `description`: 일제시기 독립운동가. 함경남도 원산 출생. 1919년 강우규(姜宇奎)의 조선총독 암살계획을 도움.
+  - `term_year`: 1886-1948
+
+</details>
+
+### 사람 검수 입력
+
+- Manual status: `PENDING`
+- Manual reason: (미입력)
+- Reviewer: (미입력)
+- Reviewed at: (미입력)
+
+[목록으로 돌아가기](#case-목록)
+
+---
+
+<a id="case-019"></a>
+## 019. 노인동맹단 · VERIFIED
+
+- Case ID: `related-resolution-case:0bc0d77acf760c13137e`
+- 모델 게이트: `NEEDS_MANUAL_REVIEW`
+- 검증 사유: `INSUFFICIENT_PAIR_EVIDENCE`
+- 후보 수: 13개
+- 검수자: MK
+- 검수 시각: Wed Jul 22 2026 18:05:39 GMT+0900 (한국 표준시)
+
+### 모델 판정 사유
+
+> 문제 문맥 표본은 없으나, 정확 일치 원천과 1919년 블라디보스토크라는 동일한 창설 시기·장소 및 본문의 명시적 호칭을 통해 노인동맹단과 ‘노인단’ 원천은 동일한 독립운동단체로 묶었다. 강우규·박은식·유상돈은 단체의 구성원·조직자·활동자이고, 명부는 단체 관련 문헌이므로 단체 자체가 아닌 관계 근거로만 분류했다. 1907년 의병단체 동맹단 및 권업동맹단·신인동맹회·애국동맹단, 현대 개념 노농동맹은 명칭 일부 또는 형태만 유사한 별개 실체이므로 identity에서 제외했다.
+
+### 현재 후보 분류
+
+| 역할 | 원천·표제 | Candidate ID |
+|---|---|---|
+| CANONICAL · 노인동맹단(노인단) | THESAURUS · 노인동맹단 | `source-candidate:3f3f89183286dd27de46` |
+| EVIDENCE_ONLY | AKS · 강우규 | `source-candidate:a3bad3fae72807e4f887` |
+| CANONICAL · 노인동맹단(노인단) | AKS · 노인단 | `source-candidate:345164bca097fb9c37e0` |
+| EVIDENCE_ONLY | AKS · 대한국민노인동맹단명부 | `source-candidate:8ff89b0fe90d877cb35c` |
+| EVIDENCE_ONLY | AKS · 박은식 | `source-candidate:5b8eed98c8bbce59f297` |
+| EVIDENCE_ONLY | AKS · 소년애국단 | `source-candidate:ad9638ee996bbbc3774f` |
+| EVIDENCE_ONLY | THESAURUS · 대한국민노인동맹단명부 | `source-candidate:ffe1c43a736206999cf3` |
+| EVIDENCE_ONLY | AKS · 유상돈 | `source-candidate:90b1de90bd7d05ed0475` |
+| REJECTED | THESAURUS · 동맹단 | `source-candidate:33937868ef8de95d30cb` |
+| REJECTED | AKS · 노농동맹 | `source-candidate:e74d3ac1407af0501a21` |
+| REJECTED | AKS · 권업동맹단 | `source-candidate:7175cae0cf7e6af46a0c` |
+| REJECTED | AKS · 신인동맹회 | `source-candidate:aeabb0d59009bce848df` |
+| REJECTED | AKS · 애국동맹단 | `source-candidate:b0de83132616b62df0af` |
+
+### Canonical 대안
+
+#### 대안 1. 노인동맹단(노인단)
+
+- Entity type: `Organization`
+- 동일 실체 후보:
+  - `source-candidate:3f3f89183286dd27de46` — THESAURUS · 노인동맹단
+  - `source-candidate:345164bca097fb9c37e0` — AKS · 노인단
+- 판정 근거: 두 레코드는 모두 1919년 러시아 블라디보스토크에서 조직된 재외 한인 독립운동단체를 직접 설명한다. AKS의 표제어는 노인단이나, 본문에서 노인동맹단을 구성했다고 명시하며 창설 시기·장소·성격이 일치하므로 동일 단체의 이칭 또는 약칭으로 본다.
+
+### Evidence only
+
+- `source-candidate:a3bad3fae72807e4f887` — AKS · 강우규
+- `source-candidate:8ff89b0fe90d877cb35c` — AKS · 대한국민노인동맹단명부
+- `source-candidate:5b8eed98c8bbce59f297` — AKS · 박은식
+- `source-candidate:ad9638ee996bbbc3774f` — AKS · 소년애국단
+- `source-candidate:ffe1c43a736206999cf3` — THESAURUS · 대한국민노인동맹단명부
+- `source-candidate:90b1de90bd7d05ed0475` — AKS · 유상돈
+
+### Rejected
+
+- `source-candidate:33937868ef8de95d30cb` — THESAURUS · 동맹단
+- `source-candidate:e74d3ac1407af0501a21` — AKS · 노농동맹
+- `source-candidate:7175cae0cf7e6af46a0c` — AKS · 권업동맹단
+- `source-candidate:aeabb0d59009bce848df` — AKS · 신인동맹회
+- `source-candidate:b0de83132616b62df0af` — AKS · 애국동맹단
+
+### Ambiguous
+
+- 없음
+
+<details>
+<summary><strong>후보 13개의 원천 문맥 펼치기</strong></summary>
+
+#### 후보 1. 노인동맹단 · THESAURUS
+
+- Candidate ID: `source-candidate:3f3f89183286dd27de46`
+- 현재 분류: **CANONICAL · 노인동맹단(노인단)**
+- Source record ID: `THESAURUS:TERM:39851359:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 老人同盟團
+- 시대: 일제시기
+- 원천 문맥:
+  - `term_name`: 노인동맹단
+  - `hanja`: 老人同盟團
+  - `era`: 일제시기
+  - `thesaurus_category`: 사회운동·독립운동>독립운동>민족주의운동(독립)
+  - `description`: 1919년 박은식(朴殷植)이 블라디보스톡에서 결성한 65세 이상의 재외 한인들의 독립운동단체. 사이또총독에게 폭탄을 투척한 강우규(姜宇奎)의사가 노인동맹단원임.
+  - `term_year`: 1919-?
+
+#### 후보 2. 강우규 · AKS
+
+- Candidate ID: `source-candidate:a3bad3fae72807e4f887`
+- 현재 분류: **EVIDENCE_ONLY**
+- Source record ID: `AKS:ARTICLE:E0001298:sha256-704d8ea620c542f5`
+- Entity type: `Person`
+- 한자: 姜宇奎, 姜寧一, 曰愚, 燦九
+- 시대: 조선, 조선 후기, 근대, 일제강점기
+- 원천 문맥:
+  - `headword`: 강우규
+  - `aliases`: 강영일(姜寧一), 왈우(曰愚), 찬구(燦九)
+  - `origin`: 姜宇奎
+  - `headword_origin`: 강우규(姜宇奎)
+  - `primary_type`: 인물/근현대 인물
+  - `era`: 조선/조선 후기 | 근대/일제강점기
+  - `definition`: 대한국민노인동맹단 라오허현 지부장으로 사이토 마코토 총독 처단 투탄 의거를 일으킨 독립운동가.
+  - `snippet`: 대한국민노인동맹단 라오허현 지부장으로 사이토 마코토 총독 처단 투탄 의거를 일으킨 독립운동가
+
+#### 후보 3. 노인단 · AKS
+
+- Candidate ID: `source-candidate:345164bca097fb9c37e0`
+- 현재 분류: **CANONICAL · 노인동맹단(노인단)**
+- Source record ID: `AKS:ARTICLE:E0012868:sha256-704d8ea620c542f5`
+- Entity type: `Organization`
+- 한자: 老人團
+- 시대: 근대, 일제강점기
+- 원천 문맥:
+  - `headword`: 노인단
+  - `origin`: 老人團
+  - `headword_origin`: 노인단(老人團)
+  - `primary_type`: 단체
+  - `era`: 근대/일제강점기
+  - `definition`: 1919년 러시아 블라디보스토크에서 조직되었던 독립운동단체.
+  - `snippet`: 남겨주거나 학문과 기예를 전수하더라도 근본적으로 다른 민족의 노예를 벗어나지 못할 것이므로 노인동맹단을 구성한 것이라고 밝히고 있다. 당시 국내에서 [3 · 1운동](E0026772)이 전개되자, 해외이주
+
+#### 후보 4. 대한국민노인동맹단명부 · AKS
+
+- Candidate ID: `source-candidate:8ff89b0fe90d877cb35c`
+- 현재 분류: **EVIDENCE_ONLY**
+- Source record ID: `AKS:ARTICLE:E0014935:sha256-704d8ea620c542f5`
+- Entity type: `Work`
+- 한자: 大韓國民老人同盟團名簿
+- 시대: 근대, 일제강점기
+- 원천 문맥:
+  - `headword`: 대한국민노인동맹단명부
+  - `origin`: 大韓國民老人同盟團名簿
+  - `headword_origin`: 대한국민노인동맹단명부(大韓國民老人同盟團名簿)
+  - `primary_type`: 문헌/고서
+  - `era`: 근대/일제강점기
+  - `definition`: 1919년 노령학교노인동맹단에서 서재필에게 노인동맹단의 총재직을 맡아줄 것을 요청한 글과 단원 명단이 수록된 문서. 서명록.
+  - `snippet`: 1919년 노령학교노인동맹단에서 서재필에게 노인동맹단의 총재직을 맡아줄 것을 요청한 글과 단원 명단이 수록된 문서. 서명록
+
+#### 후보 5. 박은식 · AKS
+
+- Candidate ID: `source-candidate:5b8eed98c8bbce59f297`
+- 현재 분류: **EVIDENCE_ONLY**
+- Source record ID: `AKS:ARTICLE:E0021025:sha256-704d8ea620c542f5`
+- Entity type: `Person`
+- 한자: 朴殷植, 謙谷, 朴箕貞, 白巖, 太白狂奴, 無恥生, 聖七
+- 시대: 조선, 조선 후기, 근대, 일제강점기
+- 원천 문맥:
+  - `headword`: 박은식
+  - `aliases`: 겸곡(謙谷), 박기정(朴箕貞), 백암(白巖). 태백광노(太白狂奴). 무치생(無恥生), 성칠(聖七)
+  - `origin`: 朴殷植
+  - `headword_origin`: 박은식(朴殷植)
+  - `primary_type`: 인물/근현대 인물
+  - `era`: 조선/조선 후기 | 근대/일제강점기
+  - `definition`: 일제강점기 때, 황성신문 및 대한매일신보 주필로 언론을 통한 애국계몽운동을 전개하고, 임시정부 제2대 대통령 등을 역임하였으며, 『한국통사』 등을 저술한 유학자·언론인·독립운동가.
+  - `snippet`: 디보스토크에서 맞이하였다. 이 때가 61세의 고령이었음에도 불구하고 동지들과 함께 대한국민노인동맹단(大韓國民老人同盟團)을 조직해 취지서를 쓰고 지도자로서 활동하였다. 대한국민노인동맹단은 [강
+
+#### 후보 6. 소년애국단 · AKS
+
+- Candidate ID: `source-candidate:ad9638ee996bbbc3774f`
+- 현재 분류: **EVIDENCE_ONLY**
+- Source record ID: `AKS:ARTICLE:E0029974:sha256-704d8ea620c542f5`
+- Entity type: `Organization`
+- 한자: 少年愛國團
+- 시대: 근대, 일제강점기
+- 원천 문맥:
+  - `headword`: 소년애국단
+  - `origin`: 少年愛國團
+  - `headword_origin`: 소년애국단(少年愛國團)
+  - `primary_type`: 단체
+  - `era`: 근대/일제강점기
+  - `definition`: 1919년 러시아 블라디보스토크에서 조직된 독립운동단체.
+  - `snippet`: 시아 거주 동포들 사이 사회주의 운동이 활발히 일어났다. 이에 힘입어 한인사회당, 일세당, 국민의회, 노인동맹단 등은 적극적으로 사회주의운동에 나섰다. 이들 단체는 노선에 따라 경쟁하기도 하였으나 1920
+
+#### 후보 7. 대한국민노인동맹단명부 · THESAURUS
+
+- Candidate ID: `source-candidate:ffe1c43a736206999cf3`
+- 현재 분류: **EVIDENCE_ONLY**
+- Source record ID: `THESAURUS:TERM:10495964:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 大韓國民老人同盟團名簿
+- 시대: 일제시기
+- 원천 문맥:
+  - `term_name`: 대한국민노인동맹단명부
+  - `hanja`: 大韓國民老人同盟團名簿
+  - `era`: 일제시기
+  - `thesaurus_category`: 사회운동·독립운동>독립운동>민족주의운동(독립)
+  - `description`: 1919년 노령한교노인동맹단(露領韓僑老人同盟團)에서 서재필(徐載弼)에게 노인동맹단의 총재직을 맡아줄 것을 요청한 문서에 첨부된 서명록.
+  - `term_year`: 1919
+
+#### 후보 8. 유상돈 · AKS
+
+- Candidate ID: `source-candidate:90b1de90bd7d05ed0475`
+- 현재 분류: **EVIDENCE_ONLY**
+- Source record ID: `AKS:ARTICLE:E0078589:sha256-704d8ea620c542f5`
+- Entity type: `Person`
+- 한자: 劉尙敦, 劉尙燉, 劉鐵, 劉哲, 劉徐澤, 劉相敦
+- 시대: 조선, 조선 후기, 근대, 일제강점기
+- 원천 문맥:
+  - `headword`: 유상돈
+  - `aliases`: 유상돈(劉尙燉), 유철(劉鐵), 유철(劉哲), 유여택(劉徐澤), 유상돈(劉相敦)
+  - `origin`: 劉尙敦
+  - `headword_origin`: 유상돈(劉尙敦)
+  - `primary_type`: 인물/근현대 인물
+  - `era`: 조선/조선 후기 | 근대/일제강점기
+  - `definition`: 일제강점기 연해주 블라디보스토크로 망명하여 권업회, 대한노인동맹단 등을 거치며 활동한 독립운동가.
+
+#### 후보 9. 동맹단 · THESAURUS
+
+- Candidate ID: `source-candidate:33937868ef8de95d30cb`
+- 현재 분류: **REJECTED**
+- Source record ID: `THESAURUS:TERM:10486697:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 同盟團
+- 시대: 근대
+- 원천 문맥:
+  - `term_name`: 동맹단
+  - `hanja`: 同盟團
+  - `era`: 근대
+  - `thesaurus_category`: 사회운동·독립운동>독립운동>의병운동
+  - `description`: 1907년 대한제국 군대가 강제로 해산당하자 박운서(朴雲瑞) 등이 9월 진안군 마이산에서 조직한 항일단체.
+  - `term_year`: 1907-?
+
+#### 후보 10. 노농동맹 · AKS
+
+- Candidate ID: `source-candidate:e74d3ac1407af0501a21`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0070319:sha256-704d8ea620c542f5`
+- Entity type: `Concept`
+- 한자: 勞農同盟
+- 시대: 현대
+- 원천 문맥:
+  - `headword`: 노농동맹
+  - `origin`: 勞農同盟
+  - `headword_origin`: 노농동맹(勞農同盟)
+  - `primary_type`: 개념
+  - `era`: 현대
+  - `definition`: 사회주의 혁명을 위한 계급 투쟁에서 노동자와 농민이 자신들의 정치적 요구를 관철하기 위하여 맺은 동맹.
+
+#### 후보 11. 권업동맹단 · AKS
+
+- Candidate ID: `source-candidate:7175cae0cf7e6af46a0c`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0006985:sha256-704d8ea620c542f5`
+- Entity type: `Organization`
+- 한자: 勸業同盟團
+- 시대: 근대, 대한제국기, 일제강점기
+- 원천 문맥:
+  - `headword`: 권업동맹단
+  - `origin`: 勸業同盟團
+  - `headword_origin`: 권업동맹단(勸業同盟團)
+  - `primary_type`: 단체
+  - `era`: 근대/대한제국기 | 근대/일제강점기
+  - `definition`: 1910년 3월 오운(吳雲) 등이 미국 로스앤젤레스에서 설립한 농산물경영회사.
+
+#### 후보 12. 신인동맹회 · AKS
+
+- Candidate ID: `source-candidate:aeabb0d59009bce848df`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0033298:sha256-704d8ea620c542f5`
+- Entity type: `Organization`
+- 한자: 新人同盟會
+- 시대: 근대, 일제강점기
+- 원천 문맥:
+  - `headword`: 신인동맹회
+  - `origin`: 新人同盟會
+  - `headword_origin`: 신인동맹회(新人同盟會)
+  - `primary_type`: 단체
+  - `era`: 근대/일제강점기
+  - `definition`: 일제강점기인 1922년 2월 서울에서 사회주의자들이 조직하였던 사상단체.
+
+#### 후보 13. 애국동맹단 · AKS
+
+- Candidate ID: `source-candidate:b0de83132616b62df0af`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0035205:sha256-704d8ea620c542f5`
+- Entity type: `Organization`
+- 한자: 愛國同盟團
+- 시대: 근대, 일제강점기
+- 원천 문맥:
+  - `headword`: 애국동맹단
+  - `origin`: 愛國同盟團
+  - `headword_origin`: 애국동맹단(愛國同盟團)
+  - `primary_type`: 단체
+  - `era`: 근대/일제강점기
+  - `definition`: 미주 본토의 한인사회에서 1910년 국치 직전 한일합병 반대투쟁을 목적으로 조직된 민족운동단체.
+
+</details>
+
+### 사람 검수 입력
+
+- Manual status: `VERIFIED`
+- Manual reason: 다른 단체나 인물들이 연관되어있거나 없는경우 REJECTED, CANDIDATE로 잘 분류되어있다
+- Reviewer: MK
+- Reviewed at: Wed Jul 22 2026 18:05:39 GMT+0900 (한국 표준시)
+
+[목록으로 돌아가기](#case-목록)
+
+---
+
+<a id="case-020"></a>
+## 020. 사이토총독저격사건 · VERIFIED
+
+- Case ID: `related-resolution-case:ea4ef1f12c87719d1966`
+- 모델 게이트: `NEEDS_MANUAL_REVIEW`
+- 검증 사유: `INSUFFICIENT_PAIR_EVIDENCE`, `TERM_SOURCE_ALIGNMENT_REVIEW_REQUIRED`
+- 후보 수: 8개
+- 검수자: MK
+- 검수 시각: Wed Jul 22 2026 18:05:39 GMT+0900 (한국 표준시)
+
+### 모델 판정 사유
+
+> 문제 문맥 표본은 없으나 canonical term과 정확히 일치하는 원천이 1919년 강우규의 사이토 총독 저격 사건을 직접 정의하며, ‘사이토 저격 의거’ 원천도 날짜·장소·주체·대상이 일치해 같은 사건으로 병합했다. 조병철·최자남·허형 및 서울 중구 원천은 각각 참여자 또는 발생지를 주 대상으로 하므로 identity가 아니라 명시적 관계 근거로만 분류했다. 8·15저격사건과 장면 부통령 저격사건은 ‘저격사건’이라는 일부 표현만 겹칠 뿐 서로 다른 현대 사건이므로 제외했다.
+
+### 현재 후보 분류
+
+| 역할 | 원천·표제 | Candidate ID |
+|---|---|---|
+| CANONICAL · 사이토총독저격사건(사이토 저격 의거) | THESAURUS · 사이토총독저격사건 | `source-candidate:ee89d7b46347176390f8` |
+| EVIDENCE_ONLY | AKS · 조병철 | `source-candidate:cf9edabdd2daa5bb6076` |
+| EVIDENCE_ONLY | AKS · 최자남 | `source-candidate:77fb64985e552396529c` |
+| EVIDENCE_ONLY | AKS · 허형 | `source-candidate:343e2fc6a14c6757ee54` |
+| EVIDENCE_ONLY | AKS · 서울특별시 중구 | `source-candidate:963e8a655f86b6a01b5d` |
+| CANONICAL · 사이토총독저격사건(사이토 저격 의거) | AKS · 사이토 저격 의거 | `source-candidate:47659909d902c5308068` |
+| REJECTED | AKS · 8·15저격사건 | `source-candidate:699a898bad08ab928362` |
+| REJECTED | AKS · 장면 부통령 저격사건 | `source-candidate:d9acbfe78e854f992564` |
+
+### Canonical 대안
+
+#### 대안 1. 사이토총독저격사건(사이토 저격 의거)
+
+- Entity type: `Event`
+- 동일 실체 후보:
+  - `source-candidate:ee89d7b46347176390f8` — THESAURUS · 사이토총독저격사건
+  - `source-candidate:47659909d902c5308068` — AKS · 사이토 저격 의거
+- 판정 근거: 두 레코드는 모두 1919년 9월 2일 강우규가 제3대 조선 총독으로 부임하던 사이토 마코토를 서울역에서 저격하려 한 동일한 의거를 설명한다. 명칭만 '사이토총독저격사건'과 '사이토 저격 의거'로 다르다.
+
+### Evidence only
+
+- `source-candidate:cf9edabdd2daa5bb6076` — AKS · 조병철
+- `source-candidate:77fb64985e552396529c` — AKS · 최자남
+- `source-candidate:343e2fc6a14c6757ee54` — AKS · 허형
+- `source-candidate:963e8a655f86b6a01b5d` — AKS · 서울특별시 중구
+
+### Rejected
+
+- `source-candidate:699a898bad08ab928362` — AKS · 8·15저격사건
+- `source-candidate:d9acbfe78e854f992564` — AKS · 장면 부통령 저격사건
+
+### Ambiguous
+
+- 없음
+
+<details>
+<summary><strong>후보 8개의 원천 문맥 펼치기</strong></summary>
+
+#### 후보 1. 사이토총독저격사건 · THESAURUS
+
+- Candidate ID: `source-candidate:ee89d7b46347176390f8`
+- 현재 분류: **CANONICAL · 사이토총독저격사건(사이토 저격 의거)**
+- Source record ID: `THESAURUS:TERM:4939:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 齋藤總督狙擊事件
+- 시대: 일제시기
+- 원천 문맥:
+  - `term_name`: 사이토총독저격사건
+  - `hanja`: 齋藤總督狙擊事件
+  - `era`: 일제시기
+  - `thesaurus_category`: 사회운동·독립운동>독립운동>의거·의열투쟁
+  - `description`: 1919년 9월 2일 강우규(姜宇奎)가 조선 총독 사이토 마코토를 저격한 사건.
+  - `term_year`: 1919
+
+#### 후보 2. 조병철 · AKS
+
+- Candidate ID: `source-candidate:cf9edabdd2daa5bb6076`
+- 현재 분류: **EVIDENCE_ONLY**
+- Source record ID: `AKS:ARTICLE:E0051809:sha256-704d8ea620c542f5`
+- Entity type: `Person`
+- 한자: 趙炳喆
+- 시대: 근대, 개항기, 일제강점기
+- 원천 문맥:
+  - `headword`: 조병철
+  - `origin`: 趙炳喆
+  - `headword_origin`: 조병철(趙炳喆)
+  - `primary_type`: 인물/근현대 인물
+  - `era`: 근대/개항기 | 근대/일제강점기
+  - `definition`: 일제강점기 때, 사이토 총독 저격사건에 가담하여 강우규에게 폭탄을 제공한 독립운동가.
+  - `snippet`: 일제강점기 때, 사이토 총독 저격사건에 가담하여 강우규에게 폭탄을 제공한 독립운동가
+
+#### 후보 3. 최자남 · AKS
+
+- Candidate ID: `source-candidate:77fb64985e552396529c`
+- 현재 분류: **EVIDENCE_ONLY**
+- Source record ID: `AKS:ARTICLE:E0057606:sha256-704d8ea620c542f5`
+- Entity type: `Person`
+- 한자: 崔子南
+- 시대: 근대, 개항기, 일제강점기
+- 원천 문맥:
+  - `headword`: 최자남
+  - `origin`: 崔子南
+  - `headword_origin`: 최자남(崔子南)
+  - `primary_type`: 인물/근현대 인물
+  - `era`: 근대/개항기 | 근대/일제강점기
+  - `definition`: 일제강점기 때, 독립운동가들을 지원하고 비밀결사를 조직하는 등 항일투쟁을 전개하였으며, 사이토 총독 저격사건에 가담한 독립운동가.
+  - `snippet`: 일제강점기 때, 독립운동가들을 지원하고 비밀결사를 조직하는 등 항일투쟁을 전개하였으며, 사이토 총독 저격사건에 가담한 독립운동가
+
+#### 후보 4. 허형 · AKS
+
+- Candidate ID: `source-candidate:343e2fc6a14c6757ee54`
+- 현재 분류: **EVIDENCE_ONLY**
+- Source record ID: `AKS:ARTICLE:E0063182:sha256-704d8ea620c542f5`
+- Entity type: `Person`
+- 한자: 許炯
+- 시대: 근대, 개항기, 현대
+- 원천 문맥:
+  - `headword`: 허형
+  - `origin`: 許炯
+  - `headword_origin`: 허형(許炯)
+  - `primary_type`: 인물/근현대 인물
+  - `era`: 근대/개항기 | 현대
+  - `definition`: 일제강점기 때, 사이토 총독 저격사건에 가담하였고, 동아일보, 조선일보, 중앙일보의 지국장을 역임한 언론인·독립운동가.
+  - `snippet`: 일제강점기 때, 사이토 총독 저격사건에 가담하였고, 동아일보, 조선일보, 중앙일보의 지국장을 역임한 언론인·독립운동가
+
+#### 후보 5. 서울특별시 중구 · AKS
+
+- Candidate ID: `source-candidate:963e8a655f86b6a01b5d`
+- 현재 분류: **EVIDENCE_ONLY**
+- Source record ID: `AKS:ARTICLE:E0067021:sha256-704d8ea620c542f5`
+- Entity type: `Place`
+- 한자: 特別市, 中區
+- 시대: 현대
+- 원천 문맥:
+  - `headword`: 서울특별시 중구
+  - `origin`: 서울特別市 中區
+  - `headword_origin`: 서울특별시 중구(서울特別市 中區)
+  - `primary_type`: 지명/행정지명·마을
+  - `era`: 현대
+  - `definition`: 서울특별시의 가장 중심부에 위치한 구.
+  - `snippet`: 가 되었다. 1970년 남대문로5가의 관할이 되어 현재에 이른다. 봉래동2가는 강우규(姜宇奎)의 사이토총독저격사건이 일어났던 곳이기도 하다. 봉래동1가는 칠패시장이 있던 자리이다. 32. 산림동(山林洞) 동쪽은 주
+
+#### 후보 6. 사이토 저격 의거 · AKS
+
+- Candidate ID: `source-candidate:47659909d902c5308068`
+- 현재 분류: **CANONICAL · 사이토총독저격사건(사이토 저격 의거)**
+- Source record ID: `AKS:ARTICLE:E0025892:sha256-704d8ea620c542f5`
+- Entity type: `Event`
+- 한자: 齋藤實, 狙擊, 義擧
+- 시대: 근대, 일제강점기
+- 원천 문맥:
+  - `headword`: 사이토 저격 의거
+  - `origin`: 齋藤實 狙擊 義擧
+  - `headword_origin`: 사이토 저격 의거(齋藤實 狙擊 義擧)
+  - `primary_type`: 사건/사건·사고
+  - `era`: 근대/일제강점기
+  - `definition`: 1919년 9월 2일 강우규(姜宇奎)가 서울역에서 제3대 조선 총독으로 부임해 오던 사이토(齋藤實)를 암살하려다 미수에 그친 일.
+
+#### 후보 7. 8·15저격사건 · AKS
+
+- Candidate ID: `source-candidate:699a898bad08ab928362`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0059770:sha256-704d8ea620c542f5`
+- Entity type: `Event`
+- 한자: 八一五狙擊事件
+- 시대: 현대
+- 원천 문맥:
+  - `headword`: 8·15저격사건
+  - `aliases`: 문세광 사건, 박정희 저격미수사건
+  - `origin`: 八一五狙擊事件
+  - `headword_origin`: 8·15저격사건(八一五狙擊事件)
+  - `primary_type`: 사건/사건·사고
+  - `era`: 현대
+  - `definition`: 1974년 8월 15일, 서울 장충동 국립국장에서 열린 광복절 제29주년 기념식에서 재일교포 2세인 문세광이 박대통령을 암살하기 위해 권총을 발사한 사건.
+
+#### 후보 8. 장면 부통령 저격사건 · AKS
+
+- Candidate ID: `source-candidate:d9acbfe78e854f992564`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0073455:sha256-704d8ea620c542f5`
+- Entity type: `Event`
+- 한자: 張勉, 副統領, 狙擊事件
+- 시대: 현대
+- 원천 문맥:
+  - `headword`: 장면 부통령 저격사건
+  - `aliases`: 9·28사건
+  - `origin`: 張勉 副統領 狙擊事件
+  - `headword_origin`: 장면 부통령 저격사건(張勉 副統領 狙擊事件)
+  - `primary_type`: 사건/사건·사고
+  - `era`: 현대
+  - `definition`: 1956년 9월 28일, 부통령 장면이 저격당한 사건.
+
+</details>
+
+### 사람 검수 입력
+
+- Manual status: `VERIFIED`
+- Manual reason: 8.15저격사건, 부통령저격사건과 사이토총독저격사건을 별개의 사건으로 잘 분류하였음
+- Reviewer: MK
+- Reviewed at: Wed Jul 22 2026 18:05:39 GMT+0900 (한국 표준시)
+
+[목록으로 돌아가기](#case-목록)
+
+---
+
+<a id="case-021"></a>
+## 021. 정재달 · PENDING
+
+- Case ID: `related-resolution-case:cb302be6f77f5e0fc9de`
+- 모델 게이트: `NEEDS_MANUAL_REVIEW`
+- 검증 사유: `INSUFFICIENT_PAIR_EVIDENCE`, `TERM_SOURCE_ALIGNMENT_REVIEW_REQUIRED`
+- 후보 수: 3개
+
+### 모델 판정 사유
+
+> 문제 문맥 표본은 제공되지 않았지만, 용어 자체와 각 원천의 구체적 인물 정보가 일관되게 鄭在達/전우/조동진이라는 동일 독립운동·사회주의 운동가로 수렴한다. 특히 전우 항목의 정재달은 단순 문자열 포함이 아니라 해당 인물의 명시적 이명이므로 별도 인물이 아닌 동일성 구성원으로 분류하였다. 시대 표기의 근대·현대 차이는 일제시기 활동과 해방 후 활동을 함께 포괄한 서지 분류 차이이며, 별도 동명이인이나 확장 표제어를 가리키는 근거는 없다.
+
+### 현재 후보 분류
+
+| 역할 | 원천·표제 | Candidate ID |
+|---|---|---|
+| CANONICAL · 정재달(鄭在達) | AKS · 정재달 | `source-candidate:d64d861c4df8a9783710` |
+| CANONICAL · 정재달(鄭在達) | THESAURUS · 정재달 | `source-candidate:6fe3be4cb24a557c1aa2` |
+| CANONICAL · 정재달(鄭在達) | AKS · 전우 | `source-candidate:afd92ff33ea57ac26f75` |
+
+### Canonical 대안
+
+#### 대안 1. 정재달(鄭在達)
+
+- Entity type: `Person`
+- 동일 실체 후보:
+  - `source-candidate:d64d861c4df8a9783710` — AKS · 정재달
+  - `source-candidate:6fe3be4cb24a557c1aa2` — THESAURUS · 정재달
+  - `source-candidate:afd92ff33ea57ac26f75` — AKS · 전우
+- 판정 근거: 세 후보는 鄭在達이라는 동일 한자명과 전우(田友)·조동진(趙東鎭) 등의 동일한 이명을 공유하는 일제강점기 사회주의·공산주의 운동가를 가리킨다. AKS 정재달 항목은 고려공산청년회 중앙총국 위원 경력을, THESAURUS 항목은 진천 출신·1919년 만세시위·무산자동맹회 활동 및 해방 후 경력을, AKS 전우 항목은 정재달을 명시적 이명으로 제시하면서 무산자동맹회 결성 등의 활동을 설명한다. 전우 항목은 표제만 다를 뿐 정재달 자신을 이명으로 직접 설명한다.
+
+### Evidence only
+
+- 없음
+
+### Rejected
+
+- 없음
+
+### Ambiguous
+
+- 없음
+
+<details>
+<summary><strong>후보 3개의 원천 문맥 펼치기</strong></summary>
+
+#### 후보 1. 정재달 · AKS
+
+- Candidate ID: `source-candidate:d64d861c4df8a9783710`
+- 현재 분류: **CANONICAL · 정재달(鄭在達)**
+- Source record ID: `AKS:ARTICLE:E0050834:sha256-704d8ea620c542f5`
+- Entity type: `Person`
+- 한자: 鄭在達
+- 시대: 근대, 개항기, 일제강점기
+- 원천 문맥:
+  - `headword`: 정재달
+  - `aliases`: 미로노프, 전우, 조동진
+  - `origin`: 鄭在達
+  - `headword_origin`: 정재달(鄭在達)
+  - `primary_type`: 인물/근현대 인물
+  - `era`: 근대/개항기 | 근대/일제강점기
+  - `definition`: 일제강점기 고려공산청년회 중앙총국 위원을 역임한 사회주의운동가.
+
+#### 후보 2. 정재달 · THESAURUS
+
+- Candidate ID: `source-candidate:6fe3be4cb24a557c1aa2`
+- 현재 분류: **CANONICAL · 정재달(鄭在達)**
+- Source record ID: `THESAURUS:TERM:21038041:sha256-1022516a18f91e61`
+- Entity type: `Person`
+- 한자: 鄭在達
+- 시대: 현대
+- 원천 문맥:
+  - `term_name`: 정재달
+  - `hanja`: 鄭在達
+  - `era`: 현대
+  - `thesaurus_category`: 인명
+  - `description`: 일제시기의 공산주의운동가. 본적은 충청북도 진천. 1919년 고향에서 만세시위에 참가. 1922년 무산자동맹회(無産者同盟會)에서 활동함. 해방 후 조선인민공화국 중앙인민위원회 후보위원으로 선정됨.
+  - `term_year`: 1895-?
+
+#### 후보 3. 전우 · AKS
+
+- Candidate ID: `source-candidate:afd92ff33ea57ac26f75`
+- 현재 분류: **CANONICAL · 정재달(鄭在達)**
+- Source record ID: `AKS:ARTICLE:E0066718:sha256-704d8ea620c542f5`
+- Entity type: `Person`
+- 한자: 田友, 鄭在達, 趙東鎭
+- 시대: 근대, 개항기, 현대
+- 원천 문맥:
+  - `headword`: 전우
+  - `aliases`: 정재달(鄭在達), 조동진(趙東鎭)
+  - `origin`: 田友
+  - `headword_origin`: 전우(田友)
+  - `primary_type`: 인물/근현대 인물
+  - `era`: 근대/개항기 | 현대
+  - `definition`: 일제강점기 때, 사회주의운동단체인 무산자동맹회를 결성하고, 신간회 복대표위원회 중앙집행위원 등을 역임한 공산주의자.
+
+</details>
+
+### 사람 검수 입력
+
+- Manual status: `PENDING`
+- Manual reason: (미입력)
+- Reviewer: (미입력)
+- Reviewed at: (미입력)
+
+[목록으로 돌아가기](#case-목록)
+
+---
+
+<a id="case-022"></a>
+## 022. 불랑기자포 · PENDING
+
+- Case ID: `related-resolution-case:89071a8fe3d41f7ff888`
+- 모델 게이트: `NEEDS_MANUAL_REVIEW`
+- 검증 사유: `INSUFFICIENT_PAIR_EVIDENCE`
+- 후보 수: 4개
+
+### 모델 판정 사유
+
+> 정확 일치 후보 2건은 조선시대 화포 불랑기자포 자체를 직접 설명하며, 보물 지정·육군박물관 소장·1563년이라는 유물 식별 맥락과도 양립하므로 하나의 canonical 대안으로 묶었다. 반면 불랑기 후보들은 불랑기자포의 어근과만 겹치는 별도 화포를 대상으로 하며, target과의 명시적 관계 근거가 없으므로 확장·포함 명칭에 따른 오탐으로 제외했다.
+
+### 현재 후보 분류
+
+| 역할 | 원천·표제 | Candidate ID |
+|---|---|---|
+| CANONICAL · 불랑기자포(佛狼機子砲) | AKS · 불랑기자포 | `source-candidate:b96203d7409a6451c6d2` |
+| CANONICAL · 불랑기자포(佛狼機子砲) | THESAURUS · 불랑기자포 | `source-candidate:dbcdf0a8c7774951bf96` |
+| REJECTED | AKS · 불랑기 | `source-candidate:2f158145b8f73d0ab526` |
+| REJECTED | THESAURUS · 불랑기 | `source-candidate:592eb650935bd67933d3` |
+
+### Canonical 대안
+
+#### 대안 1. 불랑기자포(佛狼機子砲)
+
+- Entity type: `Heritage`
+- 동일 실체 후보:
+  - `source-candidate:b96203d7409a6451c6d2` — AKS · 불랑기자포
+  - `source-candidate:dbcdf0a8c7774951bf96` — THESAURUS · 불랑기자포
+- 판정 근거: 두 원천 모두 한자 佛狼機子砲/佛狼機子砲와 조선시대 화포라는 직접적인 식별 정보를 제시한다. AKS 원천은 보물 제861-1·861-2호 및 후장식화포라는 별칭과 함께 화포로 설명하고, THESAURUS 원천은 1563년 육군박물관 소장의 불랑기 실탄 장전용 통신으로 설명한다. 조선시대 불랑기자포라는 동일 유물군을 가리키는 것으로 판단된다.
+
+### Evidence only
+
+- 없음
+
+### Rejected
+
+- `source-candidate:2f158145b8f73d0ab526` — AKS · 불랑기
+- `source-candidate:592eb650935bd67933d3` — THESAURUS · 불랑기
+
+### Ambiguous
+
+- 없음
+
+<details>
+<summary><strong>후보 4개의 원천 문맥 펼치기</strong></summary>
+
+#### 후보 1. 불랑기자포 · AKS
+
+- Candidate ID: `source-candidate:b96203d7409a6451c6d2`
+- 현재 분류: **CANONICAL · 불랑기자포(佛狼機子砲)**
+- Source record ID: `AKS:ARTICLE:E0024965:sha256-704d8ea620c542f5`
+- Entity type: `Heritage`
+- 한자: 佛狼機子砲
+- 시대: 조선, 조선 전기, 조선 후기
+- 원천 문맥:
+  - `headword`: 불랑기자포
+  - `aliases`: 보물 제861-1호, 보물 제861-2호, 후장식화포
+  - `origin`: 佛狼機子砲
+  - `headword_origin`: 불랑기자포(佛狼機子砲)
+  - `primary_type`: 물품
+  - `era`: 조선/조선 전기 | 조선/조선 후기
+  - `definition`: 불씨를 손으로 점화, 발사시키는 화포(火砲).
+
+#### 후보 2. 불랑기자포 · THESAURUS
+
+- Candidate ID: `source-candidate:dbcdf0a8c7774951bf96`
+- 현재 분류: **CANONICAL · 불랑기자포(佛狼機子砲)**
+- Source record ID: `THESAURUS:TERM:35662243:sha256-1022516a18f91e61`
+- Entity type: `Heritage`
+- 한자: 佛狼機子砲
+- 시대: 조선시대
+- 원천 문맥:
+  - `term_name`: 불랑기자포
+  - `hanja`: 佛狼機子砲
+  - `era`: 조선시대
+  - `thesaurus_category`: 문화재
+  - `description`: 조선시대에 화기(火器)인 불랑기의 실탄을 장전하던 통신(筒身)으로 육군박물관 소장.
+  - `term_year`: 1563
+
+#### 후보 3. 불랑기 · AKS
+
+- Candidate ID: `source-candidate:2f158145b8f73d0ab526`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0024964:sha256-704d8ea620c542f5`
+- Entity type: `Heritage`
+- 한자: 佛狼機
+- 시대: 조선, 조선 후기
+- 원천 문맥:
+  - `headword`: 불랑기
+  - `origin`: 佛狼機
+  - `headword_origin`: 불랑기(佛狼機)
+  - `primary_type`: 물품
+  - `era`: 조선/조선 후기
+  - `definition`: 조선 중기에 제작된 서양식 청동제 화포.
+
+#### 후보 4. 불랑기 · THESAURUS
+
+- Candidate ID: `source-candidate:592eb650935bd67933d3`
+- 현재 분류: **REJECTED**
+- Source record ID: `THESAURUS:TERM:35662240:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 佛狼機
+- 시대: 조선시대
+- 원천 문맥:
+  - `term_name`: 불랑기
+  - `hanja`: 佛狼機
+  - `era`: 조선시대
+  - `thesaurus_category`: 국방·군사>군수품>무기류
+  - `description`: 조선시대 임진왜란 때 명나라 원군(援軍)이 가져와 전투에 사용한 대포.
+  - `term_year`: ?-?
+
+</details>
+
+### 사람 검수 입력
+
+- Manual status: `PENDING`
+- Manual reason: (미입력)
+- Reviewer: (미입력)
+- Reviewed at: (미입력)
+
+[목록으로 돌아가기](#case-목록)
+
+---
+
+<a id="case-023"></a>
+## 023. 부여용 · PENDING
+
+- Case ID: `related-resolution-case:8c98f2880013362b383c`
+- 모델 게이트: `NEEDS_MANUAL_REVIEW`
+- 검증 사유: `AMBIGUOUS_SOURCE_REMAINS`
+- 후보 수: 6개
+
+### 모델 판정 사유
+
+> 기출문제 수와 problem_context_samples가 모두 비어 있어 '부여용'이 백제 왕자·부흥운동가 부여용(扶餘勇)을 뜻하는지, 조선시대 토관직 부여용(副勵勇)을 뜻하는지 target 식별 단서가 없다. 따라서 두 동음이의 실체를 canonical 대안으로 제안하지 않고, 각각의 직접 설명 원천은 AMBIGUOUS로 보류했다. 부여부와 부여용정리사지는 이름 일부 또는 지명만 겹치는 별도 장소·유적이며 target과의 관계 근거가 없어 REJECTED로 분류했다.
+
+### 현재 후보 분류
+
+| 역할 | 원천·표제 | Candidate ID |
+|---|---|---|
+| AMBIGUOUS | AKS · 부여용 | `source-candidate:02589a238bcb2c80663c` |
+| AMBIGUOUS | AKS · 부여용 | `source-candidate:0c243433b2164260d214` |
+| AMBIGUOUS | THESAURUS · 부여용 | `source-candidate:3b77e152967ad56fcaec` |
+| AMBIGUOUS | THESAURUS · 부여용 | `source-candidate:670c83e7b8f431e2990a` |
+| REJECTED | THESAURUS · 부여부 | `source-candidate:4c0368c78d4a2e4f414f` |
+| REJECTED | AKS · 용정리 사지 | `source-candidate:8365a002411394d6a4c0` |
+
+### Canonical 대안
+
+- 없음
+### Evidence only
+
+- 없음
+
+### Rejected
+
+- `source-candidate:4c0368c78d4a2e4f414f` — THESAURUS · 부여부
+- `source-candidate:8365a002411394d6a4c0` — AKS · 용정리 사지
+
+### Ambiguous
+
+- `source-candidate:02589a238bcb2c80663c` — AKS · 부여용
+- `source-candidate:0c243433b2164260d214` — AKS · 부여용
+- `source-candidate:3b77e152967ad56fcaec` — THESAURUS · 부여용
+- `source-candidate:670c83e7b8f431e2990a` — THESAURUS · 부여용
+
+<details>
+<summary><strong>후보 6개의 원천 문맥 펼치기</strong></summary>
+
+#### 후보 1. 부여용 · AKS
+
+- Candidate ID: `source-candidate:02589a238bcb2c80663c`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `AKS:ARTICLE:E0024431:sha256-704d8ea620c542f5`
+- Entity type: `Person`
+- 한자: 扶餘勇
+- 시대: 고대, 삼국, 백제
+- 원천 문맥:
+  - `headword`: 부여용
+  - `origin`: 扶餘勇
+  - `headword_origin`: 부여용(扶餘勇)
+  - `primary_type`: 인물/전통 인물
+  - `era`: 고대/삼국/백제
+  - `definition`: 삼국시대 백제 제31대 의자왕의 여섯째 아들인 왕자. 부흥운동가.
+
+#### 후보 2. 부여용 · AKS
+
+- Candidate ID: `source-candidate:0c243433b2164260d214`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `AKS:ARTICLE:E0024432:sha256-704d8ea620c542f5`
+- Entity type: `Concept`
+- 한자: 副勵勇
+- 시대: 조선, 조선 전기, 조선 후기
+- 원천 문맥:
+  - `headword`: 부여용
+  - `origin`: 副勵勇
+  - `headword_origin`: 부여용(副勵勇)
+  - `primary_type`: 제도/관직
+  - `era`: 조선/조선 전기 | 조선/조선 후기
+  - `definition`: 조선시대 서반(西班) 종9품의 토관직(土官職).
+
+#### 후보 3. 부여용 · THESAURUS
+
+- Candidate ID: `source-candidate:3b77e152967ad56fcaec`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `THESAURUS:TERM:12607648:sha256-1022516a18f91e61`
+- Entity type: `Person`
+- 한자: 扶餘勇
+- 시대: 삼국시대
+- 원천 문맥:
+  - `term_name`: 부여용
+  - `hanja`: 扶餘勇
+  - `era`: 삼국시대
+  - `thesaurus_category`: 인명
+  - `description`: 백제 의자왕의 아들로 663년 9월의 백촌강(白村江)전투에서 백제부흥군을 지휘하여 나당연합군에 저항하다 패배하자 왜로 망명함. 고구려로 망명한 형인 부여풍과 내응하여 백제 재건을 꾀했으나 좌절됨.
+  - `term_year`: ?
+
+#### 후보 4. 부여용 · THESAURUS
+
+- Candidate ID: `source-candidate:670c83e7b8f431e2990a`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `THESAURUS:TERM:35667336:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 副勵勇
+- 시대: 조선시대
+- 원천 문맥:
+  - `term_name`: 부여용
+  - `hanja`: 副勵勇
+  - `era`: 조선시대
+  - `thesaurus_category`: 정치·행정·법제>인사
+  - `description`: 조선시대 서반(西班) 종9품의 토관직(土官職).
+  - `term_year`: ?-?
+
+#### 후보 5. 부여부 · THESAURUS
+
+- Candidate ID: `source-candidate:4c0368c78d4a2e4f414f`
+- 현재 분류: **REJECTED**
+- Source record ID: `THESAURUS:TERM:24329:sha256-1022516a18f91e61`
+- Entity type: `Place`
+- 한자: 扶餘府
+- 시대: 남북국시대
+- 원천 문맥:
+  - `term_name`: 부여부
+  - `hanja`: 扶餘府
+  - `era`: 남북국시대
+  - `thesaurus_category`: 지명
+  - `description`: 발해의 지방행정구역인 15부(府) 중의 하나. 부여(扶餘)의 옛땅에 설치됨.
+  - `term_year`: 669-918
+
+#### 후보 6. 용정리 사지 · AKS
+
+- Candidate ID: `source-candidate:8365a002411394d6a4c0`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0039669:sha256-704d8ea620c542f5`
+- Entity type: `Heritage`
+- 한자: 龍井里, 寺址
+- 시대: 고대, 삼국, 백제
+- 원천 문맥:
+  - `headword`: 용정리 사지
+  - `aliases`: 부여용정리사지
+  - `origin`: 龍井里 寺址
+  - `headword_origin`: 용정리 사지(龍井里 寺址)
+  - `primary_type`: 유적/터
+  - `era`: 고대/삼국/백제
+  - `definition`: 충청남도 부여군 부여읍에 있는 삼국시대 백제의 사찰터.
+
+</details>
+
+### 사람 검수 입력
+
+- Manual status: `PENDING`
+- Manual reason: (미입력)
+- Reviewer: (미입력)
+- Reviewed at: (미입력)
+
+[목록으로 돌아가기](#case-목록)
+
+---
+
+<a id="case-024"></a>
+## 024. 국채보상단연회 · PENDING
+
+- Case ID: `related-resolution-case:62dca39653f2f99e2421`
+- 모델 게이트: `NEEDS_MANUAL_REVIEW`
+- 검증 사유: `INSUFFICIENT_PAIR_EVIDENCE`
+- 후보 수: 5개
+
+### 모델 판정 사유
+
+> 문제 문맥 표본은 없지만, 용어 자체와 정확히 일치하는 두 THESAURUS 원천이 설립 연도·장소·주축 인물·목적을 일치하게 제시하므로 하나의 근대 애국계몽 조직으로 병합하였다. 국미적성회 원천은 별도 여성단체를 주 대상으로 하되 국채보상단연회와의 비교 관계를 명시하므로 evidence-only로 보존했다. 국채보상운동은 상위·관련 운동 사건일 뿐 특정 단체가 아니며, 신국채보상운동은 시대와 대상이 다른 후대 운동이므로 identity 대안에서 제외했다.
+
+### 현재 후보 분류
+
+| 역할 | 원천·표제 | Candidate ID |
+|---|---|---|
+| CANONICAL · 국채보상단연회 | THESAURUS · 국채보상단연회 | `source-candidate:076bedf055e6767a2bf2` |
+| CANONICAL · 국채보상단연회 | THESAURUS · 국채보상단연회 | `source-candidate:2cb63ef58868eb24e771` |
+| EVIDENCE_ONLY | AKS · 국미적성회 | `source-candidate:f17213139d53ee950e0e` |
+| REJECTED | AKS · 국채보상운동 | `source-candidate:9fbe20e62b0bf016a11d` |
+| REJECTED | AKS · 금모으기운동 | `source-candidate:ab31eb68e512d4ba6748` |
+
+### Canonical 대안
+
+#### 대안 1. 국채보상단연회
+
+- Entity type: `Organization`
+- 동일 실체 후보:
+  - `source-candidate:076bedf055e6767a2bf2` — THESAURUS · 국채보상단연회
+  - `source-candidate:2cb63ef58868eb24e771` — THESAURUS · 국채보상단연회
+- 판정 근거: 두 THESAURUS 원천은 모두 한자 國債報償斷煙會, 1907년 대구 설립, 김광제·서상돈 주축, 국채보상 목적의 애국계몽단체라는 동일한 구체적 식별 정보를 제시하여 국채보상단연회 자체를 직접 설명한다.
+
+### Evidence only
+
+- `source-candidate:f17213139d53ee950e0e` — AKS · 국미적성회
+
+### Rejected
+
+- `source-candidate:9fbe20e62b0bf016a11d` — AKS · 국채보상운동
+- `source-candidate:ab31eb68e512d4ba6748` — AKS · 금모으기운동
+
+### Ambiguous
+
+- 없음
+
+<details>
+<summary><strong>후보 5개의 원천 문맥 펼치기</strong></summary>
+
+#### 후보 1. 국채보상단연회 · THESAURUS
+
+- Candidate ID: `source-candidate:076bedf055e6767a2bf2`
+- 현재 분류: **CANONICAL · 국채보상단연회**
+- Source record ID: `THESAURUS:TERM:14398:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 國債報償斷煙會
+- 시대: 근대
+- 원천 문맥:
+  - `term_name`: 국채보상단연회
+  - `hanja`: 國債報償斷煙會
+  - `era`: 근대
+  - `thesaurus_category`: 사회운동·독립운동>사회운동>계몽운동
+  - `description`: 국채보상을 목적으로 1907년 대구에서 김광제(金光濟)와 서상돈(徐相敦)이 주축이 되어 설립한 애국계몽단체.
+  - `term_year`: 1907-?
+
+#### 후보 2. 국채보상단연회 · THESAURUS
+
+- Candidate ID: `source-candidate:2cb63ef58868eb24e771`
+- 현재 분류: **CANONICAL · 국채보상단연회**
+- Source record ID: `THESAURUS:TERM:4199096:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 國債報償斷煙會
+- 시대: 근대
+- 원천 문맥:
+  - `term_name`: 국채보상단연회
+  - `hanja`: 國債報償斷煙會
+  - `era`: 근대
+  - `thesaurus_category`: 사회운동·독립운동>사회운동>계몽운동
+  - `description`: 국채보상을 목적으로 1907년 대구에서 김광제(金光濟)와 서상돈(徐相敦)이 주축이 되어 설립한 애국계몽단체.
+  - `term_year`: 1907-?
+
+#### 후보 3. 국미적성회 · AKS
+
+- Candidate ID: `source-candidate:f17213139d53ee950e0e`
+- 현재 분류: **EVIDENCE_ONLY**
+- Source record ID: `AKS:ARTICLE:E0006286:sha256-704d8ea620c542f5`
+- Entity type: `Organization`
+- 한자: 掬米積誠會
+- 시대: 근대, 대한제국기
+- 원천 문맥:
+  - `headword`: 국미적성회
+  - `origin`: 掬米積誠會
+  - `headword_origin`: 국미적성회(掬米積誠會)
+  - `primary_type`: 단체
+  - `era`: 근대/대한제국기
+  - `definition`: 1907년 국채보상운동을 위해 설립된 여성단체.
+  - `snippet`: 비녀 두 개가 들어왔다. 『황성신문』을 비롯한 당시 신문에서는 적성회활동이 남자들에 의하여 조직된 국채보상단연회(國債報償斷烟會)보다 더 활발하다고 평하였다
+
+#### 후보 4. 국채보상운동 · AKS
+
+- Candidate ID: `source-candidate:9fbe20e62b0bf016a11d`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0006527:sha256-704d8ea620c542f5`
+- Entity type: `Event`
+- 한자: 國債報償運動
+- 시대: 근대, 대한제국기
+- 원천 문맥:
+  - `headword`: 국채보상운동
+  - `origin`: 國債報償運動
+  - `headword_origin`: 국채보상운동(國債報償運動)
+  - `primary_type`: 사건/사회운동
+  - `era`: 근대/대한제국기
+  - `definition`: 1907년부터 1908년 사이에 국채를 국민들의 모금으로 갚기 위하여 전개된 국권회복운동.
+
+#### 후보 5. 금모으기운동 · AKS
+
+- Candidate ID: `source-candidate:ab31eb68e512d4ba6748`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0080908:sha256-704d8ea620c542f5`
+- Entity type: `Event`
+- 한자: 金, 運動, 新
+- 시대: 현대
+- 원천 문맥:
+  - `headword`: 금모으기운동
+  - `aliases`: 제2의 국채보상운동, 신(新)국채보상운동
+  - `origin`: 金모으기運動
+  - `headword_origin`: 금모으기운동(金모으기運動)
+  - `primary_type`: 사건/사회운동
+  - `era`: 현대
+  - `definition`: 1997년, IMF 외환위기에서 벗어나기 위해 금을 모아서 외채를 상환하려고 한 국민적인 운동.
+
+</details>
+
+### 사람 검수 입력
+
+- Manual status: `PENDING`
+- Manual reason: (미입력)
+- Reviewer: (미입력)
+- Reviewed at: (미입력)
+
+[목록으로 돌아가기](#case-목록)
+
+---
+
+<a id="case-025"></a>
+## 025. 고려일보 · VERIFIED
+
+- Case ID: `related-resolution-case:10d7870a69a095679405`
+- 모델 게이트: `NEEDS_MANUAL_REVIEW`
+- 검증 사유: `ENTITY_TYPE_REVIEW_REQUIRED`, `INSUFFICIENT_PAIR_EVIDENCE`
+- 후보 수: 4개
+- 검수자: MK
+- 검수 시각: Wed Jul 22 2026 18:05:39 GMT+0900 (한국 표준시)
+
+### 모델 판정 사유
+
+> 문제 문맥 표본이 제공되지 않아 추가 동명이인 가능성을 문맥으로 검증할 수는 없지만, 정확 일치 후보 두 건은 알마티 발행 한인동포 신문 및 레닌기치 개칭이라는 공통의 구체적 단서로 동일 실체로 확인된다. 레닌기치는 고려일보 자체가 아니라 그 전신 제호이므로 관계 근거로만 보존했으며, 고려일력은 유사한 명칭의 별도 고려 후기 역서이므로 identity에서 제외했다.
+
+### 현재 후보 분류
+
+| 역할 | 원천·표제 | Candidate ID |
+|---|---|---|
+| CANONICAL · 고려일보(高麗日報) | AKS · 고려일보 | `source-candidate:8e5bcad40737c124de50` |
+| CANONICAL · 고려일보(高麗日報) | THESAURUS · 고려일보 | `source-candidate:5ddf4af57b84fd211b3a` |
+| EVIDENCE_ONLY | THESAURUS · 레닌기치 | `source-candidate:e75fae827f463fe2e803` |
+| REJECTED | THESAURUS · 고려일력 | `source-candidate:44843679dc112fc94b7b` |
+
+### Canonical 대안
+
+#### 대안 1. 고려일보(高麗日報)
+
+- Entity type: `Work`
+- 동일 실체 후보:
+  - `source-candidate:8e5bcad40737c124de50` — AKS · 고려일보
+  - `source-candidate:5ddf4af57b84fd211b3a` — THESAURUS · 고려일보
+- 판정 근거: 두 레코드는 카자흐스탄 알마티에서 발행되는 한인 동포 신문 고려일보를 설명한다. AKS의 근대/일제강점기 표기는 신문의 전신 및 역사적 연원까지 포괄한 것으로 보이며, 시소러스의 1991년 레닌기치에서 제호 변경된 현대 신문 설명과 동일 실체이다.
+
+### Evidence only
+
+- `source-candidate:e75fae827f463fe2e803` — THESAURUS · 레닌기치
+
+### Rejected
+
+- `source-candidate:44843679dc112fc94b7b` — THESAURUS · 고려일력
+
+### Ambiguous
+
+- 없음
+
+<details>
+<summary><strong>후보 4개의 원천 문맥 펼치기</strong></summary>
+
+#### 후보 1. 고려일보 · AKS
+
+- Candidate ID: `source-candidate:8e5bcad40737c124de50`
+- 현재 분류: **CANONICAL · 고려일보(高麗日報)**
+- Source record ID: `AKS:ARTICLE:E0072190:sha256-704d8ea620c542f5`
+- Entity type: `Work`
+- 한자: 高麗日報
+- 시대: 근대, 일제강점기
+- 원천 문맥:
+  - `headword`: 고려일보
+  - `origin`: 高麗日報
+  - `headword_origin`: 고려일보(高麗日報)
+  - `primary_type`: 문헌/연속간행물
+  - `era`: 근대/일제강점기
+  - `definition`: 카자흐스탄공화국의 알마티(Almty)시에서 발간되고 있는 한글-러시아어 신문.
+
+#### 후보 2. 고려일보 · THESAURUS
+
+- Candidate ID: `source-candidate:5ddf4af57b84fd211b3a`
+- 현재 분류: **CANONICAL · 고려일보(高麗日報)**
+- Source record ID: `THESAURUS:TERM:10489817:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 高麗日報
+- 시대: 현대
+- 원천 문맥:
+  - `term_name`: 고려일보
+  - `hanja`: 高麗日報
+  - `era`: 현대
+  - `thesaurus_category`: 문화·예술>언론·출판
+  - `description`: 1991년 5월에 레닌기치의 제호를 바꾸어 카자흐스탄 알마아타시에서 발간되고 있는 한인동포 발행의 신문.
+  - `term_year`: 1991-?
+
+#### 후보 3. 레닌기치 · THESAURUS
+
+- Candidate ID: `source-candidate:e75fae827f463fe2e803`
+- 현재 분류: **EVIDENCE_ONLY**
+- Source record ID: `THESAURUS:TERM:21024241:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: (없음)
+- 시대: 일제시기
+- 원천 문맥:
+  - `term_name`: 레닌기치
+  - `hanja`: 레닌기치
+  - `era`: 일제시기
+  - `thesaurus_category`: 문화·예술>언론·출판
+  - `description`: 1938년 5월 카자흐스탄공화국 크질오르다(Kzyl-Orda)시에서 창간되어 1978년 8월 알마아타(Alma Ata)시로 이전, 발행된 해외동포신문. 1991년 고려일보로 제호가 변경됨.
+  - `term_year`: 1938-1991
+
+#### 후보 4. 고려일력 · THESAURUS
+
+- Candidate ID: `source-candidate:44843679dc112fc94b7b`
+- 현재 분류: **REJECTED**
+- Source record ID: `THESAURUS:TERM:29372093:sha256-1022516a18f91e61`
+- Entity type: `Work`
+- 한자: 高麗日曆
+- 시대: 고려후기
+- 원천 문맥:
+  - `term_name`: 고려일력
+  - `hanja`: 高麗日曆
+  - `era`: 고려후기
+  - `thesaurus_category`: 서명
+  - `description`: 고려 고종 5년(1218)에 김덕명(金德明)이 새로 편찬한 역서.
+  - `term_year`: 1218
+
+</details>
+
+### 사람 검수 입력
+
+- Manual status: `VERIFIED`
+- Manual reason: 고려후기의 고려일력을 잘 걸러내었음
+- Reviewer: MK
+- Reviewed at: Wed Jul 22 2026 18:05:39 GMT+0900 (한국 표준시)
+
+[목록으로 돌아가기](#case-목록)
+
+---
+
+<a id="case-026"></a>
+## 026. 김흠돌 · PENDING
+
+- Case ID: `related-resolution-case:8fc07dc9402f597783fa`
+- 모델 게이트: `NEEDS_MANUAL_REVIEW`
+- 검증 사유: `INSUFFICIENT_PAIR_EVIDENCE`
+- 후보 수: 5개
+
+### 모델 판정 사유
+
+> 문제 문맥 표본은 없지만 canonical term과 정확히 일치하는 김흠돌(金欽突) 인물 레코드들은 신라 통일기 및 681년 모반·주살이라는 공통 식별 단서로 하나의 인물로 묶었다. ‘김흠돌의 모역 사건’은 인물명에 사건명이 덧붙은 별도 사건 실체이므로 identity로 병합하지 않았고, 김군관 역시 별도 인물이므로 identity 후보가 아니다. 두 원천은 각각 김흠돌과의 관계를 명시하므로 EVIDENCE_ONLY로 분류했다.
+
+### 현재 후보 분류
+
+| 역할 | 원천·표제 | Candidate ID |
+|---|---|---|
+| CANONICAL · 김흠돌(金欽突) | AKS · 김흠돌 | `source-candidate:23ca9c5bf1b941f6bcac` |
+| CANONICAL · 김흠돌(金欽突) | ITKC_PERSON · 김흠돌 | `source-candidate:fc45bc9fe64d59feacfa` |
+| CANONICAL · 김흠돌(金欽突) | THESAURUS · 김흠돌 | `source-candidate:5dadd086c496276710b5` |
+| EVIDENCE_ONLY | THESAURUS · 김흠돌의모역사건 | `source-candidate:83bce875b02c4df46b9f` |
+| EVIDENCE_ONLY | THESAURUS · 김군관 | `source-candidate:c0a38f638427a399c432` |
+
+### Canonical 대안
+
+#### 대안 1. 김흠돌(金欽突)
+
+- Entity type: `Person`
+- 동일 실체 후보:
+  - `source-candidate:23ca9c5bf1b941f6bcac` — AKS · 김흠돌
+  - `source-candidate:fc45bc9fe64d59feacfa` — ITKC_PERSON · 김흠돌
+  - `source-candidate:5dadd086c496276710b5` — THESAURUS · 김흠돌
+- 판정 근거: 용어 자체가 인물 김흠돌을 가리킨다. 세 원천 모두 한자 金欽突(金欽突)와 인물 유형이 일치하며, AKS와 THESAURUS는 문무왕·신문왕대 신라의 고위 관료·장군으로서 681년 신문왕 때 모반하다 처형된 인물이라는 구체적 활동·시기 단서를 제시한다. ITKC_PERSON도 동일한 이름과 한자를 가진 인물 레코드이다.
+
+### Evidence only
+
+- `source-candidate:83bce875b02c4df46b9f` — THESAURUS · 김흠돌의모역사건
+- `source-candidate:c0a38f638427a399c432` — THESAURUS · 김군관
+
+### Rejected
+
+- 없음
+
+### Ambiguous
+
+- 없음
+
+<details>
+<summary><strong>후보 5개의 원천 문맥 펼치기</strong></summary>
+
+#### 후보 1. 김흠돌 · AKS
+
+- Candidate ID: `source-candidate:23ca9c5bf1b941f6bcac`
+- 현재 분류: **CANONICAL · 김흠돌(金欽突)**
+- Source record ID: `AKS:ARTICLE:E0011157:sha256-704d8ea620c542f5`
+- Entity type: `Person`
+- 한자: 金欽突
+- 시대: 고대, 남북국, 통일신라
+- 원천 문맥:
+  - `headword`: 김흠돌
+  - `origin`: 金欽突
+  - `headword_origin`: 김흠돌(金欽突)
+  - `primary_type`: 인물/전통 인물
+  - `era`: 고대/남북국/통일신라
+  - `definition`: 신라 시대 문무왕대 활약한 진골 출신의 고위 관료로, 신문왕 때 반란을 일으켰다가 실패한 인물.
+
+#### 후보 2. 김흠돌 · ITKC_PERSON
+
+- Candidate ID: `source-candidate:fc45bc9fe64d59feacfa`
+- 현재 분류: **CANONICAL · 김흠돌(金欽突)**
+- Source record ID: `ITKC:PERSON:P012048:sha256-2bfbf7f8ab4b1538`
+- Entity type: `Person`
+- 한자: 金欽突
+- 시대: (없음)
+- 원천 문맥:
+  - `name`: 김흠돌
+  - `hanja`: 金欽突
+
+#### 후보 3. 김흠돌 · THESAURUS
+
+- Candidate ID: `source-candidate:5dadd086c496276710b5`
+- 현재 분류: **CANONICAL · 김흠돌(金欽突)**
+- Source record ID: `THESAURUS:TERM:12594493:sha256-1022516a18f91e61`
+- Entity type: `Person`
+- 한자: 金欽突
+- 시대: 삼국시대
+- 원천 문맥:
+  - `term_name`: 김흠돌
+  - `hanja`: 金欽突
+  - `era`: 삼국시대
+  - `thesaurus_category`: 인명
+  - `description`: 삼국시대 신라의 장군이자 반란자. 김유신(金庾信)·김인문(金仁問)과 함께 고구려정벌에 큰 공을 세운 장군. 그러나 681년(신문왕 1) 8월에 파진찬 흥원(興元), 대아찬 진공(眞功) 등과 모반을 꾀하다 주살됨.
+  - `term_year`: ?-681
+
+#### 후보 4. 김흠돌의모역사건 · THESAURUS
+
+- Candidate ID: `source-candidate:83bce875b02c4df46b9f`
+- 현재 분류: **EVIDENCE_ONLY**
+- Source record ID: `THESAURUS:TERM:19777:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 金欽突, 謀逆事件
+- 시대: 남북국시대
+- 원천 문맥:
+  - `term_name`: 김흠돌의모역사건
+  - `hanja`: 金欽突의謀逆事件
+  - `era`: 남북국시대
+  - `thesaurus_category`: 정치·행정·법제>정치>정치사건
+  - `description`: 신라 신문왕(神文王)의 장인인 김흠돌이 파진찬 흥원(興元), 대아찬 진공(眞功) 등과 함께 반란을 꾀한 사건.
+  - `term_year`: 681
+
+#### 후보 5. 김군관 · THESAURUS
+
+- Candidate ID: `source-candidate:c0a38f638427a399c432`
+- 현재 분류: **EVIDENCE_ONLY**
+- Source record ID: `THESAURUS:TERM:12607981:sha256-1022516a18f91e61`
+- Entity type: `Person`
+- 한자: 金軍官
+- 시대: 남북국시대
+- 원천 문맥:
+  - `term_name`: 김군관
+  - `hanja`: 金軍官
+  - `era`: 남북국시대
+  - `thesaurus_category`: 인명
+  - `description`: 신라 중대의 장군·대신. 신문왕비의 아버지. 김유신(金庾信)과 김인문(金仁問)을 도와 고구려정벌에 큰 공을 세웠으며, 문무왕 때는 병부령(兵部令)·상대등까지 올랐으나  681년 김흠돌(金欽突)의 모반을 보고하지 않은 이유로 죽임을 당함.
+  - `term_year`: ?-681
+
+</details>
+
+### 사람 검수 입력
+
+- Manual status: `PENDING`
+- Manual reason: (미입력)
+- Reviewer: (미입력)
+- Reviewed at: (미입력)
+
+[목록으로 돌아가기](#case-목록)
+
+---
+
+<a id="case-027"></a>
+## 027. 교정 · PENDING
+
+- Case ID: `related-resolution-case:6b8de002cfda0a14524b`
+- 모델 게이트: `NEEDS_MANUAL_REVIEW`
+- 검증 사유: `AMBIGUOUS_SOURCE_REMAINS`
+- 후보 수: 22개
+
+### 모델 판정 사유
+
+> 문제 문맥이 전혀 제공되지 않아 ‘교정’이 가리키는 실제 기출문제 target을 식별할 수 없으므로 canonical 대안을 제안하지 않았다. 정확 일치하는 대한제국기 불교 승직 교정(敎正)만은 target 일치 여부가 문맥 부재로 불확정이어서 AMBIGUOUS로 보류했다. 교정청·교정도감·교정별감 등은 접미어가 붙은 별도 관청·관직·사건이고, 교정교육·문체지교정·상교정본 문헌은 한자·유형·시대·의미가 다른 별도 실체이므로, 문제 target과의 명시적 관계 근거 없이 identity 또는 evidence로 채택하지 않았다.
+
+### 현재 후보 분류
+
+| 역할 | 원천·표제 | Candidate ID |
+|---|---|---|
+| AMBIGUOUS | THESAURUS · 교정 | `source-candidate:1c09453bbcb9fca68ff3` |
+| REJECTED | AKS · 교정청 | `source-candidate:9e94d1514f1fcc7ec7bd` |
+| REJECTED | THESAURUS · 교정청 | `source-candidate:117b57e32951aadd9af0` |
+| REJECTED | AKS · 교정교육 | `source-candidate:2bd683c0fe400f80bac7` |
+| REJECTED | AKS · 교정도감 | `source-candidate:8dc7c5c65d1bc88969ef` |
+| REJECTED | AKS · 무신정권 | `source-candidate:1d4c36b5e7e11d3c142c` |
+| REJECTED | AKS · 서지학 | `source-candidate:e53fdf7067099cdd3187` |
+| REJECTED | AKS · 세종 | `source-candidate:a810286f2cb7a2cafb9b` |
+| REJECTED | AKS · 교정별감 | `source-candidate:901d40051dfcbaba5e46` |
+| REJECTED | AKS · 교정창춘 | `source-candidate:b0b8de360088b48a7e27` |
+| REJECTED | THESAURUS · 교정별감 | `source-candidate:a3ebbdbfef354f6f6dc8` |
+| REJECTED | THESAURUS · 교정당랑 | `source-candidate:760e2131b837160cfa61` |
+| REJECTED | THESAURUS · 교정수획원 | `source-candidate:f79dd9995fadb46ab53f` |
+| REJECTED | AKS · 문체반정 | `source-candidate:df62b881d4cfcd30cde7` |
+| REJECTED | AKS · 상교정본 자비도량참법 권10 | `source-candidate:f14fbf776a4293bf941e` |
+| REJECTED | AKS · 상교정본 자비도량참법 권1~3 | `source-candidate:3b1ce5802efed02ca5be` |
+| REJECTED | AKS · 상교정본 자비도량참법 권7~10 | `source-candidate:cf7c09f59874246fa08c` |
+| REJECTED | AKS · 상교정본 자비도량참법 권4～6 | `source-candidate:224f98828fb52ed0303b` |
+| REJECTED | AKS · 상교정본 자비도량참법 권9~10 | `source-candidate:b97d3256c37140ed1c0e` |
+| REJECTED | AKS · 상교정본 자비도량참법 권9～10 | `source-candidate:e213075bda8bdb632e0b` |
+| REJECTED | AKS · 교정청 | `source-candidate:037d1e3ac13b44378ef7` |
+| REJECTED | ITKC_EVENT · 교정도감 설치 | `source-candidate:f20dbc5ac070a160582e` |
+
+### Canonical 대안
+
+- 없음
+### Evidence only
+
+- 없음
+
+### Rejected
+
+- `source-candidate:9e94d1514f1fcc7ec7bd` — AKS · 교정청
+- `source-candidate:117b57e32951aadd9af0` — THESAURUS · 교정청
+- `source-candidate:2bd683c0fe400f80bac7` — AKS · 교정교육
+- `source-candidate:8dc7c5c65d1bc88969ef` — AKS · 교정도감
+- `source-candidate:1d4c36b5e7e11d3c142c` — AKS · 무신정권
+- `source-candidate:e53fdf7067099cdd3187` — AKS · 서지학
+- `source-candidate:a810286f2cb7a2cafb9b` — AKS · 세종
+- `source-candidate:901d40051dfcbaba5e46` — AKS · 교정별감
+- `source-candidate:b0b8de360088b48a7e27` — AKS · 교정창춘
+- `source-candidate:a3ebbdbfef354f6f6dc8` — THESAURUS · 교정별감
+- `source-candidate:760e2131b837160cfa61` — THESAURUS · 교정당랑
+- `source-candidate:f79dd9995fadb46ab53f` — THESAURUS · 교정수획원
+- `source-candidate:df62b881d4cfcd30cde7` — AKS · 문체반정
+- `source-candidate:f14fbf776a4293bf941e` — AKS · 상교정본 자비도량참법 권10
+- `source-candidate:3b1ce5802efed02ca5be` — AKS · 상교정본 자비도량참법 권1~3
+- `source-candidate:cf7c09f59874246fa08c` — AKS · 상교정본 자비도량참법 권7~10
+- `source-candidate:224f98828fb52ed0303b` — AKS · 상교정본 자비도량참법 권4～6
+- `source-candidate:b97d3256c37140ed1c0e` — AKS · 상교정본 자비도량참법 권9~10
+- `source-candidate:e213075bda8bdb632e0b` — AKS · 상교정본 자비도량참법 권9～10
+- `source-candidate:037d1e3ac13b44378ef7` — AKS · 교정청
+- `source-candidate:f20dbc5ac070a160582e` — ITKC_EVENT · 교정도감 설치
+
+### Ambiguous
+
+- `source-candidate:1c09453bbcb9fca68ff3` — THESAURUS · 교정
+
+<details>
+<summary><strong>후보 22개의 원천 문맥 펼치기</strong></summary>
+
+#### 후보 1. 교정 · THESAURUS
+
+- Candidate ID: `source-candidate:1c09453bbcb9fca68ff3`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `THESAURUS:TERM:12601900:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 敎正
+- 시대: 근대
+- 원천 문맥:
+  - `term_name`: 교정
+  - `hanja`: 敎正
+  - `era`: 근대
+  - `thesaurus_category`: 전통사상·종교>불교>불교종파·용어
+  - `description`: 대한제국기 큰 절의 주지에게 주었던 승직으로 섭리(攝理)가 바뀐 이름. 1911년의 사찰령 이후 주지로 명칭이 바뀜.
+  - `term_year`: 1902-1911
+
+#### 후보 2. 교정청 · AKS
+
+- Candidate ID: `source-candidate:9e94d1514f1fcc7ec7bd`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0005569:sha256-704d8ea620c542f5`
+- Entity type: `Concept`
+- 한자: 校正廳
+- 시대: 조선, 조선 전기, 조선 후기
+- 원천 문맥:
+  - `headword`: 교정청
+  - `origin`: 校正廳
+  - `headword_origin`: 교정청(校正廳)
+  - `primary_type`: 제도/관청
+  - `era`: 조선/조선 전기 | 조선/조선 후기
+  - `definition`: 조선시대 서적 편찬 시 검토 및 교정을 위해 설치하였던 임시 관서.
+
+#### 후보 3. 교정청 · THESAURUS
+
+- Candidate ID: `source-candidate:117b57e32951aadd9af0`
+- 현재 분류: **REJECTED**
+- Source record ID: `THESAURUS:TERM:2081:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 校正廳
+- 시대: 조선시대
+- 원천 문맥:
+  - `term_name`: 교정청
+  - `hanja`: 校正廳
+  - `era`: 조선시대
+  - `thesaurus_category`: 정치·행정·법제>행정>중앙행정기구
+  - `description`: 조선시대에 서적을 편찬할 때, 교정·보완을 위해 임시로 설치한 관청.
+  - `term_year`: 1470-1474
+  - `term_remark`: 서적편찬
+
+#### 후보 4. 교정교육 · AKS
+
+- Candidate ID: `source-candidate:2bd683c0fe400f80bac7`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0005564:sha256-704d8ea620c542f5`
+- Entity type: `Concept`
+- 한자: 矯正敎育
+- 시대: 현대
+- 원천 문맥:
+  - `headword`: 교정교육
+  - `aliases`: 교도교육
+  - `origin`: 矯正敎育
+  - `headword_origin`: 교정교육(矯正敎育)
+  - `primary_type`: 개념
+  - `era`: 현대
+  - `definition`: 수형자가 정상적인 사회생활을 할 수 있도록 교도하기 위한 교육. 교도교육.
+  - `snippet`: 내용 교정교육이란 처음부터 목적을 가지고 계획된 학습경험과 학습환경을 통해 범죄자의 행위를 변화시키
+
+#### 후보 5. 교정도감 · AKS
+
+- Candidate ID: `source-candidate:8dc7c5c65d1bc88969ef`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0005565:sha256-704d8ea620c542f5`
+- Entity type: `Organization`
+- 한자: 敎定都監, 敎定所
+- 시대: 고려, 고려 후기
+- 원천 문맥:
+  - `headword`: 교정도감
+  - `aliases`: 교정소(敎定所)
+  - `origin`: 敎定都監
+  - `headword_origin`: 교정도감(敎定都監)
+  - `primary_type`: 단체
+  - `era`: 고려/고려 후기
+  - `definition`: 고려 후기, 무신 집권 하의 최고 권력 기관.
+  - `snippet`: 설치 목적 일명 '교정소(敎定所)'라고도 한다. 1209년(희종 5) 4월, [최충헌(崔忠獻)](E0057707) 부자의 살해를 모
+
+#### 후보 6. 무신정권 · AKS
+
+- Candidate ID: `source-candidate:1d4c36b5e7e11d3c142c`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0019118:sha256-704d8ea620c542f5`
+- Entity type: `Concept`
+- 한자: 武臣政權
+- 시대: 고려, 고려 후기
+- 원천 문맥:
+  - `headword`: 무신정권
+  - `aliases`: 무인정권
+  - `origin`: 武臣政權
+  - `headword_origin`: 무신정권(武臣政權)
+  - `primary_type`: 개념
+  - `era`: 고려/고려 후기
+  - `definition`: 1170년부터 1270년 사이에 무신 세력에 의해 주도된 고려 왕조의 정권. 무인정권.
+  - `snippet`: 유무 등이 차례로 행사하였다. 김준은 최씨정권을 타도하고, 최씨정권 이래로 무신집권자가 지니는 [교정별감(敎定別監)](E0005566)에 임명되어 정권을 좌우하다가 1268년(원종 9) 임연에게 암
+
+#### 후보 7. 서지학 · AKS
+
+- Candidate ID: `source-candidate:e53fdf7067099cdd3187`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0028203:sha256-704d8ea620c542f5`
+- Entity type: `Concept`
+- 한자: 書誌學
+- 시대: (없음)
+- 원천 문맥:
+  - `headword`: 서지학
+  - `origin`: 書誌學
+  - `headword_origin`: 서지학(書誌學)
+  - `primary_type`: 개념
+  - `era`: 미상
+  - `definition`: 책을 대상으로 조사, 분석, 비평, 연구하여 기술하는 학문.
+  - `snippet`: 소산인 본문에 있어서 문자의 이동(異同)은 어떠한가, 즉 본문에 오자와 탈자가 있는가 없는가, 있다면 교정하고, 문장에 보탬과 깎임이 있다면 그 역사와 전래를 조사, 연구하여 밝혀주는 것과 관련된 분야이다
+
+#### 후보 8. 세종 · AKS
+
+- Candidate ID: `source-candidate:a810286f2cb7a2cafb9b`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0029857:sha256-704d8ea620c542f5`
+- Entity type: `Person`
+- 한자: 世宗, 元正, 莊憲英文睿武仁聖明孝大王
+- 시대: 조선, 조선 전기
+- 원천 문맥:
+  - `headword`: 세종
+  - `aliases`: 원정(元正), 장헌영문예무인성명효대왕(莊憲英文睿武仁聖明孝大王)
+  - `origin`: 世宗
+  - `headword_origin`: 세종(世宗)
+  - `primary_type`: 인물/전통 인물
+  - `era`: 조선/조선 전기
+  - `definition`: 조선의 제4대(재위: 1418년~1450년) 왕.
+  - `snippet`: 0일 태종의 선위를 이어받아 세자 충녕대군이 왕위에 올랐으니 이 사람이 세종이다. # 세종의 업적 ## 유교정치의 기틀 마련 세종대는 우리 민족의 역사에서 가장 훌륭한 유교정치, 찬란한 문화가 이룩된 시대였
+
+#### 후보 9. 교정별감 · AKS
+
+- Candidate ID: `source-candidate:901d40051dfcbaba5e46`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0005566:sha256-704d8ea620c542f5`
+- Entity type: `Concept`
+- 한자: 敎定別監
+- 시대: 고려, 고려 전기, 고려 후기
+- 원천 문맥:
+  - `headword`: 교정별감
+  - `origin`: 敎定別監
+  - `headword_origin`: 교정별감(敎定別監)
+  - `primary_type`: 제도/관직
+  - `era`: 고려/고려 전기 | 고려/고려 후기
+  - `definition`: 고려시대 최충헌(崔忠獻)이 세운 교정도감의 수장.
+
+#### 후보 10. 교정창춘 · AKS
+
+- Candidate ID: `source-candidate:b0b8de360088b48a7e27`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0080081:sha256-704d8ea620c542f5`
+- Entity type: `Concept`
+- 한자: 校正唱準, 司準
+- 시대: 조선, 조선 전기, 조선 후기
+- 원천 문맥:
+  - `headword`: 교정창춘
+  - `aliases`: 사준(司準)
+  - `origin`: 校正唱準
+  - `headword_origin`: 교정창춘(校正唱準)
+  - `primary_type`: 개념
+  - `era`: 조선/조선 전기 | 조선/조선 후기
+  - `definition`: 교서관 등에서 서책 간행 시에 원고를 대조하고 교정하던 하급 관원.
+
+#### 후보 11. 교정별감 · THESAURUS
+
+- Candidate ID: `source-candidate:a3ebbdbfef354f6f6dc8`
+- 현재 분류: **REJECTED**
+- Source record ID: `THESAURUS:TERM:2079:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 敎定別監
+- 시대: 고려후기
+- 원천 문맥:
+  - `term_name`: 교정별감
+  - `hanja`: 敎定別監
+  - `era`: 고려후기
+  - `thesaurus_category`: 정치·행정·법제>인사
+  - `description`: 무신집권기 최고권력기관인 교정도감의 수장.
+  - `term_year`: 1209-1270
+
+#### 후보 12. 교정당랑 · THESAURUS
+
+- Candidate ID: `source-candidate:760e2131b837160cfa61`
+- 현재 분류: **REJECTED**
+- Source record ID: `THESAURUS:TERM:35669497:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 校正堂郎
+- 시대: 조선시대
+- 원천 문맥:
+  - `term_name`: 교정당랑
+  - `hanja`: 校正堂郎
+  - `era`: 조선시대
+  - `thesaurus_category`: 정치·행정·법제>인사
+  - `description`: 조선시대 교정청(校正廳)의 당상관(堂上官)과 낭관(郎官)을 말함.
+  - `term_year`: ?-?
+
+#### 후보 13. 교정수획원 · THESAURUS
+
+- Candidate ID: `source-candidate:f79dd9995fadb46ab53f`
+- 현재 분류: **REJECTED**
+- Source record ID: `THESAURUS:TERM:29369553:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 敎定收獲員
+- 시대: 고려후기
+- 원천 문맥:
+  - `term_name`: 교정수획원
+  - `hanja`: 敎定收獲員
+  - `era`: 고려후기
+  - `thesaurus_category`: 정치·행정·법제>인사
+  - `description`: 고려무신정권기 교정도감(敎定都監)에 소속되어 수취를 담당하던 관원.
+  - `term_year`: ?-?
+
+#### 후보 14. 문체반정 · AKS
+
+- Candidate ID: `source-candidate:df62b881d4cfcd30cde7`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0019697:sha256-704d8ea620c542f5`
+- Entity type: `Concept`
+- 한자: 文體反正, 歸正, 文體醇正, 文體之矯正, 文體波動, 丕變文體
+- 시대: 조선, 조선 후기
+- 원천 문맥:
+  - `headword`: 문체반정
+  - `aliases`: 귀정(歸正), 문체순정(文體醇正), 문체지교정(文體之矯正), 문체파동(文體波動), 비변문체(丕變文體)
+  - `origin`: 文體反正
+  - `headword_origin`: 문체반정(文體反正)
+  - `primary_type`: 개념
+  - `era`: 조선/조선 후기
+  - `definition`: 조선후기 정조 때에 유행한 한문문체를 개혁하여 순정고문으로 환원시키려던 정책. 문체순정·문체파동·비변문체·문체지교정·귀정.
+
+#### 후보 15. 상교정본 자비도량참법 권10 · AKS
+
+- Candidate ID: `source-candidate:f14fbf776a4293bf941e`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0069881:sha256-704d8ea620c542f5`
+- Entity type: `Work`
+- 한자: 詳校正本, 慈悲道場懺法, 卷十, 梁武讖文, 梁皇寶讖, 梁皇讖文
+- 시대: 고려, 고려 후기, 조선, 조선 전기
+- 원천 문맥:
+  - `headword`: 상교정본 자비도량참법 권10
+  - `aliases`: 양무참문(梁武讖文), 양황보참(梁皇寶讖), 양황참문(梁皇讖文)
+  - `origin`: 詳校正本 慈悲道場懺法 卷十
+  - `headword_origin`: 상교정본 자비도량참법 권10(詳校正本 慈悲道場懺法 卷十)
+  - `primary_type`: 문헌/고서
+  - `era`: 고려/고려 후기 | 조선/조선 전기
+  - `definition`: 양나라 승려 진관 등이 편찬한 「자비도량참법」의 상교정본을 들여와 고려시대에 간행한 의례서. 불교의례서.
+
+#### 후보 16. 상교정본 자비도량참법 권1~3 · AKS
+
+- Candidate ID: `source-candidate:3b1ce5802efed02ca5be`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0069755:sha256-704d8ea620c542f5`
+- Entity type: `Work`
+- 한자: 詳校正本, 慈悲道場懺法, 卷一, 三, 梁武讖文, 梁皇寶讖, 梁皇讖文
+- 시대: 고려, 고려 후기
+- 원천 문맥:
+  - `headword`: 상교정본 자비도량참법 권1~3
+  - `aliases`: 양무참문(梁武讖文), 양황보참(梁皇寶讖), 양황참문(梁皇讖文)
+  - `origin`: 詳校正本 慈悲道場懺法 卷一~三
+  - `headword_origin`: 상교정본 자비도량참법 권1~3(詳校正本 慈悲道場懺法 卷一~三)
+  - `primary_type`: 문헌/고서
+  - `era`: 고려/고려 후기
+  - `definition`: 양나라 승려 진관 등이 편찬한 ｢자비도량참법｣의 상교정본을 들여와 1352년에 간행한 의례서. 불교의례서.
+
+#### 후보 17. 상교정본 자비도량참법 권7~10 · AKS
+
+- Candidate ID: `source-candidate:cf7c09f59874246fa08c`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0069703:sha256-704d8ea620c542f5`
+- Entity type: `Work`
+- 한자: 詳校正本, 慈悲道場懺法, 卷七, 十, 梁武讖文, 梁皇寶讖, 梁皇讖文
+- 시대: 고려, 고려 후기
+- 원천 문맥:
+  - `headword`: 상교정본 자비도량참법 권7~10
+  - `aliases`: 양무참문(梁武讖文), 양황보참(梁皇寶讖), 양황참문(梁皇讖文)
+  - `origin`: 詳校正本 慈悲道場懺法 卷七～十
+  - `headword_origin`: 상교정본 자비도량참법 권7~10(詳校正本 慈悲道場懺法 卷七～十)
+  - `primary_type`: 문헌/고서
+  - `era`: 고려/고려 후기
+  - `definition`: 양나라 승려 진관 등이 편찬한 「자비도량참법」의 상교정본을 들여와 1352년에 간행한 의례서. 불교의례서.
+
+#### 후보 18. 상교정본 자비도량참법 권4～6 · AKS
+
+- Candidate ID: `source-candidate:224f98828fb52ed0303b`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0069742:sha256-704d8ea620c542f5`
+- Entity type: `Work`
+- 한자: 詳校正本, 慈悲道場懺法, 卷四, 六, 梁武讖文, 梁皇寶讖, 梁皇讖文, 慈悲道場懺法第四之六
+- 시대: 조선, 조선 전기
+- 원천 문맥:
+  - `headword`: 상교정본 자비도량참법 권4～6
+  - `aliases`: 양무참문(梁武讖文), 양황보참(梁皇寶讖), 양황참문(梁皇讖文), 자비도량참법제사지육(慈悲道場懺法第四之六)
+  - `origin`: 詳校正本 慈悲道場懺法 卷四～六
+  - `headword_origin`: 상교정본 자비도량참법 권4～6(詳校正本 慈悲道場懺法 卷四～六)
+  - `primary_type`: 문헌/고서
+  - `era`: 조선/조선 전기
+  - `definition`: 「자비도량참법(慈悲道場懺法)」의 상교정본(詳校正本)을 들여와 1462년에 간경도감에서 간행한 불교의례서.
+
+#### 후보 19. 상교정본 자비도량참법 권9~10 · AKS
+
+- Candidate ID: `source-candidate:b97d3256c37140ed1c0e`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0069767:sha256-704d8ea620c542f5`
+- Entity type: `Work`
+- 한자: 詳校正本, 慈悲道場懺法, 卷九, 十, 梁武讖文, 梁皇寶讖, 梁皇讖文
+- 시대: 고려, 고려 후기
+- 원천 문맥:
+  - `headword`: 상교정본 자비도량참법 권9~10
+  - `aliases`: 양무참문(梁武讖文), 양황보참(梁皇寶讖), 양황참문(梁皇讖文)
+  - `origin`: 詳校正本 慈悲道場懺法 卷九~十
+  - `headword_origin`: 상교정본 자비도량참법 권9~10(詳校正本 慈悲道場懺法 卷九~十)
+  - `primary_type`: 문헌/고서
+  - `era`: 고려/고려 후기
+  - `definition`: 변산에서 진관 등이 편찬한 ｢자비도량참법｣의 상교정본을 들여와 1316년에 간행한 의례서. 불교의례서.
+
+#### 후보 20. 상교정본 자비도량참법 권9～10 · AKS
+
+- Candidate ID: `source-candidate:e213075bda8bdb632e0b`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0069779:sha256-704d8ea620c542f5`
+- Entity type: `Work`
+- 한자: 詳校正本, 慈悲道場懺法, 卷九, 十, 梁武讖文, 梁皇寶讖, 梁皇讖文
+- 시대: 조선, 조선 전기
+- 원천 문맥:
+  - `headword`: 상교정본 자비도량참법 권9～10
+  - `aliases`: 양무참문(梁武讖文), 양황보참(梁皇寶讖), 양황참문(梁皇讖文)
+  - `origin`: 詳校正本 慈悲道場懺法 卷九～十
+  - `headword_origin`: 상교정본 자비도량참법 권9～10(詳校正本 慈悲道場懺法 卷九～十)
+  - `primary_type`: 문헌/고서
+  - `era`: 조선/조선 전기
+  - `definition`: 간경도감에서 진관 등이 편찬한 「자비도량참법」의 상교정본을 들여와 1462년에 간행한 의례서. 불교의례서.
+
+#### 후보 21. 교정청 · AKS
+
+- Candidate ID: `source-candidate:037d1e3ac13b44378ef7`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0005570:sha256-704d8ea620c542f5`
+- Entity type: `Concept`
+- 한자: 校正廳
+- 시대: 근대, 개항기
+- 원천 문맥:
+  - `headword`: 교정청
+  - `origin`: 校正廳
+  - `headword_origin`: 교정청(校正廳)
+  - `primary_type`: 제도/관청
+  - `era`: 근대/개항기
+  - `definition`: 1894년(고종 31) 6월 내정 개혁을 위해 한시적으로 설치되었던 임시 관청.
+
+#### 후보 22. 교정도감 설치 · ITKC_EVENT
+
+- Candidate ID: `source-candidate:f20dbc5ac070a160582e`
+- 현재 분류: **REJECTED**
+- Source record ID: `ITKC:EVENT:ITKC_PH_1294A_0426:sha256-b824cb8eb9575bbc`
+- Entity type: `Event`
+- 한자: (없음)
+- 시대: 고려, 1209년(희종 5) 4월
+- 원천 문맥:
+  - `event_name`: 교정도감 설치
+  - `subject_category`: 기관
+  - `period`: 고려
+  - `event_date`: 1209년(희종 5) 4월
+  - `related_event`: 최씨무인정권
+
+</details>
+
+### 사람 검수 입력
+
+- Manual status: `PENDING`
+- Manual reason: (미입력)
+- Reviewer: (미입력)
+- Reviewed at: (미입력)
+
+[목록으로 돌아가기](#case-목록)
+
+---
+
+<a id="case-028"></a>
+## 028. 미국인 회사 · PENDING
+
+- Case ID: `related-resolution-case:784def79ebee0a85586f`
+- 모델 게이트: `NEEDS_MANUAL_REVIEW`
+- 검증 사유: `ENTITY_TYPE_REVIEW_REQUIRED`, `INSUFFICIENT_PAIR_EVIDENCE`
+- 후보 수: 21개
+
+### 모델 판정 사유
+
+> 문제 문맥 표본은 비어 있으나, 정확 일치한 두 THESAURUS 레코드는 동일 한자와 사실상 동일한 정의를 통해 미국인이 설립하거나 미국 자본으로 설립한 회사라는 일반 역사경제 범주를 직접 규정한다. 따라서 두 시대 분류 레코드를 하나의 canonical target으로 병합했다. 갑산동산·대한제국·전차·한미전기회사 문서는 각각 광업권 취득, 합작 설립, 경영권, 설립 주체라는 구체적 관계를 서술하므로 evidence로만 보존했다. 영국인회사·외국인회사는 다른 국적 또는 상위 범주이고, 개별 회사·기관·사찰·공사관·교회사 등은 명칭 일부나 '미국' 수식어만 겹치거나 유형이 달라 identity에서 제외했다.
+
+### 현재 후보 분류
+
+| 역할 | 원천·표제 | Candidate ID |
+|---|---|---|
+| CANONICAL · 미국인회사(美國人會社) | THESAURUS · 미국인회사 | `source-candidate:1730dca6e652723dac3c` |
+| CANONICAL · 미국인회사(美國人會社) | THESAURUS · 미국인회사 | `source-candidate:de76f702ee1826609e3d` |
+| EVIDENCE_ONLY | AKS · 갑산동산 | `source-candidate:f1c22811db698cbc6715` |
+| EVIDENCE_ONLY | AKS · 대한제국 | `source-candidate:f00073bccee6c95255c8` |
+| REJECTED | AKS · 운산군 | `source-candidate:4317cacf91ac141fc349` |
+| EVIDENCE_ONLY | AKS · 전차 | `source-candidate:03bb2ce43c482bf48618` |
+| EVIDENCE_ONLY | AKS · 한미전기회사 | `source-candidate:e9a3ada6e3059c8f7993` |
+| REJECTED | THESAURUS · 영국인회사 | `source-candidate:b76b1be903b1d1857390` |
+| REJECTED | THESAURUS · 영국인회사 | `source-candidate:61d332fc62f7c48478e1` |
+| REJECTED | THESAURUS · 외국인회사 | `source-candidate:537cf4e51f177e8aef2f` |
+| REJECTED | AKS · 미국 태고사 | `source-candidate:827b5f8312a8d6972f3d` |
+| REJECTED | AKS · 국자회사 | `source-candidate:cb9b11d8d5b43162e99d` |
+| REJECTED | AKS · 미상회사 | `source-candidate:350cb16b50712a1e8083` |
+| REJECTED | AKS · 한미무역회사 | `source-candidate:df2946faba83e618cbc0` |
+| REJECTED | AKS · 미국 불국사 | `source-candidate:dc17a0e42833eef80ea6` |
+| REJECTED | AKS · 미국 서미사 | `source-candidate:fa81b342e3bb3fa603dd` |
+| REJECTED | AKS · 국회사무처 | `source-candidate:4f7174f3413b83f283d7` |
+| REJECTED | AKS · 한국기독교회사 | `source-candidate:ffcc91649864161e3c8b` |
+| REJECTED | AKS · 주미대한제국공사관 | `source-candidate:e8f22faf3b8fd06d2791` |
+| REJECTED | AKS · 미국 남선사 | `source-candidate:7389a06bd379e06ffe2a` |
+| REJECTED | AKS · 재법한국인회 | `source-candidate:6c89a987df3b6fb20e34` |
+
+### Canonical 대안
+
+#### 대안 1. 미국인회사(美國人會社)
+
+- Entity type: `Concept`
+- 동일 실체 후보:
+  - `source-candidate:1730dca6e652723dac3c` — THESAURUS · 미국인회사
+  - `source-candidate:de76f702ee1826609e3d` — THESAURUS · 미국인회사
+- 판정 근거: 두 THESAURUS 레코드는 모두 한자 표기 美國人會社와 동일한 정의(미국인이 설립하거나 미국인 자본으로 설립된 회사)를 제시한다. 대한제국기와 개항기는 서로 충돌하는 별도 회사명이 아니라 동일한 역사적 경제 범주의 시대 분류 차이이므로, 미국인회사라는 일반 범주를 함께 직접 설명하는 동일 target으로 묶는다.
+
+### Evidence only
+
+- `source-candidate:f1c22811db698cbc6715` — AKS · 갑산동산
+- `source-candidate:f00073bccee6c95255c8` — AKS · 대한제국
+- `source-candidate:03bb2ce43c482bf48618` — AKS · 전차
+- `source-candidate:e9a3ada6e3059c8f7993` — AKS · 한미전기회사
+
+### Rejected
+
+- `source-candidate:4317cacf91ac141fc349` — AKS · 운산군
+- `source-candidate:b76b1be903b1d1857390` — THESAURUS · 영국인회사
+- `source-candidate:61d332fc62f7c48478e1` — THESAURUS · 영국인회사
+- `source-candidate:537cf4e51f177e8aef2f` — THESAURUS · 외국인회사
+- `source-candidate:827b5f8312a8d6972f3d` — AKS · 미국 태고사
+- `source-candidate:cb9b11d8d5b43162e99d` — AKS · 국자회사
+- `source-candidate:350cb16b50712a1e8083` — AKS · 미상회사
+- `source-candidate:df2946faba83e618cbc0` — AKS · 한미무역회사
+- `source-candidate:dc17a0e42833eef80ea6` — AKS · 미국 불국사
+- `source-candidate:fa81b342e3bb3fa603dd` — AKS · 미국 서미사
+- `source-candidate:4f7174f3413b83f283d7` — AKS · 국회사무처
+- `source-candidate:ffcc91649864161e3c8b` — AKS · 한국기독교회사
+- `source-candidate:e8f22faf3b8fd06d2791` — AKS · 주미대한제국공사관
+- `source-candidate:7389a06bd379e06ffe2a` — AKS · 미국 남선사
+- `source-candidate:6c89a987df3b6fb20e34` — AKS · 재법한국인회
+
+### Ambiguous
+
+- 없음
+
+<details>
+<summary><strong>후보 21개의 원천 문맥 펼치기</strong></summary>
+
+#### 후보 1. 미국인회사 · THESAURUS
+
+- Candidate ID: `source-candidate:1730dca6e652723dac3c`
+- 현재 분류: **CANONICAL · 미국인회사(美國人會社)**
+- Source record ID: `THESAURUS:TERM:29363851:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 美國人會社
+- 시대: 근대
+- 원천 문맥:
+  - `term_name`: 미국인회사
+  - `hanja`: 美國人會社
+  - `era`: 근대
+  - `thesaurus_category`: 경제·산업>경제단체·기구>회사·기업
+  - `description`: 미국인이 설립하거나 혹은 미국인 자본으로 설립된 회사.
+  - `term_year`: ?-?
+  - `term_remark`: 대한제국기
+
+#### 후보 2. 미국인회사 · THESAURUS
+
+- Candidate ID: `source-candidate:de76f702ee1826609e3d`
+- 현재 분류: **CANONICAL · 미국인회사(美國人會社)**
+- Source record ID: `THESAURUS:TERM:29364965:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 美國人會社
+- 시대: 개항기
+- 원천 문맥:
+  - `term_name`: 미국인회사
+  - `hanja`: 美國人會社
+  - `era`: 개항기
+  - `thesaurus_category`: 경제·산업>경제단체·기구>회사·기업
+  - `description`: 미국인이 설립하거나 미국인 자본으로 설립된 회사.
+  - `term_year`: ?-?
+  - `term_remark`: 개항기
+
+#### 후보 3. 갑산동산 · AKS
+
+- Candidate ID: `source-candidate:f1c22811db698cbc6715`
+- 현재 분류: **EVIDENCE_ONLY**
+- Source record ID: `AKS:ARTICLE:E0000912:sha256-704d8ea620c542f5`
+- Entity type: `Place`
+- 한자: 甲山銅山
+- 시대: (없음)
+- 원천 문맥:
+  - `headword`: 갑산동산
+  - `origin`: 甲山銅山
+  - `headword_origin`: 갑산동산(甲山銅山)
+  - `primary_type`: 지명/시설
+  - `era`: 미상
+  - `definition`: 함경남도 갑산군 진동면 동점리·대복리에 있는 광산.
+  - `snippet`: 부 [내장원](E0012559) 소속으로 관에서 운영하였으나 민간에 이관되었고, 1909년 4월 미국인 회사가 광업권을 얻어 조사와 채광을 하였다. 1916년 일본의 구원광업주식회사에 광업권이 양
+
+#### 후보 4. 대한제국 · AKS
+
+- Candidate ID: `source-candidate:f00073bccee6c95255c8`
+- 현재 분류: **EVIDENCE_ONLY**
+- Source record ID: `AKS:ARTICLE:E0015187:sha256-704d8ea620c542f5`
+- Entity type: `Concept`
+- 한자: 大韓帝國
+- 시대: 근대, 대한제국기
+- 원천 문맥:
+  - `headword`: 대한제국
+  - `origin`: 大韓帝國
+  - `headword_origin`: 대한제국(大韓帝國)
+  - `primary_type`: 제도/법령·제도
+  - `era`: 근대/대한제국기
+  - `definition`: 1897년 10월 12일부터 1910년 8월 29일까지 존속하였던 한국 근대 국가.
+  - `snippet`: E0049706)가 개통되었다. 황제가 내탕금[^9]을 출자한 [한성전기회사](E0061752)는 미국인 콜부란 · 보스트윅과 [합자회사](E0062326)(Collbran&Bostwick Comp
+
+#### 후보 5. 운산군 · AKS
+
+- Candidate ID: `source-candidate:4317cacf91ac141fc349`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0040305:sha256-704d8ea620c542f5`
+- Entity type: `Place`
+- 한자: 雲山郡
+- 시대: 현대
+- 원천 문맥:
+  - `headword`: 운산군
+  - `origin`: 雲山郡
+  - `headword_origin`: 운산군(雲山郡)
+  - `primary_type`: 지명/행정지명·마을
+  - `era`: 현대
+  - `definition`: 평안북도 중앙에 위치한 군.
+  - `snippet`: 설로 유치원이 있었다. 한편 외국인의 잦은 내왕으로 서양문물이 도입되기 시작했는데, 1896년 미국인에 의해 종합병원인 운산광산병원이 설립되었으며, 1935년 북진의약회사가 설립되어 양약과
+
+#### 후보 6. 전차 · AKS
+
+- Candidate ID: `source-candidate:03bb2ce43c482bf48618`
+- 현재 분류: **EVIDENCE_ONLY**
+- Source record ID: `AKS:ARTICLE:E0049706:sha256-704d8ea620c542f5`
+- Entity type: `Heritage`
+- 한자: 電車
+- 시대: (없음)
+- 원천 문맥:
+  - `headword`: 전차
+  - `origin`: 電車
+  - `headword_origin`: 전차(電車)
+  - `primary_type`: 물품
+  - `era`: 미상
+  - `definition`: 전기의 힘을 동력으로 하여 궤도 위를 달리는 차량.
+  - `snippet`: 발행하였다. 고종의 처음 40만 원 출자란 부동산을 가리킨 것으로 보인다. 이 계약은 모든 경영권을 미국인들이 독점하고 고종이 35만 원의 추가출자 약속을 이행하지 못할 때에는 이미 출자한 회사자산도
+
+#### 후보 7. 한미전기회사 · AKS
+
+- Candidate ID: `source-candidate:e9a3ada6e3059c8f7993`
+- 현재 분류: **EVIDENCE_ONLY**
+- Source record ID: `AKS:ARTICLE:E0061619:sha256-704d8ea620c542f5`
+- Entity type: `Organization`
+- 한자: 韓美電氣會社
+- 시대: 근대, 대한제국기
+- 원천 문맥:
+  - `headword`: 한미전기회사
+  - `origin`: 韓美電氣會社
+  - `headword_origin`: 한미전기회사(韓美電氣會社)
+  - `primary_type`: 단체
+  - `era`: 근대/대한제국기
+  - `definition`: 1904년서울에 설립되었던 전기 회사.
+  - `snippet`: 개설 고종과 미국인 콜브란(Collbran, H.)·보스트윅(Bostwick, H.R.)이 합작하여 설립한 회사로 한성전
+
+#### 후보 8. 영국인회사 · THESAURUS
+
+- Candidate ID: `source-candidate:b76b1be903b1d1857390`
+- 현재 분류: **REJECTED**
+- Source record ID: `THESAURUS:TERM:29363908:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 英國人會社
+- 시대: 근대
+- 원천 문맥:
+  - `term_name`: 영국인회사
+  - `hanja`: 英國人會社
+  - `era`: 근대
+  - `thesaurus_category`: 경제·산업>경제단체·기구>회사·기업
+  - `description`: 영국인이 설립하거나 영국자본으로 설립된 회사.
+  - `term_year`: ?-?
+  - `term_remark`: 대한제국기
+
+#### 후보 9. 영국인회사 · THESAURUS
+
+- Candidate ID: `source-candidate:61d332fc62f7c48478e1`
+- 현재 분류: **REJECTED**
+- Source record ID: `THESAURUS:TERM:29364888:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 英國人會社
+- 시대: 개항기
+- 원천 문맥:
+  - `term_name`: 영국인회사
+  - `hanja`: 英國人會社
+  - `era`: 개항기
+  - `thesaurus_category`: 경제·산업>경제단체·기구>회사·기업
+  - `description`: 영국인이 설립하거나 영국자본으로 설립된 회사.
+  - `term_year`: ?-?
+  - `term_remark`: 개항기
+
+#### 후보 10. 외국인회사 · THESAURUS
+
+- Candidate ID: `source-candidate:537cf4e51f177e8aef2f`
+- 현재 분류: **REJECTED**
+- Source record ID: `THESAURUS:TERM:29364901:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 外國人會社
+- 시대: 근대
+- 원천 문맥:
+  - `term_name`: 외국인회사
+  - `hanja`: 外國人會社
+  - `era`: 근대
+  - `thesaurus_category`: 경제·산업>경제단체·기구>회사·기업
+  - `description`: 외국인 혹은 외국자본으로 설립된 회사.
+  - `term_year`: ?-?
+  - `term_remark`: 대한제국기
+
+#### 후보 11. 미국 태고사 · AKS
+
+- Candidate ID: `source-candidate:827b5f8312a8d6972f3d`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0079139:sha256-704d8ea620c542f5`
+- Entity type: `Heritage`
+- 한자: (없음)
+- 시대: 현대
+- 원천 문맥:
+  - `headword`: 미국 태고사
+  - `aliases`: LA 태고사
+  - `origin`: Mountain Spirit Center
+  - `headword_origin`: 미국 태고사(Mountain Spirit Center)
+  - `primary_type`: 유적/건물
+  - `era`: 현대
+  - `definition`: 미국 캘리포니아 테하차피(Tehachapi)에 있는 해방 이후 미국인 승려 무량이 창건한 한국 관련 사찰.
+
+#### 후보 12. 국자회사 · AKS
+
+- Candidate ID: `source-candidate:cb9b11d8d5b43162e99d`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0006428:sha256-704d8ea620c542f5`
+- Entity type: `Organization`
+- 한자: 麯子會社
+- 시대: 근대, 개항기, 일제강점기
+- 원천 문맥:
+  - `headword`: 국자회사
+  - `origin`: 麯子會社
+  - `headword_origin`: 국자회사(麯子會社)
+  - `primary_type`: 단체
+  - `era`: 근대/개항기 | 근대/일제강점기
+  - `definition`: 술의 원료가 되는 누룩을 만들던 양조회사.
+
+#### 후보 13. 미상회사 · AKS
+
+- Candidate ID: `source-candidate:350cb16b50712a1e8083`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0078076:sha256-704d8ea620c542f5`
+- Entity type: `Organization`
+- 한자: 米商會社
+- 시대: 근대, 개항기
+- 원천 문맥:
+  - `headword`: 미상회사
+  - `origin`: 米商會社
+  - `headword_origin`: 미상회사(米商會社)
+  - `primary_type`: 단체
+  - `era`: 근대/개항기
+  - `definition`: 1894년 갑오개혁 직후 도성 내 식량 문제를 해결하기 위해 설립한 국책회사.
+
+#### 후보 14. 한미무역회사 · AKS
+
+- Candidate ID: `source-candidate:df2946faba83e618cbc0`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0073693:sha256-704d8ea620c542f5`
+- Entity type: `Organization`
+- 한자: 韓美貿易會社
+- 시대: 근대, 일제강점기
+- 원천 문맥:
+  - `headword`: 한미무역회사
+  - `origin`: 韓美貿易會社
+  - `headword_origin`: 한미무역회사(韓美貿易會社)
+  - `primary_type`: 단체
+  - `era`: 근대/일제강점기
+  - `definition`: 1910년 2월 샌프란시스코에서 설립된 미국동포사회 최초의 무역회사.
+
+#### 후보 15. 미국 불국사 · AKS
+
+- Candidate ID: `source-candidate:dc17a0e42833eef80ea6`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0079128:sha256-704d8ea620c542f5`
+- Entity type: `Heritage`
+- 한자: (없음)
+- 시대: 현대
+- 원천 문맥:
+  - `headword`: 미국 불국사
+  - `aliases`: 부다나라
+  - `headword_origin`: 미국 불국사
+  - `primary_type`: 유적/건물
+  - `era`: 현대
+  - `definition`: 미국 미주리(Missouri) 세인트루이스(St. Louis)와 조지아(Georgia) 애틀랜타(Atlanta)에 있는 해방 이후 비구니 선각이 창건한 사찰.
+
+#### 후보 16. 미국 서미사 · AKS
+
+- Candidate ID: `source-candidate:fa81b342e3bb3fa603dd`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0079131:sha256-704d8ea620c542f5`
+- Entity type: `Heritage`
+- 한자: (없음)
+- 시대: 현대
+- 원천 문맥:
+  - `headword`: 미국 서미사
+  - `aliases`: 타코마 서미사
+  - `headword_origin`: 미국 서미사
+  - `primary_type`: 유적/건물
+  - `era`: 현대
+  - `definition`: 미국 워싱턴 터코마(Tacoma)에 있는 해방 이후 승려 일면이 창건한 사찰.
+
+#### 후보 17. 국회사무처 · AKS
+
+- Candidate ID: `source-candidate:4f7174f3413b83f283d7`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0006571:sha256-704d8ea620c542f5`
+- Entity type: `Concept`
+- 한자: 國會事務處
+- 시대: 현대
+- 원천 문맥:
+  - `headword`: 국회사무처
+  - `origin`: 國會事務處
+  - `headword_origin`: 국회사무처(國會事務處)
+  - `primary_type`: 제도/법령·제도
+  - `era`: 현대
+  - `definition`: 국회의 의정활동을 지원하고 행정사무를 처리하기 위하여 ＜국회사무처법＞에 의하여 설치된 입법부의 기관.
+
+#### 후보 18. 한국기독교회사 · AKS
+
+- Candidate ID: `source-candidate:ffcc91649864161e3c8b`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0076228:sha256-704d8ea620c542f5`
+- Entity type: `Concept`
+- 한자: 韓國基督敎會史
+- 시대: 현대
+- 원천 문맥:
+  - `headword`: 한국기독교회사
+  - `aliases`: 한국개신교회사, 한국교회사
+  - `origin`: 韓國基督敎會史
+  - `headword_origin`: 한국기독교회사(韓國基督敎會史)
+  - `primary_type`: 개념
+  - `era`: 현대
+  - `definition`: 한국의 역사와 문화 속에서 형성된 기독교 역사를 뜻하는 기독교용어. 한국교회사·한국개신교회사.
+
+#### 후보 19. 주미대한제국공사관 · AKS
+
+- Candidate ID: `source-candidate:e8f22faf3b8fd06d2791`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0076935:sha256-704d8ea620c542f5`
+- Entity type: `Heritage`
+- 한자: 駐美大韓帝國公使館
+- 시대: 근대, 개항기
+- 원천 문맥:
+  - `headword`: 주미대한제국공사관
+  - `aliases`: 대조선주미공사관, 대조선주차미국화성돈공사관, 미국공사관, 화성돈대한제국공사관
+  - `origin`: 駐美大韓帝國公使館
+  - `headword_origin`: 주미대한제국공사관(駐美大韓帝國公使館)
+  - `primary_type`: 유적/건물
+  - `era`: 근대/개항기
+  - `definition`: 1877년 빅토리아 양식으로 지어진 주택으로 미국 워싱턴 DC 워싱턴에 위치한 대한제국 공사관 건물. 미국 국가사적지(NRHP·National Register of Historic Places).
+
+#### 후보 20. 미국 남선사 · AKS
+
+- Candidate ID: `source-candidate:7389a06bd379e06ffe2a`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0079119:sha256-704d8ea620c542f5`
+- Entity type: `Heritage`
+- 한자: (없음)
+- 시대: 현대
+- 원천 문맥:
+  - `headword`: 미국 남선사
+  - `aliases`: West Houston Zen Center
+  - `headword_origin`: 미국 남선사
+  - `primary_type`: 유적/건물
+  - `era`: 현대
+  - `definition`: 미국 텍사스 휴스턴(Houston)에 있는 해방 이후에 창건된 대한불교조계종 소속 사찰.
+
+#### 후보 21. 재법한국인회 · AKS
+
+- Candidate ID: `source-candidate:6c89a987df3b6fb20e34`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0071842:sha256-704d8ea620c542f5`
+- Entity type: `Organization`
+- 한자: 在法韓國人會
+- 시대: 근대, 일제강점기
+- 원천 문맥:
+  - `headword`: 재법한국인회
+  - `origin`: 在法韓國人會
+  - `headword_origin`: 재법한국인회(在法韓國人會)
+  - `primary_type`: 단체
+  - `era`: 근대/일제강점기
+  - `definition`: 1919년에 설립된 프랑스 최초의 한인 단체.
+
+</details>
+
+### 사람 검수 입력
+
+- Manual status: `PENDING`
+- Manual reason: (미입력)
+- Reviewer: (미입력)
+- Reviewed at: (미입력)
+
+[목록으로 돌아가기](#case-목록)
+
+---
+
+<a id="case-029"></a>
+## 029. 미국의 소리 · PENDING
+
+- Case ID: `related-resolution-case:dc78e3f1b8be5d8856c2`
+- 모델 게이트: `NEEDS_MANUAL_REVIEW`
+- 검증 사유: `ENTITY_TYPE_REVIEW_REQUIRED`
+- 후보 수: 16개
+
+### 모델 판정 사유
+
+> 문제 문맥 표본이 없으므로, canonical term과 정확히 일치하고 1942년 창설된 미국 대외선전방송으로 직접 정의한 후보만 미국의 소리(Voice of America) 자체로 묶었다. ‘미국의 소리 한국어 방송’은 VOA의 한국어 서비스라는 범위가 더 좁은 별도 표제이므로 포함·확장 관계만으로 identity에 병합하지 않고 관계 근거로만 보존하였다. 이승만·황재경·단파방송 밀청사건 문서는 각각 VOA 출연·근무·청취 관계를 명시하므로 EVIDENCE_ONLY로 분류했다. 일반 방송, 인류학 및 판소리·문학 관련 ‘소리’ 명칭들은 동명 또는 부분 문자열 일치일 뿐 대상과의 구체적 관계가 없어 제외했다.
+
+### 현재 후보 분류
+
+| 역할 | 원천·표제 | Candidate ID |
+|---|---|---|
+| CANONICAL · 미국의 소리(Voice of America) | THESAURUS · 미국의소리 | `source-candidate:fcbaf9ae67a0727cc2d3` |
+| REJECTED | AKS · 방송 | `source-candidate:ba2bead7c697ce0017d7` |
+| EVIDENCE_ONLY | AKS · 이승만 | `source-candidate:bc63c15c85f6a930e26e` |
+| REJECTED | AKS · 인류학 | `source-candidate:3ece57a82c529e19d1f9` |
+| EVIDENCE_ONLY | AKS · 미국의 소리(voice of america) 한국어 방송 | `source-candidate:842ba75f59528a4cbfe7` |
+| EVIDENCE_ONLY | AKS · 황재경 | `source-candidate:caf85578d480cf4974f4` |
+| EVIDENCE_ONLY | AKS · 단파방송 밀청사건 | `source-candidate:3735b850fccfbcff924e` |
+| EVIDENCE_ONLY | THESAURUS · 단파방송밀청사건 | `source-candidate:c6af044820739b3deae2` |
+| REJECTED | AKS · 말의 소리 | `source-candidate:e91d0eecdcbdf0dbbb7d` |
+| REJECTED | AKS · 소리북 | `source-candidate:485cb3ffa0233551b1bb` |
+| REJECTED | AKS · 씨알의 소리 | `source-candidate:8f7e6fb40034397425cd` |
+| REJECTED | AKS · 총독의 소리 | `source-candidate:7b95dd6d924abf3181f6` |
+| REJECTED | AKS · 눈대목 | `source-candidate:0b540baf6757b97b75cb` |
+| REJECTED | AKS · 창 | `source-candidate:00128488bf63a78f07b4` |
+| REJECTED | AKS · 호미걸이소리 | `source-candidate:c91185538a1b2fb58132` |
+| REJECTED | AKS · 판소리고법 | `source-candidate:e79d1d0607d1833e7640` |
+
+### Canonical 대안
+
+#### 대안 1. 미국의 소리(Voice of America)
+
+- Entity type: `Organization`
+- 동일 실체 후보:
+  - `source-candidate:fcbaf9ae67a0727cc2d3` — THESAURUS · 미국의소리
+- 판정 근거: 문제 문맥 표본은 제공되지 않았으므로 canonical term 자체를 기준으로 보수적으로 판정하였다. 이 후보는 표제가 정확히 ‘미국의소리’이고, 1942년 창설된 미국의 대외선전방송이라고 직접 정의하여 Voice of America라는 대상 자체를 설명한다.
+
+### Evidence only
+
+- `source-candidate:bc63c15c85f6a930e26e` — AKS · 이승만
+- `source-candidate:842ba75f59528a4cbfe7` — AKS · 미국의 소리(voice of america) 한국어 방송
+- `source-candidate:caf85578d480cf4974f4` — AKS · 황재경
+- `source-candidate:3735b850fccfbcff924e` — AKS · 단파방송 밀청사건
+- `source-candidate:c6af044820739b3deae2` — THESAURUS · 단파방송밀청사건
+
+### Rejected
+
+- `source-candidate:ba2bead7c697ce0017d7` — AKS · 방송
+- `source-candidate:3ece57a82c529e19d1f9` — AKS · 인류학
+- `source-candidate:e91d0eecdcbdf0dbbb7d` — AKS · 말의 소리
+- `source-candidate:485cb3ffa0233551b1bb` — AKS · 소리북
+- `source-candidate:8f7e6fb40034397425cd` — AKS · 씨알의 소리
+- `source-candidate:7b95dd6d924abf3181f6` — AKS · 총독의 소리
+- `source-candidate:0b540baf6757b97b75cb` — AKS · 눈대목
+- `source-candidate:00128488bf63a78f07b4` — AKS · 창
+- `source-candidate:c91185538a1b2fb58132` — AKS · 호미걸이소리
+- `source-candidate:e79d1d0607d1833e7640` — AKS · 판소리고법
+
+### Ambiguous
+
+- 없음
+
+<details>
+<summary><strong>후보 16개의 원천 문맥 펼치기</strong></summary>
+
+#### 후보 1. 미국의소리 · THESAURUS
+
+- Candidate ID: `source-candidate:fcbaf9ae67a0727cc2d3`
+- 현재 분류: **CANONICAL · 미국의 소리(Voice of America)**
+- Source record ID: `THESAURUS:TERM:29368823:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 美國
+- 시대: 현대
+- 원천 문맥:
+  - `term_name`: 미국의소리
+  - `hanja`: 美國의소리
+  - `era`: 현대
+  - `thesaurus_category`: 외교·국제관계>미국>외교·국제관계(미국)
+  - `description`: 1942년 국무부의 국제협력국 관장하에 창설된 미국의 대외선전방송(對外宣傳放送).
+  - `term_year`: 1942-?
+
+#### 후보 2. 방송 · AKS
+
+- Candidate ID: `source-candidate:ba2bead7c697ce0017d7`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0021719:sha256-704d8ea620c542f5`
+- Entity type: `Concept`
+- 한자: 放送
+- 시대: 현대
+- 원천 문맥:
+  - `headword`: 방송
+  - `origin`: 放送
+  - `headword_origin`: 방송(放送)
+  - `primary_type`: 개념
+  - `era`: 현대
+  - `definition`: 라디오나 텔레비전을 통하여 보도·음악·강연·연예 등을 보내어 널리 보고 듣게 하는 통신기술.
+  - `snippet`: 일에는 장애인을 위한 ‘사랑의 소리 방송’이 전파를 타기 시작하였다. 현재 세계의 라디오 보급상황은 미국의 경우 인구 1,000명당 2,100여 대가 보급되어 있으며, 우리나라는 1,000명당 1,006대
+
+#### 후보 3. 이승만 · AKS
+
+- Candidate ID: `source-candidate:bc63c15c85f6a930e26e`
+- 현재 분류: **EVIDENCE_ONLY**
+- Source record ID: `AKS:ARTICLE:E0044938:sha256-704d8ea620c542f5`
+- Entity type: `Person`
+- 한자: 李承晩, 雩南, 李承龍
+- 시대: 조선, 조선 후기, 근대, 현대
+- 원천 문맥:
+  - `headword`: 이승만
+  - `aliases`: 우남(雩南), 이승룡(李承龍)
+  - `origin`: 李承晩
+  - `headword_origin`: 이승만(李承晩)
+  - `primary_type`: 인물/근현대 인물
+  - `era`: 조선/조선 후기 | 근대 | 현대
+  - `definition`: 대한민국 제1·2·3대 대통령을 역임한 정치인.
+  - `snippet`: 1945년 태평양 전쟁이 끝날 때까지 임시정부를 승인하지 않았다. 1942년 8월 29일부터 미국의 소리(Voice Of America)[^4] 방송에서 일본의 패망과 독립운동의 필요성을 강조하는
+
+#### 후보 4. 인류학 · AKS
+
+- Candidate ID: `source-candidate:3ece57a82c529e19d1f9`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0046875:sha256-704d8ea620c542f5`
+- Entity type: `Concept`
+- 한자: 人類學
+- 시대: 현대
+- 원천 문맥:
+  - `headword`: 인류학
+  - `origin`: 人類學
+  - `headword_origin`: 인류학(人類學)
+  - `primary_type`: 개념
+  - `era`: 현대
+  - `definition`: 인간과 인간 집단을 총체적으로 연구하는 학문.
+  - `snippet`: 대주의와 소위 ‘문화 결정론[^91]’이 오류이며 생물학적인 요인이 문화나 교육보다 더욱 중요하다는 미국의 보수 우파와 사회 생물학자들은 이에 환호했다. 마거릿 미드가 자유와 관용을 위해 목소리를 높여 온
+
+#### 후보 5. 미국의 소리(voice of america) 한국어 방송 · AKS
+
+- Candidate ID: `source-candidate:842ba75f59528a4cbfe7`
+- 현재 분류: **EVIDENCE_ONLY**
+- Source record ID: `AKS:ARTICLE:E0073725:sha256-704d8ea620c542f5`
+- Entity type: `Organization`
+- 한자: 美國, 韓國語, 放送
+- 시대: 근대, 일제강점기
+- 원천 문맥:
+  - `headword`: 미국의 소리(voice of america) 한국어 방송
+  - `origin`: 美國의 소리(voice of america) 韓國語 放送
+  - `headword_origin`: 미국의 소리(voice of america) 한국어 방송(美國의 소리(voice of america) 韓國語 放送)
+  - `primary_type`: 단체
+  - `era`: 근대/일제강점기
+  - `definition`: 1942년 대외 선전활동을 위해 만든 미국의 해외선전방송.
+  - `snippet`: 설립목적 미일전쟁의 발발을 계기로 일본군의 심리 교란, 한국인의 반일활동 조성, 그리고 미국의 정책과 입장을 선전하기 위해 설립되었다. # 연원 및 변천 미국의 소리는 제2차 세계대전이 진행 중이
+
+#### 후보 6. 황재경 · AKS
+
+- Candidate ID: `source-candidate:caf85578d480cf4974f4`
+- 현재 분류: **EVIDENCE_ONLY**
+- Source record ID: `AKS:ARTICLE:E0073735:sha256-704d8ea620c542f5`
+- Entity type: `Person`
+- 한자: 黃材景
+- 시대: 근대, 대한제국기, 현대
+- 원천 문맥:
+  - `headword`: 황재경
+  - `origin`: 黃材景
+  - `headword_origin`: 황재경(黃材景)
+  - `primary_type`: 인물/근현대 인물
+  - `era`: 근대/대한제국기 | 현대
+  - `definition`: 해방 이후 미국 워싱턴의 한인교회에서 목회한 목사. 아나운서, 음악가.
+  - `snippet`: 개설 미국의 소리 방송국 아나운서이며 음악가와 만담가이자 목사로, 워싱톤D.C. 최초의 한인교회를 개척했던
+
+#### 후보 7. 단파방송 밀청사건 · AKS
+
+- Candidate ID: `source-candidate:3735b850fccfbcff924e`
+- 현재 분류: **EVIDENCE_ONLY**
+- Source record ID: `AKS:ARTICLE:E0013684:sha256-704d8ea620c542f5`
+- Entity type: `Event`
+- 한자: 短波放送, 密聽事件
+- 시대: 근대, 일제강점기
+- 원천 문맥:
+  - `headword`: 단파방송 밀청사건
+  - `origin`: 短波放送 密聽事件
+  - `headword_origin`: 단파방송 밀청사건(短波放送 密聽事件)
+  - `primary_type`: 사건/사건·사고
+  - `era`: 근대/일제강점기
+  - `definition`: 일제강점기 말기 방송국에 근무하던 직원들을 중심으로‘ 미국의 소리(VOA)’와 중경의 임시정부에서 보낸 단파 방송을 청취하여 전황을 비밀리에 전파하다가 많은 사람이 체포당했던 사건.
+
+#### 후보 8. 단파방송밀청사건 · THESAURUS
+
+- Candidate ID: `source-candidate:c6af044820739b3deae2`
+- 현재 분류: **EVIDENCE_ONLY**
+- Source record ID: `THESAURUS:TERM:10495852:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 短波放送密聽事件
+- 시대: 일제시기
+- 원천 문맥:
+  - `term_name`: 단파방송밀청사건
+  - `hanja`: 短波放送密聽事件
+  - `era`: 일제시기
+  - `thesaurus_category`: 사회운동·독립운동>독립운동>민족주의운동(독립)
+  - `description`: 일제시기 말기에 '미국의 소리(VOA)'와 중경임시정부에서 보낸 단파방송을 몰래 청취한 사람들이 체포당한 사건.
+  - `term_year`: 1942-1943
+
+#### 후보 9. 말의 소리 · AKS
+
+- Candidate ID: `source-candidate:e91d0eecdcbdf0dbbb7d`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0017831:sha256-704d8ea620c542f5`
+- Entity type: `Work`
+- 한자: (없음)
+- 시대: 근대, 일제강점기
+- 원천 문맥:
+  - `headword`: 말의 소리
+  - `headword_origin`: 말의 소리
+  - `primary_type`: 문헌/고서
+  - `era`: 근대/일제강점기
+  - `definition`: 일제강점기 국어학자 주시경(1876-1914)이 국어의 음운과 문법을 체계적으로 기술하여 1914년에 간행한 문법서.
+
+#### 후보 10. 소리북 · AKS
+
+- Candidate ID: `source-candidate:485cb3ffa0233551b1bb`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0030033:sha256-704d8ea620c542f5`
+- Entity type: `Heritage`
+- 한자: 白
+- 시대: (없음)
+- 원천 문맥:
+  - `headword`: 소리북
+  - `aliases`: 고장북, 백(白)북
+  - `headword_origin`: 소리북
+  - `primary_type`: 물품
+  - `era`: 미상
+  - `definition`: 판소리에서 고수(鼓手)가 가객(歌客)의 소리에 맞추어 장단을 칠 때 쓰는 북.
+
+#### 후보 11. 씨알의 소리 · AKS
+
+- Candidate ID: `source-candidate:8f7e6fb40034397425cd`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0034201:sha256-704d8ea620c542f5`
+- Entity type: `Work`
+- 한자: (없음)
+- 시대: 현대
+- 원천 문맥:
+  - `headword`: 씨알의 소리
+  - `headword_origin`: 씨알의 소리
+  - `primary_type`: 문헌/연속간행물
+  - `era`: 현대
+  - `definition`: 1970년에, 함석헌이 민주주의 발전에 이바지하기 위하여 발행한 교양 평론 잡지.
+
+#### 후보 12. 총독의 소리 · AKS
+
+- Candidate ID: `source-candidate:7b95dd6d924abf3181f6`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0057120:sha256-704d8ea620c542f5`
+- Entity type: `Work`
+- 한자: 總督
+- 시대: 현대
+- 원천 문맥:
+  - `headword`: 총독의 소리
+  - `origin`: 總督의 소리
+  - `headword_origin`: 총독의 소리(總督의 소리)
+  - `primary_type`: 작품/문학
+  - `era`: 현대
+  - `definition`: 최인훈(崔仁勳)이 지은 연작 단편소설.
+
+#### 후보 13. 눈대목 · AKS
+
+- Candidate ID: `source-candidate:0b540baf6757b97b75cb`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0072513:sha256-704d8ea620c542f5`
+- Entity type: `Concept`
+- 한자: (없음)
+- 시대: (없음)
+- 원천 문맥:
+  - `headword`: 눈대목
+  - `aliases`: 소리의 눈
+  - `headword_origin`: 눈대목
+  - `primary_type`: 개념
+  - `era`: 미상
+  - `definition`: 판소리 한 바탕 가운데 가장 중요하게 생각하는 대목. 소리의 눈.
+
+#### 후보 14. 창 · AKS
+
+- Candidate ID: `source-candidate:00128488bf63a78f07b4`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0055312:sha256-704d8ea620c542f5`
+- Entity type: `Concept`
+- 한자: 唱
+- 시대: 현대
+- 원천 문맥:
+  - `headword`: 창
+  - `aliases`: 소리
+  - `origin`: 唱
+  - `headword_origin`: 창(唱)
+  - `primary_type`: 개념
+  - `era`: 현대
+  - `definition`: 판소리에서 광대가 부르는 노래. 소리.
+
+#### 후보 15. 호미걸이소리 · AKS
+
+- Candidate ID: `source-candidate:c91185538a1b2fb58132`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0063748:sha256-704d8ea620c542f5`
+- Entity type: `Work`
+- 한자: (없음)
+- 시대: 현대
+- 원천 문맥:
+  - `headword`: 호미걸이소리
+  - `headword_origin`: 호미걸이소리
+  - `primary_type`: 작품/전통음악
+  - `era`: 현대
+  - `definition`: 경기도 고양지역에 전승되는 김매기소리.
+
+#### 후보 16. 판소리고법 · AKS
+
+- Candidate ID: `source-candidate:e79d1d0607d1833e7640`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0059672:sha256-704d8ea620c542f5`
+- Entity type: `Concept`
+- 한자: 鼓法
+- 시대: 현대
+- 원천 문맥:
+  - `headword`: 판소리고법
+  - `origin`: 판소리鼓法
+  - `headword_origin`: 판소리고법(판소리鼓法)
+  - `primary_type`: 개념
+  - `era`: 현대
+  - `definition`: 판소리 가객의 소리에 맞추어 고수가 북으로 장단치는 반주법.
+
+</details>
+
+### 사람 검수 입력
+
+- Manual status: `PENDING`
+- Manual reason: (미입력)
+- Reviewer: (미입력)
+- Reviewed at: (미입력)
+
+[목록으로 돌아가기](#case-목록)
+
+---
+
+<a id="case-030"></a>
+## 030. 개태도광사 · PENDING
+
+- Case ID: `related-resolution-case:418879036c44c46ca9e8`
+- 모델 게이트: `NEEDS_MANUAL_REVIEW`
+- 검증 사유: `ENTITY_TYPE_REVIEW_REQUIRED`
+- 후보 수: 3개
+
+### 모델 판정 사유
+
+> 문제 문맥 표본은 없지만 canonical term과 정확히 일치하는 두 원천은 동일한 한자명 및 1936년 김광영 창시 종교라는 독립적 식별 근거를 제공한다. 부분 포함 검색으로 나온 도광사는 별개의 사찰이며, 김광영 및 인접한 명칭 요소가 겹친다는 사정만으로 개태도광사와 동일시하거나 관계 근거로 보존할 수 없다.
+
+### 현재 후보 분류
+
+| 역할 | 원천·표제 | Candidate ID |
+|---|---|---|
+| CANONICAL · 개태도광사(開泰道光寺) | AKS · 개태도광사 | `source-candidate:6d8261ad390d06bdaabd` |
+| CANONICAL · 개태도광사(開泰道光寺) | THESAURUS · 개태도광사 | `source-candidate:ac4015bce5418994f7ed` |
+| REJECTED | THESAURUS · 도광사 | `source-candidate:c9eeaa65a040c477c826` |
+
+### Canonical 대안
+
+#### 대안 1. 개태도광사(開泰道光寺)
+
+- Entity type: `Organization`
+- 동일 실체 후보:
+  - `source-candidate:6d8261ad390d06bdaabd` — AKS · 개태도광사
+  - `source-candidate:ac4015bce5418994f7ed` — THESAURUS · 개태도광사
+- 판정 근거: 두 원천은 모두 한자명 開泰道光寺, 1936년, 김광영 창시 및 단군신앙 중심의 종교라는 구체적 식별 단서가 일치하여 개태도광사 자체를 직접 설명한다.
+
+### Evidence only
+
+- 없음
+
+### Rejected
+
+- `source-candidate:c9eeaa65a040c477c826` — THESAURUS · 도광사
+
+### Ambiguous
+
+- 없음
+
+<details>
+<summary><strong>후보 3개의 원천 문맥 펼치기</strong></summary>
+
+#### 후보 1. 개태도광사 · AKS
+
+- Candidate ID: `source-candidate:6d8261ad390d06bdaabd`
+- 현재 분류: **CANONICAL · 개태도광사(開泰道光寺)**
+- Source record ID: `AKS:ARTICLE:E0001740:sha256-704d8ea620c542f5`
+- Entity type: `Organization`
+- 한자: 開泰道光寺
+- 시대: 근대, 일제강점기
+- 원천 문맥:
+  - `headword`: 개태도광사
+  - `origin`: 開泰道光寺
+  - `headword_origin`: 개태도광사(開泰道光寺)
+  - `primary_type`: 단체
+  - `era`: 근대/일제강점기
+  - `definition`: 1936년 김광영(金光榮)이 창시한 종교.
+
+#### 후보 2. 개태도광사 · THESAURUS
+
+- Candidate ID: `source-candidate:ac4015bce5418994f7ed`
+- 현재 분류: **CANONICAL · 개태도광사(開泰道光寺)**
+- Source record ID: `THESAURUS:TERM:10491365:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 開泰道光寺
+- 시대: 일제시기-현대
+- 원천 문맥:
+  - `term_name`: 개태도광사
+  - `hanja`: 開泰道光寺
+  - `era`: 일제시기-현대
+  - `thesaurus_category`: 전통사상·종교>기타종교
+  - `description`: 1936년에 김광영(金光榮)이 단군신앙을 중심신앙으로 두고 창시한 종교.
+  - `term_year`: 1936-?
+
+#### 후보 3. 도광사 · THESAURUS
+
+- Candidate ID: `source-candidate:c9eeaa65a040c477c826`
+- 현재 분류: **REJECTED**
+- Source record ID: `THESAURUS:TERM:35668689:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 道光寺
+- 시대: 일제시기
+- 원천 문맥:
+  - `term_name`: 도광사
+  - `hanja`: 道光寺
+  - `era`: 일제시기
+  - `thesaurus_category`: 전통사상·종교>불교>불교관련시설
+  - `description`: 1930년 김광영(金光榮)이 임진왜란 때 소실된 개태사(開泰寺) 터에 세운 사찰.
+  - `term_year`: 1930
+
+</details>
+
+### 사람 검수 입력
+
+- Manual status: `PENDING`
+- Manual reason: (미입력)
+- Reviewer: (미입력)
+- Reviewed at: (미입력)
+
+[목록으로 돌아가기](#case-목록)
+
+---
+
+<a id="case-031"></a>
+## 031. 단군신화 · PENDING
+
+- Case ID: `related-resolution-case:5d8d38baa2848e5c3ee2`
+- 모델 게이트: `NEEDS_MANUAL_REVIEW`
+- 검증 사유: `ENTITY_TYPE_REVIEW_REQUIRED`, `INSUFFICIENT_PAIR_EVIDENCE`
+- 후보 수: 6개
+
+### 모델 판정 사유
+
+> 문제 문맥 표본은 비어 있으나, 용어 자체와 정확히 일치하며 단군 및 고조선 건국 신화를 직접 정의하는 두 후보를 하나의 target 대안으로 묶었다. 단군고기, 신단수, 삼신숭배, 무씨사당화상석은 각각 기록·신화 속 대상·신앙·유물이라는 별도 실체이므로 canonical identity로 병합하지 않았고, 각 설명에 단군신화와의 구체적 관계가 명시되어 evidence-only로 분류했다.
+
+### 현재 후보 분류
+
+| 역할 | 원천·표제 | Candidate ID |
+|---|---|---|
+| CANONICAL · 단군신화 | AKS · 단군 신화 | `source-candidate:2ad9aa4a6f0d81b866a6` |
+| CANONICAL · 단군신화 | THESAURUS · 단군신화 | `source-candidate:21f54c8c9bcb2da36879` |
+| EVIDENCE_ONLY | THESAURUS · 단군고기 | `source-candidate:42ccad7abe9bd3a99207` |
+| EVIDENCE_ONLY | THESAURUS · 신단수 | `source-candidate:1ecba8c568a8524f3d13` |
+| EVIDENCE_ONLY | THESAURUS · 삼신숭배 | `source-candidate:1104fb9a64fb230134d9` |
+| EVIDENCE_ONLY | THESAURUS · 무씨사당화상석 | `source-candidate:34aad6f9217aa2813a56` |
+
+### Canonical 대안
+
+#### 대안 1. 단군신화
+
+- Entity type: `Work`
+- 동일 실체 후보:
+  - `source-candidate:2ad9aa4a6f0d81b866a6` — AKS · 단군 신화
+  - `source-candidate:21f54c8c9bcb2da36879` — THESAURUS · 단군신화
+- 판정 근거: 두 원천 모두 ‘단군신화(檀君神話)’를 고조선의 시조·창업왕 단군에 관한 신화로 직접 정의한다. 표기와 대상(단군), 내용(고조선 건국 관련 신화)이 일치하므로 같은 설화·신화 실체를 설명한다.
+
+### Evidence only
+
+- `source-candidate:42ccad7abe9bd3a99207` — THESAURUS · 단군고기
+- `source-candidate:1ecba8c568a8524f3d13` — THESAURUS · 신단수
+- `source-candidate:1104fb9a64fb230134d9` — THESAURUS · 삼신숭배
+- `source-candidate:34aad6f9217aa2813a56` — THESAURUS · 무씨사당화상석
+
+### Rejected
+
+- 없음
+
+### Ambiguous
+
+- 없음
+
+<details>
+<summary><strong>후보 6개의 원천 문맥 펼치기</strong></summary>
+
+#### 후보 1. 단군 신화 · AKS
+
+- Candidate ID: `source-candidate:2ad9aa4a6f0d81b866a6`
+- 현재 분류: **CANONICAL · 단군신화**
+- Source record ID: `AKS:ARTICLE:E0013553:sha256-704d8ea620c542f5`
+- Entity type: `Work`
+- 한자: 檀君, 神話
+- 시대: 고대, 초기국가
+- 원천 문맥:
+  - `headword`: 단군 신화
+  - `origin`: 檀君 神話
+  - `headword_origin`: 단군 신화(檀君 神話)
+  - `primary_type`: 작품/설화
+  - `era`: 고대/초기국가
+  - `definition`: 초기국가시대 우리 민족의 시조이고 고조선의 창업왕인 단군에 관한 신화.
+
+#### 후보 2. 단군신화 · THESAURUS
+
+- Candidate ID: `source-candidate:21f54c8c9bcb2da36879`
+- 현재 분류: **CANONICAL · 단군신화**
+- Source record ID: `THESAURUS:TERM:3012:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 檀君神話
+- 시대: 선사시대
+- 원천 문맥:
+  - `term_name`: 단군신화
+  - `hanja`: 檀君神話
+  - `era`: 선사시대
+  - `thesaurus_category`: 문화·예술>문학
+  - `description`: 고조선의 시조인 단군에 관한 신화.
+  - `term_year`: ?-?
+
+#### 후보 3. 단군고기 · THESAURUS
+
+- Candidate ID: `source-candidate:42ccad7abe9bd3a99207`
+- 현재 분류: **EVIDENCE_ONLY**
+- Source record ID: `THESAURUS:TERM:25470:sha256-1022516a18f91e61`
+- Entity type: `Work`
+- 한자: 檀君古記
+- 시대: 고대
+- 원천 문맥:
+  - `term_name`: 단군고기
+  - `hanja`: 檀君古記
+  - `era`: 고대
+  - `thesaurus_category`: 서명
+  - `description`: 단군신화와 고조선의 개국 사실을 알려주는 현전하는 가장 오래된 기록.
+  - `term_year`: ?
+
+#### 후보 4. 신단수 · THESAURUS
+
+- Candidate ID: `source-candidate:1ecba8c568a8524f3d13`
+- 현재 분류: **EVIDENCE_ONLY**
+- Source record ID: `THESAURUS:TERM:19942:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 神壇樹
+- 시대: 선사시대
+- 원천 문맥:
+  - `term_name`: 신단수
+  - `hanja`: 神壇樹
+  - `era`: 선사시대
+  - `thesaurus_category`: 문화·예술>문학
+  - `description`: 단군신화에 나오는 신성한 나무.
+  - `term_year`: ?-?
+
+#### 후보 5. 삼신숭배 · THESAURUS
+
+- Candidate ID: `source-candidate:1104fb9a64fb230134d9`
+- 현재 분류: **EVIDENCE_ONLY**
+- Source record ID: `THESAURUS:TERM:37753920:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 三神崇拜
+- 시대: 조선시대
+- 원천 문맥:
+  - `term_name`: 삼신숭배
+  - `hanja`: 三神崇拜
+  - `era`: 조선시대
+  - `thesaurus_category`: 전통사상·종교>무교·민간신앙
+  - `description`: 단군신화에 나오는 환인·환웅·단군을 신앙대상으로 삼아 숭배하는 민간신앙.
+  - `term_year`: ?-?
+
+#### 후보 6. 무씨사당화상석 · THESAURUS
+
+- Candidate ID: `source-candidate:34aad6f9217aa2813a56`
+- 현재 분류: **EVIDENCE_ONLY**
+- Source record ID: `THESAURUS:TERM:12592837:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 武氏祀堂畵像石
+- 시대: 고대
+- 원천 문맥:
+  - `term_name`: 무씨사당화상석
+  - `hanja`: 武氏祀堂畵像石
+  - `era`: 고대
+  - `thesaurus_category`: 외교·국제관계>중국>종교·문화(중국)
+  - `description`: 중국 후한시대 산둥성(山東省) 자샹현(嘉祥縣) 무씨사당 석실 내에서 발견된 화상석으로 내용이 단군신화와 유사하다고 전함.
+  - `term_year`: ?-?
+
+</details>
+
+### 사람 검수 입력
+
+- Manual status: `PENDING`
+- Manual reason: (미입력)
+- Reviewer: (미입력)
+- Reviewed at: (미입력)
+
+[목록으로 돌아가기](#case-목록)
+
+---
+
+<a id="case-032"></a>
+## 032. 김성원 · PENDING
+
+- Case ID: `related-resolution-case:57d7bec64c58c24654f9`
+- 모델 게이트: `NEEDS_MANUAL_REVIEW`
+- 검증 사유: `AMBIGUOUS_SOURCE_REMAINS`
+- 후보 수: 14개
+
+### 모델 판정 사유
+
+> problem_count가 0이고 problem_context_samples가 비어 있어, 동명이인 김성원의 한자·생몰년·본관·활동시대 가운데 어느 식별 단서가 기출문제 target을 가리키는지 확인할 수 없다. 따라서 현대 농학자, 임진왜란 순절자, 동복현감 김성원 등 직접 인물 후보를 canonical 대안으로 임의 채택하지 않았다. 김태원의 이명, 선암사종루종 제작자, 식영정 건립자 관련 원천도 target이 특정되지 않아 관계 증거 또는 단순 비대상 원천으로 확정 분류할 수 없으므로 모두 AMBIGUOUS로 보류한다.
+
+### 현재 후보 분류
+
+| 역할 | 원천·표제 | Candidate ID |
+|---|---|---|
+| AMBIGUOUS | AKS · 김성원 | `source-candidate:be72585daa0340eefcdf` |
+| AMBIGUOUS | AKS · 김성원 | `source-candidate:dd4ed3280ead2cf1c387` |
+| AMBIGUOUS | AKS · 김성원 | `source-candidate:1a73b20063e4637042cf` |
+| AMBIGUOUS | ITKC_PERSON · 김성원 | `source-candidate:e5dff2d0661cc9d3ccc3` |
+| AMBIGUOUS | ITKC_PERSON · 김성원 | `source-candidate:2a1aa3073556e531a001` |
+| AMBIGUOUS | ITKC_PERSON · 김성원 | `source-candidate:5b89dca611695da7126d` |
+| AMBIGUOUS | ITKC_PERSON · 김성원 | `source-candidate:5c25c81484eddc2008f4` |
+| AMBIGUOUS | ITKC_PERSON · 김성원 | `source-candidate:9dd72fa084151bd868ee` |
+| AMBIGUOUS | THESAURUS · 김성원 | `source-candidate:c94352cd15bae6f5a591` |
+| AMBIGUOUS | THESAURUS · 김성원 | `source-candidate:95254945e74c1585c75a` |
+| AMBIGUOUS | THESAURUS · 김성원 | `source-candidate:460b3e1262c5f7f7baf4` |
+| AMBIGUOUS | AKS · 김태원 | `source-candidate:07e49d0730f3a5ad43f7` |
+| AMBIGUOUS | THESAURUS · 선암사종루종 | `source-candidate:db1fb26964dbbd63089d` |
+| AMBIGUOUS | THESAURUS · 식영정 | `source-candidate:f346e9ab61855ae268f0` |
+
+### Canonical 대안
+
+- 없음
+### Evidence only
+
+- 없음
+
+### Rejected
+
+- 없음
+
+### Ambiguous
+
+- `source-candidate:be72585daa0340eefcdf` — AKS · 김성원
+- `source-candidate:dd4ed3280ead2cf1c387` — AKS · 김성원
+- `source-candidate:1a73b20063e4637042cf` — AKS · 김성원
+- `source-candidate:e5dff2d0661cc9d3ccc3` — ITKC_PERSON · 김성원
+- `source-candidate:2a1aa3073556e531a001` — ITKC_PERSON · 김성원
+- `source-candidate:5b89dca611695da7126d` — ITKC_PERSON · 김성원
+- `source-candidate:5c25c81484eddc2008f4` — ITKC_PERSON · 김성원
+- `source-candidate:9dd72fa084151bd868ee` — ITKC_PERSON · 김성원
+- `source-candidate:c94352cd15bae6f5a591` — THESAURUS · 김성원
+- `source-candidate:95254945e74c1585c75a` — THESAURUS · 김성원
+- `source-candidate:460b3e1262c5f7f7baf4` — THESAURUS · 김성원
+- `source-candidate:07e49d0730f3a5ad43f7` — AKS · 김태원
+- `source-candidate:db1fb26964dbbd63089d` — THESAURUS · 선암사종루종
+- `source-candidate:f346e9ab61855ae268f0` — THESAURUS · 식영정
+
+<details>
+<summary><strong>후보 14개의 원천 문맥 펼치기</strong></summary>
+
+#### 후보 1. 김성원 · AKS
+
+- Candidate ID: `source-candidate:be72585daa0340eefcdf`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `AKS:ARTICLE:E0009478:sha256-704d8ea620c542f5`
+- Entity type: `Person`
+- 한자: 金聲遠
+- 시대: 근대, 대한제국기, 현대
+- 원천 문맥:
+  - `headword`: 김성원
+  - `origin`: 金聲遠
+  - `headword_origin`: 김성원(金聲遠)
+  - `primary_type`: 인물/근현대 인물
+  - `era`: 근대/대한제국기 | 현대
+  - `definition`: 일제강점기 『실험조선과수재배법』 등을 저술한 학자. 광복회원.
+
+#### 후보 2. 김성원 · AKS
+
+- Candidate ID: `source-candidate:dd4ed3280ead2cf1c387`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `AKS:ARTICLE:E0009479:sha256-704d8ea620c542f5`
+- Entity type: `Person`
+- 한자: 金聲遠, 景久, 松山, 月城君
+- 시대: 조선, 조선 전기
+- 원천 문맥:
+  - `headword`: 김성원
+  - `aliases`: 경구(景久<br>), 송산(松山), 월성군(月城君)
+  - `origin`: 金聲遠
+  - `headword_origin`: 김성원(金聲遠)
+  - `primary_type`: 인물/전통 인물
+  - `era`: 조선/조선 전기
+  - `definition`: 조선 전기 임진왜란 때 금산전투에 참전하여 순절한 선비이자 학자.
+
+#### 후보 3. 김성원 · AKS
+
+- Candidate ID: `source-candidate:1a73b20063e4637042cf`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `AKS:ARTICLE:E0009480:sha256-704d8ea620c542f5`
+- Entity type: `Person`
+- 한자: 金成遠, 岡叔, 棲霞
+- 시대: 조선, 조선 전기, 조선 후기
+- 원천 문맥:
+  - `headword`: 김성원
+  - `aliases`: 강숙(岡叔), 서하(棲霞)
+  - `origin`: 金成遠
+  - `headword_origin`: 김성원(金成遠)
+  - `primary_type`: 인물/전통 인물
+  - `era`: 조선/조선 전기 | 조선/조선 후기
+  - `definition`: 조선시대 제원도찰방, 동복현감 등을 역임한 문신. 학자.
+
+#### 후보 4. 김성원 · ITKC_PERSON
+
+- Candidate ID: `source-candidate:e5dff2d0661cc9d3ccc3`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `ITKC:PERSON:P007181:sha256-2bfbf7f8ab4b1538`
+- Entity type: `Person`
+- 한자: 金成遠
+- 시대: (없음)
+- 원천 문맥:
+  - `name`: 김성원
+  - `hanja`: 金成遠
+  - `birth_year`: 1525
+  - `death_year`: 1597
+  - `bonkwan`: 광산(光山)
+  - `ja`: 구이(久而)
+  - `father`: 김홍익(金弘翼)
+
+#### 후보 5. 김성원 · ITKC_PERSON
+
+- Candidate ID: `source-candidate:2a1aa3073556e531a001`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `ITKC:PERSON:P007182:sha256-2bfbf7f8ab4b1538`
+- Entity type: `Person`
+- 한자: 金聲遠
+- 시대: (없음)
+- 원천 문맥:
+  - `name`: 김성원
+  - `hanja`: 金聲遠
+  - `birth_year`: 1565
+  - `death_year`: 1592
+  - `bonkwan`: 경주(慶州)
+  - `ja`: 경구(景久)
+  - `ho`: 송산(松山)
+
+#### 후보 6. 김성원 · ITKC_PERSON
+
+- Candidate ID: `source-candidate:5b89dca611695da7126d`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `ITKC:PERSON:P007183:sha256-2bfbf7f8ab4b1538`
+- Entity type: `Person`
+- 한자: 金性源
+- 시대: (없음)
+- 원천 문맥:
+  - `name`: 김성원
+  - `hanja`: 金性源
+  - `bonkwan`: 광산(光山)
+
+#### 후보 7. 김성원 · ITKC_PERSON
+
+- Candidate ID: `source-candidate:5c25c81484eddc2008f4`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `ITKC:PERSON:P007184:sha256-2bfbf7f8ab4b1538`
+- Entity type: `Person`
+- 한자: 金聲遠
+- 시대: (없음)
+- 원천 문맥:
+  - `name`: 김성원
+  - `hanja`: 金聲遠
+  - `birth_year`: 15??
+  - `death_year`: 1627
+  - `bonkwan`: 연안(延安)
+  - `ja`: 근지(近之)
+  - `ho`: 지연(止淵)
+
+#### 후보 8. 김성원 · ITKC_PERSON
+
+- Candidate ID: `source-candidate:9dd72fa084151bd868ee`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `ITKC:PERSON:P007185:sha256-2bfbf7f8ab4b1538`
+- Entity type: `Person`
+- 한자: 金聲遠
+- 시대: (없음)
+- 원천 문맥:
+  - `name`: 김성원
+  - `hanja`: 金聲遠
+  - `bonkwan`: 금산(錦山)
+
+#### 후보 9. 김성원 · THESAURUS
+
+- Candidate ID: `source-candidate:c94352cd15bae6f5a591`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `THESAURUS:TERM:21035565:sha256-1022516a18f91e61`
+- Entity type: `Person`
+- 한자: 金聲遠
+- 시대: 조선전기
+- 원천 문맥:
+  - `term_name`: 김성원
+  - `hanja`: 金聲遠
+  - `era`: 조선전기
+  - `thesaurus_category`: 인명
+  - `description`: 1592년 임진왜란이 일어나자 조헌의 의병군에 가담하여 금산전투에 참가하였다가 전사함.
+  - `term_year`: ?-1592
+  - `term_remark`: 조선
+
+#### 후보 10. 김성원 · THESAURUS
+
+- Candidate ID: `source-candidate:95254945e74c1585c75a`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `THESAURUS:TERM:21035575:sha256-1022516a18f91e61`
+- Entity type: `Person`
+- 한자: 金成遠
+- 시대: 조선전기
+- 원천 문맥:
+  - `term_name`: 김성원
+  - `hanja`: 金成遠
+  - `era`: 조선전기
+  - `thesaurus_category`: 인명
+  - `description`: 조선전기의 문신으로 임진왜란 때 동복현감으로 군량과 의병을 모으는 데 공을 세움.
+  - `term_year`: 1525-1597
+
+#### 후보 11. 김성원 · THESAURUS
+
+- Candidate ID: `source-candidate:460b3e1262c5f7f7baf4`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `THESAURUS:TERM:21035582:sha256-1022516a18f91e61`
+- Entity type: `Person`
+- 한자: 金聲遠
+- 시대: 현대
+- 원천 문맥:
+  - `term_name`: 김성원
+  - `hanja`: 金聲遠
+  - `era`: 현대
+  - `thesaurus_category`: 인명
+  - `description`: 과수에 대한 연구와 실험에 전념한 농학자로 우리나라 최초의 순우리말로 된 과수재배법을 출판함.
+  - `term_year`: 1906-1998
+  - `term_remark`: 1906
+
+#### 후보 12. 김태원 · AKS
+
+- Candidate ID: `source-candidate:07e49d0730f3a5ad43f7`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `AKS:ARTICLE:E0010864:sha256-704d8ea620c542f5`
+- Entity type: `Person`
+- 한자: 金泰源, 景仲, 金性源, 心山
+- 시대: 근대, 일제강점기
+- 원천 문맥:
+  - `headword`: 김태원
+  - `aliases`: 경중(景仲), 김성원(金性源), 심산(心山)
+  - `origin`: 金泰源
+  - `headword_origin`: 김태원(金泰源)
+  - `primary_type`: 인물/근현대 인물
+  - `era`: 근대/일제강점기
+  - `definition`: 일제강점기 때, 벽창의용단을 조직하여 군자금 모금, 일본경찰 및 밀정 처단 등의 항일투쟁을 전개한 독립운동가.
+
+#### 후보 13. 선암사종루종 · THESAURUS
+
+- Candidate ID: `source-candidate:db1fb26964dbbd63089d`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `THESAURUS:TERM:12603263:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 仙巖寺鐘樓鐘
+- 시대: 조선후기
+- 원천 문맥:
+  - `term_name`: 선암사종루종
+  - `hanja`: 仙巖寺鐘樓鐘
+  - `era`: 조선후기
+  - `thesaurus_category`: 문화·예술>미술
+  - `description`: 1700년(숙종 26) 18세기 대표적인 주종장인 김수원(金守元)과 김성원(金成元)이 제작한 종으로 전라남도 순천시 승주읍 죽학리 선암사의 종루에 걸려 있음.
+  - `term_year`: 1700
+
+#### 후보 14. 식영정 · THESAURUS
+
+- Candidate ID: `source-candidate:f346e9ab61855ae268f0`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `THESAURUS:TERM:35667911:sha256-1022516a18f91e61`
+- Entity type: `Heritage`
+- 한자: 息影亭
+- 시대: 조선전기
+- 원천 문맥:
+  - `term_name`: 식영정
+  - `hanja`: 息影亭
+  - `era`: 조선전기
+  - `thesaurus_category`: 문화재
+  - `description`: 1560년(명종 15) 김성원(金成遠)이 임억령(林億齡)을 위하여 지은 누정. 정철(鄭澈)의 행적과 관련되어 더 유명함. 전라남도 담양군 남면 지곡리에 소재.
+  - `term_year`: 1560
+
+</details>
+
+### 사람 검수 입력
+
+- Manual status: `PENDING`
+- Manual reason: (미입력)
+- Reviewer: (미입력)
+- Reviewed at: (미입력)
+
+[목록으로 돌아가기](#case-목록)
+
+---
+
+<a id="case-033"></a>
+## 033. 이휘령 · PENDING
+
+- Case ID: `related-resolution-case:4017fa6547676ad8f244`
+- 모델 게이트: `NEEDS_MANUAL_REVIEW`
+- 검증 사유: `AMBIGUOUS_SOURCE_REMAINS`
+- 후보 수: 6개
+
+### 모델 판정 사유
+
+> problem_count가 0이고 problem_context_samples도 비어 있어, 용어 ‘이휘령’이 실제로 어느 역사 실체를 target으로 하는지 식별할 단서가 없다. 따라서 여러 인물 레코드는 서로 동일한 조선 후기 이휘령일 개연성이 있어도 target identity로 묶을 수 없으며, 저작물 고계집·반경무도사 역시 이휘령과의 관계는 명시되지만 target이 확인되지 않아 evidence-only로 확정할 수 없다. 별도 동명·확장 후보를 canonical 대안으로 만들지 않고 모든 후보를 정보 부족에 따른 AMBIGUOUS로 분류한다.
+
+### 현재 후보 분류
+
+| 역할 | 원천·표제 | Candidate ID |
+|---|---|---|
+| AMBIGUOUS | AKS · 이휘령 | `source-candidate:9b4730fcb82e4129653d` |
+| AMBIGUOUS | ITKC_PERSON · 이휘령 | `source-candidate:a703453e05d1117e3428` |
+| AMBIGUOUS | ITKC_PERSON · 이휘령 | `source-candidate:501b609bd208a8937dd5` |
+| AMBIGUOUS | THESAURUS · 이휘령 | `source-candidate:b6ca3bc98c4024b3d742` |
+| AMBIGUOUS | THESAURUS · 고계집 | `source-candidate:de179c6e07dc8d618b8a` |
+| AMBIGUOUS | THESAURUS · 반경무도사 | `source-candidate:a80b44137113fc5e6bdb` |
+
+### Canonical 대안
+
+- 없음
+### Evidence only
+
+- 없음
+
+### Rejected
+
+- 없음
+
+### Ambiguous
+
+- `source-candidate:9b4730fcb82e4129653d` — AKS · 이휘령
+- `source-candidate:a703453e05d1117e3428` — ITKC_PERSON · 이휘령
+- `source-candidate:501b609bd208a8937dd5` — ITKC_PERSON · 이휘령
+- `source-candidate:b6ca3bc98c4024b3d742` — THESAURUS · 이휘령
+- `source-candidate:de179c6e07dc8d618b8a` — THESAURUS · 고계집
+- `source-candidate:a80b44137113fc5e6bdb` — THESAURUS · 반경무도사
+
+<details>
+<summary><strong>후보 6개의 원천 문맥 펼치기</strong></summary>
+
+#### 후보 1. 이휘령 · AKS
+
+- Candidate ID: `source-candidate:9b4730fcb82e4129653d`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `AKS:ARTICLE:E0046669:sha256-704d8ea620c542f5`
+- Entity type: `Person`
+- 한자: 李彙寧, 古溪, 君睦
+- 시대: 조선, 조선 후기
+- 원천 문맥:
+  - `headword`: 이휘령
+  - `aliases`: 고계(古溪), 군목(君睦)
+  - `origin`: 李彙寧
+  - `headword_origin`: 이휘령(李彙寧)
+  - `primary_type`: 인물/전통 인물
+  - `era`: 조선/조선 후기
+  - `definition`: 조선후기 밀양부사, 청주목사, 동래부사 등을 역임한 문신. 학자.
+
+#### 후보 2. 이휘령 · ITKC_PERSON
+
+- Candidate ID: `source-candidate:a703453e05d1117e3428`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `ITKC:PERSON:P049087:sha256-2bfbf7f8ab4b1538`
+- Entity type: `Person`
+- 한자: 李彙寧
+- 시대: (없음)
+- 원천 문맥:
+  - `name`: 이휘령
+  - `hanja`: 李彙寧
+  - `birth_year`: 1788
+  - `death_year`: 1861
+  - `bonkwan`: 진보(眞寶)
+  - `ja`: 군목(君睦), 군목(君穆)
+  - `ho`: 고계(古溪), 죽서(竹栖)
+  - `father`: 이지순(李志淳)
+
+#### 후보 3. 이휘령 · ITKC_PERSON
+
+- Candidate ID: `source-candidate:501b609bd208a8937dd5`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `ITKC:PERSON:P049088:sha256-2bfbf7f8ab4b1538`
+- Entity type: `Person`
+- 한자: 李彙寧
+- 시대: (없음)
+- 원천 문맥:
+  - `name`: 이휘령
+  - `hanja`: 李彙寧
+
+#### 후보 4. 이휘령 · THESAURUS
+
+- Candidate ID: `source-candidate:b6ca3bc98c4024b3d742`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `THESAURUS:TERM:37755282:sha256-1022516a18f91e61`
+- Entity type: `Person`
+- 한자: 李彙寧
+- 시대: 조선후기
+- 원천 문맥:
+  - `term_name`: 이휘령
+  - `hanja`: 李彙寧
+  - `era`: 조선후기
+  - `thesaurus_category`: 인명
+  - `description`: 조선후기의 학자겸 시인으로, 1816년(순조 16) 진사시에 합격하여 호조좌랑 ·동복현감(同福縣監)·서산군수·밀양부사·동부승지(同副承旨)를 역임하고, 이황의 10대손으로 성리학을 연구. 본관은 진보(眞寶).
+  - `term_year`: 1788-1861
+
+#### 후보 5. 고계집 · THESAURUS
+
+- Candidate ID: `source-candidate:de179c6e07dc8d618b8a`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `THESAURUS:TERM:37755279:sha256-1022516a18f91e61`
+- Entity type: `Work`
+- 한자: 古溪集
+- 시대: 조선후기
+- 원천 문맥:
+  - `term_name`: 고계집
+  - `hanja`: 古溪集
+  - `era`: 조선후기
+  - `thesaurus_category`: 서명
+  - `description`: 조선후기 철종 때의 문신인 이휘령의 시문집으로, 시(詩)나 서(書)뿐만 아니라 묘지명과 상량문 등도 수록. 8권 4책.
+  - `term_year`: ?
+
+#### 후보 6. 반경무도사 · THESAURUS
+
+- Candidate ID: `source-candidate:a80b44137113fc5e6bdb`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `THESAURUS:TERM:8389936:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 頒慶舞蹈辭
+- 시대: 조선후기
+- 원천 문맥:
+  - `term_name`: 반경무도사
+  - `hanja`: 頒慶舞蹈辭
+  - `era`: 조선후기
+  - `thesaurus_category`: 문화·예술>문학
+  - `description`: 1819년(순조 19) 이휘령(李彙寧)이 세자 익종(翼宗)의 가례식에 참가하고 그 광경을 경축하며 지은 가사.
+  - `term_year`: 1819
+
+</details>
+
+### 사람 검수 입력
+
+- Manual status: `PENDING`
+- Manual reason: (미입력)
+- Reviewer: (미입력)
+- Reviewed at: (미입력)
+
+[목록으로 돌아가기](#case-목록)
+
+---
+
+<a id="case-034"></a>
+## 034. 관음경 · PENDING
+
+- Case ID: `related-resolution-case:8efe59d4fae05c4fa21f`
+- 모델 게이트: `NEEDS_MANUAL_REVIEW`
+- 검증 사유: `ENTITY_TYPE_REVIEW_REQUIRED`
+- 후보 수: 4개
+
+### 모델 판정 사유
+
+> 문제 문맥 표본은 없으나 canonical term 자체와 직접 일치하는 두 문헌 원천은 관음경의 동일한 경전 실체를 설명하므로 하나의 대안으로 병합했다. 관음경언해는 관음경을 번역한 별도 문헌이므로 identity가 아니라 명시적 번역 관계에 따른 evidence-only로 분류했다. 관음포전투는 명칭 일부만 겹치는 별도 사건으로 제외했다.
+
+### 현재 후보 분류
+
+| 역할 | 원천·표제 | Candidate ID |
+|---|---|---|
+| CANONICAL · 관음경(觀音經, 관세음보살보문품) | AKS · 관음경 | `source-candidate:d198b98eac5b417cbdec` |
+| CANONICAL · 관음경(觀音經, 관세음보살보문품) | THESAURUS · 관음경 | `source-candidate:83ed1bb7d191718b994e` |
+| EVIDENCE_ONLY | THESAURUS · 관음경언해 | `source-candidate:e848175f0cd53fc17f53` |
+| REJECTED | ITKC_EVENT · 관음포전투 | `source-candidate:91e36174334bb51eea6b` |
+
+### Canonical 대안
+
+#### 대안 1. 관음경(觀音經, 관세음보살보문품)
+
+- Entity type: `Work`
+- 동일 실체 후보:
+  - `source-candidate:d198b98eac5b417cbdec` — AKS · 관음경
+  - `source-candidate:83ed1bb7d191718b994e` — THESAURUS · 관음경
+- 판정 근거: 두 원천 모두 관음경(觀音經)을 『법화경』의 관세음보살보문품을 독립 경전으로 삼은 문헌, 즉 관음신앙의 근거 경전으로 직접 설명한다. 한자명, 서명 유형 및 『법화경』 제25품이라는 구체적 설명이 일치한다.
+
+### Evidence only
+
+- `source-candidate:e848175f0cd53fc17f53` — THESAURUS · 관음경언해
+
+### Rejected
+
+- `source-candidate:91e36174334bb51eea6b` — ITKC_EVENT · 관음포전투
+
+### Ambiguous
+
+- 없음
+
+<details>
+<summary><strong>후보 4개의 원천 문맥 펼치기</strong></summary>
+
+#### 후보 1. 관음경 · AKS
+
+- Candidate ID: `source-candidate:d198b98eac5b417cbdec`
+- 현재 분류: **CANONICAL · 관음경(觀音經, 관세음보살보문품)**
+- Source record ID: `AKS:ARTICLE:E0004956:sha256-704d8ea620c542f5`
+- Entity type: `Work`
+- 한자: 觀音經, 觀世音菩薩普門品, 觀世音經, 普門品經
+- 시대: 고대, 삼국
+- 원천 문맥:
+  - `headword`: 관음경
+  - `aliases`: 관세음보살보문품(觀世音菩薩普門品), 관세음경(觀世音經), 보문품경(普門品經)
+  - `origin`: 觀音經
+  - `headword_origin`: 관음경(觀音經)
+  - `primary_type`: 문헌/고서
+  - `era`: 고대/삼국
+  - `definition`: 『법화경(法華經)』 제25 「관세음보살보문품(觀世音菩薩普門品)」을 독립된 경으로 만든 책.
+
+#### 후보 2. 관음경 · THESAURUS
+
+- Candidate ID: `source-candidate:83ed1bb7d191718b994e`
+- 현재 분류: **CANONICAL · 관음경(觀音經, 관세음보살보문품)**
+- Source record ID: `THESAURUS:TERM:25287:sha256-1022516a18f91e61`
+- Entity type: `Work`
+- 한자: 觀音經
+- 시대: 남북국시대
+- 원천 문맥:
+  - `term_name`: 관음경
+  - `hanja`: 觀音經
+  - `era`: 남북국시대
+  - `thesaurus_category`: 서명
+  - `description`: ≪법화경(法華經)≫의 일부분으로 관음신앙(觀音信仰)의 근거가 되는 경전.
+  - `term_year`: ?
+
+#### 후보 3. 관음경언해 · THESAURUS
+
+- Candidate ID: `source-candidate:e848175f0cd53fc17f53`
+- 현재 분류: **EVIDENCE_ONLY**
+- Source record ID: `THESAURUS:TERM:25288:sha256-1022516a18f91e61`
+- Entity type: `Work`
+- 한자: 觀音經諺解
+- 시대: 조선전기
+- 원천 문맥:
+  - `term_name`: 관음경언해
+  - `hanja`: 觀音經諺解
+  - `era`: 조선전기
+  - `thesaurus_category`: 서명
+  - `description`: 1485년(성종 16)에 간행된 ≪관음경(觀音經)≫의 한글 번역서.
+  - `term_year`: 1485
+
+#### 후보 4. 관음포전투 · ITKC_EVENT
+
+- Candidate ID: `source-candidate:91e36174334bb51eea6b`
+- 현재 분류: **REJECTED**
+- Source record ID: `ITKC:EVENT:ITKC_PH_1294A_0584:sha256-b824cb8eb9575bbc`
+- Entity type: `Event`
+- 한자: (없음)
+- 시대: 고려, 1383년(우왕 9) 5월
+- 원천 문맥:
+  - `event_name`: 관음포전투
+  - `subject_category`: 전쟁
+  - `period`: 고려
+  - `event_date`: 1383년(우왕 9) 5월
+  - `related_event`: 고려말 왜구 침공
+
+</details>
+
+### 사람 검수 입력
+
+- Manual status: `PENDING`
+- Manual reason: (미입력)
+- Reviewer: (미입력)
+- Reviewed at: (미입력)
+
+[목록으로 돌아가기](#case-목록)
+
+---
+
+<a id="case-035"></a>
+## 035. 지혜 · PENDING
+
+- Case ID: `related-resolution-case:47177b18358234038cb8`
+- 모델 게이트: `NEEDS_MANUAL_REVIEW`
+- 검증 사유: `AMBIGUOUS_SOURCE_REMAINS`
+- 후보 수: 7개
+
+### 모델 판정 사유
+
+> 문제 수가 0이고 problem_context_samples가 제공되지 않아, 기출문제가 가리키는 지혜의 시대·신분·활동 단서를 정할 수 없다. 따라서 정확히 일치하는 두 지혜(智惠) 인물 후보도 target canonical 대안으로 확정하거나 서로 병합하지 않고 AMBIGUOUS로 분류했다. 사지·소지장·지권인·아지설화의 ‘지혜’는 일반 명사이며, 지혜담은 확장된 별도 설화 개념이므로 target과의 명시적 관계가 없는 검색 일치로 REJECTED 처리했다.
+
+### 현재 후보 분류
+
+| 역할 | 원천·표제 | Candidate ID |
+|---|---|---|
+| AMBIGUOUS | AKS · 지혜 | `source-candidate:dacb36e0b60e342fa830` |
+| AMBIGUOUS | THESAURUS · 지혜 | `source-candidate:3e382dab06deb2d01739` |
+| REJECTED | THESAURUS · 사지 | `source-candidate:ae0adf1f8d5fb7f433e1` |
+| REJECTED | THESAURUS · 소지장 | `source-candidate:3806f546b37dd499b1d8` |
+| REJECTED | THESAURUS · 지권인 | `source-candidate:ea095ea17803b6a270c1` |
+| REJECTED | AKS · 지략설화 | `source-candidate:02bbcd79592df539b655` |
+| REJECTED | THESAURUS · 아지설화 | `source-candidate:78089f108bd076c16dec` |
+
+### Canonical 대안
+
+- 없음
+### Evidence only
+
+- 없음
+
+### Rejected
+
+- `source-candidate:ae0adf1f8d5fb7f433e1` — THESAURUS · 사지
+- `source-candidate:3806f546b37dd499b1d8` — THESAURUS · 소지장
+- `source-candidate:ea095ea17803b6a270c1` — THESAURUS · 지권인
+- `source-candidate:02bbcd79592df539b655` — AKS · 지략설화
+- `source-candidate:78089f108bd076c16dec` — THESAURUS · 아지설화
+
+### Ambiguous
+
+- `source-candidate:dacb36e0b60e342fa830` — AKS · 지혜
+- `source-candidate:3e382dab06deb2d01739` — THESAURUS · 지혜
+
+<details>
+<summary><strong>후보 7개의 원천 문맥 펼치기</strong></summary>
+
+#### 후보 1. 지혜 · AKS
+
+- Candidate ID: `source-candidate:dacb36e0b60e342fa830`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `AKS:ARTICLE:E0054471:sha256-704d8ea620c542f5`
+- Entity type: `Person`
+- 한자: 智惠
+- 시대: 고대, 삼국, 신라
+- 원천 문맥:
+  - `headword`: 지혜
+  - `origin`: 智惠
+  - `headword_origin`: 지혜(智惠)
+  - `primary_type`: 인물/전통 인물
+  - `era`: 고대/삼국/신라
+  - `definition`: 삼국시대 신라의 제26대 진평왕 때 안흥사 불전을 수리한 승려.
+
+#### 후보 2. 지혜 · THESAURUS
+
+- Candidate ID: `source-candidate:3e382dab06deb2d01739`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `THESAURUS:TERM:16798024:sha256-1022516a18f91e61`
+- Entity type: `Person`
+- 한자: 智惠
+- 시대: 삼국시대
+- 원천 문맥:
+  - `term_name`: 지혜
+  - `hanja`: 智惠
+  - `era`: 삼국시대
+  - `thesaurus_category`: 인명
+  - `description`: 신라시대 안흥사의 비구니스님. 관음신앙이 돈독함.
+  - `term_year`: ?
+
+#### 후보 3. 사지 · THESAURUS
+
+- Candidate ID: `source-candidate:ae0adf1f8d5fb7f433e1`
+- 현재 분류: **REJECTED**
+- Source record ID: `THESAURUS:TERM:14686414:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 四智
+- 시대: (없음)
+- 원천 문맥:
+  - `term_name`: 사지
+  - `hanja`: 四智
+  - `era`: 통시대
+  - `thesaurus_category`: 전통사상·종교>불교>불교종파·용어
+  - `description`: 법상종(法相宗)에서 주장하는 부처의 네 가지 지혜. ≪무량수경종요≫에 상세하게 해설됨.
+  - `term_year`: ?-?
+
+#### 후보 4. 소지장 · THESAURUS
+
+- Candidate ID: `source-candidate:3806f546b37dd499b1d8`
+- 현재 분류: **REJECTED**
+- Source record ID: `THESAURUS:TERM:14688165:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 所知章
+- 시대: (없음)
+- 원천 문맥:
+  - `term_name`: 소지장
+  - `hanja`: 所知章
+  - `era`: 통시대
+  - `thesaurus_category`: 전통사상·종교>불교>불교종파·용어
+  - `description`: 탐욕과 성냄과 어리석음 등의 근본번뇌가 사물의 진실을 파악하지 못하게 함으로써 진실한 지혜가 일어나지 못하도록 막는 번뇌.
+  - `term_year`: ?-?
+
+#### 후보 5. 지권인 · THESAURUS
+
+- Candidate ID: `source-candidate:ea095ea17803b6a270c1`
+- 현재 분류: **REJECTED**
+- Source record ID: `THESAURUS:TERM:35667691:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 智拳印
+- 시대: (없음)
+- 원천 문맥:
+  - `term_name`: 지권인
+  - `hanja`: 智拳印
+  - `era`: 통시대
+  - `thesaurus_category`: 전통사상·종교>불교>불교종파·용어
+  - `description`: 일체의 무명번뇌를 없애고 부처의 지혜를 얻음을 상징하는, 비로자나불(毘盧遮那佛)이 짓는 수인.
+  - `term_year`: ?-?
+
+#### 후보 6. 지략설화 · AKS
+
+- Candidate ID: `source-candidate:02bbcd79592df539b655`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0054137:sha256-704d8ea620c542f5`
+- Entity type: `Concept`
+- 한자: 智略說話
+- 시대: (없음)
+- 원천 문맥:
+  - `headword`: 지략설화
+  - `aliases`: 지략담, 지혜담
+  - `origin`: 智略說話
+  - `headword_origin`: 지략설화(智略說話)
+  - `primary_type`: 개념
+  - `era`: 미상
+  - `definition`: 평범한 인물이 꾀를 써서 남을 속이기도 하고 반대로 남에게 속기도 하는 내용을 다룬 민담.
+
+#### 후보 7. 아지설화 · THESAURUS
+
+- Candidate ID: `source-candidate:78089f108bd076c16dec`
+- 현재 분류: **REJECTED**
+- Source record ID: `THESAURUS:TERM:6297062:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 兒智說話
+- 시대: (없음)
+- 원천 문맥:
+  - `term_name`: 아지설화
+  - `hanja`: 兒智說話
+  - `era`: 통시대
+  - `thesaurus_category`: 문화·예술>문학
+  - `description`: 어려운 과제를 쉽게 해결해낸 어린아이의 지혜를 다룬 설화.
+  - `term_year`: ?-?
+
+</details>
+
+### 사람 검수 입력
+
+- Manual status: `PENDING`
+- Manual reason: (미입력)
+- Reviewer: (미입력)
+- Reviewed at: (미입력)
+
+[목록으로 돌아가기](#case-목록)
+
+---
+
+<a id="case-036"></a>
+## 036. 동모산성 · PENDING
+
+- Case ID: `related-resolution-case:5058fea1a380b9f58a3b`
+- 모델 게이트: `NEEDS_MANUAL_REVIEW`
+- 검증 사유: `INSUFFICIENT_PAIR_EVIDENCE`, `TERM_SOURCE_ALIGNMENT_REVIEW_REQUIRED`
+- 후보 수: 7개
+
+### 모델 판정 사유
+
+> 문제 문맥 표본은 없으나, 입력 용어 ‘동모산성’과 유적 유형 제안에 따라 발해 돈화의 성산자산성을 직접 별칭으로 제시하거나 같은 위치의 동모산 추정 산성으로 설명한 두 후보만 target 유적으로 묶었다. 동모산 지명·수도 후보는 산성 유적과 유형이 달라 identity로 병합하지 않았으며, 별칭을 명시한 AKS 기록만 관계 보조 근거로 분류했다. 대모산성·자모산성은 음절이 유사할 뿐 시대·한자·지역이 다른 별도 산성으로 제외했다.
+
+### 현재 후보 분류
+
+| 역할 | 원천·표제 | Candidate ID |
+|---|---|---|
+| CANONICAL · 동모산성(돈화 성산자산성) | AKS · 돈화 성산자산성 | `source-candidate:7b79042f4df88a637d0c` |
+| EVIDENCE_ONLY | AKS · 동모산 | `source-candidate:59ba3e67598f6cff7b2b` |
+| REJECTED | THESAURUS · 동모산 | `source-candidate:4c25ca4503f821a46490` |
+| REJECTED | THESAURUS · 대모산성 | `source-candidate:8c02bd6292eca901686f` |
+| CANONICAL · 동모산성(돈화 성산자산성) | THESAURUS · 성산자산성 | `source-candidate:24bcd3cb0b5d1de925bd` |
+| REJECTED | THESAURUS · 자모산성 | `source-candidate:07634b418049f14baffa` |
+| REJECTED | THESAURUS · 대모산성 | `source-candidate:0160437f996071cb8dc5` |
+
+### Canonical 대안
+
+#### 대안 1. 동모산성(돈화 성산자산성)
+
+- Entity type: `Heritage`
+- 동일 실체 후보:
+  - `source-candidate:7b79042f4df88a637d0c` — AKS · 돈화 성산자산성
+  - `source-candidate:24bcd3cb0b5d1de925bd` — THESAURUS · 성산자산성
+- 판정 근거: 용어 자체가 산성 유적을 가리키며, AKS 후보는 돈화시 현유향 성산자촌의 발해 산성인 ‘돈화 성산자산성’을 동모산성의 별칭으로 명시한다. THESAURUS 후보도 같은 돈화시 현유향 성산자촌 성산자산의 발해 산성을 동모산으로 추정되는 건국지로 설명하여 위치·시대·유적 유형이 일치한다.
+
+### Evidence only
+
+- `source-candidate:59ba3e67598f6cff7b2b` — AKS · 동모산
+
+### Rejected
+
+- `source-candidate:4c25ca4503f821a46490` — THESAURUS · 동모산
+- `source-candidate:8c02bd6292eca901686f` — THESAURUS · 대모산성
+- `source-candidate:07634b418049f14baffa` — THESAURUS · 자모산성
+- `source-candidate:0160437f996071cb8dc5` — THESAURUS · 대모산성
+
+### Ambiguous
+
+- 없음
+
+<details>
+<summary><strong>후보 7개의 원천 문맥 펼치기</strong></summary>
+
+#### 후보 1. 돈화 성산자산성 · AKS
+
+- Candidate ID: `source-candidate:7b79042f4df88a637d0c`
+- 현재 분류: **CANONICAL · 동모산성(돈화 성산자산성)**
+- Source record ID: `AKS:ARTICLE:E0016097:sha256-704d8ea620c542f5`
+- Entity type: `Heritage`
+- 한자: 敦化, 城山子山城
+- 시대: 고대, 남북국, 발해
+- 원천 문맥:
+  - `headword`: 돈화 성산자산성
+  - `aliases`: 동모산성
+  - `origin`: 敦化 城山子山城
+  - `headword_origin`: 돈화 성산자산성(敦化 城山子山城)
+  - `primary_type`: 유적
+  - `era`: 고대/남북국/발해
+  - `definition`: 중국 길림성 연변조선족자치주 돈화시(敦化市) 현유향 성산자촌에 있는 남북국시대 발해의 성곽. 산성.
+
+#### 후보 2. 동모산 · AKS
+
+- Candidate ID: `source-candidate:59ba3e67598f6cff7b2b`
+- 현재 분류: **EVIDENCE_ONLY**
+- Source record ID: `AKS:ARTICLE:E0016449:sha256-704d8ea620c542f5`
+- Entity type: `Place`
+- 한자: 東牟山, 東牟山城
+- 시대: 고대, 남북국, 발해
+- 원천 문맥:
+  - `headword`: 동모산
+  - `aliases`: 동모산성, 東牟山城
+  - `origin`: 東牟山
+  - `headword_origin`: 동모산(東牟山)
+  - `primary_type`: 지명/자연지명
+  - `era`: 고대/남북국/발해
+  - `definition`: 중국 길림성 돈화시에 있었던 발해시대의 수도.
+
+#### 후보 3. 동모산 · THESAURUS
+
+- Candidate ID: `source-candidate:4c25ca4503f821a46490`
+- 현재 분류: **REJECTED**
+- Source record ID: `THESAURUS:TERM:24561:sha256-1022516a18f91e61`
+- Entity type: `Place`
+- 한자: 東牟山
+- 시대: (없음)
+- 원천 문맥:
+  - `term_name`: 동모산
+  - `hanja`: 東牟山
+  - `thesaurus_category`: 지명
+  - `description`: 발해 초기의 수도. 지금의 만주 길림성 돈화현 지역.
+  - `term_year`: 698-756
+
+#### 후보 4. 대모산성 · THESAURUS
+
+- Candidate ID: `source-candidate:8c02bd6292eca901686f`
+- 현재 분류: **REJECTED**
+- Source record ID: `THESAURUS:TERM:15396:sha256-1022516a18f91e61`
+- Entity type: `Heritage`
+- 한자: 大母山城
+- 시대: 삼국시대
+- 원천 문맥:
+  - `term_name`: 대모산성
+  - `hanja`: 大母山城
+  - `era`: 삼국시대
+  - `thesaurus_category`: 문화재
+  - `description`: 삼국시대의 테뫼식 석축산성으로 경기도 양주군 주내면 어둔리와 남방리, 백석면 방성리 사이의 산성산에 있음.
+  - `term_year`: ?
+  - `term_remark`: 양주
+
+#### 후보 5. 성산자산성 · THESAURUS
+
+- Candidate ID: `source-candidate:24bcd3cb0b5d1de925bd`
+- 현재 분류: **CANONICAL · 동모산성(돈화 성산자산성)**
+- Source record ID: `THESAURUS:TERM:17876:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 城山子山城
+- 시대: 남북국시대
+- 원천 문맥:
+  - `term_name`: 성산자산성
+  - `hanja`: 城山子山城
+  - `era`: 남북국시대
+  - `thesaurus_category`: 국방·군사>군사방어시설
+  - `description`: 발해의 건국지인 동모산(東牟山)으로 추정되는 산성. 중국 길림성 돈화시 현유향 성산자촌 성산자산에 있음.
+  - `term_year`: ?-?
+
+#### 후보 6. 자모산성 · THESAURUS
+
+- Candidate ID: `source-candidate:07634b418049f14baffa`
+- 현재 분류: **REJECTED**
+- Source record ID: `THESAURUS:TERM:33566328:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 慈母山城
+- 시대: 조선시대
+- 원천 문맥:
+  - `term_name`: 자모산성
+  - `hanja`: 慈母山城
+  - `era`: 조선시대
+  - `thesaurus_category`: 국방·군사>군사방어시설
+  - `description`: 조선시대의 석성(石城)으로 황해도 평산군 마산면에 있음. 둘레 약 5㎞, 높이 4m.
+  - `term_year`: ?-?
+
+#### 후보 7. 대모산성 · THESAURUS
+
+- Candidate ID: `source-candidate:0160437f996071cb8dc5`
+- 현재 분류: **REJECTED**
+- Source record ID: `THESAURUS:TERM:44041678:sha256-1022516a18f91e61`
+- Entity type: `Heritage`
+- 한자: 大母山城
+- 시대: 삼국시대
+- 원천 문맥:
+  - `term_name`: 대모산성
+  - `hanja`: 大母山城
+  - `era`: 삼국시대
+  - `thesaurus_category`: 문화재
+  - `description`: 충청북도 진천군 진천읍 성석리에 있는 백제의 토축성.
+  - `term_year`: ?
+  - `term_remark`: 진천
+
+</details>
+
+### 사람 검수 입력
+
+- Manual status: `PENDING`
+- Manual reason: (미입력)
+- Reviewer: (미입력)
+- Reviewed at: (미입력)
+
+[목록으로 돌아가기](#case-목록)
+
+---
+
+<a id="case-037"></a>
+## 037. 땅굴 · PENDING
+
+- Case ID: `related-resolution-case:7ac3eef3761e7b7a6e39`
+- 모델 게이트: `NEEDS_MANUAL_REVIEW`
+- 검증 사유: `ENTITY_TYPE_REVIEW_REQUIRED`
+- 후보 수: 2개
+
+### 모델 판정 사유
+
+> 기출문제 문맥 표본이 제공되지 않아 별도의 동명 실체를 분기할 근거는 없다. 두 후보는 단순 명칭·시대 일치에 그치지 않고 북한의 비무장지대 지하 남침용 군사통로라는 구체적 정의가 동일하므로 하나의 target 개념으로 묶는다. 다른 동명·확장 후보는 입력에 없다.
+
+### 현재 후보 분류
+
+| 역할 | 원천·표제 | Candidate ID |
+|---|---|---|
+| CANONICAL · 땅굴 | AKS · 땅굴 | `source-candidate:fc58e870a16ed1d97433` |
+| CANONICAL · 땅굴 | THESAURUS · 땅굴 | `source-candidate:4bffcceed6e2425dd2ce` |
+
+### Canonical 대안
+
+#### 대안 1. 땅굴
+
+- Entity type: `Concept`
+- 동일 실체 후보:
+  - `source-candidate:fc58e870a16ed1d97433` — AKS · 땅굴
+  - `source-candidate:4bffcceed6e2425dd2ce` — THESAURUS · 땅굴
+- 판정 근거: 문제 문맥 표본은 없으나, 두 원천은 모두 현대 북한이 휴전선 비무장지대 지하에 기습작전 목적으로 굴착한 남침용 군사통로라는 동일한 개념을 직접 정의한다. 목적, 주체, 장소 및 기능이 일치한다.
+
+### Evidence only
+
+- 없음
+
+### Rejected
+
+- 없음
+
+### Ambiguous
+
+- 없음
+
+<details>
+<summary><strong>후보 2개의 원천 문맥 펼치기</strong></summary>
+
+#### 후보 1. 땅굴 · AKS
+
+- Candidate ID: `source-candidate:fc58e870a16ed1d97433`
+- 현재 분류: **CANONICAL · 땅굴**
+- Source record ID: `AKS:ARTICLE:E0017183:sha256-704d8ea620c542f5`
+- Entity type: `Concept`
+- 한자: 窟
+- 시대: 현대
+- 원천 문맥:
+  - `headword`: 땅굴
+  - `origin`: 땅窟
+  - `headword_origin`: 땅굴(땅窟)
+  - `primary_type`: 개념
+  - `era`: 현대
+  - `definition`: 북한이 기습작전을 수행할 목적으로 휴전선 비무장지대의 지하에 굴착한 남침용 군사통로.
+
+#### 후보 2. 땅굴 · THESAURUS
+
+- Candidate ID: `source-candidate:4bffcceed6e2425dd2ce`
+- 현재 분류: **CANONICAL · 땅굴**
+- Source record ID: `THESAURUS:TERM:29368079:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: (없음)
+- 시대: 현대
+- 원천 문맥:
+  - `term_name`: 땅굴
+  - `hanja`: 땅굴
+  - `era`: 현대
+  - `thesaurus_category`: 외교·국제관계>북한>국방·군사(북한)
+  - `description`: 북한이 기습작전을 목적으로 휴전선 비무장지대의 지하에 굴착한 남침용 군사통로.
+  - `term_year`: 1971
+
+</details>
+
+### 사람 검수 입력
+
+- Manual status: `PENDING`
+- Manual reason: (미입력)
+- Reviewer: (미입력)
+- Reviewed at: (미입력)
+
+[목록으로 돌아가기](#case-목록)
+
+---
+
+<a id="case-038"></a>
+## 038. 비무장지대(영화) · PENDING
+
+- Case ID: `related-resolution-case:d655ef19a065bf2f26b7`
+- 모델 게이트: `NEEDS_MANUAL_REVIEW`
+- 검증 사유: `TERM_SOURCE_ALIGNMENT_REVIEW_REQUIRED`
+- 후보 수: 4개
+
+### 모델 판정 사유
+
+> 문제 문맥 표본은 없으나 canonical term이 '비무장지대(영화)'로 작품 유형을 명시하며, 후보 28f1947a7396587c5e5f는 1965년 박상호 감독의 동명 영화라는 발행·창작 시기와 감독·내용을 제공해 target과 직접 일치한다. 나머지 후보들은 같은 한자와 명칭을 가진 비무장지대라는 지명·군사·외교 개념일 뿐, 영화 자체 또는 영화와의 명시적 관계를 설명하지 않으므로 identity 및 evidence-only에서 제외한다.
+
+### 현재 후보 분류
+
+| 역할 | 원천·표제 | Candidate ID |
+|---|---|---|
+| CANONICAL · 비무장지대(영화) | THESAURUS · 비무장지대 | `source-candidate:28f1947a7396587c5e5f` |
+| REJECTED | AKS · 비무장지대 | `source-candidate:9a76a2a743d3d0f79603` |
+| REJECTED | THESAURUS · 비무장지대 | `source-candidate:9173bf5c4b88e3ac84df` |
+| REJECTED | THESAURUS · 비무장지대 | `source-candidate:01ede23a830abc842019` |
+
+### Canonical 대안
+
+#### 대안 1. 비무장지대(영화)
+
+- Entity type: `Work`
+- 동일 실체 후보:
+  - `source-candidate:28f1947a7396587c5e5f` — THESAURUS · 비무장지대
+- 판정 근거: 용어의 괄호 표기와 일치하는 영화 작품이다. 원천은 박상호 감독이 1965년에 연출한 세미다큐멘터리 영화이며, 어린 남매가 비무장지대에서 어머니를 찾는 내용을 명시하여 target 작품을 직접 설명한다.
+
+### Evidence only
+
+- 없음
+
+### Rejected
+
+- `source-candidate:9a76a2a743d3d0f79603` — AKS · 비무장지대
+- `source-candidate:9173bf5c4b88e3ac84df` — THESAURUS · 비무장지대
+- `source-candidate:01ede23a830abc842019` — THESAURUS · 비무장지대
+
+### Ambiguous
+
+- 없음
+
+<details>
+<summary><strong>후보 4개의 원천 문맥 펼치기</strong></summary>
+
+#### 후보 1. 비무장지대 · THESAURUS
+
+- Candidate ID: `source-candidate:28f1947a7396587c5e5f`
+- 현재 분류: **CANONICAL · 비무장지대(영화)**
+- Source record ID: `THESAURUS:TERM:18882137:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 非武裝地帶
+- 시대: 현대
+- 원천 문맥:
+  - `term_name`: 비무장지대
+  - `hanja`: 非武裝地帶
+  - `era`: 현대
+  - `thesaurus_category`: 문화·예술>종합예술
+  - `description`: 1965년 박상호(朴商昊) 감독이 연출한 세미다큐멘터리로 어머니를 찾아 비무장지대를 헤매는 어린 남매의 모습을 그린 영화. 제13회 아시아영화제 비극 부문 작품상 수상.
+  - `term_year`: 1965
+  - `term_remark`: 영화
+
+#### 후보 2. 비무장지대 · AKS
+
+- Candidate ID: `source-candidate:9a76a2a743d3d0f79603`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0025142:sha256-704d8ea620c542f5`
+- Entity type: `Place`
+- 한자: 非武裝地帶
+- 시대: (없음)
+- 원천 문맥:
+  - `headword`: 비무장지대
+  - `origin`: 非武裝地帶
+  - `headword_origin`: 비무장지대(非武裝地帶)
+  - `primary_type`: 지명/자연지명
+  - `era`: 미상
+  - `definition`: 조약이나 협정에 의하여 무장이 금지된 완충지대.
+
+#### 후보 3. 비무장지대 · THESAURUS
+
+- Candidate ID: `source-candidate:9173bf5c4b88e3ac84df`
+- 현재 분류: **REJECTED**
+- Source record ID: `THESAURUS:TERM:4758:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 非武裝地帶
+- 시대: 현대
+- 원천 문맥:
+  - `term_name`: 비무장지대
+  - `hanja`: 非武裝地帶
+  - `era`: 현대
+  - `thesaurus_category`: 국방·군사>전쟁·전투
+  - `description`: 우리나라에서는 6·25전쟁 이후 설정되었으며, 일반적으로는 조약이나 협정에 의하여 무장이 금지된 완충 지대.
+  - `term_year`: 1951-?
+
+#### 후보 4. 비무장지대 · THESAURUS
+
+- Candidate ID: `source-candidate:01ede23a830abc842019`
+- 현재 분류: **REJECTED**
+- Source record ID: `THESAURUS:TERM:4759:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 非武裝地帶
+- 시대: 현대
+- 원천 문맥:
+  - `term_name`: 비무장지대
+  - `hanja`: 非武裝地帶
+  - `era`: 현대
+  - `thesaurus_category`: 외교·국제관계>외교협상·협약>현대
+  - `description`: 우리나라에서는 6·25전쟁 이후 설정되었으며, 일반적으로는 조약이나 협정에 의하여 무장이 금지된 완충 지대.
+  - `term_year`: 1951-?
+
+</details>
+
+### 사람 검수 입력
+
+- Manual status: `PENDING`
+- Manual reason: (미입력)
+- Reviewer: (미입력)
+- Reviewed at: (미입력)
+
+[목록으로 돌아가기](#case-목록)
+
+---
+
+<a id="case-039"></a>
+## 039. 권경우 · PENDING
+
+- Case ID: `related-resolution-case:c0606a20dbacd58d19c0`
+- 모델 게이트: `NEEDS_MANUAL_REVIEW`
+- 검증 사유: `AMBIGUOUS_SOURCE_REMAINS`
+- 후보 수: 7개
+
+### 모델 판정 사유
+
+> problem_count가 0이고 problem_context_samples가 비어 있어 기출문제가 가리키는 target 실체의 식별 단서가 전혀 없다. 후보에는 한자가 다르고 시대·생몰년·자·관직이 구별되는 권경우(權景祐, 1448~1501, 자수)와 권경우(權慶祐, 1547~1616, 신지)라는 두 동명 인물이 확인된다. 각 인물군 내부의 원천들은 서로 직접 병합 가능하지만, 어느 인물군이 실제 문제 target인지는 문맥 없이 선택할 수 없다. 수곡서원은 권경우(權景祐) 배향 관계를 명시하지만 서원 자체가 인물과 다른 대상이며, 그 인물이 target인지도 확정되지 않는다. 따라서 임의의 canonical 대안을 만들거나 동명 인물을 함께 병합하지 않고 전체 후보를 AMBIGUOUS로 분류한다.
+
+### 현재 후보 분류
+
+| 역할 | 원천·표제 | Candidate ID |
+|---|---|---|
+| AMBIGUOUS | AKS · 권경우 | `source-candidate:f767e8418cdd7f17ea96` |
+| AMBIGUOUS | AKS · 권경우 | `source-candidate:fae3111bc48ac2951178` |
+| AMBIGUOUS | ITKC_PERSON · 권경우 | `source-candidate:76a4c04cdcfe8a727dcc` |
+| AMBIGUOUS | ITKC_PERSON · 권경우 | `source-candidate:8630fb1751dcf79ca69c` |
+| AMBIGUOUS | THESAURUS · 권경우 | `source-candidate:c449839507d16541cf84` |
+| AMBIGUOUS | THESAURUS · 권경우 | `source-candidate:1b3c0222e4921e5c6cd8` |
+| AMBIGUOUS | THESAURUS · 수곡서원 | `source-candidate:2117c075f0fa4bea8758` |
+
+### Canonical 대안
+
+- 없음
+### Evidence only
+
+- 없음
+
+### Rejected
+
+- 없음
+
+### Ambiguous
+
+- `source-candidate:f767e8418cdd7f17ea96` — AKS · 권경우
+- `source-candidate:fae3111bc48ac2951178` — AKS · 권경우
+- `source-candidate:76a4c04cdcfe8a727dcc` — ITKC_PERSON · 권경우
+- `source-candidate:8630fb1751dcf79ca69c` — ITKC_PERSON · 권경우
+- `source-candidate:c449839507d16541cf84` — THESAURUS · 권경우
+- `source-candidate:1b3c0222e4921e5c6cd8` — THESAURUS · 권경우
+- `source-candidate:2117c075f0fa4bea8758` — THESAURUS · 수곡서원
+
+<details>
+<summary><strong>후보 7개의 원천 문맥 펼치기</strong></summary>
+
+#### 후보 1. 권경우 · AKS
+
+- Candidate ID: `source-candidate:f767e8418cdd7f17ea96`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `AKS:ARTICLE:E0006826:sha256-704d8ea620c542f5`
+- Entity type: `Person`
+- 한자: 權景祐, 子綏
+- 시대: 조선, 조선 전기
+- 원천 문맥:
+  - `headword`: 권경우
+  - `aliases`: 자수(子綏)
+  - `origin`: 權景祐
+  - `headword_origin`: 권경우(權景祐)
+  - `primary_type`: 인물/전통 인물
+  - `era`: 조선/조선 전기
+  - `definition`: 조선 전기에, 도승지, 대사헌 등을 역임한 문신.
+
+#### 후보 2. 권경우 · AKS
+
+- Candidate ID: `source-candidate:fae3111bc48ac2951178`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `AKS:ARTICLE:E0006827:sha256-704d8ea620c542f5`
+- Entity type: `Person`
+- 한자: 權慶祐, 申之
+- 시대: 조선, 조선 전기, 조선 후기
+- 원천 문맥:
+  - `headword`: 권경우
+  - `aliases`: 신지(申之)
+  - `origin`: 權慶祐
+  - `headword_origin`: 권경우(權慶祐)
+  - `primary_type`: 인물/전통 인물
+  - `era`: 조선/조선 전기 | 조선/조선 후기
+  - `definition`: 조선 중기에, 정언, 헌납, 장령 등을 역임한 문신.
+
+#### 후보 3. 권경우 · ITKC_PERSON
+
+- Candidate ID: `source-candidate:76a4c04cdcfe8a727dcc`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `ITKC:PERSON:P002212:sha256-2bfbf7f8ab4b1538`
+- Entity type: `Person`
+- 한자: 權慶祐
+- 시대: (없음)
+- 원천 문맥:
+  - `name`: 권경우
+  - `hanja`: 權慶祐
+  - `birth_year`: 1547
+  - `death_year`: 1616
+  - `bonkwan`: 안동(安東)
+  - `ja`: 신지(申之)
+  - `father`: 권기(權驥)
+
+#### 후보 4. 권경우 · ITKC_PERSON
+
+- Candidate ID: `source-candidate:8630fb1751dcf79ca69c`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `ITKC:PERSON:P002213:sha256-2bfbf7f8ab4b1538`
+- Entity type: `Person`
+- 한자: 權景祐
+- 시대: (없음)
+- 원천 문맥:
+  - `name`: 권경우
+  - `hanja`: 權景祐
+  - `birth_year`: 1448
+  - `death_year`: 1501
+  - `bonkwan`: 안동(安東)
+  - `ja`: 자수(子綏)
+  - `father`: 권질(權耋)
+
+#### 후보 5. 권경우 · THESAURUS
+
+- Candidate ID: `source-candidate:c449839507d16541cf84`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `THESAURUS:TERM:10503747:sha256-1022516a18f91e61`
+- Entity type: `Person`
+- 한자: 權慶祐
+- 시대: 조선후기
+- 원천 문맥:
+  - `term_name`: 권경우
+  - `hanja`: 權慶祐
+  - `era`: 조선후기
+  - `thesaurus_category`: 인명
+  - `description`: 조선 선조·광해군 때 정언·헌납·장령 등을 역임한 문신. 본관은 안동(安東).
+  - `term_year`: 1547-1616
+
+#### 후보 6. 권경우 · THESAURUS
+
+- Candidate ID: `source-candidate:1b3c0222e4921e5c6cd8`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `THESAURUS:TERM:10503753:sha256-1022516a18f91e61`
+- Entity type: `Person`
+- 한자: 權景祐
+- 시대: 조선전기
+- 원천 문맥:
+  - `term_name`: 권경우
+  - `hanja`: 權景祐
+  - `era`: 조선전기
+  - `thesaurus_category`: 인명
+  - `description`: 조선 성종·연산군 때 도승지·대사헌 등을 지낸 문신. 무오사화에 연루되어 관노가 되었다가 중종반정 때 신원됨. 본관은 안동(安東).
+  - `term_year`: ?
+
+#### 후보 7. 수곡서원 · THESAURUS
+
+- Candidate ID: `source-candidate:2117c075f0fa4bea8758`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `THESAURUS:TERM:39860409:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 水谷書院
+- 시대: 조선후기
+- 원천 문맥:
+  - `term_name`: 수곡서원
+  - `hanja`: 水谷書院
+  - `era`: 조선후기
+  - `thesaurus_category`: 교육>전근대교육기관
+  - `description`: 1874년(고종 11) 건립하여 권경우(權景祐)·권경유(權景裕)을 배향한 서원. 경기도 양평군(楊平郡) 지제면(砥堤面) 수곡리(水谷里)에 있음.
+  - `term_year`: 1874
+
+</details>
+
+### 사람 검수 입력
+
+- Manual status: `PENDING`
+- Manual reason: (미입력)
+- Reviewer: (미입력)
+- Reviewed at: (미입력)
+
+[목록으로 돌아가기](#case-목록)
+
+---
+
+<a id="case-040"></a>
+## 040. 황국신민화정책 · PENDING
+
+- Case ID: `related-resolution-case:100da52828c98cebea0f`
+- 모델 게이트: `NEEDS_MANUAL_REVIEW`
+- 검증 사유: `INSUFFICIENT_PAIR_EVIDENCE`, `TERM_SOURCE_ALIGNMENT_REVIEW_REQUIRED`
+- 후보 수: 10개
+
+### 모델 판정 사유
+
+> 문제 문맥 표본이 없으므로 canonical term과 직접 정의된 원천을 기준으로 판정했다. 정확히 일치하는 황국신민화정책과, 같은 1937~1945년 일본화·민족말살 정책을 직접 정의한 황국신민화를 하나의 정책 개념으로 묶었다. 교육·음악협회·사학억압·국책문학·학생의거·황국신민서사·국민정신총동원운동 원천은 각각 별도 실체가 주 대상이므로 identity에는 넣지 않았지만, 정책의 수행 목적·배경·일환을 명시해 evidence로 분류했다. 개화정책은 명칭의 '정책'만 겹치는 별도 시대의 정책이며 관계 근거가 없어 제외했다.
+
+### 현재 후보 분류
+
+| 역할 | 원천·표제 | Candidate ID |
+|---|---|---|
+| CANONICAL · 황국신민화정책 | THESAURUS · 황국신민화정책 | `source-candidate:1c6bf7490017bca8c0cf` |
+| EVIDENCE_ONLY | AKS · 교육과정 | `source-candidate:06cfde0287bc84cf68e5` |
+| EVIDENCE_ONLY | AKS · 김재훈 | `source-candidate:5d0ac02c262928926453` |
+| EVIDENCE_ONLY | AKS · 사학 | `source-candidate:eba3ae99844c31967129` |
+| EVIDENCE_ONLY | AKS · 국책문학론 | `source-candidate:75baa541dd87cf2b4602` |
+| EVIDENCE_ONLY | AKS · 부산항일학생의거 | `source-candidate:dba40701c8d2bb01fdb8` |
+| EVIDENCE_ONLY | AKS · 황국신민서사 | `source-candidate:2b79504f40546e19df48` |
+| CANONICAL · 황국신민화정책 | THESAURUS · 황국신민화 | `source-candidate:2337ac9953a001e13586` |
+| REJECTED | AKS · 개화정책 | `source-candidate:1aa095913016963d96b3` |
+| EVIDENCE_ONLY | AKS · 국민정신총동원운동 | `source-candidate:14e119ff66380369e446` |
+
+### Canonical 대안
+
+#### 대안 1. 황국신민화정책
+
+- Entity type: `Concept`
+- 동일 실체 후보:
+  - `source-candidate:1c6bf7490017bca8c0cf` — THESAURUS · 황국신민화정책
+  - `source-candidate:2337ac9953a001e13586` — THESAURUS · 황국신민화
+- 판정 근거: 문제 문맥 표본은 없으나 canonical term 자체가 황국신민화정책이다. 첫 원천은 한자 皇國臣民化政策, 일제시기·1937~1945년, 조선의 완전한 일본화를 목적으로 한 정책이라는 직접 정의를 제시한다. '황국신민화' 원천도 같은 시기(1937~1945) 민족말살과 한국인의 일본인화를 목적으로 한 정책으로 정의하여, 표제어 차이에도 불구하고 동일한 식민 동화정책을 직접 설명한다.
+
+### Evidence only
+
+- `source-candidate:06cfde0287bc84cf68e5` — AKS · 교육과정
+- `source-candidate:5d0ac02c262928926453` — AKS · 김재훈
+- `source-candidate:eba3ae99844c31967129` — AKS · 사학
+- `source-candidate:75baa541dd87cf2b4602` — AKS · 국책문학론
+- `source-candidate:dba40701c8d2bb01fdb8` — AKS · 부산항일학생의거
+- `source-candidate:2b79504f40546e19df48` — AKS · 황국신민서사
+- `source-candidate:14e119ff66380369e446` — AKS · 국민정신총동원운동
+
+### Rejected
+
+- `source-candidate:1aa095913016963d96b3` — AKS · 개화정책
+
+### Ambiguous
+
+- 없음
+
+<details>
+<summary><strong>후보 10개의 원천 문맥 펼치기</strong></summary>
+
+#### 후보 1. 황국신민화정책 · THESAURUS
+
+- Candidate ID: `source-candidate:1c6bf7490017bca8c0cf`
+- 현재 분류: **CANONICAL · 황국신민화정책**
+- Source record ID: `THESAURUS:TERM:25169630:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 皇國臣民化政策
+- 시대: 일제시기
+- 원천 문맥:
+  - `term_name`: 황국신민화정책
+  - `hanja`: 皇國臣民化政策
+  - `era`: 일제시기
+  - `thesaurus_category`: 정치·행정·법제>정치사상·정책
+  - `description`: 일제시기 체제 하에서 조선의 완전한 일본화를 목적으로 실행된 정책.
+  - `term_year`: 1937-1945
+
+#### 후보 2. 교육과정 · AKS
+
+- Candidate ID: `source-candidate:06cfde0287bc84cf68e5`
+- 현재 분류: **EVIDENCE_ONLY**
+- Source record ID: `AKS:ARTICLE:E0005530:sha256-704d8ea620c542f5`
+- Entity type: `Concept`
+- 한자: 敎育課程
+- 시대: (없음)
+- 원천 문맥:
+  - `headword`: 교육과정
+  - `origin`: 敎育課程
+  - `headword_origin`: 교육과정(敎育課程)
+  - `primary_type`: 개념
+  - `era`: 미상
+  - `definition`: 학교와 같은 교육기관에서 교육목표를 달성하기 위한 다양한 교육 활동의 기준을 체계적으로 선정하고 조직한 문서이며, 나아가 이를 실행하는 과정과 성취한 결과를 포함하는 일련의 계획.
+  - `snippet`: 적 지식교육 과목을 폐지하고 생활교양교육인 공민과를 새로 개설하였다. 일제강점기 실업교육은 황국신민화 정책에 부응하는 산업기능인을 양성하는 것을 목표로 하였고, 학교교육은 전시(戰時)에 동원되었다. 3) 일
+
+#### 후보 3. 김재훈 · AKS
+
+- Candidate ID: `source-candidate:5d0ac02c262928926453`
+- 현재 분류: **EVIDENCE_ONLY**
+- Source record ID: `AKS:ARTICLE:E0010360:sha256-704d8ea620c542f5`
+- Entity type: `Person`
+- 한자: 金載勳
+- 시대: 근대, 대한제국기, 현대
+- 원천 문맥:
+  - `headword`: 김재훈
+  - `aliases`: 니콜라이 김
+  - `origin`: 金載勳
+  - `headword_origin`: 김재훈(金載勳)
+  - `primary_type`: 인물/근현대 인물
+  - `era`: 근대/대한제국기 | 현대
+  - `definition`: 일제강점기 경성음악전문학교 초대원장, 조선음악협회 이사 등을 역임한 음악인. 작곡가. 바이올리니스트.
+  - `snippet`: 곡 「비가(悲歌)」·「푸레루디움 운트 알레그로」를 발표했다. 1941년 조선총독부가 '음악을 통한 일제의 황국신민화 정책 수행'을 목적으로 조선총독부 학무국의 알선으로 설립된 조선음악협회(朝鮮音樂協會) 결성대회에
+
+#### 후보 4. 사학 · AKS
+
+- Candidate ID: `source-candidate:eba3ae99844c31967129`
+- 현재 분류: **EVIDENCE_ONLY**
+- Source record ID: `AKS:ARTICLE:E0026088:sha256-704d8ea620c542f5`
+- Entity type: `Concept`
+- 한자: 私學
+- 시대: (없음)
+- 원천 문맥:
+  - `headword`: 사학
+  - `origin`: 私學
+  - `headword_origin`: 사학(私學)
+  - `primary_type`: 개념
+  - `era`: 미상
+  - `definition`: 학교법인이나 공공단체 이외의 법인 또는 사인(私人)이 설립한 학교.
+  - `snippet`: 립의 인가규정을 더욱 엄격하게 하고 교과서 검열을 강화하며, 일어교육과 보급에 치중하여 그들의 황국신민화정책을 확고히 하고자 한 것이었다. 이와 같은 사학억압정책은 1915년 ＜개정사학규칙＞에서 더욱 심화
+
+#### 후보 5. 국책문학론 · AKS
+
+- Candidate ID: `source-candidate:75baa541dd87cf2b4602`
+- 현재 분류: **EVIDENCE_ONLY**
+- Source record ID: `AKS:ARTICLE:E0070712:sha256-704d8ea620c542f5`
+- Entity type: `Concept`
+- 한자: 國策文學論
+- 시대: 근대, 일제강점기, 현대
+- 원천 문맥:
+  - `headword`: 국책문학론
+  - `aliases`: 국민문학, 대일 협력 문학, 친일문학
+  - `origin`: 國策文學論
+  - `headword_origin`: 국책문학론(國策文學論)
+  - `primary_type`: 개념
+  - `era`: 근대/일제강점기 | 현대
+  - `definition`: 국책의 일방적 전달과 선전을 위하여 1940년 전후 시기에 창작된 문학양식. 국민문학·친일문학·대일 협력 문학.
+  - `snippet`: 수행과 참여가 강요되는 상황에서 문학 역시 예외가 될 수 없었다. 따라서 전시하 국책에 따라 창작된 황국신민화정책을 주제로 삼은 문학과 농민문학, 대륙문학, 생산문학, 해양문학 등을 일괄하여 국책문학이라 한다. # 연
+
+#### 후보 6. 부산항일학생의거 · AKS
+
+- Candidate ID: `source-candidate:dba40701c8d2bb01fdb8`
+- 현재 분류: **EVIDENCE_ONLY**
+- Source record ID: `AKS:ARTICLE:E0078093:sha256-704d8ea620c542f5`
+- Entity type: `Event`
+- 한자: 釜山抗日學生義擧
+- 시대: 근대, 일제강점기
+- 원천 문맥:
+  - `headword`: 부산항일학생의거
+  - `aliases`: 노다이사건
+  - `origin`: 釜山抗日學生義擧
+  - `headword_origin`: 부산항일학생의거(釜山抗日學生義擧)
+  - `primary_type`: 사건/사회운동
+  - `era`: 근대/일제강점기
+  - `definition`: 1940년 부산에서 열린 경남학도전력증강국방경기대회에서 일본인 심판 노다이의 부당 행위에 항의하여 일어난 항일학생운동.
+  - `snippet`: 편파적이고 민족 차별적인 대회 운영에 맞선 항일학생운동이다. # 역사적 배경 일제는 중일전쟁 이후 황국신민화 정책을 통해 조선 민중의 일상생활을 통제하고, 나아가 민족 말살을 추진하였다. 또 「국가총동원법(國家總
+
+#### 후보 7. 황국신민서사 · AKS
+
+- Candidate ID: `source-candidate:2b79504f40546e19df48`
+- 현재 분류: **EVIDENCE_ONLY**
+- Source record ID: `AKS:ARTICLE:E0076120:sha256-704d8ea620c542f5`
+- Entity type: `Concept`
+- 한자: 皇國臣民誓詞
+- 시대: 근대, 일제강점기
+- 원천 문맥:
+  - `headword`: 황국신민서사
+  - `origin`: 皇國臣民誓詞
+  - `headword_origin`: 황국신민서사(皇國臣民誓詞)
+  - `primary_type`: 제도/법령·제도
+  - `era`: 근대/일제강점기
+  - `definition`: 1937년 황국신민화 정책의 일환으로 조선총독부가 제정한 맹세.
+
+#### 후보 8. 황국신민화 · THESAURUS
+
+- Candidate ID: `source-candidate:2337ac9953a001e13586`
+- 현재 분류: **CANONICAL · 황국신민화정책**
+- Source record ID: `THESAURUS:TERM:18876778:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 皇國臣民化
+- 시대: 일제시기
+- 원천 문맥:
+  - `term_name`: 황국신민화
+  - `hanja`: 皇國臣民化
+  - `era`: 일제시기
+  - `thesaurus_category`: 사회운동·독립운동>일본제국주의>식민통치 및 정책
+  - `description`: 일제시기 말기 민족말살정책의 일환으로 한민족을 말살하고 한국인을 일본인화하려는 정책.
+  - `term_year`: 1937-1945
+
+#### 후보 9. 개화정책 · AKS
+
+- Candidate ID: `source-candidate:1aa095913016963d96b3`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0001760:sha256-704d8ea620c542f5`
+- Entity type: `Concept`
+- 한자: 開化政策
+- 시대: 근대, 개항기
+- 원천 문맥:
+  - `headword`: 개화정책
+  - `origin`: 開化政策
+  - `headword_origin`: 개화정책(開化政策)
+  - `primary_type`: 개념
+  - `era`: 근대/개항기
+  - `definition`: 개화를 실행하기 위하여 1880년대에 정부 주도로 추진한 정책.
+
+#### 후보 10. 국민정신총동원운동 · AKS
+
+- Candidate ID: `source-candidate:14e119ff66380369e446`
+- 현재 분류: **EVIDENCE_ONLY**
+- Source record ID: `AKS:ARTICLE:E0078012:sha256-704d8ea620c542f5`
+- Entity type: `Event`
+- 한자: 國民精神總動員運動
+- 시대: 근대, 일제강점기
+- 원천 문맥:
+  - `headword`: 국민정신총동원운동
+  - `origin`: 國民精神總動員運動
+  - `headword_origin`: 국민정신총동원운동(國民精神總動員運動)
+  - `primary_type`: 사건/사회운동
+  - `era`: 근대/일제강점기
+  - `definition`: 1930년대 말 일제가 조선민중의 내선일체·황국신민화를 달성하고, 이를 토대로 전쟁수행에 필요한 인적·물적 자원을 효과적으로 동원하기 위해 전개한 운동.
+
+</details>
+
+### 사람 검수 입력
+
+- Manual status: `PENDING`
+- Manual reason: (미입력)
+- Reviewer: (미입력)
+- Reviewed at: (미입력)
+
+[목록으로 돌아가기](#case-목록)
+
+---
+
+<a id="case-041"></a>
+## 041. 연해주크라스키노성지 · PENDING
+
+- Case ID: `related-resolution-case:423267d5cd842a166a89`
+- 모델 게이트: `NEEDS_MANUAL_REVIEW`
+- 검증 사유: `ENTITY_TYPE_REVIEW_REQUIRED`, `INSUFFICIENT_PAIR_EVIDENCE`, `TERM_SOURCE_ALIGNMENT_REVIEW_REQUIRED`
+- 후보 수: 4개
+
+### 모델 판정 사유
+
+> 문제 문맥 표본은 없으나 canonical term 자체와 정확히 대응하는 크라스키노성지 후보 및 그 축약 표기는 동일한 연해주 소재 발해 성곽 유적을 직접 설명한다. 우수리스크성지와 크루그르이성지는 같은 연해주 발해 성터 범주에 속할 뿐 소재지와 고유 지명이 달라 target identity로 병합하지 않았다.
+
+### 현재 후보 분류
+
+| 역할 | 원천·표제 | Candidate ID |
+|---|---|---|
+| CANONICAL · 연해주 크라스키노성지 | AKS · 연해주 크라스키노성지 | `source-candidate:02b1e2ce8dd521e1d4c5` |
+| CANONICAL · 연해주 크라스키노성지 | THESAURUS · 연해크라스키노성지 | `source-candidate:71aac1deabae6608ba6b` |
+| REJECTED | THESAURUS · 연해남우수리스크성지 | `source-candidate:6200ddc651763a7e9121` |
+| REJECTED | THESAURUS · 연해크루그르이성지 | `source-candidate:dcdeaaee99780b13ded9` |
+
+### Canonical 대안
+
+#### 대안 1. 연해주 크라스키노성지
+
+- Entity type: `Heritage`
+- 동일 실체 후보:
+  - `source-candidate:02b1e2ce8dd521e1d4c5` — AKS · 연해주 크라스키노성지
+  - `source-candidate:71aac1deabae6608ba6b` — THESAURUS · 연해크라스키노성지
+- 판정 근거: 정확 일치 후보는 러시아 연해주 크라스키노 마을의 발해 성곽터로 정의된다. 다른 후보도 ‘연해크라스키노성지’라는 축약 표기이며, 러시아 연해주 하산지방 소재 발해 성터이자 염주 중심 유적으로 추정된다고 하여 명칭·지역·시대·유적 성격이 일치한다.
+
+### Evidence only
+
+- 없음
+
+### Rejected
+
+- `source-candidate:6200ddc651763a7e9121` — THESAURUS · 연해남우수리스크성지
+- `source-candidate:dcdeaaee99780b13ded9` — THESAURUS · 연해크루그르이성지
+
+### Ambiguous
+
+- 없음
+
+<details>
+<summary><strong>후보 4개의 원천 문맥 펼치기</strong></summary>
+
+#### 후보 1. 연해주 크라스키노성지 · AKS
+
+- Candidate ID: `source-candidate:02b1e2ce8dd521e1d4c5`
+- 현재 분류: **CANONICAL · 연해주 크라스키노성지**
+- Source record ID: `AKS:ARTICLE:E0036980:sha256-704d8ea620c542f5`
+- Entity type: `Heritage`
+- 한자: 沿海州, 城址
+- 시대: 고대, 남북국, 발해
+- 원천 문맥:
+  - `headword`: 연해주 크라스키노성지
+  - `origin`: 沿海州 Kraskino城址
+  - `headword_origin`: 연해주 크라스키노성지(沿海州 Kraskino城址)
+  - `primary_type`: 유적/터
+  - `era`: 고대/남북국/발해
+  - `definition`: 러시아 프리모르스키 크레이(Приморский край 연해주) 크라스키노(Краскино)마을에 있는 남북국시대 발해의 성곽터.
+
+#### 후보 2. 연해크라스키노성지 · THESAURUS
+
+- Candidate ID: `source-candidate:71aac1deabae6608ba6b`
+- 현재 분류: **CANONICAL · 연해주 크라스키노성지**
+- Source record ID: `THESAURUS:TERM:14685290:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 沿海, 城址
+- 시대: 남북국시대
+- 원천 문맥:
+  - `term_name`: 연해크라스키노성지
+  - `hanja`: 沿海크라스키노城址
+  - `era`: 남북국시대
+  - `thesaurus_category`: 국방·군사>군사방어시설
+  - `description`: 발해 62주(州) 가운데 염주(鹽州)의 중심 유적지로 추정되는 성터. 러시아 연해주(沿海州) 하산지방에 있음.
+  - `term_year`: ?-?
+
+#### 후보 3. 연해남우수리스크성지 · THESAURUS
+
+- Candidate ID: `source-candidate:6200ddc651763a7e9121`
+- 현재 분류: **REJECTED**
+- Source record ID: `THESAURUS:TERM:14685280:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 沿海南, 城址
+- 시대: 남북국시대
+- 원천 문맥:
+  - `term_name`: 연해남우수리스크성지
+  - `hanja`: 沿海南우수리스크城址
+  - `era`: 남북국시대
+  - `thesaurus_category`: 국방·군사>군사방어시설
+  - `description`: 발해의 솔빈부(率濱府)와 관련있다고 추정되는 성터 유적지. 러시아 연해주(沿海州) 우수리스크시(市)에 있음.
+  - `term_year`: ?-?
+
+#### 후보 4. 연해크루그르이성지 · THESAURUS
+
+- Candidate ID: `source-candidate:dcdeaaee99780b13ded9`
+- 현재 분류: **REJECTED**
+- Source record ID: `THESAURUS:TERM:14685294:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 沿海, 城址
+- 시대: 남북국시대
+- 원천 문맥:
+  - `term_name`: 연해크루그르이성지
+  - `hanja`: 沿海크루그르이城址
+  - `era`: 남북국시대
+  - `thesaurus_category`: 국방·군사>군사방어시설
+  - `description`: 발해의 성터. 러시아 연해주(沿海州) 아누치노지방의 다우비헤강 오른쪽에 있는 크루그르이산의 북쪽에 있음.
+  - `term_year`: ?-?
+
+</details>
+
+### 사람 검수 입력
+
+- Manual status: `PENDING`
+- Manual reason: (미입력)
+- Reviewer: (미입력)
+- Reviewed at: (미입력)
+
+[목록으로 돌아가기](#case-목록)
+
+---
+
+<a id="case-042"></a>
+## 042. 박수년 · PENDING
+
+- Case ID: `related-resolution-case:260919f5981cf4acbfe8`
+- 모델 게이트: `NEEDS_MANUAL_REVIEW`
+- 검증 사유: `AMBIGUOUS_SOURCE_REMAINS`
+- 후보 수: 3개
+
+### 모델 판정 사유
+
+> problem_count가 0이고 problem_context_samples도 비어 있어, 용어 박수년이 가리키는 기출문제 target을 식별할 수 없다. 후보에는 같은 한자·시대이나 관직과 활동이 다른 문신 박수년과, 보안군으로 봉해진 무신 박수년이 존재한다. 무신 관련 두 원천은 서로 동일 인물로 보이지만, target 부재 상태에서는 이를 canonical 대안으로 제안할 수 없으며 문신 후보 역시 동명이인 가능성을 배제할 수 없다.
+
+### 현재 후보 분류
+
+| 역할 | 원천·표제 | Candidate ID |
+|---|---|---|
+| AMBIGUOUS | AKS · 박수년 | `source-candidate:ddb6ab6bc8d1abe4e411` |
+| AMBIGUOUS | AKS · 박수년 | `source-candidate:6a0def4b52c7c8b54435` |
+| AMBIGUOUS | THESAURUS · 박수년 | `source-candidate:9d7a4b2da294bbb5fc05` |
+
+### Canonical 대안
+
+- 없음
+### Evidence only
+
+- 없음
+
+### Rejected
+
+- 없음
+
+### Ambiguous
+
+- `source-candidate:ddb6ab6bc8d1abe4e411` — AKS · 박수년
+- `source-candidate:6a0def4b52c7c8b54435` — AKS · 박수년
+- `source-candidate:9d7a4b2da294bbb5fc05` — THESAURUS · 박수년
+
+<details>
+<summary><strong>후보 3개의 원천 문맥 펼치기</strong></summary>
+
+#### 후보 1. 박수년 · AKS
+
+- Candidate ID: `source-candidate:ddb6ab6bc8d1abe4e411`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `AKS:ARTICLE:E0020835:sha256-704d8ea620c542f5`
+- Entity type: `Person`
+- 한자: 朴壽年
+- 시대: 고려, 고려 후기
+- 원천 문맥:
+  - `headword`: 박수년
+  - `origin`: 朴壽年
+  - `headword_origin`: 박수년(朴壽年)
+  - `primary_type`: 인물/전통 인물
+  - `era`: 고려/고려 후기
+  - `definition`: 고려 후기에, 지도첨의부사, 첨의평리, 찬성사 등을 역임한 문신.
+
+#### 후보 2. 박수년 · AKS
+
+- Candidate ID: `source-candidate:6a0def4b52c7c8b54435`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `AKS:ARTICLE:E0020836:sha256-704d8ea620c542f5`
+- Entity type: `Person`
+- 한자: 朴壽年, 保安君
+- 시대: 고려, 고려 후기
+- 원천 문맥:
+  - `headword`: 박수년
+  - `aliases`: 보안군(保安君)
+  - `origin`: 朴壽年
+  - `headword_origin`: 박수년(朴壽年)
+  - `primary_type`: 인물/전통 인물
+  - `era`: 고려/고려 후기
+  - `definition`: 고려후기 양광도병마사, 보안군, 양광도도순위사 등을 역임한 무신.
+
+#### 후보 3. 박수년 · THESAURUS
+
+- Candidate ID: `source-candidate:9d7a4b2da294bbb5fc05`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `THESAURUS:TERM:12606251:sha256-1022516a18f91e61`
+- Entity type: `Person`
+- 한자: 朴壽年
+- 시대: 고려후기
+- 원천 문맥:
+  - `term_name`: 박수년
+  - `hanja`: 朴壽年
+  - `era`: 고려후기
+  - `thesaurus_category`: 인명
+  - `description`: 고려후기의 무신으로 1361년(공민왕 10) 홍건적의 침입때 공을 세우고, 1376년(우왕 2) 양광도병마사가 되어 최영(崔瑩)의 휘하에서 왜구를 무찌름. 그 이후에도 왜구를 무찌른 공으로 보안군(保安君)에 봉해짐.
+  - `term_year`: ?-1386
+
+</details>
+
+### 사람 검수 입력
+
+- Manual status: `PENDING`
+- Manual reason: (미입력)
+- Reviewer: (미입력)
+- Reviewed at: (미입력)
+
+[목록으로 돌아가기](#case-목록)
+
+---
+
+<a id="case-043"></a>
+## 043. 박인계 · PENDING
+
+- Case ID: `related-resolution-case:4ffee5cec298756e24bb`
+- 모델 게이트: `NEEDS_MANUAL_REVIEW`
+- 검증 사유: `AMBIGUOUS_SOURCE_REMAINS`
+- 후보 수: 2개
+
+### 모델 판정 사유
+
+> 문제 문맥이 전혀 제공되지 않아 canonical target 실체를 식별할 수 없다. 두 후보는 한자·시대·인물 유형이 일치하고 서로 동일한 고려 후기 박인계일 가능성은 높지만, 후보들 사이의 동일성만으로 기출문제 target에 대한 canonical 대안을 만들 수는 없다. 다른 동명·확장 후보를 identity로 포함하거나 배제할 target 기준도 부재하므로 모든 후보를 AMBIGUOUS로 분류한다.
+
+### 현재 후보 분류
+
+| 역할 | 원천·표제 | Candidate ID |
+|---|---|---|
+| AMBIGUOUS | AKS · 박인계 | `source-candidate:e9651b8526480572bb04` |
+| AMBIGUOUS | THESAURUS · 박인계 | `source-candidate:ae68d520c7c26b1489d7` |
+
+### Canonical 대안
+
+- 없음
+### Evidence only
+
+- 없음
+
+### Rejected
+
+- 없음
+
+### Ambiguous
+
+- `source-candidate:e9651b8526480572bb04` — AKS · 박인계
+- `source-candidate:ae68d520c7c26b1489d7` — THESAURUS · 박인계
+
+<details>
+<summary><strong>후보 2개의 원천 문맥 펼치기</strong></summary>
+
+#### 후보 1. 박인계 · AKS
+
+- Candidate ID: `source-candidate:e9651b8526480572bb04`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `AKS:ARTICLE:E0021060:sha256-704d8ea620c542f5`
+- Entity type: `Person`
+- 한자: 朴仁桂, 賢將
+- 시대: 고려, 고려 후기
+- 원천 문맥:
+  - `headword`: 박인계
+  - `aliases`: 현장(賢將)
+  - `origin`: 朴仁桂
+  - `headword_origin`: 박인계(朴仁桂)
+  - `primary_type`: 인물/전통 인물
+  - `era`: 고려/고려 후기
+  - `definition`: 고려 후기에, 전지문주사, 예의판서, 양광도원수 등을 역임한 장군·공신.
+
+#### 후보 2. 박인계 · THESAURUS
+
+- Candidate ID: `source-candidate:ae68d520c7c26b1489d7`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `THESAURUS:TERM:12607185:sha256-1022516a18f91e61`
+- Entity type: `Person`
+- 한자: 朴仁桂
+- 시대: 고려후기
+- 원천 문맥:
+  - `term_name`: 박인계
+  - `hanja`: 朴仁桂
+  - `era`: 고려후기
+  - `thesaurus_category`: 인명
+  - `description`: 고려 공민왕 때의 공신. 1361년(공민왕 10) 홍건적이 침입한 개경을 수복한 공으로 수복경성1등공신(收復京城一等功臣)에 서훈. 1375년(우왕 1)에 양광도안무사(楊廣道按撫使)를 역임. 1376년 칩입한 왜구와 싸우다 전사.
+  - `term_year`: ?-1376
+
+</details>
+
+### 사람 검수 입력
+
+- Manual status: `PENDING`
+- Manual reason: (미입력)
+- Reviewer: (미입력)
+- Reviewed at: (미입력)
+
+[목록으로 돌아가기](#case-목록)
+
+---
+
+<a id="case-044"></a>
+## 044. 박봉석 · PENDING
+
+- Case ID: `related-resolution-case:d9bced2b81102df2caa0`
+- 모델 게이트: `NEEDS_MANUAL_REVIEW`
+- 검증 사유: `AMBIGUOUS_SOURCE_REMAINS`
+- 후보 수: 3개
+
+### 모델 판정 사유
+
+> problem_count가 0이고 problem_context_samples가 비어 있어 기출문제가 실제로 가리키는 박봉석의 시대·활동·관계 단서를 설정할 수 없다. 따라서 직접 인물 표제어인 두 후보도 target identity로 확정해 canonical 대안을 만들 수 없으며, 단지동맹 후보는 별도 사건을 주제로 하면서 박봉석을 참여자로 언급하지만 그 인물의 동일성 및 target과의 관계를 확정할 수 없어 모두 AMBIGUOUS로 분류한다.
+
+### 현재 후보 분류
+
+| 역할 | 원천·표제 | Candidate ID |
+|---|---|---|
+| AMBIGUOUS | AKS · 박봉석 | `source-candidate:6df78bd43c74456a9889` |
+| AMBIGUOUS | THESAURUS · 박봉석 | `source-candidate:0543ea814d10b30c5b65` |
+| AMBIGUOUS | THESAURUS · 단지동맹 | `source-candidate:8fb628fdc3fb756eed05` |
+
+### Canonical 대안
+
+- 없음
+### Evidence only
+
+- 없음
+
+### Rejected
+
+- 없음
+
+### Ambiguous
+
+- `source-candidate:6df78bd43c74456a9889` — AKS · 박봉석
+- `source-candidate:0543ea814d10b30c5b65` — THESAURUS · 박봉석
+- `source-candidate:8fb628fdc3fb756eed05` — THESAURUS · 단지동맹
+
+<details>
+<summary><strong>후보 3개의 원천 문맥 펼치기</strong></summary>
+
+#### 후보 1. 박봉석 · AKS
+
+- Candidate ID: `source-candidate:6df78bd43c74456a9889`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `AKS:ARTICLE:E0020726:sha256-704d8ea620c542f5`
+- Entity type: `Person`
+- 한자: 朴奉石
+- 시대: 근대, 개항기, 일제강점기
+- 원천 문맥:
+  - `headword`: 박봉석
+  - `origin`: 朴奉石
+  - `headword_origin`: 박봉석(朴奉石)
+  - `primary_type`: 인물/근현대 인물
+  - `era`: 근대/개항기 | 근대/일제강점기
+  - `definition`: 대한제국기 때, 안규홍 의진에서 포군으로 활동한 의병.
+
+#### 후보 2. 박봉석 · THESAURUS
+
+- Candidate ID: `source-candidate:0543ea814d10b30c5b65`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `THESAURUS:TERM:6309949:sha256-1022516a18f91e61`
+- Entity type: `Person`
+- 한자: 朴奉石
+- 시대: 대한제국기
+- 원천 문맥:
+  - `term_name`: 박봉석
+  - `hanja`: 朴奉石
+  - `era`: 대한제국기
+  - `thesaurus_category`: 인명
+  - `description`: 조선 고종·순종 때 의병. 광주(光州) 출신. 1908년(융희 2) 안규홍(安圭洪) 의병부대에 가담, 이후 남한대토벌작전(南韓大討伐作戰) 때 붙잡혀 교수형을 당함. 건국훈장 독립장이 추서.
+  - `term_year`: 1885-1910
+
+#### 후보 3. 단지동맹 · THESAURUS
+
+- Candidate ID: `source-candidate:8fb628fdc3fb756eed05`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `THESAURUS:TERM:18880853:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 斷指同盟
+- 시대: 대한제국기
+- 원천 문맥:
+  - `term_name`: 단지동맹
+  - `hanja`: 斷指同盟
+  - `era`: 대한제국기
+  - `thesaurus_category`: 사회운동·독립운동>독립운동>의거·의열투쟁
+  - `description`: 1909년 1월 러시아 연추에서 국권 회복과 동양평화 수호를 위해 안중근(安重根), 김기룡, 강순기, 정원주, 박봉석, 유치홍, 김백춘 등 11인이 결성.
+  - `term_year`: 1909
+
+</details>
+
+### 사람 검수 입력
+
+- Manual status: `PENDING`
+- Manual reason: (미입력)
+- Reviewer: (미입력)
+- Reviewed at: (미입력)
+
+[목록으로 돌아가기](#case-목록)
+
+---
+
+<a id="case-045"></a>
+## 045. 비타협적민족주의 · PENDING
+
+- Case ID: `related-resolution-case:f355ab7a8cfea85918f7`
+- 모델 게이트: `NEEDS_MANUAL_REVIEW`
+- 검증 사유: `INSUFFICIENT_PAIR_EVIDENCE`
+- 후보 수: 18개
+
+### 모델 판정 사유
+
+> 문제 문맥 표본은 제공되지 않았으므로 canonical term의 정확한 명칭을 기준으로 target을 식별했다. 세 개의 동명 THESAURUS 레코드는 한자·시대·정의가 모두 일치하여 하나의 비타협적민족주의 개념으로 병합했다. 인물·작품·단체·신간회 레코드는 각각 별도 실체이지만 target 노선의 채택, 구성 주체, 대립, 인물 규정 등 구체적 관계를 명시하므로 evidence only로 분류했다. 일반 민족주의, 민족주의 사학 및 신민족주의·민족개량주의·민족적 민주주의 등 유사 명칭의 사상과 사건은 별개 개념·사건이고 target에 대한 직접 설명 또는 관계 근거가 없어 identity에서 제외했다.
+
+### 현재 후보 분류
+
+| 역할 | 원천·표제 | Candidate ID |
+|---|---|---|
+| CANONICAL · 비타협적민족주의(非妥協的民族主義) | THESAURUS · 비타협적민족주의 | `source-candidate:4d1d4e5afb2a46faa0cb` |
+| CANONICAL · 비타협적민족주의(非妥協的民族主義) | THESAURUS · 비타협적민족주의 | `source-candidate:bb51add3db7ef2940d3b` |
+| CANONICAL · 비타협적민족주의(非妥協的民族主義) | THESAURUS · 비타협적민족주의 | `source-candidate:5079f2649f881e158141` |
+| EVIDENCE_ONLY | AKS · 강달영 | `source-candidate:6b70dd180440c3e16e52` |
+| EVIDENCE_ONLY | AKS · 권동진 | `source-candidate:8f7ade35894be8dd772a` |
+| EVIDENCE_ONLY | AKS · 문학사조 | `source-candidate:454788f3cdb49947a0a2` |
+| EVIDENCE_ONLY | AKS · 백두산등척기 | `source-candidate:cae9ba3ad7ab3a934179` |
+| EVIDENCE_ONLY | AKS · 연정회 | `source-candidate:7a380c674b08e91be867` |
+| EVIDENCE_ONLY | THESAURUS · 신간회 | `source-candidate:e29d52517772c9645c5b` |
+| REJECTED | AKS · 민족주의 | `source-candidate:4d52e675f9f4cda69a4a` |
+| REJECTED | AKS · 민족적 민주주의 | `source-candidate:2fad570be404fa71dc42` |
+| REJECTED | AKS · 신민족주의사학 | `source-candidate:9fb076c663e81efd8555` |
+| REJECTED | AKS · 민족주의비교연구회 사건 | `source-candidate:c9c6c7b1fd2b143aaabb` |
+| REJECTED | AKS · 신민족주의 | `source-candidate:7cf74df51aef7c0caf26` |
+| REJECTED | AKS · 민족주의 사학 | `source-candidate:56d3fd24d4849d33a60a` |
+| REJECTED | AKS · 단군민족주의 | `source-candidate:a2974ba28d6b580e1874` |
+| REJECTED | AKS · 민족개량주의 | `source-candidate:309f359b75480d398a2c` |
+| REJECTED | AKS · 조선민족제일주의 | `source-candidate:45869613862b75f7f010` |
+
+### Canonical 대안
+
+#### 대안 1. 비타협적민족주의(非妥協的民族主義)
+
+- Entity type: `Concept`
+- 동일 실체 후보:
+  - `source-candidate:4d1d4e5afb2a46faa0cb` — THESAURUS · 비타협적민족주의
+  - `source-candidate:bb51add3db7ef2940d3b` — THESAURUS · 비타협적민족주의
+  - `source-candidate:5079f2649f881e158141` — THESAURUS · 비타협적민족주의
+- 판정 근거: 문제 문맥 표본은 없으나 canonical term 자체가 비타협적민족주의이며, 세 THESAURUS 원천은 모두 한자 非妥協的民族主義, 일제시기, ‘절대적 독립을 원칙으로 하는 부르주아 민족주의 운동 노선’이라는 동일한 정의를 직접 제시한다. 분류 체계만 다를 뿐 같은 일제시기 정치·독립운동 사상 노선을 설명한다.
+
+### Evidence only
+
+- `source-candidate:6b70dd180440c3e16e52` — AKS · 강달영
+- `source-candidate:8f7ade35894be8dd772a` — AKS · 권동진
+- `source-candidate:454788f3cdb49947a0a2` — AKS · 문학사조
+- `source-candidate:cae9ba3ad7ab3a934179` — AKS · 백두산등척기
+- `source-candidate:7a380c674b08e91be867` — AKS · 연정회
+- `source-candidate:e29d52517772c9645c5b` — THESAURUS · 신간회
+
+### Rejected
+
+- `source-candidate:4d52e675f9f4cda69a4a` — AKS · 민족주의
+- `source-candidate:2fad570be404fa71dc42` — AKS · 민족적 민주주의
+- `source-candidate:9fb076c663e81efd8555` — AKS · 신민족주의사학
+- `source-candidate:c9c6c7b1fd2b143aaabb` — AKS · 민족주의비교연구회 사건
+- `source-candidate:7cf74df51aef7c0caf26` — AKS · 신민족주의
+- `source-candidate:56d3fd24d4849d33a60a` — AKS · 민족주의 사학
+- `source-candidate:a2974ba28d6b580e1874` — AKS · 단군민족주의
+- `source-candidate:309f359b75480d398a2c` — AKS · 민족개량주의
+- `source-candidate:45869613862b75f7f010` — AKS · 조선민족제일주의
+
+### Ambiguous
+
+- 없음
+
+<details>
+<summary><strong>후보 18개의 원천 문맥 펼치기</strong></summary>
+
+#### 후보 1. 비타협적민족주의 · THESAURUS
+
+- Candidate ID: `source-candidate:4d1d4e5afb2a46faa0cb`
+- 현재 분류: **CANONICAL · 비타협적민족주의(非妥協的民族主義)**
+- Source record ID: `THESAURUS:TERM:21000675:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 非妥協的民族主義
+- 시대: 일제시기
+- 원천 문맥:
+  - `term_name`: 비타협적민족주의
+  - `hanja`: 非妥協的民族主義
+  - `era`: 일제시기
+  - `thesaurus_category`: 정치·행정·법제>정치사상·정책
+  - `description`: 일제시기에 절대적 독립을 원칙으로 하는 부르주아 민족주의 운동 노선.
+  - `term_year`: ?-?
+
+#### 후보 2. 비타협적민족주의 · THESAURUS
+
+- Candidate ID: `source-candidate:bb51add3db7ef2940d3b`
+- 현재 분류: **CANONICAL · 비타협적민족주의(非妥協的民族主義)**
+- Source record ID: `THESAURUS:TERM:4782:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 非妥協的民族主義
+- 시대: 일제시기
+- 원천 문맥:
+  - `term_name`: 비타협적민족주의
+  - `hanja`: 非妥協的民族主義
+  - `era`: 일제시기
+  - `thesaurus_category`: 사회운동·독립운동>독립운동>민족주의운동(독립)
+  - `description`: 일제시기에 절대적 독립을 원칙으로 하는 부르주아 민족주의 운동 노선.
+  - `term_year`: ?-?
+
+#### 후보 3. 비타협적민족주의 · THESAURUS
+
+- Candidate ID: `source-candidate:5079f2649f881e158141`
+- 현재 분류: **CANONICAL · 비타협적민족주의(非妥協的民族主義)**
+- Source record ID: `THESAURUS:TERM:4783:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 非妥協的民族主義
+- 시대: 일제시기
+- 원천 문맥:
+  - `term_name`: 비타협적민족주의
+  - `hanja`: 非妥協的民族主義
+  - `era`: 일제시기
+  - `thesaurus_category`: 사회운동·독립운동>사회사상
+  - `description`: 일제시기에 절대적 독립을 원칙으로 하는 부르주아 민족주의 운동 노선.
+  - `term_year`: ?-?
+
+#### 후보 4. 강달영 · AKS
+
+- Candidate ID: `source-candidate:6b70dd180440c3e16e52`
+- 현재 분류: **EVIDENCE_ONLY**
+- Source record ID: `AKS:ARTICLE:E0001027:sha256-704d8ea620c542f5`
+- Entity type: `Person`
+- 한자: 姜達永
+- 시대: 근대, 개항기, 일제강점기
+- 원천 문맥:
+  - `headword`: 강달영
+  - `origin`: 姜達永
+  - `headword_origin`: 강달영(姜達永)
+  - `primary_type`: 인물/근현대 인물
+  - `era`: 근대/개항기 | 근대/일제강점기
+  - `definition`: 일제강점기 때, 조선노농총동맹 중앙위원, 제2차 조선공산당 책임비서 등을 역임한 {사회주의 운동가}.
+  - `snippet`: 정치목표는 공산당의 영도하에 사회·민족 진영을 통합하여 국민당을 조직하는 것이었다. 강달영은 비타협적 민족주의자만의 대회를 만주지방에서 소집하여 국민당을 조직하고, 그 본부를 해외에, 지부를 국내에 두고 공
+
+#### 후보 5. 권동진 · AKS
+
+- Candidate ID: `source-candidate:8f7ade35894be8dd772a`
+- 현재 분류: **EVIDENCE_ONLY**
+- Source record ID: `AKS:ARTICLE:E0006883:sha256-704d8ea620c542f5`
+- Entity type: `Person`
+- 한자: 權東鎭, 實菴, 愛堂, 憂堂
+- 시대: 조선, 조선 후기, 근대, 현대
+- 원천 문맥:
+  - `headword`: 권동진
+  - `aliases`: 실암(實菴), 애당(愛堂), 우당(憂堂)
+  - `origin`: 權東鎭
+  - `headword_origin`: 권동진(權東鎭)
+  - `primary_type`: 인물/근현대 인물
+  - `era`: 조선/조선 후기 | 근대 | 현대
+  - `definition`: 천도교 지도자이자 민족 대표의 한 사람으로서 「3 · 1독립선언서」에 서명한 독립운동가.
+  - `snippet`: 라 거듭되는 분화를 겪었다. 이때 천도교 구파 지도자로서 자치운동을 도모하는 천도교 신파와 달리 비타협적 민족주의 노선을 걸었다. 천도교 구파가 1926년부터 사회주의 세력과 연대하여 [6 · 10만세운동](E00
+
+#### 후보 6. 문학사조 · AKS
+
+- Candidate ID: `source-candidate:454788f3cdb49947a0a2`
+- 현재 분류: **EVIDENCE_ONLY**
+- Source record ID: `AKS:ARTICLE:E0019736:sha256-704d8ea620c542f5`
+- Entity type: `Concept`
+- 한자: 文學思潮
+- 시대: 현대
+- 원천 문맥:
+  - `headword`: 문학사조
+  - `origin`: 文學思潮
+  - `headword_origin`: 문학사조(文學思潮)
+  - `primary_type`: 개념
+  - `era`: 현대
+  - `definition`: 문학작품에 담긴 각 시대의 총체적 또는 주도적 사상의 경향을 가리키는 사조(思潮). 문예사조.
+  - `snippet`: 행하면서, 한편 개인적 자아와 그 서정이 미약한 대로 표출되기 시작한다. 신채호·박은식(朴殷植) 등의 비타협적 민족주의 논조, 한용운(韓龍雲)의 불교개혁을 골격으로 한 전통지향, 최남선(崔南善)·이광수(李光洙) 등의 문화적
+
+#### 후보 7. 백두산등척기 · AKS
+
+- Candidate ID: `source-candidate:cae9ba3ad7ab3a934179`
+- 현재 분류: **EVIDENCE_ONLY**
+- Source record ID: `AKS:ARTICLE:E0022053:sha256-704d8ea620c542f5`
+- Entity type: `Work`
+- 한자: 白頭山登陟記
+- 시대: 근대, 일제강점기
+- 원천 문맥:
+  - `headword`: 백두산등척기
+  - `origin`: 白頭山登陟記
+  - `headword_origin`: 백두산등척기(白頭山登陟記)
+  - `primary_type`: 작품/문학
+  - `era`: 근대/일제강점기
+  - `definition`: 1930년, 안재홍(安在鴻)이 『조선일보』에 연재한 백두산 기행문.
+  - `snippet`: 6772)부터 일제 말 조선어학회 사건까지 민족 운동에 관여하여 무려 9차례에 걸쳐 옥고를 치룬 비타협적 민족주의자다. [일제시기](E0047318) [신간회](E0032606) 결성을 주도하고 해방 후에도 초계급
+
+#### 후보 8. 연정회 · AKS
+
+- Candidate ID: `source-candidate:7a380c674b08e91be867`
+- 현재 분류: **EVIDENCE_ONLY**
+- Source record ID: `AKS:ARTICLE:E0036904:sha256-704d8ea620c542f5`
+- Entity type: `Organization`
+- 한자: 硏政會
+- 시대: 근대, 일제강점기
+- 원천 문맥:
+  - `headword`: 연정회
+  - `origin`: 硏政會
+  - `headword_origin`: 연정회(硏政會)
+  - `primary_type`: 단체
+  - `era`: 근대/일제강점기
+  - `definition`: 1923년 말부터 민족주의 계열의 일부 세력들이 정치운동의 일환으로 추진했던 자치운동단체.
+  - `snippet`: 면서 두 방향의 민족운동이 두드러진 성과를 거두지 못하자, 민족운동 계열은 절대 독립을 지향하던 '비타협적 민족주의자'와 자력(自力) 독립이 어렵다는 인식 아래 식민지 조선의 내정(內政)을 확보하자는 '타협적 민족주의
+
+#### 후보 9. 신간회 · THESAURUS
+
+- Candidate ID: `source-candidate:e29d52517772c9645c5b`
+- 현재 분류: **EVIDENCE_ONLY**
+- Source record ID: `THESAURUS:TERM:5883:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 新幹會
+- 시대: 일제시기
+- 원천 문맥:
+  - `term_name`: 신간회
+  - `hanja`: 新幹會
+  - `era`: 일제시기
+  - `thesaurus_category`: 사회운동·독립운동>독립운동>통일전선운동
+  - `description`: 1927년 서울에서 조직된 비타협적 민족주의자들과 사회주의자들의 반일통일전선조직.
+  - `term_year`: 1927-1931
+
+#### 후보 10. 민족주의 · AKS
+
+- Candidate ID: `source-candidate:4d52e675f9f4cda69a4a`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0020272:sha256-704d8ea620c542f5`
+- Entity type: `Concept`
+- 한자: 民族主義
+- 시대: 현대
+- 원천 문맥:
+  - `headword`: 민족주의
+  - `origin`: 民族主義
+  - `headword_origin`: 민족주의(民族主義)
+  - `primary_type`: 개념
+  - `era`: 현대
+  - `definition`: 민족을 구성하고 통합하며 민족 단위의 국가 형성을 위한 정치사상.
+
+#### 후보 11. 민족적 민주주의 · AKS
+
+- Candidate ID: `source-candidate:2fad570be404fa71dc42`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0073403:sha256-704d8ea620c542f5`
+- Entity type: `Concept`
+- 한자: 民族的, 民主主義
+- 시대: 현대
+- 원천 문맥:
+  - `headword`: 민족적 민주주의
+  - `origin`: 民族的 民主主義
+  - `headword_origin`: 민족적 민주주의(民族的 民主主義)
+  - `primary_type`: 개념
+  - `era`: 현대
+  - `definition`: 5·16 군사정변 이후 민족주의를 강조하면서 박정희 정권이 내세운 정치 이데올로기.
+
+#### 후보 12. 신민족주의사학 · AKS
+
+- Candidate ID: `source-candidate:9fb076c663e81efd8555`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0032972:sha256-704d8ea620c542f5`
+- Entity type: `Concept`
+- 한자: 新民族主義史學
+- 시대: 현대
+- 원천 문맥:
+  - `headword`: 신민족주의사학
+  - `origin`: 新民族主義史學
+  - `headword_origin`: 신민족주의사학(新民族主義史學)
+  - `primary_type`: 개념
+  - `era`: 현대
+  - `definition`: 해방 이후 민족주의사학의 역할 변화에 따라 새로운 진로를 모색하는 과정에서 나타난 한국 역사학계의 학문사조.
+
+#### 후보 13. 민족주의비교연구회 사건 · AKS
+
+- Candidate ID: `source-candidate:c9c6c7b1fd2b143aaabb`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0073404:sha256-704d8ea620c542f5`
+- Entity type: `Event`
+- 한자: 民族主義比較硏究會, 事件
+- 시대: 현대
+- 원천 문맥:
+  - `headword`: 민족주의비교연구회 사건
+  - `aliases`: 민비연사건
+  - `origin`: 民族主義比較硏究會 事件
+  - `headword_origin`: 민족주의비교연구회 사건(民族主義比較硏究會 事件)
+  - `primary_type`: 사건/사건·사고
+  - `era`: 현대
+  - `definition`: 1967년 중앙정보부가 서울대학교의 ‘민족주의비교연구회’를 반국가단체로 규정하고 관련자들을 구속한 사건.
+
+#### 후보 14. 신민족주의 · AKS
+
+- Candidate ID: `source-candidate:7cf74df51aef7c0caf26`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0032971:sha256-704d8ea620c542f5`
+- Entity type: `Concept`
+- 한자: 新民族主義
+- 시대: 현대
+- 원천 문맥:
+  - `headword`: 신민족주의
+  - `origin`: 新民族主義
+  - `headword_origin`: 신민족주의(新民族主義)
+  - `primary_type`: 개념
+  - `era`: 현대
+  - `definition`: 해방 이후부터 안재홍이 통일민족국가 건설을 위하여 주창한 정치적 이념.
+
+#### 후보 15. 민족주의 사학 · AKS
+
+- Candidate ID: `source-candidate:56d3fd24d4849d33a60a`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0020273:sha256-704d8ea620c542f5`
+- Entity type: `Concept`
+- 한자: 民族主義, 史學
+- 시대: 근대, 일제강점기
+- 원천 문맥:
+  - `headword`: 민족주의 사학
+  - `origin`: 民族主義 史學
+  - `headword_origin`: 민족주의 사학(民族主義 史學)
+  - `primary_type`: 개념
+  - `era`: 근대/일제강점기
+  - `definition`: 식민치하의 현실인식에 기초해, 일제의 식민사학에 정면으로 대결하면서 한민족의 주체적인 역사상을 수립하고자 했던 민족진영의 역사학.
+
+#### 후보 16. 단군민족주의 · AKS
+
+- Candidate ID: `source-candidate:a2974ba28d6b580e1874`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0076108:sha256-704d8ea620c542f5`
+- Entity type: `Concept`
+- 한자: 檀君民族主義
+- 시대: 현대
+- 원천 문맥:
+  - `headword`: 단군민족주의
+  - `origin`: 檀君民族主義
+  - `headword_origin`: 단군민족주의(檀君民族主義)
+  - `primary_type`: 개념
+  - `era`: 현대
+  - `definition`: 단군의 고조선 건국을 민족의 출발점으로 보고 단군 자손이라는 정체성에 기초하여 민족적 결속과 자주독립 및 발전을 도모하려는 종교운동. 정치사상.
+
+#### 후보 17. 민족개량주의 · AKS
+
+- Candidate ID: `source-candidate:309f359b75480d398a2c`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0066424:sha256-704d8ea620c542f5`
+- Entity type: `Concept`
+- 한자: 民族改良主義
+- 시대: 근대, 일제강점기
+- 원천 문맥:
+  - `headword`: 민족개량주의
+  - `origin`: 民族改良主義
+  - `headword_origin`: 민족개량주의(民族改良主義)
+  - `primary_type`: 개념
+  - `era`: 근대/일제강점기
+  - `definition`: 일제강점기, 일본 제국주의의 관점에서 민족성을 개량해야 한다고 주장한 개량주의. 역사용어.
+
+#### 후보 18. 조선민족제일주의 · AKS
+
+- Candidate ID: `source-candidate:45869613862b75f7f010`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0070705:sha256-704d8ea620c542f5`
+- Entity type: `Concept`
+- 한자: 朝鮮民族第一主義
+- 시대: 현대
+- 원천 문맥:
+  - `headword`: 조선민족제일주의
+  - `aliases`: 우리민족제일주의
+  - `origin`: 朝鮮民族第一主義
+  - `headword_origin`: 조선민족제일주의(朝鮮民族第一主義)
+  - `primary_type`: 개념
+  - `era`: 현대
+  - `definition`: 1986년 김정일에 의해 처음 제기된 북한의 민족우월주의론. 우리민족제일주의.
+
+</details>
+
+### 사람 검수 입력
+
+- Manual status: `PENDING`
+- Manual reason: (미입력)
+- Reviewer: (미입력)
+- Reviewed at: (미입력)
+
+[목록으로 돌아가기](#case-목록)
+
+---
+
+<a id="case-046"></a>
+## 046. 민족주의사학 · PENDING
+
+- Case ID: `related-resolution-case:d76fdfbf1ecc7ac8d1da`
+- 모델 게이트: `NEEDS_MANUAL_REVIEW`
+- 검증 사유: `INSUFFICIENT_PAIR_EVIDENCE`
+- 후보 수: 8개
+
+### 모델 판정 사유
+
+> 문제 문맥 표본은 제공되지 않았으므로 canonical term의 정확한 명칭과 정의를 기준으로 판정했다. 정확히 같은 명칭·한자와 식민사학 대항이라는 정의를 공유하는 두 원천만 target 개념으로 병합했다. 신민족주의사학과 민중사학은 각각 별도 학문 경향이지만 원천 문맥에서 민족주의사학과의 변화·가교 관계를 명시하므로 evidence-only로 분류했다. 민족주의 및 신민족주의는 표제어 일부가 겹치거나 파생된 개념일 뿐, 역사학 사조인 target을 직접 설명하거나 관계를 제시하지 않아 identity에서 제외했다.
+
+### 현재 후보 분류
+
+| 역할 | 원천·표제 | Candidate ID |
+|---|---|---|
+| CANONICAL · 민족주의사학 | AKS · 민족주의 사학 | `source-candidate:18ab4860c7173ff110e8` |
+| CANONICAL · 민족주의사학 | THESAURUS · 민족주의사학 | `source-candidate:6693a33cfa9415344eaa` |
+| EVIDENCE_ONLY | THESAURUS · 신민족주의사학 | `source-candidate:3dfe38359ddd915e35b0` |
+| EVIDENCE_ONLY | THESAURUS · 민중사학 | `source-candidate:fab8bb482811bc6bacd0` |
+| EVIDENCE_ONLY | AKS · 신민족주의사학 | `source-candidate:1f52202ea039f64fb075` |
+| REJECTED | THESAURUS · 민족주의 | `source-candidate:89141cc2eb05b1bc0873` |
+| REJECTED | AKS · 민족주의 | `source-candidate:db66974a8f11922f8489` |
+| REJECTED | THESAURUS · 신민족주의 | `source-candidate:cae21e336af4466f125f` |
+
+### Canonical 대안
+
+#### 대안 1. 민족주의사학
+
+- Entity type: `Concept`
+- 동일 실체 후보:
+  - `source-candidate:18ab4860c7173ff110e8` — AKS · 민족주의 사학
+  - `source-candidate:6693a33cfa9415344eaa` — THESAURUS · 민족주의사학
+- 판정 근거: 문제 문맥 표본은 없으나 canonical term 자체가 ‘민족주의사학’이다. 두 원천은 모두 民族主義史學을 표제로 하며, 일제강점기 식민사학에 맞서 한국사·민족의 주체성과 자주적 역사상을 강조한 역사학이라는 동일한 개념을 직접 정의한다.
+
+### Evidence only
+
+- `source-candidate:3dfe38359ddd915e35b0` — THESAURUS · 신민족주의사학
+- `source-candidate:fab8bb482811bc6bacd0` — THESAURUS · 민중사학
+- `source-candidate:1f52202ea039f64fb075` — AKS · 신민족주의사학
+
+### Rejected
+
+- `source-candidate:89141cc2eb05b1bc0873` — THESAURUS · 민족주의
+- `source-candidate:db66974a8f11922f8489` — AKS · 민족주의
+- `source-candidate:cae21e336af4466f125f` — THESAURUS · 신민족주의
+
+### Ambiguous
+
+- 없음
+
+<details>
+<summary><strong>후보 8개의 원천 문맥 펼치기</strong></summary>
+
+#### 후보 1. 민족주의 사학 · AKS
+
+- Candidate ID: `source-candidate:18ab4860c7173ff110e8`
+- 현재 분류: **CANONICAL · 민족주의사학**
+- Source record ID: `AKS:ARTICLE:E0020273:sha256-704d8ea620c542f5`
+- Entity type: `Concept`
+- 한자: 民族主義, 史學
+- 시대: 근대, 일제강점기
+- 원천 문맥:
+  - `headword`: 민족주의 사학
+  - `origin`: 民族主義 史學
+  - `headword_origin`: 민족주의 사학(民族主義 史學)
+  - `primary_type`: 개념
+  - `era`: 근대/일제강점기
+  - `definition`: 식민치하의 현실인식에 기초해, 일제의 식민사학에 정면으로 대결하면서 한민족의 주체적인 역사상을 수립하고자 했던 민족진영의 역사학.
+
+#### 후보 2. 민족주의사학 · THESAURUS
+
+- Candidate ID: `source-candidate:6693a33cfa9415344eaa`
+- 현재 분류: **CANONICAL · 민족주의사학**
+- Source record ID: `THESAURUS:TERM:4085:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 民族主義史學
+- 시대: 근대-현대
+- 원천 문맥:
+  - `term_name`: 민족주의사학
+  - `hanja`: 民族主義史學
+  - `era`: 근대-현대
+  - `thesaurus_category`: 학술·과학기술>인문과학
+  - `description`: 일제 강점기 식민사학에 대항하여 민족의 우수성과 한국사의 주체적 발전을 강조한 역사학.
+  - `term_year`: ?-?
+
+#### 후보 3. 신민족주의사학 · THESAURUS
+
+- Candidate ID: `source-candidate:3dfe38359ddd915e35b0`
+- 현재 분류: **EVIDENCE_ONLY**
+- Source record ID: `THESAURUS:TERM:14688336:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 新民族主義史學
+- 시대: 현대
+- 원천 문맥:
+  - `term_name`: 신민족주의사학
+  - `hanja`: 新民族主義史學
+  - `era`: 현대
+  - `thesaurus_category`: 학술·과학기술>인문과학
+  - `description`: 1945년 광복 이후 민족주의사학의 새로운 진로를 모색하는 과정에서 나타난 한국 역사학계의 한 경향. 안재홍(安在鴻)·손진태(孫晉泰)·이인영(李仁榮)·조윤제(趙潤濟) 등이 이에 속함.
+  - `term_year`: 1945-?
+
+#### 후보 4. 민중사학 · THESAURUS
+
+- Candidate ID: `source-candidate:fab8bb482811bc6bacd0`
+- 현재 분류: **EVIDENCE_ONLY**
+- Source record ID: `THESAURUS:TERM:14689312:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 民衆史學
+- 시대: 현대
+- 원천 문맥:
+  - `term_name`: 민중사학
+  - `hanja`: 民衆史學
+  - `era`: 현대
+  - `thesaurus_category`: 학술·과학기술>인문과학
+  - `description`: 1980년대 초반에 등장한 민중적 민족주의사학을 가교로 하여 1980년대 중반부터 발전한 한국 역사학계의 한 학문적 경향.
+  - `term_year`: ?-?
+
+#### 후보 5. 신민족주의사학 · AKS
+
+- Candidate ID: `source-candidate:1f52202ea039f64fb075`
+- 현재 분류: **EVIDENCE_ONLY**
+- Source record ID: `AKS:ARTICLE:E0032972:sha256-704d8ea620c542f5`
+- Entity type: `Concept`
+- 한자: 新民族主義史學
+- 시대: 현대
+- 원천 문맥:
+  - `headword`: 신민족주의사학
+  - `origin`: 新民族主義史學
+  - `headword_origin`: 신민족주의사학(新民族主義史學)
+  - `primary_type`: 개념
+  - `era`: 현대
+  - `definition`: 해방 이후 민족주의사학의 역할 변화에 따라 새로운 진로를 모색하는 과정에서 나타난 한국 역사학계의 학문사조.
+
+#### 후보 6. 민족주의 · THESAURUS
+
+- Candidate ID: `source-candidate:89141cc2eb05b1bc0873`
+- 현재 분류: **REJECTED**
+- Source record ID: `THESAURUS:TERM:39849877:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 民族主義
+- 시대: (없음)
+- 원천 문맥:
+  - `term_name`: 민족주의
+  - `hanja`: 民族主義
+  - `era`: 통시대
+  - `thesaurus_category`: 정치·행정·법제>정치사상·정책
+  - `description`: 민족에 기반을 둔 국가의 형성을 지상목표로 하고, 이것을 창건(創建)·유지·확대하려고 하는 민족의 정신상태나 정책원리 또는 그 활동.
+  - `term_year`: ?-?
+
+#### 후보 7. 민족주의 · AKS
+
+- Candidate ID: `source-candidate:db66974a8f11922f8489`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0020272:sha256-704d8ea620c542f5`
+- Entity type: `Concept`
+- 한자: 民族主義
+- 시대: 현대
+- 원천 문맥:
+  - `headword`: 민족주의
+  - `origin`: 民族主義
+  - `headword_origin`: 민족주의(民族主義)
+  - `primary_type`: 개념
+  - `era`: 현대
+  - `definition`: 민족을 구성하고 통합하며 민족 단위의 국가 형성을 위한 정치사상.
+
+#### 후보 8. 신민족주의 · THESAURUS
+
+- Candidate ID: `source-candidate:cae21e336af4466f125f`
+- 현재 분류: **REJECTED**
+- Source record ID: `THESAURUS:TERM:5940:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 新民族主義
+- 시대: 현대
+- 원천 문맥:
+  - `term_name`: 신민족주의
+  - `hanja`: 新民族主義
+  - `era`: 현대
+  - `thesaurus_category`: 정치·행정·법제>정치사상·정책
+  - `description`: 1945년 8·15 이후 안재홍(安在鴻)이 국가 건설의 방향과 성격에 대하여 내세운 민족주의 이념.
+  - `term_year`: 1945-?
+
+</details>
+
+### 사람 검수 입력
+
+- Manual status: `PENDING`
+- Manual reason: (미입력)
+- Reviewer: (미입력)
+- Reviewed at: (미입력)
+
+[목록으로 돌아가기](#case-목록)
+
+---
+
+<a id="case-047"></a>
+## 047. 녹도목 · PENDING
+
+- Case ID: `related-resolution-case:6d5e04514f487ac39ec9`
+- 모델 게이트: `NEEDS_MANUAL_REVIEW`
+- 검증 사유: `ENTITY_TYPE_REVIEW_REQUIRED`
+- 후보 수: 7개
+
+### 모델 판정 사유
+
+> 문제 문맥 표본은 제공되지 않았지만, 정확 일치 후보인 녹도목(祿都目)은 조선시대 체아직의 정기 도목 제도를 직접 정의하므로 canonical term의 실체로 판정했다. 나머지는 녹도라는 섬 지명, 도목을 포함하는 다른 문헌·장부·별도 인사 제도, 또는 지도 목판으로서 명칭 일부나 시대만 유사하다. 이들 원천에는 녹도목 자체와의 구체적인 관계도 제시되지 않아 identity 또는 evidence-only로 분류하지 않았다.
+
+### 현재 후보 분류
+
+| 역할 | 원천·표제 | Candidate ID |
+|---|---|---|
+| CANONICAL · 녹도목(祿都目) | THESAURUS · 녹도목 | `source-candidate:454bb10dc170b833a507` |
+| REJECTED | AKS · 녹도 | `source-candidate:1f19c541d41b778950b4` |
+| REJECTED | AKS · 소록도 | `source-candidate:afb9248270da3cfa6853` |
+| REJECTED | AKS · 수선전도 목판 | `source-candidate:b5789656c4e43876778b` |
+| REJECTED | AKS · 군도목 | `source-candidate:c305f05fe2c73419bd23` |
+| REJECTED | AKS · 단도목 | `source-candidate:c8b85c345146bfbf620c` |
+| REJECTED | AKS · 도목장 | `source-candidate:11e6a10f65d788d74e36` |
+
+### Canonical 대안
+
+#### 대안 1. 녹도목(祿都目)
+
+- Entity type: `Concept`
+- 동일 실체 후보:
+  - `source-candidate:454bb10dc170b833a507` — THESAURUS · 녹도목
+- 판정 근거: 문제 문맥 표본은 없으나 canonical term과 정확히 일치하고 한자도 祿都目이다. 이 원천은 조선시대 체아직에 대해 해마다 네 차례 시행한 도목이라는 인사 제도를 직접 정의하므로, 용어가 가리키는 제도·개념 실체의 직접 설명이다.
+
+### Evidence only
+
+- 없음
+
+### Rejected
+
+- `source-candidate:1f19c541d41b778950b4` — AKS · 녹도
+- `source-candidate:afb9248270da3cfa6853` — AKS · 소록도
+- `source-candidate:b5789656c4e43876778b` — AKS · 수선전도 목판
+- `source-candidate:c305f05fe2c73419bd23` — AKS · 군도목
+- `source-candidate:c8b85c345146bfbf620c` — AKS · 단도목
+- `source-candidate:11e6a10f65d788d74e36` — AKS · 도목장
+
+### Ambiguous
+
+- 없음
+
+<details>
+<summary><strong>후보 7개의 원천 문맥 펼치기</strong></summary>
+
+#### 후보 1. 녹도목 · THESAURUS
+
+- Candidate ID: `source-candidate:454bb10dc170b833a507`
+- 현재 분류: **CANONICAL · 녹도목(祿都目)**
+- Source record ID: `THESAURUS:TERM:35670264:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 祿都目
+- 시대: 조선시대
+- 원천 문맥:
+  - `term_name`: 녹도목
+  - `hanja`: 祿都目
+  - `era`: 조선시대
+  - `thesaurus_category`: 정치·행정·법제>인사
+  - `description`: 조선시대 체아직(遞兒職)에 대하여 해마다 네 차례 행하는 도목.
+  - `term_year`: ?-?
+
+#### 후보 2. 녹도 · AKS
+
+- Candidate ID: `source-candidate:1f19c541d41b778950b4`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0012961:sha256-704d8ea620c542f5`
+- Entity type: `Place`
+- 한자: 鹿島
+- 시대: (없음)
+- 원천 문맥:
+  - `headword`: 녹도
+  - `origin`: 鹿島
+  - `headword_origin`: 녹도(鹿島)
+  - `primary_type`: 지명/자연지명
+  - `era`: 미상
+  - `definition`: 충청남도 보령시 오천면 녹도리에 속하는 섬.
+
+#### 후보 3. 소록도 · AKS
+
+- Candidate ID: `source-candidate:afb9248270da3cfa6853`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0030027:sha256-704d8ea620c542f5`
+- Entity type: `Place`
+- 한자: 小鹿島
+- 시대: (없음)
+- 원천 문맥:
+  - `headword`: 소록도
+  - `aliases`: 녹도
+  - `origin`: 小鹿島
+  - `headword_origin`: 소록도(小鹿島)
+  - `primary_type`: 지명/자연지명
+  - `era`: 미상
+  - `definition`: 전라남도 고흥군 도양읍에 속하는 섬.
+
+#### 후보 4. 수선전도 목판 · AKS
+
+- Candidate ID: `source-candidate:b5789656c4e43876778b`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0031459:sha256-704d8ea620c542f5`
+- Entity type: `Work`
+- 한자: 首善全圖, 木板
+- 시대: 조선, 조선 후기
+- 원천 문맥:
+  - `headword`: 수선전도 목판
+  - `origin`: 首善全圖 木板
+  - `headword_origin`: 수선전도 목판(首善全圖 木板)
+  - `primary_type`: 문헌/고서
+  - `era`: 조선/조선 후기
+  - `definition`: 조선 후기, 지리학자 김정호가 제작한 것으로 추정되는 서울 지도 목판.
+
+#### 후보 5. 군도목 · AKS
+
+- Candidate ID: `source-candidate:c305f05fe2c73419bd23`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0006601:sha256-704d8ea620c542f5`
+- Entity type: `Work`
+- 한자: 群都目
+- 시대: 근대, 개항기
+- 원천 문맥:
+  - `headword`: 군도목
+  - `aliases`: 군두목
+  - `origin`: 群都目
+  - `headword_origin`: 군도목(群都目)
+  - `primary_type`: 문헌/고서
+  - `era`: 근대/개항기
+  - `definition`: 1896년에 쓰여진 편자 미상의 국어 어휘집.
+
+#### 후보 6. 단도목 · AKS
+
+- Candidate ID: `source-candidate:c8b85c345146bfbf620c`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0013562:sha256-704d8ea620c542f5`
+- Entity type: `Concept`
+- 한자: 單都目
+- 시대: 조선, 조선 전기
+- 원천 문맥:
+  - `headword`: 단도목
+  - `origin`: 單都目
+  - `headword_origin`: 단도목(單都目)
+  - `primary_type`: 제도/법령·제도
+  - `era`: 조선/조선 전기
+  - `definition`: 조선 초기 일년에 한 번씩 정기적으로 시행한 관리들의 인사 제도.
+
+#### 후보 7. 도목장 · AKS
+
+- Candidate ID: `source-candidate:11e6a10f65d788d74e36`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0015630:sha256-704d8ea620c542f5`
+- Entity type: `Concept`
+- 한자: 都目狀
+- 시대: 조선, 조선 전기, 조선 후기
+- 원천 문맥:
+  - `headword`: 도목장
+  - `origin`: 都目狀
+  - `headword_origin`: 도목장(都目狀)
+  - `primary_type`: 제도/법령·제도
+  - `era`: 조선/조선 전기 | 조선/조선 후기
+  - `definition`: 조선시대 지방에 거주하는 공노비의 총괄장부.
+
+</details>
+
+### 사람 검수 입력
+
+- Manual status: `PENDING`
+- Manual reason: (미입력)
+- Reviewer: (미입력)
+- Reviewed at: (미입력)
+
+[목록으로 돌아가기](#case-목록)
+
+---
+
+<a id="case-048"></a>
+## 048. 도목채 · PENDING
+
+- Case ID: `related-resolution-case:1d85650117e720fd9f03`
+- 모델 게이트: `NEEDS_MANUAL_REVIEW`
+- 검증 사유: `ENTITY_TYPE_REVIEW_REQUIRED`
+- 후보 수: 7개
+
+### 모델 판정 사유
+
+> 문제 문맥 표본은 없지만 canonical term 도목채와 정확히 일치하고 한자 및 조선시대 비용 지급 기능을 직접 제시한 THESAURUS 원천만 도목채 자체로 확인된다. 나머지는 목채집·지도 목판·어휘집·도목 관련 별도 인사 제도·노비 장부로서, '목채' 또는 '도목'의 부분 문자열 및 주제상 인접성만 있을 뿐 도목채와의 명시적이고 유용한 관계를 서술하지 않으므로 canonical identity 또는 evidence-only로 포함하지 않았다.
+
+### 현재 후보 분류
+
+| 역할 | 원천·표제 | Candidate ID |
+|---|---|---|
+| CANONICAL · 도목채(都目債) | THESAURUS · 도목채 | `source-candidate:64c9c2f28ec4975fe602` |
+| REJECTED | AKS · 투막집 | `source-candidate:df04fd5bec6bfdb028d0` |
+| REJECTED | AKS · 수선전도 목판 | `source-candidate:51882dfc5a1c5357eb74` |
+| REJECTED | AKS · 군도목 | `source-candidate:93074117c0d974b5888c` |
+| REJECTED | AKS · 단도목 | `source-candidate:5be3f72e9372a3df0669` |
+| REJECTED | AKS · 도목장 | `source-candidate:127ca0c62ba5c380cbbb` |
+| REJECTED | AKS · 양도목 | `source-candidate:f769fb55cddf8de9c52f` |
+
+### Canonical 대안
+
+#### 대안 1. 도목채(都目債)
+
+- Entity type: `Concept`
+- 동일 실체 후보:
+  - `source-candidate:64c9c2f28ec4975fe602` — THESAURUS · 도목채
+- 판정 근거: 정확히 일치하는 명칭과 한자 都目債를 제시하며, 조선시대 도목 작성에 드는 비용으로 지급한 물품·돈이라는 도목채 자체의 정의를 직접 설명한다.
+
+### Evidence only
+
+- 없음
+
+### Rejected
+
+- `source-candidate:df04fd5bec6bfdb028d0` — AKS · 투막집
+- `source-candidate:51882dfc5a1c5357eb74` — AKS · 수선전도 목판
+- `source-candidate:93074117c0d974b5888c` — AKS · 군도목
+- `source-candidate:5be3f72e9372a3df0669` — AKS · 단도목
+- `source-candidate:127ca0c62ba5c380cbbb` — AKS · 도목장
+- `source-candidate:f769fb55cddf8de9c52f` — AKS · 양도목
+
+### Ambiguous
+
+- 없음
+
+<details>
+<summary><strong>후보 7개의 원천 문맥 펼치기</strong></summary>
+
+#### 후보 1. 도목채 · THESAURUS
+
+- Candidate ID: `source-candidate:64c9c2f28ec4975fe602`
+- 현재 분류: **CANONICAL · 도목채(都目債)**
+- Source record ID: `THESAURUS:TERM:9096:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 都目債
+- 시대: 조선시대
+- 원천 문맥:
+  - `term_name`: 도목채
+  - `hanja`: 都目債
+  - `era`: 조선시대
+  - `thesaurus_category`: 정치·행정·법제>인사
+  - `description`: 조선시대 국가에서 벼슬아치들의 성적을 정리한 도목을 작성하는 데 드는 비용으로 지급하는 물품이나 돈.
+  - `term_year`: ?-?
+
+#### 후보 2. 투막집 · AKS
+
+- Candidate ID: `source-candidate:df04fd5bec6bfdb028d0`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0059482:sha256-704d8ea620c542f5`
+- Entity type: `Concept`
+- 한자: (없음)
+- 시대: (없음)
+- 원천 문맥:
+  - `headword`: 투막집
+  - `aliases`: 귀틀집, 목채집, 방틀집, 틀목집
+  - `headword_origin`: 투막집
+  - `primary_type`: 개념
+  - `era`: 미상
+  - `definition`: 둥근 나무를 우물틀［井］ 모양으로 쌓아올려서 벽을 이룬 이룬. 귀틀집·방틀집·목채집·틀목집.
+
+#### 후보 3. 수선전도 목판 · AKS
+
+- Candidate ID: `source-candidate:51882dfc5a1c5357eb74`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0031459:sha256-704d8ea620c542f5`
+- Entity type: `Work`
+- 한자: 首善全圖, 木板
+- 시대: 조선, 조선 후기
+- 원천 문맥:
+  - `headword`: 수선전도 목판
+  - `origin`: 首善全圖 木板
+  - `headword_origin`: 수선전도 목판(首善全圖 木板)
+  - `primary_type`: 문헌/고서
+  - `era`: 조선/조선 후기
+  - `definition`: 조선 후기, 지리학자 김정호가 제작한 것으로 추정되는 서울 지도 목판.
+
+#### 후보 4. 군도목 · AKS
+
+- Candidate ID: `source-candidate:93074117c0d974b5888c`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0006601:sha256-704d8ea620c542f5`
+- Entity type: `Work`
+- 한자: 群都目
+- 시대: 근대, 개항기
+- 원천 문맥:
+  - `headword`: 군도목
+  - `aliases`: 군두목
+  - `origin`: 群都目
+  - `headword_origin`: 군도목(群都目)
+  - `primary_type`: 문헌/고서
+  - `era`: 근대/개항기
+  - `definition`: 1896년에 쓰여진 편자 미상의 국어 어휘집.
+
+#### 후보 5. 단도목 · AKS
+
+- Candidate ID: `source-candidate:5be3f72e9372a3df0669`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0013562:sha256-704d8ea620c542f5`
+- Entity type: `Concept`
+- 한자: 單都目
+- 시대: 조선, 조선 전기
+- 원천 문맥:
+  - `headword`: 단도목
+  - `origin`: 單都目
+  - `headword_origin`: 단도목(單都目)
+  - `primary_type`: 제도/법령·제도
+  - `era`: 조선/조선 전기
+  - `definition`: 조선 초기 일년에 한 번씩 정기적으로 시행한 관리들의 인사 제도.
+
+#### 후보 6. 도목장 · AKS
+
+- Candidate ID: `source-candidate:127ca0c62ba5c380cbbb`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0015630:sha256-704d8ea620c542f5`
+- Entity type: `Concept`
+- 한자: 都目狀
+- 시대: 조선, 조선 전기, 조선 후기
+- 원천 문맥:
+  - `headword`: 도목장
+  - `origin`: 都目狀
+  - `headword_origin`: 도목장(都目狀)
+  - `primary_type`: 제도/법령·제도
+  - `era`: 조선/조선 전기 | 조선/조선 후기
+  - `definition`: 조선시대 지방에 거주하는 공노비의 총괄장부.
+
+#### 후보 7. 양도목 · AKS
+
+- Candidate ID: `source-candidate:f769fb55cddf8de9c52f`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0035464:sha256-704d8ea620c542f5`
+- Entity type: `Concept`
+- 한자: 兩都目
+- 시대: 조선, 조선 전기, 조선 후기
+- 원천 문맥:
+  - `headword`: 양도목
+  - `origin`: 兩都目
+  - `headword_origin`: 양도목(兩都目)
+  - `primary_type`: 제도/법령·제도
+  - `era`: 조선/조선 전기 | 조선/조선 후기
+  - `definition`: 조선시대, 매년 6월 말과 12월 말에 두 번 시행되는 정기 인사행정 제도.
+
+</details>
+
+### 사람 검수 입력
+
+- Manual status: `PENDING`
+- Manual reason: (미입력)
+- Reviewer: (미입력)
+- Reviewed at: (미입력)
+
+[목록으로 돌아가기](#case-목록)
+
+---
+
+<a id="case-049"></a>
+## 049. 단도목 · PENDING
+
+- Case ID: `related-resolution-case:cc1263b07ef54da07f45`
+- 모델 게이트: `NEEDS_MANUAL_REVIEW`
+- 검증 사유: `AMBIGUOUS_SOURCE_REMAINS`
+- 후보 수: 2개
+
+### 모델 판정 사유
+
+> 기출문제 문맥 및 target 식별 단서가 제공되지 않았으므로 canonical target 대안을 제안할 수 없다. 두 후보는 명칭·한자·시대·제도 내용이 일치해 서로 같은 단도목 제도를 가리킬 가능성이 높지만, 후보들 사이의 동일성만으로 그것이 문제 target임을 확정할 수는 없다. 따라서 두 후보 모두 target 귀속 여부가 정보 부족인 AMBIGUOUS로 분류했으며, 별도의 동명·확장 후보를 identity 대안으로 포함하지 않았다.
+
+### 현재 후보 분류
+
+| 역할 | 원천·표제 | Candidate ID |
+|---|---|---|
+| AMBIGUOUS | AKS · 단도목 | `source-candidate:3826d695253b48e9a5d9` |
+| AMBIGUOUS | THESAURUS · 단도목 | `source-candidate:7dc7ed2e74c926a803d0` |
+
+### Canonical 대안
+
+- 없음
+### Evidence only
+
+- 없음
+
+### Rejected
+
+- 없음
+
+### Ambiguous
+
+- `source-candidate:3826d695253b48e9a5d9` — AKS · 단도목
+- `source-candidate:7dc7ed2e74c926a803d0` — THESAURUS · 단도목
+
+<details>
+<summary><strong>후보 2개의 원천 문맥 펼치기</strong></summary>
+
+#### 후보 1. 단도목 · AKS
+
+- Candidate ID: `source-candidate:3826d695253b48e9a5d9`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `AKS:ARTICLE:E0013562:sha256-704d8ea620c542f5`
+- Entity type: `Concept`
+- 한자: 單都目
+- 시대: 조선, 조선 전기
+- 원천 문맥:
+  - `headword`: 단도목
+  - `origin`: 單都目
+  - `headword_origin`: 단도목(單都目)
+  - `primary_type`: 제도/법령·제도
+  - `era`: 조선/조선 전기
+  - `definition`: 조선 초기 일년에 한 번씩 정기적으로 시행한 관리들의 인사 제도.
+
+#### 후보 2. 단도목 · THESAURUS
+
+- Candidate ID: `source-candidate:7dc7ed2e74c926a803d0`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `THESAURUS:TERM:3018:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 單都目
+- 시대: 조선전기
+- 원천 문맥:
+  - `term_name`: 단도목
+  - `hanja`: 單都目
+  - `era`: 조선전기
+  - `thesaurus_category`: 정치·행정·법제>인사
+  - `description`: 조선전기 1년에 한 번 관리들의 고과에 따라 정기적으로 실시하던 인사방법.
+  - `term_year`: 1399-1422
+
+</details>
+
+### 사람 검수 입력
+
+- Manual status: `PENDING`
+- Manual reason: (미입력)
+- Reviewer: (미입력)
+- Reviewed at: (미입력)
+
+[목록으로 돌아가기](#case-목록)
+
+---
+
+<a id="case-050"></a>
+## 050. 도목장 · PENDING
+
+- Case ID: `related-resolution-case:2f05036945ce8307d36e`
+- 모델 게이트: `NEEDS_MANUAL_REVIEW`
+- 검증 사유: `ENTITY_TYPE_REVIEW_REQUIRED`
+- 후보 수: 3개
+
+### 모델 판정 사유
+
+> 도목장(都目狀)을 직접 정의한 두 정확 일치 후보는 같은 조선시대 행정 장부 실체로 묶었다. 목장지도는 조선 후기 지도책이라는 별도 문헌이며, 유사 문자열이나 시대 중첩만으로는 도목장과 동일하거나 관계 있는 실체로 볼 수 없어 제외했다.
+
+### 현재 후보 분류
+
+| 역할 | 원천·표제 | Candidate ID |
+|---|---|---|
+| CANONICAL · 도목장(都目狀) | AKS · 도목장 | `source-candidate:22cba969489a712254ef` |
+| CANONICAL · 도목장(都目狀) | THESAURUS · 도목장 | `source-candidate:3ab9f59135497a8496b7` |
+| REJECTED | THESAURUS · 목장지도 | `source-candidate:62f04d5d4dd13e496dee` |
+
+### Canonical 대안
+
+#### 대안 1. 도목장(都目狀)
+
+- Entity type: `Concept`
+- 동일 실체 후보:
+  - `source-candidate:22cba969489a712254ef` — AKS · 도목장
+  - `source-candidate:3ab9f59135497a8496b7` — THESAURUS · 도목장
+- 판정 근거: 문제 문맥 표본은 없으나 canonical term 자체가 도목장이며, 두 원천은 모두 한자 都目狀과 조선시대 지방 거주 공노비·봉족·호수의 총괄 장부라는 동일한 제도·장부 실체를 직접 설명한다.
+
+### Evidence only
+
+- 없음
+
+### Rejected
+
+- `source-candidate:62f04d5d4dd13e496dee` — THESAURUS · 목장지도
+
+### Ambiguous
+
+- 없음
+
+<details>
+<summary><strong>후보 3개의 원천 문맥 펼치기</strong></summary>
+
+#### 후보 1. 도목장 · AKS
+
+- Candidate ID: `source-candidate:22cba969489a712254ef`
+- 현재 분류: **CANONICAL · 도목장(都目狀)**
+- Source record ID: `AKS:ARTICLE:E0015630:sha256-704d8ea620c542f5`
+- Entity type: `Concept`
+- 한자: 都目狀
+- 시대: 조선, 조선 전기, 조선 후기
+- 원천 문맥:
+  - `headword`: 도목장
+  - `origin`: 都目狀
+  - `headword_origin`: 도목장(都目狀)
+  - `primary_type`: 제도/법령·제도
+  - `era`: 조선/조선 전기 | 조선/조선 후기
+  - `definition`: 조선시대 지방에 거주하는 공노비의 총괄장부.
+
+#### 후보 2. 도목장 · THESAURUS
+
+- Candidate ID: `source-candidate:3ab9f59135497a8496b7`
+- 현재 분류: **CANONICAL · 도목장(都目狀)**
+- Source record ID: `THESAURUS:TERM:3398:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 都目狀
+- 시대: 조선시대
+- 원천 문맥:
+  - `term_name`: 도목장
+  - `hanja`: 都目狀
+  - `era`: 조선시대
+  - `thesaurus_category`: 정치·행정·법제>행정>행정제도
+  - `description`: 조선시대 지방에 거주하는 공노비, 봉족(奉足), 호수(戶首)의 총괄 장부.
+  - `term_year`: ?-?
+
+#### 후보 3. 목장지도 · THESAURUS
+
+- Candidate ID: `source-candidate:62f04d5d4dd13e496dee`
+- 현재 분류: **REJECTED**
+- Source record ID: `THESAURUS:TERM:6305409:sha256-1022516a18f91e61`
+- Entity type: `Work`
+- 한자: 牧場地圖
+- 시대: 조선후기
+- 원천 문맥:
+  - `term_name`: 목장지도
+  - `hanja`: 牧場地圖
+  - `era`: 조선후기
+  - `thesaurus_category`: 서명
+  - `description`: 1663년(현종 4) 허목(許穆)이 지은 목장에 관한 지도책.
+  - `term_year`: 1663
+
+</details>
+
+### 사람 검수 입력
+
+- Manual status: `PENDING`
+- Manual reason: (미입력)
+- Reviewer: (미입력)
+- Reviewed at: (미입력)
+
+[목록으로 돌아가기](#case-목록)
+
+---
+
+<a id="case-051"></a>
+## 051. 봉천여조선변민교역장정 · PENDING
+
+- Case ID: `related-resolution-case:1c87217c8a0cf644d909`
+- 모델 게이트: `NEEDS_MANUAL_REVIEW`
+- 검증 사유: `ENTITY_TYPE_REVIEW_REQUIRED`
+- 후보 수: 1개
+
+### 모델 판정 사유
+
+> 유일한 후보는 canonical term의 정확한 별칭을 제시하고, 해당 명칭이 가리키는 1882년 조선·청 간 중강무역 재개 조약을 직접 설명하므로 target 자체의 원천으로 분류했다. 다른 동명·확장 표제어 또는 별도 실체 후보는 입력에 없다.
+
+### 현재 후보 분류
+
+| 역할 | 원천·표제 | Candidate ID |
+|---|---|---|
+| CANONICAL · 봉천여조선변민교역장정 | AKS · 중강통상장정 | `source-candidate:aad74ee8522103b7e4cc` |
+
+### Canonical 대안
+
+#### 대안 1. 봉천여조선변민교역장정
+
+- Entity type: `Work`
+- 동일 실체 후보:
+  - `source-candidate:aad74ee8522103b7e4cc` — AKS · 중강통상장정
+- 판정 근거: 문제 문맥 표본은 없으나 canonical term 자체가 후보의 명시적 별칭인 ‘봉천여조선변민교역장정’과 정확히 일치한다. 후보는 이를 1882년 조선과 청이 중강무역 재개를 위해 체결한 조약, 즉 중강통상장정(中江通商章程)으로 구체적으로 설명한다.
+
+### Evidence only
+
+- 없음
+
+### Rejected
+
+- 없음
+
+### Ambiguous
+
+- 없음
+
+<details>
+<summary><strong>후보 1개의 원천 문맥 펼치기</strong></summary>
+
+#### 후보 1. 중강통상장정 · AKS
+
+- Candidate ID: `source-candidate:aad74ee8522103b7e4cc`
+- 현재 분류: **CANONICAL · 봉천여조선변민교역장정**
+- Source record ID: `AKS:ARTICLE:E0053679:sha256-704d8ea620c542f5`
+- Entity type: `Work`
+- 한자: 中江通商章程
+- 시대: 근대, 개항기
+- 원천 문맥:
+  - `headword`: 중강통상장정
+  - `aliases`: 봉천여조선변민교역장정
+  - `origin`: 中江通商章程
+  - `headword_origin`: 중강통상장정(中江通商章程)
+  - `primary_type`: 문헌/문서
+  - `era`: 근대/개항기
+  - `definition`: 1882년(고종 19) 8월 23일, 조선과 청나라 사이의 상민수륙무역장정(商民水陸貿易章程)에 의거하여 두 나라가 체결한 중강무역(中江貿易)의 재개에 관한 조약.
+
+</details>
+
+### 사람 검수 입력
+
+- Manual status: `PENDING`
+- Manual reason: (미입력)
+- Reviewer: (미입력)
+- Reviewed at: (미입력)
+
+[목록으로 돌아가기](#case-목록)
+
+---
+
+<a id="case-052"></a>
+## 052. 국조속오례의 · PENDING
+
+- Case ID: `related-resolution-case:d0d31ab87d91196c841a`
+- 모델 게이트: `NEEDS_MANUAL_REVIEW`
+- 검증 사유: `TERM_SOURCE_ALIGNMENT_REVIEW_REQUIRED`
+- 후보 수: 6개
+
+### 모델 판정 사유
+
+> 문제 문맥 표본은 없으나 canonical term과 정확히 일치하는 1744년 『국조속오례의』를 target으로 판정했다. ‘속오례의’는 AKS가 명시한 별칭이고 동일 연도·편찬 맥락도 일치하여 함께 identity로 병합했다. 반면 ‘국조속오례의보’는 접미어 차이와 1751년 편찬으로 별도 문헌이므로 identity가 아니라, target을 보충·수정했다는 명시적 관계에 따라 EVIDENCE_ONLY로 분류했다. 『국조오례의』는 더 이른 별도 원전이며 해당 원천에서 target과의 관계를 설명하지 않아 제외했다.
+
+### 현재 후보 분류
+
+| 역할 | 원천·표제 | Candidate ID |
+|---|---|---|
+| CANONICAL · 국조속오례의(國朝續五禮儀) | AKS · 국조속오례의 | `source-candidate:6c3a86cbbd07dc9b33d9` |
+| CANONICAL · 국조속오례의(國朝續五禮儀) | THESAURUS · 국조속오례의 | `source-candidate:778446ef4a43f3d54702` |
+| EVIDENCE_ONLY | THESAURUS · 국조속오례의보 | `source-candidate:c85552ae70cfcc6c2d91` |
+| EVIDENCE_ONLY | AKS · 국조속오례의보 | `source-candidate:cc8febeed657f260c5b8` |
+| CANONICAL · 국조속오례의(國朝續五禮儀) | THESAURUS · 속오례의 | `source-candidate:1f01fb11907d7151bac1` |
+| REJECTED | THESAURUS · 국조오례의 | `source-candidate:52e15cbdebcf78c2ede4` |
+
+### Canonical 대안
+
+#### 대안 1. 국조속오례의(國朝續五禮儀)
+
+- Entity type: `Work`
+- 동일 실체 후보:
+  - `source-candidate:6c3a86cbbd07dc9b33d9` — AKS · 국조속오례의
+  - `source-candidate:778446ef4a43f3d54702` — THESAURUS · 국조속오례의
+  - `source-candidate:1f01fb11907d7151bac1` — THESAURUS · 속오례의
+- 판정 근거: 1744년(영조 20) 조선 후기 편찬 예서라는 시기·유형·내용이 일치한다. AKS 원천은 ‘속오례의’를 국조속오례의의 별칭으로 명시하며, THESAURUS의 ‘속오례의(續五禮儀)’도 같은 1744년 예조 편찬본으로 설명되어 동일 문헌의 약칭·이칭으로 판단된다.
+
+### Evidence only
+
+- `source-candidate:c85552ae70cfcc6c2d91` — THESAURUS · 국조속오례의보
+- `source-candidate:cc8febeed657f260c5b8` — AKS · 국조속오례의보
+
+### Rejected
+
+- `source-candidate:52e15cbdebcf78c2ede4` — THESAURUS · 국조오례의
+
+### Ambiguous
+
+- 없음
+
+<details>
+<summary><strong>후보 6개의 원천 문맥 펼치기</strong></summary>
+
+#### 후보 1. 국조속오례의 · AKS
+
+- Candidate ID: `source-candidate:6c3a86cbbd07dc9b33d9`
+- 현재 분류: **CANONICAL · 국조속오례의(國朝續五禮儀)**
+- Source record ID: `AKS:ARTICLE:E0006503:sha256-704d8ea620c542f5`
+- Entity type: `Work`
+- 한자: 國朝續五禮儀
+- 시대: 조선, 조선 후기
+- 원천 문맥:
+  - `headword`: 국조속오례의
+  - `aliases`: 속오례의
+  - `origin`: 國朝續五禮儀
+  - `headword_origin`: 국조속오례의(國朝續五禮儀)
+  - `primary_type`: 문헌/고서
+  - `era`: 조선/조선 후기
+  - `definition`: 『국조오례의』를 수정·보완하여 1744년에 5권 4책으로 편찬한 예서.
+
+#### 후보 2. 국조속오례의 · THESAURUS
+
+- Candidate ID: `source-candidate:778446ef4a43f3d54702`
+- 현재 분류: **CANONICAL · 국조속오례의(國朝續五禮儀)**
+- Source record ID: `THESAURUS:TERM:25342:sha256-1022516a18f91e61`
+- Entity type: `Work`
+- 한자: 國朝續五禮儀
+- 시대: 조선후기
+- 원천 문맥:
+  - `term_name`: 국조속오례의
+  - `hanja`: 國朝續五禮儀
+  - `era`: 조선후기
+  - `thesaurus_category`: 서명
+  - `description`: 1744년(영조 20)에 예조판서 이종성(李宗城) 등이 ≪국조오례의(國朝五禮儀)≫를 개정한 책.
+  - `term_year`: 1744
+
+#### 후보 3. 국조속오례의보 · THESAURUS
+
+- Candidate ID: `source-candidate:c85552ae70cfcc6c2d91`
+- 현재 분류: **EVIDENCE_ONLY**
+- Source record ID: `THESAURUS:TERM:6306052:sha256-1022516a18f91e61`
+- Entity type: `Work`
+- 한자: 國朝續五禮儀補
+- 시대: 조선후기
+- 원천 문맥:
+  - `term_name`: 국조속오례의보
+  - `hanja`: 國朝續五禮儀補
+  - `era`: 조선후기
+  - `thesaurus_category`: 서명
+  - `description`: 1751년(영조 27) 편찬한 ≪국조속오례의(國朝續五禮儀)≫를 보충한 책. 2권 1책. 목판본.
+  - `term_year`: 1751
+
+#### 후보 4. 국조속오례의보 · AKS
+
+- Candidate ID: `source-candidate:cc8febeed657f260c5b8`
+- 현재 분류: **EVIDENCE_ONLY**
+- Source record ID: `AKS:ARTICLE:E0006504:sha256-704d8ea620c542f5`
+- Entity type: `Work`
+- 한자: 國朝續五禮儀補
+- 시대: 조선, 조선 후기
+- 원천 문맥:
+  - `headword`: 국조속오례의보
+  - `origin`: 國朝續五禮儀補
+  - `headword_origin`: 국조속오례의보(國朝續五禮儀補)
+  - `primary_type`: 문헌/고서
+  - `era`: 조선/조선 후기
+  - `definition`: 조선 후기의 문신, 신만 등이 『국조속오례의』를 수정·보완하여 1751년에 2권 1책으로 편찬한 예서.
+
+#### 후보 5. 속오례의 · THESAURUS
+
+- Candidate ID: `source-candidate:1f01fb11907d7151bac1`
+- 현재 분류: **CANONICAL · 국조속오례의(國朝續五禮儀)**
+- Source record ID: `THESAURUS:TERM:25343:sha256-1022516a18f91e61`
+- Entity type: `Work`
+- 한자: 續五禮儀
+- 시대: 조선후기
+- 원천 문맥:
+  - `term_name`: 속오례의
+  - `hanja`: 續五禮儀
+  - `era`: 조선후기
+  - `thesaurus_category`: 서명
+  - `description`: 1744년(영조 20)에 예조(禮曹)에서 ≪국조오례의(國朝五禮儀)≫의 속편으로 편찬한 책.
+  - `term_year`: 1744
+
+#### 후보 6. 국조오례의 · THESAURUS
+
+- Candidate ID: `source-candidate:52e15cbdebcf78c2ede4`
+- 현재 분류: **REJECTED**
+- Source record ID: `THESAURUS:TERM:25340:sha256-1022516a18f91e61`
+- Entity type: `Work`
+- 한자: 國朝五禮儀
+- 시대: 조선전기
+- 원천 문맥:
+  - `term_name`: 국조오례의
+  - `hanja`: 國朝五禮儀
+  - `era`: 조선전기
+  - `thesaurus_category`: 서명
+  - `description`: 1474년(성종 5)에 완성된 조선시대 오례(五禮)에 관한 책.
+  - `term_year`: 1474
+
+</details>
+
+### 사람 검수 입력
+
+- Manual status: `PENDING`
+- Manual reason: (미입력)
+- Reviewer: (미입력)
+- Reviewed at: (미입력)
+
+[목록으로 돌아가기](#case-목록)
+
+---
+
+<a id="case-053"></a>
+## 053. 흥부전 · PENDING
+
+- Case ID: `related-resolution-case:37951d7bf81116dd2f9c`
+- 모델 게이트: `NEEDS_MANUAL_REVIEW`
+- 검증 사유: `AMBIGUOUS_SOURCE_REMAINS`
+- 후보 수: 2개
+
+### 모델 판정 사유
+
+> 문제 문맥 표본이 전혀 제공되지 않아 canonical term이 어느 기출문제상의 실체를 가리키는지 판정할 수 없다. 두 후보는 명칭·한자·작품 유형상 서로 같은 고전소설일 가능성이 높지만, 검색 후보 간 일치만으로 기출문제 target identity를 확정할 수 없으므로 모두 AMBIGUOUS로 분류하였다.
+
+### 현재 후보 분류
+
+| 역할 | 원천·표제 | Candidate ID |
+|---|---|---|
+| AMBIGUOUS | AKS · 흥부전 | `source-candidate:e48bd74fb0d14e5a6c89` |
+| AMBIGUOUS | THESAURUS · 흥부전 | `source-candidate:cd88f77ff73867b89eb2` |
+
+### Canonical 대안
+
+- 없음
+### Evidence only
+
+- 없음
+
+### Rejected
+
+- 없음
+
+### Ambiguous
+
+- `source-candidate:e48bd74fb0d14e5a6c89` — AKS · 흥부전
+- `source-candidate:cd88f77ff73867b89eb2` — THESAURUS · 흥부전
+
+<details>
+<summary><strong>후보 2개의 원천 문맥 펼치기</strong></summary>
+
+#### 후보 1. 흥부전 · AKS
+
+- Candidate ID: `source-candidate:e48bd74fb0d14e5a6c89`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `AKS:ARTICLE:E0066012:sha256-704d8ea620c542f5`
+- Entity type: `Work`
+- 한자: 興夫傳
+- 시대: (없음)
+- 원천 문맥:
+  - `headword`: 흥부전
+  - `aliases`: 놀부가, 놀부전, 놀부흥부가, 박타령, 박흥보가, 박흥보전, 연의각, 장흥보전, 흥보전, 흥부놀부전, 흥보만보록, 흥보가
+  - `origin`: 興夫傳
+  - `headword_origin`: 흥부전(興夫傳)
+  - `primary_type`: 작품/문학
+  - `era`: 미상
+  - `definition`: 작자·연대 미상의 고전소설.
+
+#### 후보 2. 흥부전 · THESAURUS
+
+- Candidate ID: `source-candidate:cd88f77ff73867b89eb2`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `THESAURUS:TERM:26171:sha256-1022516a18f91e61`
+- Entity type: `Work`
+- 한자: 興夫傳
+- 시대: 조선후기
+- 원천 문맥:
+  - `term_name`: 흥부전
+  - `hanja`: 興夫傳
+  - `era`: 조선후기
+  - `thesaurus_category`: 서명
+  - `description`: 조선후기 판소리계 소설.
+  - `term_year`: 조선후기
+
+</details>
+
+### 사람 검수 입력
+
+- Manual status: `PENDING`
+- Manual reason: (미입력)
+- Reviewer: (미입력)
+- Reviewed at: (미입력)
+
+[목록으로 돌아가기](#case-목록)
+
+---
+
+<a id="case-054"></a>
+## 054. 동편제흥보가 · PENDING
+
+- Case ID: `related-resolution-case:6cdfccbfdf53f0b96c8f`
+- 모델 게이트: `NEEDS_MANUAL_REVIEW`
+- 검증 사유: `ENTITY_TYPE_REVIEW_REQUIRED`
+- 후보 수: 6개
+
+### 모델 판정 사유
+
+> 문제 문맥 표본은 제공되지 않았으므로 canonical term의 정확한 표제·한자와 정의에 따라 target을 판소리 동편제흥보가로 식별했다. 정확히 그 대상을 정의한 THESAURUS 항목만 identity로 채택했다. '판소리' 항목은 target의 지정·전승을 구체적으로 서술하지만 문서 주 대상이 상위 개념이므로 evidence-only로 분류했다. 동편제, 일반 흥보가, 흥부전, 동편제 수궁가는 각각 유파·원작/일반 작품·다른 유형의 문학 작품·다른 판소리 마당으로서 이름 일부나 유사한 장르만 겹치며 target 자체 또는 명시적 target 관계를 설명하지 않아 identity에서 제외했다.
+
+### 현재 후보 분류
+
+| 역할 | 원천·표제 | Candidate ID |
+|---|---|---|
+| CANONICAL · 동편제흥보가 | THESAURUS · 동편제흥보가 | `source-candidate:d750a08d5d88107f132a` |
+| EVIDENCE_ONLY | AKS · 판소리 | `source-candidate:15ab2f0713bca1c07ed8` |
+| REJECTED | AKS · 동편제 | `source-candidate:b9e72aa7eea8b612b067` |
+| REJECTED | AKS · 흥보가 | `source-candidate:dc73dc0157a88a157d70` |
+| REJECTED | AKS · 흥부전 | `source-candidate:d9e708da99faef4ce5c6` |
+| REJECTED | AKS · 남도창 동편제 | `source-candidate:28e88123955cf9d37879` |
+
+### Canonical 대안
+
+#### 대안 1. 동편제흥보가
+
+- Entity type: `Heritage`
+- 동일 실체 후보:
+  - `source-candidate:d750a08d5d88107f132a` — THESAURUS · 동편제흥보가
+- 판정 근거: 문제 문맥 표본은 없으나 canonical term 자체가 동편제(東便制) 창법으로 부르는 흥보가를 뜻한다. THESAURUS 후보는 표제와 한자 '東便制興甫歌'가 정확히 일치하고, '판소리 유파 중 동편제로 노래하는 흥보가'라고 대상 자체를 정의하며 문화재로 분류한다.
+
+### Evidence only
+
+- `source-candidate:15ab2f0713bca1c07ed8` — AKS · 판소리
+
+### Rejected
+
+- `source-candidate:b9e72aa7eea8b612b067` — AKS · 동편제
+- `source-candidate:dc73dc0157a88a157d70` — AKS · 흥보가
+- `source-candidate:d9e708da99faef4ce5c6` — AKS · 흥부전
+- `source-candidate:28e88123955cf9d37879` — AKS · 남도창 동편제
+
+### Ambiguous
+
+- 없음
+
+<details>
+<summary><strong>후보 6개의 원천 문맥 펼치기</strong></summary>
+
+#### 후보 1. 동편제흥보가 · THESAURUS
+
+- Candidate ID: `source-candidate:d750a08d5d88107f132a`
+- 현재 분류: **CANONICAL · 동편제흥보가**
+- Source record ID: `THESAURUS:TERM:6298904:sha256-1022516a18f91e61`
+- Entity type: `Heritage`
+- 한자: 東便制興甫歌
+- 시대: (없음)
+- 원천 문맥:
+  - `term_name`: 동편제흥보가
+  - `hanja`: 東便制興甫歌
+  - `era`: 통시대
+  - `thesaurus_category`: 문화재
+  - `description`: 판소리 유파(流派) 중 동편제(東便制)로 노래하는 흥보가.
+  - `term_year`: ?
+
+#### 후보 2. 판소리 · AKS
+
+- Candidate ID: `source-candidate:15ab2f0713bca1c07ed8`
+- 현재 분류: **EVIDENCE_ONLY**
+- Source record ID: `AKS:ARTICLE:E0059664:sha256-704d8ea620c542f5`
+- Entity type: `Work`
+- 한자: (없음)
+- 시대: 현대
+- 원천 문맥:
+  - `headword`: 판소리
+  - `headword_origin`: 판소리
+  - `primary_type`: 작품/전통음악
+  - `era`: 현대
+  - `definition`: 판소리 유파 중 동편제로 노래하는 흥보가.
+  - `snippet`: 가. 1996년 전라남도 무형문화재(현, 무형유산)로 지정되었다. 1996년 10월에 지정되었다. 동편제 흥보가는 송흥록(宋興祿)을 기둥으로, 그의 아우인 송광록(宋光祿)에게 전해지고, 다시 광록의 아들인 송우룡
+
+#### 후보 3. 동편제 · AKS
+
+- Candidate ID: `source-candidate:b9e72aa7eea8b612b067`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0016845:sha256-704d8ea620c542f5`
+- Entity type: `Concept`
+- 한자: 東便制
+- 시대: 현대
+- 원천 문맥:
+  - `headword`: 동편제
+  - `origin`: 東便制
+  - `headword_origin`: 동편제(東便制)
+  - `primary_type`: 개념
+  - `era`: 현대
+  - `definition`: 섬진강을 중심으로 전라도의 동쪽지역에 전승되는 판소리 소리제. 음악용어.
+
+#### 후보 4. 흥보가 · AKS
+
+- Candidate ID: `source-candidate:dc73dc0157a88a157d70`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0066005:sha256-704d8ea620c542f5`
+- Entity type: `Work`
+- 한자: 興甫歌
+- 시대: 현대
+- 원천 문맥:
+  - `headword`: 흥보가
+  - `aliases`: 흥부가
+  - `origin`: 興甫歌
+  - `headword_origin`: 흥보가(興甫歌)
+  - `primary_type`: 작품/전통음악
+  - `era`: 현대
+  - `definition`: 판소리 다섯마당 가운데 하나.
+
+#### 후보 5. 흥부전 · AKS
+
+- Candidate ID: `source-candidate:d9e708da99faef4ce5c6`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0066012:sha256-704d8ea620c542f5`
+- Entity type: `Work`
+- 한자: 興夫傳
+- 시대: (없음)
+- 원천 문맥:
+  - `headword`: 흥부전
+  - `aliases`: 놀부가, 놀부전, 놀부흥부가, 박타령, 박흥보가, 박흥보전, 연의각, 장흥보전, 흥보전, 흥부놀부전, 흥보만보록, 흥보가
+  - `origin`: 興夫傳
+  - `headword_origin`: 흥부전(興夫傳)
+  - `primary_type`: 작품/문학
+  - `era`: 미상
+  - `definition`: 작자·연대 미상의 고전소설.
+
+#### 후보 6. 남도창 동편제 · AKS
+
+- Candidate ID: `source-candidate:28e88123955cf9d37879`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0011874:sha256-704d8ea620c542f5`
+- Entity type: `Concept`
+- 한자: 南道唱, 東便制
+- 시대: 현대
+- 원천 문맥:
+  - `headword`: 남도창 동편제
+  - `origin`: 南道唱 東便制
+  - `headword_origin`: 남도창 동편제(南道唱 東便制)
+  - `primary_type`: 개념
+  - `era`: 현대
+  - `definition`: 광주광역시에서 지정·보호하는 동편제 판소리의 수궁가.
+
+</details>
+
+### 사람 검수 입력
+
+- Manual status: `PENDING`
+- Manual reason: (미입력)
+- Reviewer: (미입력)
+- Reviewed at: (미입력)
+
+[목록으로 돌아가기](#case-목록)
+
+---
+
+<a id="case-055"></a>
+## 055. 오효신 · PENDING
+
+- Case ID: `related-resolution-case:83b0cc2e4cf09fa5c793`
+- 모델 게이트: `NEEDS_MANUAL_REVIEW`
+- 검증 사유: `AMBIGUOUS_SOURCE_REMAINS`
+- 후보 수: 2개
+
+### 모델 판정 사유
+
+> 기출문제 문맥 샘플이 전혀 없고 problem_count도 0이므로, canonical_term 자체만으로 target 실체를 확정할 수 없다. 두 후보는 모두 발해의 일본 파견 사신·관리라는 유사한 설명을 가지지만 한자 및 표기 정보가 충돌하며, 문제 target에 대한 구체적 일치 근거도 없다. 따라서 어느 후보도 canonical identity로 제안하지 않고 모두 AMBIGUOUS로 분류한다.
+
+### 현재 후보 분류
+
+| 역할 | 원천·표제 | Candidate ID |
+|---|---|---|
+| AMBIGUOUS | AKS · 오효신 | `source-candidate:6ae771ca03c226717b62` |
+| AMBIGUOUS | THESAURUS · 오효신 | `source-candidate:a9ce66950b86bff19e0b` |
+
+### Canonical 대안
+
+- 없음
+### Evidence only
+
+- 없음
+
+### Rejected
+
+- 없음
+
+### Ambiguous
+
+- `source-candidate:6ae771ca03c226717b62` — AKS · 오효신
+- `source-candidate:a9ce66950b86bff19e0b` — THESAURUS · 오효신
+
+<details>
+<summary><strong>후보 2개의 원천 문맥 펼치기</strong></summary>
+
+#### 후보 1. 오효신 · AKS
+
+- Candidate ID: `source-candidate:6ae771ca03c226717b62`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `AKS:ARTICLE:E0038632:sha256-704d8ea620c542f5`
+- Entity type: `Person`
+- 한자: 吳孝愼, 馬孝愼
+- 시대: 고대, 남북국, 발해
+- 원천 문맥:
+  - `headword`: 오효신
+  - `aliases`: 마효신(馬孝愼)
+  - `origin`: 吳孝愼
+  - `headword_origin`: 오효신(吳孝愼)
+  - `primary_type`: 인물/전통 인물
+  - `era`: 고대/남북국/발해
+  - `definition`: 남북국시대 발해의 사신으로 일본에 파견되어 정오위하, 종사위상의 관등을 역임한 관리.
+
+#### 후보 2. 오효신 · THESAURUS
+
+- Candidate ID: `source-candidate:a9ce66950b86bff19e0b`
+- 현재 분류: **AMBIGUOUS**
+- Source record ID: `THESAURUS:TERM:12605586:sha256-1022516a18f91e61`
+- Entity type: `Person`
+- 한자: 烏孝愼
+- 시대: 남북국시대
+- 원천 문맥:
+  - `term_name`: 오효신
+  - `hanja`: 烏孝愼
+  - `era`: 남북국시대
+  - `thesaurus_category`: 인명
+  - `description`: 발해시대의 관리로 주로 일본에 사신으로 내왕이 많았음. 정당성(政堂省) 좌윤(左允)으로 있으면서 일본에서 정오위하(正五位下)의 관등을 제수받음.
+  - `term_year`: ?
+
+</details>
+
+### 사람 검수 입력
+
+- Manual status: `PENDING`
+- Manual reason: (미입력)
+- Reviewer: (미입력)
+- Reviewed at: (미입력)
+
+[목록으로 돌아가기](#case-목록)
+
+---
+
+<a id="case-056"></a>
+## 056. 6월 항쟁 · PENDING
+
+- Case ID: `related-resolution-case:c55d38ef335a028e9f45`
+- 모델 게이트: `NEEDS_MANUAL_REVIEW`
+- 검증 사유: `TERM_SOURCE_ALIGNMENT_REVIEW_REQUIRED`
+- 후보 수: 6개
+
+### 모델 판정 사유
+
+> 문제 문맥 표본은 없지만, 입력 정규 용어 ‘6월 항쟁’과 직접 일치하는 후보들의 1987년 민주화운동 설명이 구체적으로 동일하여 하나의 사건 대안으로 병합했다. 10월 항쟁과 대몽항쟁은 ‘항쟁’이라는 일반 명칭 요소만 공유하는 다른 시대의 별도 사건이며, target과의 명시적 관계도 없어 identity 또는 evidence-only에서 제외했다.
+
+### 현재 후보 분류
+
+| 역할 | 원천·표제 | Candidate ID |
+|---|---|---|
+| CANONICAL · 6월 항쟁 | AKS · 6월항쟁 | `source-candidate:3f7dbca39ca74c88cbef` |
+| CANONICAL · 6월 항쟁 | THESAURUS · 6월민주항쟁 | `source-candidate:56bb86e5cf79941e3976` |
+| CANONICAL · 6월 항쟁 | THESAURUS · 6월민주항쟁 | `source-candidate:85f445404110729f2523` |
+| REJECTED | THESAURUS · 10월항쟁 | `source-candidate:48b449170c63550694d0` |
+| REJECTED | THESAURUS · 10월항쟁 | `source-candidate:8d382b55b899ada94a69` |
+| REJECTED | THESAURUS · 대몽항쟁 | `source-candidate:47dc1123910cc8e2953f` |
+
+### Canonical 대안
+
+#### 대안 1. 6월 항쟁
+
+- Entity type: `Event`
+- 동일 실체 후보:
+  - `source-candidate:3f7dbca39ca74c88cbef` — AKS · 6월항쟁
+  - `source-candidate:56bb86e5cf79941e3976` — THESAURUS · 6월민주항쟁
+  - `source-candidate:85f445404110729f2523` — THESAURUS · 6월민주항쟁
+- 판정 근거: 정규 용어 ‘6월 항쟁’은 1987년 6월의 전국적 민주화운동을 뜻한다. 세 원천 모두 6월항쟁/6월민주항쟁/6월민주화항쟁이라는 동의 명칭, 1987년, 전두환 정부의 4·13 호헌 조치와 박종철 고문치사 사건을 계기로 한 호헌 철폐·대통령 직선제 개헌 요구라는 동일한 사건 식별 단서를 직접 설명한다.
+
+### Evidence only
+
+- 없음
+
+### Rejected
+
+- `source-candidate:48b449170c63550694d0` — THESAURUS · 10월항쟁
+- `source-candidate:8d382b55b899ada94a69` — THESAURUS · 10월항쟁
+- `source-candidate:47dc1123910cc8e2953f` — THESAURUS · 대몽항쟁
+
+### Ambiguous
+
+- 없음
+
+<details>
+<summary><strong>후보 6개의 원천 문맥 펼치기</strong></summary>
+
+#### 후보 1. 6월항쟁 · AKS
+
+- Candidate ID: `source-candidate:3f7dbca39ca74c88cbef`
+- 현재 분류: **CANONICAL · 6월 항쟁**
+- Source record ID: `AKS:ARTICLE:E0068343:sha256-704d8ea620c542f5`
+- Entity type: `Event`
+- 한자: 六月抗爭
+- 시대: 현대
+- 원천 문맥:
+  - `headword`: 6월항쟁
+  - `aliases`: 6 · 10항쟁, 6월민주항쟁, 6월민주화항쟁
+  - `origin`: 六月抗爭
+  - `headword_origin`: 6월항쟁(六月抗爭)
+  - `primary_type`: 사건/사회운동
+  - `era`: 현대
+  - `definition`: 1987년 6월, 대통령직선제 개헌 등 민주화를 요구하며 전국적으로 전개된 대규모 시민 항쟁.
+
+#### 후보 2. 6월민주항쟁 · THESAURUS
+
+- Candidate ID: `source-candidate:56bb86e5cf79941e3976`
+- 현재 분류: **CANONICAL · 6월 항쟁**
+- Source record ID: `THESAURUS:TERM:12600697:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 六月民主抗爭
+- 시대: 현대
+- 원천 문맥:
+  - `term_name`: 6월민주항쟁
+  - `hanja`: 六月民主抗爭
+  - `era`: 현대
+  - `thesaurus_category`: 정치·행정·법제>정치>정치사건
+  - `description`: 1987년 전두환의 4·13호헌조치와 박종철고문치사사건을 계기로 호헌철폐, 직선제 개헌을 요구하며 전국에서 학생과 시민들을 중심으로 일어난 민주화 운동.
+  - `term_year`: 1987
+
+#### 후보 3. 6월민주항쟁 · THESAURUS
+
+- Candidate ID: `source-candidate:85f445404110729f2523`
+- 현재 분류: **CANONICAL · 6월 항쟁**
+- Source record ID: `THESAURUS:TERM:882:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 六月民主抗爭
+- 시대: 현대
+- 원천 문맥:
+  - `term_name`: 6월민주항쟁
+  - `hanja`: 六月民主抗爭
+  - `era`: 현대
+  - `thesaurus_category`: 사회운동·독립운동>사회운동>민주화운동
+  - `description`: 1987년 전두환의 4·13호헌조치와 박종철고문치사사건을 계기로 호헌철폐, 직선제 개헌을 요구하며 전국에서 학생과 시민들을 중심으로 일어난 민주화 운동.
+  - `term_year`: 1987
+
+#### 후보 4. 10월항쟁 · THESAURUS
+
+- Candidate ID: `source-candidate:48b449170c63550694d0`
+- 현재 분류: **REJECTED**
+- Source record ID: `THESAURUS:TERM:15718:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 十月抗爭
+- 시대: 현대
+- 원천 문맥:
+  - `term_name`: 10월항쟁
+  - `hanja`: 十月抗爭
+  - `era`: 현대
+  - `thesaurus_category`: 사회운동·독립운동>사회운동>민주화운동
+  - `description`: 1946년 10월 미군정에 대항하여 경상도지역을 시발로 전국적으로 확산된 대중투쟁.
+  - `term_year`: 1946
+
+#### 후보 5. 10월항쟁 · THESAURUS
+
+- Candidate ID: `source-candidate:8d382b55b899ada94a69`
+- 현재 분류: **REJECTED**
+- Source record ID: `THESAURUS:TERM:4199007:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 十月抗爭
+- 시대: 현대
+- 원천 문맥:
+  - `term_name`: 10월항쟁
+  - `hanja`: 十月抗爭
+  - `era`: 현대
+  - `thesaurus_category`: 정치·행정·법제>정치>정치사건
+  - `description`: 1946년 10월 미군정에 대항하여 경상도지역을 시발로 전국적으로 확산된 대중투쟁.
+  - `term_year`: 1946
+
+#### 후보 6. 대몽항쟁 · THESAURUS
+
+- Candidate ID: `source-candidate:47dc1123910cc8e2953f`
+- 현재 분류: **REJECTED**
+- Source record ID: `THESAURUS:TERM:33563511:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 對蒙抗爭
+- 시대: 고려시대
+- 원천 문맥:
+  - `term_name`: 대몽항쟁
+  - `hanja`: 對蒙抗爭
+  - `era`: 고려시대
+  - `thesaurus_category`: 국방·군사>전쟁·전투
+  - `description`: 고려후기 몽고의 6차례 침입에 맞선 고려의 항쟁.
+  - `term_year`: 1231-1259
+
+</details>
+
+### 사람 검수 입력
+
+- Manual status: `PENDING`
+- Manual reason: (미입력)
+- Reviewer: (미입력)
+- Reviewed at: (미입력)
+
+[목록으로 돌아가기](#case-목록)
+
+---
+
+<a id="case-057"></a>
+## 057. 독립신문(1945) · PENDING
+
+- Case ID: `related-resolution-case:5e56bd84bc749659c051`
+- 모델 게이트: `NEEDS_MANUAL_REVIEW`
+- 검증 사유: `TERM_SOURCE_ALIGNMENT_REVIEW_REQUIRED`
+- 후보 수: 15개
+
+### 모델 판정 사유
+
+> canonical term이 ‘독립신문(1945)’로 연도를 명시하므로 target은 1945년 김승학이 서울에서 발행한 『독립신문』으로 특정된다. 이에 연도·지역·발행 주체가 일치하는 두 원천만 동일 실체로 묶었다. 1896년·1919년의 동명 『독립신문』들은 같은 한자와 표제를 공유하더라도 창간 시기·지역·주체가 달라 제외했으며, 『대한독립신문』·『조선독립신문』·『독립신보』 및 진관사 소장 문건류는 확장 또는 별도 표제·별도 유형일 뿐 target과의 명시적 관계가 없어 제외했다.
+
+### 현재 후보 분류
+
+| 역할 | 원천·표제 | Candidate ID |
+|---|---|---|
+| CANONICAL · 독립신문(1945) | AKS · 독립신문 | `source-candidate:86e441e76bd8348171b2` |
+| CANONICAL · 독립신문(1945) | THESAURUS · 독립신문 | `source-candidate:6dce6c81146d2446edaa` |
+| REJECTED | THESAURUS · 독립신문 | `source-candidate:923f9bc7826644777262` |
+| REJECTED | AKS · 독립신문 | `source-candidate:8de6a7b6cc97fe90d8b8` |
+| REJECTED | AKS · 독립신문 | `source-candidate:52f6a1e0ae0a4cefd8b1` |
+| REJECTED | THESAURUS · 독립신문 | `source-candidate:9d1b4335602e54c8815c` |
+| REJECTED | AKS · 독립신문 | `source-candidate:ab7b9b7205ee871c3700` |
+| REJECTED | AKS · 대한독립신문 | `source-candidate:843df64ac85550d4db9b` |
+| REJECTED | THESAURUS · 대한독립신문 | `source-candidate:3a8435f83944c9e73ee3` |
+| REJECTED | THESAURUS · 독립신문 | `source-candidate:b24729bc91f31680ed34` |
+| REJECTED | AKS · 대한독립신문 | `source-candidate:c0ca36cf59ebf7a884d3` |
+| REJECTED | AKS · 조선독립신문 | `source-candidate:4b2d131d34e9088de33c` |
+| REJECTED | AKS · 조선독립신문 | `source-candidate:7c195198123a21d9bb6c` |
+| REJECTED | AKS · 진관사 소장 독립신문류 | `source-candidate:a2ab3695a809f7466948` |
+| REJECTED | AKS · 독립신보 | `source-candidate:1cc60ed01201f6e1bf37` |
+
+### Canonical 대안
+
+#### 대안 1. 독립신문(1945)
+
+- Entity type: `Work`
+- 동일 실체 후보:
+  - `source-candidate:86e441e76bd8348171b2` — AKS · 독립신문
+  - `source-candidate:6dce6c81146d2446edaa` — THESAURUS · 독립신문
+- 판정 근거: 용어 자체의 연도 한정인 ‘1945’가 target 식별 단서이다. 두 원천은 모두 1945년 서울에서 김승학이 창간·발행한 『독립신문』으로 설명하며, AKS는 김승학의 일간신문 창간을, THESAURUS는 1945년 10월 11일 김승학 발행 및 1945~1949년 존속을 명시한다.
+
+### Evidence only
+
+- 없음
+
+### Rejected
+
+- `source-candidate:923f9bc7826644777262` — THESAURUS · 독립신문
+- `source-candidate:8de6a7b6cc97fe90d8b8` — AKS · 독립신문
+- `source-candidate:52f6a1e0ae0a4cefd8b1` — AKS · 독립신문
+- `source-candidate:9d1b4335602e54c8815c` — THESAURUS · 독립신문
+- `source-candidate:ab7b9b7205ee871c3700` — AKS · 독립신문
+- `source-candidate:843df64ac85550d4db9b` — AKS · 대한독립신문
+- `source-candidate:3a8435f83944c9e73ee3` — THESAURUS · 대한독립신문
+- `source-candidate:b24729bc91f31680ed34` — THESAURUS · 독립신문
+- `source-candidate:c0ca36cf59ebf7a884d3` — AKS · 대한독립신문
+- `source-candidate:4b2d131d34e9088de33c` — AKS · 조선독립신문
+- `source-candidate:7c195198123a21d9bb6c` — AKS · 조선독립신문
+- `source-candidate:a2ab3695a809f7466948` — AKS · 진관사 소장 독립신문류
+- `source-candidate:1cc60ed01201f6e1bf37` — AKS · 독립신보
+
+### Ambiguous
+
+- 없음
+
+<details>
+<summary><strong>후보 15개의 원천 문맥 펼치기</strong></summary>
+
+#### 후보 1. 독립신문 · AKS
+
+- Candidate ID: `source-candidate:86e441e76bd8348171b2`
+- 현재 분류: **CANONICAL · 독립신문(1945)**
+- Source record ID: `AKS:ARTICLE:E0015987:sha256-704d8ea620c542f5`
+- Entity type: `Work`
+- 한자: 獨立新聞
+- 시대: 현대
+- 원천 문맥:
+  - `headword`: 독립신문
+  - `origin`: 獨立新聞
+  - `headword_origin`: 독립신문(獨立新聞)
+  - `primary_type`: 문헌/연속간행물
+  - `era`: 현대
+  - `definition`: 1945년에, 서울에서 김승학이 국민 여론의 환기(喚起) 정도(正導) 등을 사시로 창간한 일간 신문.
+
+#### 후보 2. 독립신문 · THESAURUS
+
+- Candidate ID: `source-candidate:6dce6c81146d2446edaa`
+- 현재 분류: **CANONICAL · 독립신문(1945)**
+- Source record ID: `THESAURUS:TERM:3496:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 獨立新聞
+- 시대: 현대
+- 원천 문맥:
+  - `term_name`: 독립신문
+  - `hanja`: 獨立新聞
+  - `era`: 현대
+  - `thesaurus_category`: 문화·예술>언론·출판
+  - `description`: 1945년 10월 11일 김승학(金承學)이 발행하여 우익 정론지로서의 역할을 한 신문.
+  - `term_year`: 1945-1949
+  - `term_remark`: 1945
+
+#### 후보 3. 독립신문 · THESAURUS
+
+- Candidate ID: `source-candidate:923f9bc7826644777262`
+- 현재 분류: **REJECTED**
+- Source record ID: `THESAURUS:TERM:3500:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 獨立新聞
+- 시대: 일제시기
+- 원천 문맥:
+  - `term_name`: 독립신문
+  - `hanja`: 獨立新聞
+  - `era`: 일제시기
+  - `thesaurus_category`: 문화·예술>언론·출판
+  - `description`: 1919년 8월 21일 상해에서 ≪독립≫이란 제호로창간되었다가 같은 해 10월 ≪독립신문≫으로 제호를 바꾼 대한민국임시정부의 기관지.
+  - `term_year`: 1919-1925
+  - `term_remark`: 상해
+
+#### 후보 4. 독립신문 · AKS
+
+- Candidate ID: `source-candidate:8de6a7b6cc97fe90d8b8`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0015985:sha256-704d8ea620c542f5`
+- Entity type: `Work`
+- 한자: 獨立新聞
+- 시대: 근대, 일제강점기
+- 원천 문맥:
+  - `headword`: 독립신문
+  - `origin`: 獨立新聞
+  - `headword_origin`: 독립신문(獨立新聞)
+  - `primary_type`: 문헌/연속간행물
+  - `era`: 근대/일제강점기
+  - `definition`: 1919년에, 블라디보스토크에서 장기영 등이 민족정신을 고취시키기 위하여 창간한 신문.
+
+#### 후보 5. 독립신문 · AKS
+
+- Candidate ID: `source-candidate:52f6a1e0ae0a4cefd8b1`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0015986:sha256-704d8ea620c542f5`
+- Entity type: `Work`
+- 한자: 獨立新聞
+- 시대: 근대, 일제강점기
+- 원천 문맥:
+  - `headword`: 독립신문
+  - `origin`: 獨立新聞
+  - `headword_origin`: 독립신문(獨立新聞)
+  - `primary_type`: 문헌/연속간행물
+  - `era`: 근대/일제강점기
+  - `definition`: 1919년에, 중국 상해에서 이광수가 민족정신을 고취시키기 위하여 창간한 신문.
+
+#### 후보 6. 독립신문 · THESAURUS
+
+- Candidate ID: `source-candidate:9d1b4335602e54c8815c`
+- 현재 분류: **REJECTED**
+- Source record ID: `THESAURUS:TERM:10496122:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 獨立新聞
+- 시대: 일제시기
+- 원천 문맥:
+  - `term_name`: 독립신문
+  - `hanja`: 獨立新聞
+  - `era`: 일제시기
+  - `thesaurus_category`: 문화·예술>언론·출판
+  - `description`: 1919년에 블라디보스토크(Vladivostok)에서 장기영(張基永)과 김학현(金學鉉) 등이 반일운동과 민족정신을 고취시키기 위하여 창간한 신문.
+  - `term_year`: 1919-?
+  - `term_remark`: 1919
+
+#### 후보 7. 독립신문 · AKS
+
+- Candidate ID: `source-candidate:ab7b9b7205ee871c3700`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0015984:sha256-704d8ea620c542f5`
+- Entity type: `Work`
+- 한자: 獨立新聞
+- 시대: 근대, 개항기
+- 원천 문맥:
+  - `headword`: 독립신문
+  - `origin`: 獨立新聞
+  - `headword_origin`: 독립신문(獨立新聞)
+  - `primary_type`: 문헌/연속간행물
+  - `era`: 근대/개항기
+  - `definition`: 1896년에, 창간된 우리나라 최초의 민간 신문.
+
+#### 후보 8. 대한독립신문 · AKS
+
+- Candidate ID: `source-candidate:843df64ac85550d4db9b`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0014975:sha256-704d8ea620c542f5`
+- Entity type: `Work`
+- 한자: 大韓獨立新聞
+- 시대: 현대
+- 원천 문맥:
+  - `headword`: 대한독립신문
+  - `origin`: 大韓獨立新聞
+  - `headword_origin`: 대한독립신문(大韓獨立新聞)
+  - `primary_type`: 문헌/연속간행물
+  - `era`: 현대
+  - `definition`: 1945년에, 대한 독립 협회에서 이승만의 환국을 맞아 창간한 일간 신문.
+
+#### 후보 9. 대한독립신문 · THESAURUS
+
+- Candidate ID: `source-candidate:3a8435f83944c9e73ee3`
+- 현재 분류: **REJECTED**
+- Source record ID: `THESAURUS:TERM:3292:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 大韓獨立新聞
+- 시대: 현대
+- 원천 문맥:
+  - `term_name`: 대한독립신문
+  - `hanja`: 大韓獨立新聞
+  - `era`: 현대
+  - `thesaurus_category`: 문화·예술>언론·출판
+  - `description`: 1945년 광복 후 대한독립협회에서 발간한 일간신문.
+  - `term_year`: 1945
+  - `term_remark`: 1945
+
+#### 후보 10. 독립신문 · THESAURUS
+
+- Candidate ID: `source-candidate:b24729bc91f31680ed34`
+- 현재 분류: **REJECTED**
+- Source record ID: `THESAURUS:TERM:3498:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 獨立新聞
+- 시대: 근대
+- 원천 문맥:
+  - `term_name`: 독립신문
+  - `hanja`: 獨立新聞
+  - `era`: 근대
+  - `thesaurus_category`: 문화·예술>언론·출판
+  - `description`: 1896년 4월 7일 서재필(徐載弼)과 개화파가 합작하여 창간한 최초의 민간 일간지.
+  - `term_year`: 1896-1899
+  - `term_remark`: 1896
+
+#### 후보 11. 대한독립신문 · AKS
+
+- Candidate ID: `source-candidate:c0ca36cf59ebf7a884d3`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0014974:sha256-704d8ea620c542f5`
+- Entity type: `Work`
+- 한자: 大韓獨立新聞
+- 시대: 근대, 일제강점기
+- 원천 문맥:
+  - `headword`: 대한독립신문
+  - `origin`: 大韓獨立新聞
+  - `headword_origin`: 대한독립신문(大韓獨立新聞)
+  - `primary_type`: 문헌/연속간행물
+  - `era`: 근대/일제강점기
+  - `definition`: 1919년에, 간도 용정촌에서 구춘성 등이 해외 독립지사들의 활동 상황을 전하기 위하여 창간한 교민 신문.
+
+#### 후보 12. 조선독립신문 · AKS
+
+- Candidate ID: `source-candidate:4b2d131d34e9088de33c`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0051991:sha256-704d8ea620c542f5`
+- Entity type: `Work`
+- 한자: 朝鮮獨立新聞
+- 시대: 근대, 일제강점기
+- 원천 문맥:
+  - `headword`: 조선독립신문
+  - `origin`: 朝鮮獨立新聞
+  - `headword_origin`: 조선독립신문(朝鮮獨立新聞)
+  - `primary_type`: 문헌/연속간행물
+  - `era`: 근대/일제강점기
+  - `definition`: 1919년에, 보성사에서 천도교의 지도자들이 창간한 신문.
+
+#### 후보 13. 조선독립신문 · AKS
+
+- Candidate ID: `source-candidate:7c195198123a21d9bb6c`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0051992:sha256-704d8ea620c542f5`
+- Entity type: `Work`
+- 한자: 朝鮮獨立新聞
+- 시대: 근대, 일제강점기
+- 원천 문맥:
+  - `headword`: 조선독립신문
+  - `origin`: 朝鮮獨立新聞
+  - `headword_origin`: 조선독립신문(朝鮮獨立新聞)
+  - `primary_type`: 문헌/연속간행물
+  - `era`: 근대/일제강점기
+  - `definition`: 1919년에, 만주 조선국민의회에서 민족의 단결과 자주정신 배양을 목적으로 창간한 일간 신문.
+
+#### 후보 14. 진관사 소장 독립신문류 · AKS
+
+- Candidate ID: `source-candidate:a2ab3695a809f7466948`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0077592:sha256-704d8ea620c542f5`
+- Entity type: `Work`
+- 한자: 津寬寺, 所藏, 獨立新聞類
+- 시대: 근대, 일제강점기
+- 원천 문맥:
+  - `headword`: 진관사 소장 독립신문류
+  - `origin`: 津寬寺 所藏 獨立新聞類
+  - `headword_origin`: 진관사 소장 독립신문류(津寬寺 所藏 獨立新聞類)
+  - `primary_type`: 문헌/문서
+  - `era`: 근대/일제강점기
+  - `definition`: 서울특별시 은평구 진관사에서 발견된 『독립신문』 등의 신문 및 문건.
+
+#### 후보 15. 독립신보 · AKS
+
+- Candidate ID: `source-candidate:1cc60ed01201f6e1bf37`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0015988:sha256-704d8ea620c542f5`
+- Entity type: `Work`
+- 한자: 獨立新報
+- 시대: 현대
+- 원천 문맥:
+  - `headword`: 독립신보
+  - `origin`: 獨立新報
+  - `headword_origin`: 독립신보(獨立新報)
+  - `primary_type`: 문헌/연속간행물
+  - `era`: 현대
+  - `definition`: 1946년에, 극좌익지적인 성격으로 창간한 일간 신문.
+
+</details>
+
+### 사람 검수 입력
+
+- Manual status: `PENDING`
+- Manual reason: (미입력)
+- Reviewer: (미입력)
+- Reviewed at: (미입력)
+
+[목록으로 돌아가기](#case-목록)
+
+---
+
+<a id="case-058"></a>
+## 058. 독립신문(1919 블라디보스토크) · PENDING
+
+- Case ID: `related-resolution-case:c52f3974b038f2404184`
+- 모델 게이트: `NEEDS_MANUAL_REVIEW`
+- 검증 사유: `TERM_SOURCE_ALIGNMENT_REVIEW_REQUIRED`
+- 후보 수: 4개
+
+### 모델 판정 사유
+
+> 문제 문맥 표본은 없지만 canonical term이 1919년 블라디보스토크라는 명시적 식별자를 제공한다. 이에 정확히 부합하는 두 원천만 동일한 신문으로 병합하였다. 상해의 대한민국임시정부 기관지 독립신문은 같은 이름의 별도 간행물이므로 제외했으며, 블라디보스토크 고려사범대학은 지명 일치만 있을 뿐 대상 신문과의 관계 근거가 없어 제외했다.
+
+### 현재 후보 분류
+
+| 역할 | 원천·표제 | Candidate ID |
+|---|---|---|
+| CANONICAL · 독립신문(1919 블라디보스토크) | AKS · 독립신문 | `source-candidate:1fae67827c0c8a145730` |
+| REJECTED | AKS · 원동고려사범대학 | `source-candidate:eea6833b7a5b2757e9e2` |
+| CANONICAL · 독립신문(1919 블라디보스토크) | THESAURUS · 독립신문 | `source-candidate:03d032a25ed54aeece83` |
+| REJECTED | THESAURUS · 독립신문 | `source-candidate:7e1a103298a9b976ece6` |
+
+### Canonical 대안
+
+#### 대안 1. 독립신문(1919 블라디보스토크)
+
+- Entity type: `Work`
+- 동일 실체 후보:
+  - `source-candidate:1fae67827c0c8a145730` — AKS · 독립신문
+  - `source-candidate:03d032a25ed54aeece83` — THESAURUS · 독립신문
+- 판정 근거: 용어 자체의 식별 단서인 1919년·블라디보스토크와 일치한다. 두 원천 모두 장기영 등을 중심으로 블라디보스토크에서 민족정신 고취 및 반일운동을 위해 1919년에 창간한 한자 표기 獨立新聞이라는 동일한 연속간행물을 직접 설명한다.
+
+### Evidence only
+
+- 없음
+
+### Rejected
+
+- `source-candidate:eea6833b7a5b2757e9e2` — AKS · 원동고려사범대학
+- `source-candidate:7e1a103298a9b976ece6` — THESAURUS · 독립신문
+
+### Ambiguous
+
+- 없음
+
+<details>
+<summary><strong>후보 4개의 원천 문맥 펼치기</strong></summary>
+
+#### 후보 1. 독립신문 · AKS
+
+- Candidate ID: `source-candidate:1fae67827c0c8a145730`
+- 현재 분류: **CANONICAL · 독립신문(1919 블라디보스토크)**
+- Source record ID: `AKS:ARTICLE:E0015985:sha256-704d8ea620c542f5`
+- Entity type: `(빈 값)`
+- 한자: 獨立新聞
+- 시대: 근대, 일제강점기
+- 원천 문맥:
+  - `headword`: 독립신문
+  - `origin`: 獨立新聞
+  - `headword_origin`: 독립신문(獨立新聞)
+  - `primary_type`: 문헌/연속간행물
+  - `era`: 근대/일제강점기
+  - `definition`: 1919년에, 블라디보스토크에서 장기영 등이 민족정신을 고취시키기 위하여 창간한 신문.
+
+#### 후보 2. 원동고려사범대학 · AKS
+
+- Candidate ID: `source-candidate:eea6833b7a5b2757e9e2`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0072244:sha256-704d8ea620c542f5`
+- Entity type: `Organization`
+- 한자: 遠東高麗師範大學
+- 시대: 근대, 일제강점기
+- 원천 문맥:
+  - `headword`: 원동고려사범대학
+  - `aliases`: 블라디보스토크고려사범대학, 해삼위고려사범대학
+  - `origin`: 遠東高麗師範大學
+  - `headword_origin`: 원동고려사범대학(遠東高麗師範大學)
+  - `primary_type`: 단체/학교
+  - `era`: 근대/일제강점기
+  - `definition`: 1931년에 블라디보스토크에 설립된 고려인 사범대학.
+
+#### 후보 3. 독립신문 · THESAURUS
+
+- Candidate ID: `source-candidate:03d032a25ed54aeece83`
+- 현재 분류: **CANONICAL · 독립신문(1919 블라디보스토크)**
+- Source record ID: `THESAURUS:TERM:10496122:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 獨立新聞
+- 시대: 일제시기
+- 원천 문맥:
+  - `term_name`: 독립신문
+  - `hanja`: 獨立新聞
+  - `era`: 일제시기
+  - `thesaurus_category`: 문화·예술>언론·출판
+  - `description`: 1919년에 블라디보스토크(Vladivostok)에서 장기영(張基永)과 김학현(金學鉉) 등이 반일운동과 민족정신을 고취시키기 위하여 창간한 신문.
+  - `term_year`: 1919-?
+  - `term_remark`: 1919
+
+#### 후보 4. 독립신문 · THESAURUS
+
+- Candidate ID: `source-candidate:7e1a103298a9b976ece6`
+- 현재 분류: **REJECTED**
+- Source record ID: `THESAURUS:TERM:3500:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 獨立新聞
+- 시대: 일제시기
+- 원천 문맥:
+  - `term_name`: 독립신문
+  - `hanja`: 獨立新聞
+  - `era`: 일제시기
+  - `thesaurus_category`: 문화·예술>언론·출판
+  - `description`: 1919년 8월 21일 상해에서 ≪독립≫이란 제호로창간되었다가 같은 해 10월 ≪독립신문≫으로 제호를 바꾼 대한민국임시정부의 기관지.
+  - `term_year`: 1919-1925
+  - `term_remark`: 상해
+
+</details>
+
+### 사람 검수 입력
+
+- Manual status: `PENDING`
+- Manual reason: (미입력)
+- Reviewer: (미입력)
+- Reviewed at: (미입력)
+
+[목록으로 돌아가기](#case-목록)
+
+---
+
+<a id="case-059"></a>
+## 059. 대한신문(1919 북간도) · PENDING
+
+- Case ID: `related-resolution-case:5534a8ba3c9b9e023e48`
+- 모델 게이트: `NEEDS_MANUAL_REVIEW`
+- 검증 사유: `TERM_SOURCE_ALIGNMENT_REVIEW_REQUIRED`
+- 후보 수: 8개
+
+### 모델 판정 사유
+
+> 문제 문맥 표본은 없지만 canonical term 자체가 1919년 북간도 신문을 target으로 특정한다. 1919년 만주·간도 용정촌 발간의 大韓獨立新聞을 설명하는 두 원천만 동일 target으로 묶었다. 1907년 서울의 친일 대한신문 및 그 신문사, 1910년 대한일일신문사, 1945년 대한독립협회 발간 대한독립신문은 이름 또는 한자가 일부 겹쳐도 시기·장소·주체·유형이 달라 target identity가 아니며, target과의 명시적 관계 근거도 없어 제외했다.
+
+### 현재 후보 분류
+
+| 역할 | 원천·표제 | Candidate ID |
+|---|---|---|
+| CANONICAL · 대한신문(1919 북간도) | AKS · 대한독립신문 | `source-candidate:72e0e507ce9fc13a4964` |
+| REJECTED | THESAURUS · 대한신문사 | `source-candidate:32dfac8ab38f5f792066` |
+| REJECTED | AKS · 대한신문 | `source-candidate:2aa069f0ed654a1cab43` |
+| REJECTED | THESAURUS · 대한신문 | `source-candidate:2dbe81e83364920f25cd` |
+| REJECTED | THESAURUS · 대한일일신문사 | `source-candidate:91b50f606f8057c1f1aa` |
+| REJECTED | AKS · 대한독립신문 | `source-candidate:a6a40df462ba6f34ab44` |
+| CANONICAL · 대한신문(1919 북간도) | THESAURUS · 대한독립신문 | `source-candidate:1f4970fe890e4608d287` |
+| REJECTED | THESAURUS · 대한독립신문 | `source-candidate:0b09d334750346efaf28` |
+
+### Canonical 대안
+
+#### 대안 1. 대한신문(1919 북간도)
+
+- Entity type: `Work`
+- 동일 실체 후보:
+  - `source-candidate:72e0e507ce9fc13a4964` — AKS · 대한독립신문
+  - `source-candidate:1f4970fe890e4608d287` — THESAURUS · 대한독립신문
+- 판정 근거: Target은 용어 표기의 식별 단서인 1919년 북간도(만주) 발간 신문이다. 두 원천은 모두 한자 大韓獨立新聞의 1919년 만주 한인 신문을 설명하며, AKS 원천은 간도 용정촌에서 구춘성 등이 창간했다고 구체적으로 밝혀 북간도·1919년 단서와 일치한다.
+
+### Evidence only
+
+- 없음
+
+### Rejected
+
+- `source-candidate:32dfac8ab38f5f792066` — THESAURUS · 대한신문사
+- `source-candidate:2aa069f0ed654a1cab43` — AKS · 대한신문
+- `source-candidate:2dbe81e83364920f25cd` — THESAURUS · 대한신문
+- `source-candidate:91b50f606f8057c1f1aa` — THESAURUS · 대한일일신문사
+- `source-candidate:a6a40df462ba6f34ab44` — AKS · 대한독립신문
+- `source-candidate:0b09d334750346efaf28` — THESAURUS · 대한독립신문
+
+### Ambiguous
+
+- 없음
+
+<details>
+<summary><strong>후보 8개의 원천 문맥 펼치기</strong></summary>
+
+#### 후보 1. 대한독립신문 · AKS
+
+- Candidate ID: `source-candidate:72e0e507ce9fc13a4964`
+- 현재 분류: **CANONICAL · 대한신문(1919 북간도)**
+- Source record ID: `AKS:ARTICLE:E0014974:sha256-704d8ea620c542f5`
+- Entity type: `(빈 값)`
+- 한자: 大韓獨立新聞
+- 시대: 근대, 일제강점기
+- 원천 문맥:
+  - `headword`: 대한독립신문
+  - `origin`: 大韓獨立新聞
+  - `headword_origin`: 대한독립신문(大韓獨立新聞)
+  - `primary_type`: 문헌/연속간행물
+  - `era`: 근대/일제강점기
+  - `definition`: 1919년에, 간도 용정촌에서 구춘성 등이 해외 독립지사들의 활동 상황을 전하기 위하여 창간한 교민 신문.
+
+#### 후보 2. 대한신문사 · THESAURUS
+
+- Candidate ID: `source-candidate:32dfac8ab38f5f792066`
+- 현재 분류: **REJECTED**
+- Source record ID: `THESAURUS:TERM:12470:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 大韓新聞社
+- 시대: 근대
+- 원천 문맥:
+  - `term_name`: 대한신문사
+  - `hanja`: 大韓新聞社
+  - `era`: 근대
+  - `thesaurus_category`: 문화·예술>언론·출판
+  - `description`: 1907년 이인직(李人稙)이 서울에 설립한 신문사.
+  - `term_year`: 1907
+
+#### 후보 3. 대한신문 · AKS
+
+- Candidate ID: `source-candidate:2aa069f0ed654a1cab43`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0015112:sha256-704d8ea620c542f5`
+- Entity type: `Work`
+- 한자: 大韓新聞
+- 시대: 근대, 대한제국기
+- 원천 문맥:
+  - `headword`: 대한신문
+  - `origin`: 大韓新聞
+  - `headword_origin`: 대한신문(大韓新聞)
+  - `primary_type`: 문헌/연속간행물
+  - `era`: 근대/대한제국기
+  - `definition`: 1907년에, 이완용이 언론 기관의 필요성을 인식하여 이인직으로 하여금 창간한 친일 신문.
+
+#### 후보 4. 대한신문 · THESAURUS
+
+- Candidate ID: `source-candidate:2dbe81e83364920f25cd`
+- 현재 분류: **REJECTED**
+- Source record ID: `THESAURUS:TERM:3315:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 大韓新聞
+- 시대: 근대
+- 원천 문맥:
+  - `term_name`: 대한신문
+  - `hanja`: 大韓新聞
+  - `era`: 근대
+  - `thesaurus_category`: 문화·예술>언론·출판
+  - `description`: 1907년 7월 18일 이인직(李人稙)이 창간한 친일계(親日系) 신문.
+  - `term_year`: 1907-1909
+
+#### 후보 5. 대한일일신문사 · THESAURUS
+
+- Candidate ID: `source-candidate:91b50f606f8057c1f1aa`
+- 현재 분류: **REJECTED**
+- Source record ID: `THESAURUS:TERM:12443:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 大韓日日新聞社
+- 시대: 근대
+- 원천 문맥:
+  - `term_name`: 대한일일신문사
+  - `hanja`: 大韓日日新聞社
+  - `era`: 근대
+  - `thesaurus_category`: 문화·예술>언론·출판
+  - `description`: 1910년 이소종(李紹鍾)이 서울에 설립한 신문사.
+  - `term_year`: 1910
+
+#### 후보 6. 대한독립신문 · AKS
+
+- Candidate ID: `source-candidate:a6a40df462ba6f34ab44`
+- 현재 분류: **REJECTED**
+- Source record ID: `AKS:ARTICLE:E0014975:sha256-704d8ea620c542f5`
+- Entity type: `Work`
+- 한자: 大韓獨立新聞
+- 시대: 현대
+- 원천 문맥:
+  - `headword`: 대한독립신문
+  - `origin`: 大韓獨立新聞
+  - `headword_origin`: 대한독립신문(大韓獨立新聞)
+  - `primary_type`: 문헌/연속간행물
+  - `era`: 현대
+  - `definition`: 1945년에, 대한 독립 협회에서 이승만의 환국을 맞아 창간한 일간 신문.
+
+#### 후보 7. 대한독립신문 · THESAURUS
+
+- Candidate ID: `source-candidate:1f4970fe890e4608d287`
+- 현재 분류: **CANONICAL · 대한신문(1919 북간도)**
+- Source record ID: `THESAURUS:TERM:3291:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 大韓獨立新聞
+- 시대: 일제시기
+- 원천 문맥:
+  - `term_name`: 대한독립신문
+  - `hanja`: 大韓獨立新聞
+  - `era`: 일제시기
+  - `thesaurus_category`: 문화·예술>언론·출판
+  - `description`: 1919년 만주에서 발간된 한인신문.
+  - `term_year`: 1919
+  - `term_remark`: 1919
+
+#### 후보 8. 대한독립신문 · THESAURUS
+
+- Candidate ID: `source-candidate:0b09d334750346efaf28`
+- 현재 분류: **REJECTED**
+- Source record ID: `THESAURUS:TERM:3292:sha256-1022516a18f91e61`
+- Entity type: `(빈 값)`
+- 한자: 大韓獨立新聞
+- 시대: 현대
+- 원천 문맥:
+  - `term_name`: 대한독립신문
+  - `hanja`: 大韓獨立新聞
+  - `era`: 현대
+  - `thesaurus_category`: 문화·예술>언론·출판
+  - `description`: 1945년 광복 후 대한독립협회에서 발간한 일간신문.
+  - `term_year`: 1945
+  - `term_remark`: 1945
+
+</details>
+
+### 사람 검수 입력
+
+- Manual status: `PENDING`
+- Manual reason: (미입력)
+- Reviewer: (미입력)
+- Reviewed at: (미입력)
+
+[목록으로 돌아가기](#case-목록)
+
+---

@@ -5,9 +5,11 @@
 
 - `human_review_candidates.csv`: 100개 case의 후보 550행을 비교한다. 모든 행을 작성하지 않는다.
 - `human_review_cases.csv`: 용어 case 100건의 최종 상태·공통 근거·검수자를 기록한다.
-  `1`~`20`은 기존 검수 완료분이고 `21`~`100`은 신규 검수 대상이다.
+  실제 완료 상태는 `case_review_status`로 확인한다.
 - `related_entity_manual_review.csv`: 관련 엔티티 모델 판정 중 자동 검증 게이트가 보류한
   case만 기록한다. 첫 `--goldset` 실행 뒤 자동 생성되며, 보류 건이 없으면 헤더만 남는다.
+- `role_conflict_manual_review.csv`: 사람 gold와 모델이 `EVIDENCE_ONLY`·`REJECTED`를 서로
+  반대로 판정한 후보만 모은 재검토 큐다. 모델 평가 뒤 자동 생성된다.
 - `case_review_status=COMPLETE`인 case에서 역할이 빈 후보는 자동으로 `REJECTED`가 된다.
 - 파일럿은 case당 후보 10개 이하를 우선 선택하고, 해당 category에 그런 case가 없을 때만 최소 후보 case를 사용한다.
 - 자동 생성 컬럼은 확인만 하고 수정하지 않는다.
@@ -69,10 +71,17 @@
 - `IDENTITY_MEMBER`: 이 레코드가 해당 역사 실체 자체를 직접 설명한다.
   - 예: `거친무늬 거울` 용어에 대한 AKS의 「거친무늬 거울」 문서
   - 같은 실체를 설명하는 AKS·시소러스·ITKC 레코드는 모두 identity member가 될 수 있다.
-- `EVIDENCE_ONLY`: 용어를 언급하거나 관계 근거를 제공하지만 문서의 주 대상은 다른 실체다.
-  - 예: `황궁`을 설명에 포함하지만 표제어와 주 대상은 `여정궁`인 문서
-- `REJECTED`: 문자열 검색 오탐이거나 category·시대·대상이 일치하지 않는다. 직접 입력할 수도 있지만 보통 빈칸으로 둔다.
-- `AMBIGUOUS`: 현재 기출문제와 원천 문맥만으로 위 세 역할 중 하나를 확정할 수 없다.
+- `EVIDENCE_ONLY`: 문서의 주 대상은 다른 실체지만 원천 문맥이 target을 명시적으로
+  언급하고, 인용·참여·체결·제작·포함 같은 구체적인 관계를 설명한다.
+  - 예: 별도 문헌이 target 문헌을 인용했다고 명시한 문서
+- `REJECTED`: target과의 관계 설명 없이 부분 문자열·동명·수식어만 겹치거나,
+  category·시대·대상이 다른 검색 오탐이다. 직접 입력할 수도 있지만 보통 빈칸으로 둔다.
+- `AMBIGUOUS`: 정보 부족 때문에 위 세 역할 중 하나를 확정할 수 없다. 관계가 명확한
+  별도 실체나 관계 없는 명확한 오탐을 단순히 확신도가 낮다는 이유로 넣지 않는다.
+
+역할은 `IDENTITY_MEMBER` 여부를 먼저 판단하고, target과 다른 실체라면 명시적인 관계
+근거가 있는지 확인한다. 관계가 있으면 `EVIDENCE_ONLY`, 문자열만 겹치고 관계가 없으면
+`REJECTED`, 현재 정보로 두 경우를 구분할 수 없을 때만 `AMBIGUOUS`다.
 
 case를 `COMPLETE`로 확정하면 역할이 빈 후보는 importer가 `REJECTED`로 변환한다. 따라서
 사람은 `IDENTITY_MEMBER`, `EVIDENCE_ONLY`, `AMBIGUOUS` 후보를 중심으로 입력한다.
@@ -324,7 +333,7 @@ case만 한 행씩 생성된다.
 | `canonical_term` | 재검색한 관련 용어다. |
 | `model_verification_status` | 자동 게이트 결과다. 이 파일에는 보통 `NEEDS_MANUAL_REVIEW`가 들어간다. |
 | `validation_error_codes` | 보류 원인 JSON 배열이다. `INSUFFICIENT_PAIR_EVIDENCE`, `ENTITY_TYPE_REVIEW_REQUIRED` 등이 들어간다. |
-| `candidate_reference_json` | candidate ID, 원천, 원천 레코드 ID, 표제명, 유형, 한자, 시대를 모은 읽기 전용 안내 배열이다. 아래 분류 JSON의 ID가 어느 문서를 뜻하는지 확인할 때 사용한다. |
+| `candidate_reference_json` | candidate ID, 원천, 원천 레코드 ID, 표제명, 정규화 유형, 한자, 시대와 `source_context` 원문 근거를 모은 읽기 전용 안내 배열이다. `term_remark`는 원문 판단 근거로만 표시하며 정규화 유형을 자동 추론하지 않는다. |
 | `model_decision_reason` | LLM이 case 전체에 대해 작성한 판정 사유다. 사람 승인 근거를 대신하지 않는다. |
 
 ### 8.2 사람이 확인·수정하는 컬럼
@@ -339,6 +348,11 @@ case만 한 행씩 생성된다.
 | `manual_reason` | 사람이 원천 내용을 대조해 내린 최종 판단 근거다. `VERIFIED` 또는 `REJECTED`에서 필수다. |
 | `reviewer` | 검수자 이름 또는 팀 식별자다. 완료 판정에서 필수다. |
 | `reviewed_at` | ISO 8601 검수 시각이다. 비워 두면 적용 실행 시 UTC 시각이 자동 기록된다. |
+
+`manual_status=PENDING`은 아직 사람 판정이 확정되지 않은 상태이므로 다시 `--goldset`을
+실행하면 네 JSON 분류 컬럼이 현재 모델 판정으로 갱신된다. 이전 모델 결과를 사람 판정으로
+오인하지 않도록 하기 위한 동작이다. 사람이 수정한 분류를 보존하려면 검수를 끝낸 뒤
+`manual_status=VERIFIED` 또는 `REJECTED`와 함께 `manual_reason`, `reviewer`를 작성한다.
 
 ### 8.3 가장 쉬운 작성 방법
 
@@ -367,3 +381,41 @@ case만 한 행씩 생성된다.
 사람이 이 골든셋에서 직접 지정한 seed가 유일한 검증 대안에 속하면 단일 원천이어도
 `verified_related_entity_seed`로 승격한다. 그 외 단일 원천만
 `single_source_entities_requiring_approval.csv`에서 별도 승인한다.
+
+## 9. `role_conflict_manual_review.csv`
+
+이 파일은 기존 gold를 자동으로 바꾸는 파일이 아니다. 현재 사람 정답과 모델 결과 사이의
+`EVIDENCE_ONLY`·`REJECTED` 경계 충돌만 모아, gold 오류인지 모델 오류인지 다시 확인하는
+감사 큐다.
+
+### 9.1 확인할 컬럼
+
+| 컬럼 | 의미 |
+|---|---|
+| `canonical_term`, `problem_context_samples_json` | 기출문제에서 판정하는 target과 문맥 |
+| `source_context_json` | 후보 원천의 주 대상과 실제 설명 |
+| `gold_role`, `gold_reason` | 현재 사람 정답과 근거 |
+| `model_role`, `model_reason` | 현재 모델 판정과 근거 |
+| `candidate_pair_signals_json` | 같은 case 후보와의 코드 비교 신호. 최종 정답은 아님 |
+
+### 9.2 사람이 입력할 컬럼
+
+| 컬럼 | 입력 방법 |
+|---|---|
+| `reviewed_role` | 재검토한 최종 역할. `IDENTITY_MEMBER`, `EVIDENCE_ONLY`, `REJECTED`, `AMBIGUOUS` 중 하나 |
+| `review_status` | 미검토는 `PENDING`, 완료는 `COMPLETE` |
+| `manual_reason` | target과 원천 주 대상, 관계 유무를 대조한 근거 |
+| `reviewer` | 검수자 이름 또는 팀 식별자 |
+| `reviewed_at` | ISO 8601 검수 시각. 필요하면 기록 |
+
+`COMPLETE`로 판정한 결과가 기존 gold와 다르면
+`human_review_candidates.csv`의 해당 `term_review_task_id`·`source_candidate_id` 행을
+수정하고 case 검증을 다시 실행한다. 이 큐 자체는 gold import에 직접 반영되지 않는다.
+
+현재 모델 결과로 큐만 다시 만들 때는 다음 명령을 사용한다. 기존 큐의 같은 후보에 작성한
+사람 입력 컬럼은 보존된다.
+
+```powershell
+.\.venv\Scripts\python.exe `
+  etl/preprocessing/neo4j/entity_resolution/role_conflict_review.py
+```

@@ -130,10 +130,13 @@ def request_term_decision(
     semantic_policy = policy["entity_resolution"]["semantic_review"]
     model_policy = semantic_policy["term_model"]
     executor_policy = semantic_policy["term_executor"]
+    request_task = dict(task)
+    request_task["review_model"] = model_policy["model"]
+    request_task["prompt_version"] = semantic_policy["prompt_version"]
     request_arguments: dict[str, object] = {
         "model": model_policy["model"],
         "instructions": prompt,
-        "input": dumps(task, ensure_ascii=False),
+        "input": dumps(request_task, ensure_ascii=False),
         "max_output_tokens": int(executor_policy["maximum_output_tokens"]),
         "reasoning": {"effort": model_policy["reasoning_effort"]},
         "store": bool(executor_policy["store_response"]),

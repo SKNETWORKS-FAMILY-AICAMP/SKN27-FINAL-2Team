@@ -59,6 +59,7 @@ def build_candidate_reference(task: dict) -> list[dict]:
                 ),
                 "hanja": candidate.get("hanja", []),
                 "era": candidate.get("era_values", []),
+                "source_context": candidate.get("source_context", {}),
             }
         )
     return references
@@ -136,11 +137,13 @@ def build_manual_review_table(
         str(case_id): sorted(set(group["error_code"].astype(str)))
         for case_id, group in error_table.groupby("resolution_case_id")
     }
-    editable_fields = [
+    decision_fields = [
         "canonical_alternatives_json",
         "evidence_only_source_candidate_ids_json",
         "rejected_source_candidate_ids_json",
         "ambiguous_source_candidate_ids_json",
+    ]
+    audit_fields = [
         "manual_status",
         "manual_reason",
         "reviewer",
@@ -189,8 +192,18 @@ def build_manual_review_table(
         }
         existing = existing_by_case.get(case_id)
         if existing is not None:
-            for field_name in editable_fields:
+            for field_name in audit_fields:
                 row[field_name] = existing[field_name]
+            existing_status = str(
+                existing.get("manual_status") or ""
+            ).strip().upper()
+            completed_statuses = {
+                str(manual_policy["statuses"]["verified"]).upper(),
+                str(manual_policy["statuses"]["rejected"]).upper(),
+            }
+            if existing_status in completed_statuses:
+                for field_name in decision_fields:
+                    row[field_name] = existing[field_name]
         rows.append(row)
     return pd.DataFrame(rows, columns=get_manual_review_columns())
 

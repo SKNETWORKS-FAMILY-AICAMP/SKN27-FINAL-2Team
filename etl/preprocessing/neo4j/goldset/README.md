@@ -59,13 +59,15 @@
 명시적 초기화 옵션이다. 일반적인 표본 확대에는 사용하지 않는다.
 
 사람이 실제로 작성할 파일은 `human_review_csv` 안에 있다. 최초 골든셋 검수는 두 CSV로
-진행하고, 관련 엔티티 자동 게이트가 보류한 건이 있으면 세 번째 CSV가 자동 생성된다.
+진행한다. 평가와 관련 엔티티 자동 게이트가 보류하거나 충돌한 건은 별도 검수 CSV로
+자동 생성된다.
 
 | 위치 | 의미 |
 |---|---|
-| `human_review_csv/human_review_cases.csv` | 용어 case 100건의 최종 상태·공통 근거·검수자 입력. `1`~`20`은 완료, `21`~`100`은 신규 검수 대상 |
+| `human_review_csv/human_review_cases.csv` | 용어 case 100건의 최종 상태·공통 근거·검수자 입력. 실제 진행 상태는 `case_review_status`로 확인 |
 | `human_review_csv/human_review_candidates.csv` | 정답·근거·애매 후보의 역할, 동일 실체 묶음, `EVIDENCE_ONLY`의 별도 관련 엔티티 입력. 빈 역할은 case 완료 시 `REJECTED` |
 | `human_review_csv/related_entity_manual_review.csv` | 관련 엔티티 모델 판정 중 자동 게이트가 보류한 case 승인·수정. 최초 `--goldset` 실행 뒤 생성 |
+| `human_review_csv/role_conflict_manual_review.csv` | 사람 gold와 모델의 `EVIDENCE_ONLY`·`REJECTED` 상호 오분류 재검토 큐. 평가 뒤 생성 |
 | `final_identity` | seed 원천이 속한 검증 대안만 승격한 관련 엔티티 canonical registry와 Neo4j identity CSV |
 | `internal/source` | 표본 task, 빈 CSV 양식, 코드 baseline, 표본 생성 기록 |
 | `internal/model` | 골든 case 모델 판정과 checkpoint |
@@ -79,11 +81,56 @@
 `internal/evaluation/model_vs_gold_metrics.json`은 LLM 원본 제안 지표와 검증 게이트 통과
 후 지표를 함께 기록한다. `proposal_false_merge_pair_count`는 LLM이 제안한 오병합이고,
 `verified_false_merge_pair_count`는 게이트까지 통과한 실제 위험 오병합이다.
+역할 평가는 원래 `candidate_role_macro_f1`을 유지하면서, 표본 수를 반영한
+`candidate_role_weighted_f1`, 정책상 희소 역할을 제외한
+`candidate_role_macro_f1_without_excluded_roles`, 역할별 표본 수인
+`candidate_role_support_counts`를 함께 기록한다. 보조지표는 원래 macro F1을 대체하지 않는다.
 `model_vs_gold_case_results.csv`의 `gate_verification_status`,
 `gate_error_codes_json`, `accepted_pair_false_positive`,
 `blocked_proposal_false_merge_count`에서 case별 차단 결과를 확인한다.
 게이트가 보류해 아직 확정하지 않은 정답 pair는 오분리로 세지 않고
 `deferred_gold_identity_pair_count`로 별도 집계한다.
+
+`proposal_identity_pair_recall`은 원본 모델 제안이 gold pair를 누락하지 않았는지
+측정한다. 정답 pair를 모두 포함하면서 잘못된 pair도 추가하면 recall은 1.0이고 precision은
+낮아질 수 있으므로 두 값을 함께 본다.
+
+`verified_identity_pair_recall`은 `VERIFIED` case 내부의 조건부 recall이다. 게이트가
+보류한 gold pair는 FN이 아니라 `deferred_gold_identity_pair_count`로 빠지므로 이 값을
+전체 자동 병합 recall로 해석하지 않는다. 전체 자동 승인 coverage는 다음처럼 계산한다.
+
+```text
+verified TP / (verified TP + verified FN + deferred gold pair)
+```
+
+현재 v3 결과는 `24 / (24 + 0 + 35) = 0.406780`이다. verified precision 1.0은 자동 승인된
+pair의 안전성을 뜻하고, 40.7%는 전체 gold pair 중 자동 승인된 범위를 뜻한다.
+
+이 계산은 `model_vs_gold_metrics.json`의
+`auto_accepted_identity_pair_precision`, `auto_accepted_identity_pair_recall`,
+`auto_accepted_identity_pair_f1`, `deferred_gold_identity_pair_rate`에 직접 기록된다.
+`conditional_verified_identity_pair_*`는 기존 `verified_identity_pair_*`가 조건부
+지표임을 명확히 하는 호환 필드다. 보류 오류는 같은 JSON의
+`deferred_gold_pair_error_case_counts`와 `deferred_gold_pair_error_pair_counts`에서
+case 수와 영향받은 pair 수를 각각 확인한다.
+
+identity pair evidence gate의 활성 방식은 `connected_graph`다. 강한 충돌이 없는
+`merge_eligible=true` edge로 identity 멤버 전체가 연결되면 pair evidence를 통과한다.
+모든 pair 직접 근거를 요구하는 기존 방식은 `complete_graph`이며 정책값으로 회귀할 수
+있다. 연결 방식도 강한 pair 충돌, pair 행 누락, category 충돌, term alignment와
+EntityType 검토를 우회하지 않는다.
+metrics JSON의 `identity_pair_gate_policy_version`과
+`identity_pair_gate_evidence_mode`가 실제 평가에 적용된 게이트 정책을 기록한다.
+
+현재 v3 결과에서 연결 그래프는 `비무장지대`의 정답 pair 3개를 추가 승인했다.
+자동 승인 precision 1.0과 false merge 0을 유지하면서 자동 승인 recall은
+`0.406780`에서 `0.457627`로 증가했다.
+
+`role_conflict_manual_review.csv`는 현재 모델과 gold가 `EVIDENCE_ONLY`·`REJECTED`를 반대로
+고른 후보만 모은다. 검수자는 target 문맥과 후보 원천의 주 대상을 비교해
+`reviewed_role`, `review_status`, `manual_reason`, `reviewer`를 작성한다. 이 파일은 gold를
+자동 변경하지 않는다. gold가 잘못된 것으로 결론 나면 같은 후보를
+`human_review_candidates.csv`에서 수정한 뒤 다시 import한다.
 
 상류에서 전달받은 기출문제의 용어 표기는 원문 그대로 보존한다. 모델이 유사한 정답 표기로
 교정해 제안하더라도, 입력 용어와 identity member 원천명 사이에 정규화 exact·포함 관계·
@@ -122,6 +169,8 @@
 `human_review_csv/related_entity_manual_review.csv`에 행이 생성된다. 모델 제안이 맞으면
 `manual_status=VERIFIED`, `manual_reason`, `reviewer`만 작성하고 다시 `--goldset`을 실행한다.
 완료된 사람 판정은 `verification_method=HUMAN_REVIEW`와 검수자·시각을 함께 기록한다.
+`PENDING` 행의 분류 JSON은 재실행할 때 현재 모델 판정으로 갱신되며,
+`VERIFIED`·`REJECTED`로 완료한 사람 판정만 다음 실행에서도 보존된다.
 
 모든 관련 엔티티 판정이 끝나면 같은 `--goldset` 실행에서 `final_identity`도 생성한다.
 동명이인 대안이 여러 개여도 사람이 관련 엔티티로 지정했던 seed SourceRecord가 속한 대안만

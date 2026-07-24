@@ -504,11 +504,11 @@ def build_validation_tables_from_review_tasks(
     }
 
 
-def collect_term_source_alignment_modes(
+def collect_term_source_alignment_modes_by_member(
     task: dict,
     member_ids: list[str],
-) -> set[str]:
-    """입력 용어와 identity member 원천명 사이의 일반화된 정합성을 계산한다."""
+) -> dict[str, set[str]]:
+    """입력 용어와 각 identity member 원천명 사이의 정합성을 계산한다."""
     term_values = [task.get("canonical_term", "")]
     term_values.extend(task.get("term_variants", []))
     normalized_terms: set[str] = set()
@@ -522,8 +522,11 @@ def collect_term_source_alignment_modes(
         str(candidate["source_candidate_id"]): candidate
         for candidate in task.get("source_candidates", [])
     }
-    alignment_modes: set[str] = set()
+    alignment_modes_by_member: dict[str, set[str]] = {}
     for member_id in member_ids:
+        member_key = str(member_id)
+        alignment_modes: set[str] = set()
+        alignment_modes_by_member[member_key] = alignment_modes
         candidate = candidate_by_id.get(str(member_id))
         if candidate is None:
             continue
@@ -556,7 +559,58 @@ def collect_term_source_alignment_modes(
                         matched_character_count += 1
                 if matched_character_count == len(term_name):
                     alignment_modes.add("ordered_subsequence_expansion")
-    return alignment_modes
+    return alignment_modes_by_member
+
+
+def collect_term_source_alignment_modes(
+    task: dict,
+    member_ids: list[str],
+) -> set[str]:
+    """하위 호환을 위해 identity member 전체의 정합성 모드를 합쳐 반환한다."""
+    combined_modes: set[str] = set()
+    modes_by_member = collect_term_source_alignment_modes_by_member(
+        task,
+        member_ids,
+    )
+    for alignment_modes in modes_by_member.values():
+        combined_modes.update(alignment_modes)
+    return combined_modes
+
+
+def identity_members_have_connected_pair_evidence(
+    member_ids: list[str],
+    pair_by_ids: dict[frozenset[str], dict],
+) -> bool:
+    """강한 충돌 없는 양성 pair edge가 identity 멤버 전체를 연결하는지 확인한다."""
+    normalized_member_ids = [str(member_id) for member_id in member_ids]
+    if len(normalized_member_ids) < 2:
+        return True
+    adjacency = {
+        member_id: set()
+        for member_id in normalized_member_ids
+    }
+    for left_id, right_id in combinations(normalized_member_ids, 2):
+        pair = pair_by_ids.get(frozenset([left_id, right_id]))
+        if pair is None:
+            continue
+        conflicts = loads(pair["conflict_signals_json"])
+        if conflicts:
+            continue
+        merge_eligible = str(pair["merge_eligible"]).lower() == "true"
+        if not merge_eligible:
+            continue
+        adjacency[left_id].add(right_id)
+        adjacency[right_id].add(left_id)
+
+    visited: set[str] = set()
+    pending = [normalized_member_ids[0]]
+    while pending:
+        member_id = pending.pop()
+        if member_id in visited:
+            continue
+        visited.add(member_id)
+        pending.extend(adjacency[member_id].difference(visited))
+    return visited == set(normalized_member_ids)
 
 
 def validate_term_decisions(
@@ -574,6 +628,16 @@ def validate_term_decisions(
         "manual_review"
     ]
     term_alignment_policy = semantic_policy["term_source_alignment"]
+    identity_pair_gate_policy = semantic_policy["identity_pair_gate"]
+    pair_evidence_modes = identity_pair_gate_policy["evidence_modes"]
+    pair_evidence_mode = identity_pair_gate_policy[
+        "active_evidence_mode"
+    ]
+    if pair_evidence_mode not in set(pair_evidence_modes.values()):
+        raise ValueError(
+            "지원하지 않는 identity pair evidence mode입니다: "
+            f"{pair_evidence_mode}"
+        )
     automatic_alignment_modes = set(
         term_alignment_policy["automatic_acceptance_modes"]
     )
@@ -766,19 +830,43 @@ def validate_term_decisions(
                 identifier_policy,
             )
             alternative_specs.append((alternative, alternative_id))
-            alignment_modes: set[str] = set()
+            alignment_modes_by_member: dict[str, set[str]] = {}
             if task is not None:
-                alignment_modes = collect_term_source_alignment_modes(
-                    task,
-                    member_ids,
+                alignment_modes_by_member = (
+                    collect_term_source_alignment_modes_by_member(
+                        task,
+                        member_ids,
+                    )
                 )
+            members_requiring_alignment_review: list[str] = []
+            require_each_member = bool(
+                term_alignment_policy["require_each_identity_member"]
+            )
+            if require_each_member:
+                members_requiring_alignment_review = [
+                    member_id
+                    for member_id in member_ids
+                    if not alignment_modes_by_member.get(
+                        str(member_id),
+                        set(),
+                    ).intersection(automatic_alignment_modes)
+                ]
+            elif not any(
+                alignment_modes.intersection(automatic_alignment_modes)
+                for alignment_modes in alignment_modes_by_member.values()
+            ):
+                members_requiring_alignment_review = list(member_ids)
             if (
                 task is not None
-                and not alignment_modes.intersection(
-                    automatic_alignment_modes
-                )
+                and members_requiring_alignment_review
                 and not manual_override
             ):
+                observed_modes = {
+                    member_id: sorted(
+                        alignment_modes_by_member.get(member_id, set())
+                    )
+                    for member_id in members_requiring_alignment_review
+                }
                 add_validation_error(
                     error_rows,
                     decision_id,
@@ -789,9 +877,10 @@ def validate_term_decisions(
                         {
                             "canonical_term": task["canonical_term"],
                             "identity_member_source_candidate_ids": member_ids,
-                            "observed_alignment_modes": sorted(
-                                alignment_modes
+                            "members_requiring_review": (
+                                members_requiring_alignment_review
                             ),
+                            "observed_alignment_modes": observed_modes,
                         },
                         ensure_ascii=False,
                     ),
@@ -839,6 +928,7 @@ def validate_term_decisions(
                         candidate_id,
                     )
                     invalid = True
+            alternative_has_invalid_pair = False
             for left_id, right_id in combinations(member_ids, 2):
                 pair = pair_by_ids.get(frozenset([left_id, right_id]))
                 if pair is None:
@@ -851,6 +941,7 @@ def validate_term_decisions(
                         f"{left_id},{right_id}",
                     )
                     invalid = True
+                    alternative_has_invalid_pair = True
                     continue
                 conflicts = loads(pair["conflict_signals_json"])
                 if conflicts:
@@ -863,9 +954,11 @@ def validate_term_decisions(
                         dumps(conflicts, ensure_ascii=False),
                     )
                     invalid = True
+                    alternative_has_invalid_pair = True
                     continue
                 if (
-                    str(pair["merge_eligible"]).lower() != "true"
+                    pair_evidence_mode == pair_evidence_modes["complete"]
+                    and str(pair["merge_eligible"]).lower() != "true"
                     and not manual_override
                 ):
                     add_validation_error(
@@ -877,6 +970,32 @@ def validate_term_decisions(
                         f"{left_id},{right_id}",
                     )
                     manual_review = True
+            if (
+                pair_evidence_mode == pair_evidence_modes["connected"]
+                and not alternative_has_invalid_pair
+                and not identity_members_have_connected_pair_evidence(
+                    member_ids,
+                    pair_by_ids,
+                )
+                and not manual_override
+            ):
+                add_validation_error(
+                    error_rows,
+                    decision_id,
+                    case_id,
+                    "NEEDS_MANUAL_REVIEW",
+                    "INSUFFICIENT_PAIR_EVIDENCE",
+                    dumps(
+                        {
+                            "evidence_mode": pair_evidence_mode,
+                            "identity_member_source_candidate_ids": (
+                                member_ids
+                            ),
+                        },
+                        ensure_ascii=False,
+                    ),
+                )
+                manual_review = True
 
         if isinstance(decision.get("ambiguous_sources"), list) and decision.get(
             "ambiguous_sources"
