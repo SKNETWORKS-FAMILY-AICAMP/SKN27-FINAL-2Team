@@ -24,6 +24,7 @@ class StudyPlanMypage(models.Model):
     completion_rate = models.FloatField(default=0)
     archived_at = models.DateTimeField(blank=True, null=True)
     deleted_at = models.DateTimeField(blank=True, null=True)
+    weekly_report_data = models.JSONField(blank=True, null=True)
 
     class Meta:
         managed = False

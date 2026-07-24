@@ -1,0 +1,194 @@
+{
+  "pack_id": "image_generation_pack:easy_mixed_heritage:E0015980",
+  "family_id": "image_choice_pack_v2:easy_mixed_heritage",
+  "era": "개항기·대한제국",
+  "service_era": "개항기",
+  "service_topic": "문화",
+  "service_question_type": "역사 자료의 분석 및 해석",
+  "service_question_subtype": "시각 자료 해석",
+  "variant_key": "image:image_choice_pack_v2:easy_mixed_heritage:E0015980",
+  "target_label": "서울 독립문",
+  "topic_type": "문화유산",
+  "question_task": "standard_select",
+  "choice_mode": "image",
+  "stem_pattern": "target_description",
+  "relation_axis_id": "common.definition_feature",
+  "material_type": "자료 제시문",
+  "major_type": "역사 자료의 분석 및 해석",
+  "minor_type": "시각 자료 해석",
+  "difficulty_label": "쉬움",
+  "question_task_instruction": "검수된 단서를 바탕으로 대상명을 직접 노출하지 않는 지문과 발문을 만들고, 제시된 이미지 중 해당 문화유산을 고르게 한다.",
+  "material_clue_basis": "서울특별시 서대문구에 있는 대한제국기 자주독립을 위해 세운 문(門). 석조문.",
+  "material_evidence_chunks": [
+    {
+      "snippet": "서울특별시 서대문구에 있는 대한제국기 자주독립을 위해 세운 문(門). 석조문.",
+      "chunk_id": "definition:E0015980",
+      "article_id": "E0015980",
+      "exact_text": "서울특별시 서대문구에 있는 대한제국기 자주독립을 위해 세운 문(門). 석조문.",
+      "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_060_10900&whereStr=",
+      "section_path": [
+        "검수된 이미지 식별 단서"
+      ]
+    }
+  ],
+  "material_fact_semantically_distinct": true,
+  "status": "rag_ready",
+  "semantic_status": "pass",
+  "items": [
+    {
+      "slot_no": 0,
+      "role": "answer",
+      "basis_item_id": "clue:be7709172568",
+      "article_id": "E0015980",
+      "truth_owner_label": "서울 독립문",
+      "fact_basis": "서울특별시 서대문구에 있는 대한제국기 자주독립을 위해 세운 문(門). 석조문.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "definition:E0015980",
+          "article_id": "E0015980",
+          "snippet": "서울특별시 서대문구에 있는 대한제국기 자주독립을 위해 세운 문(門). 석조문.",
+          "exact_text": "서울특별시 서대문구에 있는 대한제국기 자주독립을 위해 세운 문(門). 석조문.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_060_10900&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_060_10900_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_060/ki_060_10900.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_060/ki_060_10900.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_060_10900&whereStr=",
+        "image_source": "국사편찬위원회",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유적",
+        "category_sub": "궁궐·성",
+        "internal_owner_title": "독립문",
+        "owner_id": "E0015980"
+      }
+    },
+    {
+      "slot_no": 1,
+      "role": "distractor",
+      "basis_item_id": "clue:37a5f7163102",
+      "article_id": "E0015361",
+      "truth_owner_label": "덕수궁",
+      "fact_basis": "서울특별시 중구에 있는 조선시대 고종의 거처로 이용된 궁궐.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "definition:E0015361",
+          "article_id": "E0015361",
+          "snippet": "서울특별시 중구에 있는 조선시대 고종의 거처로 이용된 궁궐.",
+          "exact_text": "서울특별시 중구에 있는 조선시대 고종의 거처로 이용된 궁궐.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_060_12400&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_060_12400_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_060/ki_060_12400.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_060/ki_060_12400.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_060_12400&whereStr=",
+        "image_source": "문화재청 덕수궁관리소",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유적",
+        "category_sub": "궁궐·성",
+        "internal_owner_title": "덕수궁",
+        "owner_id": "E0015361"
+      }
+    },
+    {
+      "slot_no": 2,
+      "role": "distractor",
+      "basis_item_id": "clue:2e0832872673",
+      "article_id": "E0002442",
+      "truth_owner_label": "경복궁 근정전",
+      "fact_basis": "서울특별시 종로구 경복궁에 있는 조선시대 국가의 중대한 의식을 거행하던 궁궐건물. 전각.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "definition:E0002442",
+          "article_id": "E0002442",
+          "snippet": "서울특별시 종로구 경복궁에 있는 조선시대 국가의 중대한 의식을 거행하던 궁궐건물. 전각.",
+          "exact_text": "서울특별시 종로구 경복궁에 있는 조선시대 국가의 중대한 의식을 거행하던 궁궐건물. 전각.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_00200&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_050_00200_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_050/ki_050_00200.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_050/ki_050_00200.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_00200&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유적",
+        "category_sub": "궁궐·성",
+        "internal_owner_title": "경복궁 근정전",
+        "owner_id": "E0002442"
+      }
+    },
+    {
+      "slot_no": 3,
+      "role": "distractor",
+      "basis_item_id": "clue:a45ddc865327",
+      "article_id": "E0055319",
+      "truth_owner_label": "창경궁",
+      "fact_basis": "서울특별시 종로구 창경궁로 185에 있는 조선전기 창덕궁 동쪽에 세운 궁궐.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "definition:E0055319",
+          "article_id": "E0055319",
+          "snippet": "서울특별시 종로구 창경궁로 185에 있는 조선전기 창덕궁 동쪽에 세운 궁궐.",
+          "exact_text": "서울특별시 종로구 창경궁로 185에 있는 조선전기 창덕궁 동쪽에 세운 궁궐.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_00900&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_050_00900_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_050/ki_050_00900.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_050/ki_050_00900.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_00900&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유적",
+        "category_sub": "궁궐·성",
+        "internal_owner_title": "창경궁",
+        "owner_id": "E0055319"
+      }
+    },
+    {
+      "slot_no": 4,
+      "role": "distractor",
+      "basis_item_id": "clue:e29408a90de7",
+      "article_id": "E0007804",
+      "truth_owner_label": "김제 금산사 미륵전",
+      "fact_basis": "전북특별자치도 김제시 금산면 금산사에 있는 조선후기 에 창건된 사찰건물. 불전.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "definition:E0007804",
+          "article_id": "E0007804",
+          "snippet": "전북특별자치도 김제시 금산면 금산사에 있는 조선후기 에 창건된 사찰건물. 불전.",
+          "exact_text": "전북특별자치도 김제시 금산면 금산사에 있는 조선후기 에 창건된 사찰건물. 불전.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_14500&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_050_14500_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_050/ki_050_14500.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_050/ki_050_14500.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_14500&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유적",
+        "category_sub": "종교시설",
+        "internal_owner_title": "김제 금산사 미륵전",
+        "owner_id": "E0007804"
+      }
+    }
+  ]
+}

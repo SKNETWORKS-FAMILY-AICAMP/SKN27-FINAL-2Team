@@ -1,0 +1,14 @@
+{
+  "ANSWER_IN_PASSAGE": "정답 선지가 지문/질문에 노출됨",
+  "ANSWER_RESTATEMENT_SUSPECT": "정답 선지가 지문 내용을 의미상 재진술한 의심",
+  "ANSWER_LENGTH_BIAS": "정답 선지가 유독 길거나 짧음",
+  "CHOICE_FORMAT_ERROR": "선지 문장/형식 오류",
+  "QUESTION_CHOICE_MISMATCH": "질문 요구와 선지 내용/형식이 맞지 않음",
+  "QUESTION_MARKER_MISMATCH": "지문에 없는 표식/밑줄/(가) 등을 참조함",
+  "EXCLUDED_COMBO_OR_ORDER_CHOICE": "조합형/순서형 선지라 선지 단위 검수 제외",
+  "ORDER_CHOICE_CONTEXT_REQUIRED": "순서형/기호형 선지라 문항 단위 확인 필요",
+  "ODD_DISTRACTOR": "오답 선지가 너무 어색하거나 쉽게 제거되는 의심",
+  "WEIRD_CHOICE": "문제 맥락상 너무 이상하거나 부적절한 선지",
+  "DUPLICATE_OR_SIMILAR_CHOICE": "중복되거나 거의 같은 선지가 있음",
+  "NO_OR_MULTI_ANSWER": "정답이 없거나 2개 이상임"
+}

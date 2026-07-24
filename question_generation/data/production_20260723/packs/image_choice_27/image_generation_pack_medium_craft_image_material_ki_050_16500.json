@@ -1,0 +1,194 @@
+{
+  "pack_id": "image_generation_pack:medium_craft:image_material:ki_050_16500",
+  "family_id": "image_choice_pack_v2:medium_craft",
+  "era": "조선",
+  "service_era": "조선",
+  "service_topic": "문화",
+  "service_question_type": "역사 자료의 분석 및 해석",
+  "service_question_subtype": "시각 자료 해석",
+  "variant_key": "image:image_choice_pack_v2:medium_craft:image_material:ki_050_16500",
+  "target_label": "백자 달항아리",
+  "topic_type": "문화유산",
+  "question_task": "standard_select",
+  "choice_mode": "image",
+  "stem_pattern": "inquiry_topic",
+  "relation_axis_id": "common.definition_feature",
+  "material_type": "탐구 자료",
+  "major_type": "역사 자료의 분석 및 해석",
+  "minor_type": "시각 자료 해석",
+  "difficulty_label": "보통",
+  "question_task_instruction": "검수된 단서를 바탕으로 대상명을 직접 노출하지 않는 지문과 발문을 만들고, 제시된 이미지 중 해당 문화유산을 고르게 한다.",
+  "material_clue_basis": "백자 달항아리는 유백색(乳白色) 항아리의 둥근 형태가 둥근 달을 연상하게 되어 일명 ‘달항아리’라 불린다. 조선 17세기 후기~18세기 전기의 약 1세기 동안 조선왕조 유일의 관요(官窯)인 사옹원의 분원 백자제작소(경기도 광주)에서 만들어진 것이다.",
+  "material_evidence_chunks": [
+    {
+      "snippet": "백자 달항아리는 유백색(乳白色) 항아리의 둥근 형태가 둥근 달을 연상하게 되어 일명 ‘달항아리’라 불린다. 조선 17세기 후기~18세기 전기의 약 1세기 동안 조선왕조 유일의 관요(官窯)인 사옹원의 분원 백자제작소(경기도 광주)에서 만들어진 것이다.",
+      "chunk_id": "image_material:ki_050_16500",
+      "article_id": "image_material:ki_050_16500",
+      "exact_text": "백자 달항아리는 유백색(乳白色) 항아리의 둥근 형태가 둥근 달을 연상하게 되어 일명 ‘달항아리’라 불린다. 조선 17세기 후기~18세기 전기의 약 1세기 동안 조선왕조 유일의 관요(官窯)인 사옹원의 분원 백자제작소(경기도 광주)에서 만들어진 것이다.",
+      "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_16500&whereStr=",
+      "section_path": [
+        "검수된 이미지 식별 단서"
+      ]
+    }
+  ],
+  "material_fact_semantically_distinct": true,
+  "status": "rag_ready",
+  "semantic_status": "pass",
+  "items": [
+    {
+      "slot_no": 0,
+      "role": "answer",
+      "basis_item_id": "clue:3b1ff3792f2a",
+      "article_id": "image_material:ki_050_16500",
+      "truth_owner_label": "백자 달항아리",
+      "fact_basis": "백자 달항아리는 유백색(乳白色) 항아리의 둥근 형태가 둥근 달을 연상하게 되어 일명 ‘달항아리’라 불린다. 조선 17세기 후기~18세기 전기의 약 1세기 동안 조선왕조 유일의 관요(官窯)인 사옹원의 분원 백자제작소(경기도 광주)에서 만들어진 것이다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "image_material:ki_050_16500",
+          "article_id": "image_material:ki_050_16500",
+          "snippet": "백자 달항아리는 유백색(乳白色) 항아리의 둥근 형태가 둥근 달을 연상하게 되어 일명 ‘달항아리’라 불린다. 조선 17세기 후기~18세기 전기의 약 1세기 동안 조선왕조 유일의 관요(官窯)인 사옹원의 분원 백자제작소(경기도 광주)에서 만들어진 것이다.",
+          "exact_text": "백자 달항아리는 유백색(乳白色) 항아리의 둥근 형태가 둥근 달을 연상하게 되어 일명 ‘달항아리’라 불린다. 조선 17세기 후기~18세기 전기의 약 1세기 동안 조선왕조 유일의 관요(官窯)인 사옹원의 분원 백자제작소(경기도 광주)에서 만들어진 것이다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_16500&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "image_material:ki_050_16500",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_050/ki_050_16500.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_050/ki_050_16500.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_16500&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유물",
+        "category_sub": "공예",
+        "internal_owner_title": "백자 달항아리",
+        "owner_id": "image_material:ki_050_16500"
+      }
+    },
+    {
+      "slot_no": 1,
+      "role": "distractor",
+      "basis_item_id": "clue:8baa485cd5aa",
+      "article_id": "image_material:ki_020_05600",
+      "truth_owner_label": "공주 백제 무령왕릉에서 발견된 석수",
+      "fact_basis": "무령왕릉이 발견되었을 때 출토되었다. 진묘수라고도 부르는데, 죽은 자를 수호하고, 무덤을 지키기 위해 만들었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "image_material:ki_020_05600",
+          "article_id": "image_material:ki_020_05600",
+          "snippet": "무령왕릉이 발견되었을 때 출토되었다. 진묘수라고도 부르는데, 죽은 자를 수호하고, 무덤을 지키기 위해 만들었다.",
+          "exact_text": "무령왕릉이 발견되었을 때 출토되었다. 진묘수라고도 부르는데, 죽은 자를 수호하고, 무덤을 지키기 위해 만들었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_020_05600&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "image_material:ki_020_05600",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_020/ki_020_05600.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_020/ki_020_05600.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_020_05600&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유물",
+        "category_sub": "공예",
+        "internal_owner_title": "공주 백제 무령왕릉에서 발견된 석수",
+        "owner_id": "image_material:ki_020_05600"
+      }
+    },
+    {
+      "slot_no": 2,
+      "role": "distractor",
+      "basis_item_id": "clue:58e90a6489e0",
+      "article_id": "image_material:ki_020_08000",
+      "truth_owner_label": "백제금동대향로",
+      "fact_basis": "백제 시기의 향로이다. 높이 61.8㎝, 지름 19cm, 무게 11.8㎏의 대형 향로이다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "image_material:ki_020_08000",
+          "article_id": "image_material:ki_020_08000",
+          "snippet": "백제 시기의 향로이다. 높이 61.8㎝, 지름 19cm, 무게 11.8㎏의 대형 향로이다.",
+          "exact_text": "백제 시기의 향로이다. 높이 61.8㎝, 지름 19cm, 무게 11.8㎏의 대형 향로이다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_020_08000&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "image_material:ki_020_08000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_020/ki_020_08000.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_020/ki_020_08000.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_020_08000&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유물",
+        "category_sub": "공예",
+        "internal_owner_title": "백제금동대향로",
+        "owner_id": "image_material:ki_020_08000"
+      }
+    },
+    {
+      "slot_no": 3,
+      "role": "distractor",
+      "basis_item_id": "clue:0f6962e108dc",
+      "article_id": "image_material:ki_020_10300",
+      "truth_owner_label": "경주 황남동 상감 유리구슬",
+      "fact_basis": "경주 황남동에 있는 신라 미추왕릉에서 발견된 옥 목걸이다. 길이는 24㎝이며, 상감된 유리옥의 지름은 1.8㎝이다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "image_material:ki_020_10300",
+          "article_id": "image_material:ki_020_10300",
+          "snippet": "경주 황남동에 있는 신라 미추왕릉에서 발견된 옥 목걸이다. 길이는 24㎝이며, 상감된 유리옥의 지름은 1.8㎝이다.",
+          "exact_text": "경주 황남동에 있는 신라 미추왕릉에서 발견된 옥 목걸이다. 길이는 24㎝이며, 상감된 유리옥의 지름은 1.8㎝이다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_020_10300&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "image_material:ki_020_10300",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_020/ki_020_10300.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_020/ki_020_10300.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_020_10300&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유물",
+        "category_sub": "공예",
+        "internal_owner_title": "경주 황남동 상감 유리구슬",
+        "owner_id": "image_material:ki_020_10300"
+      }
+    },
+    {
+      "slot_no": 4,
+      "role": "distractor",
+      "basis_item_id": "clue:98e6647d275c",
+      "article_id": "image_material:ki_020_15700",
+      "truth_owner_label": "김해 대성동 고분 출토 각종 가야토기",
+      "fact_basis": "김해 대성동 고분군에서 출토된 각종 토기류이다. 가야 토기는 가야시대에 만들어져 주로 낙동강 서안 일대에서 출토되는 토기를 말하는데, 지역 차에 따라 소지역 양식으로 세분화된다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "image_material:ki_020_15700",
+          "article_id": "image_material:ki_020_15700",
+          "snippet": "김해 대성동 고분군에서 출토된 각종 토기류이다. 가야 토기는 가야시대에 만들어져 주로 낙동강 서안 일대에서 출토되는 토기를 말하는데, 지역 차에 따라 소지역 양식으로 세분화된다.",
+          "exact_text": "김해 대성동 고분군에서 출토된 각종 토기류이다. 가야 토기는 가야시대에 만들어져 주로 낙동강 서안 일대에서 출토되는 토기를 말하는데, 지역 차에 따라 소지역 양식으로 세분화된다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_020_15700&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "image_material:ki_020_15700",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_020/ki_020_15700.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_020/ki_020_15700.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_020_15700&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유물",
+        "category_sub": "공예",
+        "internal_owner_title": "김해 대성동 고분 출토 각종 가야토기",
+        "owner_id": "image_material:ki_020_15700"
+      }
+    }
+  ]
+}
