@@ -1,20 +1,30 @@
 from __future__ import annotations
 
 import os
-from functools import lru_cache
+from threading import Lock
 from typing import TypeVar
 
 
 T = TypeVar("T")
+_reranker = None
+_reranker_loaded = False
+_reranker_lock = Lock()
 
 
-@lru_cache(maxsize=1)
 def get_reranker():
-    try:
-        from sentence_transformers import CrossEncoder
-    except ImportError:
-        return None
-    return CrossEncoder(os.getenv("RAG_RERANKER_MODEL", "BAAI/bge-reranker-v2-m3"))
+    global _reranker, _reranker_loaded
+    if _reranker_loaded:
+        return _reranker
+    with _reranker_lock:
+        if not _reranker_loaded:
+            try:
+                from sentence_transformers import CrossEncoder
+            except ImportError:
+                _reranker = None
+            else:
+                _reranker = CrossEncoder(os.getenv("RAG_RERANKER_MODEL", "BAAI/bge-reranker-v2-m3"))
+            _reranker_loaded = True
+    return _reranker
 
 
 def score_results(question: str, rows: list[T]) -> list[tuple[T, float]] | None:

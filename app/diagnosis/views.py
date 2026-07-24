@@ -47,7 +47,7 @@ DIAGNOSIS_ERA_GROUPS = [
 ]
 DIAGNOSIS_SCORE_COUNTS = {1: 10, 2: 30, 3: 10}
 
-# 예상 수준 기준 (취득점 / 최대점 × 100)
+# 예상 수준 기준 (진단평가 총점 100점 기준 취득 점수)
 GRADE_THRESHOLDS = [
     (80, "1급"),
     (70, "2급"),
@@ -55,10 +55,10 @@ GRADE_THRESHOLDS = [
 ]
 
 
-def _get_expected_grade(score_rate_pct: float) -> str:
-    """score_rate_pct: 0~100 사이 백분율"""
+def _get_expected_grade(total_score: int) -> str:
+    """total_score: 진단평가 취득 점수"""
     for threshold, grade in GRADE_THRESHOLDS:
-        if score_rate_pct >= threshold:
+        if total_score >= threshold:
             return grade
     return "탈락"
 
@@ -664,8 +664,7 @@ def diagnosis_result_api(request, session_id):
     max_score = sum(r.q_score for r in records)
     correct_count = sum(1 for r in records if r.is_correct)
     score_rate = round(total_score / max_score, 4) if max_score else 0.0
-    score_rate_pct = score_rate * 100
-    expected_grade = _get_expected_grade(score_rate_pct)
+    expected_grade = _get_expected_grade(total_score)
     previous_session = (
         SolveSessions.objects.filter(
             user_id=session.user_id,

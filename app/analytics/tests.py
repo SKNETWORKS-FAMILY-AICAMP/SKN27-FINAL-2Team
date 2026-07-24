@@ -1,10 +1,7 @@
-from contextlib import nullcontext
 from datetime import date, timedelta
-import json
 from types import SimpleNamespace
 from unittest.mock import Mock, patch
 
-from django.db import IntegrityError
 from django.test import SimpleTestCase
 
 from analytics.service.analytics import get_diagnosis_comparison_pair
@@ -15,18 +12,7 @@ from analytics.service.mypage import (
     build_wrong_rate_summary,
     build_wrong_type_summary,
 )
-from analytics.service.studyplan import (
-    StudyPlanGenerationUnavailable,
-    build_daily_plan_items,
-    carry_over_incomplete_past_blocks_to_today,
-    complete_study_plan_block_by_id,
-    create_study_plan,
-    delete_study_plan_block,
-    ensure_today_study_plan,
-    get_study_plan_config,
-    get_review_block_target_key,
-    is_active_study_plan_unique_violation,
-)
+from analytics.service.studyplan import calculate_record_based_plan_progress
 from analytics.service.taxonomy import build_target_display_label
 
 
@@ -63,6 +49,7 @@ class MypageServiceTests(SimpleTestCase):
         self.assertEqual(summary["study_streak_days"], 2)
         self.assertEqual(summary["avg_question_time"], "01:06")
         self.assertEqual(summary["avg_session_time"], "02:06")
+
 
     @patch("analytics.service.mypage.get_completed_weekly_review_sessions")
     @patch("analytics.service.mypage.get_recent_wrong_rate_period")
@@ -202,6 +189,41 @@ class MypageServiceTests(SimpleTestCase):
 
         get_user_study_info_mock.assert_called_once_with(user.user_id)
         self.assertEqual(label, "미설정")
+
+
+class StudyPlanCompatibilityTests(SimpleTestCase):
+    @patch("analytics.service.studyplan.get_active_study_plan_dto")
+    def test_record_progress_uses_versioned_active_plan_projection(
+        self,
+        get_active_study_plan_dto_mock,
+    ):
+        plan_items = [
+            {
+                "date": "2026-07-21",
+                "blocks": [
+                    {"blockId": "practice-1", "blockType": "practice"},
+                    {"blockId": "practice-2", "blockType": "practice"},
+                    {"blockId": "review", "blockType": "weekly_review"},
+                ],
+            }
+        ]
+        get_active_study_plan_dto_mock.return_value = {
+            "studyPlanId": 10,
+            "completionRate": 0.5,
+            "plans": plan_items,
+        }
+        study_plan = SimpleNamespace(
+            studyplan_id=10,
+            study_plan_items=plan_items,
+            completion_rate=0.0,
+        )
+
+        result = calculate_record_based_plan_progress(7, study_plan)
+
+        self.assertEqual(result["summary"]["targetCount"], 2)
+        self.assertEqual(result["summary"]["achievedCount"], 1)
+        self.assertEqual(result["summary"]["remainingCount"], 1)
+        self.assertEqual(result["summary"]["completionPercent"], 50)
 
 
 class DiagnosisComparisonTests(SimpleTestCase):
@@ -493,292 +515,6 @@ class PlannerDisplayTests(SimpleTestCase):
         self.assertEqual(
             [item["label"] for item in items],
             ["오답률 90%", "오답률 50%"],
-        )
-
-
-class StudyPlanSynchronizationTests(SimpleTestCase):
-    def test_empty_active_plan_is_regenerated(self):
-        today = date(2026, 7, 13)
-        active_plan = SimpleNamespace(
-            study_plan_items="[]",
-            start_date=today,
-            end_date=today + timedelta(days=6),
-            modified_at=None,
-            created_at=None,
-        )
-        active_plans = Mock()
-        active_plans.first.return_value = active_plan
-        created_plan = {"studyPlanId": 2}
-
-        with (
-            patch(
-                "analytics.service.studyplan.transaction.atomic",
-                return_value=nullcontext(),
-            ),
-            patch("analytics.service.studyplan.lock_study_plan_user") as lock_user_mock,
-            patch(
-                "analytics.service.studyplan.get_active_study_plans",
-                return_value=active_plans,
-            ),
-            patch(
-                "analytics.service.studyplan.create_study_plan",
-                return_value=created_plan,
-            ) as create_plan_mock,
-        ):
-            result = ensure_today_study_plan(7, today)
-
-        lock_user_mock.assert_called_once_with(7)
-        create_plan_mock.assert_called_once_with(7)
-        self.assertEqual(result, created_plan)
-
-    def test_carry_over_keeps_completed_and_weekly_review_blocks(self):
-        today = date(2026, 7, 13)
-        plan_items = [
-            {
-                "date": "2026-07-12",
-                "blocks": [
-                    {
-                        "blockId": "incomplete",
-                        "blockType": "newWeakness",
-                        "isCompleted": False,
-                    },
-                    {
-                        "blockId": "completed",
-                        "blockType": "newWeakness",
-                        "isCompleted": True,
-                    },
-                    {
-                        "blockId": "weekly-review",
-                        "blockType": "weekly_review",
-                        "isCompleted": False,
-                    },
-                ],
-            }
-        ]
-
-        result = carry_over_incomplete_past_blocks_to_today(plan_items, today)
-
-        blocks_by_date = {
-            day_plan["date"]: [
-                block["blockId"]
-                for block in day_plan["blocks"]
-            ]
-            for day_plan in result["items"]
-        }
-        self.assertEqual(
-            blocks_by_date["2026-07-12"],
-            ["completed", "weekly-review"],
-        )
-        self.assertEqual(blocks_by_date["2026-07-13"], ["incomplete"])
-
-    def test_review_target_uses_canonical_group_key(self):
-        first_block = {
-            "groupKeyId": "era=조선|topic=정치|q_type=사료",
-            "classification": "복합",
-            "label": "기존 표시명",
-        }
-        renamed_block = {
-            "groupKeyId": "era=조선|topic=정치|q_type=사료",
-            "classification": "복합",
-            "label": "변경된 표시명",
-        }
-
-        self.assertEqual(
-            get_review_block_target_key(first_block),
-            get_review_block_target_key(renamed_block),
-        )
-
-    def test_active_plan_unique_violation_checks_constraint_name(self):
-        error = IntegrityError()
-        cause = Exception()
-        cause.diag = SimpleNamespace(
-            constraint_name="study_plan_mypage_user_active_uidx",
-        )
-        error.__cause__ = cause
-
-        self.assertTrue(is_active_study_plan_unique_violation(error))
-        self.assertFalse(is_active_study_plan_unique_violation(IntegrityError()))
-
-    def test_empty_plan_is_rejected_before_existing_plan_is_archived(self):
-        with (
-            patch("analytics.service.studyplan.transaction.atomic") as atomic_mock,
-            self.assertRaises(StudyPlanGenerationUnavailable),
-        ):
-            create_study_plan(7, study_plan_items=[])
-
-        atomic_mock.assert_not_called()
-
-    def test_delete_block_locks_only_the_active_plan(self):
-        today = date.today().isoformat()
-        active_plan = SimpleNamespace(
-            studyplan_id=1,
-            study_plans="summary",
-            study_plan_items=json.dumps(
-                [
-                    {
-                        "date": today,
-                        "blocks": [
-                            {
-                                "blockId": "learning",
-                                "blockType": "newWeakness",
-                                "isCompleted": False,
-                            }
-                        ],
-                    }
-                ]
-            ),
-        )
-        active_plans = Mock()
-        active_plans.filter.return_value.first.return_value = active_plan
-
-        with (
-            patch(
-                "analytics.service.studyplan.transaction.atomic",
-                return_value=nullcontext(),
-            ),
-            patch(
-                "analytics.service.studyplan.get_active_study_plans",
-                return_value=active_plans,
-            ) as active_plans_mock,
-            patch("analytics.service.studyplan.refill_deleted_plan_block"),
-            patch(
-                "analytics.service.studyplan.update_study_plan",
-                return_value={"studyPlanId": 1},
-            ) as update_mock,
-        ):
-            result = delete_study_plan_block(7, 1, 0, 0)
-
-        active_plans_mock.assert_called_once_with(7, lock=True)
-        active_plans.filter.assert_called_once_with(studyplan_id=1)
-        update_mock.assert_called_once()
-        self.assertEqual(result, {"studyPlanId": 1})
-
-    def test_complete_block_by_id_locks_only_the_active_plan(self):
-        active_plan = SimpleNamespace(
-            studyplan_id=1,
-            study_plans="summary",
-            study_plan_items=json.dumps(
-                [
-                    {
-                        "date": "2026-07-13",
-                        "blocks": [
-                            {
-                                "blockId": "learning",
-                                "blockType": "newWeakness",
-                                "isCompleted": False,
-                            }
-                        ],
-                    }
-                ]
-            ),
-        )
-        active_plans = Mock()
-        active_plans.filter.return_value.first.return_value = active_plan
-
-        with (
-            patch(
-                "analytics.service.studyplan.transaction.atomic",
-                return_value=nullcontext(),
-            ),
-            patch(
-                "analytics.service.studyplan.get_active_study_plans",
-                return_value=active_plans,
-            ) as active_plans_mock,
-            patch(
-                "analytics.service.studyplan.update_study_plan",
-                return_value={"studyPlanId": 1},
-            ) as update_mock,
-        ):
-            result = complete_study_plan_block_by_id(7, 1, "learning")
-
-        active_plans_mock.assert_called_once_with(7, lock=True)
-        active_plans.filter.assert_called_once_with(studyplan_id=1)
-        updated_items = update_mock.call_args.args[3]
-        self.assertTrue(updated_items[0]["blocks"][0]["isCompleted"])
-        self.assertEqual(result, {"studyPlanId": 1})
-
-
-class StudyPlanGenerationTests(SimpleTestCase):
-    def setUp(self):
-        self.config = get_study_plan_config()
-        self.today = date(2026, 7, 13)
-        self.weak_target = {
-            "groupKeyId": "era=조선|topic=정치|q_type=사료",
-            "classification": "복합",
-            "label": "조선 · 정치 · 사료",
-            "era": "조선",
-            "topic": "정치",
-            "qType": "사료",
-            "wrongRate": 0.7,
-            "weaknessScore": 0.8,
-            "predictionScore": 0.4,
-            "priorityScore": 0.8,
-            "averageTimeSec": 60,
-            "reason": "취약 영역",
-            "planSource": "normal",
-        }
-        self.prediction_target = {
-            "groupKeyId": "era=고려|topic=경제|q_type=개념",
-            "classification": "복합",
-            "label": "고려 · 경제 · 개념",
-            "era": "고려",
-            "topic": "경제",
-            "qType": "개념",
-            "wrongRate": 0,
-            "weaknessScore": 0,
-            "predictionScore": 0.9,
-            "priorityScore": 0.9,
-            "averageTimeSec": 60,
-            "reason": "출제 예상",
-            "planSource": "fallback_prediction_only",
-        }
-
-    def test_short_term_plan_uses_only_weak_targets_without_weekly_review(self):
-        plans = build_daily_plan_items(
-            [self.prediction_target, self.weak_target],
-            daily_available_minutes=60,
-            remaining_days=3,
-            today=self.today,
-            config=self.config,
-        )
-
-        self.assertEqual(len(plans), 3)
-        self.assertEqual(plans[-1]["date"], "2026-07-15")
-        self.assertTrue(
-            all(
-                block["groupKeyId"] == self.weak_target["groupKeyId"]
-                for day_plan in plans
-                for block in day_plan["blocks"]
-            )
-        )
-        self.assertTrue(
-            all(
-                block["blockType"] == "newWeakness"
-                for day_plan in plans
-                for block in day_plan["blocks"]
-            )
-        )
-        self.assertFalse(
-            any(
-                block["blockType"] == self.config["weekly_review_block_type"]
-                for day_plan in plans
-                for block in day_plan["blocks"]
-            )
-        )
-
-    def test_seven_day_plan_keeps_weekly_review_on_last_day(self):
-        plans = build_daily_plan_items(
-            [self.weak_target],
-            daily_available_minutes=60,
-            remaining_days=7,
-            today=self.today,
-            config=self.config,
-        )
-
-        self.assertEqual(len(plans), 7)
-        self.assertEqual(
-            plans[-1]["blocks"][0]["blockType"],
-            self.config["weekly_review_block_type"],
         )
 
 

@@ -1,0 +1,194 @@
+{
+  "pack_id": "image_generation_pack:easy_mixed_heritage:E0007804",
+  "family_id": "image_choice_pack_v2:easy_mixed_heritage",
+  "era": "조선",
+  "service_era": "조선",
+  "service_topic": "문화",
+  "service_question_type": "역사 자료의 분석 및 해석",
+  "service_question_subtype": "시각 자료 해석",
+  "variant_key": "image:image_choice_pack_v2:easy_mixed_heritage:E0007804",
+  "target_label": "김제 금산사 미륵전",
+  "topic_type": "문화유산",
+  "question_task": "standard_select",
+  "choice_mode": "image",
+  "stem_pattern": "source_inference",
+  "relation_axis_id": "common.definition_feature",
+  "material_type": "자료 제시문",
+  "major_type": "역사 자료의 분석 및 해석",
+  "minor_type": "시각 자료 해석",
+  "difficulty_label": "쉬움",
+  "question_task_instruction": "검수된 단서를 바탕으로 대상명을 직접 노출하지 않는 지문과 발문을 만들고, 제시된 이미지 중 해당 문화유산을 고르게 한다.",
+  "material_clue_basis": "전북특별자치도 김제시 금산면 금산사에 있는 조선후기 에 창건된 사찰건물. 불전.",
+  "material_evidence_chunks": [
+    {
+      "snippet": "전북특별자치도 김제시 금산면 금산사에 있는 조선후기 에 창건된 사찰건물. 불전.",
+      "chunk_id": "definition:E0007804",
+      "article_id": "E0007804",
+      "exact_text": "전북특별자치도 김제시 금산면 금산사에 있는 조선후기 에 창건된 사찰건물. 불전.",
+      "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_14500&whereStr=",
+      "section_path": [
+        "검수된 이미지 식별 단서"
+      ]
+    }
+  ],
+  "material_fact_semantically_distinct": true,
+  "status": "rag_ready",
+  "semantic_status": "pass",
+  "items": [
+    {
+      "slot_no": 0,
+      "role": "answer",
+      "basis_item_id": "clue:e29408a90de7",
+      "article_id": "E0007804",
+      "truth_owner_label": "김제 금산사 미륵전",
+      "fact_basis": "전북특별자치도 김제시 금산면 금산사에 있는 조선후기 에 창건된 사찰건물. 불전.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "definition:E0007804",
+          "article_id": "E0007804",
+          "snippet": "전북특별자치도 김제시 금산면 금산사에 있는 조선후기 에 창건된 사찰건물. 불전.",
+          "exact_text": "전북특별자치도 김제시 금산면 금산사에 있는 조선후기 에 창건된 사찰건물. 불전.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_14500&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_050_14500_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_050/ki_050_14500.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_050/ki_050_14500.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_14500&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유적",
+        "category_sub": "종교시설",
+        "internal_owner_title": "김제 금산사 미륵전",
+        "owner_id": "E0007804"
+      }
+    },
+    {
+      "slot_no": 1,
+      "role": "distractor",
+      "basis_item_id": "clue:495278a495a4",
+      "article_id": "E0017568",
+      "truth_owner_label": "만동묘",
+      "fact_basis": "민정중(閔鼎重)이 북경에 사신으로 갔다가 의종(毅宗)의 친필인 ‘비례부동(非禮不動)’의 넉 자를 얻어다가 송시열(宋時烈)에게 주었다.\n\n1674년(현종 15) 송시열은 이것을 화양리에 있는 절벽에 새기고 그 원본은 환장암(煥章庵 : 현재의 彩雲庵) 옆에 운한각(雲漢閣)을 지어 보관하고, 그곳 승려로 하여금 지키게 하였다. 또한 김수항(金壽恒)은 장편의 글을 지어 그 일을 기록하여 놓았다.\n\n1689년(숙종 15) 송시열이 사사(賜死)될 때 신종과 의종의 사당을 세워 제사지낼 것을 그의 제자인 권상하(權尙夏)에게 유명(遺命)으로 부탁하였다. 권상하는 이에 따라 1703년 민정중 · 정호(鄭澔) · 이선직(李先稷)과 함께 부근 유생들의 협력을 얻어 만동묘를 창건하고 신종과 의종의 신위를 봉안하여 제사지냈다.\n\n만동묘라는 이름은 경기도 가평군에 있는 조종암(朝宗巖)에 새겨진 선조의 어필인 ‘만절필동(萬折必東)’을 모본하여 화양리 바위에 새겨놓은 것을 그 첫 글자와 끝 글자에서 취해 지은 것이다.\n\n그 뒤 1726년(영조 2) 민진원(閔鎭遠)이 묘(廟)를 중수하고 그 전말을 조정에 보고하자 조정에서는 관둔전(官屯田) 5결(結)의 제전(祭田)과 노비를 주었다. 1744년에는 충청도관찰사로 하여금 묘우(廟宇)를 중수하게 하는 한편, 화양리에 있는 토지 20결(結)을 면세전(免稅田)으로 하여 제전에 쓰도록 하였다.\n\n또, 1747년에는 예조에서 90인이 윤번으로 묘우를 수직(守直)하게 하고 사전(賜田)에 전(廛)을 개설, 그 세전(稅錢)을 만동묘에서 수납하도록 하였다. 그 해이재(李縡)의 찬(撰), 유척기(兪拓基)의 전서(篆書)로 묘정비(廟庭碑)가 세워졌다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "encykorea:E0017568:0000",
+          "article_id": "E0017568",
+          "snippet": "민정중(閔鼎重)이 북경에 사신으로 갔다가 의종(毅宗)의 친필인 ‘비례부동(非禮不動)’의 넉 자를 얻어다가 송시열(宋時烈)에게 주었다.\n\n1674년(현종 15) 송시열은 이것을 화양리에 있는 절벽에 새기고 그 원본은 환장암(煥章庵 : 현재의 彩雲庵) 옆에 운한각(雲漢閣)을 지어 보관하고, 그곳 승려로 하여금 지키게 하였다. 또한 김수항(金壽恒)은 장편의 글을 지어 그 일을 기록하여 놓았다.\n\n1689년(숙종 15) 송시열이 사사(賜死)될 때 신종과 의종의 사당을 세워 제사지낼 것을 그의 제자인 권상하(權尙夏)에게 유명(遺命)으로 부탁하였다. 권상하는 이에 따라 1703년 민정중 · 정호(鄭澔) · 이선직(李先稷)과 함께 부근 유생들의 협력을 얻어 만동묘를 창건하고 신종과 의종의 신위를 봉안하여 제사지냈다.\n\n만동묘라는 이름은 경기도 가평군에 있는 조종암(朝宗巖)에 새겨진 선조의 어필인 ‘만절필동(萬折必東)’을 모본하여 화양리 바위에 새겨놓은 것을 그 첫 글자와 끝 글자에서 취해 지은 것이다.\n\n그 뒤 1726년(영조 2) 민진원(閔鎭遠)이 묘(廟)를 중수하고 그 전말을 조정에 보고하자 조정에서는 관둔전(官屯田) 5결(結)의 제전(祭田)과 노비를 주었다. 1744년에는 충청도관찰사로 하여금 묘우(廟宇)를 중수하게 하는 한편, 화양리에 있는 토지 20결(結)을 면세전(免稅田)으로 하여 제전에 쓰도록 하였다.\n\n또, 1747년에는 예조에서 90인이 윤번으로 묘우를 수직(守直)하게 하고 사전(賜田)에 전(廛)을 개설, 그 세전(稅錢)을 만동묘에서 수납하도록 하였다. 그 해이재(李縡)의 찬(撰), 유척기(兪拓基)의 전서(篆書)로 묘정비(廟庭碑)가 세워졌다.",
+          "exact_text": "민정중(閔鼎重)이 북경에 사신으로 갔다가 의종(毅宗)의 친필인 ‘비례부동(非禮不動)’의 넉 자를 얻어다가 송시열(宋時烈)에게 주었다.\n\n1674년(현종 15) 송시열은 이것을 화양리에 있는 절벽에 새기고 그 원본은 환장암(煥章庵 : 현재의 彩雲庵) 옆에 운한각(雲漢閣)을 지어 보관하고, 그곳 승려로 하여금 지키게 하였다. 또한 김수항(金壽恒)은 장편의 글을 지어 그 일을 기록하여 놓았다.\n\n1689년(숙종 15) 송시열이 사사(賜死)될 때 신종과 의종의 사당을 세워 제사지낼 것을 그의 제자인 권상하(權尙夏)에게 유명(遺命)으로 부탁하였다. 권상하는 이에 따라 1703년 민정중 · 정호(鄭澔) · 이선직(李先稷)과 함께 부근 유생들의 협력을 얻어 만동묘를 창건하고 신종과 의종의 신위를 봉안하여 제사지냈다.\n\n만동묘라는 이름은 경기도 가평군에 있는 조종암(朝宗巖)에 새겨진 선조의 어필인 ‘만절필동(萬折必東)’을 모본하여 화양리 바위에 새겨놓은 것을 그 첫 글자와 끝 글자에서 취해 지은 것이다.\n\n그 뒤 1726년(영조 2) 민진원(閔鎭遠)이 묘(廟)를 중수하고 그 전말을 조정에 보고하자 조정에서는 관둔전(官屯田) 5결(結)의 제전(祭田)과 노비를 주었다. 1744년에는 충청도관찰사로 하여금 묘우(廟宇)를 중수하게 하는 한편, 화양리에 있는 토지 20결(結)을 면세전(免稅田)으로 하여 제전에 쓰도록 하였다.\n\n또, 1747년에는 예조에서 90인이 윤번으로 묘우를 수직(守直)하게 하고 사전(賜田)에 전(廛)을 개설, 그 세전(稅錢)을 만동묘에서 수납하도록 하였다. 그 해이재(李縡)의 찬(撰), 유척기(兪拓基)의 전서(篆書)로 묘정비(廟庭碑)가 세워졌다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_21000&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_050_21000_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_050/ki_050_21000.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_050/ki_050_21000.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_21000&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유적",
+        "category_sub": "사당",
+        "internal_owner_title": "괴산 만동묘",
+        "owner_id": "E0017568"
+      }
+    },
+    {
+      "slot_no": 2,
+      "role": "distractor",
+      "basis_item_id": "clue:c9fd0c2760b6",
+      "article_id": "E0003036",
+      "truth_owner_label": "경희궁",
+      "fact_basis": "서울특별시 종로구 신문로에 있는 조선후기 왕의 피우(避寓)를 위한 이궁으로 건립된 궁궐.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "definition:E0003036",
+          "article_id": "E0003036",
+          "snippet": "서울특별시 종로구 신문로에 있는 조선후기 왕의 피우(避寓)를 위한 이궁으로 건립된 궁궐.",
+          "exact_text": "서울특별시 종로구 신문로에 있는 조선후기 왕의 피우(避寓)를 위한 이궁으로 건립된 궁궐.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_01200&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_050_01200_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_050/ki_050_01200.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_050/ki_050_01200.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_01200&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유적",
+        "category_sub": "궁궐·성",
+        "internal_owner_title": "경희궁지",
+        "owner_id": "E0003036"
+      }
+    },
+    {
+      "slot_no": 3,
+      "role": "distractor",
+      "basis_item_id": "clue:94a31770c5d4",
+      "article_id": "E0062711",
+      "truth_owner_label": "합천 해인사 대장경판",
+      "fact_basis": "고려 고종(1237~1248) 때 대장도감(大藏都監)에서 판각(板刻)한 대장경판.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "definition:E0062711",
+          "article_id": "E0062711",
+          "snippet": "고려 고종(1237~1248) 때 대장도감(大藏都監)에서 판각(板刻)한 대장경판.",
+          "exact_text": "고려 고종(1237~1248) 때 대장도감(大藏都監)에서 판각(板刻)한 대장경판.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_040_05700&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_040_05700_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_040/ki_040_05700.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_040/ki_040_05700.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_040_05700&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유물",
+        "category_sub": "공예",
+        "internal_owner_title": "합천 해인사 대장경판",
+        "owner_id": "E0062711"
+      }
+    },
+    {
+      "slot_no": 4,
+      "role": "distractor",
+      "basis_item_id": "clue:1ae7f8f5e62f",
+      "article_id": "E0005026",
+      "truth_owner_label": "논산 관촉사 석조 미륵보살 입상",
+      "fact_basis": "조선 후기에 찬술된 『관촉사사적기』에는 석조미륵보살입상의 조성 과정이 기록되어 있다. 즉 석조미륵보살입상은 고려 광종(光宗) 때인 970년부터 목종(穆宗) 때인 1006년까지 혜명(慧明) 스님이 장인 100여 명을 거느리고 관촉사와 함께 조성하였다고 한다. 또한 마치 실측이라도 한 듯이 각 부위의 수치를 구체적으로 언급하고 있는데, 상의 높이는 55척(尺) 5촌(寸)이며, 둘레는 30척, 귀의 길이는 9척, 미간(眉間)의 폭은 6척, 입의 크기는 3척 5촌, 보관(寶冠)의 높이는 8척, 대개(大蓋)의 폭은 11척, 소개(小蓋)의 폭은 6척 5촌이다. 그러나 일반적으로 알려져 있는 ‘미륵보살’이니 ‘관음보살’이니 하는 관촉사 석조미륵보살입상의 이름은 전혀 찾아볼 수 없으며, ‘불상’으로만 기록되어 있다. 석조미륵보살입상은 성현(成俔)의『허백당시집(虛白堂詩集)』에 보이는 ‘관촉사’라는 시 외에 많은 시인 묵객들에 의하여 회자되곤 하였다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "encykorea:E0005026:0001",
+          "article_id": "E0005026",
+          "snippet": "조선 후기에 찬술된 『관촉사사적기』에는 석조미륵보살입상의 조성 과정이 기록되어 있다. 즉 석조미륵보살입상은 고려 광종(光宗) 때인 970년부터 목종(穆宗) 때인 1006년까지 혜명(慧明) 스님이 장인 100여 명을 거느리고 관촉사와 함께 조성하였다고 한다. 또한 마치 실측이라도 한 듯이 각 부위의 수치를 구체적으로 언급하고 있는데, 상의 높이는 55척(尺) 5촌(寸)이며, 둘레는 30척, 귀의 길이는 9척, 미간(眉間)의 폭은 6척, 입의 크기는 3척 5촌, 보관(寶冠)의 높이는 8척, 대개(大蓋)의 폭은 11척, 소개(小蓋)의 폭은 6척 5촌이다. 그러나 일반적으로 알려져 있는 ‘미륵보살’이니 ‘관음보살’이니 하는 관촉사 석조미륵보살입상의 이름은 전혀 찾아볼 수 없으며, ‘불상’으로만 기록되어 있다. 석조미륵보살입상은 성현(成俔)의『허백당시집(虛白堂詩集)』에 보이는 ‘관촉사’라는 시 외에 많은 시인 묵객들에 의하여 회자되곤 하였다.",
+          "exact_text": "조선 후기에 찬술된 『관촉사사적기』에는 석조미륵보살입상의 조성 과정이 기록되어 있다. 즉 석조미륵보살입상은 고려 광종(光宗) 때인 970년부터 목종(穆宗) 때인 1006년까지 혜명(慧明) 스님이 장인 100여 명을 거느리고 관촉사와 함께 조성하였다고 한다. 또한 마치 실측이라도 한 듯이 각 부위의 수치를 구체적으로 언급하고 있는데, 상의 높이는 55척(尺) 5촌(寸)이며, 둘레는 30척, 귀의 길이는 9척, 미간(眉間)의 폭은 6척, 입의 크기는 3척 5촌, 보관(寶冠)의 높이는 8척, 대개(大蓋)의 폭은 11척, 소개(小蓋)의 폭은 6척 5촌이다. 그러나 일반적으로 알려져 있는 ‘미륵보살’이니 ‘관음보살’이니 하는 관촉사 석조미륵보살입상의 이름은 전혀 찾아볼 수 없으며, ‘불상’으로만 기록되어 있다. 석조미륵보살입상은 성현(成俔)의『허백당시집(虛白堂詩集)』에 보이는 ‘관촉사’라는 시 외에 많은 시인 묵객들에 의하여 회자되곤 하였다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_040_01800&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_040_01800_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_040/ki_040_01800.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_040/ki_040_01800.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_040_01800&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유물",
+        "category_sub": "불교미술",
+        "internal_owner_title": "논산 관촉사 석조미륵보살입상",
+        "owner_id": "E0005026"
+      }
+    }
+  ]
+}

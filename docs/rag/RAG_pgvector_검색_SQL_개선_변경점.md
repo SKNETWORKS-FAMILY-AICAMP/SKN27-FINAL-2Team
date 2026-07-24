@@ -180,6 +180,25 @@ Precision은 리랭커 적용 전 0.67에서 0.82로 개선됐다. 반면 CPU에
 
 CPU 환경 측정에서는 `RAG_RERANKER_ENABLED=false` 전환을 실험했다. 이후 로컬 측정에서 리랭커 사용 시에도 검색 속도 기준을 충족해 운영값을 다시 `true`로 복원했다. 후보 수, Top-K, 임베딩, HNSW는 변경하지 않는다.
 
+## 2026-07-20: 골든셋 BGE 최종 Top-K 선정
+
+`golden_saved_rerank_ab_results.csv`의 35개 strict 골든 질문에서 RRF와 BGE의 같은 Top-K를 비교했다. 검색 후보 수는 50개로 유지하고, BGE가 최종 순서만 조정했다.
+
+이 평가는 RAGAS 기반 최종 답변 품질 평가가 아니라, 같은 RRF 후보에서 BGE가 문서 순서를 개선하는지와 최종 Top-K를 고르는 rerank 최적화 실험이다. 따라서 저장된 35개 strict 질문 표본으로 비교하며, 서비스 전체 품질은 별도 RAGAS 평가로 검증한다.
+
+| 최종 Top-K | RRF Precision / Recall | BGE Precision / Recall |
+|---:|---|---|
+| 5 | 0.9079 / 0.8905 | 0.9761 / 0.9286 |
+| 10 | 0.9055 / 0.9476 | 0.9627 / 0.9476 |
+| 15 | 0.8866 / 0.9429 | 0.9553 / 0.9667 |
+| 20 | 0.8783 / 0.9810 | 0.9567 / 0.9810 |
+| 30 | 0.8499 / 0.9810 | 0.9282 / 0.9810 |
+
+- BGE Top-20은 RRF Top-20과 Recall(0.9810)은 같고 Precision은 0.8783에서 0.9567로 개선됐다.
+- Top-30 이상은 Recall 증가 없이 Precision만 하락했다.
+- 따라서 평가 기준 권장값은 **후보 50개 → BGE rerank → 최종 Top-20**이다.
+- API 기본 `top_k`는 20이고 최대 20이다. 후보 수나 reranker 모델을 바꾸면 같은 방식으로 다시 비교한다.
+
 ## 2026-07-15: Trigram 후보 채널 제거
 
 - `keyword_candidates`/`keyword_ranked` CTE와 `RAG_TRIGRAM_ENABLED` 환경 변수를 제거했다.

@@ -72,7 +72,16 @@ def build_document(row: dict) -> dict | None:
     content = body or summary or definition
     if not eid or not title or not content:
         return None
-    aliases = list(dict.fromkeys(value for value in (headword, origin) if value and value != title))
+    article_aliases = row.get("articleAliases") or []
+    if not isinstance(article_aliases, list):
+        article_aliases = []
+    aliases = list(
+        dict.fromkeys(
+            value
+            for value in (headword, origin, *(clean_text(alias) for alias in article_aliases if isinstance(alias, str)))
+            if value and value != title
+        )
+    )
     secondary_type = clean_text(row.get("secondaryType"))
     return {
         "document_id": f"aks_{eid}",

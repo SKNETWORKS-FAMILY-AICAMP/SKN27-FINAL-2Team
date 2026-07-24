@@ -1,6 +1,7 @@
 import json
 import logging
 from datetime import date
+from zoneinfo import ZoneInfo
 
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
@@ -35,30 +36,25 @@ from analytics.service.mypage import (
     build_wrong_type_summary,
 )
 from analytics.service.studyplan import (
-    StudyPlanBlockDeleteLimitExceeded,
-    StudyPlanDateOutOfRange,
-    StudyPlanExtraBlockCompletionRequired,
-    StudyPlanExtraBlockUnavailable,
     StudyPlanGenerationUnavailable,
-    add_extra_study_plan_block,
-    complete_study_plan_block,
     create_study_plan,
-    delete_study_plan_block,
-    ensure_today_study_plan,
     get_study_plan_info,
 )
+from analytics.service.study_plan.config import get_study_plan_config
+from analytics.service.study_plan.service import synchronize_active_study_plan
 
 
 @login_required
 def mypage(request):
     user_id = request.user.user_id
-    today = timezone.localdate()
-    plan_generation_available = True
-    try:
-        ensure_today_study_plan(user_id, today)
-    except StudyPlanGenerationUnavailable:
-        plan_generation_available = False
+    today = timezone.localdate(
+        timezone=ZoneInfo(get_study_plan_config().timezone),
+    )
     study_plan = get_study_plan_info(user_id)
+    if request.GET.get("format") == "json":
+        active_plan = study_plan[0] if study_plan else None
+        return JsonResponse({"studyPlan": active_plan, "weeklyReport": None})
+    plan_generation_available = True
     planner_summary = build_planner_summary(
         study_plan,
         today,
@@ -92,7 +88,9 @@ def mypage(request):
 @login_required
 def wrong_rate_detail(request):
     donut_period_days = 7
-    today = timezone.localdate()
+    today = timezone.localdate(
+        timezone=ZoneInfo(get_study_plan_config().timezone),
+    )
     donut_period = get_recent_wrong_rate_period(today, donut_period_days)
     era_stats = get_wrong_rate_group_stats(
         request.user,
@@ -238,120 +236,41 @@ def wrong_rate_period_item_questions(request):
 @login_required
 @require_POST
 def create_study_plan_view(request):
+    data = get_json_request_data(request)
+    source_study_plan_id = data.get("sourceStudyPlanId")
+    if source_study_plan_id is not None:
+        try:
+            source_study_plan_id = int(source_study_plan_id)
+        except (TypeError, ValueError):
+            return JsonResponse({"ok": False}, status=400)
     try:
-        create_study_plan(request.user.user_id)
-    except StudyPlanGenerationUnavailable:
+        result = create_study_plan(
+            request.user.user_id,
+            source_study_plan_id=source_study_plan_id,
+        )
+    except StudyPlanGenerationUnavailable as error:
+        if request.content_type == "application/json":
+            return JsonResponse({"ok": False, "error": str(error)}, status=422)
         return redirect("analytics:mypage")
 
+    if request.content_type == "application/json":
+        return JsonResponse({"ok": True, "weeklyReport": None, **result})
     return redirect("analytics:mypage")
 
 
 @login_required
 @require_POST
-def delete_study_plan_block_view(request):
+def synchronize_study_plan_view(request):
     data = get_json_request_data(request)
     try:
         study_plan_id = int(data.get("studyPlanId"))
-        day_index = int(data.get("dayIndex"))
-        block_index = int(data.get("blockIndex"))
     except (TypeError, ValueError):
         return JsonResponse({"ok": False}, status=400)
 
-    try:
-        deleted_plan = delete_study_plan_block(
-            request.user.user_id,
-            study_plan_id,
-            day_index,
-            block_index,
-        )
-    except StudyPlanBlockDeleteLimitExceeded:
-        return JsonResponse(
-            {
-                "ok": False,
-                "error": "하루에 삭제할 수 있는 학습계획은 최대 2개입니다.",
-            },
-            status=429,
-        )
-
-    if deleted_plan is None:
+    result = synchronize_active_study_plan(request.user.user_id, study_plan_id)
+    if result is None:
         return JsonResponse({"ok": False}, status=404)
-
-    return JsonResponse({"ok": True})
-
-
-@login_required
-@require_POST
-def complete_study_plan_block_view(request):
-    data = get_json_request_data(request)
-    try:
-        study_plan_id = int(data.get("studyPlanId"))
-        day_index = int(data.get("dayIndex"))
-        block_index = int(data.get("blockIndex"))
-    except (TypeError, ValueError):
-        return JsonResponse({"ok": False}, status=400)
-
-    raw_is_completed = data.get("isCompleted", True)
-    if not isinstance(raw_is_completed, bool):
-        return JsonResponse({"ok": False}, status=400)
-    is_completed = raw_is_completed
-
-    completed_plan = complete_study_plan_block(
-        request.user.user_id,
-        study_plan_id,
-        day_index,
-        block_index,
-        is_completed,
-    )
-    if completed_plan is None:
-        return JsonResponse({"ok": False}, status=404)
-
-    return JsonResponse({"ok": True})
-
-
-@login_required
-@require_POST
-def add_extra_study_plan_block_view(request):
-    data = get_json_request_data(request)
-    target_date = data.get("targetDate") or timezone.localdate().isoformat()
-    try:
-        target_date_key = date.fromisoformat(str(target_date)[:10]).isoformat()
-    except (TypeError, ValueError):
-        return JsonResponse({"ok": False}, status=400)
-
-    try:
-        updated_plan = add_extra_study_plan_block(
-            request.user.user_id,
-            target_date_key,
-        )
-    except StudyPlanDateOutOfRange:
-        return JsonResponse(
-            {
-                "ok": False,
-                "error": "추가학습은 오늘 계획에만 만들 수 있습니다.",
-            },
-            status=400,
-        )
-    except StudyPlanExtraBlockUnavailable:
-        return JsonResponse(
-            {
-                "ok": False,
-                "error": "추가학습을 만들 취약점 데이터가 부족합니다.",
-            },
-            status=400,
-        )
-    except StudyPlanExtraBlockCompletionRequired:
-        return JsonResponse(
-            {
-                "ok": False,
-                "error": "오늘의 학습 문제를 모두 푼 뒤 추가학습을 만들 수 있습니다.",
-            },
-            status=400,
-        )
-
-    if updated_plan is None:
-        return JsonResponse({"ok": False}, status=404)
-
-    return JsonResponse({"ok": True})
+    return JsonResponse({"ok": True, "weeklyReport": None, **result})
 
 
 def get_json_request_data(request):
