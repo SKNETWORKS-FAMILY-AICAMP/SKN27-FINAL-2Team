@@ -1,0 +1,13 @@
+﻿{
+    "status":  "PASS",
+    "pack_count":  3,
+    "member_count":  27,
+    "distinct_owner_count":  27,
+    "distinct_image_count":  27,
+    "clue_source_count":  35,
+    "distinct_clue_source_count":  35,
+    "rotation_count":  27,
+    "errors":  [
+
+               ]
+}

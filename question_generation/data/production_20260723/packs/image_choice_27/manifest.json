@@ -1,0 +1,114 @@
+{
+  "version": "image_generation_pack_manifest_v2",
+  "pack_count": 27,
+  "packs": [
+    {
+      "path": "image_generation_pack_easy_mixed_heritage_E0015980.json",
+      "era": "개항기·대한제국"
+    },
+    {
+      "path": "image_generation_pack_easy_mixed_heritage_E0015361.json",
+      "era": "조선"
+    },
+    {
+      "path": "image_generation_pack_easy_mixed_heritage_E0002442.json",
+      "era": "조선"
+    },
+    {
+      "path": "image_generation_pack_easy_mixed_heritage_E0055319.json",
+      "era": "조선"
+    },
+    {
+      "path": "image_generation_pack_easy_mixed_heritage_E0007804.json",
+      "era": "조선"
+    },
+    {
+      "path": "image_generation_pack_easy_mixed_heritage_E0017568.json",
+      "era": "조선"
+    },
+    {
+      "path": "image_generation_pack_easy_mixed_heritage_E0003036.json",
+      "era": "조선"
+    },
+    {
+      "path": "image_generation_pack_easy_mixed_heritage_E0062711.json",
+      "era": "고려"
+    },
+    {
+      "path": "image_generation_pack_easy_mixed_heritage_E0005026.json",
+      "era": "고려"
+    },
+    {
+      "path": "image_generation_pack_medium_craft_image_material_ki_020_05600.json",
+      "era": "고대"
+    },
+    {
+      "path": "image_generation_pack_medium_craft_image_material_ki_020_08000.json",
+      "era": "고대"
+    },
+    {
+      "path": "image_generation_pack_medium_craft_image_material_ki_020_10300.json",
+      "era": "고대"
+    },
+    {
+      "path": "image_generation_pack_medium_craft_image_material_ki_020_15700.json",
+      "era": "고대"
+    },
+    {
+      "path": "image_generation_pack_medium_craft_image_material_ki_040_02500.json",
+      "era": "고려"
+    },
+    {
+      "path": "image_generation_pack_medium_craft_image_material_ki_040_09100.json",
+      "era": "고려"
+    },
+    {
+      "path": "image_generation_pack_medium_craft_image_material_ki_040_09200.json",
+      "era": "고려"
+    },
+    {
+      "path": "image_generation_pack_medium_craft_image_material_ki_050_16300.json",
+      "era": "조선"
+    },
+    {
+      "path": "image_generation_pack_medium_craft_image_material_ki_050_16500.json",
+      "era": "조선"
+    },
+    {
+      "path": "image_generation_pack_hard_pagodas_E0024943.json",
+      "era": "고대"
+    },
+    {
+      "path": "image_generation_pack_hard_pagodas_E0024447.json",
+      "era": "고대"
+    },
+    {
+      "path": "image_generation_pack_hard_pagodas_E0019920.json",
+      "era": "고대"
+    },
+    {
+      "path": "image_generation_pack_hard_pagodas_E0024896.json",
+      "era": "고대"
+    },
+    {
+      "path": "image_generation_pack_hard_pagodas_E0000807.json",
+      "era": "고대"
+    },
+    {
+      "path": "image_generation_pack_hard_pagodas_E0002849.json",
+      "era": "고대"
+    },
+    {
+      "path": "image_generation_pack_hard_pagodas_E0024939.json",
+      "era": "고대"
+    },
+    {
+      "path": "image_generation_pack_hard_pagodas_E0064794.json",
+      "era": "고대"
+    },
+    {
+      "path": "image_generation_pack_hard_pagodas_E0040284.json",
+      "era": "고대"
+    }
+  ]
+}

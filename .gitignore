@@ -133,6 +133,8 @@ celerybeat.pid
 
 # Environments
 .env
+.env.*
+!.env.example
 .venv
 env/
 venv/
@@ -322,3 +324,6 @@ etl/preprocessing/neo4j/output/**/*.jsonl
 # Generated AKS encyclopedia RAG artifacts
 etl/preprocessing/history/processed/aks_encyclopedia.chunks.jsonl
 etl/preprocessing/history/processed/aks_encyclopedia.documents.jsonl
+
+# Question generation runtime outputs
+question_generation/outputs/

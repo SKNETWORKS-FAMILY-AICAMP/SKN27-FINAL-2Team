@@ -10,6 +10,7 @@ from django.db import models
 
 class Questions(models.Model):
     question_id = models.BigAutoField(primary_key=True)
+    source_key = models.TextField(blank=True, null=True)
     question_no = models.IntegerField(blank=True, null=True)
     q_score = models.IntegerField()
     era = models.CharField(max_length=50)

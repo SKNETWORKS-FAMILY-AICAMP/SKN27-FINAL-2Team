@@ -38,6 +38,7 @@ CREATE TABLE IF NOT EXISTS user_accounts (
 -- 이미지 지문과 이미지 선택지를 텍스트 캡션으로 바꿔 저장합니다.
 CREATE TABLE IF NOT EXISTS questions (
     question_id         BIGSERIAL       PRIMARY KEY,
+    source_key          TEXT            NULL,       -- 생성 문항 variant_key
     question_no         INT             NULL,       -- 원본 시험지 문항 번호 또는 표시용 번호
     q_score             INT             NOT NULL,   -- 배점: 하 1점, 중 2점, 상 3점
     era                 VARCHAR(50)     NOT NULL,   -- 시대: 고려, 조선 전기, 일제 강점기 등
@@ -52,6 +53,9 @@ CREATE TABLE IF NOT EXISTS questions (
     answer_explanation  TEXT            NOT NULL,   -- 정답 및 오답 해설
     core_concept        VARCHAR(255)    NOT NULL    -- 핵심 개념
 );
+
+CREATE UNIQUE INDEX IF NOT EXISTS questions_source_key_uidx
+    ON questions(source_key);
 
 -- 3. 문제 선택지
 -- 한 문제의 1~5번 선택지를 저장합니다.

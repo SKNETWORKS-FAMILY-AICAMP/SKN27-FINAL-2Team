@@ -1,0 +1,1 @@
+"""Application storage helpers."""
