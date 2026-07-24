@@ -36,6 +36,12 @@ CREATE INDEX IF NOT EXISTS exam_data_classification_idx
 
 -- questions: columns used by question filtering and exam rendering.
 ALTER TABLE questions
+    ADD COLUMN IF NOT EXISTS source_key TEXT NULL;
+
+CREATE UNIQUE INDEX IF NOT EXISTS questions_source_key_uidx
+    ON questions(source_key);
+
+ALTER TABLE questions
     ADD COLUMN IF NOT EXISTS question_no INT NULL;
 
 ALTER TABLE questions

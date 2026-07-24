@@ -47,7 +47,8 @@ v41 material 형식 예시({material_type}):
 ## 운영 방식
 
 - material_type별 규칙은 `question_generation/material_type_prompt_rules.json`에서 가져온다.
-- 예시는 `question_generation/outputs/material_type_examples_v41.json`에서 가져온다.
-- 요청마다 같은 `material_type`의 material 예시 1개만 넣는다.
+- 예시는 실제 기출 전사본을 정리한 `question_generation/material_few_shot_examples.json`에서 가져온다.
+- 요청마다 같은 `material_type`과 `question_task`의 예시 2개를 넣고 같은 난이도를 우선한다.
 - 예시에는 `answer_fact_basis`를 넣지 않는다.
 - 예시는 역사 지식 주입용이 아니라 형식 가이드용이다.
+- 현재 topic과 같은 예시는 제외하며 사용한 기출 `source_id`를 체크포인트에 기록한다.

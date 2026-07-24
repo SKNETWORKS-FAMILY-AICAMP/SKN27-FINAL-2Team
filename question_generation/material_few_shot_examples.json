@@ -1,0 +1,228 @@
+{
+  "자료 제시문": [
+    {
+      "source_id": "advanced_55_08",
+      "question_task": "standard_select",
+      "stem_pattern": "target_description",
+      "difficulty_label": "쉬움",
+      "topic": "혜초",
+      "material": "다큐멘터리 공모 신청서. 작품명: 저서, 위대한 역사 기록이 되다. 8세기 인도와 중앙아시아의 실상을 전해 주는 중요한 기록을 남긴 신라 승려가 있다. 글로벌 시대를 맞아 (가)의 기록이 우리에게 남긴 의미를 재조명하고, 현지 답사를 통해 이슬람 세계와 비잔틴 제국에 대한 기록까지 고증하고자 한다.",
+      "question": "(가) 인물에 대한 설명으로 옳은 것은?"
+    },
+    {
+      "source_id": "advanced_56_31",
+      "question_task": "standard_select",
+      "stem_pattern": "before_after",
+      "difficulty_label": "보통",
+      "topic": "갑신정변",
+      "material": "김옥균이 일본 공사 다케조에에게 국왕의 호위를 위해 일본군이 필요하다고 요청하였다. 그는 호위를 요청하는 국왕의 친서가 있으면 병력을 투입하겠다고 약속하였다. 친서는 박영효가 전달하기로 합의하였고, 다케조에는 조선에 주둔한 청군이 공격해 와도 일본군으로 막을 수 있다고 장담하였다.",
+      "question": "다음 자료에 나타난 상황 이후 전개된 사실로 옳은 것은?"
+    },
+    {
+      "source_id": "advanced_57_06",
+      "question_task": "standard_select",
+      "stem_pattern": "target_description",
+      "difficulty_label": "어려움",
+      "topic": "최치원",
+      "material": "대한민국 방방곡곡 한국사 채널. 이번에 소개할 곳은 함양 상림이다. 이 숲은 당에서 귀국한 (가)이 천령군 태수로 부임하였을 때 홍수 피해를 막기 위해 조성하였다고 한다. 백성들의 삶을 직접 살펴본 (가)는 개혁 방안을 담은 시무책 10여 조를 진성 여왕에게 올렸다.",
+      "question": "(가) 인물에 대한 설명으로 옳은 것은?"
+    },
+    {
+      "source_id": "advanced_47_24",
+      "question_task": "standard_select",
+      "stem_pattern": "fill_blank",
+      "difficulty_label": "쉬움",
+      "topic": "정조",
+      "material": "한국사 퀴즈, 조선 시대 국왕을 알아맞혀 봅시다. 힌트를 단계별로 확인해 보세요. 5단계 힌트 (가), 4단계 힌트 규장각 설치, 3단계 힌트 신해통공 실시, 2단계 힌트 초계문신제 시행, 1단계 힌트 조선의 제22대 국왕.",
+      "question": "(가)에 들어갈 내용으로 옳은 것은?"
+    },
+    {
+      "source_id": "advanced_54_25",
+      "question_task": "standard_select",
+      "stem_pattern": "content_function",
+      "difficulty_label": "보통",
+      "topic": "균역법",
+      "material": "국왕께서 군포를 2필에서 1필로 감면하라는 명을 내리셨다고 들었습니다. 그렇습니다. 백성들의 군역 부담을 줄이기 위한 조치입니다. 이와 더불어 감면으로 인한 재정 부족 문제를 해결할 수 있는 방책도 마련하라고 하셨습니다.",
+      "question": "밑줄 그은 ‘방책’에 해당하는 내용으로 옳은 것은?"
+    }
+  ],
+  "짧은 설명 자료": [
+    {
+      "source_id": "advanced_65_34",
+      "question_task": "standard_select",
+      "stem_pattern": "before_after",
+      "difficulty_label": "쉬움",
+      "topic": "아관 파천",
+      "material": "러시아 공사관으로 거처를 옮기시고 해가 바뀌었습니다. 그곳 유리창과 분칠한 담장은 화려하지만, 그을음 나는 석탄을 때는 전돌은 옥체를 보호하기에 적합하지 않은 듯합니다. 나라 신하들의 심정을 염두에 두시어 바로 환궁하고 끓어오르는 여론에 부응하시어 태평의 터전을 공고히 하소서.",
+      "question": "다음 상소가 작성된 이후의 사실로 옳은 것은?"
+    },
+    {
+      "source_id": "advanced_58_12",
+      "question_task": "standard_select",
+      "stem_pattern": "same_period",
+      "difficulty_label": "보통",
+      "topic": "구제도감",
+      "material": "왕이 명하였다. ‘도성 안의 백성들이 역질에 걸렸으니 구제도감을 설치하여 치료하고, 시신과 유골은 거두어 매장하라.’ 중서성에서 아뢰었다. ‘지난해 관내 서도의 주현에 흉년이 들어 백성이 굶주리고 있습니다. 사창과 공해의 곡식을 내어 경작을 원조하고, 가난하여 살아갈 수 없는 자는 의창을 열어 진휼하소서.’",
+      "question": "다음 상황이 나타난 시기의 사회 시책으로 옳은 것은?"
+    },
+    {
+      "source_id": "advanced_52_47",
+      "question_task": "standard_select",
+      "stem_pattern": "before_after",
+      "difficulty_label": "어려움",
+      "topic": "YH 무역 사건",
+      "material": "시사만화로 보는 현대사. 이 만화는 민생고 해결을 외치는 여성 노동자들이 경찰에게 과잉 진압되는 모습을 풍자하고 있다. 가발 생산 공장의 여성 노동자 180여 명이 업주의 폐업 조치에 맞서 신민당사에서 농성하자, 1천여 명의 무장 경찰이 폭력적으로 진압하였다. 이후 이 사건은 YH 무역 사건으로 역사에 기록되었다.",
+      "question": "다음 사건 이후의 사실로 옳은 것은?"
+    },
+    {
+      "source_id": "advanced_49_11",
+      "question_task": "standard_select",
+      "stem_pattern": "policy_system",
+      "difficulty_label": "보통",
+      "topic": "태조 왕건",
+      "material": "가상 인터뷰. 김부를 경주의 사심관으로 임명하신 의도는 무엇인가요? 투항한 김부의 공을 치하하고 해당 지역의 부호장 이하 관직에 관한 일을 맡겨 지방 세력을 견제하고자 한 것입니다. 사심관은 출신 지역의 행정에 관여하였습니다.",
+      "question": "다음 가상 인터뷰의 왕이 추진한 정책으로 옳은 것은?"
+    },
+    {
+      "source_id": "advanced_58_34",
+      "question_task": "standard_select",
+      "stem_pattern": "background_cause",
+      "difficulty_label": "쉬움",
+      "topic": "문화 통치",
+      "material": "아무리 그럴듯하게 내세워도 이러한 통치 방식은 결국 우리 조선인을 기만하는 것이다. 총독의 임용 범위를 확장하고 지방 자치 제도를 실시하여 관민이 협력하는 문화적 정치의 기초를 확립한다고 선전하였다.",
+      "question": "다음 기사가 나오게 된 배경으로 적절한 것은?"
+    },
+    {
+      "source_id": "advanced_57_23",
+      "question_task": "standard_select",
+      "stem_pattern": "result_effect",
+      "difficulty_label": "쉬움",
+      "topic": "대동법",
+      "material": "한국사 쟁점 토론 주제는 공납의 개혁이다. 농민은 방납의 폐단을 줄이기 위해 공물을 현물 대신 쌀과 베 등으로 납부하자고 주장하였다. 양반 지주는 토지 결수를 기준으로 부담하면 토지가 많은 지주의 부담이 커진다고 반박하였다.",
+      "question": "밑줄 그은 '이 법'의 영향으로 가장 적절한 것은?"
+    },
+    {
+      "source_id": "advanced_59_08",
+      "question_task": "standard_select",
+      "stem_pattern": "economic_condition",
+      "difficulty_label": "보통",
+      "topic": "장보고",
+      "material": "장보고가 귀국한 뒤 왕에게 중국에서 우리나라 사람들이 노비로 팔리고 있다고 아뢰었다. 그는 청해에 진을 설치하여 해적이 사람을 중국으로 잡아가는 것을 막게 해 달라고 요청하였고, 왕은 군사 1만 명을 주어 지키게 하였다.",
+      "question": "다음 자료에 나타난 시기의 경제 상황으로 옳은 것은?"
+    }
+  ],
+  "연표 자료": [
+    {
+      "source_id": "advanced_64_12",
+      "question_task": "timeline_position",
+      "stem_pattern": "event_period",
+      "difficulty_label": "쉬움",
+      "topic": "이자겸의 난",
+      "material": "이것은 경원 이씨 가문의 이자연 묘지명으로, 딸 셋을 모두 문종의 왕비로 보냈다는 내용이 기록되어 있다. 그의 손자 또한 딸들을 왕비로 보내 최고 권력을 누렸고, 이에 위협을 느낀 인종이 그를 제거하려 하자 척준경과 함께 반란을 일으켰다. 1104 별무반 편성 - (가) - 1135 묘청의 난 - (나) - 1170 무신 정변 - (다) - 1196 최충헌 집권 - (라) - 1270 개경 환도 - (마) - 1351 공민왕 즉위",
+      "question": "밑줄 그은 '반란'이 일어난 시기를 연표에서 옳게 고른 것은?"
+    },
+    {
+      "source_id": "advanced_59_30",
+      "question_task": "timeline_position",
+      "stem_pattern": "event_period",
+      "difficulty_label": "보통",
+      "topic": "병인양요",
+      "material": "북경 주재 프랑스 공사가 청에 보낸 문서에는 조선에서 프랑스 선교사와 많은 천주교 신자가 처형되었으므로 제독에게 요청하여 군대를 일으키게 할 것이라는 내용이 담겨 있다. 1863 고종 즉위 - (가) - 1868 오페르트 도굴 사건 - (나) - 1871 신미양요 - (다) - 1875 운요호 사건 - (라) - 1882 조미 수호 통상 조약 - (마) - 1886 조프 수호 통상 조약",
+      "question": "다음 상황이 나타난 시기를 연표에서 옳게 고른 것은?"
+    },
+    {
+      "source_id": "advanced_52_22",
+      "question_task": "timeline_position",
+      "stem_pattern": "event_period",
+      "difficulty_label": "어려움",
+      "topic": "신해박해",
+      "material": "진산의 윤지충은 조상의 신주를 불사르고 어머니의 장례에도 신주를 모시지 않았다. 사학을 따르는 죄인을 처벌하여 경계로 삼으라는 명이 내려졌다. 1746 『속대전』 간행 - (가) - 1776 정조 즉위 - (나) - 1801 공노비 해방 - (다) - 1834 헌종 즉위 - (라) - 1865 『대전회통』 편찬 - (마) - 1876 강화도 조약",
+      "question": "다음 상황이 나타난 시기를 연표에서 옳게 고른 것은?"
+    },
+    {
+      "source_id": "advanced_47_07",
+      "question_task": "period_between",
+      "stem_pattern": "between_events",
+      "difficulty_label": "보통",
+      "topic": "황산벌 전투",
+      "material": "(가) 백제가 대야성을 함락하자 김춘추의 딸 고타소랑이 남편 김품석을 따라 죽었다. 김춘추는 이에 한을 품고 고구려에 군사를 청하여 백제에 원한을 갚고자 하였다. (나) 김유신 등이 황산 벌판으로 진군하자 백제의 장군 계백이 군사를 거느리고 먼저 험한 곳을 차지하여 세 군데에 진영을 설치하고 기다렸다.",
+      "question": "(가), (나) 사이의 시기에 있었던 사실로 옳은 것은?"
+    },
+    {
+      "source_id": "advanced_54_47",
+      "question_task": "period_between",
+      "stem_pattern": "between_publications",
+      "difficulty_label": "보통",
+      "topic": "4·19 혁명",
+      "material": "(가) 대통령은 국민이 원한다면 사임하고 지난 정부통령 선거를 다시 하도록 지시하였으며, 이기붕 의장이 공직에서 물러날 것이라고 발표하였다. (나) 군사혁명위원회는 반공 태세를 재정비하고 자유 우방과의 유대를 공고히 하며, 과업을 마치면 정권을 이양하고 본연의 임무로 복귀하겠다고 발표하였다.",
+      "question": "(가), (나) 발표 사이의 시기에 있었던 사실로 옳은 것은?"
+    }
+  ],
+  "탐구 자료": [
+    {
+      "source_id": "advanced_49_09",
+      "question_task": "standard_select",
+      "stem_pattern": "same_period",
+      "difficulty_label": "쉬움",
+      "topic": "진성여왕",
+      "material": "『삼국사기』 데이터베이스 검색 결과. 9년: 죄수를 사면하고 주군의 조세를 면제해 주다. 2년: 『삼대목』을 편찬하다. 3년: 원종과 애노가 반란을 일으키다. 10년: 서남쪽에서 적고적이라고 불리는 도적이 일어나다. 11년: 태자 요에게 왕위를 물려주다.",
+      "question": "다음 검색창에 들어갈 왕의 재위 기간에 있었던 사실로 옳은 것은?"
+    },
+    {
+      "source_id": "advanced_54_35",
+      "question_task": "standard_select",
+      "stem_pattern": "activity_achievement",
+      "difficulty_label": "보통",
+      "topic": "신민회",
+      "material": "신흥 무관 학교 설립 110주년 기념식. 잠시 후 신흥 무관 학교 설립 110주년 기념식이 온라인으로 거행됩니다. 신흥 무관 학교는 안창호 등이 1907년에 조직한 비밀 결사인 (가)가 세운 독립군 양성 기관으로, 무장 투쟁 지도자를 다수 배출하였다. 기념식에 여러분의 많은 참여 바랍니다.",
+      "question": "(가) 단체의 활동으로 옳은 것은?"
+    },
+    {
+      "source_id": "advanced_52_43",
+      "question_task": "standard_select",
+      "stem_pattern": "activity_achievement",
+      "difficulty_label": "어려움",
+      "topic": "이동휘",
+      "material": "역사 인물 검색 결과. 대한 제국 무관 출신으로 신민회 등에서 활동하다 일제에 체포되었다. 이후 만주와 연해주를 중심으로 민족 운동을 전개하였다. 사회주의 정당인 한인 사회당을 창당하였고 대한민국 임시 정부의 국무총리를 역임하였다. 1995년 건국훈장 대통령장이 추서되었다.",
+      "question": "다음 검색창에 들어갈 인물의 활동으로 옳은 것은?"
+    },
+    {
+      "source_id": "advanced_51_36",
+      "question_task": "standard_select",
+      "stem_pattern": "appropriate_inquiry",
+      "difficulty_label": "보통",
+      "topic": "관민 공동회",
+      "material": "중추원은 법률과 칙령의 제정·폐지·개정에 관한 사항과 의정부에서 토의한 사항을 심사하고 의정하도록 하였다. 의관의 절반은 정부가 추천하고 나머지 절반은 인민협회에서 정치와 법률에 통달한 사람을 투표로 선출하도록 하였다.",
+      "question": "다음 자료를 활용한 탐구 활동으로 가장 적절한 것은?"
+    }
+  ],
+  "사건 배열 자료": [
+    {
+      "source_id": "advanced_52_50",
+      "question_task": "order",
+      "stem_pattern": "order",
+      "difficulty_label": "쉬움",
+      "topic": "대한민국의 국제기구 가입",
+      "material": "〈주제: 세계로 뻗어 가는 대한민국〉 (가) 국제 평화와 안전 보장을 목적으로 결성된 유엔에 가입하였다. (나) 세계 경제 발전과 무역 촉진을 도모하는 경제 협력 개발 기구(OECD)의 29번째 회원국이 되었다. (다) 세계 주요 20개국을 회원으로 하는 국제 경제 협의 기구인 G20 정상 회의를 서울에서 개최하였다.",
+      "question": "(가)~(다) 학생이 발표한 내용을 일어난 순서대로 옳게 나열한 것은?"
+    },
+    {
+      "source_id": "advanced_52_21",
+      "question_task": "order",
+      "stem_pattern": "order",
+      "difficulty_label": "보통",
+      "topic": "병자호란 전후",
+      "material": "(가) 왕이 군사를 일으켜 왕대비를 받들어 복위시킨 뒤 경운궁에서 즉위하였다. 광해군을 폐위하여 강화로 내쫓고 전국에 대사령을 내렸다. (나) 용골대 등이 왕을 인도하여 단 아래 북쪽을 향해 자리를 마련하고, 왕은 세 번 절하고 아홉 번 머리를 조아리는 예를 행하였다. (다) 왕은 김상용에게 도성의 일을 맡기고 종묘사직의 신주를 받들어 강화로 피난하게 하였다. 김류, 이귀, 최명길 등의 신하들이 왕을 따라갔다.",
+      "question": "(가)~(다)를 일어난 순서대로 옳게 나열한 것은?"
+    },
+    {
+      "source_id": "advanced_47_35",
+      "question_task": "order",
+      "stem_pattern": "order",
+      "difficulty_label": "어려움",
+      "topic": "을미사변부터 아관 파천까지",
+      "material": "(가) 왕이 경복궁을 나오자 이범진과 이윤용 등이 러시아 공사관으로 옮기게 하였다. 김홍집 등이 군중에게 잡혀 살해되자 유길준 등은 도주하였다. (나) 대군주 폐하께서 조칙을 내려 ‘짐이 신민에 앞서 머리카락을 자르니, 너희들은 짐의 뜻을 잘 본받아 만국과 나란히 서는 대업을 이루라.’라고 하셨다. (다) 광화문을 통해 들어온 일본 병사들이 건청궁으로 침입하였다. 일본 장교는 자객들이 왕후를 수색하는 것을 도왔고, 자객들은 왕후를 찾아내어 시해하였다.",
+      "question": "(가)~(다)를 일어난 순서대로 옳게 나열한 것은?"
+    }
+  ]
+}
