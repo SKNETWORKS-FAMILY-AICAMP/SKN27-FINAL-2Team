@@ -213,12 +213,69 @@ body {
   min-width: 0;
 }
 
+.choice.has-image {
+  height: auto;
+  min-height: 0;
+  align-items: start;
+  padding: 10px;
+  overflow: visible;
+}
+
+.choice.has-image > span {
+  margin-top: 4px;
+}
+
 .choice-image {
   display: block;
-  width: min(180px, 100%);
-  max-height: 180px;
+  width: min(100%, 420px);
+  height: auto;
+  max-height: 320px;
   object-fit: contain;
   border-radius: 6px;
+}
+
+/* Image choices keep the fixed exam frame while their own list scrolls. */
+@media (min-width: 901px) {
+  .exam-page .question-card.has-image-choices {
+    display: grid !important;
+    grid-template-rows: auto auto auto minmax(0, 1fr) !important;
+    align-content: stretch !important;
+  }
+
+  .exam-page .choice-list.has-image-choices {
+    min-height: 0 !important;
+    max-height: 100% !important;
+    align-content: start !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+    padding: 4px 8px 4px 0 !important;
+    scrollbar-width: thin;
+    scrollbar-color: #93b6a2 transparent;
+  }
+
+  .exam-page .choice-list.has-image-choices::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .exam-page .choice-list.has-image-choices::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: #93b6a2;
+  }
+
+  .exam-page .choice-list.has-image-choices .choice.has-image {
+    height: auto !important;
+    min-height: 196px !important;
+    align-items: start !important;
+    padding: 10px !important;
+    overflow: visible !important;
+  }
+
+  .exam-page .choice-list.has-image-choices .choice-image {
+    width: min(100%, 360px) !important;
+    max-height: 170px !important;
+    height: auto !important;
+  }
 }
 
 .submit-loading {
@@ -298,5 +355,9 @@ body {
 
   .question-type-chip {
     max-width: 100%;
+  }
+
+  .choice-image {
+    max-height: 240px;
   }
 }

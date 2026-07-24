@@ -4,8 +4,8 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>himate | 결과</title>
-  <link rel="stylesheet" href="/static/question/css/result.css?v=summary-card-layout-5" />
-  <link rel="stylesheet" href="../../static/question/css/result.css?v=summary-card-layout-5" />
+  <link rel="stylesheet" href="/static/question/css/result.css?v=result-image-choice-7" />
+  <link rel="stylesheet" href="../../static/question/css/result.css?v=result-image-choice-7" />
   <link rel="stylesheet" href="/static/himate.css" />
   <link rel="stylesheet" href="/static/layout.css?v=result-header-position-3" />
   <style>
@@ -207,6 +207,12 @@
         .replaceAll("'", "&#39;");
     }
 
+    function assetUrl(path) {
+      if (!path) return "";
+      if (/^(https?:)?\/\//.test(path) || path.startsWith("/")) return path;
+      return `/${path}`;
+    }
+
     function getCookie(name) {
       return document.cookie
         .split(";")
@@ -250,6 +256,7 @@
         choiceId: question.choiceIds?.[choiceIndex] || choice.choice_id || null,
         choiceNo: choice.choiceNo || choice.choice_no || choiceIndex + 1,
         content: typeof choice === "string" ? choice : choice.content || "",
+        imagePath: typeof choice === "string" ? "" : choice.imagePath || choice.choice_image_path || "",
         explanation: typeof choice === "string" ? "" : choice.explanation || choice.choice_explanation || "",
       }));
       const selectedChoiceId = selectedChoiceNo ? choices[selectedChoiceNo - 1]?.choiceId || null : null;
@@ -259,6 +266,7 @@
         number: index + 1,
         title: question.title || question.content,
         source: question.source || question.passage || question.image_caption || "",
+        questionImagePath: question.questionImagePath || question.question_image_path || "",
         score: question.score || question.q_score || 0,
         earnedScore: selectedChoiceNo === answerNo ? question.score || question.q_score || 0 : 0,
         type: question.type || [question.questionType, question.questionSubtype].filter(Boolean).join(" · "),
@@ -283,6 +291,7 @@
         choiceId: choice.choice_id,
         choiceNo: choice.choice_no,
         content: choice.content || "",
+        imagePath: choice.choice_image_path || choice.imagePath || "",
         explanation: choice.choice_explanation || "",
         isAnswer: choice.is_answer || false,
       }));
@@ -292,6 +301,7 @@
         number: question.number,
         title: question.content,
         source: question.passage || question.image_caption || "",
+        questionImagePath: question.question_image_path || "",
         score: question.q_score || 0,
         earnedScore: question.earned_score || 0,
         type: question.question_subtype
@@ -319,6 +329,7 @@
         choiceId: choice.choice_id,
         choiceNo: choice.choice_no,
         content: choice.content || "",
+        imagePath: choice.choice_image_path || choice.imagePath || "",
         explanation: choice.choice_explanation || "",
       }));
       return {
@@ -326,6 +337,7 @@
         number: index + 1,
         title: exp.content,
         source: exp.passage || exp.visual_note || [exp.era, exp.topic].filter(Boolean).join(" · "),
+        questionImagePath: exp.question_image_path || exp.questionImagePath || "",
         score: exp.q_score || 0,
         earnedScore: exp.is_correct ? exp.q_score || 0 : 0,
         type: exp.question_subtype ? `${exp.question_type} · ${exp.question_subtype}` : exp.question_type || "",
@@ -471,13 +483,21 @@
       timeSpent.textContent = formatDuration(question.timeSpentMs);
       questionType.textContent = question.type || "-";
       questionTitle.textContent = question.title || "";
-      questionSource.textContent = question.source || "별도 지문이 없는 문제입니다.";
+      const source = question.source || "별도 지문이 없는 문제입니다.";
+      const questionImage = question.questionImagePath
+        ? `<img class="result-question-image" src="${escapeHtml(assetUrl(question.questionImagePath))}" alt="문항 자료 이미지">`
+        : "";
+      questionSource.innerHTML = `${escapeHtml(source)}${questionImage}`;
       choiceReview.innerHTML = question.choices.map((choice) => {
         const classes = [
           correctChoice && choice.choiceId === correctChoice.choiceId ? "correct" : "",
           selectedChoice && choice.choiceId === selectedChoice.choiceId ? "selected" : "",
         ].filter(Boolean).join(" ");
-        return `<li class="${classes}"><span>${choice.choiceNo}</span><b>${escapeHtml(choiceText(choice))}</b></li>`;
+        const choiceImage = choice.imagePath
+          ? `<img class="result-choice-image" src="${escapeHtml(assetUrl(choice.imagePath))}" alt="${choice.choiceNo}번 선택지 이미지">`
+          : "";
+        const choiceTextHtml = choiceText(choice) ? `<b>${escapeHtml(choiceText(choice))}</b>` : "";
+        return `<li class="${classes}"><span>${choice.choiceNo}</span><div class="choice-review-body">${choiceImage}${choiceTextHtml}</div></li>`;
       }).join("");
 
       explanation.textContent = question.answerExplanation || "등록된 해설이 없습니다.";
@@ -565,11 +585,22 @@
       levelText.style.setProperty("color", toneColors[correctTone], "important");
       levelText.textContent = `${resultPayload.correctCount} / ${resultPayload.totalCount}`;
       document.getElementById("levelDescription").textContent = `총 ${resultPayload.totalCount}문항 중 ${resultPayload.correctCount}문항을 맞혔습니다.`;
-      const weakTypes = questions
+      const weakTopics = [...questions
         .filter((question) => !question.isCorrect)
-        .map((question) => question.type || question.topic || "미분류")
-        .slice(0, 3);
-      document.getElementById("weakTopics").innerHTML = (weakTypes.length ? weakTypes : ["오답 없음"])
+        .reduce((groups, question) => {
+          const era = String(question.era || "시대 미분류").trim() || "시대 미분류";
+          const topic = String(question.topic || "주제 미분류").trim() || "주제 미분류";
+          const label = `${era} · ${topic}`;
+          const group = groups.get(label) || { label, wrongCount: 0 };
+          group.wrongCount += 1;
+          groups.set(label, group);
+          return groups;
+        }, new Map())
+        .values()]
+        .sort((left, right) => right.wrongCount - left.wrongCount || left.label.localeCompare(right.label, "ko"))
+        .slice(0, 3)
+        .map((group) => group.label);
+      document.getElementById("weakTopics").innerHTML = (weakTopics.length ? weakTopics : ["오답 없음"])
         .map((topic) => `<li>${escapeHtml(topic)}</li>`)
         .join("");
     }
