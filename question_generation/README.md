@@ -2,6 +2,46 @@
 
 검증된 closed pack을 5선지 generation pack으로 변환한 뒤 지문과 선지를 생성하는 현행 파이프라인입니다.
 
+## Versioned Production Data
+
+2026-07-23에 생성·평가를 마친 고유 380문항과 실제 출제 Pack은 `question_generation/data/production_20260723/`에 보관합니다.
+
+```text
+packs/
+  standard_50.json
+  chronology_10.json
+  image_passage_10/
+  image_choice_27/
+questions/
+  standard_305/
+  chronology_and_image_75/
+```
+
+- `standard_305`: 일반 선택형 295문항과 이미지 자료형 10문항
+- `chronology_and_image_75`: 연대기형 50문항과 이미지 선지형 25문항
+- 이미지 파일은 복제하지 않고 원본 문제와 Pack에 기록된 `https://contents.history.go.kr/` URL을 사용합니다.
+- 실행 로그, 평가 checkpoint, API 응답 원문은 재적재에 필요하지 않아 포함하지 않습니다.
+
+서비스 DB에 넣기 전에는 반드시 `--dry-run`으로 중복과 입력 계약을 확인합니다.
+
+```powershell
+$root = "question_generation\data\production_20260723\questions"
+
+.\.venv\Scripts\python.exe -m question_generation.postprocess_questions import-db `
+  --input "$root\standard_305\questions.json" `
+  --explanations "$root\standard_305\choice_explanations.jsonl" `
+  --classifications "$root\standard_305\service_classifications.jsonl" `
+  --dry-run
+
+.\.venv\Scripts\python.exe -m question_generation.postprocess_questions import-db `
+  --input "$root\chronology_and_image_75\questions.json" `
+  --explanations "$root\chronology_and_image_75\choice_explanations.jsonl" `
+  --classifications "$root\chronology_and_image_75\service_classifications.jsonl" `
+  --dry-run
+```
+
+검증 결과가 각각 305개와 75개이면 같은 명령에서 `--dry-run`만 제거합니다. `source_key`가 이미 존재하는 문항은 내용·선지를 중복 삽입하지 않고 서비스 분류만 갱신합니다.
+
 ## Current Modules
 
 - `core/`: 입력 계약, 난이도, 관계축, 문자열 처리

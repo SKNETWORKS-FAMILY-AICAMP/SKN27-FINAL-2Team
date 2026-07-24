@@ -161,19 +161,6 @@ def generate_explanations(args: argparse.Namespace) -> int:
     return 0
 
 
-def load_major_types(items_dir: Path) -> dict[str, str]:
-    major_types: dict[str, str] = {}
-    for path in items_dir.glob("*.json"):
-        item = json.loads(path.read_text(encoding="utf-8"))
-        source = item.get("input") or {}
-        key = str(source.get("variant_key") or "")
-        major_type = str(source.get("major_type") or "").strip()
-        if not key or not major_type or key in major_types:
-            raise ValueError(f"{path}의 variant_key 또는 major_type이 없거나 중복됩니다.")
-        major_types[key] = major_type
-    return major_types
-
-
 def db_rows(
     question: dict[str, Any],
     question_no: int,
@@ -225,11 +212,10 @@ def db_rows(
 def import_db(args: argparse.Namespace) -> int:
     questions = load_questions(args.input)
     explanations = load_explanations(args.explanations)
-    major_types = load_major_types(args.items_dir)
     classifications = load_classifications(args.classifications)
     keys = {question["variant_key"] for question in questions}
-    if keys != set(explanations) or keys != set(major_types) or keys != set(classifications):
-        raise ValueError("문항·해설·item·서비스 분류의 variant_key 집합이 정확히 일치해야 합니다.")
+    if keys != set(explanations) or keys != set(classifications):
+        raise ValueError("문항·해설·서비스 분류의 variant_key 집합이 정확히 일치해야 합니다.")
 
     prepared = []
     for number, question in enumerate(questions, 1):
@@ -321,7 +307,6 @@ def parse_args() -> argparse.Namespace:
 
     importer = subparsers.add_parser("import-db", help="해설이 완료된 문제를 서비스 DB에 적재")
     importer.add_argument("--input", type=Path, required=True)
-    importer.add_argument("--items-dir", type=Path, required=True)
     importer.add_argument("--explanations", type=Path, required=True)
     importer.add_argument("--classifications", type=Path, required=True)
     importer.add_argument("--dry-run", action="store_true")
