@@ -146,6 +146,10 @@ def make_source_relation_evidence(
         "source_text": "",
         "evidence_kind": "STRUCTURED_SOURCE_ASSERTION",
         "source_release": str(row.get("source_release", "")),
+        "raw_relation_type": str(row.get("raw_relation_type", "")),
+        "relation_qualifiers_json": str(
+            row.get("relation_qualifiers_json", "[]")
+        ),
         "evidence_urls_json": dumps(
             evidence_urls,
             ensure_ascii=False,

@@ -143,6 +143,10 @@ MERGE (n:GraphEntity {entity_id: row.entity_id})
 SET n.display_name = row.display_name,
     n.search_text = row.display_name,
     n.normalized_search_text = row.normalized_search_text,
+    n.exact_search_eligible = toBoolean(row.exact_search_eligible),
+    n.exact_search_status = row.exact_search_status,
+    n.exact_search_candidate_count =
+        toInteger(row.exact_search_candidate_count),
     n.entity_type = row.entity_type,
     n.resolution_status = row.resolution_status,
     n.retrieval_eligible = toBoolean(row.retrieval_eligible),
@@ -156,6 +160,7 @@ SET n.display_name = row.display_name,
     n.merge_scope = row.merge_scope,
     n.context_anchor_id = row.context_anchor_id,
     n.context_direction = row.context_direction,
+    n.context_predicate = row.context_predicate,
     n.lifecycle_status = row.lifecycle_status,
     n.identity_confidence = CASE
         WHEN row.identity_confidence = '' THEN null
@@ -179,17 +184,27 @@ UNWIND $rows AS row
 MERGE (n:Fact {fact_id: row.fact_id})
 SET n.predicate = row.predicate,
     n.subject_source_node_id = row.subject_source_node_id,
+    n.subject_identity_node_id = row.subject_identity_node_id,
     n.object_source_node_id = row.object_source_node_id,
+    n.object_identity_node_id = row.object_identity_node_id,
     n.assertion_count = toInteger(row.assertion_count),
     n.relation_status = row.relation_status,
     n.endpoint_status = row.endpoint_status,
     n.retrieval_eligible = toBoolean(row.retrieval_eligible),
     n.candidate_retrieval_eligible =
         toBoolean(row.candidate_retrieval_eligible),
+    n.terminal_retrieval_eligible =
+        toBoolean(row.terminal_retrieval_eligible),
     n.multi_hop_eligible = toBoolean(row.multi_hop_eligible),
     n.evidence_ids_json = row.evidence_ids_json,
     n.source_datasets_json = row.source_datasets_json,
     n.candidate_tiers_json = row.candidate_tiers_json,
+    n.source_predicates_json = row.source_predicates_json,
+    n.raw_relation_types_json = row.raw_relation_types_json,
+    n.relation_qualifiers_json = row.relation_qualifiers_json,
+    n.endpoint_projection_status = row.endpoint_projection_status,
+    n.endpoint_projection_reference_fact_id =
+        row.endpoint_projection_reference_fact_id,
     n.review_model = row.review_model,
     n.review_rationale = row.review_rationale,
     n.review_reason_codes_json = row.review_reason_codes_json,
@@ -224,12 +239,16 @@ SET n.source = row.source,
     n.source_key = row.source_key,
     n.source_release = row.source_release,
     n.source_metadata_json = row.source_metadata_json,
+    n.identity_status = row.identity_status,
+    n.identity_reason_code = row.identity_reason_code,
+    n.preferred_source_node_id = row.preferred_source_node_id,
+    n.identity_evidence_urls_json = row.identity_evidence_urls_json,
     n.graph_release_id = row.graph_release_id
 RETURN count(*) AS processed
 """,
         "entity_names": """
 UNWIND $rows AS row
-MERGE (n:EntityName:ResolvedSearchTerm {
+MERGE (n:EntityName {
     entity_name_id: row.entity_name_id
 })
 SET n.name = row.name,
@@ -237,8 +256,19 @@ SET n.name = row.name,
     n.normalized_search_text = row.normalized_name,
     n.normalized_name = row.normalized_name,
     n.name_type = row.name_type,
+    n.target_count = toInteger(row.target_count),
+    n.target_resolution_status = row.target_resolution_status,
+    n.exact_search_eligible = toBoolean(row.exact_search_eligible),
+    n.retrieval_eligible = toBoolean(row.retrieval_eligible),
     n.normalization_policy_version = row.normalization_policy_version,
     n.graph_release_id = row.graph_release_id
+REMOVE n:ResolvedSearchTerm
+FOREACH (_ IN CASE
+    WHEN toBoolean(row.exact_search_eligible) THEN [1]
+    ELSE []
+END |
+    SET n:ResolvedSearchTerm
+)
 RETURN count(*) AS processed
 """,
         "exam_terms": """
@@ -256,8 +286,22 @@ SET n.term = row.term,
     n.problem_ids_json = row.problem_ids_json,
     n.source_link_status = row.source_link_status,
     n.resolution_status = row.resolution_status,
-    n.retrieval_eligible = false,
+    n.target_count = toInteger(row.target_count),
+    n.target_resolution_status = row.target_resolution_status,
+    n.exact_search_eligible = toBoolean(row.exact_search_eligible),
+    n.retrieval_eligible = toBoolean(row.retrieval_eligible),
+    n.fact_retrieval_eligible =
+        toBoolean(row.fact_retrieval_eligible),
+    n.terminal_fact_retrieval_eligible =
+        toBoolean(row.terminal_fact_retrieval_eligible),
     n.graph_release_id = row.graph_release_id
+REMOVE n:ResolvedSearchTerm
+FOREACH (_ IN CASE
+    WHEN toBoolean(row.exact_search_eligible) THEN [1]
+    ELSE []
+END |
+    SET n:ResolvedSearchTerm
+)
 RETURN count(*) AS processed
 """,
         "topics": """
@@ -317,7 +361,6 @@ RETURN count(*) AS processed
 UNWIND $rows AS row
 MATCH (term:ExamTerm {exam_term_id: row.exam_term_id})
 MATCH (entity:CanonicalEntity {entity_id: row.canonical_id})
-SET term:ResolvedSearchTerm
 MERGE (term)-[relation:REFERS_TO]->(entity)
 SET relation.match_status = row.match_status,
     relation.method = row.method,
@@ -429,6 +472,20 @@ def load_direct_fact_relationships(
         enriched_row["source_datasets"] = json.loads(
             row["source_datasets_json"]
         )
+        enriched_row["source_predicates"] = json.loads(
+            row["source_predicates_json"]
+        )
+        enriched_row["raw_relation_types"] = json.loads(
+            row["raw_relation_types_json"]
+        )
+        enriched_row["relation_qualifiers"] = json.loads(
+            row["relation_qualifiers_json"]
+        )
+        enriched_row["kinship_kind"] = ""
+        if predicate in {"HAS_CHILD", "HAS_FATHER", "HAS_MOTHER"}:
+            enriched_row["kinship_kind"] = "UNSPECIFIED"
+            if "BIOLOGICAL" in enriched_row["relation_qualifiers"]:
+                enriched_row["kinship_kind"] = "BIOLOGICAL"
         enriched_row["review_models"] = json.loads(
             row["review_models_json"]
         )
@@ -444,6 +501,7 @@ MERGE (subject)-[relation:`{predicate}` {{
     semantic_relation_id: row.semantic_relation_id
 }}]->(object)
 SET relation.representative_fact_id = row.representative_fact_id,
+    relation.directionality = row.directionality,
     relation.fact_ids = row.fact_ids,
     relation.fact_count = toInteger(row.fact_count),
     relation.assertion_count = toInteger(row.assertion_count),
@@ -453,9 +511,18 @@ SET relation.representative_fact_id = row.representative_fact_id,
     relation.retrieval_eligible = toBoolean(row.retrieval_eligible),
     relation.candidate_retrieval_eligible =
         toBoolean(row.candidate_retrieval_eligible),
+    relation.terminal_retrieval_eligible =
+        toBoolean(row.terminal_retrieval_eligible),
     relation.multi_hop_eligible = toBoolean(row.multi_hop_eligible),
     relation.evidence_ids = row.evidence_ids,
     relation.source_datasets = row.source_datasets,
+    relation.source_predicates = row.source_predicates,
+    relation.raw_relation_types = row.raw_relation_types,
+    relation.relation_qualifiers = row.relation_qualifiers,
+    relation.kinship_kind = CASE
+        WHEN row.kinship_kind = '' THEN null
+        ELSE row.kinship_kind
+    END,
     relation.review_models = row.review_models,
     relation.graph_release_id = row.graph_release_id
 RETURN count(*) AS processed
@@ -501,6 +568,14 @@ WHERE r.semantic_relation_id IS NOT NULL
 RETURN count(r) AS count
 """
         ).single()["count"],
+        "terminal_retrieval_relationship_count": session.run(
+            """
+MATCH (:GraphEntity)-[r]->(:GraphEntity)
+WHERE r.semantic_relation_id IS NOT NULL
+  AND r.terminal_retrieval_eligible = true
+RETURN count(r) AS count
+"""
+        ).single()["count"],
         "searchable_provisional_count": session.run(
             """
 MATCH (n:ProvisionalEntity)
@@ -515,6 +590,29 @@ RETURN count(n) AS count
 MATCH (start:GraphEntity)-[r]->(end:GraphEntity)
 WHERE r.semantic_relation_id IS NOT NULL
   AND r.retrieval_eligible = true
+  AND (
+      start.resolution_status <> 'RESOLVED'
+      OR end.resolution_status <> 'RESOLVED'
+  )
+RETURN count(r) AS count
+"""
+        ).single()["count"],
+        "unsafe_terminal_relationship_count": session.run(
+            """
+MATCH (start:GraphEntity)-[r]->(end:GraphEntity)
+WHERE r.semantic_relation_id IS NOT NULL
+  AND r.terminal_retrieval_eligible = true
+  AND start.resolution_status <> 'RESOLVED'
+  AND end.resolution_status <> 'RESOLVED'
+RETURN count(r) AS count
+"""
+        ).single()["count"],
+        "unsafe_provisional_traversal_count": session.run(
+            """
+MATCH (start:GraphEntity)-[r]->(end:GraphEntity)
+WHERE r.semantic_relation_id IS NOT NULL
+  AND r.terminal_retrieval_eligible = true
+  AND r.multi_hop_eligible = true
   AND (
       start.resolution_status <> 'RESOLVED'
       OR end.resolution_status <> 'RESOLVED'
@@ -544,6 +642,35 @@ RETURN coalesce(sum(r.fact_count), 0) AS count
 MATCH (n:CanonicalEntity)
 WHERE n.normalized_search_text IS NULL
    OR n.normalized_search_text = ''
+RETURN count(n) AS count
+"""
+        ).single()["count"],
+        "duplicate_exact_search_canonical_name_count": session.run(
+            """
+MATCH (n:CanonicalEntity)
+WHERE n.exact_search_eligible = true
+WITH n.normalized_search_text AS normalized_search_text,
+     count(n) AS candidate_count
+WHERE candidate_count > 1
+RETURN count(normalized_search_text) AS count
+"""
+        ).single()["count"],
+        "ambiguous_retrievable_exam_term_count": session.run(
+            """
+MATCH (n:ExamTerm)
+WHERE n.target_resolution_status = 'AMBIGUOUS'
+  AND (
+      n.exact_search_eligible = true
+      OR n.retrieval_eligible = true
+      OR n:ResolvedSearchTerm
+  )
+RETURN count(n) AS count
+"""
+        ).single()["count"],
+        "ineligible_resolved_search_term_count": session.run(
+            """
+MATCH (n:ResolvedSearchTerm)
+WHERE n.exact_search_eligible <> true
 RETURN count(n) AS count
 """
         ).single()["count"],
@@ -586,11 +713,19 @@ RETURN count(*) AS count
         "default_retrieval_relationship_count": statistics[
             "default_retrieval_semantic_relation_count"
         ],
+        "terminal_retrieval_relationship_count": statistics[
+            "terminal_retrieval_semantic_relation_count"
+        ],
         "searchable_provisional_count": 0,
         "unsafe_retrieval_relationship_count": 0,
+        "unsafe_terminal_relationship_count": 0,
+        "unsafe_provisional_traversal_count": 0,
         "duplicate_semantic_relation_id_count": 0,
         "direct_fact_reference_count": statistics["fact_count"],
         "canonical_without_exact_search_key_count": 0,
+        "duplicate_exact_search_canonical_name_count": 0,
+        "ambiguous_retrievable_exam_term_count": 0,
+        "ineligible_resolved_search_term_count": 0,
         "resolved_term_without_exact_search_key_count": 0,
         "provisional_resolved_search_term_count": 0,
         "online_exact_search_index_count": 2,

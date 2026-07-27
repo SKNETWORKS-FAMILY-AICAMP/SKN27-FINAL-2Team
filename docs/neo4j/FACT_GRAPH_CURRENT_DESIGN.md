@@ -306,8 +306,21 @@ NLP 공식 문장은 `nlp_relation_evidence_id`를 근거 ID로 사용한다.
 같은 시작점·Predicate·끝점은 `semantic_relation_id` 하나로 유지한다. 직접 관계가
 합쳐져도 개별 Fact와 Evidence는 남는다.
 
-같은 canonical 인물·방향·정규화 이름·EntityType인 미정규화 endpoint는 해당 인물
+같은 canonical 인물·방향·Predicate·정규화 이름·EntityType인 미정규화 endpoint는 해당 인물
 문맥 안에서만 병합한다. 병합 결과도 검색에서 제외되는 `ProvisionalEntity`다.
+
+친생 여부처럼 상위 관계에 포함되는 세부 조건은 별도 predicate로 나누지 않는다.
+
+```text
+HAS_BIOLOGICAL_CHILD  → HAS_CHILD  + relation_qualifiers = ["BIOLOGICAL"]
+HAS_BIOLOGICAL_FATHER → HAS_FATHER + relation_qualifiers = ["BIOLOGICAL"]
+HAS_BIOLOGICAL_MOTHER → HAS_MOTHER + relation_qualifiers = ["BIOLOGICAL"]
+```
+
+직접 관계에는 `kinship_kind = BIOLOGICAL | UNSPECIFIED`를 함께 적재한다.
+원래 predicate와 ITKC 원문 관계 코드는 각각 `source_predicates`,
+`raw_relation_types`에 보존한다. `CHILD_OF`, `DESCENDANT_OF`, `REBUILT`처럼
+방향이나 역사적 행위가 실제로 다른 관계는 통합하지 않는다.
 
 ---
 
@@ -620,19 +633,42 @@ NLP endpoint 타입 검토 후보: 8,354개
 ### 8.10 현재 Fact Graph release
 
 ```text
-release: korean-history-fact-graph-2026-07-27-contextual-v1
-GraphEntity: 19,447개
+release: korean-history-fact-graph-2026-07-27-contextual-v5
+GraphEntity: 19,437개
 CanonicalEntity: 4,786개
-ProvisionalEntity: 14,661개
-Fact assertion: 39,852개
-직접 의미 관계: 39,745개
-EvidenceSpan: 39,961개
-양 endpoint 해소 Fact: 623개
-미해소 endpoint 포함 Fact: 39,229개
+ProvisionalEntity: 14,651개
+Fact assertion: 39,836개
+직접 의미 관계: 35,193개
+EvidenceSpan: 39,945개
+양 endpoint 해소 Fact: 920개
+한쪽 이상 canonical인 terminal Fact: 7,103개
+미해소 endpoint 포함 Fact: 38,916개
 ```
 
-직접 관계 107개를 통합했지만 모든 Fact 39,852개와 근거를 보존했다. 검색 가능한
-ProvisionalEntity는 0개이며 적재 검증은 `PASSED`다.
+직접 의미 관계는 동일 endpoint 쌍과 대칭 관계의 역방향 표현을 통합해
+35,193개가 됐지만 활성 Fact 39,836개와 근거를 보존했다. 이 중
+326개 Fact는 같은 근거·predicate·이름·타입과 유일한 canonical 대표가 확인되어
+endpoint만 canonical로 투영했다. 원본 endpoint ID와 EvidenceSpan은 유지된다.
+하나의 원본 SourceRecord가 여러 GraphEntity에 속하는 경우와 같은 근거·predicate가
+서로 다른 endpoint 쌍으로 남은 경우는 모두 0건이다. identity
+conflict로 판정된 SourceRecord 1개와 identity redirect 후 자기 관계가 된 Fact를 합쳐
+Fact 16개는 별도 CSV에 격리했다. 검색 가능한 ProvisionalEntity는 0개다.
+v5 CSV와 단위 테스트 11개는 검증했지만 Neo4j 재적재는
+아직 실행하지 않았다.
+
+기본 검색은 양 endpoint가 확정된 Fact 920개만 사용한다. terminal 검색은
+한쪽 endpoint가 canonical인 Fact 7,103개까지 허용하되 ProvisionalEntity에서
+추가 hop으로 진행하지 않는다. 이에 따라 기출 용어의 안전한 사실 연결 범위는
+363개에서 699개로 늘었다.
+
+exact search는 동일 정규화 이름의 canonical 후보가 여러 개인 경우 모두 차단한다.
+승인된 기출 용어가 후보 하나를 유일하게 선택한 경우에만 그 canonical을 대표로
+허용한다. 여러 canonical에 연결된 기출 용어 27개는 검색 시작점에서 제외한다.
+
+친생 관계명 정규화 후 직접 관계 수는 변하지 않았다. 기존 데이터에는 일반 관계와
+친생 관계가 동일 endpoint 쌍으로 중복된 사례가 없었기 때문이다. 현재 직접 관계는
+`HAS_CHILD` 3,799개, `HAS_FATHER` 3,799개, `HAS_MOTHER` 106개이며 이 중
+368개가 `BIOLOGICAL` qualifier를 가진다.
 
 ---
 
@@ -718,8 +754,8 @@ ProvisionalEntity는 0개이며 적재 검증은 `PASSED`다.
 
 현재 최우선 과제는 다음 세 가지다.
 
-1. 미해소 endpoint를 canonical로 연결해 기본 검색 가능한 623건을 늘린다.
-2. `세종대왕`처럼 exact search에서 빠진 승인 별칭과 동명이인 검색을 보완한다.
+1. terminal 조회 정책을 RAG에 연결해 기출 용어 699개의 사실을 활용한다.
+2. 사실이 전혀 없는 승인 기출 용어 1,900여 개를 대상으로 공식 문서 Fact를 보강한다.
 3. canonical에서 출발해 허용 관계·근거를 반환하는 RAG 조회 계약을 구현한다.
 
 오답 유형 분석, 후보 선택, 문장 생성은 이 사실 그래프를 조회하는
@@ -739,6 +775,7 @@ endpoint identity가 아직 확정되지 않은 관계는 삭제하지 않고
 - `Fact.relation_status = REVIEWED_APPROVED`: 관계 검토 승인 사실
 - `Fact.endpoint_status = RESOLVED | UNRESOLVED`: endpoint 해소 상태
 - `Fact.retrieval_eligible = true`: 기본 RAG 검색 대상
+- `Fact.terminal_retrieval_eligible = true`: canonical에서 한 번만 조회 가능한 대상
 - `GraphEntity.resolution_status = UNRESOLVED`: identity 미확정 endpoint
 
 기본 RAG 조회는 반드시 다음 조건을 사용한다.
@@ -746,9 +783,12 @@ endpoint identity가 아직 확정되지 않은 관계는 삭제하지 않고
 ```cypher
 MATCH (fact:Fact)-[:SUBJECT]->(subject:GraphEntity)
 MATCH (fact)-[:OBJECT]->(object:GraphEntity)
-WHERE fact.default_retrieval_eligible = true
+WHERE fact.retrieval_eligible = true
 RETURN fact, subject, object
 ```
+
+terminal 후보 조회는 canonical endpoint에서 시작하고 미확정 endpoint를 결과로만
+반환한다. `multi_hop_eligible = false`인 관계를 다음 탐색 단계에 넣으면 안 된다.
 
 현재 적재 계획은 검증된 사실과 보류 사실을 함께 보존하지만,
 보류 사실이 문제 생성 후보에 자동으로 섞이지 않도록 상태를 분리한다.

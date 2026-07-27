@@ -39,8 +39,12 @@ EDA는 검토 파일을 만들며 DB에 적재하지 않는다.
 
 ## Fact Graph 최종 패키지
 
-`fact_graph_release`에는 CSV 18개와 `manifest.json`이 있다. 이 파일만 최종
+`fact_graph_release`에는 CSV 20개와 `manifest.json`이 있다. 이 파일만 최종
 공유·Git 포함 대상이며 `fact_graph_load`는 중간 산출물이다.
+
+현재 release는 친생 자녀·부친·모친을 각각 `HAS_CHILD`, `HAS_FATHER`,
+`HAS_MOTHER`로 통합한다. 친생 여부는 `relation_qualifiers_json`과 Neo4j의
+`kinship_kind` 속성에 보존된다.
 
 팀원 적재:
 
@@ -61,11 +65,18 @@ docker compose --env-file .env -f storage\fact_neo4j\docker-compose.yml up -d
 release 재생성·적재는 상위 input을 모두 가진 환경에서 `--load-only` 없이 실행한다.
 
 ```text
-GraphEntity = 19,447
+release = korean-history-fact-graph-2026-07-27-contextual-v5
+GraphEntity = 19,437
 CanonicalEntity = 4,786
-ProvisionalEntity = 14,661
-Fact = 39,852
-direct semantic relation = 39,745
-EvidenceSpan = 39,961
-load verification = PASSED
+ProvisionalEntity = 14,651
+Fact = 39,836
+direct semantic relation = 35,193
+EvidenceSpan = 39,945
+canonical endpoint projected Fact = 326
+terminal retrieval Fact = 7,103
+default fact-covered exam term = 363
+terminal fact-covered exam term = 699
+multi-entity source = 0
+duplicate evidence-predicate endpoint group = 0
+load verification = NOT_RUN
 ```

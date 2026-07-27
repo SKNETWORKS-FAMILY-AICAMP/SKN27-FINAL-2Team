@@ -1,5 +1,5 @@
 {
-  "policy_version": "source-relationship-v1.0",
+  "policy_version": "source-relationship-v1.1",
   "source_release": {
     "hash_algorithm": "sha256",
     "digest_length": 16,
@@ -83,9 +83,9 @@
       "스승": "HAS_TEACHER",
       "제자": "HAS_STUDENT",
       "부": "HAS_FATHER",
-      "생부": "HAS_BIOLOGICAL_FATHER",
+      "생부": "HAS_FATHER",
       "모": "HAS_MOTHER",
-      "생모": "HAS_BIOLOGICAL_MOTHER",
+      "생모": "HAS_MOTHER",
       "조부": "HAS_GRANDFATHER",
       "증조부": "HAS_GREAT_GRANDFATHER",
       "형제": "SIBLING_OF",
@@ -94,6 +94,22 @@
       "사위": "HAS_SON_IN_LAW",
       "남편": "SPOUSE_OF",
       "아내": "SPOUSE_OF",
+      "출자": "HAS_CHILD"
+    },
+    "itkc_person_qualifier_map": {
+      "생부": [
+        "BIOLOGICAL"
+      ],
+      "생모": [
+        "BIOLOGICAL"
+      ],
+      "출자": [
+        "BIOLOGICAL"
+      ]
+    },
+    "source_identity_relation_type_map": {
+      "생부": "HAS_BIOLOGICAL_FATHER",
+      "생모": "HAS_BIOLOGICAL_MOTHER",
       "출자": "HAS_BIOLOGICAL_CHILD"
     }
   },
@@ -142,23 +158,7 @@
           "Person"
         ]
       },
-      "HAS_BIOLOGICAL_FATHER": {
-        "start_entity_types": [
-          "Person"
-        ],
-        "end_entity_types": [
-          "Person"
-        ]
-      },
       "HAS_MOTHER": {
-        "start_entity_types": [
-          "Person"
-        ],
-        "end_entity_types": [
-          "Person"
-        ]
-      },
-      "HAS_BIOLOGICAL_MOTHER": {
         "start_entity_types": [
           "Person"
         ],
@@ -222,14 +222,6 @@
           "Person"
         ]
       },
-      "HAS_BIOLOGICAL_CHILD": {
-        "start_entity_types": [
-          "Person"
-        ],
-        "end_entity_types": [
-          "Person"
-        ]
-      },
       "INVOLVES_PERSON": {
         "start_entity_types": [
           "Event"
@@ -249,9 +241,7 @@
       "HAS_TEACHER",
       "HAS_STUDENT",
       "HAS_FATHER",
-      "HAS_BIOLOGICAL_FATHER",
       "HAS_MOTHER",
-      "HAS_BIOLOGICAL_MOTHER",
       "HAS_GRANDFATHER",
       "HAS_GREAT_GRANDFATHER",
       "SIBLING_OF",
@@ -259,7 +249,6 @@
       "HAS_FATHER_IN_LAW",
       "HAS_SON_IN_LAW",
       "SPOUSE_OF",
-      "HAS_BIOLOGICAL_CHILD",
       "INVOLVES_PERSON"
     ]
   },

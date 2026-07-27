@@ -1,0 +1,35 @@
+{
+  "policy_version": "source-identity-conflict-v2",
+  "decisions": [
+    {
+      "source_node_id": "ITKC:PERSON:P041197:sha256-2bfbf7f8ab4b1538",
+      "source": "ITKC_PERSON",
+      "source_key": "P041197",
+      "decision": "KEEP",
+      "reason_code": "GENEALOGY_EXTERNALLY_CORROBORATED",
+      "preferred_source_node_id": "",
+      "evidence_urls_json": "[\"https://www.hiks.or.kr/attach/periodical/pdf/202411271544103ALg5t87Iv8d1BAlVgG7.pdf\", \"https://seocheon.grandculture.net/seocheon/toc/GC09500670\"]",
+      "note": "이종학의 아들이자 이색의 손자인 이숙야 계보와 일치"
+    },
+    {
+      "source_node_id": "ITKC:PERSON:P041198:sha256-2bfbf7f8ab4b1538",
+      "source": "ITKC_PERSON",
+      "source_key": "P041198",
+      "decision": "QUARANTINE",
+      "reason_code": "CONFLICTING_GENEALOGY",
+      "preferred_source_node_id": "ITKC:PERSON:P041197:sha256-2bfbf7f8ab4b1538",
+      "evidence_urls_json": "[\"https://www.hiks.or.kr/attach/periodical/pdf/202411271544103ALg5t87Iv8d1BAlVgG7.pdf\", \"https://seocheon.grandculture.net/seocheon/toc/GC09500670\"]",
+      "note": "이색의 아들로 연결된 계보가 외부 확인 자료 및 P041197 계보와 충돌"
+    },
+    {
+      "source_node_id": "ITKC:PERSON:P006075:sha256-2bfbf7f8ab4b1538",
+      "source": "ITKC_PERSON",
+      "source_key": "P006075",
+      "decision": "REDIRECT",
+      "reason_code": "DUPLICATE_IDENTITY_MATCHING_NAME_AND_LINEAGE",
+      "preferred_source_node_id": "ITKC:PERSON:P008139:sha256-2bfbf7f8ab4b1538",
+      "evidence_urls_json": "[\"https://db.itkc.or.kr/people/view?gubun=person&cate1=Z&cate2=&dataId=P006075\", \"https://db.itkc.or.kr/people/view?gubun=person&cate1=Z&cate2=&dataId=P008139\"]",
+      "note": "김언(金漹)으로 이름·한자·부친 김성동·조부 김질·증조부 김종숙이 일치하며 P008139 쪽에 생년과 자 정보가 더 완전함"
+    }
+  ]
+}

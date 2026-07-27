@@ -1,10 +1,11 @@
 {
-  "policy_version": "fact-graph-release-v1.1",
-  "graph_release_id": "korean-history-fact-graph-2026-07-27-contextual-v1",
+  "policy_version": "fact-graph-release-v1.5",
+  "graph_release_id": "korean-history-fact-graph-2026-07-27-contextual-v5",
   "graph_release_prefix": "korean-history-fact-graph-",
   "input_paths": {
     "fact_graph_facts": "fact_graph_load/fact_graph_facts.csv",
     "fact_graph_nodes": "fact_graph_load/fact_graph_nodes.csv",
+    "source_relationships": "source_relationships/source_record_relationships.csv",
     "all_fact_graph_candidates": "exam_anchor_fact_graph/all_fact_graph_candidates.csv",
     "relation_review_tasks": "internal/model_review/relation_review/relation_review_tasks.jsonl",
     "relation_review_decisions": "internal/model_review/relation_review/relation_review_final_decisions.csv",
@@ -19,7 +20,8 @@
     "eras": "final_identity/neo4j_era_nodes.csv",
     "entity_topic_links": "final_identity/neo4j_canonical_to_topic_relationships.csv",
     "entity_era_links": "final_identity/neo4j_canonical_to_era_relationships.csv",
-    "evidence": "fact_graph_load/fact_graph_evidence.csv"
+    "evidence": "fact_graph_load/fact_graph_evidence.csv",
+    "identity_conflict_decisions": "../config/source_identity_conflict_decisions.json"
   },
   "output_directory": "fact_graph_release",
   "existing_fact_status": "VERIFIED",
@@ -39,7 +41,45 @@
     "anchor_entity_type": "Person",
     "minimum_distinct_source_node_count": 2,
     "minimum_normalized_name_length": 2,
-    "merge_scope": "ANCHOR_LOCAL"
+    "merge_scope": "ANCHOR_PREDICATE_LOCAL"
+  },
+  "fact_projection_deduplication": {
+    "enabled": true,
+    "require_canonical_representative": true,
+    "collapse_symmetric_semantic_relations": true,
+    "symmetric_predicates": [
+      "SIBLING_OF",
+      "SOCIAL_ASSOCIATE",
+      "SPOUSE_OF"
+    ]
+  },
+  "terminal_fact_retrieval": {
+    "enabled": true,
+    "require_at_least_one_canonical_endpoint": true,
+    "block_provisional_traversal": true
+  },
+  "exact_search_policy": {
+    "enabled": true,
+    "prefer_unique_accepted_exam_term_target": true,
+    "suppress_ambiguous_canonical_names": true
+  },
+  "relation_normalization": {
+    "predicate_aliases": {
+      "HAS_BIOLOGICAL_CHILD": "HAS_CHILD",
+      "HAS_BIOLOGICAL_FATHER": "HAS_FATHER",
+      "HAS_BIOLOGICAL_MOTHER": "HAS_MOTHER"
+    },
+    "predicate_qualifiers": {
+      "HAS_BIOLOGICAL_CHILD": [
+        "BIOLOGICAL"
+      ],
+      "HAS_BIOLOGICAL_FATHER": [
+        "BIOLOGICAL"
+      ],
+      "HAS_BIOLOGICAL_MOTHER": [
+        "BIOLOGICAL"
+      ]
+    }
   },
   "relation_type_pattern": "^[A-Z][A-Z0-9_]*$"
 }
