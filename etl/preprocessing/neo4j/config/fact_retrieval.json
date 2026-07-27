@@ -1,5 +1,5 @@
 {
-  "policy_version": "fact-retrieval-v1.1",
+  "policy_version": "fact-retrieval-v1.2",
   "identifier": {
     "hash_algorithm": "sha256",
     "digest_length": 20,
@@ -18,9 +18,7 @@
       "HAS_TEACHER",
       "HAS_STUDENT",
       "HAS_FATHER",
-      "HAS_BIOLOGICAL_FATHER",
       "HAS_MOTHER",
-      "HAS_BIOLOGICAL_MOTHER",
       "HAS_GRANDFATHER",
       "HAS_GREAT_GRANDFATHER",
       "SIBLING_OF",
@@ -28,7 +26,6 @@
       "HAS_FATHER_IN_LAW",
       "HAS_SON_IN_LAW",
       "SPOUSE_OF",
-      "HAS_BIOLOGICAL_CHILD",
       "INVOLVES_PERSON"
     ],
     "symmetric_relation_types": [
@@ -87,7 +84,6 @@
     },
     "unverifiable_decision": "UNVERIFIABLE",
     "exclusive_object_relation_types": [
-      "HAS_BIOLOGICAL_FATHER",
       "HAS_MOTHER"
     ],
     "inverse_relation_types": {
@@ -95,8 +91,6 @@
       "HAS_STUDENT": "HAS_TEACHER",
       "HAS_FATHER": "HAS_CHILD",
       "HAS_CHILD": "HAS_FATHER",
-      "HAS_BIOLOGICAL_FATHER": "HAS_BIOLOGICAL_CHILD",
-      "HAS_BIOLOGICAL_CHILD": "HAS_BIOLOGICAL_FATHER",
       "HAS_FATHER_IN_LAW": "HAS_SON_IN_LAW",
       "HAS_SON_IN_LAW": "HAS_FATHER_IN_LAW"
     },

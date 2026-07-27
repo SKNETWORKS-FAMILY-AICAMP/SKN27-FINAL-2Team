@@ -263,6 +263,14 @@ def build_source_relationships(
     source_policies = policy["sources"]
     identifier_policy = policy["identifier"]
     person_type_map = relationship_policy["itkc_person_type_map"]
+    person_qualifier_map = relationship_policy.get(
+        "itkc_person_qualifier_map",
+        {},
+    )
+    source_identity_type_map = relationship_policy.get(
+        "source_identity_relation_type_map",
+        {},
+    )
     unknown_person_types = set(
         person_relations["relation_type"]
     ).difference(person_type_map)
@@ -293,9 +301,13 @@ def build_source_relationships(
             releases["itkc_people"],
         )
         relation_type = person_type_map[str(raw_relation_type)]
+        identity_relation_type = source_identity_type_map.get(
+            str(raw_relation_type),
+            relation_type,
+        )
         relationship_identity_parts = [
             start_id,
-            relation_type,
+            identity_relation_type,
             end_id,
             relationship_policy["itkc_person_dataset"],
         ]
@@ -315,6 +327,13 @@ def build_source_relationships(
                 "end_source_record_id": end_id,
                 "relation_type": relation_type,
                 "raw_relation_type": str(raw_relation_type),
+                "relation_qualifiers_json": dumps(
+                    person_qualifier_map.get(
+                        str(raw_relation_type),
+                        [],
+                    ),
+                    ensure_ascii=False,
+                ),
                 "source_dataset": relationship_policy[
                     "itkc_person_dataset"
                 ],
@@ -386,6 +405,7 @@ def build_source_relationships(
                 "end_source_record_id": end_id,
                 "relation_type": relation_type,
                 "raw_relation_type": str(raw_relation_type),
+                "relation_qualifiers_json": "[]",
                 "source_dataset": relationship_policy[
                     "itkc_event_dataset"
                 ],
@@ -463,6 +483,7 @@ def build_source_relationships(
                 "end_source_record_id": end_id,
                 "relation_type": relation_type,
                 "raw_relation_type": "topterm_id",
+                "relation_qualifiers_json": "[]",
                 "source_dataset": relationship_policy[
                     "thesaurus_top_category_dataset"
                 ],
@@ -840,6 +861,21 @@ def build_canonical_projection(
                         sorted(group["raw_relation_type"].unique()),
                         ensure_ascii=False,
                     ),
+                    "relation_qualifiers_json": dumps(
+                        sorted(
+                            {
+                                str(qualifier)
+                                for value in group[
+                                    "relation_qualifiers_json"
+                                ]
+                                for qualifier in loads(
+                                    str(value or "[]")
+                                )
+                                if str(qualifier)
+                            }
+                        ),
+                        ensure_ascii=False,
+                    ),
                     "source_datasets_json": dumps(
                         sorted(group["source_dataset"].unique()),
                         ensure_ascii=False,
@@ -901,6 +937,7 @@ def build_canonical_projection(
         "relation_type",
         "source_relationship_ids_json",
         "raw_relation_types_json",
+        "relation_qualifiers_json",
         "source_datasets_json",
         "source_releases_json",
         "evidence_urls_json",

@@ -1,10 +1,11 @@
 # 공식 원천 중심 사실 관계 EDA
 
-> 상태: `CURRENT`
+> 상태: `EDA-SNAPSHOT`
 > 기준일: 2026-07-26
 > 실행: `etl/preprocessing/neo4j/runners/run_source_first_fact_eda.py`
 > LLM 호출: 없음
 > Neo4j 적재: 없음
+> 후속 실제 적재 결과는 `03_fact_graph_release_and_load.md`를 따른다.
 
 ## 1. 결론
 
@@ -140,3 +141,18 @@ anchor끼리 연결된 기존 사실은 299개다.
 5. 검토 후보 138건은 비용 여유가 있을 때 별도 평가한다.
 
 신규 자동 후보 24건은 현재 EDA 후보일 뿐이며, 이 단계에서는 Neo4j에 적재하지 않는다.
+
+## 7. 후속 release 결과
+
+이 EDA 이후 최종 정책을 통과한 assertion을 별도 Fact DB에 적재했다.
+
+```text
+Fact assertion: 39,852개
+직접 의미 관계: 39,745개
+EvidenceSpan: 39,961개
+양 endpoint 해소 Fact: 623개
+미해소 endpoint 포함 Fact: 39,229개
+```
+
+이 문서의 `315개 직접 사실`과 `1,464개 탐색 후보`는 당시 EDA 분모이며 현재
+release의 직접 관계 수와 동일한 지표가 아니다.

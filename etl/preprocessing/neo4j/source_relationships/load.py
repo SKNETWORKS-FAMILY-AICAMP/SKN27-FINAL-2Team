@@ -190,6 +190,8 @@ MERGE (start)-[relation:SOURCE_RELATION {
 }]->(end)
 SET relation.relation_type = row.relation_type,
     relation.raw_relation_type = row.raw_relation_type,
+    relation.relation_qualifiers_json =
+        row.relation_qualifiers_json,
     relation.source_dataset = row.source_dataset,
     relation.source_release = row.source_release,
     relation.verification_status = row.verification_status,
@@ -252,6 +254,8 @@ SET relation.relation_type = row.relation_type,
     relation.source_relationship_ids_json =
         row.source_relationship_ids_json,
     relation.raw_relation_types_json = row.raw_relation_types_json,
+    relation.relation_qualifiers_json =
+        row.relation_qualifiers_json,
     relation.source_datasets_json = row.source_datasets_json,
     relation.source_releases_json = row.source_releases_json,
     relation.evidence_urls_json = row.evidence_urls_json,

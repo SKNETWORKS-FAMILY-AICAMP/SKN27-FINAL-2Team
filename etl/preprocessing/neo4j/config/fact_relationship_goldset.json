@@ -1,5 +1,5 @@
 {
-  "policy_version": "fact-relationship-goldset-v1.0",
+  "policy_version": "fact-relationship-goldset-v1.1",
   "sample_size": 100,
   "minimum_cases_per_relation_type": 2,
   "deterministic_seed": "fact-relationship-goldset-20260726",
@@ -30,8 +30,6 @@
     "CHILD_OF": "자녀 관계: 시작 인물이 종료 인물의 자녀",
     "OCCURRED_IN": "사건 발생 지역 관계",
     "DESCENDANT_OF": "후손 관계",
-    "HAS_BIOLOGICAL_CHILD": "친생 자녀 관계",
-    "HAS_BIOLOGICAL_FATHER": "친생 부친 관계",
     "HAS_MOTHER": "모친 관계",
     "SPOUSE_OF": "배우자 관계"
   },

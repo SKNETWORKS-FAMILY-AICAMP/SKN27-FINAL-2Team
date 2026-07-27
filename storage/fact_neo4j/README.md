@@ -1,53 +1,58 @@
-# 한국사 사실 그래프 Neo4j
+# Fact Graph Neo4j
 
-기존 `skn27-neo4j`와 분리된 신규 사실 그래프 컨테이너입니다.
+> 기준일: 2026-07-27
+
+기존 `skn27-neo4j`와 분리된 사실·근거 그래프다.
+
+## 실행과 팀원 적재
 
 ```powershell
 docker compose --env-file .env -f storage\fact_neo4j\docker-compose.yml up -d
-.\.venv\Scripts\python.exe storage\fact_neo4j\load_fact_graph.py
+
+.\.venv\Scripts\python.exe `
+  etl\preprocessing\neo4j\run_fact_graph_load_pipeline.py `
+  --load-only
 ```
 
-- HTTP: `http://localhost:7475`
-- Bolt: `bolt://localhost:7688`
-- 미정규화 끝점은 `ProvisionalEntity`로 저장하며 검색 인덱스에서 제외합니다.
-- `SourceRecord`는 엔티티 끝점과 별도 노드로 저장합니다.
-- 검증된 직접 사실 관계와 `Fact`/`EvidenceSpan` 근거 구조를 함께 적재합니다.
-- 기본 이름 검색은 `normalized_search_text` 정확 일치를 먼저 사용합니다.
+기존 Fact DB를 교체할 때만 `--load-only --replace`를 사용한다.
 
-```cypher
-CALL () {
-    MATCH (entity:CanonicalEntity {
-        normalized_search_text: $normalized_name
-    })
-    RETURN entity
-    UNION
-    MATCH (term:ResolvedSearchTerm {
-        normalized_search_text: $normalized_name
-    })-[:REFERS_TO]->(entity:CanonicalEntity)
-    RETURN entity
-}
-WITH DISTINCT entity
-WHERE entity.retrieval_eligible = true
-RETURN entity
+```text
+HTTP: http://localhost:7475
+Bolt: bolt://localhost:7688
+Container: skn27-fact-neo4j
 ```
 
-`ProvisionalEntity`는 이 검색 경로와 인덱스에 포함하지 않습니다.
-# Fact graph 적재 파이프라인
+`--load-only`는 `etl/preprocessing/neo4j/output/fact_graph_release`의 최종
+CSV 18개와 `manifest.json`을 사용한다.
 
-권장 실행 명령은 다음과 같습니다.
+상위 전처리 output을 모두 보유하고 release를 재생성할 때:
 
 ```powershell
 .\.venv\Scripts\python.exe etl\preprocessing\neo4j\run_fact_graph_load_pipeline.py
 ```
 
-이 명령은 release CSV 생성, 별도 fact Neo4j 적재, 적재 결과 검증을
-순서대로 실행합니다. 기존 파생 release를 교체해야 할 때만 다음 옵션을
-명시합니다.
+## 검색 정책
 
-```powershell
-.\.venv\Scripts\python.exe etl\preprocessing\neo4j\run_fact_graph_load_pipeline.py --replace
+- canonical과 승인된 `ResolvedSearchTerm`만 이름 검색 시작점으로 사용한다.
+- `ProvisionalEntity`는 이름 검색·Anchor·자동 다중 hop에서 제외한다.
+- 직접 의미 관계를 합쳐도 모든 Fact ID와 Evidence를 보존한다.
+
+```cypher
+MATCH (anchor:CanonicalEntity {entity_id: $entity_id})-[relation]->(target)
+WHERE relation.semantic_relation_id IS NOT NULL
+  AND relation.candidate_retrieval_eligible = true
+RETURN type(relation), target, relation.fact_count, relation.evidence_ids
 ```
 
-실행 결과는 `etl/preprocessing/neo4j/output/fact_graph_release` 아래의
-`manifest.json`, `neo4j_load_manifest.json`, `pipeline_manifest.json`에서
-확인할 수 있습니다.
+## 현재 release
+
+```text
+graph_release_id = korean-history-fact-graph-2026-07-27-contextual-v1
+GraphEntity = 19,447
+Fact = 39,852
+direct semantic relation = 39,745
+EvidenceSpan = 39,961
+load verification = PASSED
+```
+
+상세 문서: `docs/neo4j/03_fact_graph_release_and_load.md`

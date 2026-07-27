@@ -63,6 +63,11 @@ def normalize_search_text(value: str) -> str:
     )
 
 
+def normalize_endpoint_display_name(value: str) -> str:
+    base_name = re.split(r"[\r\n(（]", value, maxsplit=1)[0]
+    return normalize_search_text(base_name)
+
+
 def stable_identifier(prefix: str, value: Any) -> str:
     serialized = json.dumps(
         value,
@@ -100,6 +105,66 @@ def build_fact_graph_release(
         config["accepted_relation_review_statuses"]
     )
     contextual_merge = config["contextual_merge"]
+    fact_projection_deduplication = config[
+        "fact_projection_deduplication"
+    ]
+    terminal_fact_retrieval = config["terminal_fact_retrieval"]
+    exact_search_policy = config["exact_search_policy"]
+    symmetric_predicates = set(
+        fact_projection_deduplication["symmetric_predicates"]
+    )
+    if (
+        bool(terminal_fact_retrieval["enabled"])
+        and not bool(
+            terminal_fact_retrieval[
+                "require_at_least_one_canonical_endpoint"
+            ]
+        )
+    ):
+        raise ValueError(
+            "Terminal retrieval requires at least one canonical endpoint"
+        )
+    if (
+        bool(terminal_fact_retrieval["enabled"])
+        and not bool(
+            terminal_fact_retrieval["block_provisional_traversal"]
+        )
+    ):
+        raise ValueError(
+            "Terminal retrieval must block provisional traversal"
+        )
+
+    identity_conflict_config = read_json(
+        input_paths["identity_conflict_decisions"]
+    )
+    identity_conflict_rows = identity_conflict_config.get("decisions", [])
+    if not isinstance(identity_conflict_rows, list):
+        raise ValueError("Identity conflict decisions must be a list")
+    allowed_identity_decisions = {"KEEP", "QUARANTINE", "REDIRECT"}
+    identity_decision_by_source_node_id: dict[str, dict[str, str]] = {}
+    for row in identity_conflict_rows:
+        source_node_id = row["source_node_id"]
+        decision = row["decision"]
+        if decision not in allowed_identity_decisions:
+            raise ValueError(
+                f"Unsupported identity conflict decision {decision!r}: "
+                f"{source_node_id}"
+            )
+        if source_node_id in identity_decision_by_source_node_id:
+            raise ValueError(
+                f"Duplicate identity conflict decision: {source_node_id}"
+            )
+        identity_decision_by_source_node_id[source_node_id] = row
+    quarantined_source_node_ids = {
+        source_node_id
+        for source_node_id, row in identity_decision_by_source_node_id.items()
+        if row["decision"] == "QUARANTINE"
+    }
+    redirected_source_node_ids = {
+        source_node_id: row["preferred_source_node_id"]
+        for source_node_id, row in identity_decision_by_source_node_id.items()
+        if row["decision"] == "REDIRECT"
+    }
 
     canonical_rows = read_csv_rows(input_paths["canonical_entities"])
     canonical_by_id = {
@@ -110,6 +175,28 @@ def build_fact_graph_release(
         row["node_id"]: row
         for row in read_csv_rows(input_paths["fact_graph_nodes"])
     }
+    for source_node_id, preferred_source_node_id in (
+        redirected_source_node_ids.items()
+    ):
+        if source_node_id not in graph_node_by_id:
+            raise ValueError(
+                f"Redirect source node is absent: {source_node_id}"
+            )
+        if preferred_source_node_id not in graph_node_by_id:
+            raise ValueError(
+                "Redirect target node is absent: "
+                f"{preferred_source_node_id}"
+            )
+        if preferred_source_node_id in quarantined_source_node_ids:
+            raise ValueError(
+                "Redirect target is quarantined: "
+                f"{preferred_source_node_id}"
+            )
+        if preferred_source_node_id in redirected_source_node_ids:
+            raise ValueError(
+                "Chained identity redirects are not supported: "
+                f"{source_node_id} -> {preferred_source_node_id}"
+            )
     candidate_by_id = {
         row["fact_graph_candidate_id"]: row
         for row in read_csv_rows(input_paths["all_fact_graph_candidates"])
@@ -118,6 +205,15 @@ def build_fact_graph_release(
         row["fact_id"]: row
         for row in read_csv_rows(input_paths["fact_graph_facts"])
     }
+    source_relationship_by_id = {
+        row["source_relationship_id"]: row
+        for row in read_csv_rows(input_paths["source_relationships"])
+    }
+    relation_normalization = config["relation_normalization"]
+    predicate_aliases = relation_normalization["predicate_aliases"]
+    predicate_qualifiers = relation_normalization[
+        "predicate_qualifiers"
+    ]
     task_by_id = {
         row["relation_review_task_id"]: row
         for row in read_jsonl_rows(input_paths["relation_review_tasks"])
@@ -181,6 +277,7 @@ def build_fact_graph_release(
             }
 
     selected_fact_inputs: list[dict[str, Any]] = []
+    quarantined_facts: list[dict[str, Any]] = []
     for fact in fact_by_id.values():
         is_existing_verified = (
             fact["trust_status"] == config["existing_fact_status"]
@@ -189,8 +286,16 @@ def build_fact_graph_release(
         if not is_existing_verified and decision is None:
             continue
 
-        subject_node_id = fact["subject_node_id"]
-        object_node_id = fact["object_node_id"]
+        subject_source_node_id = fact["subject_node_id"]
+        object_source_node_id = fact["object_node_id"]
+        subject_node_id = redirected_source_node_ids.get(
+            subject_source_node_id,
+            subject_source_node_id,
+        )
+        object_node_id = redirected_source_node_ids.get(
+            object_source_node_id,
+            object_source_node_id,
+        )
         subject_graph_node = graph_node_by_id.get(subject_node_id)
         object_graph_node = graph_node_by_id.get(object_node_id)
         if subject_graph_node is None or object_graph_node is None:
@@ -199,25 +304,171 @@ def build_fact_graph_release(
             )
         subject_kind = subject_graph_node["node_kind"]
         object_kind = object_graph_node["node_kind"]
-        predicate = fact["predicate"]
+        source_predicate = fact["predicate"]
+        predicate = predicate_aliases.get(
+            source_predicate,
+            source_predicate,
+        )
         if relation_pattern.fullmatch(predicate) is None:
             raise ValueError(
                 f"Unsafe relationship type {predicate!r}: {fact['fact_id']}"
             )
-
-        selected_fact_inputs.append(
+        evidence_ids = json.loads(fact["evidence_ids_json"])
+        source_relationships = [
+            source_relationship_by_id[evidence_id]
+            for evidence_id in evidence_ids
+            if evidence_id in source_relationship_by_id
+        ]
+        raw_relation_types = sorted(
             {
-                "fact": fact,
-                "decision": decision,
-                "subject_kind": subject_kind,
-                "object_kind": object_kind,
+                row["raw_relation_type"]
+                for row in source_relationships
+                if row.get("raw_relation_type", "")
             }
         )
+        relation_qualifiers = {
+            str(qualifier)
+            for qualifier in predicate_qualifiers.get(
+                source_predicate,
+                [],
+            )
+        }
+        for source_relationship in source_relationships:
+            relation_qualifiers.update(
+                json.loads(
+                    source_relationship.get(
+                        "relation_qualifiers_json",
+                        "[]",
+                    )
+                    or "[]"
+                )
+            )
+
+        selected_input = {
+            "fact": fact,
+            "decision": decision,
+            "subject_kind": subject_kind,
+            "object_kind": object_kind,
+            "subject_identity_node_id": subject_node_id,
+            "object_identity_node_id": object_node_id,
+            "predicate": predicate,
+            "source_predicates_json": json.dumps(
+                [source_predicate],
+                ensure_ascii=False,
+            ),
+            "raw_relation_types_json": json.dumps(
+                raw_relation_types,
+                ensure_ascii=False,
+            ),
+            "relation_qualifiers_json": json.dumps(
+                sorted(relation_qualifiers),
+                ensure_ascii=False,
+            ),
+        }
+        quarantined_endpoints = sorted(
+            {
+                subject_source_node_id,
+                object_source_node_id,
+            }
+            & quarantined_source_node_ids
+        )
+        if quarantined_endpoints:
+            reason_codes = sorted(
+                {
+                    identity_decision_by_source_node_id[node_id][
+                        "reason_code"
+                    ]
+                    for node_id in quarantined_endpoints
+                }
+            )
+            quarantined_facts.append(
+                {
+                    "fact_id": fact["fact_id"],
+                    "subject_node_id": subject_source_node_id,
+                    "predicate": predicate,
+                    "object_node_id": object_source_node_id,
+                    "assertion_count": fact["assertion_count"],
+                    "trust_status": fact["trust_status"],
+                    "reason_codes_json": json.dumps(
+                        reason_codes,
+                        ensure_ascii=False,
+                    ),
+                    "quarantined_source_node_ids_json": json.dumps(
+                        quarantined_endpoints,
+                        ensure_ascii=False,
+                    ),
+                    "evidence_ids_json": fact["evidence_ids_json"],
+                    "source_datasets_json": fact["source_datasets_json"],
+                    "graph_release_id": graph_release_id,
+                }
+            )
+            continue
+        redirected_endpoints = sorted(
+            {
+                subject_source_node_id,
+                object_source_node_id,
+            }
+            & redirected_source_node_ids.keys()
+        )
+        if subject_node_id == object_node_id and redirected_endpoints:
+            reason_codes = sorted(
+                {
+                    identity_decision_by_source_node_id[node_id][
+                        "reason_code"
+                    ]
+                    for node_id in redirected_endpoints
+                }
+            )
+            quarantined_facts.append(
+                {
+                    "fact_id": fact["fact_id"],
+                    "subject_node_id": subject_source_node_id,
+                    "predicate": predicate,
+                    "object_node_id": object_source_node_id,
+                    "assertion_count": fact["assertion_count"],
+                    "trust_status": fact["trust_status"],
+                    "reason_codes_json": json.dumps(
+                        [
+                            *reason_codes,
+                            "IDENTITY_REDIRECT_SELF_RELATION",
+                        ],
+                        ensure_ascii=False,
+                    ),
+                    "quarantined_source_node_ids_json": json.dumps(
+                        redirected_endpoints,
+                        ensure_ascii=False,
+                    ),
+                    "evidence_ids_json": fact["evidence_ids_json"],
+                    "source_datasets_json": fact[
+                        "source_datasets_json"
+                    ],
+                    "graph_release_id": graph_release_id,
+                }
+            )
+            continue
+        selected_fact_inputs.append(selected_input)
 
     contextual_groups: dict[
-        tuple[str, str, str, str],
+        tuple[str, str, str, str, str],
         dict[str, Any],
     ] = {}
+    provisional_occurrences_by_node: dict[
+        str,
+        set[tuple[str, str]],
+    ] = {}
+    for item in selected_fact_inputs:
+        fact = item["fact"]
+        for side, node_kind in (
+            ("subject", item["subject_kind"]),
+            ("object", item["object_kind"]),
+        ):
+            if node_kind == resolved_node_kind:
+                continue
+            node_id = item[f"{side}_identity_node_id"]
+            provisional_occurrences_by_node.setdefault(
+                node_id,
+                set(),
+            ).add((fact["fact_id"], side))
     if bool(contextual_merge["enabled"]):
         anchor_entity_type = str(
             contextual_merge["anchor_entity_type"]
@@ -237,24 +488,28 @@ def build_fact_graph_release(
             if (
                 subject_kind == resolved_node_kind
                 and object_kind != resolved_node_kind
-                and canonical_by_id[fact["subject_node_id"]]["entity_type"]
+                and canonical_by_id[
+                    item["subject_identity_node_id"]
+                ]["entity_type"]
                 == anchor_entity_type
             ):
-                anchor_id = fact["subject_node_id"]
+                anchor_id = item["subject_identity_node_id"]
                 direction = "OUT"
                 provisional_side = "object"
-                provisional_node_id = fact["object_node_id"]
+                provisional_node_id = item["object_identity_node_id"]
                 provisional_kind = object_kind
             elif (
                 object_kind == resolved_node_kind
                 and subject_kind != resolved_node_kind
-                and canonical_by_id[fact["object_node_id"]]["entity_type"]
+                and canonical_by_id[
+                    item["object_identity_node_id"]
+                ]["entity_type"]
                 == anchor_entity_type
             ):
-                anchor_id = fact["object_node_id"]
+                anchor_id = item["object_identity_node_id"]
                 direction = "IN"
                 provisional_side = "subject"
-                provisional_node_id = fact["subject_node_id"]
+                provisional_node_id = item["subject_identity_node_id"]
                 provisional_kind = subject_kind
             if not anchor_id:
                 continue
@@ -281,6 +536,7 @@ def build_fact_graph_release(
             group_key = (
                 anchor_id,
                 direction,
+                item["predicate"],
                 normalized_name,
                 entity_type,
             )
@@ -289,16 +545,22 @@ def build_fact_graph_release(
                 {
                     "anchor_id": anchor_id,
                     "direction": direction,
+                    "predicate": item["predicate"],
                     "normalized_name": normalized_name,
                     "entity_type": entity_type,
                     "display_names": set(),
                     "source_nodes": {},
                     "members": [],
+                    "member_source_node_by_occurrence": {},
                 },
             )
             group["display_names"].add(display_name)
             group["source_nodes"][provisional_node_id] = provisional_kind
-            group["members"].append((fact["fact_id"], provisional_side))
+            occurrence = (fact["fact_id"], provisional_side)
+            group["members"].append(occurrence)
+            group["member_source_node_by_occurrence"][
+                occurrence
+            ] = provisional_node_id
 
     minimum_source_count = int(
         contextual_merge["minimum_distinct_source_node_count"]
@@ -307,17 +569,47 @@ def build_fact_graph_release(
     contextual_entity_id_by_endpoint: dict[tuple[str, str], str] = {}
     contextual_entity_metadata: dict[str, dict[str, Any]] = {}
     for group_key, group in contextual_groups.items():
-        source_nodes = group["source_nodes"]
+        group_occurrences_by_source_node: dict[
+            str,
+            set[tuple[str, str]],
+        ] = {}
+        for occurrence, source_node_id in group[
+            "member_source_node_by_occurrence"
+        ].items():
+            group_occurrences_by_source_node.setdefault(
+                source_node_id,
+                set(),
+            ).add(occurrence)
+        safe_source_node_ids = {
+            source_node_id
+            for source_node_id, occurrences
+            in group_occurrences_by_source_node.items()
+            if occurrences
+            == provisional_occurrences_by_node[source_node_id]
+        }
+        source_nodes = {
+            source_node_id: source_node_kind
+            for source_node_id, source_node_kind
+            in group["source_nodes"].items()
+            if source_node_id in safe_source_node_ids
+        }
         if len(source_nodes) < minimum_source_count:
             continue
+        safe_members = [
+            occurrence
+            for occurrence in group["members"]
+            if group["member_source_node_by_occurrence"][occurrence]
+            in safe_source_node_ids
+        ]
         contextual_entity_id = stable_identifier(
             "contextual-entity",
             {
                 "scope": merge_scope,
                 "anchor_id": group_key[0],
                 "direction": group_key[1],
-                "normalized_name": group_key[2],
-                "entity_type": group_key[3],
+                "predicate": group_key[2],
+                "normalized_name": group_key[3],
+                "entity_type": group_key[4],
             },
         )
         display_names = sorted(
@@ -326,9 +618,11 @@ def build_fact_graph_release(
         )
         contextual_entity_metadata[contextual_entity_id] = {
             **group,
+            "source_nodes": source_nodes,
+            "members": safe_members,
             "display_name": display_names[0],
         }
-        for member in group["members"]:
+        for member in safe_members:
             contextual_entity_id_by_endpoint[member] = contextual_entity_id
 
     selected_facts: list[dict[str, Any]] = []
@@ -338,9 +632,9 @@ def build_fact_graph_release(
         decision = item["decision"]
         subject_kind = item["subject_kind"]
         object_kind = item["object_kind"]
-        subject_node_id = fact["subject_node_id"]
-        object_node_id = fact["object_node_id"]
-        predicate = fact["predicate"]
+        subject_node_id = item["subject_identity_node_id"]
+        object_node_id = item["object_identity_node_id"]
+        predicate = item["predicate"]
 
         subject_entity_id = subject_node_id
         if subject_kind != resolved_node_kind:
@@ -375,11 +669,13 @@ def build_fact_graph_release(
                 "fact_id": fact["fact_id"],
                 "subject_entity_id": subject_entity_id,
                 "subject_node_kind": subject_kind,
-                "subject_source_node_id": subject_node_id,
+                "subject_source_node_id": fact["subject_node_id"],
+                "subject_identity_node_id": subject_node_id,
                 "predicate": predicate,
                 "object_entity_id": object_entity_id,
                 "object_node_kind": object_kind,
-                "object_source_node_id": object_node_id,
+                "object_source_node_id": fact["object_node_id"],
+                "object_identity_node_id": object_node_id,
                 "assertion_count": fact["assertion_count"],
                 "relation_status": relation_status,
                 "endpoint_status": (
@@ -390,10 +686,28 @@ def build_fact_graph_release(
                     and fact["default_retrieval_eligible"] == "True"
                 ).lower(),
                 "candidate_retrieval_eligible": "true",
+                "terminal_retrieval_eligible": str(
+                    bool(terminal_fact_retrieval["enabled"])
+                    and (
+                        subject_kind == resolved_node_kind
+                        or object_kind == resolved_node_kind
+                    )
+                ).lower(),
                 "multi_hop_eligible": str(endpoints_resolved).lower(),
                 "evidence_ids_json": fact["evidence_ids_json"],
                 "source_datasets_json": fact["source_datasets_json"],
                 "candidate_tiers_json": fact["candidate_tiers_json"],
+                "source_predicates_json": item[
+                    "source_predicates_json"
+                ],
+                "raw_relation_types_json": item[
+                    "raw_relation_types_json"
+                ],
+                "relation_qualifiers_json": item[
+                    "relation_qualifiers_json"
+                ],
+                "endpoint_projection_status": "",
+                "endpoint_projection_reference_fact_id": "",
                 "review_model": review_model,
                 "review_rationale": review_rationale,
                 "review_reason_codes_json": review_reason_codes_json,
@@ -408,6 +722,7 @@ def build_fact_graph_release(
             if fact["trust_status"] == config["existing_fact_status"]
         )
         + len(accepted_decision_by_fact_id)
+        - len(quarantined_facts)
     )
     if len(selected_facts) != expected_fact_count:
         raise ValueError(
@@ -417,15 +732,241 @@ def build_fact_graph_release(
     if len(selected_fact_ids) != len(selected_facts):
         raise ValueError("Selected fact IDs are not unique")
 
+    projected_entity_metadata: dict[str, dict[str, str]] = {
+        canonical_id: {
+            "display_name": row["display_name"],
+            "entity_type": row["entity_type"],
+        }
+        for canonical_id, row in canonical_by_id.items()
+    }
+    for entity_id, metadata in contextual_entity_metadata.items():
+        projected_entity_metadata[entity_id] = {
+            "display_name": metadata["display_name"],
+            "entity_type": metadata["entity_type"],
+        }
+    for fact in selected_facts:
+        for side in ("subject", "object"):
+            entity_id = fact[f"{side}_entity_id"]
+            if entity_id in projected_entity_metadata:
+                continue
+            source_node_id = fact[f"{side}_identity_node_id"]
+            metadata = endpoint_metadata.get(source_node_id, {})
+            graph_node = graph_node_by_id.get(source_node_id, {})
+            projected_entity_metadata[entity_id] = {
+                "display_name": (
+                    metadata.get("display_name")
+                    or graph_node.get("display_name")
+                    or source_node_id
+                ),
+                "entity_type": (
+                    metadata.get("entity_type")
+                    or graph_node.get("entity_type")
+                    or "Unknown"
+                ),
+            }
+
+    if bool(fact_projection_deduplication["enabled"]):
+        projection_groups: dict[
+            tuple[
+                str,
+                tuple[tuple[str, str], tuple[str, str]],
+            ],
+            list[dict[str, Any]],
+        ] = {}
+        for fact in selected_facts:
+            subject_metadata = projected_entity_metadata[
+                fact["subject_entity_id"]
+            ]
+            object_metadata = projected_entity_metadata[
+                fact["object_entity_id"]
+            ]
+            subject_token = (
+                normalize_endpoint_display_name(
+                    subject_metadata["display_name"]
+                ),
+                subject_metadata["entity_type"],
+            )
+            object_token = (
+                normalize_endpoint_display_name(
+                    object_metadata["display_name"]
+                ),
+                object_metadata["entity_type"],
+            )
+            if not subject_token[0] or not object_token[0]:
+                continue
+            signature = (subject_token, object_token)
+            if fact["predicate"] in symmetric_predicates:
+                signature = tuple(sorted(signature))
+            projection_key = (fact["predicate"], signature)
+            projection_groups.setdefault(projection_key, []).append(fact)
+
+        for (predicate, _), duplicate_facts in projection_groups.items():
+            if len(duplicate_facts) < 2:
+                continue
+            canonical_facts = [
+                fact
+                for fact in duplicate_facts
+                if fact["subject_entity_id"] in canonical_by_id
+                and fact["object_entity_id"] in canonical_by_id
+            ]
+            if (
+                bool(
+                    fact_projection_deduplication[
+                        "require_canonical_representative"
+                    ]
+                )
+                and not canonical_facts
+            ):
+                continue
+            if not canonical_facts:
+                continue
+
+            canonical_facts_by_identity_pair: dict[
+                tuple[str, str],
+                list[dict[str, Any]],
+            ] = {}
+            canonical_evidence_by_identity_pair: dict[
+                tuple[str, str],
+                set[str],
+            ] = {}
+            for canonical_fact in canonical_facts:
+                identity_pair = (
+                    canonical_fact["subject_entity_id"],
+                    canonical_fact["object_entity_id"],
+                )
+                if predicate in symmetric_predicates:
+                    identity_pair = tuple(sorted(identity_pair))
+                canonical_facts_by_identity_pair.setdefault(
+                    identity_pair,
+                    [],
+                ).append(canonical_fact)
+                canonical_evidence_by_identity_pair.setdefault(
+                    identity_pair,
+                    set(),
+                ).update(
+                    json.loads(canonical_fact["evidence_ids_json"])
+                )
+
+            for fact in duplicate_facts:
+                fact_evidence_ids = set(
+                    json.loads(fact["evidence_ids_json"])
+                )
+                if not fact_evidence_ids:
+                    continue
+                matching_identity_pairs = {
+                    identity_pair
+                    for identity_pair, canonical_evidence_ids
+                    in canonical_evidence_by_identity_pair.items()
+                    if fact_evidence_ids & canonical_evidence_ids
+                }
+                if len(matching_identity_pairs) != 1:
+                    continue
+                identity_pair = next(iter(matching_identity_pairs))
+                representative_fact = min(
+                    canonical_facts_by_identity_pair[identity_pair],
+                    key=lambda row: row["fact_id"],
+                )
+                representative_pair = (
+                    representative_fact["subject_entity_id"],
+                    representative_fact["object_entity_id"],
+                )
+                representative_identity_pair = representative_pair
+                if predicate in symmetric_predicates:
+                    representative_identity_pair = tuple(
+                        sorted(representative_pair)
+                    )
+                current_pair = (
+                    fact["subject_entity_id"],
+                    fact["object_entity_id"],
+                )
+                normalized_current_pair = current_pair
+                if predicate in symmetric_predicates:
+                    normalized_current_pair = tuple(
+                        sorted(current_pair)
+                    )
+                if (
+                    normalized_current_pair
+                    == representative_identity_pair
+                    and current_pair == representative_pair
+                ):
+                    continue
+                fact["subject_entity_id"] = representative_pair[0]
+                fact["object_entity_id"] = representative_pair[1]
+                fact["endpoint_status"] = representative_fact[
+                    "endpoint_status"
+                ]
+                fact["retrieval_eligible"] = representative_fact[
+                    "retrieval_eligible"
+                ]
+                fact["candidate_retrieval_eligible"] = (
+                    representative_fact[
+                        "candidate_retrieval_eligible"
+                    ]
+                )
+                fact["terminal_retrieval_eligible"] = (
+                    representative_fact[
+                        "terminal_retrieval_eligible"
+                    ]
+                )
+                fact["multi_hop_eligible"] = representative_fact[
+                    "multi_hop_eligible"
+                ]
+                fact["endpoint_projection_status"] = (
+                    "CANONICAL_DUPLICATE_COLLAPSED"
+                )
+                fact["endpoint_projection_reference_fact_id"] = (
+                    representative_fact["fact_id"]
+                )
+
+    for fact in selected_facts:
+        has_canonical_endpoint = (
+            fact["subject_entity_id"] in canonical_by_id
+            or fact["object_entity_id"] in canonical_by_id
+        )
+        fact["terminal_retrieval_eligible"] = str(
+            bool(terminal_fact_retrieval["enabled"])
+            and has_canonical_endpoint
+        ).lower()
+
+    used_contextual_entity_ids = {
+        entity_id
+        for fact in selected_facts
+        for entity_id in (
+            fact["subject_entity_id"],
+            fact["object_entity_id"],
+        )
+        if entity_id in contextual_entity_metadata
+    }
+    contextual_entity_metadata = {
+        entity_id: metadata
+        for entity_id, metadata in contextual_entity_metadata.items()
+        if entity_id in used_contextual_entity_ids
+    }
+
     semantic_relation_groups: dict[
         tuple[str, str, str],
         list[dict[str, Any]],
     ] = {}
     for fact in selected_facts:
+        subject_entity_id = fact["subject_entity_id"]
+        object_entity_id = fact["object_entity_id"]
+        is_symmetric = (
+            bool(
+                fact_projection_deduplication[
+                    "collapse_symmetric_semantic_relations"
+                ]
+            )
+            and fact["predicate"] in symmetric_predicates
+        )
+        if is_symmetric:
+            (
+                subject_entity_id,
+                object_entity_id,
+            ) = sorted((subject_entity_id, object_entity_id))
         relation_key = (
-            fact["subject_entity_id"],
+            subject_entity_id,
             fact["predicate"],
-            fact["object_entity_id"],
+            object_entity_id,
         )
         semantic_relation_groups.setdefault(relation_key, []).append(fact)
 
@@ -457,6 +998,33 @@ def build_fact_graph_release(
                 if fact["review_model"]
             }
         )
+        source_predicates = sorted(
+            {
+                source_predicate
+                for fact in group_facts
+                for source_predicate in json.loads(
+                    fact["source_predicates_json"]
+                )
+            }
+        )
+        raw_relation_types = sorted(
+            {
+                raw_relation_type
+                for fact in group_facts
+                for raw_relation_type in json.loads(
+                    fact["raw_relation_types_json"]
+                )
+            }
+        )
+        relation_qualifiers = sorted(
+            {
+                qualifier
+                for fact in group_facts
+                for qualifier in json.loads(
+                    fact["relation_qualifiers_json"]
+                )
+            }
+        )
         fact_ids = sorted(fact["fact_id"] for fact in group_facts)
         semantic_relations.append(
             {
@@ -471,6 +1039,11 @@ def build_fact_graph_release(
                 "subject_entity_id": relation_key[0],
                 "predicate": relation_key[1],
                 "object_entity_id": relation_key[2],
+                "directionality": (
+                    "SYMMETRIC"
+                    if relation_key[1] in symmetric_predicates
+                    else "DIRECTED"
+                ),
                 "representative_fact_id": fact_ids[0],
                 "fact_ids_json": json.dumps(
                     fact_ids,
@@ -510,6 +1083,12 @@ def build_fact_graph_release(
                         for fact in group_facts
                     )
                 ).lower(),
+                "terminal_retrieval_eligible": str(
+                    any(
+                        fact["terminal_retrieval_eligible"] == "true"
+                        for fact in group_facts
+                    )
+                ).lower(),
                 "multi_hop_eligible": str(
                     any(
                         fact["multi_hop_eligible"] == "true"
@@ -522,6 +1101,18 @@ def build_fact_graph_release(
                 ),
                 "source_datasets_json": json.dumps(
                     source_datasets,
+                    ensure_ascii=False,
+                ),
+                "source_predicates_json": json.dumps(
+                    source_predicates,
+                    ensure_ascii=False,
+                ),
+                "raw_relation_types_json": json.dumps(
+                    raw_relation_types,
+                    ensure_ascii=False,
+                ),
+                "relation_qualifiers_json": json.dumps(
+                    relation_qualifiers,
                     ensure_ascii=False,
                 ),
                 "review_models_json": json.dumps(
@@ -543,6 +1134,9 @@ def build_fact_graph_release(
             "normalized_search_text": normalize_search_text(
                 canonical["display_name"]
             ),
+            "exact_search_eligible": "false",
+            "exact_search_status": "PENDING_POLICY",
+            "exact_search_candidate_count": 0,
             "entity_type": canonical["entity_type"],
             "resolution_status": "RESOLVED",
             "retrieval_eligible": str(active).lower(),
@@ -556,6 +1150,7 @@ def build_fact_graph_release(
             "merge_scope": "NONE",
             "context_anchor_id": "",
             "context_direction": "",
+            "context_predicate": "",
             "lifecycle_status": canonical["lifecycle_status"],
             "identity_confidence": canonical["identity_confidence"],
             "source_support_count": canonical["source_support_count"],
@@ -571,6 +1166,9 @@ def build_fact_graph_release(
             "entity_kind": "PROVISIONAL",
             "display_name": metadata["display_name"],
             "normalized_search_text": metadata["normalized_name"],
+            "exact_search_eligible": "false",
+            "exact_search_status": "PROVISIONAL_BLOCKED",
+            "exact_search_candidate_count": 0,
             "entity_type": metadata["entity_type"],
             "resolution_status": "UNRESOLVED",
             "retrieval_eligible": "false",
@@ -590,6 +1188,7 @@ def build_fact_graph_release(
             "merge_scope": merge_scope,
             "context_anchor_id": metadata["anchor_id"],
             "context_direction": metadata["direction"],
+            "context_predicate": metadata["predicate"],
             "lifecycle_status": "PROVISIONAL",
             "identity_confidence": "",
             "source_support_count": "",
@@ -601,21 +1200,21 @@ def build_fact_graph_release(
             (
                 fact["subject_entity_id"],
                 fact["subject_node_kind"],
-                fact["subject_source_node_id"],
+                fact["subject_identity_node_id"],
             ),
             (
                 fact["object_entity_id"],
                 fact["object_node_kind"],
-                fact["object_source_node_id"],
+                fact["object_identity_node_id"],
             ),
         )
         for entity_id, node_kind, fallback_node_id in endpoint_values:
-            if node_kind == resolved_node_kind:
-                if entity_id not in canonical_by_id:
-                    raise ValueError(
-                        f"Canonical endpoint is absent from registry: {entity_id}"
-                    )
+            if entity_id in canonical_by_id:
                 continue
+            if node_kind == resolved_node_kind:
+                raise ValueError(
+                    f"Canonical endpoint is absent from registry: {entity_id}"
+                )
             if entity_id in contextual_entity_metadata:
                 continue
             raw_node_id = fallback_node_id
@@ -638,6 +1237,9 @@ def build_fact_graph_release(
                 "entity_kind": "PROVISIONAL",
                 "display_name": display_name,
                 "normalized_search_text": normalize_search_text(display_name),
+                "exact_search_eligible": "false",
+                "exact_search_status": "PROVISIONAL_BLOCKED",
+                "exact_search_candidate_count": 0,
                 "entity_type": entity_type,
                 "resolution_status": "UNRESOLVED",
                 "retrieval_eligible": "false",
@@ -651,16 +1253,68 @@ def build_fact_graph_release(
                 "merge_scope": "NONE",
                 "context_anchor_id": "",
                 "context_direction": "",
+                "context_predicate": "",
                 "lifecycle_status": "PROVISIONAL",
                 "identity_confidence": "",
                 "source_support_count": "",
                 "graph_release_id": graph_release_id,
             }
 
+    entity_ids_by_source_node_id: dict[str, set[str]] = {}
+    for entity in entities.values():
+        for source_node_id in json.loads(
+            entity["source_node_ids_json"]
+        ):
+            entity_ids_by_source_node_id.setdefault(
+                source_node_id,
+                set(),
+            ).add(entity["entity_id"])
+    duplicated_source_node_ids = {
+        source_node_id: entity_ids
+        for source_node_id, entity_ids
+        in entity_ids_by_source_node_id.items()
+        if len(entity_ids) > 1
+    }
+    if duplicated_source_node_ids:
+        raise ValueError(
+            "A source node is represented by multiple GraphEntity nodes: "
+            + json.dumps(
+                {
+                    source_node_id: sorted(entity_ids)
+                    for source_node_id, entity_ids
+                    in duplicated_source_node_ids.items()
+                },
+                ensure_ascii=False,
+                sort_keys=True,
+            )
+        )
+
     evidence_by_id = {
         row["evidence_id"]: row
         for row in read_csv_rows(input_paths["evidence"])
     }
+    for quarantined_fact in quarantined_facts:
+        evidence_ids = json.loads(
+            quarantined_fact["evidence_ids_json"]
+        )
+        missing_evidence_ids = [
+            evidence_id
+            for evidence_id in evidence_ids
+            if evidence_id not in evidence_by_id
+        ]
+        if missing_evidence_ids:
+            raise ValueError(
+                "Missing quarantined fact evidence: "
+                + ", ".join(missing_evidence_ids)
+            )
+        quarantined_fact["evidence_records_json"] = json.dumps(
+            [
+                evidence_by_id[evidence_id]
+                for evidence_id in evidence_ids
+            ],
+            ensure_ascii=False,
+            sort_keys=True,
+        )
     selected_evidence_ids: set[str] = set()
     fact_evidence_links: list[dict[str, Any]] = []
     for fact in selected_facts:
@@ -689,6 +1343,10 @@ def build_fact_graph_release(
     source_records: dict[str, dict[str, Any]] = {
         row["source_record_id"]: {
             **row,
+            "identity_status": "ACTIVE",
+            "identity_reason_code": "",
+            "preferred_source_node_id": "",
+            "identity_evidence_urls_json": "[]",
             "graph_release_id": graph_release_id,
         }
         for row in read_csv_rows(input_paths["source_records"])
@@ -710,6 +1368,10 @@ def build_fact_graph_release(
                     ensure_ascii=False,
                     sort_keys=True,
                 ),
+                "identity_status": "ACTIVE",
+                "identity_reason_code": "",
+                "preferred_source_node_id": "",
+                "identity_evidence_urls_json": "[]",
                 "graph_release_id": graph_release_id,
             }
             evidence_source_links.append(
@@ -741,6 +1403,10 @@ def build_fact_graph_release(
                     "source_key": source_record_id,
                     "source_release": "",
                     "source_metadata_json": "{}",
+                    "identity_status": "ACTIVE",
+                    "identity_reason_code": "",
+                    "preferred_source_node_id": "",
+                    "identity_evidence_urls_json": "[]",
                     "graph_release_id": graph_release_id,
                 }
             provisional_source_links.append(
@@ -750,6 +1416,81 @@ def build_fact_graph_release(
                     "graph_release_id": graph_release_id,
                 }
             )
+
+    for fact in selected_facts:
+        source_endpoints = (
+            (
+                fact["subject_source_node_id"],
+                fact["subject_node_kind"],
+            ),
+            (
+                fact["object_source_node_id"],
+                fact["object_node_kind"],
+            ),
+        )
+        for source_record_id, source_node_kind in source_endpoints:
+            if source_node_kind not in provisional_source_kinds:
+                continue
+            if source_record_id in source_records:
+                continue
+            source_records[source_record_id] = {
+                "source_record_id": source_record_id,
+                "source": source_node_kind,
+                "source_key": source_record_id,
+                "source_release": "",
+                "source_metadata_json": "{}",
+                "identity_status": "ACTIVE",
+                "identity_reason_code": "",
+                "preferred_source_node_id": "",
+                "identity_evidence_urls_json": "[]",
+                "graph_release_id": graph_release_id,
+            }
+
+    identity_conflicts: list[dict[str, Any]] = []
+    for source_node_id, decision in identity_decision_by_source_node_id.items():
+        graph_node = graph_node_by_id.get(source_node_id, {})
+        current_source_record = source_records.get(source_node_id, {})
+        identity_status = "ACTIVE"
+        if decision["decision"] == "QUARANTINE":
+            identity_status = "SOURCE_CONFLICT"
+        elif decision["decision"] == "REDIRECT":
+            identity_status = "REDIRECTED"
+        source_records[source_node_id] = {
+            "source_record_id": source_node_id,
+            "source": (
+                current_source_record.get("source")
+                or decision["source"]
+            ),
+            "source_key": (
+                current_source_record.get("source_key")
+                or decision["source_key"]
+            ),
+            "source_release": current_source_record.get(
+                "source_release",
+                "",
+            ),
+            "source_metadata_json": current_source_record.get(
+                "source_metadata_json",
+                "{}",
+            ),
+            "identity_status": identity_status,
+            "identity_reason_code": decision["reason_code"],
+            "preferred_source_node_id": decision[
+                "preferred_source_node_id"
+            ],
+            "identity_evidence_urls_json": decision[
+                "evidence_urls_json"
+            ],
+            "graph_release_id": graph_release_id,
+        }
+        identity_conflicts.append(
+            {
+                **decision,
+                "display_name": graph_node.get("display_name", ""),
+                "identity_status": identity_status,
+                "graph_release_id": graph_release_id,
+            }
+        )
 
     accepted_match_status = str(config["accepted_match_status"])
     entity_name_rows = read_csv_rows(input_paths["entity_names"])
@@ -762,20 +1503,6 @@ def build_fact_graph_release(
         if row["match_status"] == accepted_match_status
         and row["canonical_id"] in canonical_by_id
     ]
-    linked_entity_name_ids = {
-        row["entity_name_id"]
-        for row in entity_name_links
-    }
-    entity_names = [
-        {
-            **row,
-            "search_text": row["name"],
-            "graph_release_id": graph_release_id,
-        }
-        for row in entity_name_rows
-        if row["entity_name_id"] in linked_entity_name_ids
-    ]
-
     exam_term_rows = read_csv_rows(input_paths["exam_terms"])
     exam_term_links = [
         {
@@ -786,24 +1513,211 @@ def build_fact_graph_release(
         if row["match_status"] == accepted_match_status
         and row["canonical_id"] in canonical_by_id
     ]
-    linked_exam_term_ids = {
-        row["exam_term_id"]
-        for row in exam_term_links
-    }
-    exam_terms = [
-        {
-            **row,
-            "search_text": row["term"],
-            "resolution_status": (
-                "RESOLVED"
-                if row["exam_term_id"] in linked_exam_term_ids
-                else "UNRESOLVED"
-            ),
-            "retrieval_eligible": "false",
-            "graph_release_id": graph_release_id,
-        }
+    canonical_ids_by_normalized_name: dict[str, set[str]] = {}
+    for canonical in canonical_rows:
+        if canonical["lifecycle_status"] != "ACTIVE":
+            continue
+        normalized_name = normalize_search_text(canonical["display_name"])
+        canonical_ids_by_normalized_name.setdefault(
+            normalized_name,
+            set(),
+        ).add(canonical["canonical_id"])
+
+    exam_term_by_id = {
+        row["exam_term_id"]: row
         for row in exam_term_rows
-    ]
+    }
+    exam_term_targets_by_id: dict[str, set[str]] = {}
+    exact_exam_targets_by_normalized_name: dict[str, set[str]] = {}
+    for link in exam_term_links:
+        term_id = link["exam_term_id"]
+        canonical_id = link["canonical_id"]
+        exam_term_targets_by_id.setdefault(term_id, set()).add(canonical_id)
+        term = exam_term_by_id[term_id]
+        normalized_term = normalize_search_text(
+            term.get("normalized_term") or term["term"]
+        )
+        if canonical_id not in canonical_ids_by_normalized_name.get(
+            normalized_term,
+            set(),
+        ):
+            continue
+        exact_exam_targets_by_normalized_name.setdefault(
+            normalized_term,
+            set(),
+        ).add(canonical_id)
+
+    if bool(exact_search_policy["enabled"]):
+        for normalized_name, canonical_ids in (
+            canonical_ids_by_normalized_name.items()
+        ):
+            preferred_targets = exact_exam_targets_by_normalized_name.get(
+                normalized_name,
+                set(),
+            )
+            preferred_canonical_id = ""
+            if (
+                bool(
+                    exact_search_policy[
+                        "prefer_unique_accepted_exam_term_target"
+                    ]
+                )
+                and len(preferred_targets) == 1
+            ):
+                preferred_canonical_id = next(iter(preferred_targets))
+            for canonical_id in canonical_ids:
+                entity = entities[canonical_id]
+                entity["exact_search_candidate_count"] = len(canonical_ids)
+                if len(canonical_ids) == 1:
+                    entity["exact_search_eligible"] = "true"
+                    entity["exact_search_status"] = "UNIQUE"
+                elif canonical_id == preferred_canonical_id:
+                    entity["exact_search_eligible"] = "true"
+                    entity["exact_search_status"] = "EXAM_TERM_PREFERRED"
+                elif bool(
+                    exact_search_policy[
+                        "suppress_ambiguous_canonical_names"
+                    ]
+                ):
+                    entity["exact_search_eligible"] = "false"
+                    entity["exact_search_status"] = "AMBIGUOUS_SUPPRESSED"
+                else:
+                    entity["exact_search_eligible"] = "true"
+                    entity["exact_search_status"] = "AMBIGUOUS_ALLOWED"
+        for canonical in canonical_rows:
+            if canonical["lifecycle_status"] == "ACTIVE":
+                continue
+            entity = entities[canonical["canonical_id"]]
+            entity["exact_search_eligible"] = "false"
+            entity["exact_search_status"] = "INACTIVE"
+
+    linked_entity_name_ids = {
+        row["entity_name_id"]
+        for row in entity_name_links
+    }
+    entity_name_by_id = {
+        row["entity_name_id"]: row
+        for row in entity_name_rows
+    }
+    entity_name_targets_by_id: dict[str, set[str]] = {}
+    entity_name_targets_by_normalized_name: dict[str, set[str]] = {}
+    for link in entity_name_links:
+        entity_name_id = link["entity_name_id"]
+        canonical_id = link["canonical_id"]
+        entity_name_targets_by_id.setdefault(
+            entity_name_id,
+            set(),
+        ).add(canonical_id)
+        entity_name = entity_name_by_id[entity_name_id]
+        normalized_name = normalize_search_text(
+            entity_name.get("normalized_name") or entity_name["name"]
+        )
+        entity_name_targets_by_normalized_name.setdefault(
+            normalized_name,
+            set(),
+        ).add(canonical_id)
+
+    entity_names: list[dict[str, Any]] = []
+    for row in entity_name_rows:
+        entity_name_id = row["entity_name_id"]
+        if entity_name_id not in linked_entity_name_ids:
+            continue
+        normalized_name = normalize_search_text(
+            row.get("normalized_name") or row["name"]
+        )
+        target_count = len(
+            entity_name_targets_by_normalized_name.get(
+                normalized_name,
+                set(),
+            )
+        )
+        exact_search_eligible = (
+            bool(exact_search_policy["enabled"])
+            and target_count == 1
+        )
+        entity_names.append(
+            {
+                **row,
+                "search_text": row["name"],
+                "target_count": target_count,
+                "target_resolution_status": (
+                    "UNIQUE" if target_count == 1 else "AMBIGUOUS"
+                ),
+                "exact_search_eligible": str(
+                    exact_search_eligible
+                ).lower(),
+                "retrieval_eligible": str(
+                    exact_search_eligible
+                ).lower(),
+                "graph_release_id": graph_release_id,
+            }
+        )
+
+    default_fact_entity_ids = {
+        entity_id
+        for relation in semantic_relations
+        if relation["retrieval_eligible"] == "true"
+        for entity_id in (
+            relation["subject_entity_id"],
+            relation["object_entity_id"],
+        )
+        if entity_id in canonical_by_id
+    }
+    terminal_fact_entity_ids = {
+        entity_id
+        for relation in semantic_relations
+        if relation["terminal_retrieval_eligible"] == "true"
+        for entity_id in (
+            relation["subject_entity_id"],
+            relation["object_entity_id"],
+        )
+        if entity_id in canonical_by_id
+    }
+    exam_terms: list[dict[str, Any]] = []
+    for row in exam_term_rows:
+        target_ids = exam_term_targets_by_id.get(
+            row["exam_term_id"],
+            set(),
+        )
+        target_count = len(target_ids)
+        target_resolution_status = "UNRESOLVED"
+        if target_count == 1:
+            target_resolution_status = "UNIQUE"
+        elif target_count > 1:
+            target_resolution_status = "AMBIGUOUS"
+        exact_search_eligible = (
+            bool(exact_search_policy["enabled"])
+            and target_count == 1
+        )
+        target_id = next(iter(target_ids)) if target_count == 1 else ""
+        exam_terms.append(
+            {
+                **row,
+                "search_text": row["term"],
+                "resolution_status": (
+                    "RESOLVED"
+                    if target_count == 1
+                    else target_resolution_status
+                ),
+                "target_count": target_count,
+                "target_resolution_status": target_resolution_status,
+                "exact_search_eligible": str(
+                    exact_search_eligible
+                ).lower(),
+                "retrieval_eligible": str(
+                    exact_search_eligible
+                ).lower(),
+                "fact_retrieval_eligible": str(
+                    exact_search_eligible
+                    and target_id in default_fact_entity_ids
+                ).lower(),
+                "terminal_fact_retrieval_eligible": str(
+                    exact_search_eligible
+                    and target_id in terminal_fact_entity_ids
+                ).lower(),
+                "graph_release_id": graph_release_id,
+            }
+        )
 
     source_resolution_links = [
         {
@@ -879,6 +1793,14 @@ def build_fact_graph_release(
             source_records.values(),
             key=lambda row: row["source_record_id"],
         ),
+        "identity_conflicts": sorted(
+            identity_conflicts,
+            key=lambda row: row["source_node_id"],
+        ),
+        "quarantined_facts": sorted(
+            quarantined_facts,
+            key=lambda row: row["fact_id"],
+        ),
         "entity_names": sorted(
             entity_names,
             key=lambda row: row["entity_name_id"],
@@ -912,6 +1834,9 @@ def write_fact_graph_release(
             "entity_kind",
             "display_name",
             "normalized_search_text",
+            "exact_search_eligible",
+            "exact_search_status",
+            "exact_search_candidate_count",
             "entity_type",
             "resolution_status",
             "retrieval_eligible",
@@ -925,6 +1850,7 @@ def write_fact_graph_release(
             "merge_scope",
             "context_anchor_id",
             "context_direction",
+            "context_predicate",
             "lifecycle_status",
             "identity_confidence",
             "source_support_count",
@@ -935,19 +1861,27 @@ def write_fact_graph_release(
             "subject_entity_id",
             "subject_node_kind",
             "subject_source_node_id",
+            "subject_identity_node_id",
             "predicate",
             "object_entity_id",
             "object_node_kind",
             "object_source_node_id",
+            "object_identity_node_id",
             "assertion_count",
             "relation_status",
             "endpoint_status",
             "retrieval_eligible",
             "candidate_retrieval_eligible",
+            "terminal_retrieval_eligible",
             "multi_hop_eligible",
             "evidence_ids_json",
             "source_datasets_json",
             "candidate_tiers_json",
+            "source_predicates_json",
+            "raw_relation_types_json",
+            "relation_qualifiers_json",
+            "endpoint_projection_status",
+            "endpoint_projection_reference_fact_id",
             "review_model",
             "review_rationale",
             "review_reason_codes_json",
@@ -958,6 +1892,7 @@ def write_fact_graph_release(
             "subject_entity_id",
             "predicate",
             "object_entity_id",
+            "directionality",
             "representative_fact_id",
             "fact_ids_json",
             "fact_count",
@@ -967,9 +1902,13 @@ def write_fact_graph_release(
             "endpoint_status",
             "retrieval_eligible",
             "candidate_retrieval_eligible",
+            "terminal_retrieval_eligible",
             "multi_hop_eligible",
             "evidence_ids_json",
             "source_datasets_json",
+            "source_predicates_json",
+            "raw_relation_types_json",
+            "relation_qualifiers_json",
             "review_models_json",
             "graph_release_id",
         ],
@@ -994,6 +1933,37 @@ def write_fact_graph_release(
             "source_key",
             "source_release",
             "source_metadata_json",
+            "identity_status",
+            "identity_reason_code",
+            "preferred_source_node_id",
+            "identity_evidence_urls_json",
+            "graph_release_id",
+        ],
+        "identity_conflicts": [
+            "source_node_id",
+            "source",
+            "source_key",
+            "decision",
+            "reason_code",
+            "preferred_source_node_id",
+            "evidence_urls_json",
+            "note",
+            "display_name",
+            "identity_status",
+            "graph_release_id",
+        ],
+        "quarantined_facts": [
+            "fact_id",
+            "subject_node_id",
+            "predicate",
+            "object_node_id",
+            "assertion_count",
+            "trust_status",
+            "reason_codes_json",
+            "quarantined_source_node_ids_json",
+            "evidence_ids_json",
+            "evidence_records_json",
+            "source_datasets_json",
             "graph_release_id",
         ],
         "entity_names": [
@@ -1003,6 +1973,10 @@ def write_fact_graph_release(
             "name_type",
             "normalization_policy_version",
             "search_text",
+            "target_count",
+            "target_resolution_status",
+            "exact_search_eligible",
+            "retrieval_eligible",
             "graph_release_id",
         ],
         "exam_terms": [
@@ -1020,7 +1994,12 @@ def write_fact_graph_release(
             "resolution_policy_version",
             "search_text",
             "resolution_status",
+            "target_count",
+            "target_resolution_status",
+            "exact_search_eligible",
             "retrieval_eligible",
+            "fact_retrieval_eligible",
+            "terminal_fact_retrieval_eligible",
             "graph_release_id",
         ],
         "topics": ["topic_id", "name", "status", "version", "graph_release_id"],
@@ -1149,14 +2128,77 @@ def write_fact_graph_release(
                 row["retrieval_eligible"] == "true"
                 for row in package["semantic_relations"]
             ),
+            "terminal_retrieval_fact_count": sum(
+                row["terminal_retrieval_eligible"] == "true"
+                for row in package["facts"]
+            ),
+            "terminal_retrieval_semantic_relation_count": sum(
+                row["terminal_retrieval_eligible"] == "true"
+                for row in package["semantic_relations"]
+            ),
             "candidate_only_fact_count": sum(
                 row["retrieval_eligible"] == "false"
                 for row in package["facts"]
             ),
+            "symmetric_semantic_relation_count": sum(
+                row["directionality"] == "SYMMETRIC"
+                for row in package["semantic_relations"]
+            ),
+            "symmetric_semantic_fact_collapse_count": sum(
+                int(row["fact_count"]) - 1
+                for row in package["semantic_relations"]
+                if row["directionality"] == "SYMMETRIC"
+            ),
             "evidence_count": len(package["evidence"]),
             "source_record_count": len(package["source_records"]),
+            "identity_conflict_decision_count": len(
+                package["identity_conflicts"]
+            ),
+            "quarantined_source_record_count": sum(
+                row["decision"] == "QUARANTINE"
+                for row in package["identity_conflicts"]
+            ),
+            "redirected_source_record_count": sum(
+                row["decision"] == "REDIRECT"
+                for row in package["identity_conflicts"]
+            ),
+            "quarantined_fact_count": len(package["quarantined_facts"]),
+            "canonical_projection_collapsed_fact_count": sum(
+                row["endpoint_projection_status"]
+                == "CANONICAL_DUPLICATE_COLLAPSED"
+                for row in package["facts"]
+            ),
             "entity_name_count": len(package["entity_names"]),
+            "exact_search_entity_name_count": sum(
+                row["exact_search_eligible"] == "true"
+                for row in package["entity_names"]
+            ),
             "exam_term_count": len(package["exam_terms"]),
+            "unique_resolved_exam_term_count": sum(
+                row["target_resolution_status"] == "UNIQUE"
+                for row in package["exam_terms"]
+            ),
+            "ambiguous_exam_term_count": sum(
+                row["target_resolution_status"] == "AMBIGUOUS"
+                for row in package["exam_terms"]
+            ),
+            "default_fact_covered_exam_term_count": sum(
+                row["fact_retrieval_eligible"] == "true"
+                for row in package["exam_terms"]
+            ),
+            "terminal_fact_covered_exam_term_count": sum(
+                row["terminal_fact_retrieval_eligible"] == "true"
+                for row in package["exam_terms"]
+            ),
+            "exact_search_canonical_entity_count": sum(
+                row["exact_search_eligible"] == "true"
+                for row in package["entities"]
+                if row["entity_kind"] == "CANONICAL"
+            ),
+            "ambiguous_suppressed_canonical_entity_count": sum(
+                row["exact_search_status"] == "AMBIGUOUS_SUPPRESSED"
+                for row in package["entities"]
+            ),
             "topic_count": len(package["topics"]),
             "era_count": len(package["eras"]),
             "contextual_merged_entity_count": len(contextual_entities),

@@ -1,13 +1,12 @@
 # 사실 그래프 구축용 현재 데이터 EDA
 
-> 상태: `CURRENT-DATA-EDA`
-> 기준일: 2026-07-25
+> 상태: `SOURCE-DATA-BASELINE`
+> 기준일: 2026-07-27
 > 범위: AKS·ITKC·한국역사용어시소러스, 기출 추출 용어, Entity Resolution staging,
 > 원천 관계 staging
 
-> 주의: 이 문서의 Entity Resolution 수치는 최종 registry 생성 전 staging
-> snapshot이다. 2026-07-26 최종 수치와 사실 검색 구현 상태는
-> `FACT_GRAPH_CURRENT_DESIGN.md`를 기준으로 한다.
+> 주의: 1~12절은 최종 registry 전 staging EDA다. 실제 Fact Graph release는
+> 아래 13절과 `03_fact_graph_release_and_load.md`를 기준으로 한다.
 
 ## 1. 결론
 
@@ -473,3 +472,24 @@ target과 충분한 Fact가 있는 범위부터 Graph release를 만들 수 있�
 
 이 문서의 수치는 위 파일의 현재 상태를 다시 읽어 계산했다. 과거 EDA 문서의
 수치와 다를 경우 이 문서를 현재 기준으로 사용한다.
+
+---
+
+## 13. 2026-07-27 최종 release 업데이트
+
+초기 EDA의 `CanonicalEntity 0개`, `EvidenceSpan 미구현`, `RAG 후보 탐색 대기`
+상태는 더 이상 현재 상태가 아니다.
+
+| 항목 | 현재 수치 |
+|---|---:|
+| CanonicalEntity | 4,786 |
+| ProvisionalEntity | 14,661 |
+| GraphEntity | 19,447 |
+| Fact assertion | 39,852 |
+| 직접 의미 관계 | 39,745 |
+| EvidenceSpan | 39,961 |
+| 양 endpoint 해소 Fact | 623 |
+| 미해소 endpoint 포함 Fact | 39,229 |
+
+현재 차단점은 raw 관계 수가 아니라 endpoint identity 해소율이다. 미해소 관계는
+보존하지만 이름 검색·기본 RAG·자동 다중 hop에서는 제외한다.
