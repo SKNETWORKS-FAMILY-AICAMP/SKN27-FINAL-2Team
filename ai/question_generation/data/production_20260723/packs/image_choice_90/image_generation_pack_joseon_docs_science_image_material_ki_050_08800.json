@@ -1,0 +1,194 @@
+{
+  "pack_id": "image_generation_pack:joseon_docs_science:image_material:ki_050_08800",
+  "family_id": "image_choice_pack_v3:joseon_docs_science",
+  "era": "조선",
+  "service_era": "조선",
+  "service_topic": "문화",
+  "service_question_type": "역사 자료의 분석 및 해석",
+  "service_question_subtype": "시각 자료 해석",
+  "variant_key": "image:image_choice_pack_v3:joseon_docs_science:image_material:ki_050_08800",
+  "target_label": "경국대전",
+  "topic_type": "문화유산",
+  "question_task": "standard_select",
+  "choice_mode": "image",
+  "stem_pattern": "inquiry_topic",
+  "relation_axis_id": "common.definition_feature",
+  "material_type": "탐구 자료",
+  "major_type": "역사 자료의 분석 및 해석",
+  "minor_type": "시각 자료 해석",
+  "difficulty_label": "보통",
+  "question_task_instruction": "검수된 단서를 바탕으로 대상명을 직접 노출하지 않는 지문과 발문을 만들고, 제시된 이미지 중 해당 문화유산을 고르게 한다.",
+  "material_clue_basis": "『경국대전(經國大典)』은 1485년(성종 16) 완성된 조선왕조의 기본 법전이다. 세조대부터 점진적으로 편찬을 시작한 것으로 육전체제(六典體制)에 따라 이전(吏典), 호전(戶典), 예전(禮典), 병전(兵典), 형전(刑典), 공전(工典)으로 구성되어 있다.",
+  "material_evidence_chunks": [
+    {
+      "snippet": "『경국대전(經國大典)』은 1485년(성종 16) 완성된 조선왕조의 기본 법전이다. 세조대부터 점진적으로 편찬을 시작한 것으로 육전체제(六典體制)에 따라 이전(吏典), 호전(戶典), 예전(禮典), 병전(兵典), 형전(刑典), 공전(工典)으로 구성되어 있다.",
+      "chunk_id": "ki_050_08800_chunk_0000",
+      "article_id": "image_material:ki_050_08800",
+      "exact_text": "『경국대전(經國大典)』은 1485년(성종 16) 완성된 조선왕조의 기본 법전이다. 세조대부터 점진적으로 편찬을 시작한 것으로 육전체제(六典體制)에 따라 이전(吏典), 호전(戶典), 예전(禮典), 병전(兵典), 형전(刑典), 공전(工典)으로 구성되어 있다.",
+      "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_08800&whereStr=",
+      "section_path": [
+        "검수된 이미지 식별 단서"
+      ]
+    }
+  ],
+  "material_fact_semantically_distinct": true,
+  "status": "rag_ready",
+  "semantic_status": "pass",
+  "items": [
+    {
+      "slot_no": 0,
+      "role": "answer",
+      "basis_item_id": "clue:00136f1dba77",
+      "article_id": "image_material:ki_050_08800",
+      "truth_owner_label": "경국대전",
+      "fact_basis": "『경국대전(經國大典)』은 1485년(성종 16) 완성된 조선왕조의 기본 법전이다. 세조대부터 점진적으로 편찬을 시작한 것으로 육전체제(六典體制)에 따라 이전(吏典), 호전(戶典), 예전(禮典), 병전(兵典), 형전(刑典), 공전(工典)으로 구성되어 있다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_050_08800_chunk_0000",
+          "article_id": "image_material:ki_050_08800",
+          "snippet": "『경국대전(經國大典)』은 1485년(성종 16) 완성된 조선왕조의 기본 법전이다. 세조대부터 점진적으로 편찬을 시작한 것으로 육전체제(六典體制)에 따라 이전(吏典), 호전(戶典), 예전(禮典), 병전(兵典), 형전(刑典), 공전(工典)으로 구성되어 있다.",
+          "exact_text": "『경국대전(經國大典)』은 1485년(성종 16) 완성된 조선왕조의 기본 법전이다. 세조대부터 점진적으로 편찬을 시작한 것으로 육전체제(六典體制)에 따라 이전(吏典), 호전(戶典), 예전(禮典), 병전(兵典), 형전(刑典), 공전(工典)으로 구성되어 있다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_08800&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_050_08800_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_050/ki_050_08800.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_050/ki_050_08800.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_08800&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유물",
+        "category_sub": "문헌",
+        "internal_owner_title": "경국대전",
+        "owner_id": "image_material:ki_050_08800"
+      }
+    },
+    {
+      "slot_no": 1,
+      "role": "distractor",
+      "basis_item_id": "clue:d54b2c06223c",
+      "article_id": "image_material:ki_050_14900",
+      "truth_owner_label": "혼천의",
+      "fact_basis": "혼천의(渾天儀)는 천체의 운행과 위치를 측정할 수 있는 천문 관측기구이다. 조선의 혼천의는 1433년(세종 15) 정초(鄭招)·정인지(鄭麟趾) 등이 고전을 조사하고 이천(李蕆)·장영실(蔣英實)이 기계화한 것이 최초이다. 이후 몇 차례 개량이 이루어졌는데, 현재 남아 있는 혼천의는 2005년 서울특별시 유형문화재 제199호로 지정되었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_050_14900_chunk_0000",
+          "article_id": "image_material:ki_050_14900",
+          "snippet": "혼천의(渾天儀)는 천체의 운행과 위치를 측정할 수 있는 천문 관측기구이다. 조선의 혼천의는 1433년(세종 15) 정초(鄭招)·정인지(鄭麟趾) 등이 고전을 조사하고 이천(李蕆)·장영실(蔣英實)이 기계화한 것이 최초이다. 이후 몇 차례 개량이 이루어졌는데, 현재 남아 있는 혼천의는 2005년 서울특별시 유형문화재 제199호로 지정되었다.",
+          "exact_text": "혼천의(渾天儀)는 천체의 운행과 위치를 측정할 수 있는 천문 관측기구이다. 조선의 혼천의는 1433년(세종 15) 정초(鄭招)·정인지(鄭麟趾) 등이 고전을 조사하고 이천(李蕆)·장영실(蔣英實)이 기계화한 것이 최초이다. 이후 몇 차례 개량이 이루어졌는데, 현재 남아 있는 혼천의는 2005년 서울특별시 유형문화재 제199호로 지정되었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_14900&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_050_14900_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_050/ki_050_14900.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_050/ki_050_14900.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_14900&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유물",
+        "category_sub": "과학·기술용품",
+        "internal_owner_title": "혼천의",
+        "owner_id": "image_material:ki_050_14900"
+      }
+    },
+    {
+      "slot_no": 2,
+      "role": "distractor",
+      "basis_item_id": "clue:304b1c516dfc",
+      "article_id": "image_material:ki_050_14800",
+      "truth_owner_label": "앙부일구",
+      "fact_basis": "앙부일구(仰釜日晷)는 1434년(세종 16) 제작된 해시계이다. 해의 운행에 따라 발생하는 그림자를 통해 낮의 시간을 측정하는 방식이었다. 아울러 절기마다 태양에 고도가 달라짐에 따라 변화하는 그림자의 길이를 통해 24절기도 파악할 수 있었다. 궁궐이나 관청에서만 사용되지 않고 종로의 혜정교, 종묘 앞에도 설치되어 백성들도 사용할 수 있었으며 양반들도 자신의 정원에 설치해 사용하기도 했다. 국립고궁박물관에 보관 중인 앙부일구는 1985년 보물 제845호로 지정되었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_050_14800_chunk_0000",
+          "article_id": "image_material:ki_050_14800",
+          "snippet": "앙부일구(仰釜日晷)는 1434년(세종 16) 제작된 해시계이다. 해의 운행에 따라 발생하는 그림자를 통해 낮의 시간을 측정하는 방식이었다. 아울러 절기마다 태양에 고도가 달라짐에 따라 변화하는 그림자의 길이를 통해 24절기도 파악할 수 있었다. 궁궐이나 관청에서만 사용되지 않고 종로의 혜정교, 종묘 앞에도 설치되어 백성들도 사용할 수 있었으며 양반들도 자신의 정원에 설치해 사용하기도 했다. 국립고궁박물관에 보관 중인 앙부일구는 1985년 보물 제845호로 지정되었다.",
+          "exact_text": "앙부일구(仰釜日晷)는 1434년(세종 16) 제작된 해시계이다. 해의 운행에 따라 발생하는 그림자를 통해 낮의 시간을 측정하는 방식이었다. 아울러 절기마다 태양에 고도가 달라짐에 따라 변화하는 그림자의 길이를 통해 24절기도 파악할 수 있었다. 궁궐이나 관청에서만 사용되지 않고 종로의 혜정교, 종묘 앞에도 설치되어 백성들도 사용할 수 있었으며 양반들도 자신의 정원에 설치해 사용하기도 했다. 국립고궁박물관에 보관 중인 앙부일구는 1985년 보물 제845호로 지정되었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_14800&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_050_14800_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_050/ki_050_14800.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_050/ki_050_14800.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_14800&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유물",
+        "category_sub": "과학·기술용품",
+        "internal_owner_title": "앙부일구",
+        "owner_id": "image_material:ki_050_14800"
+      }
+    },
+    {
+      "slot_no": 3,
+      "role": "distractor",
+      "basis_item_id": "clue:4472004993d1",
+      "article_id": "image_material:ki_050_14700",
+      "truth_owner_label": "공주 충청감영 측우기",
+      "fact_basis": "측우기(測雨器)는 1442년(세종 24) 제작된 강우량 측정기로 기구를 거치하는 측우대와 함께 구성되었다. 세종대 진행되고 있던 농업 진흥 정책에 따른 연구를 위해 고안되었고 1441년(세종 23)부터 실험에 들어가 성과를 보았다. 이후 1442년 5월 강우량 측정에 관한 제도가 정비되었고 한양의 서운관(書雲觀)을 비롯한 각 지방 관청의 뜰에 측우기를 설치하였다. 전국에서 측정된 강우량은 모두 서울로 보고되었다. 1837년(헌종 3) 제작된 공주 충청감영 측우기는 2020년 국보 제329호로 지정되었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_050_14700_chunk_0000",
+          "article_id": "image_material:ki_050_14700",
+          "snippet": "측우기(測雨器)는 1442년(세종 24) 제작된 강우량 측정기로 기구를 거치하는 측우대와 함께 구성되었다. 세종대 진행되고 있던 농업 진흥 정책에 따른 연구를 위해 고안되었고 1441년(세종 23)부터 실험에 들어가 성과를 보았다. 이후 1442년 5월 강우량 측정에 관한 제도가 정비되었고 한양의 서운관(書雲觀)을 비롯한 각 지방 관청의 뜰에 측우기를 설치하였다. 전국에서 측정된 강우량은 모두 서울로 보고되었다. 1837년(헌종 3) 제작된 공주 충청감영 측우기는 2020년 국보 제329호로 지정되었다.",
+          "exact_text": "측우기(測雨器)는 1442년(세종 24) 제작된 강우량 측정기로 기구를 거치하는 측우대와 함께 구성되었다. 세종대 진행되고 있던 농업 진흥 정책에 따른 연구를 위해 고안되었고 1441년(세종 23)부터 실험에 들어가 성과를 보았다. 이후 1442년 5월 강우량 측정에 관한 제도가 정비되었고 한양의 서운관(書雲觀)을 비롯한 각 지방 관청의 뜰에 측우기를 설치하였다. 전국에서 측정된 강우량은 모두 서울로 보고되었다. 1837년(헌종 3) 제작된 공주 충청감영 측우기는 2020년 국보 제329호로 지정되었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_14700&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_050_14700_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_050/ki_050_14700.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_050/ki_050_14700.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_14700&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유물",
+        "category_sub": "과학·기술용품",
+        "internal_owner_title": "공주 충청감영 측우기",
+        "owner_id": "image_material:ki_050_14700"
+      }
+    },
+    {
+      "slot_no": 4,
+      "role": "distractor",
+      "basis_item_id": "clue:29db9235b3f2",
+      "article_id": "image_material:ki_050_14600",
+      "truth_owner_label": "창경궁 자격루",
+      "fact_basis": "자격루(自擊漏)는 조선 전기 고안된 시계의 일종으로 물시계라고도 불린다. 1434년(세종 16) 장영실(蔣英實), 이천(李蕆) 등에 의해 제작되었으며, 자동으로 시각을 알리기 위해 종, 북, 징 등의 기계가 달려 있었다. 하지만 세종대 만들어진 자격루는 임진왜란 때 모두 소실되었다. 현재 남아 있는 자격루는 1536년(중종 31)에 제작되어 창경궁에 있었던 것으로 현재는 국립고궁박물관에 보관되어 있다. 창경궁 자격루는 1985년 국보 제229호로 지정되었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_050_14600_chunk_0000",
+          "article_id": "image_material:ki_050_14600",
+          "snippet": "자격루(自擊漏)는 조선 전기 고안된 시계의 일종으로 물시계라고도 불린다. 1434년(세종 16) 장영실(蔣英實), 이천(李蕆) 등에 의해 제작되었으며, 자동으로 시각을 알리기 위해 종, 북, 징 등의 기계가 달려 있었다. 하지만 세종대 만들어진 자격루는 임진왜란 때 모두 소실되었다. 현재 남아 있는 자격루는 1536년(중종 31)에 제작되어 창경궁에 있었던 것으로 현재는 국립고궁박물관에 보관되어 있다. 창경궁 자격루는 1985년 국보 제229호로 지정되었다.",
+          "exact_text": "자격루(自擊漏)는 조선 전기 고안된 시계의 일종으로 물시계라고도 불린다. 1434년(세종 16) 장영실(蔣英實), 이천(李蕆) 등에 의해 제작되었으며, 자동으로 시각을 알리기 위해 종, 북, 징 등의 기계가 달려 있었다. 하지만 세종대 만들어진 자격루는 임진왜란 때 모두 소실되었다. 현재 남아 있는 자격루는 1536년(중종 31)에 제작되어 창경궁에 있었던 것으로 현재는 국립고궁박물관에 보관되어 있다. 창경궁 자격루는 1985년 국보 제229호로 지정되었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_14600&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_050_14600_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_050/ki_050_14600.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_050/ki_050_14600.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_14600&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유물",
+        "category_sub": "과학·기술용품",
+        "internal_owner_title": "창경궁 자격루",
+        "owner_id": "image_material:ki_050_14600"
+      }
+    }
+  ]
+}

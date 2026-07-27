@@ -1,0 +1,194 @@
+{
+  "pack_id": "image_generation_pack:prehistoric_sites:image_material:ki_010_02300",
+  "family_id": "image_choice_pack_v3:prehistoric_sites",
+  "era": "선사·초기국가",
+  "service_era": "선사 시대",
+  "service_topic": "문화",
+  "service_question_type": "역사 자료의 분석 및 해석",
+  "service_question_subtype": "시각 자료 해석",
+  "variant_key": "image:image_choice_pack_v3:prehistoric_sites:image_material:ki_010_02300",
+  "target_label": "부여 송국리 유적",
+  "topic_type": "문화유산",
+  "question_task": "standard_select",
+  "choice_mode": "image",
+  "stem_pattern": "source_inference",
+  "relation_axis_id": "common.definition_feature",
+  "material_type": "자료 제시문",
+  "major_type": "역사 자료의 분석 및 해석",
+  "minor_type": "시각 자료 해석",
+  "difficulty_label": "보통",
+  "question_task_instruction": "검수된 단서를 바탕으로 대상명을 직접 노출하지 않는 지문과 발문을 만들고, 제시된 이미지 중 해당 문화유산을 고르게 한다.",
+  "material_clue_basis": "부여 송국리 유적은 대표적인 청동기시대 주거지 유적이다. 하천과 평지에 인접한 낮은 구릉과 대지 위에 100여 기 이상의 집터가 있었을 것으로 추정된다. 특징 가운데 하나는 마을 전체가 목책, 즉 통나무 장벽으로 둘러싸여 있는 점이다. 목책은 서쪽으로 돌출된 가지능선에서 시작되어 유적이 분포하는 구릉을 둘러싸는 대규모 시설로, 내부 면적이 작게는 300,000㎡, 크게는 610,000㎡에 이를 것으로 예측된다. 1976년 사적 제249호로 지정되었다.",
+  "material_evidence_chunks": [
+    {
+      "snippet": "부여 송국리 유적은 대표적인 청동기시대 주거지 유적이다. 하천과 평지에 인접한 낮은 구릉과 대지 위에 100여 기 이상의 집터가 있었을 것으로 추정된다. 특징 가운데 하나는 마을 전체가 목책, 즉 통나무 장벽으로 둘러싸여 있는 점이다. 목책은 서쪽으로 돌출된 가지능선에서 시작되어 유적이 분포하는 구릉을 둘러싸는 대규모 시설로, 내부 면적이 작게는 300,000㎡, 크게는 610,000㎡에 이를 것으로 예측된다. 1976년 사적 제249호로 지정되었다.",
+      "chunk_id": "ki_010_02300_chunk_0000",
+      "article_id": "image_material:ki_010_02300",
+      "exact_text": "부여 송국리 유적은 대표적인 청동기시대 주거지 유적이다. 하천과 평지에 인접한 낮은 구릉과 대지 위에 100여 기 이상의 집터가 있었을 것으로 추정된다. 특징 가운데 하나는 마을 전체가 목책, 즉 통나무 장벽으로 둘러싸여 있는 점이다. 목책은 서쪽으로 돌출된 가지능선에서 시작되어 유적이 분포하는 구릉을 둘러싸는 대규모 시설로, 내부 면적이 작게는 300,000㎡, 크게는 610,000㎡에 이를 것으로 예측된다. 1976년 사적 제249호로 지정되었다.",
+      "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_010_02300&whereStr=",
+      "section_path": [
+        "검수된 이미지 식별 단서"
+      ]
+    }
+  ],
+  "material_fact_semantically_distinct": true,
+  "status": "rag_ready",
+  "semantic_status": "pass",
+  "items": [
+    {
+      "slot_no": 0,
+      "role": "answer",
+      "basis_item_id": "clue:478cf53848ac",
+      "article_id": "image_material:ki_010_02300",
+      "truth_owner_label": "부여 송국리 유적",
+      "fact_basis": "부여 송국리 유적은 대표적인 청동기시대 주거지 유적이다. 하천과 평지에 인접한 낮은 구릉과 대지 위에 100여 기 이상의 집터가 있었을 것으로 추정된다. 특징 가운데 하나는 마을 전체가 목책, 즉 통나무 장벽으로 둘러싸여 있는 점이다. 목책은 서쪽으로 돌출된 가지능선에서 시작되어 유적이 분포하는 구릉을 둘러싸는 대규모 시설로, 내부 면적이 작게는 300,000㎡, 크게는 610,000㎡에 이를 것으로 예측된다. 1976년 사적 제249호로 지정되었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_010_02300_chunk_0000",
+          "article_id": "image_material:ki_010_02300",
+          "snippet": "부여 송국리 유적은 대표적인 청동기시대 주거지 유적이다. 하천과 평지에 인접한 낮은 구릉과 대지 위에 100여 기 이상의 집터가 있었을 것으로 추정된다. 특징 가운데 하나는 마을 전체가 목책, 즉 통나무 장벽으로 둘러싸여 있는 점이다. 목책은 서쪽으로 돌출된 가지능선에서 시작되어 유적이 분포하는 구릉을 둘러싸는 대규모 시설로, 내부 면적이 작게는 300,000㎡, 크게는 610,000㎡에 이를 것으로 예측된다. 1976년 사적 제249호로 지정되었다.",
+          "exact_text": "부여 송국리 유적은 대표적인 청동기시대 주거지 유적이다. 하천과 평지에 인접한 낮은 구릉과 대지 위에 100여 기 이상의 집터가 있었을 것으로 추정된다. 특징 가운데 하나는 마을 전체가 목책, 즉 통나무 장벽으로 둘러싸여 있는 점이다. 목책은 서쪽으로 돌출된 가지능선에서 시작되어 유적이 분포하는 구릉을 둘러싸는 대규모 시설로, 내부 면적이 작게는 300,000㎡, 크게는 610,000㎡에 이를 것으로 예측된다. 1976년 사적 제249호로 지정되었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_010_02300&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_010_02300_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_02300.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_02300.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_010_02300&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유적",
+        "category_sub": "주거시설",
+        "internal_owner_title": "부여 송국리 유적",
+        "owner_id": "image_material:ki_010_02300"
+      }
+    },
+    {
+      "slot_no": 1,
+      "role": "distractor",
+      "basis_item_id": "clue:c18dd3e81da4",
+      "article_id": "image_material:ki_010_02100",
+      "truth_owner_label": "강화 부근리 고인돌",
+      "fact_basis": "청동기시대의 고인돌 유적이다. 강화 부근리에는 40여기의 고인돌이 산재하는데, 그 중 강화 부근리 고인돌의 규모가 가장 크다. 북방식 혹은 탁자식 고인돌의 형태이다. 전체 높이는 2.6m이고, 덮개돌은 길이 6.5m, 너비 5.2m, 두께 1.2m의 화강암으로 되어 있다. 1964년 사적 제137호로 지정되었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_010_02100_chunk_0000",
+          "article_id": "image_material:ki_010_02100",
+          "snippet": "청동기시대의 고인돌 유적이다. 강화 부근리에는 40여기의 고인돌이 산재하는데, 그 중 강화 부근리 고인돌의 규모가 가장 크다. 북방식 혹은 탁자식 고인돌의 형태이다. 전체 높이는 2.6m이고, 덮개돌은 길이 6.5m, 너비 5.2m, 두께 1.2m의 화강암으로 되어 있다. 1964년 사적 제137호로 지정되었다.",
+          "exact_text": "청동기시대의 고인돌 유적이다. 강화 부근리에는 40여기의 고인돌이 산재하는데, 그 중 강화 부근리 고인돌의 규모가 가장 크다. 북방식 혹은 탁자식 고인돌의 형태이다. 전체 높이는 2.6m이고, 덮개돌은 길이 6.5m, 너비 5.2m, 두께 1.2m의 화강암으로 되어 있다. 1964년 사적 제137호로 지정되었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_010_02100&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_010_02100_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_02100.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_02100.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_010_02100&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유적",
+        "category_sub": "무덤",
+        "internal_owner_title": "강화 부근리 고인돌",
+        "owner_id": "image_material:ki_010_02100"
+      }
+    },
+    {
+      "slot_no": 2,
+      "role": "distractor",
+      "basis_item_id": "clue:d4f6053bd6f1",
+      "article_id": "image_material:ki_010_02000",
+      "truth_owner_label": "연천 학곡리 고인돌",
+      "fact_basis": "청동기시대의 고인돌 유적이다. 연천 학곡리에는 임진강을 따라 5기의 고인돌이 분포하며, 사진의 고인돌은 그중 1호 고인돌이다. 이른바 북방식 혹은 탁자식 고인돌의 형태이다. 덮개돌의 재질은 현무암이고, 그 가장자리에는 손질한 흔적이 뚜렷하며 평면 형태는 약간 각이 진 육각형이다. 덮개돌의 윗면에는 지름 7㎝쯤 되는 홈 구멍이 10여 개 파여 있다. 고임돌은 재질이 서로 다른데, 남쪽(사진의 오른쪽)은 현무암이고, 북쪽(사진의 왼쪽)은 변성암 계통이다. 1996년 경기도 기념물 제158호로 지정되었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_010_02000_chunk_0000",
+          "article_id": "image_material:ki_010_02000",
+          "snippet": "청동기시대의 고인돌 유적이다. 연천 학곡리에는 임진강을 따라 5기의 고인돌이 분포하며, 사진의 고인돌은 그중 1호 고인돌이다. 이른바 북방식 혹은 탁자식 고인돌의 형태이다. 덮개돌의 재질은 현무암이고, 그 가장자리에는 손질한 흔적이 뚜렷하며 평면 형태는 약간 각이 진 육각형이다. 덮개돌의 윗면에는 지름 7㎝쯤 되는 홈 구멍이 10여 개 파여 있다. 고임돌은 재질이 서로 다른데, 남쪽(사진의 오른쪽)은 현무암이고, 북쪽(사진의 왼쪽)은 변성암 계통이다. 1996년 경기도 기념물 제158호로 지정되었다.",
+          "exact_text": "청동기시대의 고인돌 유적이다. 연천 학곡리에는 임진강을 따라 5기의 고인돌이 분포하며, 사진의 고인돌은 그중 1호 고인돌이다. 이른바 북방식 혹은 탁자식 고인돌의 형태이다. 덮개돌의 재질은 현무암이고, 그 가장자리에는 손질한 흔적이 뚜렷하며 평면 형태는 약간 각이 진 육각형이다. 덮개돌의 윗면에는 지름 7㎝쯤 되는 홈 구멍이 10여 개 파여 있다. 고임돌은 재질이 서로 다른데, 남쪽(사진의 오른쪽)은 현무암이고, 북쪽(사진의 왼쪽)은 변성암 계통이다. 1996년 경기도 기념물 제158호로 지정되었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_010_02000&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_010_02000_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_02000.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_02000.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_010_02000&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유적",
+        "category_sub": "무덤",
+        "internal_owner_title": "연천 학곡리 고인돌",
+        "owner_id": "image_material:ki_010_02000"
+      }
+    },
+    {
+      "slot_no": 3,
+      "role": "distractor",
+      "basis_item_id": "clue:50626a8d5738",
+      "article_id": "image_material:ki_010_02800",
+      "truth_owner_label": "울주 대곡리 반구대 암각화",
+      "fact_basis": "높이 3m, 너비 10m의 ‘ㄱ’자 모양으로 꺾인 절벽 암반에 여러 가지 모양을 새긴 바위 그림이다. 육지 동물과 바닷고기, 사냥하는 장면 등 총 75종 200여 점의 그림이 새겨져 있다. 사냥 활동이 원활하게 이루어지길 기원하며, 사냥감이 풍성해지길 바라는 마음으로 바위에 새긴 것이다. 조각기로 쪼아 윤곽선을 만들거나 전체를 떼어낸 기법, 쪼아낸 윤곽선을 갈아내는 기법의 사용으로 보아 신석기 말에서 청동기시대에 제작되었음을 알 수 있으며 또한 시베리아 암각화의 전통을 보여주고 있다. 1995년 국보 제285호로 지정되었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_010_02800_chunk_0000",
+          "article_id": "image_material:ki_010_02800",
+          "snippet": "높이 3m, 너비 10m의 ‘ㄱ’자 모양으로 꺾인 절벽 암반에 여러 가지 모양을 새긴 바위 그림이다. 육지 동물과 바닷고기, 사냥하는 장면 등 총 75종 200여 점의 그림이 새겨져 있다. 사냥 활동이 원활하게 이루어지길 기원하며, 사냥감이 풍성해지길 바라는 마음으로 바위에 새긴 것이다. 조각기로 쪼아 윤곽선을 만들거나 전체를 떼어낸 기법, 쪼아낸 윤곽선을 갈아내는 기법의 사용으로 보아 신석기 말에서 청동기시대에 제작되었음을 알 수 있으며 또한 시베리아 암각화의 전통을 보여주고 있다. 1995년 국보 제285호로 지정되었다.",
+          "exact_text": "높이 3m, 너비 10m의 ‘ㄱ’자 모양으로 꺾인 절벽 암반에 여러 가지 모양을 새긴 바위 그림이다. 육지 동물과 바닷고기, 사냥하는 장면 등 총 75종 200여 점의 그림이 새겨져 있다. 사냥 활동이 원활하게 이루어지길 기원하며, 사냥감이 풍성해지길 바라는 마음으로 바위에 새긴 것이다. 조각기로 쪼아 윤곽선을 만들거나 전체를 떼어낸 기법, 쪼아낸 윤곽선을 갈아내는 기법의 사용으로 보아 신석기 말에서 청동기시대에 제작되었음을 알 수 있으며 또한 시베리아 암각화의 전통을 보여주고 있다. 1995년 국보 제285호로 지정되었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_010_02800&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_010_02800_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_02800.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_02800.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_010_02800&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유물",
+        "category_sub": "벽화",
+        "internal_owner_title": "울주 대곡리 반구대 암각화",
+        "owner_id": "image_material:ki_010_02800"
+      }
+    },
+    {
+      "slot_no": 4,
+      "role": "distractor",
+      "basis_item_id": "clue:2397eb431ba8",
+      "article_id": "image_material:ki_010_04600",
+      "truth_owner_label": "광주 신창동 유적",
+      "fact_basis": "영산강 유역 낮은 평야 지대에 자리한 초기 철기시대 유적이다. 늪과 못 터, 토기 가마터, 배수 시설, 독무덤(옹관묘) 등이 확인되었다. 독무덤은 53기가 발견되었고, 그 안에서 토기와 철기류 유물이 출토되었다. 늪과 못 터에서 토기, 목제, 석기 등의 유물이 나왔는데, 특히 빗, 괭이, 나무 뚜껑과 같은 목제유물들은 당시 생활 모습을 알려 준다. 이와 함께 출토된 불탄 쌀, 볍씨, 살구씨 등은 농경문화를 짐작케 한다. 가마터에서는 토기 제작기술의 발전된 모습을 확인할 수 있다. 1992년 사적 제375호로 지정되었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_010_04600_chunk_0000",
+          "article_id": "image_material:ki_010_04600",
+          "snippet": "영산강 유역 낮은 평야 지대에 자리한 초기 철기시대 유적이다. 늪과 못 터, 토기 가마터, 배수 시설, 독무덤(옹관묘) 등이 확인되었다. 독무덤은 53기가 발견되었고, 그 안에서 토기와 철기류 유물이 출토되었다. 늪과 못 터에서 토기, 목제, 석기 등의 유물이 나왔는데, 특히 빗, 괭이, 나무 뚜껑과 같은 목제유물들은 당시 생활 모습을 알려 준다. 이와 함께 출토된 불탄 쌀, 볍씨, 살구씨 등은 농경문화를 짐작케 한다. 가마터에서는 토기 제작기술의 발전된 모습을 확인할 수 있다. 1992년 사적 제375호로 지정되었다.",
+          "exact_text": "영산강 유역 낮은 평야 지대에 자리한 초기 철기시대 유적이다. 늪과 못 터, 토기 가마터, 배수 시설, 독무덤(옹관묘) 등이 확인되었다. 독무덤은 53기가 발견되었고, 그 안에서 토기와 철기류 유물이 출토되었다. 늪과 못 터에서 토기, 목제, 석기 등의 유물이 나왔는데, 특히 빗, 괭이, 나무 뚜껑과 같은 목제유물들은 당시 생활 모습을 알려 준다. 이와 함께 출토된 불탄 쌀, 볍씨, 살구씨 등은 농경문화를 짐작케 한다. 가마터에서는 토기 제작기술의 발전된 모습을 확인할 수 있다. 1992년 사적 제375호로 지정되었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_010_04600&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_010_04600_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_04600.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_04600.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_010_04600&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유적",
+        "category_sub": "무덤",
+        "internal_owner_title": "광주 신창동 유적",
+        "owner_id": "image_material:ki_010_04600"
+      }
+    }
+  ]
+}

@@ -1,0 +1,194 @@
+{
+  "pack_id": "image_generation_pack:joseon_architecture:image_material:ki_050_01700",
+  "family_id": "image_choice_pack_v3:joseon_architecture",
+  "era": "조선",
+  "service_era": "조선",
+  "service_topic": "문화",
+  "service_question_type": "역사 자료의 분석 및 해석",
+  "service_question_subtype": "시각 자료 해석",
+  "variant_key": "image:image_choice_pack_v3:joseon_architecture:image_material:ki_050_01700",
+  "target_label": "서울 사직단",
+  "topic_type": "문화유산",
+  "question_task": "standard_select",
+  "choice_mode": "image",
+  "stem_pattern": "inquiry_topic",
+  "relation_axis_id": "common.definition_feature",
+  "material_type": "탐구 자료",
+  "major_type": "역사 자료의 분석 및 해석",
+  "minor_type": "시각 자료 해석",
+  "difficulty_label": "보통",
+  "question_task_instruction": "검수된 단서를 바탕으로 대상명을 직접 노출하지 않는 지문과 발문을 만들고, 제시된 이미지 중 해당 문화유산을 고르게 한다.",
+  "material_clue_basis": "사직단(社稷壇)은 토지와 곡식의 신을 제사하는 공간으로 1394년(태조 3) 건립되었다. 사직의 제사는 농사의 풍요와 백성들의 안녕을 기원하는 것이 궁극적인 목적이었기 때문에 조선시대 국가가 주관하는 제사 중 가장 중요한 대사(大祀)로 분류되었다. 각 지방에도 사직단이 건립되었는데 기능은 서울의 것과 같다. 1963년 서울의 사직단은 사적 제121호로, 대문은 보물 제177호로 지정되었다.",
+  "material_evidence_chunks": [
+    {
+      "snippet": "사직단(社稷壇)은 토지와 곡식의 신을 제사하는 공간으로 1394년(태조 3) 건립되었다. 사직의 제사는 농사의 풍요와 백성들의 안녕을 기원하는 것이 궁극적인 목적이었기 때문에 조선시대 국가가 주관하는 제사 중 가장 중요한 대사(大祀)로 분류되었다. 각 지방에도 사직단이 건립되었는데 기능은 서울의 것과 같다. 1963년 서울의 사직단은 사적 제121호로, 대문은 보물 제177호로 지정되었다.",
+      "chunk_id": "ki_050_01700_chunk_0000",
+      "article_id": "image_material:ki_050_01700",
+      "exact_text": "사직단(社稷壇)은 토지와 곡식의 신을 제사하는 공간으로 1394년(태조 3) 건립되었다. 사직의 제사는 농사의 풍요와 백성들의 안녕을 기원하는 것이 궁극적인 목적이었기 때문에 조선시대 국가가 주관하는 제사 중 가장 중요한 대사(大祀)로 분류되었다. 각 지방에도 사직단이 건립되었는데 기능은 서울의 것과 같다. 1963년 서울의 사직단은 사적 제121호로, 대문은 보물 제177호로 지정되었다.",
+      "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_01700&whereStr=",
+      "section_path": [
+        "검수된 이미지 식별 단서"
+      ]
+    }
+  ],
+  "material_fact_semantically_distinct": true,
+  "status": "rag_ready",
+  "semantic_status": "pass",
+  "items": [
+    {
+      "slot_no": 0,
+      "role": "answer",
+      "basis_item_id": "clue:248ea4043015",
+      "article_id": "image_material:ki_050_01700",
+      "truth_owner_label": "서울 사직단",
+      "fact_basis": "사직단(社稷壇)은 토지와 곡식의 신을 제사하는 공간으로 1394년(태조 3) 건립되었다. 사직의 제사는 농사의 풍요와 백성들의 안녕을 기원하는 것이 궁극적인 목적이었기 때문에 조선시대 국가가 주관하는 제사 중 가장 중요한 대사(大祀)로 분류되었다. 각 지방에도 사직단이 건립되었는데 기능은 서울의 것과 같다. 1963년 서울의 사직단은 사적 제121호로, 대문은 보물 제177호로 지정되었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_050_01700_chunk_0000",
+          "article_id": "image_material:ki_050_01700",
+          "snippet": "사직단(社稷壇)은 토지와 곡식의 신을 제사하는 공간으로 1394년(태조 3) 건립되었다. 사직의 제사는 농사의 풍요와 백성들의 안녕을 기원하는 것이 궁극적인 목적이었기 때문에 조선시대 국가가 주관하는 제사 중 가장 중요한 대사(大祀)로 분류되었다. 각 지방에도 사직단이 건립되었는데 기능은 서울의 것과 같다. 1963년 서울의 사직단은 사적 제121호로, 대문은 보물 제177호로 지정되었다.",
+          "exact_text": "사직단(社稷壇)은 토지와 곡식의 신을 제사하는 공간으로 1394년(태조 3) 건립되었다. 사직의 제사는 농사의 풍요와 백성들의 안녕을 기원하는 것이 궁극적인 목적이었기 때문에 조선시대 국가가 주관하는 제사 중 가장 중요한 대사(大祀)로 분류되었다. 각 지방에도 사직단이 건립되었는데 기능은 서울의 것과 같다. 1963년 서울의 사직단은 사적 제121호로, 대문은 보물 제177호로 지정되었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_01700&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_050_01700_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_050/ki_050_01700.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_050/ki_050_01700.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_01700&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유적",
+        "category_sub": "천문·의례시설",
+        "internal_owner_title": "서울 사직단",
+        "owner_id": "image_material:ki_050_01700"
+      }
+    },
+    {
+      "slot_no": 1,
+      "role": "distractor",
+      "basis_item_id": "clue:272e7b2ff05d",
+      "article_id": "image_material:ki_050_01400",
+      "truth_owner_label": "종묘",
+      "fact_basis": "종묘(宗廟)는 조선 왕조의 역대 국왕과 왕비의 신주를 모신 제향 공간이다. 1392년(태조 1) 개성에 처음 건립되었다가, 1395년(태조 4) 한양 천도와 함께 오늘날의 자리로 이전했다. 크게 중심 건물인 정전과 또 다른 사당인 영녕전으로 구성되어 있다. 종묘의 제사는 1년에 다섯 차례 진행되었는데, 국가가 주관하는 가장 중요한 제사로서 대사(大祀)에 속했다. 현재는 5월 첫째 주 일요일과 11월 첫째 주 토요일에 제례를 진행한다. 1963년 사적 제125호로 지정되었으며, 1995년 유네스코 세계유산에 등재되었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_050_01400_chunk_0000",
+          "article_id": "image_material:ki_050_01400",
+          "snippet": "종묘(宗廟)는 조선 왕조의 역대 국왕과 왕비의 신주를 모신 제향 공간이다. 1392년(태조 1) 개성에 처음 건립되었다가, 1395년(태조 4) 한양 천도와 함께 오늘날의 자리로 이전했다. 크게 중심 건물인 정전과 또 다른 사당인 영녕전으로 구성되어 있다. 종묘의 제사는 1년에 다섯 차례 진행되었는데, 국가가 주관하는 가장 중요한 제사로서 대사(大祀)에 속했다. 현재는 5월 첫째 주 일요일과 11월 첫째 주 토요일에 제례를 진행한다. 1963년 사적 제125호로 지정되었으며, 1995년 유네스코 세계유산에 등재되었다.",
+          "exact_text": "종묘(宗廟)는 조선 왕조의 역대 국왕과 왕비의 신주를 모신 제향 공간이다. 1392년(태조 1) 개성에 처음 건립되었다가, 1395년(태조 4) 한양 천도와 함께 오늘날의 자리로 이전했다. 크게 중심 건물인 정전과 또 다른 사당인 영녕전으로 구성되어 있다. 종묘의 제사는 1년에 다섯 차례 진행되었는데, 국가가 주관하는 가장 중요한 제사로서 대사(大祀)에 속했다. 현재는 5월 첫째 주 일요일과 11월 첫째 주 토요일에 제례를 진행한다. 1963년 사적 제125호로 지정되었으며, 1995년 유네스코 세계유산에 등재되었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_01400&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_050_01400_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_050/ki_050_01400.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_050/ki_050_01400.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_01400&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유적",
+        "category_sub": "천문·의례시설",
+        "internal_owner_title": "종묘",
+        "owner_id": "image_material:ki_050_01400"
+      }
+    },
+    {
+      "slot_no": 2,
+      "role": "distractor",
+      "basis_item_id": "clue:93709beb21a4",
+      "article_id": "image_material:ki_050_03000",
+      "truth_owner_label": "숭례문",
+      "fact_basis": "숭례문(崇禮門)은 1398년(태조 7) 완성된 한양도성의 정문으로, 남쪽에 위치하고 있어 남대문으로도 불린다. 다른 문들과 달리 세로로 쓰인 것이 특징이다. 『지봉유설』에는 양녕대군이 ‘숭례문’이라는 현판을 썼다고 기록되어 있다. 2008년 방화로 일부가 불에 탔고 복원 공사 끝에 2013년 준공되었다. 본래 성곽과 연결되어 있었지만 개항기 이후 도시 개발과 일본에 의해 훼손되었고 현재는 일부만을 복원했다. 1962년 국보 제1호로 지정되었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_050_03000_chunk_0000",
+          "article_id": "image_material:ki_050_03000",
+          "snippet": "숭례문(崇禮門)은 1398년(태조 7) 완성된 한양도성의 정문으로, 남쪽에 위치하고 있어 남대문으로도 불린다. 다른 문들과 달리 세로로 쓰인 것이 특징이다. 『지봉유설』에는 양녕대군이 ‘숭례문’이라는 현판을 썼다고 기록되어 있다. 2008년 방화로 일부가 불에 탔고 복원 공사 끝에 2013년 준공되었다. 본래 성곽과 연결되어 있었지만 개항기 이후 도시 개발과 일본에 의해 훼손되었고 현재는 일부만을 복원했다. 1962년 국보 제1호로 지정되었다.",
+          "exact_text": "숭례문(崇禮門)은 1398년(태조 7) 완성된 한양도성의 정문으로, 남쪽에 위치하고 있어 남대문으로도 불린다. 다른 문들과 달리 세로로 쓰인 것이 특징이다. 『지봉유설』에는 양녕대군이 ‘숭례문’이라는 현판을 썼다고 기록되어 있다. 2008년 방화로 일부가 불에 탔고 복원 공사 끝에 2013년 준공되었다. 본래 성곽과 연결되어 있었지만 개항기 이후 도시 개발과 일본에 의해 훼손되었고 현재는 일부만을 복원했다. 1962년 국보 제1호로 지정되었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_03000&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_050_03000_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_050/ki_050_03000.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_050/ki_050_03000.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_03000&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유적",
+        "category_sub": "궁궐·성",
+        "internal_owner_title": "숭례문",
+        "owner_id": "image_material:ki_050_03000"
+      }
+    },
+    {
+      "slot_no": 3,
+      "role": "distractor",
+      "basis_item_id": "clue:7593806743e1",
+      "article_id": "image_material:ki_050_03100",
+      "truth_owner_label": "흥인지문",
+      "fact_basis": "흥인지문(興仁之門)은 1398년(태조 7) 완성된 한양도성의 동문으로, 동쪽에 위치하고 있어 동대문으로도 불린다. 반원형의 평면을 이룬 옹성(甕城)을 쌓아 적에 대한 방비와 공격에 유리하게 하였는데, 도성 내 8개의 성문 중 옹성을 갖춘 것은 흥인지문뿐이다. 현재의 모습은 1869년(고종 6) 개축된 것이며, 1907년 전차 선로를 개설하면서 성문과 연결된 성벽을 허물었다. 1963년 보물 제1호로 지정되었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_050_03100_chunk_0000",
+          "article_id": "image_material:ki_050_03100",
+          "snippet": "흥인지문(興仁之門)은 1398년(태조 7) 완성된 한양도성의 동문으로, 동쪽에 위치하고 있어 동대문으로도 불린다. 반원형의 평면을 이룬 옹성(甕城)을 쌓아 적에 대한 방비와 공격에 유리하게 하였는데, 도성 내 8개의 성문 중 옹성을 갖춘 것은 흥인지문뿐이다. 현재의 모습은 1869년(고종 6) 개축된 것이며, 1907년 전차 선로를 개설하면서 성문과 연결된 성벽을 허물었다. 1963년 보물 제1호로 지정되었다.",
+          "exact_text": "흥인지문(興仁之門)은 1398년(태조 7) 완성된 한양도성의 동문으로, 동쪽에 위치하고 있어 동대문으로도 불린다. 반원형의 평면을 이룬 옹성(甕城)을 쌓아 적에 대한 방비와 공격에 유리하게 하였는데, 도성 내 8개의 성문 중 옹성을 갖춘 것은 흥인지문뿐이다. 현재의 모습은 1869년(고종 6) 개축된 것이며, 1907년 전차 선로를 개설하면서 성문과 연결된 성벽을 허물었다. 1963년 보물 제1호로 지정되었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_03100&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_050_03100_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_050/ki_050_03100.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_050/ki_050_03100.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_03100&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유적",
+        "category_sub": "궁궐·성",
+        "internal_owner_title": "흥인지문",
+        "owner_id": "image_material:ki_050_03100"
+      }
+    },
+    {
+      "slot_no": 4,
+      "role": "distractor",
+      "basis_item_id": "clue:aad0c47e53c6",
+      "article_id": "image_material:ki_050_03800",
+      "truth_owner_label": "수원화성 팔달문",
+      "fact_basis": "팔달문(八達門)은 1796년(정조 20)에 완성된 수원화성의 남문으로, 보물로 지정되어 있다. 문의 명칭은 서쪽에 위치한 팔달산에서 유래했다. 문루는 중층의 구조로 되어 있어 외형이 웅장하다. 문의 바깥쪽에는 반원형의 옹성을 쌓아 2중으로 방어가 가능하도록 설계했다. 일제강점기 당시인 1920~30년 사이에 수리가 있었고, 1975년 화성에 대한 복원 공사를 진행하면서 옹성이 수리되었다. 조선후기 성문건축의 사례를 파악할 수 있는 중요한 자료이다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_050_03800_chunk_0000",
+          "article_id": "image_material:ki_050_03800",
+          "snippet": "팔달문(八達門)은 1796년(정조 20)에 완성된 수원화성의 남문으로, 보물로 지정되어 있다. 문의 명칭은 서쪽에 위치한 팔달산에서 유래했다. 문루는 중층의 구조로 되어 있어 외형이 웅장하다. 문의 바깥쪽에는 반원형의 옹성을 쌓아 2중으로 방어가 가능하도록 설계했다. 일제강점기 당시인 1920~30년 사이에 수리가 있었고, 1975년 화성에 대한 복원 공사를 진행하면서 옹성이 수리되었다. 조선후기 성문건축의 사례를 파악할 수 있는 중요한 자료이다.",
+          "exact_text": "팔달문(八達門)은 1796년(정조 20)에 완성된 수원화성의 남문으로, 보물로 지정되어 있다. 문의 명칭은 서쪽에 위치한 팔달산에서 유래했다. 문루는 중층의 구조로 되어 있어 외형이 웅장하다. 문의 바깥쪽에는 반원형의 옹성을 쌓아 2중으로 방어가 가능하도록 설계했다. 일제강점기 당시인 1920~30년 사이에 수리가 있었고, 1975년 화성에 대한 복원 공사를 진행하면서 옹성이 수리되었다. 조선후기 성문건축의 사례를 파악할 수 있는 중요한 자료이다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_03800&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_050_03800_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_050/ki_050_03800.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_050/ki_050_03800.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_03800&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유적",
+        "category_sub": "궁궐·성",
+        "internal_owner_title": "수원화성 팔달문",
+        "owner_id": "image_material:ki_050_03800"
+      }
+    }
+  ]
+}

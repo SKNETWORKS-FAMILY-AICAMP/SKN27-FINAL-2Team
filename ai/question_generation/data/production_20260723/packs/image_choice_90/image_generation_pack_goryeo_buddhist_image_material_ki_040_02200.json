@@ -1,0 +1,194 @@
+{
+  "pack_id": "image_generation_pack:goryeo_buddhist:image_material:ki_040_02200",
+  "family_id": "image_choice_pack_v3:goryeo_buddhist",
+  "era": "고려",
+  "service_era": "고려",
+  "service_topic": "문화",
+  "service_question_type": "역사 자료의 분석 및 해석",
+  "service_question_subtype": "시각 자료 해석",
+  "variant_key": "image:image_choice_pack_v3:goryeo_buddhist:image_material:ki_040_02200",
+  "target_label": "청도 운문사 석조여래좌상",
+  "topic_type": "문화유산",
+  "question_task": "standard_select",
+  "choice_mode": "image",
+  "stem_pattern": "target_description",
+  "relation_axis_id": "common.definition_feature",
+  "material_type": "자료 제시문",
+  "major_type": "역사 자료의 분석 및 해석",
+  "minor_type": "시각 자료 해석",
+  "difficulty_label": "어려움",
+  "question_task_instruction": "검수된 단서를 바탕으로 대상명을 직접 노출하지 않는 지문과 발문을 만들고, 제시된 이미지 중 해당 문화유산을 고르게 한다.",
+  "material_clue_basis": "경상북도 청도군 운문면 운문사에 있는 10세기 초 석조여래좌상이다. 높이는 0.63m이다. 광배와 대좌를 모두 갖춘 완전한 형태의 불상이다. 소라 모양 머리[肉髻], 큰 얼굴, 조화롭지 못한 얼굴, 투박한 손이 특징이다. 1963년에 보물 제317호로 지정되었다.",
+  "material_evidence_chunks": [
+    {
+      "snippet": "경상북도 청도군 운문면 운문사에 있는 10세기 초 석조여래좌상이다. 높이는 0.63m이다. 광배와 대좌를 모두 갖춘 완전한 형태의 불상이다. 소라 모양 머리[肉髻], 큰 얼굴, 조화롭지 못한 얼굴, 투박한 손이 특징이다. 1963년에 보물 제317호로 지정되었다.",
+      "chunk_id": "ki_040_02200_chunk_0000",
+      "article_id": "image_material:ki_040_02200",
+      "exact_text": "경상북도 청도군 운문면 운문사에 있는 10세기 초 석조여래좌상이다. 높이는 0.63m이다. 광배와 대좌를 모두 갖춘 완전한 형태의 불상이다. 소라 모양 머리[肉髻], 큰 얼굴, 조화롭지 못한 얼굴, 투박한 손이 특징이다. 1963년에 보물 제317호로 지정되었다.",
+      "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_040_02200&whereStr=",
+      "section_path": [
+        "검수된 이미지 식별 단서"
+      ]
+    }
+  ],
+  "material_fact_semantically_distinct": true,
+  "status": "rag_ready",
+  "semantic_status": "pass",
+  "items": [
+    {
+      "slot_no": 0,
+      "role": "answer",
+      "basis_item_id": "clue:4c32fd6799ca",
+      "article_id": "image_material:ki_040_02200",
+      "truth_owner_label": "청도 운문사 석조여래좌상",
+      "fact_basis": "경상북도 청도군 운문면 운문사에 있는 10세기 초 석조여래좌상이다. 높이는 0.63m이다. 광배와 대좌를 모두 갖춘 완전한 형태의 불상이다. 소라 모양 머리[肉髻], 큰 얼굴, 조화롭지 못한 얼굴, 투박한 손이 특징이다. 1963년에 보물 제317호로 지정되었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_040_02200_chunk_0000",
+          "article_id": "image_material:ki_040_02200",
+          "snippet": "경상북도 청도군 운문면 운문사에 있는 10세기 초 석조여래좌상이다. 높이는 0.63m이다. 광배와 대좌를 모두 갖춘 완전한 형태의 불상이다. 소라 모양 머리[肉髻], 큰 얼굴, 조화롭지 못한 얼굴, 투박한 손이 특징이다. 1963년에 보물 제317호로 지정되었다.",
+          "exact_text": "경상북도 청도군 운문면 운문사에 있는 10세기 초 석조여래좌상이다. 높이는 0.63m이다. 광배와 대좌를 모두 갖춘 완전한 형태의 불상이다. 소라 모양 머리[肉髻], 큰 얼굴, 조화롭지 못한 얼굴, 투박한 손이 특징이다. 1963년에 보물 제317호로 지정되었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_040_02200&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_040_02200_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_040/ki_040_02200.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_040/ki_040_02200.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_040_02200&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유물",
+        "category_sub": "불교미술",
+        "internal_owner_title": "청도 운문사 석조여래좌상",
+        "owner_id": "image_material:ki_040_02200"
+      }
+    },
+    {
+      "slot_no": 1,
+      "role": "distractor",
+      "basis_item_id": "clue:06bb42abafc9",
+      "article_id": "image_material:ki_040_07500",
+      "truth_owner_label": "파주 용미리 마애이불입상",
+      "fact_basis": "경기도 파주시 광탄면 용미리 장지산에 위치한 고려 시대 석불 입상이다. 자연석 벽면을 그대로 이용하여 조각하였다. 불상 2구로 구성되어 있으며, 전체 높이는 17.4m이다. 왼쪽 둥근 갓을 쓴 불상은 미륵불로 추정되며, 높이는 2.45m이다. 오른쪽의 사각형 갓을 쓴 불상의 높이는 2.35m이다. 후사가 없었던 고려 선종(재위 1083~1094)이 후비 원신궁주의 꿈에서 본 두 승려를 돌에 새기고 절을 짓자 왕자 한산후가 태어났다는 설화가 전해진다. 1963년 보물 제93호로 지정되었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_040_07500_chunk_0000",
+          "article_id": "image_material:ki_040_07500",
+          "snippet": "경기도 파주시 광탄면 용미리 장지산에 위치한 고려 시대 석불 입상이다. 자연석 벽면을 그대로 이용하여 조각하였다. 불상 2구로 구성되어 있으며, 전체 높이는 17.4m이다. 왼쪽 둥근 갓을 쓴 불상은 미륵불로 추정되며, 높이는 2.45m이다. 오른쪽의 사각형 갓을 쓴 불상의 높이는 2.35m이다. 후사가 없었던 고려 선종(재위 1083~1094)이 후비 원신궁주의 꿈에서 본 두 승려를 돌에 새기고 절을 짓자 왕자 한산후가 태어났다는 설화가 전해진다. 1963년 보물 제93호로 지정되었다.",
+          "exact_text": "경기도 파주시 광탄면 용미리 장지산에 위치한 고려 시대 석불 입상이다. 자연석 벽면을 그대로 이용하여 조각하였다. 불상 2구로 구성되어 있으며, 전체 높이는 17.4m이다. 왼쪽 둥근 갓을 쓴 불상은 미륵불로 추정되며, 높이는 2.45m이다. 오른쪽의 사각형 갓을 쓴 불상의 높이는 2.35m이다. 후사가 없었던 고려 선종(재위 1083~1094)이 후비 원신궁주의 꿈에서 본 두 승려를 돌에 새기고 절을 짓자 왕자 한산후가 태어났다는 설화가 전해진다. 1963년 보물 제93호로 지정되었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_040_07500&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_040_07500_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_040/ki_040_07500.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_040/ki_040_07500.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_040_07500&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유물",
+        "category_sub": "불교미술",
+        "internal_owner_title": "파주 용미리 마애이불입상",
+        "owner_id": "image_material:ki_040_07500"
+      }
+    },
+    {
+      "slot_no": 2,
+      "role": "distractor",
+      "basis_item_id": "clue:5148c2f49855",
+      "article_id": "image_material:ki_040_15300",
+      "truth_owner_label": "영주 부석사 소조여래좌상",
+      "fact_basis": "부석사 무량수전에 안치된 고려 초기 불상이다. 경상북도 영주시 부석면 부석사에 있다. 높이는 2.78m이며, 풍만한 얼굴, 가는 눈썹, 반쯤 뜬 눈, 날카로운 코, 두꺼운 입술, 목의 세 갈래 주름[三道]이 특징이다. 무릎 아래로 흘러내리는 옷 주름은 865년(경문왕 5)에 제작된 철원 도피안사 철조비로자나불상(국보 제63호)에서 확인되는 불상 양식과 유사하다. 불상을 모신 장소가 극락전이라는 점을 보아 아미타불상으로 추정된다. 1962년 국보 제45호로 지정되었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_040_15300_chunk_0000",
+          "article_id": "image_material:ki_040_15300",
+          "snippet": "부석사 무량수전에 안치된 고려 초기 불상이다. 경상북도 영주시 부석면 부석사에 있다. 높이는 2.78m이며, 풍만한 얼굴, 가는 눈썹, 반쯤 뜬 눈, 날카로운 코, 두꺼운 입술, 목의 세 갈래 주름[三道]이 특징이다. 무릎 아래로 흘러내리는 옷 주름은 865년(경문왕 5)에 제작된 철원 도피안사 철조비로자나불상(국보 제63호)에서 확인되는 불상 양식과 유사하다. 불상을 모신 장소가 극락전이라는 점을 보아 아미타불상으로 추정된다. 1962년 국보 제45호로 지정되었다.",
+          "exact_text": "부석사 무량수전에 안치된 고려 초기 불상이다. 경상북도 영주시 부석면 부석사에 있다. 높이는 2.78m이며, 풍만한 얼굴, 가는 눈썹, 반쯤 뜬 눈, 날카로운 코, 두꺼운 입술, 목의 세 갈래 주름[三道]이 특징이다. 무릎 아래로 흘러내리는 옷 주름은 865년(경문왕 5)에 제작된 철원 도피안사 철조비로자나불상(국보 제63호)에서 확인되는 불상 양식과 유사하다. 불상을 모신 장소가 극락전이라는 점을 보아 아미타불상으로 추정된다. 1962년 국보 제45호로 지정되었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_040_15300&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_040_15300_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_040/ki_040_15300.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_040/ki_040_15300.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_040_15300&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유물",
+        "category_sub": "불교미술",
+        "internal_owner_title": "영주 부석사 소조여래좌상",
+        "owner_id": "image_material:ki_040_15300"
+      }
+    },
+    {
+      "slot_no": 3,
+      "role": "distractor",
+      "basis_item_id": "clue:9ae138ba62ec",
+      "article_id": "image_material:ki_040_01900",
+      "truth_owner_label": "강릉 한송사지 석조보살좌상",
+      "fact_basis": "강원도 강릉시 남항진동 한송사터에서 발견된 10세기 고려 보살상이다. 1912년에 일본으로 반출되었다가 1965년 한일협정에 따라 반환되었고, 현재 국립춘천박물관에 소장되어 있다. 높이는 92.4cm이고, 흰 대리석으로 제작되었다. 둥근 얼굴, 원통형 보관(寶冠), 상투 모양 머리[肉髻], 목의 세 주름[三道]이 특징이다. 백호가 소실되면서 생긴 흔적과 잘린 머리를 붙인 흔적이 남아 있다. 『가정집(稼亭集)』과 『동문선(東文選)』의 기록으로 보아 문수보살상으로 추정된다. 1967년 국보 제124호로 지정되었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_040_01900_chunk_0000",
+          "article_id": "image_material:ki_040_01900",
+          "snippet": "강원도 강릉시 남항진동 한송사터에서 발견된 10세기 고려 보살상이다. 1912년에 일본으로 반출되었다가 1965년 한일협정에 따라 반환되었고, 현재 국립춘천박물관에 소장되어 있다. 높이는 92.4cm이고, 흰 대리석으로 제작되었다. 둥근 얼굴, 원통형 보관(寶冠), 상투 모양 머리[肉髻], 목의 세 주름[三道]이 특징이다. 백호가 소실되면서 생긴 흔적과 잘린 머리를 붙인 흔적이 남아 있다. 『가정집(稼亭集)』과 『동문선(東文選)』의 기록으로 보아 문수보살상으로 추정된다. 1967년 국보 제124호로 지정되었다.",
+          "exact_text": "강원도 강릉시 남항진동 한송사터에서 발견된 10세기 고려 보살상이다. 1912년에 일본으로 반출되었다가 1965년 한일협정에 따라 반환되었고, 현재 국립춘천박물관에 소장되어 있다. 높이는 92.4cm이고, 흰 대리석으로 제작되었다. 둥근 얼굴, 원통형 보관(寶冠), 상투 모양 머리[肉髻], 목의 세 주름[三道]이 특징이다. 백호가 소실되면서 생긴 흔적과 잘린 머리를 붙인 흔적이 남아 있다. 『가정집(稼亭集)』과 『동문선(東文選)』의 기록으로 보아 문수보살상으로 추정된다. 1967년 국보 제124호로 지정되었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_040_01900&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_040_01900_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_040/ki_040_01900.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_040/ki_040_01900.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_040_01900&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유물",
+        "category_sub": "불교미술",
+        "internal_owner_title": "강릉 한송사지 석조보살좌상",
+        "owner_id": "image_material:ki_040_01900"
+      }
+    },
+    {
+      "slot_no": 4,
+      "role": "distractor",
+      "basis_item_id": "clue:b9cc2931011b",
+      "article_id": "image_material:ki_040_01300",
+      "truth_owner_label": "논산 개태사지 석조여래삼존입상",
+      "fact_basis": "충청남도 논산시 연산면 천호리 개태사의 극락전에 건립된 불상이다. 태조가 후삼국 통일을 기념하기 위해 개태사를 창건할 때 조성되어 940년(태조 23)에 완공되었다. 중앙의 본존불(높이 4.15m)과 좌협시 보살상(높이 3.53m), 우협시 보살상(높이 3.46m)으로 구성되어 있다. 불상은 짧은 코와 인중, 미소 띤 입, 넓은 뺨의 형태를 띠고 있으며, 나말여초 불상의 특징을 잘 보여준다. 1963년 보물 제219호로 지정되었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_040_01300_chunk_0000",
+          "article_id": "image_material:ki_040_01300",
+          "snippet": "충청남도 논산시 연산면 천호리 개태사의 극락전에 건립된 불상이다. 태조가 후삼국 통일을 기념하기 위해 개태사를 창건할 때 조성되어 940년(태조 23)에 완공되었다. 중앙의 본존불(높이 4.15m)과 좌협시 보살상(높이 3.53m), 우협시 보살상(높이 3.46m)으로 구성되어 있다. 불상은 짧은 코와 인중, 미소 띤 입, 넓은 뺨의 형태를 띠고 있으며, 나말여초 불상의 특징을 잘 보여준다. 1963년 보물 제219호로 지정되었다.",
+          "exact_text": "충청남도 논산시 연산면 천호리 개태사의 극락전에 건립된 불상이다. 태조가 후삼국 통일을 기념하기 위해 개태사를 창건할 때 조성되어 940년(태조 23)에 완공되었다. 중앙의 본존불(높이 4.15m)과 좌협시 보살상(높이 3.53m), 우협시 보살상(높이 3.46m)으로 구성되어 있다. 불상은 짧은 코와 인중, 미소 띤 입, 넓은 뺨의 형태를 띠고 있으며, 나말여초 불상의 특징을 잘 보여준다. 1963년 보물 제219호로 지정되었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_040_01300&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_040_01300_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_040/ki_040_01300.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_040/ki_040_01300.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_040_01300&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유물",
+        "category_sub": "불교미술",
+        "internal_owner_title": "논산 개태사지 석조여래삼존입상",
+        "owner_id": "image_material:ki_040_01300"
+      }
+    }
+  ]
+}

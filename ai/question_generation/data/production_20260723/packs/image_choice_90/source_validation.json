@@ -1,0 +1,10 @@
+{
+  "global_distinct_owner_count": 90,
+  "global_distinct_image_count": 90,
+  "owner_overlap_count": 0,
+  "image_overlap_count": 0,
+  "overlap_with_v2_27_count": 0,
+  "db_evidence_count": 90,
+  "all_packs_ready": true,
+  "overlap_with_legacy_image_packs_10_count": 0
+}

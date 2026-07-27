@@ -1,0 +1,194 @@
+{
+  "pack_id": "image_generation_pack:ancient_tombs:image_material:ki_020_10000",
+  "family_id": "image_choice_pack_v3:ancient_tombs",
+  "era": "고대",
+  "service_era": "삼국 시대",
+  "service_topic": "문화",
+  "service_question_type": "역사 자료의 분석 및 해석",
+  "service_question_subtype": "시각 자료 해석",
+  "variant_key": "image:image_choice_pack_v3:ancient_tombs:image_material:ki_020_10000",
+  "target_label": "경주 대릉원",
+  "topic_type": "문화유산",
+  "question_task": "standard_select",
+  "choice_mode": "image",
+  "stem_pattern": "inquiry_topic",
+  "relation_axis_id": "common.definition_feature",
+  "material_type": "탐구 자료",
+  "major_type": "역사 자료의 분석 및 해석",
+  "minor_type": "시각 자료 해석",
+  "difficulty_label": "보통",
+  "question_task_instruction": "검수된 단서를 바탕으로 대상명을 직접 노출하지 않는 지문과 발문을 만들고, 제시된 이미지 중 해당 문화유산을 고르게 한다.",
+  "material_clue_basis": "경주시에 있는 신라시대의 고분군이다. 대릉원이란 명칭은 『삼국사기』 신라본기의 ‘미추왕(味鄒王)을 대릉(大陵)에 장사지냈다’라는 기록에서 따온 것이다. 신라시대의 왕, 왕비, 귀족 등의 무덤 23기가 모여 있고 모두 평지에 자리 잡고 있다. 무덤의 양식은 돌무지덧널무덤이다. 2011년 서로 인접해 있는 경주노동동고분군, 경주노서동고분군, 경주황남동고분군, 경주황오동고분군, 경주인왕동고분군을 통합하여 사적 제512호로 지정되었다.",
+  "material_evidence_chunks": [
+    {
+      "snippet": "경주시에 있는 신라시대의 고분군이다. 대릉원이란 명칭은 『삼국사기』 신라본기의 ‘미추왕(味鄒王)을 대릉(大陵)에 장사지냈다’라는 기록에서 따온 것이다. 신라시대의 왕, 왕비, 귀족 등의 무덤 23기가 모여 있고 모두 평지에 자리 잡고 있다. 무덤의 양식은 돌무지덧널무덤이다. 2011년 서로 인접해 있는 경주노동동고분군, 경주노서동고분군, 경주황남동고분군, 경주황오동고분군, 경주인왕동고분군을 통합하여 사적 제512호로 지정되었다.",
+      "chunk_id": "ki_020_10000_chunk_0000",
+      "article_id": "image_material:ki_020_10000",
+      "exact_text": "경주시에 있는 신라시대의 고분군이다. 대릉원이란 명칭은 『삼국사기』 신라본기의 ‘미추왕(味鄒王)을 대릉(大陵)에 장사지냈다’라는 기록에서 따온 것이다. 신라시대의 왕, 왕비, 귀족 등의 무덤 23기가 모여 있고 모두 평지에 자리 잡고 있다. 무덤의 양식은 돌무지덧널무덤이다. 2011년 서로 인접해 있는 경주노동동고분군, 경주노서동고분군, 경주황남동고분군, 경주황오동고분군, 경주인왕동고분군을 통합하여 사적 제512호로 지정되었다.",
+      "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_020_10000&whereStr=",
+      "section_path": [
+        "검수된 이미지 식별 단서"
+      ]
+    }
+  ],
+  "material_fact_semantically_distinct": true,
+  "status": "rag_ready",
+  "semantic_status": "pass",
+  "items": [
+    {
+      "slot_no": 0,
+      "role": "answer",
+      "basis_item_id": "clue:aa977b5b1be8",
+      "article_id": "image_material:ki_020_10000",
+      "truth_owner_label": "경주 대릉원",
+      "fact_basis": "경주시에 있는 신라시대의 고분군이다. 대릉원이란 명칭은 『삼국사기』 신라본기의 ‘미추왕(味鄒王)을 대릉(大陵)에 장사지냈다’라는 기록에서 따온 것이다. 신라시대의 왕, 왕비, 귀족 등의 무덤 23기가 모여 있고 모두 평지에 자리 잡고 있다. 무덤의 양식은 돌무지덧널무덤이다. 2011년 서로 인접해 있는 경주노동동고분군, 경주노서동고분군, 경주황남동고분군, 경주황오동고분군, 경주인왕동고분군을 통합하여 사적 제512호로 지정되었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_020_10000_chunk_0000",
+          "article_id": "image_material:ki_020_10000",
+          "snippet": "경주시에 있는 신라시대의 고분군이다. 대릉원이란 명칭은 『삼국사기』 신라본기의 ‘미추왕(味鄒王)을 대릉(大陵)에 장사지냈다’라는 기록에서 따온 것이다. 신라시대의 왕, 왕비, 귀족 등의 무덤 23기가 모여 있고 모두 평지에 자리 잡고 있다. 무덤의 양식은 돌무지덧널무덤이다. 2011년 서로 인접해 있는 경주노동동고분군, 경주노서동고분군, 경주황남동고분군, 경주황오동고분군, 경주인왕동고분군을 통합하여 사적 제512호로 지정되었다.",
+          "exact_text": "경주시에 있는 신라시대의 고분군이다. 대릉원이란 명칭은 『삼국사기』 신라본기의 ‘미추왕(味鄒王)을 대릉(大陵)에 장사지냈다’라는 기록에서 따온 것이다. 신라시대의 왕, 왕비, 귀족 등의 무덤 23기가 모여 있고 모두 평지에 자리 잡고 있다. 무덤의 양식은 돌무지덧널무덤이다. 2011년 서로 인접해 있는 경주노동동고분군, 경주노서동고분군, 경주황남동고분군, 경주황오동고분군, 경주인왕동고분군을 통합하여 사적 제512호로 지정되었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_020_10000&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_020_10000_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_020/ki_020_10000.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_020/ki_020_10000.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_020_10000&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유적",
+        "category_sub": "무덤",
+        "internal_owner_title": "경주 대릉원",
+        "owner_id": "image_material:ki_020_10000"
+      }
+    },
+    {
+      "slot_no": 1,
+      "role": "distractor",
+      "basis_item_id": "clue:7fbba077b6e1",
+      "article_id": "image_material:ki_020_10200",
+      "truth_owner_label": "경주 황남대총",
+      "fact_basis": "황남대총(皇南大塚)은 경주시의 경주대릉원일원에 있는 신라시대의 고분이다. 2개의 원분(圓墳)이 남북으로 이어져 있는 표형분(瓢形墳)으로 동서 지름 80m, 남북 지름 120m, 남분 높이 22m, 북분 높이 23m로 신라 최대 봉토분이다. 묘제는 돌무지덧널무덤이다. 남분에서 출토된 유골은 60살 전후의 남자로 판단된다. 북분에서는 ‘부인대(夫人帶)’라는 명문이 있는 허리띠끝꾸미개가 출토되었으므로 피장자가 부인인 것으로 추정되었다. 2011년 경주 평야 한복판에 인접해 있는 신라시대의 고분군과 함께 사적 제512호 지정되었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_020_10200_chunk_0000",
+          "article_id": "image_material:ki_020_10200",
+          "snippet": "황남대총(皇南大塚)은 경주시의 경주대릉원일원에 있는 신라시대의 고분이다. 2개의 원분(圓墳)이 남북으로 이어져 있는 표형분(瓢形墳)으로 동서 지름 80m, 남북 지름 120m, 남분 높이 22m, 북분 높이 23m로 신라 최대 봉토분이다. 묘제는 돌무지덧널무덤이다. 남분에서 출토된 유골은 60살 전후의 남자로 판단된다. 북분에서는 ‘부인대(夫人帶)’라는 명문이 있는 허리띠끝꾸미개가 출토되었으므로 피장자가 부인인 것으로 추정되었다. 2011년 경주 평야 한복판에 인접해 있는 신라시대의 고분군과 함께 사적 제512호 지정되었다.",
+          "exact_text": "황남대총(皇南大塚)은 경주시의 경주대릉원일원에 있는 신라시대의 고분이다. 2개의 원분(圓墳)이 남북으로 이어져 있는 표형분(瓢形墳)으로 동서 지름 80m, 남북 지름 120m, 남분 높이 22m, 북분 높이 23m로 신라 최대 봉토분이다. 묘제는 돌무지덧널무덤이다. 남분에서 출토된 유골은 60살 전후의 남자로 판단된다. 북분에서는 ‘부인대(夫人帶)’라는 명문이 있는 허리띠끝꾸미개가 출토되었으므로 피장자가 부인인 것으로 추정되었다. 2011년 경주 평야 한복판에 인접해 있는 신라시대의 고분군과 함께 사적 제512호 지정되었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_020_10200&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_020_10200_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_020/ki_020_10200.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_020/ki_020_10200.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_020_10200&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유적",
+        "category_sub": "무덤",
+        "internal_owner_title": "경주 황남대총",
+        "owner_id": "image_material:ki_020_10200"
+      }
+    },
+    {
+      "slot_no": 2,
+      "role": "distractor",
+      "basis_item_id": "clue:5b03a721ebc3",
+      "article_id": "image_material:ki_020_10900",
+      "truth_owner_label": "경주 금령총",
+      "fact_basis": "금령총(金鈴塚)은 돌무지덧널무덤으로 6세기 초엽으로 추정된다. 부장품 가운데 금제 방울이 들어 있어서 ‘금령총’이라 한다. 주요 부장품으로는 그림이 그려진 백화수피제(白樺樹皮製) 채양과 관모(冠帽)·금동제 신발·은제 허리띠와 띠드리개, 각종 마구 및 철제무기, 금동제합(金銅製盒), 쇠솥, 각종 그림이 그려진 칠기(漆器), 유리잔, 기마인물상(騎馬人物像) 토기, 배모양 토기 등 특수형 토기와 장식토기 등 모두 11점의 토기가 있다. 2011년 경주 평야 한복판에 인접해 있는 신라시대의 고분군과 함께 사적 제512호 지정되었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_020_10900_chunk_0000",
+          "article_id": "image_material:ki_020_10900",
+          "snippet": "금령총(金鈴塚)은 돌무지덧널무덤으로 6세기 초엽으로 추정된다. 부장품 가운데 금제 방울이 들어 있어서 ‘금령총’이라 한다. 주요 부장품으로는 그림이 그려진 백화수피제(白樺樹皮製) 채양과 관모(冠帽)·금동제 신발·은제 허리띠와 띠드리개, 각종 마구 및 철제무기, 금동제합(金銅製盒), 쇠솥, 각종 그림이 그려진 칠기(漆器), 유리잔, 기마인물상(騎馬人物像) 토기, 배모양 토기 등 특수형 토기와 장식토기 등 모두 11점의 토기가 있다. 2011년 경주 평야 한복판에 인접해 있는 신라시대의 고분군과 함께 사적 제512호 지정되었다.",
+          "exact_text": "금령총(金鈴塚)은 돌무지덧널무덤으로 6세기 초엽으로 추정된다. 부장품 가운데 금제 방울이 들어 있어서 ‘금령총’이라 한다. 주요 부장품으로는 그림이 그려진 백화수피제(白樺樹皮製) 채양과 관모(冠帽)·금동제 신발·은제 허리띠와 띠드리개, 각종 마구 및 철제무기, 금동제합(金銅製盒), 쇠솥, 각종 그림이 그려진 칠기(漆器), 유리잔, 기마인물상(騎馬人物像) 토기, 배모양 토기 등 특수형 토기와 장식토기 등 모두 11점의 토기가 있다. 2011년 경주 평야 한복판에 인접해 있는 신라시대의 고분군과 함께 사적 제512호 지정되었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_020_10900&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_020_10900_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_020/ki_020_10900.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_020/ki_020_10900.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_020_10900&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유적",
+        "category_sub": "무덤",
+        "internal_owner_title": "경주 금령총",
+        "owner_id": "image_material:ki_020_10900"
+      }
+    },
+    {
+      "slot_no": 3,
+      "role": "distractor",
+      "basis_item_id": "clue:6235d9eab02e",
+      "article_id": "image_material:ki_020_11500",
+      "truth_owner_label": "경주 호우총",
+      "fact_basis": "호우총(壺杅塚)은 경주시의 경주 대릉원 일원에 있는 신라시대의 고분이다. 1946년 국립박물관이 은령총(銀鈴塚)과 함께 발굴하였다. 한국인에 의해 최초로 발굴된 유적으로 전형적인 신라 돌무지덧널무덤이다. 고구려 광개토대왕을 기념하는 명문이 새겨진 청동 호우(壺杅)가 출토되어 호우총이라 불리게 되었다. 2011년 경주 평야 한복판에 인접해 있는 신라시대의 고분군과 함께 사적 제512호 지정되었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_020_11500_chunk_0000",
+          "article_id": "image_material:ki_020_11500",
+          "snippet": "호우총(壺杅塚)은 경주시의 경주 대릉원 일원에 있는 신라시대의 고분이다. 1946년 국립박물관이 은령총(銀鈴塚)과 함께 발굴하였다. 한국인에 의해 최초로 발굴된 유적으로 전형적인 신라 돌무지덧널무덤이다. 고구려 광개토대왕을 기념하는 명문이 새겨진 청동 호우(壺杅)가 출토되어 호우총이라 불리게 되었다. 2011년 경주 평야 한복판에 인접해 있는 신라시대의 고분군과 함께 사적 제512호 지정되었다.",
+          "exact_text": "호우총(壺杅塚)은 경주시의 경주 대릉원 일원에 있는 신라시대의 고분이다. 1946년 국립박물관이 은령총(銀鈴塚)과 함께 발굴하였다. 한국인에 의해 최초로 발굴된 유적으로 전형적인 신라 돌무지덧널무덤이다. 고구려 광개토대왕을 기념하는 명문이 새겨진 청동 호우(壺杅)가 출토되어 호우총이라 불리게 되었다. 2011년 경주 평야 한복판에 인접해 있는 신라시대의 고분군과 함께 사적 제512호 지정되었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_020_11500&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_020_11500_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_020/ki_020_11500.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_020/ki_020_11500.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_020_11500&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유적",
+        "category_sub": "무덤",
+        "internal_owner_title": "경주 호우총",
+        "owner_id": "image_material:ki_020_11500"
+      }
+    },
+    {
+      "slot_no": 4,
+      "role": "distractor",
+      "basis_item_id": "clue:dcd16df9bf93",
+      "article_id": "image_material:ki_020_04200",
+      "truth_owner_label": "광주 월계동 장고분",
+      "fact_basis": "광주광역시 광산구에 있는 삼국시대의 무덤이다. 원형의 분구에 방형 혹은 삼각형의 단상부가 합쳐진 모양이 ‘장고’와 비슷하다고 하여 장고분이라 부른다. 일본의 ‘전방후원분’과도 비슷한 형태를 가지고 있다. 당시 한반도 남부와 일본과의 문화 교류와 사람의 이동을 알려주는 중요한 유적이다. 1994년 광주광역시 기념물 제20호로 지정되었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_020_04200_chunk_0000",
+          "article_id": "image_material:ki_020_04200",
+          "snippet": "광주광역시 광산구에 있는 삼국시대의 무덤이다. 원형의 분구에 방형 혹은 삼각형의 단상부가 합쳐진 모양이 ‘장고’와 비슷하다고 하여 장고분이라 부른다. 일본의 ‘전방후원분’과도 비슷한 형태를 가지고 있다. 당시 한반도 남부와 일본과의 문화 교류와 사람의 이동을 알려주는 중요한 유적이다. 1994년 광주광역시 기념물 제20호로 지정되었다.",
+          "exact_text": "광주광역시 광산구에 있는 삼국시대의 무덤이다. 원형의 분구에 방형 혹은 삼각형의 단상부가 합쳐진 모양이 ‘장고’와 비슷하다고 하여 장고분이라 부른다. 일본의 ‘전방후원분’과도 비슷한 형태를 가지고 있다. 당시 한반도 남부와 일본과의 문화 교류와 사람의 이동을 알려주는 중요한 유적이다. 1994년 광주광역시 기념물 제20호로 지정되었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_020_04200&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_020_04200_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_020/ki_020_04200.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_020/ki_020_04200.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_020_04200&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유적",
+        "category_sub": "무덤",
+        "internal_owner_title": "광주 월계동 장고분",
+        "owner_id": "image_material:ki_020_04200"
+      }
+    }
+  ]
+}

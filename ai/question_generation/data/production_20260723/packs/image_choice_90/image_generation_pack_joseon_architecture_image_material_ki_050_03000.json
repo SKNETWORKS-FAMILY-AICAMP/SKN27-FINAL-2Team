@@ -1,0 +1,194 @@
+{
+  "pack_id": "image_generation_pack:joseon_architecture:image_material:ki_050_03000",
+  "family_id": "image_choice_pack_v3:joseon_architecture",
+  "era": "조선",
+  "service_era": "조선",
+  "service_topic": "문화",
+  "service_question_type": "역사 자료의 분석 및 해석",
+  "service_question_subtype": "시각 자료 해석",
+  "variant_key": "image:image_choice_pack_v3:joseon_architecture:image_material:ki_050_03000",
+  "target_label": "숭례문",
+  "topic_type": "문화유산",
+  "question_task": "standard_select",
+  "choice_mode": "image",
+  "stem_pattern": "source_inference",
+  "relation_axis_id": "common.definition_feature",
+  "material_type": "자료 제시문",
+  "major_type": "역사 자료의 분석 및 해석",
+  "minor_type": "시각 자료 해석",
+  "difficulty_label": "보통",
+  "question_task_instruction": "검수된 단서를 바탕으로 대상명을 직접 노출하지 않는 지문과 발문을 만들고, 제시된 이미지 중 해당 문화유산을 고르게 한다.",
+  "material_clue_basis": "숭례문(崇禮門)은 1398년(태조 7) 완성된 한양도성의 정문으로, 남쪽에 위치하고 있어 남대문으로도 불린다. 다른 문들과 달리 세로로 쓰인 것이 특징이다. 『지봉유설』에는 양녕대군이 ‘숭례문’이라는 현판을 썼다고 기록되어 있다. 2008년 방화로 일부가 불에 탔고 복원 공사 끝에 2013년 준공되었다. 본래 성곽과 연결되어 있었지만 개항기 이후 도시 개발과 일본에 의해 훼손되었고 현재는 일부만을 복원했다. 1962년 국보 제1호로 지정되었다.",
+  "material_evidence_chunks": [
+    {
+      "snippet": "숭례문(崇禮門)은 1398년(태조 7) 완성된 한양도성의 정문으로, 남쪽에 위치하고 있어 남대문으로도 불린다. 다른 문들과 달리 세로로 쓰인 것이 특징이다. 『지봉유설』에는 양녕대군이 ‘숭례문’이라는 현판을 썼다고 기록되어 있다. 2008년 방화로 일부가 불에 탔고 복원 공사 끝에 2013년 준공되었다. 본래 성곽과 연결되어 있었지만 개항기 이후 도시 개발과 일본에 의해 훼손되었고 현재는 일부만을 복원했다. 1962년 국보 제1호로 지정되었다.",
+      "chunk_id": "ki_050_03000_chunk_0000",
+      "article_id": "image_material:ki_050_03000",
+      "exact_text": "숭례문(崇禮門)은 1398년(태조 7) 완성된 한양도성의 정문으로, 남쪽에 위치하고 있어 남대문으로도 불린다. 다른 문들과 달리 세로로 쓰인 것이 특징이다. 『지봉유설』에는 양녕대군이 ‘숭례문’이라는 현판을 썼다고 기록되어 있다. 2008년 방화로 일부가 불에 탔고 복원 공사 끝에 2013년 준공되었다. 본래 성곽과 연결되어 있었지만 개항기 이후 도시 개발과 일본에 의해 훼손되었고 현재는 일부만을 복원했다. 1962년 국보 제1호로 지정되었다.",
+      "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_03000&whereStr=",
+      "section_path": [
+        "검수된 이미지 식별 단서"
+      ]
+    }
+  ],
+  "material_fact_semantically_distinct": true,
+  "status": "rag_ready",
+  "semantic_status": "pass",
+  "items": [
+    {
+      "slot_no": 0,
+      "role": "answer",
+      "basis_item_id": "clue:93709beb21a4",
+      "article_id": "image_material:ki_050_03000",
+      "truth_owner_label": "숭례문",
+      "fact_basis": "숭례문(崇禮門)은 1398년(태조 7) 완성된 한양도성의 정문으로, 남쪽에 위치하고 있어 남대문으로도 불린다. 다른 문들과 달리 세로로 쓰인 것이 특징이다. 『지봉유설』에는 양녕대군이 ‘숭례문’이라는 현판을 썼다고 기록되어 있다. 2008년 방화로 일부가 불에 탔고 복원 공사 끝에 2013년 준공되었다. 본래 성곽과 연결되어 있었지만 개항기 이후 도시 개발과 일본에 의해 훼손되었고 현재는 일부만을 복원했다. 1962년 국보 제1호로 지정되었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_050_03000_chunk_0000",
+          "article_id": "image_material:ki_050_03000",
+          "snippet": "숭례문(崇禮門)은 1398년(태조 7) 완성된 한양도성의 정문으로, 남쪽에 위치하고 있어 남대문으로도 불린다. 다른 문들과 달리 세로로 쓰인 것이 특징이다. 『지봉유설』에는 양녕대군이 ‘숭례문’이라는 현판을 썼다고 기록되어 있다. 2008년 방화로 일부가 불에 탔고 복원 공사 끝에 2013년 준공되었다. 본래 성곽과 연결되어 있었지만 개항기 이후 도시 개발과 일본에 의해 훼손되었고 현재는 일부만을 복원했다. 1962년 국보 제1호로 지정되었다.",
+          "exact_text": "숭례문(崇禮門)은 1398년(태조 7) 완성된 한양도성의 정문으로, 남쪽에 위치하고 있어 남대문으로도 불린다. 다른 문들과 달리 세로로 쓰인 것이 특징이다. 『지봉유설』에는 양녕대군이 ‘숭례문’이라는 현판을 썼다고 기록되어 있다. 2008년 방화로 일부가 불에 탔고 복원 공사 끝에 2013년 준공되었다. 본래 성곽과 연결되어 있었지만 개항기 이후 도시 개발과 일본에 의해 훼손되었고 현재는 일부만을 복원했다. 1962년 국보 제1호로 지정되었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_03000&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_050_03000_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_050/ki_050_03000.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_050/ki_050_03000.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_03000&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유적",
+        "category_sub": "궁궐·성",
+        "internal_owner_title": "숭례문",
+        "owner_id": "image_material:ki_050_03000"
+      }
+    },
+    {
+      "slot_no": 1,
+      "role": "distractor",
+      "basis_item_id": "clue:7593806743e1",
+      "article_id": "image_material:ki_050_03100",
+      "truth_owner_label": "흥인지문",
+      "fact_basis": "흥인지문(興仁之門)은 1398년(태조 7) 완성된 한양도성의 동문으로, 동쪽에 위치하고 있어 동대문으로도 불린다. 반원형의 평면을 이룬 옹성(甕城)을 쌓아 적에 대한 방비와 공격에 유리하게 하였는데, 도성 내 8개의 성문 중 옹성을 갖춘 것은 흥인지문뿐이다. 현재의 모습은 1869년(고종 6) 개축된 것이며, 1907년 전차 선로를 개설하면서 성문과 연결된 성벽을 허물었다. 1963년 보물 제1호로 지정되었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_050_03100_chunk_0000",
+          "article_id": "image_material:ki_050_03100",
+          "snippet": "흥인지문(興仁之門)은 1398년(태조 7) 완성된 한양도성의 동문으로, 동쪽에 위치하고 있어 동대문으로도 불린다. 반원형의 평면을 이룬 옹성(甕城)을 쌓아 적에 대한 방비와 공격에 유리하게 하였는데, 도성 내 8개의 성문 중 옹성을 갖춘 것은 흥인지문뿐이다. 현재의 모습은 1869년(고종 6) 개축된 것이며, 1907년 전차 선로를 개설하면서 성문과 연결된 성벽을 허물었다. 1963년 보물 제1호로 지정되었다.",
+          "exact_text": "흥인지문(興仁之門)은 1398년(태조 7) 완성된 한양도성의 동문으로, 동쪽에 위치하고 있어 동대문으로도 불린다. 반원형의 평면을 이룬 옹성(甕城)을 쌓아 적에 대한 방비와 공격에 유리하게 하였는데, 도성 내 8개의 성문 중 옹성을 갖춘 것은 흥인지문뿐이다. 현재의 모습은 1869년(고종 6) 개축된 것이며, 1907년 전차 선로를 개설하면서 성문과 연결된 성벽을 허물었다. 1963년 보물 제1호로 지정되었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_03100&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_050_03100_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_050/ki_050_03100.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_050/ki_050_03100.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_03100&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유적",
+        "category_sub": "궁궐·성",
+        "internal_owner_title": "흥인지문",
+        "owner_id": "image_material:ki_050_03100"
+      }
+    },
+    {
+      "slot_no": 2,
+      "role": "distractor",
+      "basis_item_id": "clue:aad0c47e53c6",
+      "article_id": "image_material:ki_050_03800",
+      "truth_owner_label": "수원화성 팔달문",
+      "fact_basis": "팔달문(八達門)은 1796년(정조 20)에 완성된 수원화성의 남문으로, 보물로 지정되어 있다. 문의 명칭은 서쪽에 위치한 팔달산에서 유래했다. 문루는 중층의 구조로 되어 있어 외형이 웅장하다. 문의 바깥쪽에는 반원형의 옹성을 쌓아 2중으로 방어가 가능하도록 설계했다. 일제강점기 당시인 1920~30년 사이에 수리가 있었고, 1975년 화성에 대한 복원 공사를 진행하면서 옹성이 수리되었다. 조선후기 성문건축의 사례를 파악할 수 있는 중요한 자료이다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_050_03800_chunk_0000",
+          "article_id": "image_material:ki_050_03800",
+          "snippet": "팔달문(八達門)은 1796년(정조 20)에 완성된 수원화성의 남문으로, 보물로 지정되어 있다. 문의 명칭은 서쪽에 위치한 팔달산에서 유래했다. 문루는 중층의 구조로 되어 있어 외형이 웅장하다. 문의 바깥쪽에는 반원형의 옹성을 쌓아 2중으로 방어가 가능하도록 설계했다. 일제강점기 당시인 1920~30년 사이에 수리가 있었고, 1975년 화성에 대한 복원 공사를 진행하면서 옹성이 수리되었다. 조선후기 성문건축의 사례를 파악할 수 있는 중요한 자료이다.",
+          "exact_text": "팔달문(八達門)은 1796년(정조 20)에 완성된 수원화성의 남문으로, 보물로 지정되어 있다. 문의 명칭은 서쪽에 위치한 팔달산에서 유래했다. 문루는 중층의 구조로 되어 있어 외형이 웅장하다. 문의 바깥쪽에는 반원형의 옹성을 쌓아 2중으로 방어가 가능하도록 설계했다. 일제강점기 당시인 1920~30년 사이에 수리가 있었고, 1975년 화성에 대한 복원 공사를 진행하면서 옹성이 수리되었다. 조선후기 성문건축의 사례를 파악할 수 있는 중요한 자료이다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_03800&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_050_03800_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_050/ki_050_03800.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_050/ki_050_03800.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_03800&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유적",
+        "category_sub": "궁궐·성",
+        "internal_owner_title": "수원화성 팔달문",
+        "owner_id": "image_material:ki_050_03800"
+      }
+    },
+    {
+      "slot_no": 3,
+      "role": "distractor",
+      "basis_item_id": "clue:221cfbc6a153",
+      "article_id": "image_material:ki_050_01900",
+      "truth_owner_label": "성균관 명륜당",
+      "fact_basis": "명륜당(明倫堂)은 서울 성균관에 설치되어 학생들에게 유학을 가르치던 학문 공간이다. 1398년(태조 7) 건립되었으며 임진왜란 당시 불탔다가 선조 말엽에 재건했다. ‘명륜(明倫)’은 인간사회의 윤리를 밝힌다는 뜻으로, 『맹자』 등문공편에 ‘학교를 세워 교육을 행함은 모두 인륜을 밝히는 것이다.’라는 구절에서 차용되었다. 현판은 1606년(선조 39)에 명(明)의 사신 주지번(朱之蕃)이 왔을 때 쓴 것이라고 전해진다. 소과와 대과를 시행하는 과장으로 사용되기도 하였으며, 1963년 대성전(大成殿)과 함께 보물 제141호로 지정되었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_050_01900_chunk_0000",
+          "article_id": "image_material:ki_050_01900",
+          "snippet": "명륜당(明倫堂)은 서울 성균관에 설치되어 학생들에게 유학을 가르치던 학문 공간이다. 1398년(태조 7) 건립되었으며 임진왜란 당시 불탔다가 선조 말엽에 재건했다. ‘명륜(明倫)’은 인간사회의 윤리를 밝힌다는 뜻으로, 『맹자』 등문공편에 ‘학교를 세워 교육을 행함은 모두 인륜을 밝히는 것이다.’라는 구절에서 차용되었다. 현판은 1606년(선조 39)에 명(明)의 사신 주지번(朱之蕃)이 왔을 때 쓴 것이라고 전해진다. 소과와 대과를 시행하는 과장으로 사용되기도 하였으며, 1963년 대성전(大成殿)과 함께 보물 제141호로 지정되었다.",
+          "exact_text": "명륜당(明倫堂)은 서울 성균관에 설치되어 학생들에게 유학을 가르치던 학문 공간이다. 1398년(태조 7) 건립되었으며 임진왜란 당시 불탔다가 선조 말엽에 재건했다. ‘명륜(明倫)’은 인간사회의 윤리를 밝힌다는 뜻으로, 『맹자』 등문공편에 ‘학교를 세워 교육을 행함은 모두 인륜을 밝히는 것이다.’라는 구절에서 차용되었다. 현판은 1606년(선조 39)에 명(明)의 사신 주지번(朱之蕃)이 왔을 때 쓴 것이라고 전해진다. 소과와 대과를 시행하는 과장으로 사용되기도 하였으며, 1963년 대성전(大成殿)과 함께 보물 제141호로 지정되었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_01900&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_050_01900_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_050/ki_050_01900.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_050/ki_050_01900.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_01900&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유적",
+        "category_sub": "교육시설",
+        "internal_owner_title": "성균관 명륜당",
+        "owner_id": "image_material:ki_050_01900"
+      }
+    },
+    {
+      "slot_no": 4,
+      "role": "distractor",
+      "basis_item_id": "clue:7cff971370fe",
+      "article_id": "image_material:ki_050_13500",
+      "truth_owner_label": "안동 도산서원",
+      "fact_basis": "도산서원(陶山書院)은 조선 전기 학자인 이황의 학행을 추모하기 위해 세운 서원이다. 낙향한 이황이 세운 도산서당(陶山書堂)에서 출발했으며 1575년(선조 8) ‘도산(陶山)’으로 사액을 받았다. 사액 현판은 한석봉으로 유명한 한호(韓濩)의 글씨이다. 고종대 서원철폐령 당시 훼철되지 않은 전국 47개 서원 가운데 하나이다. 1969년 사적 제170호로 지정되었으며, 2019년 ‘한국의 서원’ 중 하나로 유네스코 세계유산에 등재되었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_050_13500_chunk_0000",
+          "article_id": "image_material:ki_050_13500",
+          "snippet": "도산서원(陶山書院)은 조선 전기 학자인 이황의 학행을 추모하기 위해 세운 서원이다. 낙향한 이황이 세운 도산서당(陶山書堂)에서 출발했으며 1575년(선조 8) ‘도산(陶山)’으로 사액을 받았다. 사액 현판은 한석봉으로 유명한 한호(韓濩)의 글씨이다. 고종대 서원철폐령 당시 훼철되지 않은 전국 47개 서원 가운데 하나이다. 1969년 사적 제170호로 지정되었으며, 2019년 ‘한국의 서원’ 중 하나로 유네스코 세계유산에 등재되었다.",
+          "exact_text": "도산서원(陶山書院)은 조선 전기 학자인 이황의 학행을 추모하기 위해 세운 서원이다. 낙향한 이황이 세운 도산서당(陶山書堂)에서 출발했으며 1575년(선조 8) ‘도산(陶山)’으로 사액을 받았다. 사액 현판은 한석봉으로 유명한 한호(韓濩)의 글씨이다. 고종대 서원철폐령 당시 훼철되지 않은 전국 47개 서원 가운데 하나이다. 1969년 사적 제170호로 지정되었으며, 2019년 ‘한국의 서원’ 중 하나로 유네스코 세계유산에 등재되었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_13500&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_050_13500_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_050/ki_050_13500.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_050/ki_050_13500.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_13500&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유적",
+        "category_sub": "교육시설",
+        "internal_owner_title": "안동 도산서원",
+        "owner_id": "image_material:ki_050_13500"
+      }
+    }
+  ]
+}

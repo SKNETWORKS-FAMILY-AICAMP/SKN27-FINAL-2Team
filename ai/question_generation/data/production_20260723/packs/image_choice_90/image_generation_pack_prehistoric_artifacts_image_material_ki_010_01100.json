@@ -1,0 +1,194 @@
+{
+  "pack_id": "image_generation_pack:prehistoric_artifacts:image_material:ki_010_01100",
+  "family_id": "image_choice_pack_v3:prehistoric_artifacts",
+  "era": "선사·초기국가",
+  "service_era": "선사 시대",
+  "service_topic": "문화",
+  "service_question_type": "역사 자료의 분석 및 해석",
+  "service_question_subtype": "시각 자료 해석",
+  "variant_key": "image:image_choice_pack_v3:prehistoric_artifacts:image_material:ki_010_01100",
+  "target_label": "강원 양양 오산리 출토 조합식 어구",
+  "topic_type": "문화유산",
+  "question_task": "standard_select",
+  "choice_mode": "image",
+  "stem_pattern": "inquiry_topic",
+  "relation_axis_id": "common.definition_feature",
+  "material_type": "탐구 자료",
+  "major_type": "역사 자료의 분석 및 해석",
+  "minor_type": "시각 자료 해석",
+  "difficulty_label": "보통",
+  "question_task_instruction": "검수된 단서를 바탕으로 대상명을 직접 노출하지 않는 지문과 발문을 만들고, 제시된 이미지 중 해당 문화유산을 고르게 한다.",
+  "material_clue_basis": "신석기시대 어렵에 사용되었던 어구 유물이다. 전면을 갈아서 만든 조합식 어구는 기둥의 아랫부분이 새 부리처럼 약간 휘어져 있어, 사진의 맨 오른쪽과 같이, 이 부분에 동물의 뼛조각으로 만든 침을 결합해 낚싯바늘로 사용하였다. 침과의 연결 부분은 접착면을 넓히기 위하여 편평하게 갈았으며, 기둥의 윗부분에는 한 줄 혹은 두 줄의 홈을 파 낚싯줄을 묶기 쉽게 하였다.",
+  "material_evidence_chunks": [
+    {
+      "snippet": "신석기시대 어렵에 사용되었던 어구 유물이다. 전면을 갈아서 만든 조합식 어구는 기둥의 아랫부분이 새 부리처럼 약간 휘어져 있어, 사진의 맨 오른쪽과 같이, 이 부분에 동물의 뼛조각으로 만든 침을 결합해 낚싯바늘로 사용하였다. 침과의 연결 부분은 접착면을 넓히기 위하여 편평하게 갈았으며, 기둥의 윗부분에는 한 줄 혹은 두 줄의 홈을 파 낚싯줄을 묶기 쉽게 하였다.",
+      "chunk_id": "ki_010_01100_chunk_0000",
+      "article_id": "image_material:ki_010_01100",
+      "exact_text": "신석기시대 어렵에 사용되었던 어구 유물이다. 전면을 갈아서 만든 조합식 어구는 기둥의 아랫부분이 새 부리처럼 약간 휘어져 있어, 사진의 맨 오른쪽과 같이, 이 부분에 동물의 뼛조각으로 만든 침을 결합해 낚싯바늘로 사용하였다. 침과의 연결 부분은 접착면을 넓히기 위하여 편평하게 갈았으며, 기둥의 윗부분에는 한 줄 혹은 두 줄의 홈을 파 낚싯줄을 묶기 쉽게 하였다.",
+      "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_010_01100&whereStr=",
+      "section_path": [
+        "검수된 이미지 식별 단서"
+      ]
+    }
+  ],
+  "material_fact_semantically_distinct": true,
+  "status": "rag_ready",
+  "semantic_status": "pass",
+  "items": [
+    {
+      "slot_no": 0,
+      "role": "answer",
+      "basis_item_id": "clue:7682fb811521",
+      "article_id": "image_material:ki_010_01100",
+      "truth_owner_label": "강원 양양 오산리 출토 조합식 어구",
+      "fact_basis": "신석기시대 어렵에 사용되었던 어구 유물이다. 전면을 갈아서 만든 조합식 어구는 기둥의 아랫부분이 새 부리처럼 약간 휘어져 있어, 사진의 맨 오른쪽과 같이, 이 부분에 동물의 뼛조각으로 만든 침을 결합해 낚싯바늘로 사용하였다. 침과의 연결 부분은 접착면을 넓히기 위하여 편평하게 갈았으며, 기둥의 윗부분에는 한 줄 혹은 두 줄의 홈을 파 낚싯줄을 묶기 쉽게 하였다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_010_01100_chunk_0000",
+          "article_id": "image_material:ki_010_01100",
+          "snippet": "신석기시대 어렵에 사용되었던 어구 유물이다. 전면을 갈아서 만든 조합식 어구는 기둥의 아랫부분이 새 부리처럼 약간 휘어져 있어, 사진의 맨 오른쪽과 같이, 이 부분에 동물의 뼛조각으로 만든 침을 결합해 낚싯바늘로 사용하였다. 침과의 연결 부분은 접착면을 넓히기 위하여 편평하게 갈았으며, 기둥의 윗부분에는 한 줄 혹은 두 줄의 홈을 파 낚싯줄을 묶기 쉽게 하였다.",
+          "exact_text": "신석기시대 어렵에 사용되었던 어구 유물이다. 전면을 갈아서 만든 조합식 어구는 기둥의 아랫부분이 새 부리처럼 약간 휘어져 있어, 사진의 맨 오른쪽과 같이, 이 부분에 동물의 뼛조각으로 만든 침을 결합해 낚싯바늘로 사용하였다. 침과의 연결 부분은 접착면을 넓히기 위하여 편평하게 갈았으며, 기둥의 윗부분에는 한 줄 혹은 두 줄의 홈을 파 낚싯줄을 묶기 쉽게 하였다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_010_01100&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_010_01100_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_01100.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_01100.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_010_01100&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유적",
+        "category_sub": "자연지물",
+        "internal_owner_title": "강원 양양 오산리 출토 조합식 어구",
+        "owner_id": "image_material:ki_010_01100"
+      }
+    },
+    {
+      "slot_no": 1,
+      "role": "distractor",
+      "basis_item_id": "clue:00e3546078d0",
+      "article_id": "image_material:ki_010_01200",
+      "truth_owner_label": "강원 양양 오산리 출토 흙으로 빚은 얼굴상",
+      "fact_basis": "둥근 점토판을 손가락으로 꾹꾹 눌러 사람의 얼굴 모양을 표현하였다. 신석기시대의 얼굴상은 대체로 3개의 구멍으로 표현되는데, 오산리에서 출토된 유물의 경우, 5개의 구멍으로 두 개의 눈과 두 개의 콧구멍 그리고 입을 표현하였다. 얼굴상은 재액으로부터의 보호와 축원을 바라는 일종의 신앙적 용도였을 것으로 보인다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_010_01200_chunk_0000",
+          "article_id": "image_material:ki_010_01200",
+          "snippet": "둥근 점토판을 손가락으로 꾹꾹 눌러 사람의 얼굴 모양을 표현하였다. 신석기시대의 얼굴상은 대체로 3개의 구멍으로 표현되는데, 오산리에서 출토된 유물의 경우, 5개의 구멍으로 두 개의 눈과 두 개의 콧구멍 그리고 입을 표현하였다. 얼굴상은 재액으로부터의 보호와 축원을 바라는 일종의 신앙적 용도였을 것으로 보인다.",
+          "exact_text": "둥근 점토판을 손가락으로 꾹꾹 눌러 사람의 얼굴 모양을 표현하였다. 신석기시대의 얼굴상은 대체로 3개의 구멍으로 표현되는데, 오산리에서 출토된 유물의 경우, 5개의 구멍으로 두 개의 눈과 두 개의 콧구멍 그리고 입을 표현하였다. 얼굴상은 재액으로부터의 보호와 축원을 바라는 일종의 신앙적 용도였을 것으로 보인다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_010_01200&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_010_01200_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_01200.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_01200.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_010_01200&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유물",
+        "category_sub": "공예",
+        "internal_owner_title": "강원 양양 오산리 출토 흙으로 빚은 얼굴상",
+        "owner_id": "image_material:ki_010_01200"
+      }
+    },
+    {
+      "slot_no": 2,
+      "role": "distractor",
+      "basis_item_id": "clue:63f580f3d4db",
+      "article_id": "image_material:ki_010_01800",
+      "truth_owner_label": "충북 청주 산성동 유적에서 출토된 가락바퀴",
+      "fact_basis": "충청북도 청주 산성동 유적에서 출토된 신석기시대의 가락바퀴(방추차)이다. 지름 5.4cm, 두께 2.6cm이고, 표면에 점무늬가 베풀어져 있다. 가락바퀴는 중심부의 구멍에 가락(둥근 막대)을 끼워 넣고 동식물로부터 얻은 섬유를 회전시키며 꼬아서 실을 얻는다. 신석기시대의 가락바퀴는 대부분 토제품이지만, 청동기시대 이후에는 돌로 만들어지기도 한다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_010_01800_chunk_0000",
+          "article_id": "image_material:ki_010_01800",
+          "snippet": "충청북도 청주 산성동 유적에서 출토된 신석기시대의 가락바퀴(방추차)이다. 지름 5.4cm, 두께 2.6cm이고, 표면에 점무늬가 베풀어져 있다. 가락바퀴는 중심부의 구멍에 가락(둥근 막대)을 끼워 넣고 동식물로부터 얻은 섬유를 회전시키며 꼬아서 실을 얻는다. 신석기시대의 가락바퀴는 대부분 토제품이지만, 청동기시대 이후에는 돌로 만들어지기도 한다.",
+          "exact_text": "충청북도 청주 산성동 유적에서 출토된 신석기시대의 가락바퀴(방추차)이다. 지름 5.4cm, 두께 2.6cm이고, 표면에 점무늬가 베풀어져 있다. 가락바퀴는 중심부의 구멍에 가락(둥근 막대)을 끼워 넣고 동식물로부터 얻은 섬유를 회전시키며 꼬아서 실을 얻는다. 신석기시대의 가락바퀴는 대부분 토제품이지만, 청동기시대 이후에는 돌로 만들어지기도 한다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_010_01800&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_010_01800_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_01800.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_01800.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_010_01800&whereStr=",
+        "image_source": "e뮤지엄(국립청주박물관)",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유물",
+        "category_sub": "생활용품",
+        "internal_owner_title": "충북 청주 산성동 유적에서 출토된 가락바퀴",
+        "owner_id": "image_material:ki_010_01800"
+      }
+    },
+    {
+      "slot_no": 3,
+      "role": "distractor",
+      "basis_item_id": "clue:c2c9d364f51f",
+      "article_id": "image_material:ki_010_03850",
+      "truth_owner_label": "청주 오송 유적 출토 잔무늬 거울",
+      "fact_basis": "청동 거울은 당시 지배자와 관련된 유물로, 몸에 걸치고 햇빛을 반사하는 기능을 하며 의례용으로 사용되었다. 거울 뒷면에 끈을 꿰어 매달기 위한 꼭지가 2개 달려 있는데, 꼭지가 1개 이상 달린 것은 한국 청동거울의 특징이다. 지름은 18cm 정도로, 거울 뒷면에 기하학무늬가 새겨져 있고, 문양 선의 굵기가 가느므로, 잔무늬 거울로 분류된다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_010_03850_chunk_0000",
+          "article_id": "image_material:ki_010_03850",
+          "snippet": "청동 거울은 당시 지배자와 관련된 유물로, 몸에 걸치고 햇빛을 반사하는 기능을 하며 의례용으로 사용되었다. 거울 뒷면에 끈을 꿰어 매달기 위한 꼭지가 2개 달려 있는데, 꼭지가 1개 이상 달린 것은 한국 청동거울의 특징이다. 지름은 18cm 정도로, 거울 뒷면에 기하학무늬가 새겨져 있고, 문양 선의 굵기가 가느므로, 잔무늬 거울로 분류된다.",
+          "exact_text": "청동 거울은 당시 지배자와 관련된 유물로, 몸에 걸치고 햇빛을 반사하는 기능을 하며 의례용으로 사용되었다. 거울 뒷면에 끈을 꿰어 매달기 위한 꼭지가 2개 달려 있는데, 꼭지가 1개 이상 달린 것은 한국 청동거울의 특징이다. 지름은 18cm 정도로, 거울 뒷면에 기하학무늬가 새겨져 있고, 문양 선의 굵기가 가느므로, 잔무늬 거울로 분류된다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_010_03850&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_010_03850_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_03850.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_03850.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_010_03850&whereStr=",
+        "image_source": "국립청주박물관",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유물",
+        "category_sub": "의례용품",
+        "internal_owner_title": "청주 오송 유적 출토 잔무늬 거울",
+        "owner_id": "image_material:ki_010_03850"
+      }
+    },
+    {
+      "slot_no": 4,
+      "role": "distractor",
+      "basis_item_id": "clue:766a640832b0",
+      "article_id": "image_material:ki_010_04000",
+      "truth_owner_label": "전 덕산 출토 간두령",
+      "fact_basis": "충남 예산군에 있는 흥선대원군 부친의 무덤 근처 구릉에서 출토되었다고 전해진다. 간두령 1쌍은 각각 높이 14.7㎝와 14.9㎝, 무게 616.5g와 571g로 모습은 같고 크기만 다르다. 몸체와 자루, 2부분으로 되어있고 사이에 갓 모양의 테두리를 두르고 있다. 전체적으로는 포탄 모습이며 비어있는 몸체를 칸막이로 나누어 위에는 청동 구슬을 두었고 아래에는 공간을 남겨 소리가 잘 울릴 수 있도록 하였다. 1990년 ‘전 덕산 청동방울 일괄’이라는 명칭으로 국보 제255호로 지정되었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_010_04000_chunk_0000",
+          "article_id": "image_material:ki_010_04000",
+          "snippet": "충남 예산군에 있는 흥선대원군 부친의 무덤 근처 구릉에서 출토되었다고 전해진다. 간두령 1쌍은 각각 높이 14.7㎝와 14.9㎝, 무게 616.5g와 571g로 모습은 같고 크기만 다르다. 몸체와 자루, 2부분으로 되어있고 사이에 갓 모양의 테두리를 두르고 있다. 전체적으로는 포탄 모습이며 비어있는 몸체를 칸막이로 나누어 위에는 청동 구슬을 두었고 아래에는 공간을 남겨 소리가 잘 울릴 수 있도록 하였다. 1990년 ‘전 덕산 청동방울 일괄’이라는 명칭으로 국보 제255호로 지정되었다.",
+          "exact_text": "충남 예산군에 있는 흥선대원군 부친의 무덤 근처 구릉에서 출토되었다고 전해진다. 간두령 1쌍은 각각 높이 14.7㎝와 14.9㎝, 무게 616.5g와 571g로 모습은 같고 크기만 다르다. 몸체와 자루, 2부분으로 되어있고 사이에 갓 모양의 테두리를 두르고 있다. 전체적으로는 포탄 모습이며 비어있는 몸체를 칸막이로 나누어 위에는 청동 구슬을 두었고 아래에는 공간을 남겨 소리가 잘 울릴 수 있도록 하였다. 1990년 ‘전 덕산 청동방울 일괄’이라는 명칭으로 국보 제255호로 지정되었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_010_04000&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_010_04000_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_04000.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_04000.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_010_04000&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유물",
+        "category_sub": "의례용품",
+        "internal_owner_title": "전 덕산 출토 간두령",
+        "owner_id": "image_material:ki_010_04000"
+      }
+    }
+  ]
+}
