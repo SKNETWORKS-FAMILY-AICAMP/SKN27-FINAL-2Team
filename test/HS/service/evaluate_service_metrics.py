@@ -35,6 +35,8 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from app.chatbot.graph_service import build_graph_context
 from app.chatbot import rag_service as rag_service_module
+from app.chatbot.rag import llm_answer_generator
+from app.chatbot.rag.llm_answer_generator import prompt_snippet
 from app.chatbot.rag.pgvector_retriever import PgVectorHybridRetriever, cached_pg_search
 from app.chatbot.rag_service import build_history_rag_answer
 
@@ -228,7 +230,7 @@ def evaluate_ragas_metrics(questions: list[dict], limit: int, top_k: int, debug_
     for question in text_questions[:limit]:
         result = build_history_rag_answer(question["query"], intent="concept", answer_format="text", top_k=top_k)
         answer = ragas_text(result.get("answer") or structured_to_text(result.get("structured_answer") or {}))
-        contexts = [source.get("snippet") or "" for source in result.get("sources") or [] if source.get("snippet")]
+        contexts = [prompt_snippet(source.get("snippet")) for source in result.get("sources") or [] if source.get("snippet")]
         if not contexts:
             contexts = [item.chunk_text for item in retriever.search(question["query"], top_k=top_k) if item.chunk_text]
         if not contexts:
@@ -450,12 +452,17 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--latency-limit", type=int, default=5)
     parser.add_argument("--ragas", action="store_true")
     parser.add_argument("--ragas-limit", type=int, default=50)
+    parser.add_argument("--prompt-snippet-chars", type=int, default=llm_answer_generator.PROMPT_SNIPPET_MAX_CHARS)
     parser.add_argument("--out-prefix", type=Path, default=DEFAULT_OUT)
     return parser.parse_args()
 
 
 def main() -> None:
     args = parse_args()
+    if args.prompt_snippet_chars < 1:
+        raise ValueError("--prompt-snippet-chars must be at least 1")
+    llm_answer_generator.PROMPT_SNIPPET_MAX_CHARS = args.prompt_snippet_chars
+    print(f"prompt_snippet_chars={args.prompt_snippet_chars}")
     print_langsmith_status()
     questions = load_jsonl(args.golden_file)
     queries = [item["query"] for item in questions[: args.latency_limit]]

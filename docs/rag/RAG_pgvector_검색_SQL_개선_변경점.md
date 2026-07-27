@@ -180,6 +180,33 @@ Precision은 리랭커 적용 전 0.67에서 0.82로 개선됐다. 반면 CPU에
 
 CPU 환경 측정에서는 `RAG_RERANKER_ENABLED=false` 전환을 실험했다. 이후 로컬 측정에서 리랭커 사용 시에도 검색 속도 기준을 충족해 운영값을 다시 `true`로 복원했다. 후보 수, Top-K, 임베딩, HNSW는 변경하지 않는다.
 
+## 2026-07-21: 서비스 Top-5 전달 구성
+
+RAGAS 서비스 평가에서는 `top_k=5`, 프롬프트 근거 길이 260자로 측정했다. 이때 리랭커가 켜진 일반 텍스트 질의의 실제 파이프라인은 다음과 같다.
+
+```text
+벡터 후보 최대 50개 + MeCab BM25 후보 최대 50개
+→ RRF 병합·중복 제거
+→ RRF 상위 25개 (= 최종 Top-K 5 × 5)
+→ BGE CrossEncoder 리랭킹
+→ 최종 Top-5를 LLM 근거로 전달
+```
+
+- `50`은 **채널별 후보 풀**(`RAG_RETRIEVAL_CANDIDATE_POOL`)이다. 중복 제거 전에는 두 채널 합계가 최대 100개일 수 있다.
+- BGE는 기본적으로 이 전체 후보 풀이 아니라 RRF 상위 25개만 평가한다.
+- `RAG_RERANK_CANDIDATE_POOL=50`을 설정하면 RRF 상위 50개를 BGE에 넣을 수 있으나, CPU 환경에서는 리랭킹 시간이 증가한다.
+
+| 평가 항목 | Top-20 / 260자 | Top-5 / 260자 |
+|---|---:|---:|
+| 검색 속도 | 48.58초 | 19.88초 |
+| 전체 응답 속도 | 53.04초 | 24.39초 |
+| RAGAS Context Precision | 0.77 | 0.82 |
+| RAGAS Context Recall | 0.88 | 0.85 |
+| RAGAS Faithfulness | 0.94 | 0.93 |
+| RAGAS Answer Relevance | 0.81 | 0.81 |
+
+Top-5는 모든 RAGAS 기준(0.80)을 통과했다. 이 결과는 **최종 LLM 전달 수**의 선택 기준이며, 검색 후보 풀을 5개로 줄인다는 의미는 아니다.
+
 ## 2026-07-20: 골든셋 BGE 최종 Top-K 선정
 
 `golden_saved_rerank_ab_results.csv`의 35개 strict 골든 질문에서 RRF와 BGE의 같은 Top-K를 비교했다. 검색 후보 수는 50개로 유지하고, BGE가 최종 순서만 조정했다.

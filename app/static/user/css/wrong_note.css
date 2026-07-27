@@ -398,6 +398,16 @@ select {
   line-height: 1.4;
 }
 
+.note-question-image {
+  display: block;
+  width: min(100%, 560px);
+  max-height: 300px;
+  height: auto;
+  margin-top: 10px;
+  border-radius: 8px;
+  object-fit: contain;
+}
+
 .choice-list {
   min-height: 0;
   overflow: auto;
@@ -437,6 +447,59 @@ select {
   color: var(--ink);
   font-size: 13px;
   line-height: 1.42;
+}
+
+.note-choice-body {
+  display: grid;
+  justify-items: start;
+  gap: 8px;
+  min-width: 0;
+}
+
+.note-choice-image {
+  display: block;
+  width: min(100%, 360px);
+  max-height: 240px;
+  height: auto;
+  border-radius: 6px;
+  object-fit: contain;
+}
+
+/* Keep every image choice fully visible inside a fixed, scrollable note list. */
+.wrong-note-page .choice-list.has-image-choices {
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  align-content: start !important;
+  padding: 4px 10px 4px 0 !important;
+  scrollbar-width: thin;
+  scrollbar-color: #93b6a2 transparent;
+}
+
+.wrong-note-page .choice-list.has-image-choices::-webkit-scrollbar {
+  width: 8px;
+}
+
+.wrong-note-page .choice-list.has-image-choices::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: #93b6a2;
+}
+
+.wrong-note-page .choice-list.has-image-choices li.has-image {
+  min-height: 184px !important;
+  align-items: start !important;
+  padding: 10px 12px !important;
+}
+
+.wrong-note-page .choice-list.has-image-choices .note-choice-body {
+  min-height: 160px;
+}
+
+.wrong-note-page .choice-list.has-image-choices .note-choice-image {
+  width: min(100%, 300px) !important;
+  height: 160px !important;
+  max-height: 160px !important;
+  object-fit: contain !important;
+  background: #f7f7f5;
 }
 
 .choice-list li.correct {

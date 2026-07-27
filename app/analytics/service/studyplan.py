@@ -9,10 +9,15 @@ from analytics.service.study_plan.config import get_study_plan_config as get_ver
 from analytics.service.study_plan.dto import is_completion_block, parse_plan_items
 from analytics.service.study_plan.service import (
     InitialStudyPlanConfigUnavailable,
+    StudyPlanBlockNotDue,
+    StudyPlanBlockNotFound,
+    StudyPlanBlockRouteMismatch,
+    StudyPlanBlockTerminal,
     complete_study_plan_block_by_id as complete_block_by_id,
     create_personalized_study_plan,
     get_active_study_plan_dto,
     is_weekly_review_plan_block,
+    validate_study_plan_block_start as validate_block_start_for_route,
 )
 
 
@@ -127,6 +132,32 @@ def complete_study_plan_block(
         block_id,
         is_completed,
     )
+
+
+def validate_study_plan_block_start(
+    user_id: int,
+    study_plan_id: int,
+    block_id: str,
+    route: str,
+    today: date | None = None,
+) -> dict[str, object]:
+    try:
+        block = validate_block_start_for_route(
+            user_id,
+            study_plan_id,
+            block_id,
+            route,
+            today,
+        )
+    except StudyPlanBlockNotFound as error:
+        return {"error": {"error": str(error)}, "status_code": 404, "block": None}
+    except (
+        StudyPlanBlockNotDue,
+        StudyPlanBlockRouteMismatch,
+        StudyPlanBlockTerminal,
+    ) as error:
+        return {"error": {"error": str(error)}, "status_code": 400, "block": None}
+    return {"error": None, "status_code": 200, "block": block}
 
 
 def create_study_plan(

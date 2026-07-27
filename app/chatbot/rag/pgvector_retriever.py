@@ -402,7 +402,12 @@ class PgVectorHybridRetriever:
             bm25_query = " OR ".join(bm25_query.split())
             bm25_tsquery_function = "websearch_to_tsquery"
 
+        allowed_source_types = [value.strip() for value in os.getenv("RAG_ALLOWED_SOURCE_TYPES", "").split(",") if value.strip()]
         where_sql = "embedding IS NOT NULL"
+        source_filter_params: list[Any] = []
+        if allowed_source_types:
+            where_sql += " AND source_type = ANY(%s)"
+            source_filter_params.append(allowed_source_types)
 
         focus_match_sql = "FALSE"
         focus_match_params: list[Any] = []
@@ -453,7 +458,7 @@ class PgVectorHybridRetriever:
                 0.0::float AS keyword_score,
                 CASE WHEN %s AND ({focus_match_sql}) THEN 1 ELSE 0 END AS focus_hit
             FROM rag.document_chunks
-            WHERE embedding IS NOT NULL
+            WHERE {where_sql}
             ORDER BY embedding <=> %s::vector
             LIMIT %s
         ),
@@ -522,11 +527,13 @@ class PgVectorHybridRetriever:
                 embedding,
                 generic_overview_query,
                 *focus_match_params,
+                *source_filter_params,
                 embedding,
                 self.candidate_pool,
                 *(
                     [
                         bm25_query,
+                        *source_filter_params,
                         bm25_query,
                         bm25_candidate_pool,
                     ]

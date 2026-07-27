@@ -325,3 +325,26 @@ RRF = 벡터·BM25 채널별 Σ 1 / (60 + 채널 순위)
 - 이 판정은 API의 `intent == concept`이 아니라 질문 문자열의 개요어 존재 여부로 동작한다.
 - 가산점은 BGE 리랭커 **전** 후보군 정렬·선별에만 영향을 준다. 리랭커가 켜진 경우 BGE가 후보군을 다시 점수화해 최종 top-k 순서를 결정한다.
 - `aks_encyclopedia`(한민족대백과)에 +0.0005 출처 가산점을 적용한다. 기존 전체 RRF·BM25 후보 수집은 유지하며, 이후 35개 텍스트 골든 질문 RAGAS로 전후 비교한다.
+- 출처 제한 A/B 테스트용 환경변수 `RAG_ALLOWED_SOURCE_TYPES`를 추가했다. 예를 들어 `aks_encyclopedia`로 설정하면 벡터·BM25 후보를 한민족대백과로만 제한하고, 연표 보조 문맥도 제외한다. 미설정 상태가 기본 전체 출처 검색이다.
+
+```powershell
+$env:RAG_ALLOWED_SOURCE_TYPES="aks_encyclopedia"
+.\.venv\Scripts\python.exe test\HS\service\evaluate_service_metrics.py --golden-file test\HS\rerank\golden\dataset\golden_questions_strict_matched_444.jsonl --ragas --ragas-limit 35 --out-prefix test\HS\rerank\golden\evaluation\service_eval_aks_only
+Remove-Item Env:RAG_ALLOWED_SOURCE_TYPES
+```
+
+## 17. 고전 검색 지표용 수동 정답 라벨 (테스트 전용)
+
+- 자동 매칭 파일 `test/HS/rerank/golden/dataset/golden_matched_documents_444.json`은 40문항에 정답 후보 문서 499개(문항당 평균 12.5개)를 가진다. 이 상태는 Recall@K의 분모가 과도해 고전 검색 지표의 기준으로 쓰지 않는다.
+- `test/HS/rerank/golden/dataset/golden_relevance_labels.csv`는 수동 확정 라벨 파일이다. `relevance=2`는 핵심 근거, `1`은 보조 근거, `0` 또는 빈 값은 비관련/미확정이다. 문항당 핵심 문서 1~3개를 확정한다.
+- 라벨 파일은 테스트 산출물이며 챗봇·DB·기존 골든 질문을 변경하지 않는다.
+
+```powershell
+# 자동 후보 499개로 빈 라벨 템플릿 생성(이미 라벨이 있으면 덮어쓰지 않음)
+.\.venv\Scripts\python.exe test\HS\rerank\golden\dataset\prepare_golden_relevance_labels.py
+
+# golden_relevance_labels.csv에서 relevance를 수동 입력한 후 실행
+.\.venv\Scripts\python.exe test\HS\rerank\golden\evaluation\evaluate_golden_classical_ir.py --top-ks 1,3,5
+```
+
+- 평가지표기는 `rerank/golden/candidates/golden_rrf_candidate_scores.csv`, `golden_bge_candidate_scores.csv`를 DB 재검색 없이 비교하며 Precision@K, Recall@K, Hit Rate@K, MRR@K, MAP@K, nDCG@K를 `evaluation/golden_classical_ir_summary.csv`에 저장한다.
