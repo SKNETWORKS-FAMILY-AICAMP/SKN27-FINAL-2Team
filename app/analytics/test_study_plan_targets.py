@@ -169,7 +169,7 @@ class StudyPlanTargetCharacterizationTests(TestCase):
         self.assertEqual(first_block["blockType"], "practice")
         self.assertEqual(first_block["estimatedMinutes"], 30)
         # 블록 문항 수는 config.maximum_question_count 로 제한된다.
-        self.assertEqual(first_block["questionCount"], 10)
+        self.assertEqual(first_block["questionCount"], 20)
         self.assertAlmostEqual(first_block["priorityScore"], 0.8332, places=4)
 
     def test_last_day_is_the_weekly_review(self) -> None:

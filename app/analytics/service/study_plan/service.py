@@ -503,7 +503,30 @@ def complete_study_plan_block_by_id(
         study_plan.save(
             update_fields=("study_plan_items", "completion_rate", "modified_at"),
         )
+        if is_weekly_review_plan_block(matched_block):
+            # 커밋 뒤에 불러야 한다. 근거 수집이 방금 완료된 블록을 읽어야 하고,
+            # 트랜잭션이 열려 있는 동안 스레드를 띄우면 그 스레드가 미완료 상태를 본다.
+            _schedule_weekly_report(user_id, study_plan_id, valid_session_ids[0])
         return dto
+
+
+def _schedule_weekly_report(
+    user_id: int,
+    study_plan_id: int,
+    source_session_id: int,
+) -> None:
+    """주간복습이 끝난 직후 주간 리포트 생성을 예약한다.
+
+    diagnosis 앱이 이 함수를 직접 부르지는 않는다. 주간복습 제출이 결국
+    complete_study_plan_block_by_id 를 타므로, 트리거를 analytics 안에 둔다.
+    """
+    from django.db import transaction
+
+    from analytics.service.weekly_report.dispatcher import dispatch_weekly_report
+
+    transaction.on_commit(
+        lambda: dispatch_weekly_report(user_id, int(source_session_id), study_plan_id),
+    )
 
 
 def validate_study_plan_block_start(

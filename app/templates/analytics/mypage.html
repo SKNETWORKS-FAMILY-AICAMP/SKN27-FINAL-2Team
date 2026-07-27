@@ -121,16 +121,7 @@
             </div>
           {% endif %}
 
-          {% if weekly_report.examTrends %}
-            <div class="weekly-report-trends">
-              <h3>최근 5회차 출제 경향 <span>{{ weekly_report.examTrends.0.recentRounds }}회</span></h3>
-              <ol id="weeklyReportTrends">
-                {% for item in weekly_report.examTrends %}
-                  <li><span>{{ item.label }}</span><b>{{ item.ratioPercent }}%</b></li>
-                {% endfor %}
-              </ol>
-            </div>
-          {% endif %}
+          {# 출제 경향은 화면에 나열하지 않는다. AI 문장과 취약 순위 보정에만 쓴다. #}
         </div>
       {% else %}
         <div class="weekly-report-body weekly-report-empty" id="weeklyReportBody" data-status="none">
@@ -226,7 +217,7 @@
         </div>
 
         <section class="planner-progress-summary" aria-label="학습계획 달성률">
-          <span>이번 주 학습 진행률</span>
+          <span>현재 계획 진행률</span>
           <div class="planner-progress-meter" aria-label="{{ planner_summary.progress.periodLabel }} 학습계획 달성률 {{ planner_summary.progress.completionPercent }}%">
             <i style="width: {{ planner_summary.progress.completionPercent }}%"></i>
           </div>

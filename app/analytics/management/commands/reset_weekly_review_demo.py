@@ -126,14 +126,20 @@ class Command(BaseCommand):
 
     def _shift_plan_dates(
         self,
-        plan_items: Sequence[dict],
+        plan_items: list[dict],
         review_day_index: int,
         today: date,
     ) -> None:
-        """주간 평가일이 오늘이 되도록 일정 전체를 같은 폭으로 민다."""
+        """주간 평가를 마지막 날로 옮기고, 그 날이 오늘이 되도록 일정을 민다.
+
+        계획 생성은 주간 평가를 항상 마지막 날에 둔다. 다만 계획 동기화나
+        예전 버전으로 만들어진 계획은 순서가 다를 수 있어 여기서 맞춘다.
+        그러지 않으면 주간 평가 뒤에 미래 날짜의 학습일이 남는다.
+        """
+        plan_items.append(plan_items.pop(review_day_index))
+        last_index = len(plan_items) - 1
         for day_index, day_plan in enumerate(plan_items):
-            offset = review_day_index - day_index
-            day_plan["date"] = (today - timedelta(days=offset)).isoformat()
+            day_plan["date"] = (today - timedelta(days=last_index - day_index)).isoformat()
 
     def _reset_block_status(self, plan_items: Sequence[dict]) -> int:
         """학습 블록은 완료로, 주간 평가는 미응시로 되돌린다."""
