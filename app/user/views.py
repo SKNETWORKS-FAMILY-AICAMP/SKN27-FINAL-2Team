@@ -500,6 +500,7 @@ def solved_problems(request):
                 "answer_no": question.answer_no,
                 "answer_explanation": question.answer_explanation,
                 "core_concept": question.core_concept,
+                "question_image_path": question.question_image_path or "",
                 "selected_no": record.selected_no,
                 "is_correct": record.is_correct,
                 "time_spent": _format_ms_duration(record.time_spent_ms),
@@ -512,6 +513,7 @@ def solved_problems(request):
                         "content": option.content,
                         "is_answer": option.is_answer,
                         "choice_explanation": option.choice_explanation,
+                        "choice_image_path": option.choice_image_path or "",
                     }
                     for option in options
                 ],

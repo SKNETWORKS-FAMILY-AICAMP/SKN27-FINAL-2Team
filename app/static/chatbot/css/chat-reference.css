@@ -1,7 +1,7 @@
 /* Screenshot-matched chat layout. Deliberately text and CSS only: no logo or image assets. */
 body:has(.chat-page) { overflow: hidden; background: #fbfaf5 !important; }
 .chat-page { height: 100vh; display: grid; grid-template-rows: 76px minmax(0, 1fr); background: #fbfaf5 !important; color: #343530 !important; font-family: "Noto Serif KR", "Nanum Myeongjo", serif !important; }
-.chat-page img { display: none !important; }
+.chat-page img:not(.selected-problem-image):not(.selected-problem-choice-image):not([src$="zoom-in.png"]) { display: none !important; }
 .chat-page .chat-header { display: flex !important; height: 76px !important; min-height: 76px !important; }
 .chat-page .messages { height: auto !important; min-height: 0; padding: 0 !important; overflow: hidden !important; }
 .chat-page .chat-layout { width: 100% !important; height: 100% !important; display: grid !important; grid-template-columns: 358px minmax(0, 1fr) !important; gap: 0 !important; margin: 0 !important; overflow: hidden; border: 1px solid #cbb9a4 !important; border-radius: 8px !important; background-color: #fbfaf5 !important; background-image: radial-gradient(rgba(151,128,99,.12) .65px, transparent .75px) !important; background-size: 10px 10px !important; box-shadow: none !important; }

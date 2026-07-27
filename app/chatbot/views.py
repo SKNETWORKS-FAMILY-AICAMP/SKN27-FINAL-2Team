@@ -8,6 +8,7 @@ import urllib.request
 
 from django.http import HttpResponse, JsonResponse, StreamingHttpResponse
 from django.contrib.auth.decorators import login_required
+from django.urls import reverse
 from django.shortcuts import render
 from django.utils import timezone
 from django.db import transaction
@@ -22,6 +23,31 @@ from .rag_service import build_history_rag_answer, stream_concept_rag_answer, st
 
 
 logger = logging.getLogger(__name__)
+
+
+def proxied_image_path(value: object) -> str:
+    url = str(value or "").strip()
+    parsed = urllib.parse.urlparse(url)
+    if parsed.scheme == "https" and parsed.netloc == "contents.history.go.kr" and parsed.path.startswith("/data/img/"):
+        return f"{reverse('chatbot:image_proxy')}?{urllib.parse.urlencode({'url': url})}"
+    return url
+
+
+def load_problem_choice_explanations(user, record_id: int | None) -> dict[int, str]:
+    if record_id is None:
+        return {}
+    question_id = (
+        SolveRecords.objects.filter(record_id=record_id, session__user=user)
+        .values_list("question_id", flat=True)
+        .first()
+    )
+    if question_id is None:
+        return {}
+    return {
+        option.choice_no: option.choice_explanation.strip()
+        for option in QuestionOptions.objects.filter(question_id=question_id).order_by("choice_no")
+        if option.choice_explanation and option.choice_explanation.strip()
+    }
 
 
 @login_required
@@ -100,6 +126,11 @@ def rag_chat_api(request):
         problem_session_id = int(payload.get("problem_session_id"))
     except (TypeError, ValueError):
         problem_session_id = None
+    try:
+        problem_record_id = int(payload.get("problem_record_id"))
+    except (TypeError, ValueError):
+        problem_record_id = None
+    choice_explanations = load_problem_choice_explanations(request.user, problem_record_id)
     explanation_level = "foundation" if intent == "question" and payload.get("foundation_explanation") is True else "core" if intent == "question" else ""
 
     try:
@@ -112,6 +143,7 @@ def rag_chat_api(request):
             top_k=top_k,
             history=conversation_history,
             explanation_level=explanation_level,
+            choice_explanations=choice_explanations,
         )
     except Exception:
         logger.exception("RAG 답변 생성 실패")
@@ -146,13 +178,25 @@ def rag_chat_stream_api(request):
         problem_session_id = int(payload.get("problem_session_id"))
     except (TypeError, ValueError):
         problem_session_id = None
+    try:
+        problem_record_id = int(payload.get("problem_record_id"))
+    except (TypeError, ValueError):
+        problem_record_id = None
+    choice_explanations = load_problem_choice_explanations(request.user, problem_record_id)
     intent = payload.get("intent") or "concept"
     explanation_level = "foundation" if intent == "question" and payload.get("foundation_explanation") is True else "core" if intent == "question" else ""
 
     def stream():
         try:
             answer_stream = (
-                stream_question_rag_answer(question, mode=payload.get("mode") or "history", top_k=top_k, history=history, explanation_level=explanation_level)
+                stream_question_rag_answer(
+                    question,
+                    mode=payload.get("mode") or "history",
+                    top_k=top_k,
+                    history=history,
+                    explanation_level=explanation_level,
+                    choice_explanations=choice_explanations,
+                )
                 if intent == "question"
                 else stream_concept_rag_answer(question, mode=payload.get("mode") or "history", top_k=top_k, history=history)
             )
@@ -208,7 +252,7 @@ def solved_problem_options_api(request):
                 "content": question.content,
                 "passage": getattr(question, "passage", ""),
                 "image_caption": getattr(question, "image_caption", ""),
-                "question_image_path": getattr(question, "question_image_path", ""),
+                "question_image_path": proxied_image_path(getattr(question, "question_image_path", "")),
                 "question_type": question.question_type,
                 "era": record.era,
                 "topic": record.topic,
@@ -223,7 +267,7 @@ def solved_problem_options_api(request):
                     {
                         "choice_no": option.choice_no,
                         "content": option.content,
-                        "choice_image_path": option.choice_image_path,
+                        "choice_image_path": proxied_image_path(option.choice_image_path),
                         "is_answer": option.is_answer,
                         "choice_explanation": option.choice_explanation,
                     }

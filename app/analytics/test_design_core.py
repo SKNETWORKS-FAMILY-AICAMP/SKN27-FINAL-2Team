@@ -433,6 +433,33 @@ class StudyPlanStateTests(TestCase):
         with self.assertRaises(StudyPlanBlockTerminal):
             validate_block_start("active", plans, "done", self.today, "question")
 
+    def test_start_validation_uses_session_progress_with_completed_precedence(self) -> None:
+        plans = [
+            {
+                "date": self.today.isoformat(),
+                "blocks": [self._block("review", 1.0)],
+            }
+        ]
+
+        validate_block_start(
+            "active",
+            plans,
+            "review",
+            self.today,
+            "question",
+            in_progress_block_ids={"review"},
+        )
+        with self.assertRaises(StudyPlanBlockTerminal):
+            validate_block_start(
+                "active",
+                plans,
+                "review",
+                self.today,
+                "question",
+                completed_block_ids={"review"},
+                in_progress_block_ids={"review"},
+            )
+
     def _block(
         self,
         block_id: str,

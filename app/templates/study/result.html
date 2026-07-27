@@ -4,8 +4,8 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>himate | 결과</title>
-  <link rel="stylesheet" href="/static/question/css/result.css?v=result-image-choice-7" />
-  <link rel="stylesheet" href="../../static/question/css/result.css?v=result-image-choice-7" />
+  <link rel="stylesheet" href="/static/question/css/result.css?v=result-image-choice-14" />
+  <link rel="stylesheet" href="../../static/question/css/result.css?v=result-image-choice-14" />
   <link rel="stylesheet" href="/static/himate.css" />
   <link rel="stylesheet" href="/static/layout.css?v=result-header-position-3" />
   <style>
@@ -161,6 +161,13 @@
     </section>
   </main>
 
+  <section class="image-preview" id="imagePreview" role="dialog" aria-modal="true" aria-label="이미지 확대" hidden>
+    <button class="image-preview-backdrop" id="imagePreviewBackdrop" type="button" aria-label="이미지 확대 닫기"></button>
+    <figure class="image-preview-content">
+      <button class="image-preview-close" id="imagePreviewClose" type="button" aria-label="닫기">×</button>
+      <img id="imagePreviewImage" alt="확대된 이미지">
+    </figure>
+  </section>
   <script>
     const RESULT_MODE = "{{ result_mode|default:'practice' }}";
     const SESSION_TYPE = RESULT_MODE === "diagnostic" ? "diagnostic" : "practice";
@@ -187,6 +194,8 @@
     const questionJumpToggle = document.getElementById("questionJumpToggle");
     const noteSaveButton = document.getElementById("noteSaveButton");
     const noteSaveStatus = document.getElementById("noteSaveStatus");
+    const imagePreview = document.getElementById("imagePreview");
+    const imagePreviewImage = document.getElementById("imagePreviewImage");
 
     questionJumpToggle.addEventListener("click", () => {
       const expanded = questionJump.hidden;
@@ -211,6 +220,17 @@
       if (!path) return "";
       if (/^(https?:)?\/\//.test(path) || path.startsWith("/")) return path;
       return `/${path}`;
+    }
+
+    function openImagePreview(src, alt) {
+      imagePreviewImage.src = src;
+      imagePreviewImage.alt = alt;
+      imagePreview.hidden = false;
+    }
+
+    function closeImagePreview() {
+      imagePreview.hidden = true;
+      imagePreviewImage.removeAttribute("src");
     }
 
     function getCookie(name) {
@@ -485,16 +505,17 @@
       questionTitle.textContent = question.title || "";
       const source = question.source || "별도 지문이 없는 문제입니다.";
       const questionImage = question.questionImagePath
-        ? `<img class="result-question-image" src="${escapeHtml(assetUrl(question.questionImagePath))}" alt="문항 자료 이미지">`
+        ? `<div class="result-question-image-wrap"><img class="result-question-image" src="${escapeHtml(assetUrl(question.questionImagePath))}" alt="문항 자료 이미지"><button type="button" class="result-question-zoom" data-image="${escapeHtml(assetUrl(question.questionImagePath))}" data-alt="문항 자료 이미지" aria-label="문항 자료 이미지 확대"><img src="/static/images/zoom-in.png" alt=""></button></div>`
         : "";
       questionSource.innerHTML = `${escapeHtml(source)}${questionImage}`;
+      choiceReview.classList.toggle("has-image-choices", question.choices.some((choice) => choice.imagePath));
       choiceReview.innerHTML = question.choices.map((choice) => {
         const classes = [
           correctChoice && choice.choiceId === correctChoice.choiceId ? "correct" : "",
           selectedChoice && choice.choiceId === selectedChoice.choiceId ? "selected" : "",
         ].filter(Boolean).join(" ");
         const choiceImage = choice.imagePath
-          ? `<img class="result-choice-image" src="${escapeHtml(assetUrl(choice.imagePath))}" alt="${choice.choiceNo}번 선택지 이미지">`
+          ? `<div class="result-choice-image-wrap"><img class="result-choice-image" src="${escapeHtml(assetUrl(choice.imagePath))}" alt="${choice.choiceNo}번 선택지 이미지"><button type="button" class="result-choice-zoom" data-image="${escapeHtml(assetUrl(choice.imagePath))}" data-alt="${choice.choiceNo}번 선택지 이미지" aria-label="${choice.choiceNo}번 선택지 이미지 확대"><img src="/static/images/zoom-in.png" alt=""></button></div>`
           : "";
         const choiceTextHtml = choiceText(choice) ? `<b>${escapeHtml(choiceText(choice))}</b>` : "";
         return `<li class="${classes}"><span>${choice.choiceNo}</span><div class="choice-review-body">${choiceImage}${choiceTextHtml}</div></li>`;
@@ -512,6 +533,21 @@
       renderNoteSaveState();
       renderJump();
     }
+
+    function bindImagePreview(container) {
+      container.addEventListener("click", (event) => {
+        const button = event.target.closest(".result-question-zoom, .result-choice-zoom");
+        if (button) openImagePreview(button.dataset.image, button.dataset.alt);
+      });
+    }
+
+    bindImagePreview(questionSource);
+    bindImagePreview(choiceReview);
+    document.getElementById("imagePreviewBackdrop").addEventListener("click", closeImagePreview);
+    document.getElementById("imagePreviewClose").addEventListener("click", closeImagePreview);
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") closeImagePreview();
+    });
 
     function renderNoteSaveState(message = "") {
       if (!noteSaveButton) return;
