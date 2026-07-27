@@ -127,6 +127,13 @@ class ChatbotApiTests(TestCase):
         self.assertIn('event: section', body)
         save_chat_turn.assert_called_once()
 
+    @patch("chatbot.views.stream_question_rag_answer", side_effect=RuntimeError("stream failed"))
+    def test_stream_error_uses_client_event_shape(self, _stream_answer):
+        response = rag_chat_stream_api(self.request({"question": "문제 풀이", "intent": "question"}))
+        body = b"".join(response.streaming_content).decode()
+        self.assertIn('event: error', body)
+        self.assertIn('"type":"error"', body)
+
     @patch("chatbot.views.save_chat_turn")
     @patch("chatbot.views.stream_question_rag_answer", return_value=iter(({"type": "done", "data": {"structured_answer": {"sections": []}}},)))
     def test_problem_stream_can_request_foundation_explanation(self, stream_answer, _save_chat_turn):

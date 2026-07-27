@@ -167,7 +167,7 @@ def rag_chat_stream_api(request):
                 yield f"event: {event['type']}\ndata: {json.dumps(event, ensure_ascii=False)}\n\n"
         except Exception:
             logger.exception("RAG 스트리밍 답변 생성 실패")
-            yield 'event: error\ndata: {"error":"RAG 답변 생성 중 오류가 발생했습니다."}\n\n'
+            yield 'event: error\ndata: {"type":"error","error":"RAG 답변 생성 중 오류가 발생했습니다."}\n\n'
 
     response = StreamingHttpResponse(stream(), content_type="text/event-stream; charset=utf-8")
     response["Cache-Control"] = "no-cache"
@@ -207,6 +207,8 @@ def solved_problem_options_api(request):
                 "number": session_numbers[session_id],
                 "content": question.content,
                 "passage": getattr(question, "passage", ""),
+                "image_caption": getattr(question, "image_caption", ""),
+                "question_image_path": getattr(question, "question_image_path", ""),
                 "question_type": question.question_type,
                 "era": record.era,
                 "topic": record.topic,
@@ -221,6 +223,7 @@ def solved_problem_options_api(request):
                     {
                         "choice_no": option.choice_no,
                         "content": option.content,
+                        "choice_image_path": option.choice_image_path,
                         "is_answer": option.is_answer,
                         "choice_explanation": option.choice_explanation,
                     }
