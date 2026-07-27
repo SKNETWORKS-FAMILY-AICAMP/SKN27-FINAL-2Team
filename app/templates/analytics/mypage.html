@@ -182,9 +182,6 @@
                 <span id="plannerDayKicker">선택한 날짜</span>
                 <strong id="plannerDayLabel">{{ planner_summary.day_label }}</strong>
               </div>
-              <div class="planner-day-actions">
-                <button class="planner-date-change" id="plannerDateChange" type="button">학습일 변경</button>
-              </div>
             </div>
 
             <div class="plan-list planner-lessons" id="plannerLessons">
@@ -238,7 +235,6 @@
     const createPlanForm = document.getElementById("createPlanForm");
     const plannerCalendarGrid = document.getElementById("plannerCalendarGrid");
     const plannerMonthLabel = document.getElementById("plannerMonthLabel");
-    const plannerDateChange = document.getElementById("plannerDateChange");
     const prevPlannerMonth = document.getElementById("prevPlannerMonth");
     const nextPlannerMonth = document.getElementById("nextPlannerMonth");
     const plannerDayKicker = document.getElementById("plannerDayKicker");
@@ -253,9 +249,6 @@
     const completedKeys = new Set(plannerData.completedKeys || []);
     const plannedKeys = new Set(plannerData.plannedKeys || []);
     const progressByDate = plannerData.progressByDate || {};
-    plannerDateChange?.addEventListener("click", () => {
-      document.querySelector(".planner-calendar button.selected")?.focus();
-    });
     const getCookie = (name) => {
       const cookies = document.cookie ? document.cookie.split("; ") : [];
       for (const cookie of cookies) {

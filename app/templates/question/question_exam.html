@@ -103,6 +103,13 @@
       <span>잠시만 기다려 주세요.</span>
     </div>
   </section>
+  <section class="image-preview" id="imagePreview" role="dialog" aria-modal="true" aria-label="선택지 이미지 확대" hidden>
+    <button class="image-preview-backdrop" id="imagePreviewBackdrop" type="button" aria-label="이미지 확대 닫기"></button>
+    <figure class="image-preview-content">
+      <button class="image-preview-close" id="imagePreviewClose" type="button" aria-label="닫기">×</button>
+      <img id="imagePreviewImage" alt="확대된 선택지 이미지" />
+    </figure>
+  </section>
   <script>
     const EXAM_MODE = "{{ exam_mode|default:'practice' }}";
     const IS_DIAGNOSTIC = EXAM_MODE === "diagnostic";
@@ -157,6 +164,10 @@
     const saveProgressButton = document.getElementById("saveProgressButton");
     const saveStatus = document.getElementById("saveStatus");
     const submitLoading = document.getElementById("submitLoading");
+    const imagePreview = document.getElementById("imagePreview");
+    const imagePreviewImage = document.getElementById("imagePreviewImage");
+    const imagePreviewBackdrop = document.getElementById("imagePreviewBackdrop");
+    const imagePreviewClose = document.getElementById("imagePreviewClose");
     let remainingSeconds = shouldResume && Number.isInteger(savedProgress?.remainingSeconds) ? savedProgress.remainingSeconds : 0;
     let totalExamSeconds = 0;
     let isTimeOver = false;
@@ -215,6 +226,16 @@
       if (!path) return "";
       if (/^(https?:)?\/\//.test(path) || path.startsWith("/")) return path;
       return `/${path}`;
+    }
+
+    function formatQuestionSource(question) {
+      const source = escapeHtml(question.source).replaceAll("\n", "<br>");
+      const isChronologyQuestion = question.questionType === "연대기의 파악"
+        || question.questionSubtype === "연대기의 파악";
+      if (!isChronologyQuestion) return source;
+      return source.replace(/\s*(\([가-힣]\))/g, (match, marker, offset) => (
+        offset ? `<br>${marker}` : marker
+      ));
     }
 
     function difficultyLabel(score) {
@@ -663,14 +684,21 @@
       questionScore.textContent = IS_DIAGNOSTIC ? `${question.score || 0}점` : difficultyLabel(question.score);
       questionType.textContent = question.type;
       questionTitle.textContent = question.title;
-      const sourceHtml = escapeHtml(question.source).replaceAll("\n", "<br>");
+      const sourceHtml = formatQuestionSource(question);
       const questionImageHtml = question.questionImagePath
-        ? `<img class="question-asset-image" src="${escapeHtml(assetUrl(question.questionImagePath))}" alt="문항 자료 이미지">`
+        ? `<div class="question-source-asset"><img class="question-asset-image" src="${escapeHtml(assetUrl(question.questionImagePath))}" alt="문항 자료 이미지"><button class="question-source-zoom" type="button" data-image="${escapeHtml(assetUrl(question.questionImagePath))}" data-alt="문항 자료 이미지" aria-label="문항 자료 이미지 확대"><img src="/static/images/zoom-in.png" alt="" /></button></div>`
         : "";
-      questionSource.innerHTML = `${sourceHtml}${questionImageHtml}`;
+      questionSource.innerHTML = `<div class="question-source-copy">${sourceHtml}</div>${questionImageHtml}`;
+      questionSource.classList.toggle("has-image-source", Boolean(question.questionImagePath));
       const hasImageChoices = question.choices.some((choice) => Boolean(choice.imagePath));
+      const isVisualQuestion = question.questionSubtype === "시각 자료 해석";
+      const isVisualImageQuestion = isVisualQuestion && hasImageChoices;
       choiceList.classList.toggle("has-image-choices", hasImageChoices);
+      choiceList.classList.toggle("visual-choices", isVisualQuestion);
+      choiceList.classList.toggle("visual-image-choices", isVisualImageQuestion);
       questionCard.classList.toggle("has-image-choices", hasImageChoices);
+      questionCard.classList.toggle("visual-choices", isVisualQuestion);
+      questionCard.classList.toggle("visual-image-choices", isVisualImageQuestion);
       currentQuestionStartedAt = Date.now();
       progressFill.style.width = `${((currentIndex + 1) / questions.length) * 100}%`;
       progressText.textContent = `${currentIndex + 1} / ${questions.length}`;
@@ -681,9 +709,19 @@
           ? `<img class="choice-image" src="${escapeHtml(assetUrl(choice.imagePath))}" alt="${number}번 선택지 이미지">`
           : "";
         const choiceText = choice.content ? `<b>${escapeHtml(choice.content)}</b>` : "";
+        if (choice.imagePath) {
+          return `
+            <div class="choice has-image${selected ? " selected" : ""}" data-choice="${number}">
+              <button type="button" class="choice-select" data-choice="${number}" aria-pressed="${selected ? "true" : "false"}">
+                <span>${number}</span><div class="choice-body">${choiceImage}${choiceText}</div>
+              </button>
+              <button type="button" class="choice-zoom" data-image="${escapeHtml(assetUrl(choice.imagePath))}" data-alt="${number}번 선택지 이미지" aria-label="${number}번 선택지 이미지 확대"><img src="/static/images/zoom-in.png" alt="" /></button>
+            </div>
+          `;
+        }
         return `
-          <button type="button" class="choice${choice.imagePath ? " has-image" : ""}${selected ? " selected" : ""}" data-choice="${number}" aria-pressed="${selected ? "true" : "false"}">
-            <span>${number}</span><div class="choice-body">${choiceImage}${choiceText}</div>
+          <button type="button" class="choice${selected ? " selected" : ""}" data-choice="${number}" aria-pressed="${selected ? "true" : "false"}">
+            <span>${number}</span><div class="choice-body">${choiceText}</div>
           </button>
         `;
       }).join("");
@@ -699,8 +737,8 @@
     }
 
     function bindChoiceButtons() {
-      document.querySelectorAll(".choice").forEach((button) => {
-        button.addEventListener("click", async () => {
+      document.querySelectorAll(".choice:not(.has-image), .choice-select").forEach((button) => {
+        button.addEventListener("click", async (event) => {
           if (isTimeOver) return;
           const selectedChoice = Number(button.dataset.choice);
           answers[currentIndex] = answers[currentIndex] === selectedChoice ? null : selectedChoice;
@@ -712,7 +750,31 @@
           renderQuestion();
         });
       });
+      document.querySelectorAll(".choice-zoom").forEach((button) => {
+        button.addEventListener("click", () => openImagePreview(button.dataset.image, button.dataset.alt));
+      });
+      document.querySelectorAll(".question-source-zoom").forEach((button) => {
+        button.addEventListener("click", () => openImagePreview(button.dataset.image, button.dataset.alt));
+      });
     }
+
+    function openImagePreview(src, alt) {
+      imagePreviewImage.src = src;
+      imagePreviewImage.alt = alt;
+      imagePreview.hidden = false;
+      imagePreviewClose.focus();
+    }
+
+    function closeImagePreview() {
+      imagePreview.hidden = true;
+      imagePreviewImage.removeAttribute("src");
+    }
+
+    imagePreviewBackdrop.addEventListener("click", closeImagePreview);
+    imagePreviewClose.addEventListener("click", closeImagePreview);
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && !imagePreview.hidden) closeImagePreview();
+    });
 
     async function moveQuestion(nextIndex) {
       if (isTimeOver) return;
@@ -779,7 +841,7 @@
       timerText.textContent = "00:00";
       timerText.classList.remove("is-warning");
       timerText.classList.add("is-over");
-      document.querySelectorAll(".choice, .number-grid button, .nav-button, .submit-button").forEach((button) => {
+      document.querySelectorAll(".choice, .choice-select, .choice-zoom, .number-grid button, .nav-button, .submit-button").forEach((button) => {
         button.disabled = true;
       });
       submitButton.textContent = "시간 종료";

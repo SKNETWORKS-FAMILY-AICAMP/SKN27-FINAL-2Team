@@ -2037,7 +2037,6 @@ body.modal-open {
 .mypage .planner-day-top span { font-size: 15px !important; }
 .mypage .planner-day-top strong { font-size: 25px !important; }
 .mypage .planner-extra { min-width: 104px; min-height: 34px; border-radius: 999px; font-size: 13px; }
-.mypage .planner-date-change { min-width: 112px; min-height: 34px; border: 1px solid #ddc6b1; border-radius: 999px; background: #fffdfa; color: #5d5043; font-size: 13px; font-weight: 900; cursor: pointer; }
 .mypage .planner-board, .mypage .planner-day { overflow: visible; }
 .mypage .planner-day-actions { position: relative; z-index: 3; }
 .mypage .planner-extra:disabled:hover::after,
