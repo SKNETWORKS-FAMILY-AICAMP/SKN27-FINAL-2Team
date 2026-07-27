@@ -339,4 +339,4 @@ ai/ml_question/make_question_quality_*.py
 ai/ml_question/train_question_quality_*.ipynb
 
 # Question generation runtime outputs
-question_generation/outputs/
+ai/question_generation/outputs/

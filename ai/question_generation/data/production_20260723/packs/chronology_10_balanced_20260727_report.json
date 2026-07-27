@@ -1,0 +1,34 @@
+{
+  "status": "pass",
+  "pack_count": 10,
+  "frame_count": 50,
+  "task_counts": {
+    "period_between": 24,
+    "timeline_position": 13,
+    "order": 13
+  },
+  "difficulty_counts": {
+    "1": 1,
+    "2": 25,
+    "3": 24
+  },
+  "generation_contract_pass": 50,
+  "unique_answer_pass": 50,
+  "timeline_correct_positions": {
+    "(가)": 3,
+    "(나)": 3,
+    "(다)": 3,
+    "(라)": 2,
+    "(마)": 2
+  },
+  "order_correct_sequences": {
+    "(가)-(나)-(다)": 3,
+    "(가)-(다)-(나)": 2,
+    "(나)-(가)-(다)": 2,
+    "(나)-(다)-(가)": 2,
+    "(다)-(가)-(나)": 2,
+    "(다)-(나)-(가)": 2
+  },
+  "missing_service_taxonomy": 0,
+  "source_pack": "C:\\dev\\project\\SKN27-FINAL-2Team\\ai\\question_generation\\data\\production_20260723\\packs\\chronology_10.json"
+}

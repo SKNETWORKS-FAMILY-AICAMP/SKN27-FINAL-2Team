@@ -1690,7 +1690,6 @@ body.modal-open {
   }
 }
 
-.site-header .brand.brand-no-logo::after { content: none; }
 
 /* Period disclosure only: matches the supplied detailed-report reference. */
 .period-reference-report { overflow: hidden; border: 1px solid #e0e5dc; border-radius: 6px; background: #fff; color: #344038; }
