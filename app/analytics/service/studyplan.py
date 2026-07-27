@@ -70,10 +70,14 @@ def calculate_record_based_plan_progress(
 ) -> dict[str, object]:
     plan_items = parse_plan_items(study_plan.study_plan_items)
     completion_rate = float(study_plan.completion_rate or 0.0)
+    start_date = getattr(study_plan, "start_date", None)
+    end_date = getattr(study_plan, "end_date", None)
     active_plan = get_active_study_plan_dto(user_id)
     if active_plan and active_plan.get("studyPlanId") == study_plan.studyplan_id:
         plan_items = active_plan.get("plans", [])
         completion_rate = float(active_plan.get("completionRate") or 0.0)
+        start_date = active_plan.get("startDate") or start_date
+        end_date = active_plan.get("endDate") or end_date
 
     target_count = sum(
         1
@@ -89,10 +93,28 @@ def calculate_record_based_plan_progress(
             "remainingCount": max(target_count - achieved_count, 0),
             "completionRate": completion_rate,
             "completionPercent": round(completion_rate * 100),
-            "periodLabel": "",
+            "periodLabel": build_plan_period_label(start_date, end_date),
         },
         "block_progress": {},
     }
+
+
+def build_plan_period_label(start_date: object, end_date: object) -> str:
+    """학습계획 기간을 'MM.DD ~ MM.DD' 로 만든다. 값이 없으면 빈 문자열."""
+    start_label = _format_month_day(start_date)
+    end_label = _format_month_day(end_date)
+    if not start_label or not end_label:
+        return ""
+    return f"{start_label} ~ {end_label}"
+
+
+def _format_month_day(value: object) -> str:
+    if isinstance(value, date):
+        return f"{value.month:02d}.{value.day:02d}"
+    text = str(value or "").strip()
+    if len(text) < 10:
+        return ""
+    return f"{text[5:7]}.{text[8:10]}"
 
 
 def complete_study_plan_block_by_id(

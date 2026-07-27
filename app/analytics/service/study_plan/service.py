@@ -102,10 +102,18 @@ def create_personalized_study_plan(
     return finalize_plan_draft(user_id, draft, source_study_plan_id)
 
 
-def build_user_plan_draft(
+def build_plan_targets(
     user_id: int,
     today: date,
-) -> dict[str, object]:
+) -> tuple[list[PriorityTarget], dict[str, dict[int, int]]]:
+    """우선순위 학습 대상과 분류별 점수대 문항 수를 만든다.
+
+    학습계획 생성과 주간 리포트가 같은 대상 목록을 써야 한다. 특히 리포트의
+    repeated_error 는 여기서 만든 PriorityTarget.repeated_error 를 그대로
+    쓰므로, 계산을 다시 구현하면 groupKeyId 규칙이 어긋날 수 있다.
+
+    두 번째 반환값은 학습계획 생성이 문제 수 검증에 쓴다. 리포트는 쓰지 않는다.
+    """
     from django.db.models import Count
     from question.models import Questions, SolveRecords, SolveSessions
     from user.models import UserAccounts
@@ -171,8 +179,11 @@ def build_user_plan_draft(
         pool_targets[group_key_id]["questionCount"] = (
             int(pool_targets[group_key_id]["questionCount"]) + int(row["question_count"])
         )
-        counts_by_group.setdefault(group_key_id, {})[int(row["q_score"])] = int(
-            row["question_count"],
+        # 별칭이 같은 분류로 합쳐질 수 있어 누적해야 한다.
+        # (예: era "조선전기" 와 "조선" 이 같은 키로 정규화된다)
+        group_counts = counts_by_group.setdefault(group_key_id, {})
+        group_counts[int(row["q_score"])] = (
+            int(group_counts.get(int(row["q_score"]), 0)) + int(row["question_count"])
         )
         era_counts = counts_by_group.setdefault(era_key_id, {})
         era_counts[int(row["q_score"])] = (
@@ -212,7 +223,17 @@ def build_user_plan_draft(
     days_until_exam = None
     if profile.exam_date is not None:
         days_until_exam = (profile.exam_date - today).days
-    priority_targets = build_priority_targets(targets, days_until_exam)
+    return build_priority_targets(targets, days_until_exam), counts_by_group
+
+
+def build_user_plan_draft(
+    user_id: int,
+    today: date,
+) -> dict[str, object]:
+    from user.models import UserAccounts
+
+    priority_targets, counts_by_group = build_plan_targets(user_id, today)
+    profile = UserAccounts.objects.get(user_id=user_id)
     config = get_study_plan_config()
     daily_minutes = int(
         (profile.daily_available_hours or Decimal(0)) * config.minutes_per_hour,

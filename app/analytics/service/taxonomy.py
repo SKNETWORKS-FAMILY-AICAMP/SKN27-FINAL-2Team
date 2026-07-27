@@ -23,8 +23,13 @@ def get_taxonomy_config() -> TaxonomyConfig:
         unclassified_value="__unclassified__",
         unclassified_label="미분류",
         composite_separator=" · ",
-        field_order=("era", "topic", "qType"),
-        field_labels={"era": "시대", "topic": "주제", "qType": "유형"},
+        field_order=("era", "topic", "qType", "coreConcept"),
+        field_labels={
+            "era": "시대",
+            "topic": "주제",
+            "qType": "유형",
+            "coreConcept": "핵심 개념",
+        },
         era_aliases={
             "고조선": ("고조선",),
             "남북국 시대": ("남북국시대", "남북국", "통일신라", "발해"),
@@ -55,6 +60,8 @@ def get_taxonomy_config() -> TaxonomyConfig:
 def normalize_field_name(field_name: str) -> str:
     if field_name in ("q_type", "question_type", "qType"):
         return "qType"
+    elif field_name in ("core_concept", "coreConcept", "question__core_concept"):
+        return "coreConcept"
     return field_name
 
 
@@ -74,7 +81,8 @@ def normalize_classification_value(
         aliases = resolved_config.era_aliases
     elif normalized_field == "topic":
         aliases = resolved_config.topic_aliases
-    elif normalized_field == "qType":
+    elif normalized_field in ("qType", "coreConcept"):
+        # 유형과 핵심 개념은 별칭 표를 두지 않고 원문을 그대로 쓴다.
         return display_value
 
     comparison_key = _build_comparison_key(display_value)

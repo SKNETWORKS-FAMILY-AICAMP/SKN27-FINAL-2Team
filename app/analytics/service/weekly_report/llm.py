@@ -167,8 +167,8 @@ def validate_ai_content(
             continue
         if any(str(evidence_id) not in allowed_evidence_ids for evidence_id in evidence_ids):
             errors.append(f"{item_type.upper()}_UNKNOWN_EVIDENCE")
-        text_numbers = set(re.findall(r"-?\d+(?:\.\d+)?", text))
-        allowed_numbers = _collect_allowed_numbers(result, evidence_ids)
+        text_numbers = _extract_text_numbers(text)
+        allowed_numbers = _normalize_numbers(_collect_allowed_numbers(result, evidence_ids))
         if not text_numbers.issubset(allowed_numbers):
             errors.append(f"{item_type.upper()}_UNSUPPORTED_NUMBER")
         if any(phrase in text for phrase in forbidden_user_text):
@@ -200,17 +200,36 @@ def validate_grounded_statements(
             continue
         if any(str(evidence_id) not in allowed_evidence_ids for evidence_id in evidence_ids):
             errors.append(f"{error_prefix}_UNKNOWN_EVIDENCE")
-        text_numbers = set(re.findall(r"-?\d+(?:\.\d+)?", text))
-        allowed_numbers = _collect_allowed_numbers(
-            result,
-            evidence_ids,
-            evidence_fields,
+        text_numbers = _extract_text_numbers(text)
+        allowed_numbers = _normalize_numbers(
+            _collect_allowed_numbers(result, evidence_ids, evidence_fields),
         )
         if not text_numbers.issubset(allowed_numbers):
             errors.append(f"{error_prefix}_UNSUPPORTED_NUMBER")
         if any(phrase in text for phrase in resolved_config.forbidden_phrases):
             errors.append(f"{error_prefix}_FORBIDDEN_PHRASE")
     return list(dict.fromkeys(errors))
+
+
+def _extract_text_numbers(text: str) -> set[str]:
+    """문장에서 숫자를 뽑는다.
+
+    "1,200초" 가 1 과 200 으로 쪼개지지 않게 자릿수 구분 기호를 먼저 없앤다.
+    부호는 근거 쪽과 맞추기 위해 버린다. "3-4문제" 의 하이픈을 음수로 읽는 것도 막는다.
+    """
+    return _normalize_numbers(re.findall(r"\d+(?:\.\d+)?", text.replace(",", "")))
+
+
+def _normalize_numbers(numbers) -> set[str]:
+    """부호와 소수점 표기를 통일한다. 0.20 과 0.2, -0.2 와 0.2 를 같게 본다."""
+    normalized: set[str] = set()
+    for number in numbers:
+        try:
+            value = abs(float(number))
+        except ValueError:
+            continue
+        normalized.add(f"{value:g}")
+    return normalized
 
 
 def _collect_evidence_ids(
@@ -233,6 +252,8 @@ def _collect_evidence_items(
             "planProgress",
             "strengths",
             "priorityImprovements",
+            "conceptWeaknesses",
+            "examTrends",
             "timeSummary",
             "confusionPatterns",
             "nextPlanTargets",
@@ -250,25 +271,68 @@ def _collect_evidence_items(
     return evidence_items
 
 
+# 식별자는 사람이 인용할 수치가 아니다. 세션 번호를 점수로 쓰는 문장을 막는다.
+IDENTIFIER_KEYS = frozenset(
+    {
+        "sessionId",
+        "baselineSessionId",
+        "studyPlanId",
+        "sourceSessionId",
+        "sourceQuestionIds",
+        "questionId",
+        "questionIds",
+        "targetRound",
+    }
+)
+
+
 def _collect_allowed_numbers(
     result: Mapping[str, object],
     evidence_ids: list[object],
     evidence_fields: tuple[str, ...] | None = None,
 ) -> set[str]:
-    values: list[object] = []
+    numbers: set[str] = set()
     evidence_items = _collect_evidence_items(result, evidence_fields)
     for evidence_id in evidence_ids:
         evidence_item = evidence_items.get(str(evidence_id))
         if evidence_item is not None:
-            values.append(evidence_item)
-    return _collect_numeric_literals(values)
+            numbers.update(_collect_quotable_numbers(evidence_item))
+    return numbers
+
+
+def _collect_quotable_numbers(value: object, key: str | None = None) -> set[str]:
+    """인용해도 되는 수치만 모은다.
+
+    식별자는 제외하고, 라벨 문자열에 든 숫자는 포함한다. "3·1 운동" 같은
+    개념명을 그대로 쓰지 못하면 한국사 리포트에서 쓸 수 없는 문장이 너무 많아진다.
+    """
+    if key in IDENTIFIER_KEYS:
+        return set()
+    if isinstance(value, str):
+        return set(re.findall(r"-?\d+(?:\.\d+)?", value))
+    if isinstance(value, Mapping):
+        numbers: set[str] = set()
+        for nested_key, nested_value in value.items():
+            numbers.update(_collect_quotable_numbers(nested_value, str(nested_key)))
+        return numbers
+    if isinstance(value, (list, tuple)):
+        numbers = set()
+        for nested_value in value:
+            numbers.update(_collect_quotable_numbers(nested_value, key))
+        return numbers
+    return _collect_numeric_literals(value)
 
 
 def _collect_numeric_literals(value: object) -> set[str]:
     if isinstance(value, bool) or value is None:
         return set()
     if isinstance(value, (int, float)):
-        return set(re.findall(r"-?\d+(?:\.\d+)?", str(value)))
+        literals = set(re.findall(r"-?\d+(?:\.\d+)?", str(value)))
+        # 62.0 과 62 는 같은 값이다. 근거가 float 로 저장돼 있다는 이유로
+        # "62점" 같은 자연스러운 문장을 거절하면 안 된다.
+        if isinstance(value, float) and value.is_integer():
+            literals.add(str(int(value)))
+        return literals
     if isinstance(value, Mapping):
         numbers: set[str] = set()
         for nested_value in value.values():

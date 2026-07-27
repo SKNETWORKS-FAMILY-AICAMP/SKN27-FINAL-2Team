@@ -246,6 +246,8 @@ class LangGraphWeeklyReportAgentSuite:
         return {
             "strengths": result.get("strengths") or [],
             "priorityImprovements": result.get("priorityImprovements") or [],
+            "conceptWeaknesses": result.get("conceptWeaknesses") or [],
+            "examTrends": result.get("examTrends") or [],
             "timeSummary": result.get("timeSummary") or [],
             "confusionPatterns": result.get("confusionPatterns") or [],
         }
@@ -254,7 +256,18 @@ class LangGraphWeeklyReportAgentSuite:
     def _analyst_prompt() -> str:
         return (
             "당신은 한국사 주간평가 근거 분석 에이전트입니다. 결정 코드가 evidence에 이미 선정한 "
-            "strengths, priorityImprovements, timeSummary, confusionPatterns만 해석하세요. "
+            "strengths, priorityImprovements, conceptWeaknesses, examTrends, timeSummary, "
+            "confusionPatterns만 해석하세요. "
+            "weaknessScore 와 recentWeaknessScore, previousWeaknessScore 는 표본 수를 감안해 "
+            "보수적으로 계산한 취약 지표이며 오답률이 아닙니다. 백분율로 바꾸거나 정답률·오답률로 "
+            "바꿔 부르지 마세요. 실제 오답 비율은 wrongCount, sampleCount, wrongPercent 를 쓰세요. "
+            "trend 는 그 취약 지표가 최근 구간에서 올랐는지 내렸는지를 뜻하고, "
+            "examTrendRank 는 그 영역이 최근 출제 경향 상위 몇 위인지, "
+            "examQuestionSharePercent 는 최근 회차에서 그 영역이 차지한 문항 비중입니다. "
+            "둘 다 시험 쪽 통계이며 학습자의 정답률이나 점수가 아닙니다. "
+            "conceptWeaknesses는 시대·주제보다 좁은 핵심 개념 단위 취약 판정입니다. "
+            "examTrends는 최근 회차 출제 비중 상위 목록이며 학습자의 성적이 아닙니다. "
+            "이 값들을 서로 연결해 어느 영역을 왜 먼저 봐야 하는지 구체적으로 설명하세요. "
             "confusionPatterns는 그래프 관계가 하나로 확정되고 반복 기준을 통과한 오답 근거입니다. "
             "correctFact와 selectedFact를 이용해 어떤 역사 관계를 혼동했는지 설명할 수 있지만, "
             "그래프에 없는 인물·정책·사건·차이를 추가하지 마세요. 새로운 점수, 취약 판정, "
@@ -282,7 +295,10 @@ class LangGraphWeeklyReportAgentSuite:
     def _writer_prompt(maximum_tip_count: int) -> str:
         return (
             "당신은 한국사 주간 리포트 작성 에이전트입니다. 제공된 result, analysis, coaching만 "
-            "사용해 학생용 comment 1개와 tips를 작성하세요. 새로운 숫자, 사실, 취약 판정, "
+            "사용해 학생용 comment 1개와 tips를 작성하세요. comment는 세 문장에서 네 문장으로 쓰되 "
+            "이번 평가 결과, 가장 먼저 볼 영역과 그 근거, 다음 학습 방향이 모두 드러나게 하세요. "
+            "근거에 있는 수치를 인용해 구체적으로 쓰고, 같은 내용을 반복하지 마세요. "
+            "새로운 숫자, 사실, 취약 판정, "
             "합격 보장이나 비난 표현을 만들지 마세요. 개선 근거만으로 오답이 적었다고 추론하거나 "
             "안정적 성취·높은 정답률이라고 바꾸지 마세요. 보완 근거만으로 자주 틀린 이유·암기 "
             "부족·실수 습관을 추측하지 마세요. 계획 진행률도 별도 등급 기준이 없으므로 높다·낮다고 "
@@ -290,9 +306,11 @@ class LangGraphWeeklyReportAgentSuite:
             "확인되는 관계만 이름 붙이고, comparisonDimensions에 없는 비교 기준을 추가하지 마세요. "
             "각 사실 문장은 "
             "그 내용을 직접 뒷받침하는 입력 evidenceId만 인용해야 하며 "
-            "strengths, priorityImprovements, timeSummary, confusionPatterns, nextPlanTargets 같은 내부 "
-            "필드명은 문장에 "
-            "노출하지 말고 강점, 우선 보완 영역, 풀이시간, 다음 학습 목표처럼 표현하세요. "
+            "strengths, priorityImprovements, conceptWeaknesses, examTrends, timeSummary, "
+            "confusionPatterns, nextPlanTargets 같은 내부 필드명은 문장에 "
+            "노출하지 말고 강점, 우선 보완 영역, 핵심 개념, 최근 출제 경향, 풀이시간, "
+            "다음 학습 목표처럼 표현하세요. "
+            "출제 경향은 시험에 자주 나온다는 뜻이지 학습자가 잘한다·못한다는 뜻이 아닙니다. "
             f"tips는 최대 {maximum_tip_count}개입니다. revisionFeedback이 있으면 해당 문제만 "
             "수정하고 한국어 구조화 출력만 반환하세요."
         )

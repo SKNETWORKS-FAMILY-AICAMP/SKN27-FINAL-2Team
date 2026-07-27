@@ -319,11 +319,16 @@ class WeeklyReportLangGraphTests(TestCase):
             {
                 "strengths",
                 "priorityImprovements",
+                "conceptWeaknesses",
+                "examTrends",
                 "timeSummary",
                 "confusionPatterns",
             },
         )
+        # 점수와 학습계획은 해석 단계에 넘기지 않는다.
         self.assertNotIn("assessment", evidence)
+        self.assertNotIn("comparison", evidence)
+        self.assertNotIn("planProgress", evidence)
         self.assertNotIn("nextPlanTargets", evidence)
 
     def test_critic_verdict_rejects_passed_with_error_feedback(self) -> None:
