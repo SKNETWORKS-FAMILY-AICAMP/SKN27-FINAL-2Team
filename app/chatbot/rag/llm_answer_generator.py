@@ -64,6 +64,7 @@ meta는 title과 summary, section은 heading, row는 term과 content, sources는
 FOUNDATION_STREAM_STRUCTURED_SYSTEM_PROMPT = STREAM_STRUCTURED_SYSTEM_PROMPT + """
 
 이 사용자는 기초 해설이 필요합니다. 섹션을 반드시 "1. 먼저 알아둘 용어", "2. 시대 배경", "3. 문제 풀이", "4. 암기 포인트", "5. 선지별 해설" 순서로 구성하세요.
+질문의 [DB 선지별 해설]은 문제 DB에서 가져온 확정 판단입니다. 각 선지의 맞고 틀림을 바꾸지 말고, 해당 해설을 출발점으로 검색 근거에서 확인되는 역사적 배경과 연결 이유를 더 자세히 풀어 설명하세요.
 각 row의 content는 한 문장으로 끝내지 말고 쉬운 말로 충분히 설명하세요. 교과서 요약처럼 딱딱하게 쓰지 말고, 옆에서 차근차근 알려 주는 선생님처럼 상냥한 존댓말로 안내하세요. 모든 문장 종결은 "~에요/~예요"체로 쓰고 "~습니다/~입니다"체는 쓰지 마세요. "처음에는 헷갈릴 수 있지만", "이렇게 연결해서 보면 쉬워요", "이 부분만 기억해 두면 돼요"처럼 자연스러운 안내를 섞고, 틀린 선지는 부담을 주지 않는 말로 설명하세요."""
 
 CORE_STREAM_STRUCTURED_SYSTEM_PROMPT = STREAM_STRUCTURED_SYSTEM_PROMPT + """

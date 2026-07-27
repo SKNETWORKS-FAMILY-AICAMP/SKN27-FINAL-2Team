@@ -8,8 +8,12 @@ from django.urls import reverse
 
 from .rag.llm_answer_generator import CONCEPT_STREAM_STRUCTURED_SYSTEM_PROMPT, CORE_STREAM_STRUCTURED_SYSTEM_PROMPT, FOUNDATION_EXPLANATION_SYSTEM_PROMPT, LLMAnswerGenerator, PROMPT_SNIPPET_MAX_CHARS, normalize_structured_answer, prompt_snippet, sanitize_answer
 from .rag import reranker
-from .rag_service import build_problem_option_queries, stream_concept_rag_answer
-from .views import rag_chat_api, rag_chat_stream_api
+from .rag_service import (
+    build_problem_option_queries,
+    stream_concept_rag_answer,
+    stream_question_rag_answer,
+)
+from .views import proxied_image_path, rag_chat_api, rag_chat_stream_api
 
 
 class ChatbotApiTests(TestCase):
@@ -30,6 +34,10 @@ class ChatbotApiTests(TestCase):
         response = rag_chat_api(self.request({"question": "세종대왕", "top_k": "abc"}))
         self.assertEqual(response.status_code, 400)
 
+    def test_solved_problem_images_use_local_proxy(self):
+        value = proxied_image_path("https://contents.history.go.kr/data/img/ki/test.jpg")
+        self.assertTrue(value.startswith("/chatbot/api/image-proxy/?url="))
+
     def test_problem_explanation_prompts_define_core_and_foundation_formats(self):
         self.assertIn("먼저 알아둘 용어", FOUNDATION_EXPLANATION_SYSTEM_PROMPT)
         self.assertIn("선지별 해설", FOUNDATION_EXPLANATION_SYSTEM_PROMPT)
@@ -49,10 +57,42 @@ class ChatbotApiTests(TestCase):
         self.assertEqual(list(LLMAnswerGenerator._parse_stream_events(iter(['{"type":"done"}']))), [{"type": "done"}])
 
     def test_problem_option_queries_keep_context_for_each_choice(self):
-        queries = build_problem_option_queries("[지문] 수가 고구려를 침공했다.\n[문제] 이후 사실은?\n[보기]\n1. 을지문덕\n2. 연개소문\n[내 답] 1번\n[정답] 2번\n[분류] 고대 / 정치")
-        self.assertEqual(len(queries), 2)
+        queries = build_problem_option_queries(
+            "[지문] 수가 고구려를 침공했다.\n[문제] 이후 사실은?\n[보기]\n1. 을지문덕\n2. 연개소문\n[내 답] 1번\n[정답] 2번\n[분류] 고대 / 정치",
+            {1: "살수 대첩은 을지문덕의 승리예요."},
+        )
+        self.assertEqual(len(queries), 3)
         self.assertTrue(all("수가 고구려를 침공했다" in query and "이후 사실은" in query for query in queries))
         self.assertTrue(any("을지문덕" in query for query in queries))
+        self.assertTrue(any("살수 대첩" in query for query in queries))
+
+    def test_core_problem_stream_uses_db_choice_explanations_verbatim(self):
+        result = SimpleNamespace(chunk_id=1, score=1.0)
+        generator = SimpleNamespace(config=SimpleNamespace(provider="openai", model="test", temperature=0))
+        generator.generate_structured_stream = lambda *args, **kwargs: iter((
+            {"type": "section", "heading": "1. 정답 근거"},
+            {"type": "row", "term": "핵심", "content": "검색 근거"},
+            {"type": "section", "heading": "2. 선지 판단"},
+            {"type": "row", "term": "1번", "content": "모델이 만든 판단"},
+            {"type": "done"},
+        ))
+        with patch("chatbot.rag_service.PgVectorHybridRetriever") as retriever_class, patch(
+            "chatbot.rag_service.should_use_graph_context", return_value=False
+        ), patch("chatbot.rag_service.search_timeline_sources", return_value=[]), patch(
+            "chatbot.rag_service.result_to_payload", return_value={"title": "살수 대첩"}
+        ), patch("chatbot.rag_service.has_enough_evidence", return_value=True), patch(
+            "chatbot.rag_service.LLMAnswerGenerator.from_env", return_value=generator
+        ):
+            retriever_class.return_value.search.return_value = [result]
+            events = list(stream_question_rag_answer(
+                "[문제] 옳은 것은?\n[보기]\n1. 그림\n[내 답] 1번\n[분류] 고대 / 정치",
+                explanation_level="core",
+                choice_explanations={1: "DB에 저장된 선지 해설"},
+            ))
+
+        row_contents = [event["content"] for event in events if event["type"] == "row"]
+        self.assertIn("DB에 저장된 선지 해설", row_contents)
+        self.assertNotIn("모델이 만든 판단", row_contents)
 
     def test_parallel_reranker_loads_once(self):
         model = object()
@@ -135,11 +175,14 @@ class ChatbotApiTests(TestCase):
         self.assertIn('"type":"error"', body)
 
     @patch("chatbot.views.save_chat_turn")
+    @patch("chatbot.views.load_problem_choice_explanations", return_value={1: "DB 해설"})
     @patch("chatbot.views.stream_question_rag_answer", return_value=iter(({"type": "done", "data": {"structured_answer": {"sections": []}}},)))
-    def test_problem_stream_can_request_foundation_explanation(self, stream_answer, _save_chat_turn):
-        response = rag_chat_stream_api(self.request({"question": "문제 풀이", "intent": "question", "foundation_explanation": True}))
+    def test_problem_stream_can_request_foundation_explanation(self, stream_answer, load_explanations, _save_chat_turn):
+        response = rag_chat_stream_api(self.request({"question": "문제 풀이", "intent": "question", "foundation_explanation": True, "problem_record_id": 9}))
         b"".join(response.streaming_content)
+        load_explanations.assert_called_once()
         self.assertEqual(stream_answer.call_args.kwargs["explanation_level"], "foundation")
+        self.assertEqual(stream_answer.call_args.kwargs["choice_explanations"], {1: "DB 해설"})
 
     def test_image_proxy_requires_login(self):
         response = self.client.get(reverse("chatbot:image_proxy"), {"url": "https://contents.history.go.kr/data/img/test.jpg"})

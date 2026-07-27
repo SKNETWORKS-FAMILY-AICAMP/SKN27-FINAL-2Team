@@ -7,8 +7,8 @@
   <title>himate 한국사 챗봇</title>
   <link rel="stylesheet" href="/static/himate.css" />
   <link rel="stylesheet" href="/static/layout.css" />
-  <link rel="stylesheet" href="{% static 'chatbot/css/chat.css' %}?v=hanok-chat-3" />
-  <link rel="stylesheet" href="{% static 'chatbot/css/chat-reference.css' %}?v=10" />
+  <link rel="stylesheet" href="{% static 'chatbot/css/chat.css' %}?v=hanok-chat-13" />
+  <link rel="stylesheet" href="{% static 'chatbot/css/chat-reference.css' %}?v=11" />
 </head>
 <body>
   <main class="chat-page">
@@ -89,6 +89,13 @@
     </section>
   </div>
 
+  <section class="image-preview" id="imagePreview" role="dialog" aria-modal="true" aria-label="이미지 확대" hidden>
+    <button class="image-preview-backdrop" id="imagePreviewBackdrop" type="button" aria-label="이미지 확대 닫기"></button>
+    <figure class="image-preview-content">
+      <button class="image-preview-close" id="imagePreviewClose" type="button" aria-label="닫기">×</button>
+      <img id="imagePreviewImage" alt="확대된 선택지 이미지" />
+    </figure>
+  </section>
   <script>
     const chatStream = document.getElementById("chatStream");
     const form = document.getElementById("chatForm");
@@ -110,7 +117,7 @@
     const STORAGE_KEY = "himate_chat_sessions";
     let mode = "auto";
     let sessions = loadSessions().filter((session) => Array.isArray(session.messages) && session.messages.length > 0);
-    let activeSessionId = createSession("새 대화").id;
+    let activeSessionId = sessions[0]?.id || createSession("새 대화").id;
     let solvedProblems = [];
     let solvedProblemsLoaded = false;
 
@@ -190,6 +197,7 @@
           top_k: intent === "question" ? 8 : 20,
           conversation_history: conversationHistory,
           problem_session_id: options.problemSessionId || null,
+          problem_record_id: options.problemRecordId || null,
           foundation_explanation: options.foundationExplanation === true,
         };
         if (intent === "concept" || intent === "question") {
@@ -292,6 +300,7 @@
         submitChatQuestion(payload.question, "기초 해설 보기", {
           intent: "question",
           problemSessionId: payload.problem_session_id || data.problem_session_id || null,
+          problemRecordId: payload.problem_record_id || null,
           foundationExplanation: true,
           historyContext: payload.question,
         });
@@ -304,8 +313,11 @@
       wrapper.className = "message bot";
       wrapper.innerHTML = `
         <div class="avatar"><img src="/static/images/chatbot_label.png" alt="himate" /></div>
-        <div class="bubble bot-bubble"><div class="bot-label"><span class="bot-dot"></span><span>${escapeHtml(label)}</span></div><article class="note ${label === "문제 해설" ? "problem-note" : ""}">${problemTitle ? `<p class="selected-problem-title">선택 문제 · ${escapeHtml(problemTitle)}</p>` : ""}${problemImagePath ? `<img class="selected-problem-image" src="${escapeHtml(assetUrl(problemImagePath))}" alt="선택 문항 자료 이미지">` : ""}<h1 class="title"></h1><p class="summary"></p><div class="stream-sections"></div></article></div>`;
+        <div class="bubble bot-bubble"><div class="bot-label"><span class="bot-dot"></span><span>${escapeHtml(label)}</span></div><article class="note ${label === "문제 해설" ? "problem-note" : ""}">${problemTitle ? `<p class="selected-problem-title">선택 문제 · ${escapeHtml(problemTitle)}</p>` : ""}${problemImagePath ? `<div class="selected-problem-image-wrap"><img class="selected-problem-image" src="${escapeHtml(assetUrl(problemImagePath))}" alt="선택 문항 자료 이미지"><button type="button" class="selected-problem-question-zoom" data-image="${escapeHtml(assetUrl(problemImagePath))}" data-alt="선택 문항 자료 이미지" aria-label="문항 자료 이미지 확대"><img src="/static/images/zoom-in.png" alt=""></button></div>` : ""}<h1 class="title"></h1><p class="summary"></p><div class="stream-sections"></div></article></div>`;
       chatStream.appendChild(wrapper);
+      wrapper.querySelectorAll(".selected-problem-question-zoom").forEach((button) => {
+        button.addEventListener("click", () => openImagePreview(button.dataset.image, button.dataset.alt));
+      });
       const note = wrapper.querySelector(".note");
       const sections = wrapper.querySelector(".stream-sections");
       let table = null;
@@ -487,22 +499,15 @@
 
     function assetUrl(path) {
       if (!path) return "";
-      if (/^(https?:)?\/\//.test(path) || path.startsWith("/")) return path;
+      if (/^(https?:)?\/\//.test(path)) return proxiedImageUrl(path);
+      if (path.startsWith("/")) return path;
       return `/${path}`;
     }
 
     function selectProblemForChat(problem) {
       closeProblemPicker();
       appendProblemActionMessage(problem);
-      addMessageToActiveSession({
-        sender: "bot",
-        data: {
-          answer: `${problem.number}번 문제가 선택되었습니다. 무엇을 도와드릴까요?`,
-          context: buildProblemContext(problem, "선택한 문제입니다."),
-          intent: "chat",
-        },
-        intent: "chat",
-      });
+      addMessageToActiveSession({ sender: "problem", problem });
     }
 
     function openPendingProblemContext() {
@@ -547,13 +552,15 @@
     function appendProblemActionMessage(problem) {
       const wrapper = document.createElement("div");
       wrapper.className = "message bot";
+      const hasImageChoices = (problem.options || []).some((option) => option.choice_image_path || option.imagePath);
       const options = (problem.options || []).map((option) => {
         const selected = Number(option.choice_no) === Number(problem.selected_no);
         const correct = Number(option.choice_no) === Number(problem.answer_no);
         return `
           <li class="${selected ? "selected" : ""} ${correct ? "correct" : ""}">
             <span>${escapeHtml(option.choice_no)}. ${escapeHtml(option.content)}</span>
-            ${option.choice_image_path ? `<img class="selected-problem-choice-image" src="${escapeHtml(assetUrl(option.choice_image_path))}" alt="${escapeHtml(option.choice_no)}번 선택지 이미지">` : ""}
+            ${(option.choice_image_path || option.imagePath) ? `<img class="selected-problem-choice-image" src="${escapeHtml(assetUrl(option.choice_image_path || option.imagePath))}" alt="${escapeHtml(option.choice_no)}번 선택지 이미지">` : ""}
+            ${(option.choice_image_path || option.imagePath) ? `<button type="button" class="selected-problem-image-zoom" data-image="${escapeHtml(assetUrl(option.choice_image_path || option.imagePath))}" data-alt="${escapeHtml(option.choice_no)}번 선택지 이미지" aria-label="${escapeHtml(option.choice_no)}번 선택지 이미지 확대"><img src="/static/images/zoom-in.png" alt=""></button>` : ""}
             <em>${selected ? "내 답" : ""}${selected && correct ? " · " : ""}${correct ? "정답" : ""}</em>
           </li>
         `;
@@ -566,9 +573,9 @@
               ${escapeHtml(problem.number)}번 · ${escapeHtml(problem.era || "-")} · ${escapeHtml(problem.topic || "-")}
             </div>
             ${problem.passage ? `<p class="selected-problem-passage">${escapeHtml(problem.passage)}</p>` : ""}
-            ${problem.question_image_path ? `<img class="selected-problem-image" src="${escapeHtml(assetUrl(problem.question_image_path))}" alt="선택 문항 자료 이미지">` : ""}
+            ${(problem.question_image_path || problem.questionImagePath) ? `<div class="selected-problem-image-wrap"><img class="selected-problem-image" src="${escapeHtml(assetUrl(problem.question_image_path || problem.questionImagePath))}" alt="선택 문항 자료 이미지"><button type="button" class="selected-problem-question-zoom" data-image="${escapeHtml(assetUrl(problem.question_image_path || problem.questionImagePath))}" data-alt="선택 문항 자료 이미지" aria-label="문항 자료 이미지 확대"><img src="/static/images/zoom-in.png" alt=""></button></div>` : ""}
             <strong class="selected-problem-title">${escapeHtml(problem.content || "문제 내용 없음")}</strong>
-            ${options ? `<ol class="selected-problem-options">${options}</ol>` : ""}
+            ${options ? `<ol class="selected-problem-options${hasImageChoices ? " has-image-choices" : ""}">${options}</ol>` : ""}
             <div class="selected-problem-answer">
               <span>내 답 ${escapeHtml(answerLabel(problem.selected_no))}</span>
               <span>정답 ${escapeHtml(answerLabel(problem.answer_no))}</span>
@@ -603,7 +610,7 @@
               submitChatQuestion(
                 buildProblemCustomQuestion(problem, customQuestion),
                 customQuestion,
-                { intent: "question", historyContext: customQuestion, problemSessionId: problem.session_id },
+                { intent: "question", historyContext: customQuestion, problemSessionId: problem.session_id, problemRecordId: problem.record_id },
               );
               inlineInput.value = "";
             };
@@ -622,9 +629,12 @@
           submitChatQuestion(
             buildProblemContext(problem, fixedProblemSolvePrompt()),
             "문제 풀이보기",
-            { intent: "question", historyContext: "문제 풀이보기", problemSessionId: problem.session_id, problemImagePath: problem.question_image_path },
+            { intent: "question", historyContext: "문제 풀이보기", problemSessionId: problem.session_id, problemRecordId: problem.record_id, problemImagePath: problem.question_image_path || problem.questionImagePath },
           );
         });
+      });
+      wrapper.querySelectorAll(".selected-problem-image-zoom, .selected-problem-question-zoom").forEach((button) => {
+        button.addEventListener("click", () => openImagePreview(button.dataset.image, button.dataset.alt));
       });
       chatStream.appendChild(wrapper);
       scrollToBottom();
@@ -935,6 +945,7 @@
       session.messages.forEach((message) => {
         if (message.sender === "user") appendUserMessage(message.text);
         if (message.sender === "bot") appendBotMessage({ ...message.data, intent: message.intent || message.data?.intent });
+        if (message.sender === "problem" && message.problem) appendProblemActionMessage(message.problem);
       });
       scrollToBottom();
     }
@@ -1189,6 +1200,22 @@
     function scrollToBottom() {
       chatStream.scrollTop = chatStream.scrollHeight;
     }
+    function openImagePreview(src, alt) {
+      document.getElementById("imagePreviewImage").src = src;
+      document.getElementById("imagePreviewImage").alt = alt;
+      document.getElementById("imagePreview").hidden = false;
+    }
+
+    function closeImagePreview() {
+      document.getElementById("imagePreview").hidden = true;
+      document.getElementById("imagePreviewImage").removeAttribute("src");
+    }
+
+    document.getElementById("imagePreviewBackdrop").addEventListener("click", closeImagePreview);
+    document.getElementById("imagePreviewClose").addEventListener("click", closeImagePreview);
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") closeImagePreview();
+    });
   </script>
 </body>
 </html>

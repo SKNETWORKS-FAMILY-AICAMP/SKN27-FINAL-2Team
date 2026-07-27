@@ -2053,6 +2053,8 @@ main > *:not(.page-title):not(.hero):not(.cta-section)
   object-fit: contain;
 }
 
+.exam-page .choice.has-image .choice-image { width: calc(100% - 38px); }
+
 /* ponytail: image choices stay in one compact, scrollable two-column list. */
 .exam-page .question-source {
   max-height: none !important;
@@ -2077,6 +2079,8 @@ main > *:not(.page-title):not(.hero):not(.cta-section)
 
 .exam-page .question-source-asset {
   position: relative;
+  box-sizing: border-box;
+  padding-right: 40px;
 }
 
 .exam-page .question-source.has-image-source .question-asset-image {
@@ -2144,7 +2148,7 @@ main > *:not(.page-title):not(.hero):not(.cta-section)
   }
 
   .exam-page .choice-list.visual-image-choices .choice-image {
-    width: 100% !important;
+    width: calc(100% - 38px) !important;
     max-height: 120px !important;
   }
 }
