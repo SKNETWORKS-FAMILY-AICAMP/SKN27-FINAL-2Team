@@ -1,0 +1,194 @@
+{
+  "pack_id": "image_generation_pack:joseon_docs_science:image_material:ki_050_15000",
+  "family_id": "image_choice_pack_v3:joseon_docs_science",
+  "era": "조선",
+  "service_era": "조선",
+  "service_topic": "문화",
+  "service_question_type": "역사 자료의 분석 및 해석",
+  "service_question_subtype": "시각 자료 해석",
+  "variant_key": "image:image_choice_pack_v3:joseon_docs_science:image_material:ki_050_15000",
+  "target_label": "천상열차분야지도 각석",
+  "topic_type": "문화유산",
+  "question_task": "standard_select",
+  "choice_mode": "image",
+  "stem_pattern": "source_inference",
+  "relation_axis_id": "common.definition_feature",
+  "material_type": "자료 제시문",
+  "major_type": "역사 자료의 분석 및 해석",
+  "minor_type": "시각 자료 해석",
+  "difficulty_label": "보통",
+  "question_task_instruction": "검수된 단서를 바탕으로 대상명을 직접 노출하지 않는 지문과 발문을 만들고, 제시된 이미지 중 해당 문화유산을 고르게 한다.",
+  "material_clue_basis": "천상열차분야지도각석(天象列次分野之圖 刻石)은 돌에 새겨 제작한 천문도이다. 조선 태조대에 권근(權近) 등 학자 11인이 고구려의 천문도를 표본으로 삼아 오차를 보정하여 만들었다. 태조대 이후에도 몇 차례 보정되어 활용하다가 임진왜란을 거치면서 소실되었다. 1687년(숙종 13) 다시 발견되었는데 마모가 심해 다시 복각하였다. 태조대 제작된 것은 중국 남송시대 제작된 천문도에 이어 세계에서 2번째로 오래된 것으로 1985년 국보 제228호로 지정되었다.",
+  "material_evidence_chunks": [
+    {
+      "snippet": "천상열차분야지도각석(天象列次分野之圖 刻石)은 돌에 새겨 제작한 천문도이다. 조선 태조대에 권근(權近) 등 학자 11인이 고구려의 천문도를 표본으로 삼아 오차를 보정하여 만들었다. 태조대 이후에도 몇 차례 보정되어 활용하다가 임진왜란을 거치면서 소실되었다. 1687년(숙종 13) 다시 발견되었는데 마모가 심해 다시 복각하였다. 태조대 제작된 것은 중국 남송시대 제작된 천문도에 이어 세계에서 2번째로 오래된 것으로 1985년 국보 제228호로 지정되었다.",
+      "chunk_id": "ki_050_15000_chunk_0000",
+      "article_id": "image_material:ki_050_15000",
+      "exact_text": "천상열차분야지도각석(天象列次分野之圖 刻石)은 돌에 새겨 제작한 천문도이다. 조선 태조대에 권근(權近) 등 학자 11인이 고구려의 천문도를 표본으로 삼아 오차를 보정하여 만들었다. 태조대 이후에도 몇 차례 보정되어 활용하다가 임진왜란을 거치면서 소실되었다. 1687년(숙종 13) 다시 발견되었는데 마모가 심해 다시 복각하였다. 태조대 제작된 것은 중국 남송시대 제작된 천문도에 이어 세계에서 2번째로 오래된 것으로 1985년 국보 제228호로 지정되었다.",
+      "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_15000&whereStr=",
+      "section_path": [
+        "검수된 이미지 식별 단서"
+      ]
+    }
+  ],
+  "material_fact_semantically_distinct": true,
+  "status": "rag_ready",
+  "semantic_status": "pass",
+  "items": [
+    {
+      "slot_no": 0,
+      "role": "answer",
+      "basis_item_id": "clue:84961798eff1",
+      "article_id": "image_material:ki_050_15000",
+      "truth_owner_label": "천상열차분야지도 각석",
+      "fact_basis": "천상열차분야지도각석(天象列次分野之圖 刻石)은 돌에 새겨 제작한 천문도이다. 조선 태조대에 권근(權近) 등 학자 11인이 고구려의 천문도를 표본으로 삼아 오차를 보정하여 만들었다. 태조대 이후에도 몇 차례 보정되어 활용하다가 임진왜란을 거치면서 소실되었다. 1687년(숙종 13) 다시 발견되었는데 마모가 심해 다시 복각하였다. 태조대 제작된 것은 중국 남송시대 제작된 천문도에 이어 세계에서 2번째로 오래된 것으로 1985년 국보 제228호로 지정되었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_050_15000_chunk_0000",
+          "article_id": "image_material:ki_050_15000",
+          "snippet": "천상열차분야지도각석(天象列次分野之圖 刻石)은 돌에 새겨 제작한 천문도이다. 조선 태조대에 권근(權近) 등 학자 11인이 고구려의 천문도를 표본으로 삼아 오차를 보정하여 만들었다. 태조대 이후에도 몇 차례 보정되어 활용하다가 임진왜란을 거치면서 소실되었다. 1687년(숙종 13) 다시 발견되었는데 마모가 심해 다시 복각하였다. 태조대 제작된 것은 중국 남송시대 제작된 천문도에 이어 세계에서 2번째로 오래된 것으로 1985년 국보 제228호로 지정되었다.",
+          "exact_text": "천상열차분야지도각석(天象列次分野之圖 刻石)은 돌에 새겨 제작한 천문도이다. 조선 태조대에 권근(權近) 등 학자 11인이 고구려의 천문도를 표본으로 삼아 오차를 보정하여 만들었다. 태조대 이후에도 몇 차례 보정되어 활용하다가 임진왜란을 거치면서 소실되었다. 1687년(숙종 13) 다시 발견되었는데 마모가 심해 다시 복각하였다. 태조대 제작된 것은 중국 남송시대 제작된 천문도에 이어 세계에서 2번째로 오래된 것으로 1985년 국보 제228호로 지정되었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_15000&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_050_15000_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_050/ki_050_15000.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_050/ki_050_15000.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_15000&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유물",
+        "category_sub": "과학·기술용품",
+        "internal_owner_title": "천상열차분야지도 각석",
+        "owner_id": "image_material:ki_050_15000"
+      }
+    },
+    {
+      "slot_no": 1,
+      "role": "distractor",
+      "basis_item_id": "clue:a3cfead66298",
+      "article_id": "image_material:ki_050_16200",
+      "truth_owner_label": "대동여지도",
+      "fact_basis": "대동여지도는 1861년(철종 12)에 김정호에 의해 제작된 전국지도이다. 한반도를 동서 80리, 남북 120리를 기준으로 22개의 개별 첩으로 구성하였다. 지도에는 각 군현을 잇는 도로와 읍치, 진보, 창고, 봉수 등의 주요 지점들이 표시되어 있으며, 10리마다 방점을 찍어 군현간의 거리를 살펴 볼수 있도하였다. 대동여지도는 이전의 지도와 달리 목판본으로 제작되었기 때문에 지리정보가 사회에 확되는 계기가 되었다. 현재 30여점이 넘는 판본이 국내외에 소장되어 있으며, 이 가운데 서울역사박물관 소장본은 보물로 지정되어 있다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_050_16200_chunk_0000",
+          "article_id": "image_material:ki_050_16200",
+          "snippet": "대동여지도는 1861년(철종 12)에 김정호에 의해 제작된 전국지도이다. 한반도를 동서 80리, 남북 120리를 기준으로 22개의 개별 첩으로 구성하였다. 지도에는 각 군현을 잇는 도로와 읍치, 진보, 창고, 봉수 등의 주요 지점들이 표시되어 있으며, 10리마다 방점을 찍어 군현간의 거리를 살펴 볼수 있도하였다. 대동여지도는 이전의 지도와 달리 목판본으로 제작되었기 때문에 지리정보가 사회에 확되는 계기가 되었다. 현재 30여점이 넘는 판본이 국내외에 소장되어 있으며, 이 가운데 서울역사박물관 소장본은 보물로 지정되어 있다.",
+          "exact_text": "대동여지도는 1861년(철종 12)에 김정호에 의해 제작된 전국지도이다. 한반도를 동서 80리, 남북 120리를 기준으로 22개의 개별 첩으로 구성하였다. 지도에는 각 군현을 잇는 도로와 읍치, 진보, 창고, 봉수 등의 주요 지점들이 표시되어 있으며, 10리마다 방점을 찍어 군현간의 거리를 살펴 볼수 있도하였다. 대동여지도는 이전의 지도와 달리 목판본으로 제작되었기 때문에 지리정보가 사회에 확되는 계기가 되었다. 현재 30여점이 넘는 판본이 국내외에 소장되어 있으며, 이 가운데 서울역사박물관 소장본은 보물로 지정되어 있다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_16200&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_050_16200_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_050/ki_050_16200.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_050/ki_050_16200.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_16200&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유물",
+        "category_sub": "지도",
+        "internal_owner_title": "대동여지도",
+        "owner_id": "image_material:ki_050_16200"
+      }
+    },
+    {
+      "slot_no": 2,
+      "role": "distractor",
+      "basis_item_id": "clue:93b68a841cf1",
+      "article_id": "image_material:ki_050_15600",
+      "truth_owner_label": "조선방역지도",
+      "fact_basis": "조선방역지도(朝鮮方域之圖)는 조선 전기 제작된 한반도의 전도이다. 1557년(명종 12)에서 1558년(명종 13) 사이에 제작된 것으로 추정된다. 3단 형식으로 구성되었는데, 맨 위에는 ‘조선방역지도’라는 제목이 있으며, 가운데는 한반도의 지도가 그려져 있고, 하단은 지도 제작에 참여한 인물들의 관직과 성명이 기재되어 있다. 지도에는 각도의 주현과 군사 병영이 표시되어 있고, 주현마다 색을 달리해 구별을 쉽게 하였다. 북쪽의 만주 지역과 남쪽의 쓰시마 섬을 포함하고 있는 것이 특징이다. 1989년 국보 제248호로 지정되었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_050_15600_chunk_0000",
+          "article_id": "image_material:ki_050_15600",
+          "snippet": "조선방역지도(朝鮮方域之圖)는 조선 전기 제작된 한반도의 전도이다. 1557년(명종 12)에서 1558년(명종 13) 사이에 제작된 것으로 추정된다. 3단 형식으로 구성되었는데, 맨 위에는 ‘조선방역지도’라는 제목이 있으며, 가운데는 한반도의 지도가 그려져 있고, 하단은 지도 제작에 참여한 인물들의 관직과 성명이 기재되어 있다. 지도에는 각도의 주현과 군사 병영이 표시되어 있고, 주현마다 색을 달리해 구별을 쉽게 하였다. 북쪽의 만주 지역과 남쪽의 쓰시마 섬을 포함하고 있는 것이 특징이다. 1989년 국보 제248호로 지정되었다.",
+          "exact_text": "조선방역지도(朝鮮方域之圖)는 조선 전기 제작된 한반도의 전도이다. 1557년(명종 12)에서 1558년(명종 13) 사이에 제작된 것으로 추정된다. 3단 형식으로 구성되었는데, 맨 위에는 ‘조선방역지도’라는 제목이 있으며, 가운데는 한반도의 지도가 그려져 있고, 하단은 지도 제작에 참여한 인물들의 관직과 성명이 기재되어 있다. 지도에는 각도의 주현과 군사 병영이 표시되어 있고, 주현마다 색을 달리해 구별을 쉽게 하였다. 북쪽의 만주 지역과 남쪽의 쓰시마 섬을 포함하고 있는 것이 특징이다. 1989년 국보 제248호로 지정되었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_15600&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_050_15600_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_050/ki_050_15600.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_050/ki_050_15600.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_15600&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유물",
+        "category_sub": "지도",
+        "internal_owner_title": "조선방역지도",
+        "owner_id": "image_material:ki_050_15600"
+      }
+    },
+    {
+      "slot_no": 3,
+      "role": "distractor",
+      "basis_item_id": "clue:373c86886f67",
+      "article_id": "image_material:ki_050_09200",
+      "truth_owner_label": "동의보감",
+      "fact_basis": "『동의보감(東醫寶鑑)』은 조선시대 어의를 역임한 허준(許浚)이 중국과 조선의 의서를 집대성한 것으로 1610년(광해군 2)에 완성되었으며, 1613년(광해군 5)에 내의원에서 처음으로 간행되었다. 책의 구성은 목차 2권과 내경편 4권, 외형편 4권, 잡병편 11권, 탕액편 3권, 침구편 1권 등 25권으로 구성되었다. 또한 각기 분류에 따라 병의 이론, 처방, 출전을 밝혔다. 2009년 유네스코 세계기록유산에 등재되었으며, 2015년 국보 제319-2호로 지정되었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_050_09200_chunk_0000",
+          "article_id": "image_material:ki_050_09200",
+          "snippet": "『동의보감(東醫寶鑑)』은 조선시대 어의를 역임한 허준(許浚)이 중국과 조선의 의서를 집대성한 것으로 1610년(광해군 2)에 완성되었으며, 1613년(광해군 5)에 내의원에서 처음으로 간행되었다. 책의 구성은 목차 2권과 내경편 4권, 외형편 4권, 잡병편 11권, 탕액편 3권, 침구편 1권 등 25권으로 구성되었다. 또한 각기 분류에 따라 병의 이론, 처방, 출전을 밝혔다. 2009년 유네스코 세계기록유산에 등재되었으며, 2015년 국보 제319-2호로 지정되었다.",
+          "exact_text": "『동의보감(東醫寶鑑)』은 조선시대 어의를 역임한 허준(許浚)이 중국과 조선의 의서를 집대성한 것으로 1610년(광해군 2)에 완성되었으며, 1613년(광해군 5)에 내의원에서 처음으로 간행되었다. 책의 구성은 목차 2권과 내경편 4권, 외형편 4권, 잡병편 11권, 탕액편 3권, 침구편 1권 등 25권으로 구성되었다. 또한 각기 분류에 따라 병의 이론, 처방, 출전을 밝혔다. 2009년 유네스코 세계기록유산에 등재되었으며, 2015년 국보 제319-2호로 지정되었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_09200&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_050_09200_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_050/ki_050_09200.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_050/ki_050_09200.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_09200&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유물",
+        "category_sub": "문헌",
+        "internal_owner_title": "동의보감",
+        "owner_id": "image_material:ki_050_09200"
+      }
+    },
+    {
+      "slot_no": 4,
+      "role": "distractor",
+      "basis_item_id": "clue:00136f1dba77",
+      "article_id": "image_material:ki_050_08800",
+      "truth_owner_label": "경국대전",
+      "fact_basis": "『경국대전(經國大典)』은 1485년(성종 16) 완성된 조선왕조의 기본 법전이다. 세조대부터 점진적으로 편찬을 시작한 것으로 육전체제(六典體制)에 따라 이전(吏典), 호전(戶典), 예전(禮典), 병전(兵典), 형전(刑典), 공전(工典)으로 구성되어 있다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_050_08800_chunk_0000",
+          "article_id": "image_material:ki_050_08800",
+          "snippet": "『경국대전(經國大典)』은 1485년(성종 16) 완성된 조선왕조의 기본 법전이다. 세조대부터 점진적으로 편찬을 시작한 것으로 육전체제(六典體制)에 따라 이전(吏典), 호전(戶典), 예전(禮典), 병전(兵典), 형전(刑典), 공전(工典)으로 구성되어 있다.",
+          "exact_text": "『경국대전(經國大典)』은 1485년(성종 16) 완성된 조선왕조의 기본 법전이다. 세조대부터 점진적으로 편찬을 시작한 것으로 육전체제(六典體制)에 따라 이전(吏典), 호전(戶典), 예전(禮典), 병전(兵典), 형전(刑典), 공전(工典)으로 구성되어 있다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_08800&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_050_08800_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_050/ki_050_08800.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_050/ki_050_08800.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_08800&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유물",
+        "category_sub": "문헌",
+        "internal_owner_title": "경국대전",
+        "owner_id": "image_material:ki_050_08800"
+      }
+    }
+  ]
+}

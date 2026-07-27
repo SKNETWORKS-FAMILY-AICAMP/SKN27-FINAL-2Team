@@ -1,0 +1,194 @@
+{
+  "pack_id": "image_generation_pack:ancient_buddhist:image_material:ki_030_01800",
+  "family_id": "image_choice_pack_v3:ancient_buddhist",
+  "era": "고대",
+  "service_era": "남북국 시대",
+  "service_topic": "문화",
+  "service_question_type": "역사 자료의 분석 및 해석",
+  "service_question_subtype": "시각 자료 해석",
+  "variant_key": "image:image_choice_pack_v3:ancient_buddhist:image_material:ki_030_01800",
+  "target_label": "경주 남산 칠불암 마애불상군",
+  "topic_type": "문화유산",
+  "question_task": "standard_select",
+  "choice_mode": "image",
+  "stem_pattern": "inquiry_topic",
+  "relation_axis_id": "common.definition_feature",
+  "material_type": "탐구 자료",
+  "major_type": "역사 자료의 분석 및 해석",
+  "minor_type": "시각 자료 해석",
+  "difficulty_label": "어려움",
+  "question_task_instruction": "검수된 단서를 바탕으로 대상명을 직접 노출하지 않는 지문과 발문을 만들고, 제시된 이미지 중 해당 문화유산을 고르게 한다.",
+  "material_clue_basis": "경상북도 경주시 남산동 남산에 소재한 마애불이다. 8세기경 제작된 것으로 추정되며, 남산에 남아있는 불상 중 상태가 가장 양호하다. 동쪽을 향한 넓은 바위 면에 삼존상을, 그 앞 돌기둥의 사면에 사방불을 조각하였다. 마애삼존상의 본존상은 높이가 2.7m 정도이며, 연화대 위에 결가부좌를 앉아 항마촉지인의 수인을 취하고 있다. 좌우협시보살상은 몸체를 본존 쪽으로 틀어 서 있으며, 각각 정병과 연꽃을 손에 쥐고 있다. 높이는 2.1m 정도이다. 사방불은 동면상이 1.18m, 서면상이 1.13m, 남면상이 1m, 북면상이 72cm로 상의 크기는 모두 다르다. 동면상의 경우 왼손에 약합을 들고 있어 약사여래로 추정된다. 1963년 보물로 지정되었다가 2009년 국보로 지정되었다.",
+  "material_evidence_chunks": [
+    {
+      "snippet": "경상북도 경주시 남산동 남산에 소재한 마애불이다. 8세기경 제작된 것으로 추정되며, 남산에 남아있는 불상 중 상태가 가장 양호하다. 동쪽을 향한 넓은 바위 면에 삼존상을, 그 앞 돌기둥의 사면에 사방불을 조각하였다. 마애삼존상의 본존상은 높이가 2.7m 정도이며, 연화대 위에 결가부좌를 앉아 항마촉지인의 수인을 취하고 있다. 좌우협시보살상은 몸체를 본존 쪽으로 틀어 서 있으며, 각각 정병과 연꽃을 손에 쥐고 있다. 높이는 2.1m 정도이다. 사방불은 동면상이 1.18m, 서면상이 1.13m, 남면상이 1m, 북면상이 72cm로 상의 크기는 모두 다르다. 동면상의 경우 왼손에 약합을 들고 있어 약사여래로 추정된다. 1963년 보물로 지정되었다가 2009년 국보로 지정되었다.",
+      "chunk_id": "ki_030_01800_chunk_0000",
+      "article_id": "image_material:ki_030_01800",
+      "exact_text": "경상북도 경주시 남산동 남산에 소재한 마애불이다. 8세기경 제작된 것으로 추정되며, 남산에 남아있는 불상 중 상태가 가장 양호하다. 동쪽을 향한 넓은 바위 면에 삼존상을, 그 앞 돌기둥의 사면에 사방불을 조각하였다. 마애삼존상의 본존상은 높이가 2.7m 정도이며, 연화대 위에 결가부좌를 앉아 항마촉지인의 수인을 취하고 있다. 좌우협시보살상은 몸체를 본존 쪽으로 틀어 서 있으며, 각각 정병과 연꽃을 손에 쥐고 있다. 높이는 2.1m 정도이다. 사방불은 동면상이 1.18m, 서면상이 1.13m, 남면상이 1m, 북면상이 72cm로 상의 크기는 모두 다르다. 동면상의 경우 왼손에 약합을 들고 있어 약사여래로 추정된다. 1963년 보물로 지정되었다가 2009년 국보로 지정되었다.",
+      "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_030_01800&whereStr=",
+      "section_path": [
+        "검수된 이미지 식별 단서"
+      ]
+    }
+  ],
+  "material_fact_semantically_distinct": true,
+  "status": "rag_ready",
+  "semantic_status": "pass",
+  "items": [
+    {
+      "slot_no": 0,
+      "role": "answer",
+      "basis_item_id": "clue:ab8d53e03860",
+      "article_id": "image_material:ki_030_01800",
+      "truth_owner_label": "경주 남산 칠불암 마애불상군",
+      "fact_basis": "경상북도 경주시 남산동 남산에 소재한 마애불이다. 8세기경 제작된 것으로 추정되며, 남산에 남아있는 불상 중 상태가 가장 양호하다. 동쪽을 향한 넓은 바위 면에 삼존상을, 그 앞 돌기둥의 사면에 사방불을 조각하였다. 마애삼존상의 본존상은 높이가 2.7m 정도이며, 연화대 위에 결가부좌를 앉아 항마촉지인의 수인을 취하고 있다. 좌우협시보살상은 몸체를 본존 쪽으로 틀어 서 있으며, 각각 정병과 연꽃을 손에 쥐고 있다. 높이는 2.1m 정도이다. 사방불은 동면상이 1.18m, 서면상이 1.13m, 남면상이 1m, 북면상이 72cm로 상의 크기는 모두 다르다. 동면상의 경우 왼손에 약합을 들고 있어 약사여래로 추정된다. 1963년 보물로 지정되었다가 2009년 국보로 지정되었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_030_01800_chunk_0000",
+          "article_id": "image_material:ki_030_01800",
+          "snippet": "경상북도 경주시 남산동 남산에 소재한 마애불이다. 8세기경 제작된 것으로 추정되며, 남산에 남아있는 불상 중 상태가 가장 양호하다. 동쪽을 향한 넓은 바위 면에 삼존상을, 그 앞 돌기둥의 사면에 사방불을 조각하였다. 마애삼존상의 본존상은 높이가 2.7m 정도이며, 연화대 위에 결가부좌를 앉아 항마촉지인의 수인을 취하고 있다. 좌우협시보살상은 몸체를 본존 쪽으로 틀어 서 있으며, 각각 정병과 연꽃을 손에 쥐고 있다. 높이는 2.1m 정도이다. 사방불은 동면상이 1.18m, 서면상이 1.13m, 남면상이 1m, 북면상이 72cm로 상의 크기는 모두 다르다. 동면상의 경우 왼손에 약합을 들고 있어 약사여래로 추정된다. 1963년 보물로 지정되었다가 2009년 국보로 지정되었다.",
+          "exact_text": "경상북도 경주시 남산동 남산에 소재한 마애불이다. 8세기경 제작된 것으로 추정되며, 남산에 남아있는 불상 중 상태가 가장 양호하다. 동쪽을 향한 넓은 바위 면에 삼존상을, 그 앞 돌기둥의 사면에 사방불을 조각하였다. 마애삼존상의 본존상은 높이가 2.7m 정도이며, 연화대 위에 결가부좌를 앉아 항마촉지인의 수인을 취하고 있다. 좌우협시보살상은 몸체를 본존 쪽으로 틀어 서 있으며, 각각 정병과 연꽃을 손에 쥐고 있다. 높이는 2.1m 정도이다. 사방불은 동면상이 1.18m, 서면상이 1.13m, 남면상이 1m, 북면상이 72cm로 상의 크기는 모두 다르다. 동면상의 경우 왼손에 약합을 들고 있어 약사여래로 추정된다. 1963년 보물로 지정되었다가 2009년 국보로 지정되었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_030_01800&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_030_01800_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_030/ki_030_01800.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_030/ki_030_01800.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_030_01800&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유물",
+        "category_sub": "불교미술",
+        "internal_owner_title": "경주 남산 칠불암 마애불상군",
+        "owner_id": "image_material:ki_030_01800"
+      }
+    },
+    {
+      "slot_no": 1,
+      "role": "distractor",
+      "basis_item_id": "clue:7e6713633996",
+      "article_id": "image_material:ki_030_02000",
+      "truth_owner_label": "경주 남산 신선암 마애보살반가상",
+      "fact_basis": "경상북도 경주시 남산 신선암에 위치한다. 암면을 경사지게 다듬어 얕은 감실을 마련하고 상을 조각하였다. 상 위에는 가로 1.54m, 세로 10.5m, 깊이 6cm의 홈이 남아있는데, 빗물이나 햇빛을 막기 위한 처마가 있었던 것으로 추정된다. 상의 전체 높이는 1.4m이다. 머리에 삼면보관을 쓰고, 귀걸이와 구슬목걸이로 장식한 것을 통해 보살상임을 알 수 있다. 어깨는 연꽃으로 장식한 수발이 덮여있는데, 이는 다른 불상에서는 찾아보기 어려운 것이다. 오른손에는 꽃(보상화)을 잡고 있으며, 왼손은 설법인을 취한 채 가슴께까지 들고 있다. 8세기 중~후반에 조성된 것으로 추정된다. 보물로 지정되었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_030_02000_chunk_0000",
+          "article_id": "image_material:ki_030_02000",
+          "snippet": "경상북도 경주시 남산 신선암에 위치한다. 암면을 경사지게 다듬어 얕은 감실을 마련하고 상을 조각하였다. 상 위에는 가로 1.54m, 세로 10.5m, 깊이 6cm의 홈이 남아있는데, 빗물이나 햇빛을 막기 위한 처마가 있었던 것으로 추정된다. 상의 전체 높이는 1.4m이다. 머리에 삼면보관을 쓰고, 귀걸이와 구슬목걸이로 장식한 것을 통해 보살상임을 알 수 있다. 어깨는 연꽃으로 장식한 수발이 덮여있는데, 이는 다른 불상에서는 찾아보기 어려운 것이다. 오른손에는 꽃(보상화)을 잡고 있으며, 왼손은 설법인을 취한 채 가슴께까지 들고 있다. 8세기 중~후반에 조성된 것으로 추정된다. 보물로 지정되었다.",
+          "exact_text": "경상북도 경주시 남산 신선암에 위치한다. 암면을 경사지게 다듬어 얕은 감실을 마련하고 상을 조각하였다. 상 위에는 가로 1.54m, 세로 10.5m, 깊이 6cm의 홈이 남아있는데, 빗물이나 햇빛을 막기 위한 처마가 있었던 것으로 추정된다. 상의 전체 높이는 1.4m이다. 머리에 삼면보관을 쓰고, 귀걸이와 구슬목걸이로 장식한 것을 통해 보살상임을 알 수 있다. 어깨는 연꽃으로 장식한 수발이 덮여있는데, 이는 다른 불상에서는 찾아보기 어려운 것이다. 오른손에는 꽃(보상화)을 잡고 있으며, 왼손은 설법인을 취한 채 가슴께까지 들고 있다. 8세기 중~후반에 조성된 것으로 추정된다. 보물로 지정되었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_030_02000&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_030_02000_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_030/ki_030_02000.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_030/ki_030_02000.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_030_02000&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유물",
+        "category_sub": "불교미술",
+        "internal_owner_title": "경주 남산 신선암 마애보살반가상",
+        "owner_id": "image_material:ki_030_02000"
+      }
+    },
+    {
+      "slot_no": 2,
+      "role": "distractor",
+      "basis_item_id": "clue:87ae69f956ad",
+      "article_id": "image_material:ki_030_04600",
+      "truth_owner_label": "철원 도피안사 철조비로자나불상",
+      "fact_basis": "도피안사(到彼岸寺)는 신라 경문왕(景文王) 5년(865)에 도선(道詵)이 창건하였다. 기록에 의하면 도선이 철조비로자나불(鐵造毘盧遮那佛坐像)을 만들어 철원의 안양사에 모시려고 했으나 운반 도중에 불상이 없어져서 찾아보니 도피안사 자리에 앉아 있었으므로 이곳에 절을 세우고 불상을 모셨다고 한다. 신라말에서 고려 초에는 철로 만든 불상이 크게 유행했는데, 이 불상은 그 전형으로, 불상을 받치고 있는 대좌까지도 철로 만들었다. 불상 뒷면에 신라 경문왕 5년에 만들었다는 내용의 글이 남아 있다. 1962년 국보 제63호로 지정되었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_030_04600_chunk_0000",
+          "article_id": "image_material:ki_030_04600",
+          "snippet": "도피안사(到彼岸寺)는 신라 경문왕(景文王) 5년(865)에 도선(道詵)이 창건하였다. 기록에 의하면 도선이 철조비로자나불(鐵造毘盧遮那佛坐像)을 만들어 철원의 안양사에 모시려고 했으나 운반 도중에 불상이 없어져서 찾아보니 도피안사 자리에 앉아 있었으므로 이곳에 절을 세우고 불상을 모셨다고 한다. 신라말에서 고려 초에는 철로 만든 불상이 크게 유행했는데, 이 불상은 그 전형으로, 불상을 받치고 있는 대좌까지도 철로 만들었다. 불상 뒷면에 신라 경문왕 5년에 만들었다는 내용의 글이 남아 있다. 1962년 국보 제63호로 지정되었다.",
+          "exact_text": "도피안사(到彼岸寺)는 신라 경문왕(景文王) 5년(865)에 도선(道詵)이 창건하였다. 기록에 의하면 도선이 철조비로자나불(鐵造毘盧遮那佛坐像)을 만들어 철원의 안양사에 모시려고 했으나 운반 도중에 불상이 없어져서 찾아보니 도피안사 자리에 앉아 있었으므로 이곳에 절을 세우고 불상을 모셨다고 한다. 신라말에서 고려 초에는 철로 만든 불상이 크게 유행했는데, 이 불상은 그 전형으로, 불상을 받치고 있는 대좌까지도 철로 만들었다. 불상 뒷면에 신라 경문왕 5년에 만들었다는 내용의 글이 남아 있다. 1962년 국보 제63호로 지정되었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_030_04600&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_030_04600_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_030/ki_030_04600.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_030/ki_030_04600.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_030_04600&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유물",
+        "category_sub": "불교미술",
+        "internal_owner_title": "철원 도피안사 철조비로자나불상",
+        "owner_id": "image_material:ki_030_04600"
+      }
+    },
+    {
+      "slot_no": 3,
+      "role": "distractor",
+      "basis_item_id": "clue:1b74acd8350b",
+      "article_id": "image_material:ki_030_04100",
+      "truth_owner_label": "경북 영주 출토 금동제 당간 용머리 장식",
+      "fact_basis": "경북 영주 풍기에서 발견된 이 용머리 장식은 보당(寶幢)에 번(幡)을 매달 때 줄을 거는 역할과 당간 꼭대기에 올려 장식하였던 장치이다. 금동의 역동적인 용이 입안에 여의주를 물고 있으며, 여의주 뒤로 줄을 거는 도르래가 장착되었다. 용은 눈을 크게 뜨고 정면을 응시하였으며 얼굴 주위와 목 뒤로 굽이친 듯 갈기가 장식되었다. 목에는 비늘이 선각되고 전체적으로 화려하게 도금되어 있다. 2004년 보물 제1410호로 지정되었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_030_04100_chunk_0000",
+          "article_id": "image_material:ki_030_04100",
+          "snippet": "경북 영주 풍기에서 발견된 이 용머리 장식은 보당(寶幢)에 번(幡)을 매달 때 줄을 거는 역할과 당간 꼭대기에 올려 장식하였던 장치이다. 금동의 역동적인 용이 입안에 여의주를 물고 있으며, 여의주 뒤로 줄을 거는 도르래가 장착되었다. 용은 눈을 크게 뜨고 정면을 응시하였으며 얼굴 주위와 목 뒤로 굽이친 듯 갈기가 장식되었다. 목에는 비늘이 선각되고 전체적으로 화려하게 도금되어 있다. 2004년 보물 제1410호로 지정되었다.",
+          "exact_text": "경북 영주 풍기에서 발견된 이 용머리 장식은 보당(寶幢)에 번(幡)을 매달 때 줄을 거는 역할과 당간 꼭대기에 올려 장식하였던 장치이다. 금동의 역동적인 용이 입안에 여의주를 물고 있으며, 여의주 뒤로 줄을 거는 도르래가 장착되었다. 용은 눈을 크게 뜨고 정면을 응시하였으며 얼굴 주위와 목 뒤로 굽이친 듯 갈기가 장식되었다. 목에는 비늘이 선각되고 전체적으로 화려하게 도금되어 있다. 2004년 보물 제1410호로 지정되었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_030_04100&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_030_04100_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_030/ki_030_04100.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_030/ki_030_04100.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_030_04100&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유물",
+        "category_sub": "불교미술",
+        "internal_owner_title": "경북 영주 출토 금동제 당간 용머리 장식",
+        "owner_id": "image_material:ki_030_04100"
+      }
+    },
+    {
+      "slot_no": 4,
+      "role": "distractor",
+      "basis_item_id": "clue:afa56d6eecc6",
+      "article_id": "image_material:ki_020_07900",
+      "truth_owner_label": "부여 군수리 석조여래좌상",
+      "fact_basis": "4각형의 높은 대좌 위에 앉아 있는 백제 특유의 불상이다. 민머리 위에는 상투 모양의 작은 머리(육계)가 솟아 있다. 양어깨에 걸쳐 입은 옷은 두꺼워 신체의 윤곽이 거의 드러나지 않으며, 어깨에서 길게 흘러내린 옷자락은 대좌를 거의 덮고 있다. 가슴 부근에는 U자형의 옷 주름을 표현하였고, 무릎 밑으로 흘러내린 옷자락은 좌우대칭의 Ω형 주름을 나타내고 있다. 1963년 보물 제329호로 지정되었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_020_07900_chunk_0000",
+          "article_id": "image_material:ki_020_07900",
+          "snippet": "4각형의 높은 대좌 위에 앉아 있는 백제 특유의 불상이다. 민머리 위에는 상투 모양의 작은 머리(육계)가 솟아 있다. 양어깨에 걸쳐 입은 옷은 두꺼워 신체의 윤곽이 거의 드러나지 않으며, 어깨에서 길게 흘러내린 옷자락은 대좌를 거의 덮고 있다. 가슴 부근에는 U자형의 옷 주름을 표현하였고, 무릎 밑으로 흘러내린 옷자락은 좌우대칭의 Ω형 주름을 나타내고 있다. 1963년 보물 제329호로 지정되었다.",
+          "exact_text": "4각형의 높은 대좌 위에 앉아 있는 백제 특유의 불상이다. 민머리 위에는 상투 모양의 작은 머리(육계)가 솟아 있다. 양어깨에 걸쳐 입은 옷은 두꺼워 신체의 윤곽이 거의 드러나지 않으며, 어깨에서 길게 흘러내린 옷자락은 대좌를 거의 덮고 있다. 가슴 부근에는 U자형의 옷 주름을 표현하였고, 무릎 밑으로 흘러내린 옷자락은 좌우대칭의 Ω형 주름을 나타내고 있다. 1963년 보물 제329호로 지정되었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_020_07900&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_020_07900_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_020/ki_020_07900.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_020/ki_020_07900.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_020_07900&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유물",
+        "category_sub": "불교미술",
+        "internal_owner_title": "부여 군수리 석조여래좌상",
+        "owner_id": "image_material:ki_020_07900"
+      }
+    }
+  ]
+}

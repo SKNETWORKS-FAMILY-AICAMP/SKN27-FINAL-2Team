@@ -55,6 +55,7 @@ def build_messages(record: dict[str, Any]) -> list[dict[str, str]]:
 - G6: 대상명·정답 순서·정답 위치가 지문이나 발문에 직접 노출되지 않는가
 
 order와 timeline_position의 순서·위치 및 image의 이미지-owner 대응은 이미 코드로 검증됐다. 이를 다시 평가하지 마라.
+지문의 화자·시제·서술 형식이 일관되는지 확인하라. 사료·활동지·보고서 형식이 설정되지 않았는데 기록·조사·명령하는 문장으로 갑자기 바뀌거나, 지시어의 대상 또는 행동 주체가 불명확하면 G2를 FAIL로 판정하라.
 실패 원인이 지문이면 material, 발문이면 question만 수리 대상으로 지정하라.
 
 입력:

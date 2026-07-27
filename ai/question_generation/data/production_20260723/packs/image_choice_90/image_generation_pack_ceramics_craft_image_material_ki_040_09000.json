@@ -1,0 +1,194 @@
+{
+  "pack_id": "image_generation_pack:ceramics_craft:image_material:ki_040_09000",
+  "family_id": "image_choice_pack_v3:ceramics_craft",
+  "era": "고려",
+  "service_era": "고려",
+  "service_topic": "문화",
+  "service_question_type": "역사 자료의 분석 및 해석",
+  "service_question_subtype": "시각 자료 해석",
+  "variant_key": "image:image_choice_pack_v3:ceramics_craft:image_material:ki_040_09000",
+  "target_label": "청자 참외모양 병",
+  "topic_type": "문화유산",
+  "question_task": "standard_select",
+  "choice_mode": "image",
+  "stem_pattern": "inquiry_topic",
+  "relation_axis_id": "common.definition_feature",
+  "material_type": "탐구 자료",
+  "major_type": "역사 자료의 분석 및 해석",
+  "minor_type": "시각 자료 해석",
+  "difficulty_label": "어려움",
+  "question_task_instruction": "검수된 단서를 바탕으로 대상명을 직접 노출하지 않는 지문과 발문을 만들고, 제시된 이미지 중 해당 문화유산을 고르게 한다.",
+  "material_clue_basis": "12세기 전반에 제작된 청자 참외모양 병이다. 고려 제17대 국왕 인종(재위 1122~1146)의 능에서 ‘황통(皇統) 6년(1146)’이라는 연도가 표기된 시책(諡冊)과 함께 발견되었다. 높이 22.8cm, 입지름 8.9cm, 밑지름 8.8cm이다. 담녹색이 감도는 맑은 비색이다. 참외 모양 몸체에 꽃 모양 주둥이가 달려 있다. 아름답고 세련된 청자이다. 1962년 국보 제94호로 지정되었다.",
+  "material_evidence_chunks": [
+    {
+      "snippet": "12세기 전반에 제작된 청자 참외모양 병이다. 고려 제17대 국왕 인종(재위 1122~1146)의 능에서 ‘황통(皇統) 6년(1146)’이라는 연도가 표기된 시책(諡冊)과 함께 발견되었다. 높이 22.8cm, 입지름 8.9cm, 밑지름 8.8cm이다. 담녹색이 감도는 맑은 비색이다. 참외 모양 몸체에 꽃 모양 주둥이가 달려 있다. 아름답고 세련된 청자이다. 1962년 국보 제94호로 지정되었다.",
+      "chunk_id": "ki_040_09000_chunk_0000",
+      "article_id": "image_material:ki_040_09000",
+      "exact_text": "12세기 전반에 제작된 청자 참외모양 병이다. 고려 제17대 국왕 인종(재위 1122~1146)의 능에서 ‘황통(皇統) 6년(1146)’이라는 연도가 표기된 시책(諡冊)과 함께 발견되었다. 높이 22.8cm, 입지름 8.9cm, 밑지름 8.8cm이다. 담녹색이 감도는 맑은 비색이다. 참외 모양 몸체에 꽃 모양 주둥이가 달려 있다. 아름답고 세련된 청자이다. 1962년 국보 제94호로 지정되었다.",
+      "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_040_09000&whereStr=",
+      "section_path": [
+        "검수된 이미지 식별 단서"
+      ]
+    }
+  ],
+  "material_fact_semantically_distinct": true,
+  "status": "rag_ready",
+  "semantic_status": "pass",
+  "items": [
+    {
+      "slot_no": 0,
+      "role": "answer",
+      "basis_item_id": "clue:c2bf934e40d4",
+      "article_id": "image_material:ki_040_09000",
+      "truth_owner_label": "청자 참외모양 병",
+      "fact_basis": "12세기 전반에 제작된 청자 참외모양 병이다. 고려 제17대 국왕 인종(재위 1122~1146)의 능에서 ‘황통(皇統) 6년(1146)’이라는 연도가 표기된 시책(諡冊)과 함께 발견되었다. 높이 22.8cm, 입지름 8.9cm, 밑지름 8.8cm이다. 담녹색이 감도는 맑은 비색이다. 참외 모양 몸체에 꽃 모양 주둥이가 달려 있다. 아름답고 세련된 청자이다. 1962년 국보 제94호로 지정되었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_040_09000_chunk_0000",
+          "article_id": "image_material:ki_040_09000",
+          "snippet": "12세기 전반에 제작된 청자 참외모양 병이다. 고려 제17대 국왕 인종(재위 1122~1146)의 능에서 ‘황통(皇統) 6년(1146)’이라는 연도가 표기된 시책(諡冊)과 함께 발견되었다. 높이 22.8cm, 입지름 8.9cm, 밑지름 8.8cm이다. 담녹색이 감도는 맑은 비색이다. 참외 모양 몸체에 꽃 모양 주둥이가 달려 있다. 아름답고 세련된 청자이다. 1962년 국보 제94호로 지정되었다.",
+          "exact_text": "12세기 전반에 제작된 청자 참외모양 병이다. 고려 제17대 국왕 인종(재위 1122~1146)의 능에서 ‘황통(皇統) 6년(1146)’이라는 연도가 표기된 시책(諡冊)과 함께 발견되었다. 높이 22.8cm, 입지름 8.9cm, 밑지름 8.8cm이다. 담녹색이 감도는 맑은 비색이다. 참외 모양 몸체에 꽃 모양 주둥이가 달려 있다. 아름답고 세련된 청자이다. 1962년 국보 제94호로 지정되었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_040_09000&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_040_09000_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_040/ki_040_09000.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_040/ki_040_09000.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_040_09000&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유물",
+        "category_sub": "공예",
+        "internal_owner_title": "청자 참외모양 병",
+        "owner_id": "image_material:ki_040_09000"
+      }
+    },
+    {
+      "slot_no": 1,
+      "role": "distractor",
+      "basis_item_id": "clue:1396ee6e92d4",
+      "article_id": "image_material:ki_020_16400",
+      "truth_owner_label": "김해 예안리 고분 출토 가야토기",
+      "fact_basis": "김해 예안리 고분 117호에서 출토된 각종 토기류이다. 회백색 와질, 적갈색 연질, 회청색 경질의 고배와 호 등으로 구성되어 있다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_020_16400_chunk_0000",
+          "article_id": "image_material:ki_020_16400",
+          "snippet": "김해 예안리 고분 117호에서 출토된 각종 토기류이다. 회백색 와질, 적갈색 연질, 회청색 경질의 고배와 호 등으로 구성되어 있다.",
+          "exact_text": "김해 예안리 고분 117호에서 출토된 각종 토기류이다. 회백색 와질, 적갈색 연질, 회청색 경질의 고배와 호 등으로 구성되어 있다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_020_16400&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_020_16400_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_020/ki_020_16400.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_020/ki_020_16400.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_020_16400&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유물",
+        "category_sub": "공예",
+        "internal_owner_title": "김해 예안리 고분 출토 가야토기",
+        "owner_id": "image_material:ki_020_16400"
+      }
+    },
+    {
+      "slot_no": 2,
+      "role": "distractor",
+      "basis_item_id": "clue:8f34de4adebe",
+      "article_id": "image_material:ki_020_17000",
+      "truth_owner_label": "함안 말이산 고분 출토 아라가야 굽다리접시",
+      "fact_basis": "함안 말이산 고분에서 출토된 아라가야의 각종 굽다리접시(高杯)이다. 아라가야 고배는 5세기 전반에는 높이 15㎝ 전후로 크고, 다양한 형태가 제작되었는데 특히 투창과 대각의 형태가 다양하다. 삼각형투창고배, 화염형투창고배, 긴 세장방형의 투창이 상하 일렬로 배치된 이단일렬투창고배, 상하 엇갈리게 배치된 이단교호투창고배(二段交互透窓高杯) 등이 있다. 특히 화염형투창고배는 함안 분지를 중심으로 분포하는 특징적인 토기로 아라가야를 대표하는 토기로 알려져 있다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_020_17000_chunk_0000",
+          "article_id": "image_material:ki_020_17000",
+          "snippet": "함안 말이산 고분에서 출토된 아라가야의 각종 굽다리접시(高杯)이다. 아라가야 고배는 5세기 전반에는 높이 15㎝ 전후로 크고, 다양한 형태가 제작되었는데 특히 투창과 대각의 형태가 다양하다. 삼각형투창고배, 화염형투창고배, 긴 세장방형의 투창이 상하 일렬로 배치된 이단일렬투창고배, 상하 엇갈리게 배치된 이단교호투창고배(二段交互透窓高杯) 등이 있다. 특히 화염형투창고배는 함안 분지를 중심으로 분포하는 특징적인 토기로 아라가야를 대표하는 토기로 알려져 있다.",
+          "exact_text": "함안 말이산 고분에서 출토된 아라가야의 각종 굽다리접시(高杯)이다. 아라가야 고배는 5세기 전반에는 높이 15㎝ 전후로 크고, 다양한 형태가 제작되었는데 특히 투창과 대각의 형태가 다양하다. 삼각형투창고배, 화염형투창고배, 긴 세장방형의 투창이 상하 일렬로 배치된 이단일렬투창고배, 상하 엇갈리게 배치된 이단교호투창고배(二段交互透窓高杯) 등이 있다. 특히 화염형투창고배는 함안 분지를 중심으로 분포하는 특징적인 토기로 아라가야를 대표하는 토기로 알려져 있다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_020_17000&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_020_17000_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_020/ki_020_17000.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_020/ki_020_17000.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_020_17000&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유물",
+        "category_sub": "공예",
+        "internal_owner_title": "함안 말이산 고분 출토 아라가야 굽다리접시",
+        "owner_id": "image_material:ki_020_17000"
+      }
+    },
+    {
+      "slot_no": 3,
+      "role": "distractor",
+      "basis_item_id": "clue:1c48481f79a5",
+      "article_id": "image_material:ki_020_16200",
+      "truth_owner_label": "부산 복천동 고분 출토 각종 가야토기",
+      "fact_basis": "부산 복천동 고분군 22호분에서 출토된 각종 가야 토기류이다. 굽다리접시(고배), 목항아리(장경호), 토제 등잔을 비롯한 4~5세기 낙동강 하류 지역의 특징적인 토기들을 확인할 수 있다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_020_16200_chunk_0000",
+          "article_id": "image_material:ki_020_16200",
+          "snippet": "부산 복천동 고분군 22호분에서 출토된 각종 가야 토기류이다. 굽다리접시(고배), 목항아리(장경호), 토제 등잔을 비롯한 4~5세기 낙동강 하류 지역의 특징적인 토기들을 확인할 수 있다.",
+          "exact_text": "부산 복천동 고분군 22호분에서 출토된 각종 가야 토기류이다. 굽다리접시(고배), 목항아리(장경호), 토제 등잔을 비롯한 4~5세기 낙동강 하류 지역의 특징적인 토기들을 확인할 수 있다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_020_16200&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_020_16200_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_020/ki_020_16200.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_020/ki_020_16200.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_020_16200&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유물",
+        "category_sub": "공예",
+        "internal_owner_title": "부산 복천동 고분 출토 각종 가야토기",
+        "owner_id": "image_material:ki_020_16200"
+      }
+    },
+    {
+      "slot_no": 4,
+      "role": "distractor",
+      "basis_item_id": "clue:d8e1f88f1582",
+      "article_id": "image_material:ki_020_16100",
+      "truth_owner_label": "부산 복천동 11호분 출토 거북장식 원통형 기대와 단경호",
+      "fact_basis": "부산 복천동 11호분에서 출토되었다. 정식 명칭은 ‘부산 복천동 11호분 출토 토기 거북장식 원통형 기대 및 단경호(釜山 福泉洞 十一號墳 出土 陶器 龜裝飾 圓筒形 器臺 및 短頸壺)’이다. 기대 중앙 부분에 거북이 토우 한 마리가 부착되어 있으며, 통형 그릇받침 위에 목이 낮은 도기(陶器) 항아리가 올려 있던 상태 그대로 출토된 희귀한 사례이다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_020_16100_chunk_0000",
+          "article_id": "image_material:ki_020_16100",
+          "snippet": "부산 복천동 11호분에서 출토되었다. 정식 명칭은 ‘부산 복천동 11호분 출토 토기 거북장식 원통형 기대 및 단경호(釜山 福泉洞 十一號墳 出土 陶器 龜裝飾 圓筒形 器臺 및 短頸壺)’이다. 기대 중앙 부분에 거북이 토우 한 마리가 부착되어 있으며, 통형 그릇받침 위에 목이 낮은 도기(陶器) 항아리가 올려 있던 상태 그대로 출토된 희귀한 사례이다.",
+          "exact_text": "부산 복천동 11호분에서 출토되었다. 정식 명칭은 ‘부산 복천동 11호분 출토 토기 거북장식 원통형 기대 및 단경호(釜山 福泉洞 十一號墳 出土 陶器 龜裝飾 圓筒形 器臺 및 短頸壺)’이다. 기대 중앙 부분에 거북이 토우 한 마리가 부착되어 있으며, 통형 그릇받침 위에 목이 낮은 도기(陶器) 항아리가 올려 있던 상태 그대로 출토된 희귀한 사례이다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_020_16100&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_020_16100_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_020/ki_020_16100.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_020/ki_020_16100.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_020_16100&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유물",
+        "category_sub": "공예",
+        "internal_owner_title": "부산 복천동 11호분 출토 거북장식 원통형 기대와 단경호",
+        "owner_id": "image_material:ki_020_16100"
+      }
+    }
+  ]
+}

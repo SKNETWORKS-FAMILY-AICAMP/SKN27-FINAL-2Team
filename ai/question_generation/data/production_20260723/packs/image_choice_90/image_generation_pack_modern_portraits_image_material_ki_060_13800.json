@@ -1,0 +1,194 @@
+{
+  "pack_id": "image_generation_pack:modern_portraits:image_material:ki_060_13800",
+  "family_id": "image_choice_pack_v3:modern_portraits",
+  "era": "개항기·대한제국",
+  "service_era": "개항기",
+  "service_topic": "인물",
+  "service_question_type": "역사 자료의 분석 및 해석",
+  "service_question_subtype": "시각 자료 해석",
+  "variant_key": "image:image_choice_pack_v3:modern_portraits:image_material:ki_060_13800",
+  "target_label": "민영환",
+  "topic_type": "인물",
+  "question_task": "standard_select",
+  "choice_mode": "image",
+  "stem_pattern": "inquiry_topic",
+  "relation_axis_id": "common.definition_feature",
+  "material_type": "탐구 자료",
+  "major_type": "역사 자료의 분석 및 해석",
+  "minor_type": "시각 자료 해석",
+  "difficulty_label": "보통",
+  "question_task_instruction": "검수된 단서를 바탕으로 대상명을 직접 노출하지 않는 지문과 발문을 만들고, 제시된 이미지 중 해당 인물을 고르게 한다.",
+  "material_clue_basis": "민영환(閔泳煥, 1861∼1905)은 호조 판선 민겸호의 아들로 1877년부터 관직 생활을 시작하여 호조 판서, 병조 판서, 내무부사, 군부 대신 등의 요직을 역임하였다. 1897년 러시아 황제 대관식에 참여하기 위해 갔던 여행길에서 근대 문물과 제도의 도입 필요성을 절감하고 독립협회 설립에 적극적으로 참여하였다. 그러나 러일전쟁 이후 일본의 영향력이 확대되는 것을 비판하다 시종무관장으로 좌천되었다가 1905년 일제의 강요로 을사늑약이 체결되자 이에 항거하는 뜻으로 자결하였다.",
+  "material_evidence_chunks": [
+    {
+      "snippet": "민영환(閔泳煥, 1861∼1905)은 호조 판선 민겸호의 아들로 1877년부터 관직 생활을 시작하여 호조 판서, 병조 판서, 내무부사, 군부 대신 등의 요직을 역임하였다. 1897년 러시아 황제 대관식에 참여하기 위해 갔던 여행길에서 근대 문물과 제도의 도입 필요성을 절감하고 독립협회 설립에 적극적으로 참여하였다. 그러나 러일전쟁 이후 일본의 영향력이 확대되는 것을 비판하다 시종무관장으로 좌천되었다가 1905년 일제의 강요로 을사늑약이 체결되자 이에 항거하는 뜻으로 자결하였다.",
+      "chunk_id": "ki_060_13800_chunk_0000",
+      "article_id": "image_material:ki_060_13800",
+      "exact_text": "민영환(閔泳煥, 1861∼1905)은 호조 판선 민겸호의 아들로 1877년부터 관직 생활을 시작하여 호조 판서, 병조 판서, 내무부사, 군부 대신 등의 요직을 역임하였다. 1897년 러시아 황제 대관식에 참여하기 위해 갔던 여행길에서 근대 문물과 제도의 도입 필요성을 절감하고 독립협회 설립에 적극적으로 참여하였다. 그러나 러일전쟁 이후 일본의 영향력이 확대되는 것을 비판하다 시종무관장으로 좌천되었다가 1905년 일제의 강요로 을사늑약이 체결되자 이에 항거하는 뜻으로 자결하였다.",
+      "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_060_13800&whereStr=",
+      "section_path": [
+        "검수된 이미지 식별 단서"
+      ]
+    }
+  ],
+  "material_fact_semantically_distinct": true,
+  "status": "rag_ready",
+  "semantic_status": "pass",
+  "items": [
+    {
+      "slot_no": 0,
+      "role": "answer",
+      "basis_item_id": "clue:f8ec4bbb468e",
+      "article_id": "image_material:ki_060_13800",
+      "truth_owner_label": "민영환",
+      "fact_basis": "민영환(閔泳煥, 1861∼1905)은 호조 판선 민겸호의 아들로 1877년부터 관직 생활을 시작하여 호조 판서, 병조 판서, 내무부사, 군부 대신 등의 요직을 역임하였다. 1897년 러시아 황제 대관식에 참여하기 위해 갔던 여행길에서 근대 문물과 제도의 도입 필요성을 절감하고 독립협회 설립에 적극적으로 참여하였다. 그러나 러일전쟁 이후 일본의 영향력이 확대되는 것을 비판하다 시종무관장으로 좌천되었다가 1905년 일제의 강요로 을사늑약이 체결되자 이에 항거하는 뜻으로 자결하였다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_060_13800_chunk_0000",
+          "article_id": "image_material:ki_060_13800",
+          "snippet": "민영환(閔泳煥, 1861∼1905)은 호조 판선 민겸호의 아들로 1877년부터 관직 생활을 시작하여 호조 판서, 병조 판서, 내무부사, 군부 대신 등의 요직을 역임하였다. 1897년 러시아 황제 대관식에 참여하기 위해 갔던 여행길에서 근대 문물과 제도의 도입 필요성을 절감하고 독립협회 설립에 적극적으로 참여하였다. 그러나 러일전쟁 이후 일본의 영향력이 확대되는 것을 비판하다 시종무관장으로 좌천되었다가 1905년 일제의 강요로 을사늑약이 체결되자 이에 항거하는 뜻으로 자결하였다.",
+          "exact_text": "민영환(閔泳煥, 1861∼1905)은 호조 판선 민겸호의 아들로 1877년부터 관직 생활을 시작하여 호조 판서, 병조 판서, 내무부사, 군부 대신 등의 요직을 역임하였다. 1897년 러시아 황제 대관식에 참여하기 위해 갔던 여행길에서 근대 문물과 제도의 도입 필요성을 절감하고 독립협회 설립에 적극적으로 참여하였다. 그러나 러일전쟁 이후 일본의 영향력이 확대되는 것을 비판하다 시종무관장으로 좌천되었다가 1905년 일제의 강요로 을사늑약이 체결되자 이에 항거하는 뜻으로 자결하였다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_060_13800&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_060_13800_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_060/ki_060_13800.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_060/ki_060_13800.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_060_13800&whereStr=",
+        "image_source": "국사편찬위원회",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "인물",
+        "category_sub": "관료·정치가",
+        "internal_owner_title": "민영환",
+        "owner_id": "image_material:ki_060_13800"
+      }
+    },
+    {
+      "slot_no": 1,
+      "role": "distractor",
+      "basis_item_id": "clue:280cb0af7c50",
+      "article_id": "image_material:ki_060_25900",
+      "truth_owner_label": "유관순",
+      "fact_basis": "3·1운동 당시 충남 천안 병천(아우내) 장터 만세시위 참여하다가 투옥된 유관순(柳寬順, 1902~1920)의 감시대상인물카드 속 사진이다. 유관순의 측면과 정면 얼굴 사진이 첨부되어 있으며 이름, 나이, 신장, 지문번호 등이 기록되어 있다. 유관순은 병천 3·1운동의 주동자로 지목받아 여러 차례 재판 끝에 최종 3년 형을 선고받고 서대문 형무소에 수감되었다. 그러나 수감된 지 1년 후인 1920년 9월 28일에 옥사했다. 1962년에 건국훈장 독립장이 추서되었으며, 2019년 대한민국장으로 승격 추서되었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_060_25900_chunk_0000",
+          "article_id": "image_material:ki_060_25900",
+          "snippet": "3·1운동 당시 충남 천안 병천(아우내) 장터 만세시위 참여하다가 투옥된 유관순(柳寬順, 1902~1920)의 감시대상인물카드 속 사진이다. 유관순의 측면과 정면 얼굴 사진이 첨부되어 있으며 이름, 나이, 신장, 지문번호 등이 기록되어 있다. 유관순은 병천 3·1운동의 주동자로 지목받아 여러 차례 재판 끝에 최종 3년 형을 선고받고 서대문 형무소에 수감되었다. 그러나 수감된 지 1년 후인 1920년 9월 28일에 옥사했다. 1962년에 건국훈장 독립장이 추서되었으며, 2019년 대한민국장으로 승격 추서되었다.",
+          "exact_text": "3·1운동 당시 충남 천안 병천(아우내) 장터 만세시위 참여하다가 투옥된 유관순(柳寬順, 1902~1920)의 감시대상인물카드 속 사진이다. 유관순의 측면과 정면 얼굴 사진이 첨부되어 있으며 이름, 나이, 신장, 지문번호 등이 기록되어 있다. 유관순은 병천 3·1운동의 주동자로 지목받아 여러 차례 재판 끝에 최종 3년 형을 선고받고 서대문 형무소에 수감되었다. 그러나 수감된 지 1년 후인 1920년 9월 28일에 옥사했다. 1962년에 건국훈장 독립장이 추서되었으며, 2019년 대한민국장으로 승격 추서되었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_060_25900&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_060_25900_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_060/ki_060_25900.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_060/ki_060_25900.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_060_25900&whereStr=",
+        "image_source": "국사편찬위원회",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "인물",
+        "category_sub": "독립운동가",
+        "internal_owner_title": "유관순",
+        "owner_id": "image_material:ki_060_25900"
+      }
+    },
+    {
+      "slot_no": 2,
+      "role": "distractor",
+      "basis_item_id": "clue:b9b06f91a664",
+      "article_id": "image_material:ki_060_27300",
+      "truth_owner_label": "강우규",
+      "fact_basis": "1919년 남대문역(지금의 서울역)에서 사이토 총독 처단을 시도했던 강우규(姜宇奎, 1855~1920)의 모습이다. 강우규는 일제 강점 이후인 1911년 북간도 화룡현(和龍縣) 두도구(頭道溝)로 망명하여 연해주를 오가며 독립운동을 모색하였다. 1915년경에는 요하현(繞河縣)으로 옮겨 신흥동(新興洞)이라는 한인마을을 만들고, 광동학교(光東學校)를 설립하였다. 3·1운동이 일어나자 대한국민노인동맹단(大韓國民老人同盟團)에 가입하고, 1919년 9월 남대문역에서 총독으로 부임하던 사이토 마코토의 처단을 시도하였다. 강우규는 일제 경찰에 체포되어 사형을 언도받고, 1920년 11월 29일 숨을 거두었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_060_27300_chunk_0000",
+          "article_id": "image_material:ki_060_27300",
+          "snippet": "1919년 남대문역(지금의 서울역)에서 사이토 총독 처단을 시도했던 강우규(姜宇奎, 1855~1920)의 모습이다. 강우규는 일제 강점 이후인 1911년 북간도 화룡현(和龍縣) 두도구(頭道溝)로 망명하여 연해주를 오가며 독립운동을 모색하였다. 1915년경에는 요하현(繞河縣)으로 옮겨 신흥동(新興洞)이라는 한인마을을 만들고, 광동학교(光東學校)를 설립하였다. 3·1운동이 일어나자 대한국민노인동맹단(大韓國民老人同盟團)에 가입하고, 1919년 9월 남대문역에서 총독으로 부임하던 사이토 마코토의 처단을 시도하였다. 강우규는 일제 경찰에 체포되어 사형을 언도받고, 1920년 11월 29일 숨을 거두었다.",
+          "exact_text": "1919년 남대문역(지금의 서울역)에서 사이토 총독 처단을 시도했던 강우규(姜宇奎, 1855~1920)의 모습이다. 강우규는 일제 강점 이후인 1911년 북간도 화룡현(和龍縣) 두도구(頭道溝)로 망명하여 연해주를 오가며 독립운동을 모색하였다. 1915년경에는 요하현(繞河縣)으로 옮겨 신흥동(新興洞)이라는 한인마을을 만들고, 광동학교(光東學校)를 설립하였다. 3·1운동이 일어나자 대한국민노인동맹단(大韓國民老人同盟團)에 가입하고, 1919년 9월 남대문역에서 총독으로 부임하던 사이토 마코토의 처단을 시도하였다. 강우규는 일제 경찰에 체포되어 사형을 언도받고, 1920년 11월 29일 숨을 거두었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_060_27300&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_060_27300_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_060/ki_060_27300.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_060/ki_060_27300.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_060_27300&whereStr=",
+        "image_source": "국사편찬위원회",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "인물",
+        "category_sub": "독립운동가",
+        "internal_owner_title": "강우규",
+        "owner_id": "image_material:ki_060_27300"
+      }
+    },
+    {
+      "slot_no": 3,
+      "role": "distractor",
+      "basis_item_id": "clue:c2e7f4bebc8a",
+      "article_id": "image_material:ki_060_34700",
+      "truth_owner_label": "박은식 초상",
+      "fact_basis": "대한민국 임시정부의 제2대 대통령이었던 박은식(朴殷植, 1859~1925)의 초상이다. 박은식은 독립협회 활동을 통해 개화사상을 접하고, 『황성신문』과 『대한매일신보』 주필로서 애국계몽운동에 참여하였다. 일제강점기에는 중국에서 교육활동은 물론 『한국통사(韓國痛史)』, 『한국독립운동지혈사(韓國獨立運動之血史)』 등을 저술하여 한인들의 독립의식을 고취시키고자 하였다. 1925년 3월 대한민국 임시정부의 대통령으로 취임하였으나 곧바로 사임했다. 사임 4개월 뒤 병으로 생을 마감했다. 1962년에 건국훈장 대통령장이 추서되었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_060_34700_chunk_0000",
+          "article_id": "image_material:ki_060_34700",
+          "snippet": "대한민국 임시정부의 제2대 대통령이었던 박은식(朴殷植, 1859~1925)의 초상이다. 박은식은 독립협회 활동을 통해 개화사상을 접하고, 『황성신문』과 『대한매일신보』 주필로서 애국계몽운동에 참여하였다. 일제강점기에는 중국에서 교육활동은 물론 『한국통사(韓國痛史)』, 『한국독립운동지혈사(韓國獨立運動之血史)』 등을 저술하여 한인들의 독립의식을 고취시키고자 하였다. 1925년 3월 대한민국 임시정부의 대통령으로 취임하였으나 곧바로 사임했다. 사임 4개월 뒤 병으로 생을 마감했다. 1962년에 건국훈장 대통령장이 추서되었다.",
+          "exact_text": "대한민국 임시정부의 제2대 대통령이었던 박은식(朴殷植, 1859~1925)의 초상이다. 박은식은 독립협회 활동을 통해 개화사상을 접하고, 『황성신문』과 『대한매일신보』 주필로서 애국계몽운동에 참여하였다. 일제강점기에는 중국에서 교육활동은 물론 『한국통사(韓國痛史)』, 『한국독립운동지혈사(韓國獨立運動之血史)』 등을 저술하여 한인들의 독립의식을 고취시키고자 하였다. 1925년 3월 대한민국 임시정부의 대통령으로 취임하였으나 곧바로 사임했다. 사임 4개월 뒤 병으로 생을 마감했다. 1962년에 건국훈장 대통령장이 추서되었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_060_34700&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_060_34700_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_060/ki_060_34700.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_060/ki_060_34700.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_060_34700&whereStr=",
+        "image_source": "국사편찬위원회",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "인물",
+        "category_sub": "독립운동가",
+        "internal_owner_title": "박은식 초상",
+        "owner_id": "image_material:ki_060_34700"
+      }
+    },
+    {
+      "slot_no": 4,
+      "role": "distractor",
+      "basis_item_id": "clue:06d504d36670",
+      "article_id": "image_material:ki_060_37502",
+      "truth_owner_label": "안재홍",
+      "fact_basis": "1947년경 촬영된 안재홍(安在鴻, 1891~1965년)의 사진이다. 1919년 7월 비밀결사 대한민국 청년외교단에 참여해 옥고를 치렀고, 1924년 조선물산장려회 이사로 참여해 민족자본의 발전을 위해 노력하였다. 그리고 『시대일보』·『조선일보』에서 언론인으로 활약했으며 1927년 신간회(新幹會)가 결성되는 데 적극 참여하였다. 1945년 광복 이후 『신민족주의와 신민주주의』라는 책을 발간하였다. 1950년 6·25전쟁 때 납북되어 돌아오지 못했는데, 1965년 사망한 것으로 전한다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_060_37502_chunk_0000",
+          "article_id": "image_material:ki_060_37502",
+          "snippet": "1947년경 촬영된 안재홍(安在鴻, 1891~1965년)의 사진이다. 1919년 7월 비밀결사 대한민국 청년외교단에 참여해 옥고를 치렀고, 1924년 조선물산장려회 이사로 참여해 민족자본의 발전을 위해 노력하였다. 그리고 『시대일보』·『조선일보』에서 언론인으로 활약했으며 1927년 신간회(新幹會)가 결성되는 데 적극 참여하였다. 1945년 광복 이후 『신민족주의와 신민주주의』라는 책을 발간하였다. 1950년 6·25전쟁 때 납북되어 돌아오지 못했는데, 1965년 사망한 것으로 전한다.",
+          "exact_text": "1947년경 촬영된 안재홍(安在鴻, 1891~1965년)의 사진이다. 1919년 7월 비밀결사 대한민국 청년외교단에 참여해 옥고를 치렀고, 1924년 조선물산장려회 이사로 참여해 민족자본의 발전을 위해 노력하였다. 그리고 『시대일보』·『조선일보』에서 언론인으로 활약했으며 1927년 신간회(新幹會)가 결성되는 데 적극 참여하였다. 1945년 광복 이후 『신민족주의와 신민주주의』라는 책을 발간하였다. 1950년 6·25전쟁 때 납북되어 돌아오지 못했는데, 1965년 사망한 것으로 전한다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_060_37502&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_060_37502_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_060/ki_060_37502.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_060/ki_060_37502.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_060_37502&whereStr=",
+        "image_source": "국사편찬위원회",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "인물",
+        "category_sub": "독립운동가",
+        "internal_owner_title": "안재홍",
+        "owner_id": "image_material:ki_060_37502"
+      }
+    }
+  ]
+}

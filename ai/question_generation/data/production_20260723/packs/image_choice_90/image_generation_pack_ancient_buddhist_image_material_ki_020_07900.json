@@ -1,0 +1,194 @@
+{
+  "pack_id": "image_generation_pack:ancient_buddhist:image_material:ki_020_07900",
+  "family_id": "image_choice_pack_v3:ancient_buddhist",
+  "era": "고대",
+  "service_era": "삼국 시대",
+  "service_topic": "문화",
+  "service_question_type": "역사 자료의 분석 및 해석",
+  "service_question_subtype": "시각 자료 해석",
+  "variant_key": "image:image_choice_pack_v3:ancient_buddhist:image_material:ki_020_07900",
+  "target_label": "부여 군수리 석조여래좌상",
+  "topic_type": "문화유산",
+  "question_task": "standard_select",
+  "choice_mode": "image",
+  "stem_pattern": "target_description",
+  "relation_axis_id": "common.definition_feature",
+  "material_type": "자료 제시문",
+  "major_type": "역사 자료의 분석 및 해석",
+  "minor_type": "시각 자료 해석",
+  "difficulty_label": "어려움",
+  "question_task_instruction": "검수된 단서를 바탕으로 대상명을 직접 노출하지 않는 지문과 발문을 만들고, 제시된 이미지 중 해당 문화유산을 고르게 한다.",
+  "material_clue_basis": "4각형의 높은 대좌 위에 앉아 있는 백제 특유의 불상이다. 민머리 위에는 상투 모양의 작은 머리(육계)가 솟아 있다. 양어깨에 걸쳐 입은 옷은 두꺼워 신체의 윤곽이 거의 드러나지 않으며, 어깨에서 길게 흘러내린 옷자락은 대좌를 거의 덮고 있다. 가슴 부근에는 U자형의 옷 주름을 표현하였고, 무릎 밑으로 흘러내린 옷자락은 좌우대칭의 Ω형 주름을 나타내고 있다. 1963년 보물 제329호로 지정되었다.",
+  "material_evidence_chunks": [
+    {
+      "snippet": "4각형의 높은 대좌 위에 앉아 있는 백제 특유의 불상이다. 민머리 위에는 상투 모양의 작은 머리(육계)가 솟아 있다. 양어깨에 걸쳐 입은 옷은 두꺼워 신체의 윤곽이 거의 드러나지 않으며, 어깨에서 길게 흘러내린 옷자락은 대좌를 거의 덮고 있다. 가슴 부근에는 U자형의 옷 주름을 표현하였고, 무릎 밑으로 흘러내린 옷자락은 좌우대칭의 Ω형 주름을 나타내고 있다. 1963년 보물 제329호로 지정되었다.",
+      "chunk_id": "ki_020_07900_chunk_0000",
+      "article_id": "image_material:ki_020_07900",
+      "exact_text": "4각형의 높은 대좌 위에 앉아 있는 백제 특유의 불상이다. 민머리 위에는 상투 모양의 작은 머리(육계)가 솟아 있다. 양어깨에 걸쳐 입은 옷은 두꺼워 신체의 윤곽이 거의 드러나지 않으며, 어깨에서 길게 흘러내린 옷자락은 대좌를 거의 덮고 있다. 가슴 부근에는 U자형의 옷 주름을 표현하였고, 무릎 밑으로 흘러내린 옷자락은 좌우대칭의 Ω형 주름을 나타내고 있다. 1963년 보물 제329호로 지정되었다.",
+      "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_020_07900&whereStr=",
+      "section_path": [
+        "검수된 이미지 식별 단서"
+      ]
+    }
+  ],
+  "material_fact_semantically_distinct": true,
+  "status": "rag_ready",
+  "semantic_status": "pass",
+  "items": [
+    {
+      "slot_no": 0,
+      "role": "answer",
+      "basis_item_id": "clue:afa56d6eecc6",
+      "article_id": "image_material:ki_020_07900",
+      "truth_owner_label": "부여 군수리 석조여래좌상",
+      "fact_basis": "4각형의 높은 대좌 위에 앉아 있는 백제 특유의 불상이다. 민머리 위에는 상투 모양의 작은 머리(육계)가 솟아 있다. 양어깨에 걸쳐 입은 옷은 두꺼워 신체의 윤곽이 거의 드러나지 않으며, 어깨에서 길게 흘러내린 옷자락은 대좌를 거의 덮고 있다. 가슴 부근에는 U자형의 옷 주름을 표현하였고, 무릎 밑으로 흘러내린 옷자락은 좌우대칭의 Ω형 주름을 나타내고 있다. 1963년 보물 제329호로 지정되었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_020_07900_chunk_0000",
+          "article_id": "image_material:ki_020_07900",
+          "snippet": "4각형의 높은 대좌 위에 앉아 있는 백제 특유의 불상이다. 민머리 위에는 상투 모양의 작은 머리(육계)가 솟아 있다. 양어깨에 걸쳐 입은 옷은 두꺼워 신체의 윤곽이 거의 드러나지 않으며, 어깨에서 길게 흘러내린 옷자락은 대좌를 거의 덮고 있다. 가슴 부근에는 U자형의 옷 주름을 표현하였고, 무릎 밑으로 흘러내린 옷자락은 좌우대칭의 Ω형 주름을 나타내고 있다. 1963년 보물 제329호로 지정되었다.",
+          "exact_text": "4각형의 높은 대좌 위에 앉아 있는 백제 특유의 불상이다. 민머리 위에는 상투 모양의 작은 머리(육계)가 솟아 있다. 양어깨에 걸쳐 입은 옷은 두꺼워 신체의 윤곽이 거의 드러나지 않으며, 어깨에서 길게 흘러내린 옷자락은 대좌를 거의 덮고 있다. 가슴 부근에는 U자형의 옷 주름을 표현하였고, 무릎 밑으로 흘러내린 옷자락은 좌우대칭의 Ω형 주름을 나타내고 있다. 1963년 보물 제329호로 지정되었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_020_07900&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_020_07900_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_020/ki_020_07900.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_020/ki_020_07900.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_020_07900&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유물",
+        "category_sub": "불교미술",
+        "internal_owner_title": "부여 군수리 석조여래좌상",
+        "owner_id": "image_material:ki_020_07900"
+      }
+    },
+    {
+      "slot_no": 1,
+      "role": "distractor",
+      "basis_item_id": "clue:7deb5ee2bae9",
+      "article_id": "image_material:ki_020_07100",
+      "truth_owner_label": "서산 용현리 마애여래삼존상",
+      "fact_basis": "충청남도 서산시 운산면 가야산 계곡의 층암절벽에 거대한 여래입상을 중심으로 오른쪽에는 보살입상, 왼쪽에는 반가사유상이 조각되어 있다. 흔히 ‘백제의 미소’로 널리 알려진 이 삼존상은 『법화경』에 나오는 석가와 미륵, 제화갈라보살을 표현한 것으로 추정된다. 본존불의 묵직하면서 당당한 체구와 둥근 윤곽선, 보살상의 세련된 조형 감각, 그리고 공통적으로 나타나 있는 쾌활한 인상 등에서 6세기 말이나 7세기 초에 만든 것으로 보인다. 1962년 국보 제84호로 지정되었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_020_07100_chunk_0000",
+          "article_id": "image_material:ki_020_07100",
+          "snippet": "충청남도 서산시 운산면 가야산 계곡의 층암절벽에 거대한 여래입상을 중심으로 오른쪽에는 보살입상, 왼쪽에는 반가사유상이 조각되어 있다. 흔히 ‘백제의 미소’로 널리 알려진 이 삼존상은 『법화경』에 나오는 석가와 미륵, 제화갈라보살을 표현한 것으로 추정된다. 본존불의 묵직하면서 당당한 체구와 둥근 윤곽선, 보살상의 세련된 조형 감각, 그리고 공통적으로 나타나 있는 쾌활한 인상 등에서 6세기 말이나 7세기 초에 만든 것으로 보인다. 1962년 국보 제84호로 지정되었다.",
+          "exact_text": "충청남도 서산시 운산면 가야산 계곡의 층암절벽에 거대한 여래입상을 중심으로 오른쪽에는 보살입상, 왼쪽에는 반가사유상이 조각되어 있다. 흔히 ‘백제의 미소’로 널리 알려진 이 삼존상은 『법화경』에 나오는 석가와 미륵, 제화갈라보살을 표현한 것으로 추정된다. 본존불의 묵직하면서 당당한 체구와 둥근 윤곽선, 보살상의 세련된 조형 감각, 그리고 공통적으로 나타나 있는 쾌활한 인상 등에서 6세기 말이나 7세기 초에 만든 것으로 보인다. 1962년 국보 제84호로 지정되었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_020_07100&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_020_07100_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_020/ki_020_07100.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_020/ki_020_07100.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_020_07100&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유물",
+        "category_sub": "불교미술",
+        "internal_owner_title": "서산 용현리 마애여래삼존상",
+        "owner_id": "image_material:ki_020_07100"
+      }
+    },
+    {
+      "slot_no": 2,
+      "role": "distractor",
+      "basis_item_id": "clue:6b512689b5a3",
+      "article_id": "image_material:ki_020_14800",
+      "truth_owner_label": "경주 배동 석조여래삼존입상",
+      "fact_basis": "경주 배동 석조여래삼존입상(慶州拜洞石造如來三尊立像)은 신라시대 불상이다. 경주시 내남면 용장리에 세워져 있다. 원래는 경주 남산 기슭에 흩어져 있던 것을 1923년 지금의 자리로 옮겨온 것이다. 기본 양식이 똑같아 처음부터 삼존불(三尊佛)로 모셔졌던 것으로 추정된다. 높이는 본존불이 2.78m, 좌협시보살이 2.35m, 우협시보살이 2.93m이다. 7세기 초기의 작품으로 추정된다. 1963년 보물 제63호로 지정되었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_020_14800_chunk_0000",
+          "article_id": "image_material:ki_020_14800",
+          "snippet": "경주 배동 석조여래삼존입상(慶州拜洞石造如來三尊立像)은 신라시대 불상이다. 경주시 내남면 용장리에 세워져 있다. 원래는 경주 남산 기슭에 흩어져 있던 것을 1923년 지금의 자리로 옮겨온 것이다. 기본 양식이 똑같아 처음부터 삼존불(三尊佛)로 모셔졌던 것으로 추정된다. 높이는 본존불이 2.78m, 좌협시보살이 2.35m, 우협시보살이 2.93m이다. 7세기 초기의 작품으로 추정된다. 1963년 보물 제63호로 지정되었다.",
+          "exact_text": "경주 배동 석조여래삼존입상(慶州拜洞石造如來三尊立像)은 신라시대 불상이다. 경주시 내남면 용장리에 세워져 있다. 원래는 경주 남산 기슭에 흩어져 있던 것을 1923년 지금의 자리로 옮겨온 것이다. 기본 양식이 똑같아 처음부터 삼존불(三尊佛)로 모셔졌던 것으로 추정된다. 높이는 본존불이 2.78m, 좌협시보살이 2.35m, 우협시보살이 2.93m이다. 7세기 초기의 작품으로 추정된다. 1963년 보물 제63호로 지정되었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_020_14800&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_020_14800_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_020/ki_020_14800.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_020/ki_020_14800.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_020_14800&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유물",
+        "category_sub": "불교미술",
+        "internal_owner_title": "경주 배동 석조여래삼존입상",
+        "owner_id": "image_material:ki_020_14800"
+      }
+    },
+    {
+      "slot_no": 3,
+      "role": "distractor",
+      "basis_item_id": "clue:8258a3e768c6",
+      "article_id": "image_material:ki_030_03000",
+      "truth_owner_label": "경주 석굴암 본존불상",
+      "fact_basis": "석굴암 본존불상은 석굴암 석굴 주실(主室)의 중앙에 위치한 불상이다. 연꽃 모양의 석련대(石蓮臺) 위에 결가부좌하여 안치되어 있다. 가늘게 뜨고 있는 눈과 엷은 미소를 띤 입술, 오뚝한 코, 길게 늘어진 귀 등 부처님의 근엄하면서도 자비로운 표정을 잘 묘사하였다. 머리는 굽타식의 나발(螺髮)을 올려 세밀하게 조각하였다. 전체 높이는 약 3.4m, 대좌 높이는 1.6m이다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_030_03000_chunk_0000",
+          "article_id": "image_material:ki_030_03000",
+          "snippet": "석굴암 본존불상은 석굴암 석굴 주실(主室)의 중앙에 위치한 불상이다. 연꽃 모양의 석련대(石蓮臺) 위에 결가부좌하여 안치되어 있다. 가늘게 뜨고 있는 눈과 엷은 미소를 띤 입술, 오뚝한 코, 길게 늘어진 귀 등 부처님의 근엄하면서도 자비로운 표정을 잘 묘사하였다. 머리는 굽타식의 나발(螺髮)을 올려 세밀하게 조각하였다. 전체 높이는 약 3.4m, 대좌 높이는 1.6m이다.",
+          "exact_text": "석굴암 본존불상은 석굴암 석굴 주실(主室)의 중앙에 위치한 불상이다. 연꽃 모양의 석련대(石蓮臺) 위에 결가부좌하여 안치되어 있다. 가늘게 뜨고 있는 눈과 엷은 미소를 띤 입술, 오뚝한 코, 길게 늘어진 귀 등 부처님의 근엄하면서도 자비로운 표정을 잘 묘사하였다. 머리는 굽타식의 나발(螺髮)을 올려 세밀하게 조각하였다. 전체 높이는 약 3.4m, 대좌 높이는 1.6m이다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_030_03000&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_030_03000_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_030/ki_030_03000.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_030/ki_030_03000.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_030_03000&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유물",
+        "category_sub": "불교미술",
+        "internal_owner_title": "경주 석굴암 본존불상",
+        "owner_id": "image_material:ki_030_03000"
+      }
+    },
+    {
+      "slot_no": 4,
+      "role": "distractor",
+      "basis_item_id": "clue:06f31b2c2585",
+      "article_id": "image_material:ki_030_03100",
+      "truth_owner_label": "경주 석굴암 금강역사상",
+      "fact_basis": "석굴암 금강역사상은 본존불이 있는 굴의 입구 좌우 양쪽에 배치되어 있다. 금강역사(金剛力士) 또는 인왕역사(仁王力士)라고 부른다. 그들의 머리 뒤에 있는 원형의 두광은 그들이 단순히 힘센 자가 아니라, 신성한 지혜를 고루 갖춘 존재임을 표시하는 것이다. 무서운 표정을 하고 있으면서도 악의가 느껴지지 않는 얼굴은 신라 무인의 모습을 연상시킨다. 중국이나 일본의 금강역사상에서는 볼 수 없는 특징이다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_030_03100_chunk_0000",
+          "article_id": "image_material:ki_030_03100",
+          "snippet": "석굴암 금강역사상은 본존불이 있는 굴의 입구 좌우 양쪽에 배치되어 있다. 금강역사(金剛力士) 또는 인왕역사(仁王力士)라고 부른다. 그들의 머리 뒤에 있는 원형의 두광은 그들이 단순히 힘센 자가 아니라, 신성한 지혜를 고루 갖춘 존재임을 표시하는 것이다. 무서운 표정을 하고 있으면서도 악의가 느껴지지 않는 얼굴은 신라 무인의 모습을 연상시킨다. 중국이나 일본의 금강역사상에서는 볼 수 없는 특징이다.",
+          "exact_text": "석굴암 금강역사상은 본존불이 있는 굴의 입구 좌우 양쪽에 배치되어 있다. 금강역사(金剛力士) 또는 인왕역사(仁王力士)라고 부른다. 그들의 머리 뒤에 있는 원형의 두광은 그들이 단순히 힘센 자가 아니라, 신성한 지혜를 고루 갖춘 존재임을 표시하는 것이다. 무서운 표정을 하고 있으면서도 악의가 느껴지지 않는 얼굴은 신라 무인의 모습을 연상시킨다. 중국이나 일본의 금강역사상에서는 볼 수 없는 특징이다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_030_03100&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_030_03100_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_030/ki_030_03100.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_030/ki_030_03100.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_030_03100&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유물",
+        "category_sub": "불교미술",
+        "internal_owner_title": "경주 석굴암 금강역사상",
+        "owner_id": "image_material:ki_030_03100"
+      }
+    }
+  ]
+}
