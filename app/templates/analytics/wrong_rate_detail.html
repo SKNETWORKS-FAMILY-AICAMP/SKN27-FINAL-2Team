@@ -327,6 +327,29 @@
         .replaceAll('"', "&quot;")
         .replaceAll("'", "&#39;");
 
+      const eraIconPaths = {
+        "선사시대": "{% static 'analytics/images/eras/prehistory.png' %}", "초기국가": "{% static 'analytics/images/eras/early-states.png' %}",
+        "고조선": "{% static 'analytics/images/eras/gojoseon.png' %}", "삼국시대": "{% static 'analytics/images/eras/three-kingdoms.png' %}",
+        "남북국시대": "{% static 'analytics/images/eras/north-south-states.png' %}", "고려": "{% static 'analytics/images/eras/goryeo.png' %}",
+        "조선": "{% static 'analytics/images/eras/joseon.png' %}", "개항기": "{% static 'analytics/images/eras/opening-port.png' %}",
+        "일제강점기": "{% static 'analytics/images/eras/colonial.png' %}", "현대": "{% static 'analytics/images/eras/modern.png' %}",
+      };
+      const renderEraIcon = (label, className) => {
+        const src = eraIconPaths[String(label || "").replaceAll(/\s/g, "")];
+        return src ? `<img class="${className}" src="${src}" alt="" aria-hidden="true">` : "";
+      };
+      const topicIconPaths = {
+        "외교": "{% static 'analytics/images/topics/diplomacy.png' %}", "정치": "{% static 'analytics/images/topics/politics.png' %}",
+        "군사": "{% static 'analytics/images/topics/military.png' %}", "인물": "{% static 'analytics/images/topics/person.png' %}",
+        "사건": "{% static 'analytics/images/topics/event.png' %}", "경제": "{% static 'analytics/images/topics/economy.png' %}",
+        "문화": "{% static 'analytics/images/topics/culture.png' %}", "사회": "{% static 'analytics/images/topics/society.png' %}",
+        "사상종교": "{% static 'analytics/images/topics/thought-religion.png' %}?v=2", "제도": "{% static 'analytics/images/topics/institution.png' %}?v=2",
+      };
+      const renderTopicIcon = (label, className) => {
+        const src = topicIconPaths[String(label || "").replaceAll(/\s|·/g, "")];
+        return src ? `<img class="${className}" src="${src}" alt="" aria-hidden="true">` : "";
+      };
+
       const statusLabels = {
         weak: "오답률 높음",
         stable: "오답률 낮음",
@@ -597,7 +620,7 @@
             <header>
               <div>
                 <strong>${escapeHtml(session.title)}</strong>
-                <span>${escapeHtml(session.recordedDate)} · 세션 #${escapeHtml(session.sessionId)}</span>
+                <span>${escapeHtml(session.recordedDate)} · ${escapeHtml(session.sessionDisplayTitle)}</span>
               </div>
               <b>${escapeHtml(session.wrongRate)}%</b>
             </header>
@@ -708,7 +731,7 @@
         detailBody.innerHTML = `
           <article class="session-overview-card">
             <div>
-              <span>${escapeHtml(overview.recordedDate)} · ${escapeHtml(overview.sessionTypeLabel)}</span>
+              <span>${escapeHtml(overview.recordedDate)} · ${escapeHtml(overview.sessionDisplayTitle || overview.sessionTypeLabel)}</span>
               <strong>오답률 ${escapeHtml(overview.wrongRate)}%</strong>
             </div>
             <div class="session-overview-meter" aria-label="세션 오답률 ${escapeHtml(overview.wrongRate)}%">
@@ -726,7 +749,7 @@
         `;
       };
 
-      const renderInlineAnalysisCard = (item, sessionId) => `
+      const renderInlineAnalysisCard = (item, sessionId, iconType) => `
         <button
           class="rate-bar-card ${escapeHtml(item.statusClass)}"
           type="button"
@@ -735,12 +758,13 @@
           data-category="${escapeHtml(item.category)}"
           data-label="${escapeHtml(item.label)}"
         >
+          ${(iconType === "era" ? renderEraIcon(item.label, "bar-era-icon era-icon") : iconType === "topic" ? renderTopicIcon(item.label, "bar-era-icon era-icon") : "") || '<i class="bar-era-icon" aria-hidden="true">♜</i>'}
           <div class="bar-label">
             <strong>${escapeHtml(item.label)}</strong>
           </div>
           <div class="bar-body">
             <div class="bar-meta">
-              <span>전체 ${escapeHtml(item.totalCount)}문제 · 오답 ${escapeHtml(item.wrongCount)}개 · 문제당 ${escapeHtml(item.averageTimeLabel)}</span>
+              <span>오답 ${escapeHtml(item.wrongCount)}문항</span>
               <strong>${escapeHtml(item.wrongRate)}%</strong>
             </div>
             <div class="bar-track"><i style="width: ${Number(item.wrongRate) || 0}%"></i></div>
@@ -754,7 +778,7 @@
       const renderInlineAnalysisGroup = (group, sessionId) => {
         const items = group.items || [];
         const body = items.length
-          ? `<div class="rate-bars">${items.map((item) => renderInlineAnalysisCard(item, sessionId)).join("")}</div>`
+          ? `<div class="rate-bars">${items.map((item) => renderInlineAnalysisCard(item, sessionId, group.title === "시대별 오답률" ? "era" : group.title === "주제별 오답률" ? "topic" : "")).join("")}</div>`
           : `
             <div class="rate-bars">
               <article class="detail-empty compact">
@@ -794,13 +818,13 @@
           <div class="session-report">
             <article class="session-overview-card">
               <header class="session-report-title">
-                <div><span>${escapeHtml(overview.recordedDate)}</span><h3>${escapeHtml(detail.title || overview.sessionTypeLabel)}</h3></div>
+                <div><span>${escapeHtml(overview.recordedDate)}</span><h3>${escapeHtml(detail.title || overview.sessionDisplayTitle || overview.sessionTypeLabel)}</h3></div>
                 <p>선택한 문제지의 시대별, 유형별, 주제별 오답률을 요약하여 제공합니다.</p>
               </header>
               <div class="session-overview-summary">
                 <div class="session-overview-score"><span>오답률</span><strong>${escapeHtml(overview.wrongRate)}%</strong></div>
                 <div class="session-overview-progress"><i style="width: ${Number(overview.wrongRate) || 0}%"></i></div>
-                <dl><div><dt>전체 문항</dt><dd>${escapeHtml(overview.totalCount)}개</dd></div><div><dt>오답 문항</dt><dd>${escapeHtml(overview.wrongCount)}개</dd></div><div><dt>정답 문항</dt><dd>${escapeHtml(overview.correctCount)}개</dd></div><div><dt>총 풀이 시간</dt><dd>${escapeHtml(overview.averageTimeLabel)}</dd></div></dl>
+                <div class="session-overview-stats"><div><span>전체 문항</span><strong>${escapeHtml(overview.totalCount)}개</strong></div><div><span>오답 문항</span><strong>${escapeHtml(overview.wrongCount)}개</strong></div><div><span>정답 문항</span><strong>${escapeHtml(overview.correctCount)}개</strong></div><div><span>총 풀이 시간</span><strong>${escapeHtml(overview.averageTimeLabel)}</strong></div></div>
               </div>
             </article>
             <div class="session-report-groups">${groups.map((group) => renderInlineAnalysisGroup(group, overview.sessionId)).join("")}</div>
@@ -1147,23 +1171,34 @@
       };
 
       const renderPeriodDonut = (group) => {
-        const colors = ["#b8cfb4", "#bde4e9", "#c9daf1", "#e4cceb", "#f9beb5", "#f6d093"];
+        const colors = ["#ef8a75", "#58c3b6", "#74a9ff", "#f2b65f", "#8fcf7a", "#a08ce8"];
         const items = (group?.items || []).filter((item) => item.wrongCount > 0).slice(0, 6);
         const total = items.reduce((sum, item) => sum + item.wrongCount, 0);
         let start = 0;
-        const segments = items.map((item, index) => {
+        const donutItems = items.map((item, index) => {
           const share = total ? Math.round(item.wrongCount / total * 100) : 0;
           const end = index === items.length - 1 ? 100 : start + share;
-          const segment = `${colors[index]} ${start}% ${end}%`;
+          const midpoint = start + (end - start) / 2;
+          const donutItem = {
+            ...item,
+            color: colors[index],
+            share,
+            start,
+            end,
+            angle: midpoint * 3.6,
+          };
           start = end;
-          return segment;
+          return donutItem;
         });
+        const gradient = donutItems.map((item) => `${item.color} ${item.start}% ${item.end}%`).join(",") || "#e7ece5 0 100%";
         return `
-          <article class="period-report-donut">
-            <h3>${escapeHtml(group?.title?.replace("오답률", "") || "분류")}</h3>
-            <div class="period-report-donut-body">
-              <ul>${items.map((item, index) => `<li><i style="background:${colors[index]}"></i><span>${escapeHtml(item.label)}</span><b>${total ? Math.round(item.wrongCount / total * 100) : 0}%</b></li>`).join("") || "<li>기록 없음</li>"}</ul>
-              <div class="period-report-ring" style="background:conic-gradient(${segments.join(",") || "#e7ece5 0 100%"})"></div>
+          <article class="period-report-donut top-donut-card">
+            <header><h2>${escapeHtml(group?.title?.replace("오답률", "") || "분류")}</h2></header>
+            <div class="rate-donut-overview">
+              <div class="rate-donut-chart" style="--donut-gradient:conic-gradient(${gradient})" aria-label="${escapeHtml(group?.title || "분류")} 오답 비중">
+                <div class="rate-donut-values">${donutItems.map((item) => `<span style="--angle:${item.angle}deg;--reverse-angle:-${item.angle}deg">${item.share}%</span>`).join("") || "<span>0%</span>"}</div>
+              </div>
+              <div class="rate-donut-list">${donutItems.map((item) => `<article><i style="background:${item.color}"></i><strong>${escapeHtml(item.label)}</strong></article>`).join("") || "<article><i></i><strong>기록 없음</strong></article>"}</div>
             </div>
           </article>`;
       };
@@ -1178,9 +1213,9 @@
             <header><h2>상세 취약점 분석</h2><p>오답 유형 / 분석 대시보드</p></header>
             <div class="period-report-donuts">${groups.map(renderPeriodDonut).join("")}</div>
             <section class="period-report-summary"><div><strong>${escapeHtml(overview.periodLabel || detail.period?.label || "선택 기간")} 분석 요약</strong><span>선택한 기간의 분석 결과를 반영한 데이터입니다.</span></div><b>오답률 ${escapeHtml(overview.wrongRate)}%</b></section>
-            <section class="period-report-insights"><h3>주요 인사이트</h3><div>${top.slice(0, 4).map((item, index) => `<article><i>${["⌂", "♧", "▤", "⌁"][index]}</i><span>${escapeHtml(item.classification)}</span><strong>${escapeHtml(item.label)}</strong><small>오답률 ${escapeHtml(item.wrongRate)}%</small></article>`).join("")}</div></section>
+            <section class="period-report-insights"><h3>주요 인사이트</h3><div>${top.slice(0, 4).map((item, index) => `<article>${renderEraIcon(item.label, "period-insight-icon") || renderTopicIcon(item.label, "period-insight-icon") || `<i>${["⌂", "♧", "▤", "⌁"][index]}</i>`}<span>${escapeHtml(item.classification)}</span><strong>${escapeHtml(item.label)}</strong><small>오답률 ${escapeHtml(item.wrongRate)}%</small></article>`).join("")}</div></section>
             <section class="period-report-ranking"><h3>TOP 취약 분야</h3><div class="period-ranking-head"><span>순위</span><span>분야</span><span>세부 취약 영역</span><span>오답률</span></div>${top.map((item, index) => `<button type="button" data-period-item-question data-start-date="${escapeHtml(detail.period?.startDate)}" data-end-date="${escapeHtml(detail.period?.endDate)}" data-category="${escapeHtml(item.category)}" data-label="${escapeHtml(item.label)}"><b>${index + 1}</b><strong>${escapeHtml(item.label)}</strong><span>${escapeHtml(item.classification)} · 오답 ${escapeHtml(item.wrongCount)}개</span><em>${escapeHtml(item.wrongRate)}%</em></button>`).join("")}</section>
-            <section class="period-report-era"><h3>시대별 오답률</h3><div>${(era.items || []).map((item) => `<button type="button" data-period-item-question data-start-date="${escapeHtml(detail.period?.startDate)}" data-end-date="${escapeHtml(detail.period?.endDate)}" data-category="${escapeHtml(item.category)}" data-label="${escapeHtml(item.label)}"><i>♜</i><strong>${escapeHtml(item.label)}</strong><b>${escapeHtml(item.wrongRate)}%</b><span>오답 ${escapeHtml(item.wrongCount)}문항</span><small><em style="width:${Number(item.wrongRate) || 0}%"></em></small></button>`).join("")}</div></section>
+            <section class="period-report-era"><h3>시대별 오답률</h3><div>${(era.items || []).map((item) => `<button type="button" data-period-item-question data-start-date="${escapeHtml(detail.period?.startDate)}" data-end-date="${escapeHtml(detail.period?.endDate)}" data-category="${escapeHtml(item.category)}" data-label="${escapeHtml(item.label)}">${renderEraIcon(item.label, "period-era-icon") || "<i>♜</i>"}<strong>${escapeHtml(item.label)}</strong><b>${escapeHtml(item.wrongRate)}%</b><span>오답 ${escapeHtml(item.wrongCount)}문항</span><small><em style="width:${Number(item.wrongRate) || 0}%"></em></small></button>`).join("")}</div></section>
           </section>`;
       };
 

@@ -192,17 +192,19 @@ def get_session_scope_chart_bars(user_id):
                 wrong_count=Count("record_id", filter=Q(is_correct=False)),
                 average_time_ms=Avg("time_spent_ms"),
             )
-            .order_by("-session__recorded_date", "-session_id")
+            .order_by("session__recorded_date", "session_id")
         )
     except DatabaseError:
         return []
 
+    session_display_map = get_session_display_map(user_id)
     bars = []
     for row in rows:
         recorded_date = row["session__recorded_date"]
-        session_type_label = format_session_type_label(row["session__session_type"])
         label = format_wrong_rate_session_chart_date(recorded_date)
-        description = f"세션 #{row['session_id']} · {session_type_label}"
+        description = format_session_chart_description(
+            session_display_map.get(row["session_id"], {}).get("title", "풀이 기록"),
+        )
         period_label = format_period_label(recorded_date, recorded_date)
         bars.append(
             build_record_chart_bar(
@@ -1714,13 +1716,14 @@ def get_wrong_rate_item_session_details(user, category, label):
     field_name = category_config["field"]
     display_label = label or get_unclassified_label()
     rows = get_wrong_rate_session_rows(user, field_name, display_label)
+    session_display_map = get_session_display_map(user)
     return {
         "categoryLabel": category_config["label"],
         "itemLabel": display_label,
         "title": f"{category_config['label']} · {display_label}",
         "hasRecords": bool(rows),
         "sessions": [
-            build_wrong_rate_session_detail(row)
+            build_wrong_rate_session_detail(row, session_display_map)
             for row in rows
         ],
     }
@@ -1745,6 +1748,10 @@ def get_wrong_rate_session_analysis_detail(user, session_id):
 
     records = SolveRecords.objects.filter(session=session)
     session_type_label = format_session_type_label(session.session_type)
+    session_display_title = get_session_display_map(user).get(
+        session.session_id,
+        {},
+    ).get("title", session_type_label)
     groups = [
         {
             "title": "시대별 오답률",
@@ -1761,8 +1768,11 @@ def get_wrong_rate_session_analysis_detail(user, session_id):
     ]
     return {
         "categoryLabel": "세션 상세 분석",
-        "title": format_session_analysis_title(session, session_type_label),
-        "overview": build_session_analysis_overview(session, records, session_type_label),
+        "title": session_display_title,
+        "overview": {
+            **build_session_analysis_overview(session, records, session_type_label),
+            "sessionDisplayTitle": session_display_title,
+        },
         "topWeakTitle": "세션 오답 TOP",
         "topWeakItems": build_session_top_weak_items(groups),
         "groups": groups,
@@ -1804,10 +1814,14 @@ def get_wrong_rate_session_item_questions(user, session_id, category, label):
     record_list = list(records)
     option_content_map = get_question_option_content_map(record_list)
     session_type_label = format_session_type_label(session.session_type)
+    session_display_title = get_session_display_map(user).get(
+        session.session_id,
+        {},
+    ).get("title", session_type_label)
     return {
         "categoryLabel": category_config["label"],
         "itemLabel": display_label,
-        "sessionLabel": format_session_analysis_title(session, session_type_label),
+        "sessionLabel": session_display_title,
         "title": f"{display_label} 문제 목록",
         "hasRecords": bool(record_list),
         "questions": [
@@ -2223,13 +2237,6 @@ def build_session_top_weak_items(groups):
     )[:display_limit]
 
 
-def format_session_analysis_title(session, session_type_label):
-    """
-    세션 상세 모달 제목을 세션 번호와 유형으로 만든다.
-    """
-    return f"세션 #{session.session_id} · {session_type_label}"
-
-
 def get_wrong_rate_detail_category_config(category):
     """
     화면의 분석 구분값을 SolveRecords 필드명으로 변환한다.
@@ -2390,7 +2397,19 @@ def get_wrong_rate_session_rows(user, field_name, label):
     )
 
 
-def build_wrong_rate_session_detail(row):
+def get_session_display_map(user):
+    """Reuse the session names shown on the solved-problems page."""
+    from user.views import build_session_display_map
+
+    user_id = getattr(user, "user_id", user)
+    sessions = list(
+        SolveSessions.objects.filter(user_id=user_id)
+        .order_by("recorded_date", "session_id")
+    )
+    return build_session_display_map(user_id, sessions)
+
+
+def build_wrong_rate_session_detail(row, session_display_map):
     """
     세션별 통계 row를 팝업 표시용 dict로 변환한다.
     """
@@ -2399,10 +2418,15 @@ def build_wrong_rate_session_detail(row):
     wrong_count = row["wrong_count"] or 0
     recorded_date = row["session__recorded_date"]
     session_type_label = format_session_type_label(row["session__session_type"])
+    session_display_title = session_display_map.get(
+        row["session_id"],
+        {},
+    ).get("title", session_type_label)
     return {
         "sessionId": row["session_id"],
-        "title": format_wrong_rate_session_title(recorded_date, session_type_label),
+        "title": session_display_title,
         "sessionTypeLabel": session_type_label,
+        "sessionDisplayTitle": session_display_title,
         "recordedDate": format_wrong_rate_session_date(recorded_date),
         "totalCount": total_count,
         "solvedCount": row["solved_count"] or 0,
@@ -2414,16 +2438,6 @@ def build_wrong_rate_session_detail(row):
     }
 
 
-def format_wrong_rate_session_title(recorded_date, session_type_label):
-    """
-    팝업 목록의 세션 제목을 날짜와 세션 유형으로 만든다.
-    """
-    if recorded_date:
-        return f"{recorded_date.strftime('%m.%d')} {session_type_label}"
-
-    return session_type_label
-
-
 def format_wrong_rate_session_chart_date(recorded_date):
     """
     세션별 오답률 차트의 x축 날짜 라벨을 만든다.
@@ -2432,6 +2446,14 @@ def format_wrong_rate_session_chart_date(recorded_date):
         return recorded_date.strftime("%m.%d")
 
     return "-"
+
+
+def format_session_chart_description(title):
+    """Place a session round on its own chart-label line."""
+    label, separator, round_label = str(title or "").rpartition(" ")
+    if separator and round_label.endswith("회차"):
+        return f"{label}\n{round_label}"
+    return str(title or "풀이 기록")
 
 
 def format_wrong_rate_session_date(recorded_date):
