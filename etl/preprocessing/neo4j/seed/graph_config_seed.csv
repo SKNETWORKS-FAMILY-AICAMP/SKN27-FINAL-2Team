@@ -1,3 +1,0 @@
-config_key,config_value,note
-question_ready_min_description_length,50,설명이 이 길이 이상인 용어만 question_ready=Y
-mention_context_window_size,32,인물 언급 문맥 판정 시 매치 전후로 살펴볼 글자 수

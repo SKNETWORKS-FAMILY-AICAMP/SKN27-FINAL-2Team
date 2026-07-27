@@ -35,6 +35,8 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from app.chatbot.graph_service import build_graph_context
 from app.chatbot import rag_service as rag_service_module
+from app.chatbot.rag import llm_answer_generator
+from app.chatbot.rag.llm_answer_generator import prompt_snippet
 from app.chatbot.rag.pgvector_retriever import PgVectorHybridRetriever, cached_pg_search
 from app.chatbot.rag_service import build_history_rag_answer
 
@@ -92,7 +94,7 @@ def evaluate_graph_connectivity(queries: list[str]) -> Metric:
 
 
 @traceable(name="evaluate_latency")
-def evaluate_latency(queries: list[str]) -> list[Metric]:
+def evaluate_latency(queries: list[str], top_k: int) -> list[Metric]:
     search_values = []
     generation_values = []
     total_values = []
@@ -122,7 +124,7 @@ def evaluate_latency(queries: list[str]) -> list[Metric]:
         cached_pg_search.cache_clear()
         start = time.perf_counter()
         try:
-            build_history_rag_answer(query, intent="concept", answer_format="structured", top_k=5)
+            build_history_rag_answer(query, intent="concept", answer_format="structured", top_k=top_k)
         finally:
             rag_service_module.LLMAnswerGenerator.generate = original_generate
             rag_service_module.LLMAnswerGenerator.generate_structured = original_generate_structured
@@ -193,7 +195,7 @@ def ragas_text(value: str) -> str:
     return " ".join(lines)
 
 
-def evaluate_ragas_metrics(questions: list[dict], limit: int, debug_path: Path | None = None) -> list[Metric]:
+def evaluate_ragas_metrics(questions: list[dict], limit: int, top_k: int, debug_path: Path | None = None) -> list[Metric]:
     try:
         install_ragas_vertexai_compat()
         from datasets import Dataset
@@ -226,11 +228,11 @@ def evaluate_ragas_metrics(questions: list[dict], limit: int, debug_path: Path |
     rows = []
     retriever = PgVectorHybridRetriever()
     for question in text_questions[:limit]:
-        result = build_history_rag_answer(question["query"], intent="concept", answer_format="text", top_k=5)
+        result = build_history_rag_answer(question["query"], intent="concept", answer_format="text", top_k=top_k)
         answer = ragas_text(result.get("answer") or structured_to_text(result.get("structured_answer") or {}))
-        contexts = [source.get("snippet") or "" for source in result.get("sources") or [] if source.get("snippet")]
+        contexts = [prompt_snippet(source.get("snippet")) for source in result.get("sources") or [] if source.get("snippet")]
         if not contexts:
-            contexts = [item.chunk_text for item in retriever.search(question["query"], top_k=5) if item.chunk_text]
+            contexts = [item.chunk_text for item in retriever.search(question["query"], top_k=top_k) if item.chunk_text]
         if not contexts:
             contexts = ["검색 근거 없음"]
         rows.append(
@@ -425,11 +427,11 @@ def print_langsmith_status() -> None:
 def run_service_evaluation(args: argparse.Namespace, questions: list[dict], queries: list[str]) -> list[dict[str, str]]:
     metrics = [
         evaluate_graph_connectivity(queries),
-        *evaluate_latency(queries),
+        *evaluate_latency(queries, args.top_k),
     ]
     if args.ragas:
         debug_path = args.out_prefix.with_name(f"{args.out_prefix.name}_ragas_samples.csv")
-        metrics.extend(evaluate_ragas_metrics(questions, args.ragas_limit, debug_path))
+        metrics.extend(evaluate_ragas_metrics(questions, args.ragas_limit, args.top_k, debug_path))
     return [item.to_row() for item in metrics]
 
 
@@ -446,16 +448,21 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Evaluate RAG, Graph, latency, and external API metrics.")
     parser.add_argument("--golden-file", type=Path, default=DEFAULT_GOLDEN)
     parser.add_argument("--limit", type=int, default=50)
-    parser.add_argument("--top-k", type=int, default=5)
+    parser.add_argument("--top-k", type=int, default=20)
     parser.add_argument("--latency-limit", type=int, default=5)
     parser.add_argument("--ragas", action="store_true")
     parser.add_argument("--ragas-limit", type=int, default=50)
+    parser.add_argument("--prompt-snippet-chars", type=int, default=llm_answer_generator.PROMPT_SNIPPET_MAX_CHARS)
     parser.add_argument("--out-prefix", type=Path, default=DEFAULT_OUT)
     return parser.parse_args()
 
 
 def main() -> None:
     args = parse_args()
+    if args.prompt_snippet_chars < 1:
+        raise ValueError("--prompt-snippet-chars must be at least 1")
+    llm_answer_generator.PROMPT_SNIPPET_MAX_CHARS = args.prompt_snippet_chars
+    print(f"prompt_snippet_chars={args.prompt_snippet_chars}")
     print_langsmith_status()
     questions = load_jsonl(args.golden_file)
     queries = [item["query"] for item in questions[: args.latency_limit]]

@@ -1,268 +1,133 @@
-# 문제 2차 검수 데이터
+# 문제 2차 검수 ML
 
-## 파일
+생성된 한국사 5지선다 문제를 배포하기 전에 **선지 단위로 2차 검수**하기 위한 ML 작업 폴더입니다.
 
-- `make_data.py`: `ai/ml/ML_han_v1.json`을 2차 검수 학습용 데이터로 변환하는 코드
-- `make_choice_data.py`: 문항을 선지 단위 정답 판별 데이터로 변환하는 코드
-- `review_data.json`: 전체 데이터
-- `train.json`: 학습 데이터
-- `valid.json`: 검증 데이터
-- `test.json`: 테스트 데이터
-- `choice_data.json`: 선지별 전체 데이터
-- `choice_train.json`: 선지별 학습 데이터
-- `choice_test.json`: 선지별 테스트 데이터
-- `summary.json`: 생성 결과 요약
-
-## 데이터 구조
-
-데이터는 사람이 보기 쉽도록 `text` 하나로 합치지 않고 구조화해서 저장한다.
-
-```json
-{
-  "id": "cj_v41_0001",
-  "passage": "지문",
-  "question": "질문",
-  "choices": ["선지1", "선지2", "선지3", "선지4", "선지5"],
-  "answer": 1,
-  "target_score": 1,
-  "label": 1,
-  "error_types": []
-}
-```
-
-학습할 때만 `make_data.py`의 `build_model_text()`처럼 지문, 질문, 선지, 정답을 하나의 입력 문장으로 합쳐서 tokenizer에 넣는다.
-
-## 라벨
+최종 사용 버전은 **선지 단위 오류 유무 분류 v15**입니다.
 
 ```text
-0 = 이상 있음 / 재검수 필요
-1 = 이상 없음 / 통과 가능
+입력 X = 지문 + 질문 + 선지 1개 + 정답 여부
+y = 이진 분류
+label 0 = 오류 있음
+label 1 = 오류 없음
 ```
 
-현재 데이터는 원본 정상 문항 1600개와 합성 오류 문항 1600개로 구성되어 있다.
+이 모델은 문제의 정답 번호를 맞히는 모델이 아닙니다. 생성된 문제 안에서 검수자가 먼저 확인해야 할 선지를 찾아주는 보조 모델입니다.
 
-## 왜 3200개인가?
+## 최종 방향
 
-원본 `ML_han_v1.json`에는 정상 문항 1600개가 있다.
+- 모델: `klue/roberta-base`
+- 학습 방식: 선지 단위 이진 분류
+- 최종 버전: `v15`
+- threshold: `0.1` 고정
+- 오류 코드는 학습 y값이 아니라 결과 해석을 위한 보조 정보
+- `ㄱ, ㄴ` 조합형 선지와 `(가)-(나)-(다)` 순서형 선지는 선지 단위 검수 대상에서 제외
 
-2차 검수 모델은 `0 = 이상 있음`, `1 = 이상 없음`을 모두 배워야 하므로, 정상 문항마다 합성 오류 문항을 1개씩 추가했다.
+## 최종 학습 파일
 
-```text
-정상 문항 1600개(label=1)
-+ 합성 오류 문항 1600개(label=0)
-= 전체 3200개
-```
-
-현재 합성 오류는 아래 4가지가 순서대로 생성된다.
-
-- `ANSWER_LEAKAGE`: 정답 선지를 지문에 직접 추가
-- `ANSWER_UNIQUENESS_SUSPICIOUS`: 정답 선지를 다른 보기에도 복제
-- `CHOICE_BIAS`: 정답 선지만 길고 구체적으로 변경
-- `FORMAT_ERROR`: 선택지 1개 제거
-
-## 다시 생성
-
-```powershell
-C:\Users\Playdata\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe ai\ml_question\make_data.py
-```
-
-## RunPod 학습
-
-문제 단위 2차 검수 모델은 RunPod에 아래처럼 둔다.
+RunPod에서 최종 학습을 재현하려면 아래 파일을 사용합니다.
 
 ```text
 /workspace/
-├─ train_runpod.ipynb
-├─ common/
-│  ├─ train.json
-│  ├─ valid.json
-│  └─ test.json
-└─ output/
-```
-
-`output` 폴더는 학습 후 자동 생성된다.
-
-RunPod에서 `/workspace/train_runpod.ipynb`를 열어 위에서부터 실행한다.
-
-노트북에는 한글 주석과 셀별 설명을 넣어두었다.
-
-노트북으로만 실행하면 `requirements.txt`는 없어도 된다. 첫 번째 셀에서 필요한 라이브러리를 직접 설치한다.
-
-터미널 스크립트로 실행하고 싶으면 아래 명령을 사용한다.
-
-이 경우 `/workspace`에 `train_runpod.py`, `requirements.txt`도 함께 올린다.
-
-```bash
-cd /workspace
-pip install -r requirements.txt
-
-python train_runpod.py \
-  --train-json common/train.json \
-  --valid-json common/valid.json \
-  --test-json common/test.json \
-  --output-dir output \
-  --model-name klue/roberta-base \
-  --epochs 5 \
-  --batch-size 8 \
-  --max-length 512
-```
-
-결과는 `output` 폴더에 저장된다.
-
-- `output/model`: 저장된 모델과 tokenizer
-- `output/results.json`: 성능 지표와 threshold
-- `output/valid_predictions.csv`: 검증셋 예측 결과
-- `output/test_predictions.csv`: 테스트셋 예측 결과
-
-2차 검수 목적이므로 `accuracy`보다 `abnormal_recall`, 즉 `label=0`을 얼마나 잘 잡는지를 우선 확인한다.
-
-학습에는 early stopping이 적용되어 있다.
-
-```text
-monitor = validation loss
-patience = 2
-min_delta = 0.0
-```
-
-검증 loss가 2 epoch 동안 개선되지 않으면 학습을 중단하고, 가장 검증 loss가 낮았던 모델 가중치를 사용한다.
-
-## 선지별 정답 판별 모델
-
-선지별 모델은 문항 1개를 선지 5개로 나눠서 학습한다.
-
-```text
-1600문항 * 5선지 = 8000개
-정답 선지 1600개(label=1)
-오답 선지 6400개(label=0)
-```
-
-현재 split은 문항 기준 약 8:2이다.
-
-```text
-choice_train.json = 6475개, 1295문항
-choice_test.json = 1525개, 305문항
-```
-
-같은 `question_id`의 선지 5개는 항상 같은 split에 들어간다. 해시 기반 분할이라 정확히 6400/1600은 아니지만 8:2에 가깝게 나뉜다.
-
-다시 생성:
-
-```powershell
-C:\Users\Playdata\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe ai\ml_question\make_choice_data.py
-```
-
-RunPod에는 아래처럼 둔다.
-
-```text
-/workspace/
-├─ train_choice_runpod.ipynb
+├─ train_choice_quality_runpod_v15.ipynb
 └─ common/
-   ├─ choice_train.json
-   └─ choice_test.json
+   ├─ choice_quality_train_v10.json
+   └─ choice_quality_test_v10.json
 ```
 
-학습 결과는 `/workspace/choice_output`에 저장된다.
+v15 노트북은 v10 전처리 데이터를 읽은 뒤, 노트북 내부에서 조합형/순서형 선지를 제외하여 최종 v15 기준으로 학습합니다.
 
-이 모델은 문제 전체 품질 검수 모델이 아니라, 각 선지가 정답 후보인지 판단해서 G3 정답 유일성 검수를 보조하는 모델이다.
+## 주요 파일
 
-validation 데이터는 별도 파일로 올리지 않는다. 노트북 코드에서 `choice_train.json`을 다시 나누어 validation으로 사용한다. 이때 같은 `question_id`의 선지 5개가 train/validation에 섞이지 않도록 `GroupShuffleSplit`을 사용한다.
-
-노트북에는 학습 후 생성 문제를 검수하는 함수도 포함되어 있다.
-
-```text
-review_generated_question(row)
-```
-
-반환되는 주요 오류 유형은 아래와 같다.
-
-| 오류 유형 | 의미 |
+| 파일 | 설명 |
 |---|---|
-| `ANSWER_LENGTH_BIAS` | 정답 선지가 다른 선지들에 비해 유독 길거나 짧음 |
-| `ANSWER_IN_PASSAGE` | 정답 선지가 지문 또는 질문에 포함되어 있음 |
-| `NO_ANSWER_CANDIDATE` | 정답 후보가 0개임 |
-| `MULTIPLE_ANSWER_CANDIDATES` | 정답 후보가 2개 이상임 |
-| `ANSWER_FORMAT_ERROR` | 정답 번호가 선택지 범위를 벗어남 |
+| `make_choice_quality_data_v10.py` | 최종 학습에 사용하는 v10 전처리 데이터 생성 코드 |
+| `make_choice_quality_runpod_notebook_v15.py` | v15 RunPod 학습 노트북 생성 코드 |
+| `train_choice_quality_runpod_v15.ipynb` | 최종 v15 학습 노트북 |
+| `choice_quality_train_v10.json` | RunPod 학습용 train 데이터 |
+| `choice_quality_test_v10.json` | RunPod 평가용 test 데이터 |
+| `choice_quality_summary_v10.json` | v10 전처리 데이터 요약 |
+| `review_rules.py` | 규칙 기반 보조 검수 코드 |
+| `label_generated_errors_with_gpt.py` | 팀원 생성 문제 오류 라벨링 보조 스크립트 |
+| `choice_quality_model/` | 팀원 공유용 추론 패키지 |
+| `reports/문제_검수_ML_발표_정리.md` | 발표 자료용 정리 문서 |
 
-생성 문제 파일을 `/workspace/common/generated_questions.json`에 넣으면 노트북 마지막 셀에서 자동 검수한다.
+## 최종 v15 성능
 
-입력 예시:
-
-```json
-[
-  {
-    "id": "gen_0001",
-    "passage": "지문",
-    "question": "질문",
-    "choices": ["선지1", "선지2", "선지3", "선지4", "선지5"],
-    "answer": 1,
-    "target_score": 2
-  }
-]
-```
-
-결과는 `/workspace/choice_output/generated_review_results.json`에 저장된다.
-
-## 이상 문제 판단 기준
-
-현재 2차 검수에서 이상 문제로 보는 기준은 아래 3가지이다.
-
-| 기준 | 처리 방식 |
-|---|---|
-| 정답 선지가 다른 선지들에 비해 유독 길거나 짧음 | 규칙 기반 검사 |
-| 정답 후보가 0개 또는 2개 이상임 | 선지별 BERT 모델 확률 기반 검사 |
-| 정답 선지가 지문 또는 질문에 포함됨 | 규칙 기반 검사 |
-
-정답 후보 개수 검사는 선지별 모델이 각 선지에 대해 계산한 정답 확률을 사용한다.
+모델 단독 성능:
 
 ```text
-선지 5개 각각의 정답 확률 계산
-정답 확률이 threshold 이상인 선지를 정답 후보로 판단
-정답 후보가 1개가 아니면 이상 문제
+Accuracy: 98.37%
+오류 Precision: 84.76%
+오류 Recall: 85.58%
+오류 F1: 85.17%
 ```
 
-예시:
+모델 결과와 규칙 기반 검사를 함께 적용한 최종 성능:
 
 ```text
-① 0.91
-② 0.08
-③ 0.12
-④ 0.05
-⑤ 0.03
-=> 정답 후보 1개, 정상 가능
-
-① 0.88
-② 0.82
-③ 0.10
-④ 0.06
-⑤ 0.04
-=> 정답 후보 2개, 이상 문제
-
-① 0.21
-② 0.18
-③ 0.14
-④ 0.11
-⑤ 0.09
-=> 정답 후보 0개, 이상 문제
+Accuracy: 98.53%
+오류 Precision: 82.76%
+오류 Recall: 92.31%
+오류 F1: 87.27%
 ```
 
-규칙 기반 검사는 `review_rules.py`에 들어 있다.
+해석:
+
+```text
+실제 오류 선지 104개 중 96개 탐지
+실제 오류 선지 8개 미탐
+정상 선지 1,796개 중 20개 오탐
+정상 선지 1,776개 정상 통과
+```
+
+## 팀원 사용 방법
+
+팀원은 생성한 문제를 JSON 형식으로 저장한 뒤, `choice_quality_model/predict_choice_quality.py`를 실행하면 됩니다.
 
 ```bash
-python review_rules.py \
-  --input generated_questions_with_probs.json \
-  --output review_result.json \
-  --threshold 0.5
+python predict_choice_quality.py \
+  --model_dir ./model \
+  --input ./generated_questions.json \
+  --output_csv ./review.csv \
+  --output_json ./review.json
 ```
 
-입력 데이터에 `answer_probs`가 있으면 정답 후보 개수까지 검사한다.
+결과는 `review.csv`에서 확인합니다.
 
-```json
-{
-  "id": "gen_0001",
-  "passage": "지문",
-  "question": "질문",
-  "choices": ["선지1", "선지2", "선지3", "선지4", "선지5"],
-  "answer": 1,
-  "answer_probs": [0.91, 0.08, 0.12, 0.05, 0.03]
-}
+주요 컬럼:
+
+- `검수상태`: 검수필요, 참고검수, 통과, 검수제외
+- `오류확률`: 모델이 계산한 오류 가능성
+- `판단근거`: model, rule, model+rule, advisory, none
+- `오류코드`: 오류로 판단한 이유
+- `참고코드`: 참고용 코드
+- `지문`, `질문`, `선지`: 사람이 최종 검수할 내용
+
+## push 주의사항
+
+최종 모델 weight 파일인 `model.safetensors`는 약 442MB로 일반 GitHub push 제한을 넘습니다.
+
+따라서 Git에는 코드, 전처리 데이터, 노트북, 문서, 추론 패키지 구조만 올리고, 모델 weight는 다음 중 하나로 별도 공유하는 것을 권장합니다.
+
+- Git LFS
+- Google Drive / Notion / 사내 공유 폴더
+- RunPod volume
+- Hugging Face Hub private repository
+
+## 폴더 구성
+
+```text
+ml_question/
+├─ archive/
+├─ reports/
+├─ choice_quality_model/
+├─ README.md
+├─ requirements.txt
+├─ review_rules.py
+├─ make_choice_quality_data_v10.py
+├─ make_choice_quality_runpod_notebook_v15.py
+├─ train_choice_quality_runpod_v15.ipynb
+├─ choice_quality_train_v10.json
+├─ choice_quality_test_v10.json
+└─ choice_quality_summary_v10.json
 ```

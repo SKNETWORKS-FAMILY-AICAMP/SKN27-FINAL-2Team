@@ -1,0 +1,264 @@
+# Entity Resolution 골든셋 설계와 검수
+
+> 상태: `ANNOTATION-READY`
+> 생성 정책: `entity-resolution-gold-v1`
+> 입력 정책: `entity-resolution-candidate-v2.4`
+> 기준일: 2026-07-21
+
+## 1. 현재 결과의 의미
+
+현재 생성된 `goldset/human_review_csv`의 case·candidate CSV는 사람이 정답을 입력할
+**골든셋 검수본**이다. 모델 또는 기존 규칙의 출력을 정답으로 복사하지 않았다. 검수자가 후보
+역할과 동일 실체 묶음을 작성하고, 독립 재검수와
+이견 조정이 끝나야 실제 골든셋이 된다.
+
+골든셋의 기본 단위는 용어 한 행이 아니라 다음 두 수준이다.
+
+1. case 수준: 이 용어의 최종 link status와 문항별 추가 판정 필요 여부
+2. candidate 수준: 각 SourceRecord가 정답 실체인지, 근거 전용인지, 오탐인지, 미확정인지
+
+이 구조를 써야 `고종`처럼 하나의 표기가 여러 CanonicalEntity를 가리키는 경우를 보존할 수
+있다. 후보 다섯 개 중 하나만 고르는 방식은 사용하지 않는다.
+
+## 2. 표본 추출 정책
+
+입력은 `term_identity_review_tasks.jsonl`의 `AMBIGUOUS` task 4,638건이다. 특정 용어명이나
+source ID를 코드에 넣지 않고 다음 특성으로 결정적 층화 표본을 만든다.
+
+| 층화 특성 | 값 |
+|---|---|
+| category | 추출 15분류 |
+| 후보 수 | 1~2 / 3~5 / 6~9 / 10 / 11 이상 |
+| 검색 구성 | `EXACT_ONLY` / `EXACT_AND_EXPANDED` / `EXPANDED_ONLY` |
+| 다원천 지지 | `MULTI_SOURCE_SUPPORTED` 존재 여부 |
+| 강한 충돌 후보 쌍 | 존재 여부 |
+
+먼저 각 category에서 최대 3건을 서로 다른 복합 층에서 순환 선택한다. 남은 수량은 전체
+복합 층에서 한 건씩 순환해 채운다. 층 내부 정렬은 설정의 seed와 task ID를 SHA-256으로
+해시한 값이므로 입력 행 순서가 바뀌어도 같은 task가 선택된다.
+
+이 표본은 어려운 검색 유형과 작은 category도 관찰하기 위한 진단용 표본이다. 모집단
+비율과 같지 않으므로 다음 두 평가를 분리한다.
+
+- macro 평가: category·후보 수 구간·검색 구성별 동일 가중치
+- weighted 평가: 모집단 분포 가중치 적용
+
+## 3. 생성된 표본
+
+| 항목 | 값 |
+|---|---:|
+| 모집단 case | 4,638 |
+| 표본 case | 100 |
+| 표본 candidate | 606 |
+| category | 15개 전부 포함 |
+
+### 3.1 category 분포
+
+| category | 표본 수 | category | 표본 수 | category | 표본 수 |
+|---|---:|---|---:|---|---:|
+| 국가 | 5 | 기관 | 13 | 단체 | 5 |
+| 문헌 | 8 | 문화재 | 9 | 사건 | 7 |
+| 사상 | 5 | 왕조 | 3 | 유물 | 6 |
+| 유적 | 7 | 인물 | 9 | 정책 | 4 |
+| 제도 | 9 | 조약 | 4 | 지명 | 6 |
+
+왕조 모집단은 3건뿐이므로 세 건 모두 포함됐다. 이 category의 정확도는 사례 확인에는
+쓸 수 있지만 안정적인 비율 추정치로 해석하지 않는다.
+
+### 3.2 구조·검색 분포
+
+| 차원 | 표본 분포 |
+|---|---|
+| 후보 수 | 1~2: 22 / 3~5: 30 / 6~9: 20 / 10: 18 / 11 이상: 10 |
+| 검색 구성 | exact only: 7 / exact+확장: 38 / 확장 only: 55 |
+| 다원천 지지 | 있음: 31 / 없음: 69 |
+| 충돌 후보 쌍 | 있음: 34 / 없음: 66 |
+
+## 4. 검수 컬럼 계약
+
+### 4.1 `human_review_cases.csv`
+
+| 입력 컬럼 | 허용값·의미 |
+|---|---|
+| `gold_link_status` | `ACCEPTED / AMBIGUOUS / UNRESOLVED / REJECTED` |
+| `requires_problem_review` | 동일 용어의 문항별 실체가 달라질 수 있으면 `YES`, 아니면 `NO` |
+| `gold_decision_reason` | 최종 상태와 문항별 판정 여부의 근거 |
+| `reviewer` | 검수자 식별자 |
+| `case_review_status` | `NOT_STARTED / IN_PROGRESS / COMPLETE / NEEDS_DISCUSSION` |
+
+### 4.2 `human_review_candidates.csv`
+
+| 입력 컬럼 | 허용값·의미 |
+|---|---|
+| `gold_candidate_role` | `IDENTITY_MEMBER / EVIDENCE_ONLY / REJECTED / AMBIGUOUS` |
+| `gold_alternative_key` | 같은 실체 후보끼리 같은 case-local 키 사용. 예: `ALT_001` |
+| `gold_display_name` | 동음이의어를 구분하는 표시명 |
+| `gold_entity_type` | 목표 스키마의 9개 CanonicalEntity 보조 label |
+| `gold_reason` | 이름·한자·시대·생몰년·유형·원문 근거와 충돌 설명 |
+| `reviewer` | 검수자 식별자 |
+| `candidate_review_status` | `NOT_STARTED / IN_PROGRESS / COMPLETE / NEEDS_DISCUSSION` |
+
+`gold_alternative_key`, `gold_display_name`, `gold_entity_type`은 `IDENTITY_MEMBER`에만 쓴다.
+한 case에 정답 실체가 여러 개면 `ALT_001`, `ALT_002`를 모두 유지한다. `EVIDENCE_ONLY`는
+CanonicalEntity의 identity member로 합치지 않는다.
+
+## 5. 블라인드 검수와 승인 절차
+
+`internal/source_snapshot/rule_based_baseline.csv`에는 기존 규칙이 제안한 역할과 대안 묶음이
+별도로 들어 있다. 1차 검수자는 이 파일을 보지 않고 원천 문맥만으로 판정한다. 기존 코드
+결과를 사람 작성 CSV에 함께 두면 제안값에 끌려가므로 분리했다.
+
+권장 승인 순서는 다음과 같다.
+
+1. 1차 검수자가 candidate 606행을 모두 분류한다.
+2. 각 case의 identity member가 하나 이상의 대안으로 완전하게 묶였는지 확인한다.
+3. 다른 검수자가 전체 또는 합의한 재검수 표본을 독립 판정한다.
+4. 역할·대안 묶음·link status가 다른 case를 `NEEDS_DISCUSSION`으로 모은다.
+5. 이견 조정이 끝난 행만 `COMPLETE`로 바꾼다.
+6. 모든 candidate가 분류되지 않은 case는 gold decision으로 내보내지 않는다.
+
+## 6. 모델 평가 지표
+
+단순히 “후보 하나를 맞혔는가”만 측정하면 잘못된 병합을 감지할 수 없다. 최소 평가값은
+다음과 같다.
+
+| 수준 | 지표 |
+|---|---|
+| candidate role | 역할별 precision / recall / F1, macro F1 |
+| identity cluster | 후보 쌍 기준 pairwise precision / recall / F1 |
+| case | link status accuracy, problem review flag accuracy |
+| 안전성 | 강한 충돌 후보의 오병합 수, 동음이의어 오병합 수 |
+| coverage | category·후보 수 구간·검색 구성별 정답률 |
+
+잘못된 병합 비용이 더 크므로 identity cluster precision과 강한 충돌 오병합 건수를 우선
+gate로 사용한다. 모델 출력은 계속 `PROPOSED`이며 골든셋과 일치해도 기존 검증 gate를
+통과하기 전에는 `VERIFIED` 또는 `ACCEPTED`가 아니다.
+
+## 7. 실행 방법
+
+`.venv`를 활성화한 프로젝트 루트에서 다음 파일을 실행한다.
+
+```powershell
+python etl/preprocessing/neo4j/entity_resolution/build_gold_set.py `
+  etl/preprocessing/neo4j/output/04_llm_review/internal/term_identity_review_tasks.jsonl `
+  etl/preprocessing/neo4j/goldset/internal/source_snapshot
+```
+
+설정은 `config/resolution_policy.json`의
+`entity_resolution.semantic_review.gold_set`에서 관리한다. 표본 수, category 최소 수량,
+후보 수 구간, seed, 판정 어휘와 출력 파일명을 코드 밖에서 바꿀 수 있다.
+
+출력은 다음과 같다.
+
+| 파일 | 역할 |
+|---|---|
+| `gold_review_tasks.jsonl` | 선택된 원문 task 전체 |
+| `gold_case_labels_template.csv` | case-level 정답 입력 구조 참고 |
+| `gold_candidate_labels_template.csv` | candidate-level 정답 입력 구조 참고 |
+| `rule_based_baseline.csv` | 기존 코드 제안값 비교용 |
+| `gold_sample_distribution.csv` | 모집단과 표본 분포 비교 |
+| `gold_sample_manifest.json` | 입력 파일 해시와 정책 버전 감사 |
+
+`input_task_sha256`가 달라지면 같은 seed라도 입력 snapshot이 달라진 것이다. 이 경우 기존
+검수본을 덮어쓰지 말고 새 selection policy version 또는 별도 출력 디렉터리를 사용한다.
+
+## 8. 검수 CSV importer
+
+검수 중 진행 상태와 오류를 확인할 때는 `--allow-partial`을 사용한다. 이 모드도 검증을
+생략하지 않으며, 오류가 없는 완료 case만 decision으로 내보낸다.
+
+```powershell
+.\.venv\Scripts\python.exe `
+  etl/preprocessing/neo4j/entity_resolution/import_gold_set.py `
+  etl/preprocessing/neo4j/goldset/human_review_csv `
+  etl/preprocessing/neo4j/goldset/internal/source_snapshot/gold_review_tasks.jsonl `
+  etl/preprocessing/neo4j/goldset/internal/validation `
+  --allow-partial
+```
+
+최종 확정 때는 `--allow-partial`을 빼고 실행한다. 미완료 또는 오류가 한 건이라도 있으면
+검증 파일을 저장한 뒤 종료 코드 1을 반환한다.
+
+```powershell
+.\.venv\Scripts\python.exe `
+  etl/preprocessing/neo4j/entity_resolution/import_gold_set.py `
+  etl/preprocessing/neo4j/goldset/human_review_csv `
+  etl/preprocessing/neo4j/goldset/internal/source_snapshot/gold_review_tasks.jsonl `
+  etl/preprocessing/neo4j/goldset/internal/validation
+```
+
+importer는 다음을 검사한다.
+
+- 두 CSV의 case·candidate ID가 원본 gold task snapshot과 정확히 일치하는지
+- 수정 금지 필드인 task ID, resolution case ID, SourceRecord ID, category가 바뀌지 않았는지
+- 모든 case와 candidate가 `COMPLETE`인지
+- 역할·link status·entity type이 고정 어휘에 속하는지
+- identity member의 대안 키·표시명·entity type이 완전하고 같은 대안에서 일치하는지
+- 비 identity 후보에 대안 필드가 잘못 입력되지 않았는지
+- 복수 대안 case가 문항별 검토 대상으로 표시됐는지
+- `ACCEPTED`, `AMBIGUOUS`, `UNRESOLVED`, `REJECTED`와 후보 역할이 모순되지 않는지
+
+출력은 gold decision JSONL, case outcome CSV, validation error CSV, 입력 CSV·task 해시와
+정책 버전을 담은 manifest다. gold decision의 `decision_status=PROPOSED`는 기존 decision JSON
+구조와의 호환을 위한 값이다. `review_model=human_gold_adjudication`과 전용 prompt version으로
+사람 정답임을 구분하며 production LLM gate 입력으로 사용하지 않는다.
+
+현재 미작성 검수본을 partial 검증하면 case 100건과 candidate 606건에 대해 총 706개의
+`INCOMPLETE`가 나오고 valid decision은 0건이다. 이는 importer 오류가 아니라 아직 정답이
+입력되지 않았다는 진행 상태다.
+
+## 9. 골든 task 모델 실행과 평가
+
+먼저 dry-run으로 선택 건수와 기존 checkpoint 재사용 수를 확인한다. 이 명령은 OpenAI
+client를 만들지 않으며 API를 호출하지 않는다.
+
+```powershell
+.\.venv\Scripts\python.exe `
+  etl/preprocessing/neo4j/entity_resolution/execute_term_review.py `
+  etl/preprocessing/neo4j/goldset/internal/source_snapshot/gold_review_tasks.jsonl `
+  etl/preprocessing/neo4j/goldset/internal/model_predictions `
+  --dry-run
+```
+
+2026-07-21 dry-run 결과는 선택 100건, 재사용 checkpoint 0건, 미처리 100건이며 입력 JSON
+문자 수는 846,751자다. 이 확인에서는 실제 모델 호출을 수행하지 않았다. 실제 소량 호출은
+같은 명령에서 `--dry-run`을 빼고 `--limit 5`처럼 범위를 제한한다. 성공한 task는 즉시
+checkpoint JSONL에 기록되므로 같은 모델·prompt·정책 버전으로 재실행할 때 다시 호출하지
+않는다. 실패 task만 정책의 재시도 횟수만큼 다시 시도하며 성공한 응답을 누락하지 않는다.
+
+사람 검수본의 최종 import가 끝나고 모델 decision이 생성되면 다음 평가기를 실행한다.
+
+```powershell
+.\.venv\Scripts\python.exe `
+  etl/preprocessing/neo4j/entity_resolution/evaluate_term_review.py `
+  etl/preprocessing/neo4j/goldset/internal/validation/human_gold_decisions.jsonl `
+  etl/preprocessing/neo4j/goldset/internal/model_predictions/term_identity_model_decisions.jsonl `
+  etl/preprocessing/neo4j/goldset/internal/source_snapshot/gold_review_tasks.jsonl `
+  etl/preprocessing/neo4j/goldset/internal/validation/human_gold_case_outcomes.csv `
+  etl/preprocessing/neo4j/goldset/internal/evaluation
+```
+
+평가기 출력은 전체 지표 JSON과 case·candidate role·층별 지표 CSV, 평가 오류 CSV다. 역할
+정확도와 macro F1 외에 identity 후보 쌍의 precision·recall·F1, 오병합 쌍 수, 오분리 쌍 수,
+link status와 문항별 재판정 여부 정확도를 별도로 계산한다. macro F1은 실제 gold support가
+있는 역할만 평균한다. category·후보 수·검색 구성·다원천 지지·충돌 여부별 결과도 함께
+저장한다.
+
+승인 임계값은 현재 설정하지 않았다. 사람 정답과 첫 모델 결과를 보기 전에 임의 수치를
+하드코딩하지 않고, 특히 identity pair precision과 오병합 사례를 확인한 뒤 정책 파일에
+합의한 gate를 추가한다. 모델 결과는 이 평가와 무관하게 항상 `PROPOSED`이고 production
+verification gate 통과 전에는 `VERIFIED` 또는 `ACCEPTED`가 아니다.
+
+## 10. Neo4j 적재와의 연결
+
+골든셋은 Anchor나 역사 관계를 직접 채우는 파일이 아니다. `IDENTITY_MEMBER` 대안이 검증
+gate를 통과하면 다음 identity 구조를 만들 수 있게 하는 평가·승인 기준이다.
+
+```text
+SourceRecord-[:RESOLVES_TO]->CanonicalEntity
+EntityName-[:REFERS_TO]->CanonicalEntity
+```
+
+Anchor, AKS 본문 관계, ITKC 관계 근거는 이 identity endpoint가 확정된 뒤 별도 추출한다.
+따라서 term-level 골든셋만으로 목표 Graph 전체를 채운다고 해석하면 안 된다. 이 단계의
+책임은 잘못된 원천 병합을 막고 안정적인 canonical endpoint를 확정하는 것이다.

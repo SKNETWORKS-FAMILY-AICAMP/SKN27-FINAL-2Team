@@ -1,0 +1,19 @@
+{
+  "selection_policy_version": "entity-resolution-gold-v1",
+  "resolution_policy_version": "entity-resolution-candidate-v2.4",
+  "normalization_policy_version": "history-term-v2.0",
+  "input_task_path": "C:\\dev\\project\\SKN27-FINAL-2Team\\etl\\preprocessing\\neo4j\\output\\04_llm_review\\internal\\term_identity_review_tasks.jsonl",
+  "input_task_sha256": "ebb8bcff9a4d20a9058546d3138526094808f77853f41f389445e833e7fdfdc9",
+  "population_case_count": 4638,
+  "sample_case_count": 100,
+  "sample_candidate_count": 606,
+  "generated_at": "2026-07-21T07:10:00.509677+00:00",
+  "output_files": {
+    "gold_tasks": "C:\\dev\\project\\SKN27-FINAL-2Team\\etl\\preprocessing\\neo4j\\goldset\\internal\\source_snapshot\\gold_review_tasks.jsonl",
+    "case_annotations": "C:\\dev\\project\\SKN27-FINAL-2Team\\etl\\preprocessing\\neo4j\\goldset\\internal\\source_snapshot\\gold_case_labels_template.csv",
+    "candidate_annotations": "C:\\dev\\project\\SKN27-FINAL-2Team\\etl\\preprocessing\\neo4j\\goldset\\internal\\source_snapshot\\gold_candidate_labels_template.csv",
+    "code_baseline": "C:\\dev\\project\\SKN27-FINAL-2Team\\etl\\preprocessing\\neo4j\\goldset\\internal\\source_snapshot\\rule_based_baseline.csv",
+    "distribution": "C:\\dev\\project\\SKN27-FINAL-2Team\\etl\\preprocessing\\neo4j\\goldset\\internal\\source_snapshot\\gold_sample_distribution.csv",
+    "manifest": "C:\\dev\\project\\SKN27-FINAL-2Team\\etl\\preprocessing\\neo4j\\goldset\\internal\\source_snapshot\\gold_sample_manifest.json"
+  }
+}

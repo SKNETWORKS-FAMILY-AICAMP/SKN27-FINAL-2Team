@@ -1,0 +1,86 @@
+{
+  "version": "image_generation_pack_manifest_v2",
+  "pack_count": 10,
+  "packs": [
+    {
+      "path": "image_pack_deoksugung_service_taxonomy_20260723.json",
+      "era": "조선",
+      "service_era": "조선",
+      "service_topic": "문화",
+      "service_question_type": "역사 자료의 분석 및 해석",
+      "service_question_subtype": "시각 자료 해석"
+    },
+    {
+      "path": "image_pack_geunjeongjeon_service_taxonomy_20260723.json",
+      "era": "조선",
+      "service_era": "조선",
+      "service_topic": "문화",
+      "service_question_type": "역사 자료의 분석 및 해석",
+      "service_question_subtype": "시각 자료 해석"
+    },
+    {
+      "path": "image_pack_gwanchok_buddha_service_taxonomy_20260723.json",
+      "era": "고려",
+      "service_era": "고려",
+      "service_topic": "문화",
+      "service_question_type": "역사 자료의 분석 및 해석",
+      "service_question_subtype": "시각 자료 해석"
+    },
+    {
+      "path": "image_pack_independence_gate_service_taxonomy_20260723.json",
+      "era": "개항기·대한제국",
+      "service_era": "개항기",
+      "service_topic": "문화",
+      "service_question_type": "역사 자료의 분석 및 해석",
+      "service_question_subtype": "시각 자료 해석"
+    },
+    {
+      "path": "image_pack_pagoda_bulguksa_service_taxonomy_20260723.json",
+      "era": "고대",
+      "service_era": "남북국 시대",
+      "service_topic": "문화",
+      "service_question_type": "역사 자료의 분석 및 해석",
+      "service_question_subtype": "시각 자료 해석"
+    },
+    {
+      "path": "image_pack_pagoda_bunhwangsa_service_taxonomy_20260723.json",
+      "era": "고대",
+      "service_era": "삼국 시대",
+      "service_topic": "문화",
+      "service_question_type": "역사 자료의 분석 및 해석",
+      "service_question_subtype": "시각 자료 해석"
+    },
+    {
+      "path": "image_pack_pagoda_gameunsa_service_taxonomy_20260723.json",
+      "era": "고대",
+      "service_era": "남북국 시대",
+      "service_topic": "문화",
+      "service_question_type": "역사 자료의 분석 및 해석",
+      "service_question_subtype": "시각 자료 해석"
+    },
+    {
+      "path": "image_pack_pagoda_jeongnim_service_taxonomy_20260723.json",
+      "era": "고대",
+      "service_era": "삼국 시대",
+      "service_topic": "문화",
+      "service_question_type": "역사 자료의 분석 및 해석",
+      "service_question_subtype": "시각 자료 해석"
+    },
+    {
+      "path": "image_pack_pagoda_mireuksa_service_taxonomy_20260723.json",
+      "era": "고대",
+      "service_era": "삼국 시대",
+      "service_topic": "문화",
+      "service_question_type": "역사 자료의 분석 및 해석",
+      "service_question_subtype": "시각 자료 해석"
+    },
+    {
+      "path": "image_pack_tripitaka_service_taxonomy_20260723.json",
+      "era": "고려",
+      "service_era": "고려",
+      "service_topic": "문화",
+      "service_question_type": "역사 자료의 분석 및 해석",
+      "service_question_subtype": "시각 자료 해석"
+    }
+  ]
+}

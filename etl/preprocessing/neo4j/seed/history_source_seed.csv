@@ -1,2 +1,0 @@
-source_id,source_name,source_record_id_prefix,source_text_id_prefix,record_type,raw_relative_path,material_id_column,title_column,era_column,field_column,toc_column,text_column,url_column,markdown_path_column,review_status
-HISTORY_SOURCE,사료로 본 한국사,HISTORY_SOURCE,HISTORY_SOURCE_TEXT,TEXT_SOURCE,etl/raw_data/사료로 본 한국사/index.csv,자료ID,제목,시대,분야,목차경로,국문,상세URL,Markdown파일,SOURCE_ANCHORED

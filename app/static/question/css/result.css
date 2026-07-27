@@ -13,3 +13,29 @@
   opacity: 0.72;
   cursor: not-allowed;
 }
+
+.result-question-image {
+  display: block;
+  width: min(100%, 680px);
+  max-height: 420px;
+  height: auto;
+  margin-top: 12px;
+  border-radius: 8px;
+  object-fit: contain;
+}
+
+.choice-review-body {
+  display: grid;
+  justify-items: start;
+  gap: 8px;
+  min-width: 0;
+}
+
+.result-choice-image {
+  display: block;
+  width: min(100%, 420px);
+  max-height: 320px;
+  height: auto;
+  border-radius: 6px;
+  object-fit: contain;
+}

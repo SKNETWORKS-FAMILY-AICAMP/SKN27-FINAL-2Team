@@ -1,0 +1,37 @@
+{
+  "past_exam_source": "C:\\dev\\project\\SKN27-FINAL-2Team\\ai\\ml\\ML_han_v1.json",
+  "generated_source": "C:\\Users\\Playdata\\Downloads\\yj_question.json",
+  "past_exam_questions": 1600,
+  "generated_questions": 1144,
+  "generated_skipped_questions": 5,
+  "total_rows": 23295,
+  "source_type_count": {
+    "generated": 5695,
+    "past_exam": 8000,
+    "synthetic": 9600
+  },
+  "label_count": {
+    "0_error": 9625,
+    "1_ok": 13670
+  },
+  "error_code_count": {
+    "ANSWER_IN_PASSAGE": 1607,
+    "ANSWER_LENGTH_BIAS": 1600,
+    "WEIRD_DISTRACTOR": 1600,
+    "CHOICE_STYLE_MISMATCH": 1600,
+    "QUESTION_CHOICE_MISMATCH": 0,
+    "CHOICE_TOO_VAGUE": 1600,
+    "CHOICE_GRAMMAR_ERROR": 1601,
+    "DUPLICATE_OR_SIMILAR_CHOICE": 2,
+    "ANSWER_FORMAT_ERROR": 15
+  },
+  "split_count": {
+    "train": 18891,
+    "test": 4404
+  },
+  "files": [
+    "choice_quality_data.json",
+    "choice_quality_train.json",
+    "choice_quality_test.json"
+  ]
+}

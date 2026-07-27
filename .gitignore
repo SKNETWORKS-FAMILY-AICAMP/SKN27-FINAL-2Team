@@ -133,6 +133,8 @@ celerybeat.pid
 
 # Environments
 .env
+.env.*
+!.env.example
 .venv
 env/
 venv/
@@ -293,6 +295,8 @@ $RECYCLE.BIN/
 
 postgres_data/
 
+# Local PostgreSQL backup artifacts
+artifacts/
 
 # Neo4j preprocessing generated CSV files
 etl/preprocessing/neo4j/**/*.csv
@@ -313,6 +317,26 @@ storage/neo4j/neo4j_import/.preprocessing_complete.json
 etl/raw_data/한국민족문화대백과사전/articles_list.jsonl
 etl/raw_data/한국민족문화대백과사전/articles_detail.jsonl
 
+# Neo4j preprocessing runtime JSON and checkpoint files
+etl/preprocessing/neo4j/output/**/*.json
+etl/preprocessing/neo4j/output/**/*.jsonl
+
 # Generated AKS encyclopedia RAG artifacts
 etl/preprocessing/history/processed/aks_encyclopedia.chunks.jsonl
 etl/preprocessing/history/processed/aks_encyclopedia.documents.jsonl
+
+# ML question quality generated artifacts
+ai/ml_question/choice_quality_model.zip
+ai/ml_question/choice_quality_model/model/model.safetensors
+ai/ml_question/choice_quality_rule_only_v*.json
+ai/ml_question/choice_quality_skipped_v*.json
+ai/ml_question/choice_quality_synthetic_test_v*.json
+ai/ml_question/choice_quality_data_v[3-9].json
+ai/ml_question/choice_quality_train_v[3-9].json
+ai/ml_question/choice_quality_test_v[3-9].json
+ai/ml_question/question_quality_*.json
+ai/ml_question/make_question_quality_*.py
+ai/ml_question/train_question_quality_*.ipynb
+
+# Question generation runtime outputs
+question_generation/outputs/
