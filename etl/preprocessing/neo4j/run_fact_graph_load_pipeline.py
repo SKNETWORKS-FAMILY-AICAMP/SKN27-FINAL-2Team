@@ -34,6 +34,11 @@ def parse_arguments(neo4j_root: Path) -> argparse.Namespace:
         action="store_true",
         help="기존 fact graph release를 안전검사 후 교체합니다.",
     )
+    parser.add_argument(
+        "--load-only",
+        action="store_true",
+        help="저장소에 포함된 최종 release 패키지를 다시 생성하지 않고 적재합니다.",
+    )
     return parser.parse_args()
 
 
@@ -44,6 +49,7 @@ def run_fact_graph_load_pipeline(
     release_output: Path | None,
     batch_size: int,
     replace: bool,
+    load_only: bool,
 ) -> dict[str, Any]:
     if batch_size <= 0:
         raise ValueError("batch-size must be greater than zero")
@@ -62,13 +68,34 @@ def run_fact_graph_load_pipeline(
     if package_directory is None:
         package_directory = output_root / str(config["output_directory"])
 
-    print("[1/3] fact graph release 생성")
-    package = build_fact_graph_release(output_root, config)
-    release_manifest = write_fact_graph_release(
-        package,
-        package_directory,
-        config,
-    )
+    release_manifest: dict[str, Any] = {}
+    if load_only:
+        manifest_path = package_directory / "manifest.json"
+        if not manifest_path.is_file():
+            raise FileNotFoundError(
+                f"Final release manifest not found: {manifest_path}"
+            )
+        with manifest_path.open("r", encoding="utf-8") as input_file:
+            release_manifest = json.load(input_file)
+        missing_package_paths = [
+            str(package_directory / relative_path)
+            for relative_path in release_manifest["output_paths"].values()
+            if not (package_directory / relative_path).is_file()
+        ]
+        if missing_package_paths:
+            raise FileNotFoundError(
+                "Final release package is incomplete: "
+                + ", ".join(missing_package_paths)
+            )
+        print("[1/3] 저장소의 최종 fact graph release 확인")
+    elif not load_only:
+        print("[1/3] fact graph release 생성")
+        package = build_fact_graph_release(output_root, config)
+        release_manifest = write_fact_graph_release(
+            package,
+            package_directory,
+            config,
+        )
 
     print("[2/3] 별도 Neo4j 적재")
     load_manifest = load_fact_graph(
@@ -98,6 +125,9 @@ def run_fact_graph_load_pipeline(
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "graph_release_id": release_manifest["graph_release_id"],
         "replace_existing_release": replace,
+        "release_package_mode": (
+            "LOAD_ONLY" if load_only else "BUILD_AND_LOAD"
+        ),
         "release_statistics": release_manifest["statistics"],
         "load_verification": load_manifest["verification"],
         "release_manifest_path": str(
@@ -138,6 +168,7 @@ def main() -> None:
         release_output=release_output,
         batch_size=args.batch_size,
         replace=args.replace,
+        load_only=args.load_only,
     )
     print(json.dumps(manifest, ensure_ascii=False, indent=2))
 

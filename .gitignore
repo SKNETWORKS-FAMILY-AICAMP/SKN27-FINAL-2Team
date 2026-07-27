@@ -324,6 +324,10 @@ etl/raw_data/한국민족문화대백과사전/articles_detail.jsonl
 etl/preprocessing/neo4j/output/**/*.json
 etl/preprocessing/neo4j/output/**/*.jsonl
 
+# Portable final Fact Graph load package
+!etl/preprocessing/neo4j/output/fact_graph_release/*.csv
+!etl/preprocessing/neo4j/output/fact_graph_release/manifest.json
+
 # LLM extraction and Entity Resolution responses
 !etl/preprocessing/neo4j/output/internal/term_extraction/term_extraction_checkpoint.jsonl
 !etl/preprocessing/neo4j/output/internal/model_review/term_identity_review_checkpoint.jsonl

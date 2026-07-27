@@ -1096,7 +1096,7 @@ def write_fact_graph_release(
     for table_name, rows in package.items():
         path = output_directory / f"{table_name}.csv"
         write_csv_rows(path, fieldnames[table_name], rows)
-        output_paths[table_name] = str(path.resolve())
+        output_paths[table_name] = path.name
 
     fact_status_counts = Counter(
         row["relation_status"]
@@ -1174,5 +1174,5 @@ def write_fact_graph_release(
     manifest_path = output_directory / "manifest.json"
     with manifest_path.open("w", encoding="utf-8") as output_file:
         json.dump(manifest, output_file, ensure_ascii=False, indent=2)
-    manifest["output_paths"]["manifest"] = str(manifest_path.resolve())
+    manifest["output_paths"]["manifest"] = manifest_path.name
     return manifest
