@@ -1,5 +1,9 @@
 # 한국사 사실 그래프 현재 설계 정리
 
+> 상태: `CURRENT-DESIGN + AS-BUILT-MVP`
+> 기준일: 2026-07-27
+> 실제 적재 계약은 `03_fact_graph_release_and_load.md`를 함께 따른다.
+
 ## 1. 결론
 
 현재 목표는 기출문제의 오답을 그래프에 저장하는 것이 아니다.
@@ -96,6 +100,18 @@ difficulty
 
 ### 4.1 출처와 Entity Resolution
 
+#### `GraphEntity`
+
+현재 Fact 관계 endpoint는 `GraphEntity`로 통일한다.
+
+```text
+GraphEntity:CanonicalEntity
+GraphEntity:ProvisionalEntity
+```
+
+`ProvisionalEntity`는 관계와 근거를 보존하지만 이름 검색·Anchor·자동 다중 hop에서
+제외하는 미정규화 endpoint다.
+
 #### `ExamTerm`
 
 기출문제에서 추출한 용어의 기본 목록이다. 원천 매칭이 보류돼도 삭제하지 않는다.
@@ -164,7 +180,9 @@ Concept
 
 #### `SemanticClass`
 
-RAG 후보 자격과 근접도를 판단하는 의미 분류다.
+RAG 후보 자격과 근접도를 판단하는 목표 의미 분류다. 현재 release에는
+`EntityType`, `Topic`, `Era`가 적재됐으며 `SemanticClass`, `Region`, `Polity`,
+`PersonRole` 전체 구조는 후속 구현이다.
 
 ```text
 조선 국왕
@@ -224,9 +242,9 @@ Fact ──SUPPORTED_BY──> EvidenceSpan
 하나의 `Fact`에는 하나의 원자 주장만 저장한다. 여러 사건과 관계를
 한 문장 그대로 하나의 Fact에 넣지 않는다.
 
-신규 Fact DB 구현은 동일한 `(주어, predicate, 목적어)`를 하나의 `Fact`로
-합친다. 서로 다른 원천의 주장은 삭제하지 않고 `assertion_records_json`과
-`assertion_count`에 모두 보존한다.
+현재 Fact DB는 개별 assertion마다 `Fact`를 보존한다. 동일한
+`(주어, predicate, 목적어)`의 직접 의미 관계만 하나로 합치고 `fact_ids`,
+`fact_count`, `assertion_count`, `evidence_ids`에 모든 assertion을 누적한다.
 
 ```text
 Fact ──SUBJECT──────> GraphEntity
@@ -278,6 +296,18 @@ NLP 공식 문장은 `nlp_relation_evidence_id`를 근거 ID로 사용한다.
 코드 게이트로 승인한다. endpoint가 미확정된 관계는 삭제하지 않고
 `deferred_relation_candidates.csv`에 보류하며, 반복 빈도가 높거나 복수 근거
 관계에 포함된 endpoint만 우선 검토 큐에 올린다.
+
+### 4.5 직접 의미 관계와 국소 병합
+
+```text
+(GraphEntity)-[:ESTABLISHED|BUILT|LOCATED_IN|...]->(GraphEntity)
+```
+
+같은 시작점·Predicate·끝점은 `semantic_relation_id` 하나로 유지한다. 직접 관계가
+합쳐져도 개별 Fact와 Evidence는 남는다.
+
+같은 canonical 인물·방향·정규화 이름·EntityType인 미정규화 endpoint는 해당 인물
+문맥 안에서만 병합한다. 병합 결과도 검색에서 제외되는 `ProvisionalEntity`다.
 
 ---
 
@@ -585,7 +615,24 @@ NLP endpoint 타입 검토 후보: 8,354개
 `CANONICAL_FACT_ASSERTED`, NLP는 `NLP_STRICT`와
 `NLP_ENDPOINT_TYPE_REVIEW`로 분리한다. SourceRecord를 Canonical로
 억지 병합하지 않으므로 동명이인 안전성을 유지하면서 RAG가 1~2홉 사실
-경로를 탐색할 수 있다. 이 결과도 아직 Neo4j에 적재하지 않았다.
+경로를 탐색할 수 있다. 이 staging 후보 전체를 그대로 Neo4j에 적재하지는 않았다.
+
+### 8.10 현재 Fact Graph release
+
+```text
+release: korean-history-fact-graph-2026-07-27-contextual-v1
+GraphEntity: 19,447개
+CanonicalEntity: 4,786개
+ProvisionalEntity: 14,661개
+Fact assertion: 39,852개
+직접 의미 관계: 39,745개
+EvidenceSpan: 39,961개
+양 endpoint 해소 Fact: 623개
+미해소 endpoint 포함 Fact: 39,229개
+```
+
+직접 관계 107개를 통합했지만 모든 Fact 39,852개와 근거를 보존했다. 검색 가능한
+ProvisionalEntity는 0개이며 적재 검증은 `PASSED`다.
 
 ---
 
@@ -620,6 +667,8 @@ NLP endpoint 타입 검토 후보: 8,354개
 ---
 
 ## 10. 구현 순서
+
+1~5단계의 MVP는 현재 release로 한 차례 완료됐다. 아래는 확장 순서다.
 
 ### 1단계: canonical 대상 확정
 
@@ -669,9 +718,9 @@ NLP endpoint 타입 검토 후보: 8,354개
 
 현재 최우선 과제는 다음 세 가지다.
 
-1. 사실 관계 골드셋 100개를 검수해 패턴 사실의 정확도를 측정한다.
-2. Anchor가 없는 기출 canonical 1,893개에 공식 근거 사실을 보강한다.
-3. 외부 검증 backlog 938개의 결과를 배치별로 사실성 게이트에 반영한다.
+1. 미해소 endpoint를 canonical로 연결해 기본 검색 가능한 623건을 늘린다.
+2. `세종대왕`처럼 exact search에서 빠진 승인 별칭과 동명이인 검색을 보완한다.
+3. canonical에서 출발해 허용 관계·근거를 반환하는 RAG 조회 계약을 구현한다.
 
 오답 유형 분석, 후보 선택, 문장 생성은 이 사실 그래프를 조회하는
 RAG 및 문제 생성 단계에서 수행한다.
@@ -686,10 +735,11 @@ RAG 및 문제 생성 단계에서 수행한다.
 endpoint identity가 아직 확정되지 않은 관계는 삭제하지 않고
 `PROVISIONAL` 상태로 적재한다.
 
-- `Fact.trust_status = VERIFIED`: 기본 RAG 검색에 포함
-- `Fact.trust_status = REVIEWED`: 사람 검수 승인 후 기본 검색에 포함
-- `Fact.trust_status = PROVISIONAL`: 그래프에는 보존하지만 기본 검색에서 제외
-- `GraphEntity.resolution_status = PROVISIONAL`: identity가 아직 확정되지 않은 endpoint
+- `Fact.relation_status = VERIFIED`: 기존 검증 사실
+- `Fact.relation_status = REVIEWED_APPROVED`: 관계 검토 승인 사실
+- `Fact.endpoint_status = RESOLVED | UNRESOLVED`: endpoint 해소 상태
+- `Fact.retrieval_eligible = true`: 기본 RAG 검색 대상
+- `GraphEntity.resolution_status = UNRESOLVED`: identity 미확정 endpoint
 
 기본 RAG 조회는 반드시 다음 조건을 사용한다.
 
