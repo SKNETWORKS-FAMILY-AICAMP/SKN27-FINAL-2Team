@@ -1,12 +1,11 @@
+import _bootstrap
+
 from argparse import ArgumentParser, Namespace
 from datetime import datetime, timezone
 from json import dump, dumps
 from pathlib import Path
-import sys
 
 import pandas as pd
-
-sys.path.append(str(Path(__file__).resolve().parent))
 
 from entity_resolution.exam_match_recovery import (
     build_exam_match_recovery_tables,
@@ -16,7 +15,7 @@ from entity_resolution.exam_match_recovery import (
 
 def parse_arguments() -> Namespace:
     """기출 용어 재매칭 dry-run CLI 인자를 읽는다."""
-    neo4j_root = Path(__file__).resolve().parent
+    neo4j_root = Path(__file__).resolve().parent.parent
     final_directory = neo4j_root / "output" / "final_identity"
     internal_directory = (
         neo4j_root / "output" / "internal" / "entity_resolution"

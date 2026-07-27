@@ -1,14 +1,13 @@
 from __future__ import annotations
 
+import _bootstrap
+
 from argparse import ArgumentParser, Namespace
 from datetime import datetime, timezone
 from json import dump, dumps
 from pathlib import Path
-import sys
 
 import pandas as pd
-
-sys.path.append(str(Path(__file__).resolve().parent))
 
 from source_relationships.build import (
     build_source_relationship_tables,
@@ -28,7 +27,7 @@ def resolve_project_path(project_root: Path, path_value: str) -> Path:
 
 def parse_arguments() -> Namespace:
     """원천 관계 전처리 CLI 인자를 읽는다."""
-    project_root = Path(__file__).resolve().parents[3]
+    project_root = Path(__file__).resolve().parents[4]
     default_config = (
         project_root
         / "etl"
@@ -82,7 +81,7 @@ def run_source_relationship_preprocessing(
     cli_args: Namespace,
 ) -> dict[str, object]:
     """원천 파일을 읽어 관계 테이블과 실행 manifest를 생성한다."""
-    project_root = Path(__file__).resolve().parents[3]
+    project_root = Path(__file__).resolve().parents[4]
     policy = load_source_relationship_policy(cli_args.config)
     input_overrides = {
         "itkc_people": cli_args.itkc_people,

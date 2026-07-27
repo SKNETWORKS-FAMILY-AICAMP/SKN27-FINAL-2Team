@@ -48,7 +48,7 @@ from entity_resolution.semantic_review import (
     write_jsonl,
     write_term_decision_tables,
 )
-from run_neo4j_preprocessing import (
+from runners.run_neo4j_preprocessing import (
     resolve_pipeline_paths,
     resolve_stage_output_paths,
     run_preprocessing_pipeline,

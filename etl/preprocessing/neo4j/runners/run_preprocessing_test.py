@@ -1,3 +1,5 @@
+import _bootstrap
+
 import sys
 from argparse import ArgumentParser
 from json import dumps
@@ -47,7 +49,7 @@ def resolve_shared_thesaurus_path(neo4j_root: Path, policy: dict) -> str:
 
 def main() -> None:
     """설정의 소량 실행값을 사용해 운영 파이프라인을 격리 출력으로 실행한다."""
-    neo4j_root = Path(__file__).resolve().parent
+    neo4j_root = Path(__file__).resolve().parent.parent
     default_policy_path = neo4j_root / "config" / "resolution_policy.json"
     parser = ArgumentParser(
         description="한국사 Neo4j 전처리 파이프라인 소량 테스트 실행"

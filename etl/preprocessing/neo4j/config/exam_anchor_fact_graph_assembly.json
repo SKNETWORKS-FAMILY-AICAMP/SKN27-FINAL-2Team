@@ -1,0 +1,40 @@
+{
+  "policy_version": "exam-anchor-fact-graph-assembly-v1.1",
+  "maximum_structured_source_hops": 2,
+  "nlp_evidence_read_chunk_size": 100000,
+  "exclude_self_relations": true,
+  "accepted_match_status": "ACCEPTED",
+  "excluded_structured_relation_types": [
+    "IN_TOP_CATEGORY"
+  ],
+  "excluded_canonical_relation_types": [
+    "ASSOCIATED_WITH_POLITY"
+  ],
+  "source_record_type_to_entity_type": {
+    "PERSON": "Person",
+    "EVENT": "Event",
+    "TERM": "Concept"
+  },
+  "candidate_tiers": {
+    "structured_source": "STRUCTURED_SOURCE_ASSERTED",
+    "canonical_fact": "CANONICAL_FACT_ASSERTED",
+    "nlp_corroborated_stable": "NLP_CORROBORATED_STABLE",
+    "nlp_strict": "NLP_STRICT",
+    "nlp_type_review": "NLP_ENDPOINT_TYPE_REVIEW"
+  },
+  "nlp_auto_accept": {
+    "verification_status": "GATE_PASSED_CORROBORATED",
+    "stable_node_kinds": [
+      "CANONICAL",
+      "OFFICIAL_SOURCE"
+    ]
+  },
+  "outputs": {
+    "structured_source": "structured_source_fact_candidates.csv",
+    "canonical_fact": "canonical_fact_candidates.csv",
+    "nlp": "nlp_fact_candidates.csv",
+    "all": "all_fact_graph_candidates.csv",
+    "summary": "fact_graph_candidate_summary.csv",
+    "manifest": "manifest.json"
+  }
+}

@@ -1,15 +1,14 @@
 from __future__ import annotations
 
+import _bootstrap
+
 from argparse import ArgumentParser, Namespace
 from datetime import datetime, timezone
 from json import dump, dumps
 from pathlib import Path
-import sys
 from typing import Iterator
 
 import pandas as pd
-
-sys.path.append(str(Path(__file__).resolve().parent))
 
 from choice_relation.exam_term_raw_relations import (
     build_raw_relation_eda_tables,
@@ -21,7 +20,7 @@ from choice_relation.exam_term_raw_relations import (
 
 def parse_arguments() -> Namespace:
     """기출 용어 중심 원문 관계 EDA 실행 인자를 읽는다."""
-    neo4j_root = Path(__file__).resolve().parent
+    neo4j_root = Path(__file__).resolve().parent.parent
     project_root = neo4j_root.parents[2]
     parser = ArgumentParser(
         description=(

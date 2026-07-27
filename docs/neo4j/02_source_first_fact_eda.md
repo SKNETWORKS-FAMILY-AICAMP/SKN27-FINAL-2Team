@@ -2,7 +2,7 @@
 
 > 상태: `CURRENT`
 > 기준일: 2026-07-26
-> 실행: `run_source_first_fact_eda.py`
+> 실행: `etl/preprocessing/neo4j/runners/run_source_first_fact_eda.py`
 > LLM 호출: 없음
 > Neo4j 적재: 없음
 

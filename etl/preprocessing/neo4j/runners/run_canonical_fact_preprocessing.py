@@ -1,12 +1,11 @@
+import _bootstrap
+
 from argparse import ArgumentParser, Namespace
 from datetime import datetime, timezone
 from json import dump, dumps
 from pathlib import Path
-import sys
 
 import pandas as pd
-
-sys.path.append(str(Path(__file__).resolve().parent))
 
 from source_relationships.build import load_source_relationship_policy
 from source_relationships.canonical_facts import (
@@ -16,7 +15,7 @@ from source_relationships.canonical_facts import (
 
 def parse_arguments() -> Namespace:
     """Canonical 사실 관계 통합 CLI 인자를 읽는다."""
-    neo4j_root = Path(__file__).resolve().parent
+    neo4j_root = Path(__file__).resolve().parent.parent
     output_directory = neo4j_root / "output" / "source_relationships"
     parser = ArgumentParser(
         description=(

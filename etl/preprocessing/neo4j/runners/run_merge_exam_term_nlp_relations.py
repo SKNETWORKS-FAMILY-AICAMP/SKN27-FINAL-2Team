@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import _bootstrap
+
 from argparse import ArgumentParser, Namespace
 from json import dumps, loads
 from pathlib import Path
@@ -9,7 +11,7 @@ import pandas as pd
 
 def parse_arguments() -> Namespace:
     """Read paths used to consolidate source-specific relation candidates."""
-    neo4j_root = Path(__file__).resolve().parent
+    neo4j_root = Path(__file__).resolve().parent.parent
     parser = ArgumentParser(
         description=(
             "Merge source-specific NLP relation candidate CSV files without "

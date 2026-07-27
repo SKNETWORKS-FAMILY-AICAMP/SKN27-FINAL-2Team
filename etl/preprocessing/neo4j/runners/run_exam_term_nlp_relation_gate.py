@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import _bootstrap
+
 from argparse import ArgumentParser, Namespace
 import csv
 from hashlib import sha256
@@ -13,7 +15,7 @@ import pandas as pd
 
 def parse_arguments() -> Namespace:
     """Read relation gate input and output paths."""
-    neo4j_root = Path(__file__).resolve().parent
+    neo4j_root = Path(__file__).resolve().parent.parent
     parser = ArgumentParser(
         description=(
             "Apply a deterministic evidence gate to registered NLP relation "

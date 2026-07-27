@@ -17,7 +17,7 @@ sys.path.append(
     )
 )
 
-from run_merge_exam_term_nlp_relations import merge_candidate_tables
+from runners.run_merge_exam_term_nlp_relations import merge_candidate_tables
 
 
 class MergeExamTermNlpRelationsTest(TestCase):

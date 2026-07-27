@@ -8,24 +8,24 @@
 ```powershell
 # 1. HUMAN_REVIEW import → 골든셋 모델 실행/재사용 → 평가
 .\.venv\Scripts\python.exe `
-  etl/preprocessing/neo4j/import_and_evaluate_goldset.py `
+  etl/preprocessing/neo4j/runners/import_and_evaluate_goldset.py `
   --dry-run
 .\.venv\Scripts\python.exe `
-  etl/preprocessing/neo4j/import_and_evaluate_goldset.py
+  etl/preprocessing/neo4j/runners/import_and_evaluate_goldset.py
 
 # 2. EVIDENCE_ONLY 관련 엔티티 재검색 → LLM 판정 → 검증 게이트
 .\.venv\Scripts\python.exe `
-  etl/preprocessing/neo4j/run_related_entity_resolution.py `
+  etl/preprocessing/neo4j/runners/run_related_entity_resolution.py `
   --dry-run
 .\.venv\Scripts\python.exe `
-  etl/preprocessing/neo4j/run_related_entity_resolution.py
+  etl/preprocessing/neo4j/runners/run_related_entity_resolution.py
 
 # 3. VERIFIED 관련 엔티티만 최종 identity CSV로 승격
 .\.venv\Scripts\python.exe `
-  etl/preprocessing/neo4j/finalize_related_entities.py `
+  etl/preprocessing/neo4j/runners/finalize_related_entities.py `
   --dry-run
 .\.venv\Scripts\python.exe `
-  etl/preprocessing/neo4j/finalize_related_entities.py
+  etl/preprocessing/neo4j/runners/finalize_related_entities.py
 ```
 
 검증 오류가 있으면 LLM API를 호출하기 전에 중단한다. 성공한 모델 응답은 checkpoint에
@@ -165,14 +165,14 @@ metrics JSON의 `identity_pair_gate_policy_version`과
 
 ```powershell
 .\.venv\Scripts\python.exe `
-  etl/preprocessing/neo4j/run_related_entity_resolution.py
+  etl/preprocessing/neo4j/runners/run_related_entity_resolution.py
 ```
 
 기본 출력은 `goldset/internal/related_entity`이다. 같은 표시명의 관련 엔티티가
 여러 원래 case에서 나와도 이름만으로 자동 병합하지 않고 각각 독립 case로 유지한다.
 
 관련 엔티티는 자동 검증 게이트에서 `VERIFIED`된 대안만
-`finalize_related_entities.py` 실행에서 `final_identity`로 승격한다.
+`runners/finalize_related_entities.py` 실행에서 `final_identity`로 승격한다.
 `NEEDS_MANUAL_REVIEW`와 `INVALID`는 승격하지 않는다.
 동명이인 대안이 여러 개여도 사람이 관련 엔티티로 지정했던 seed SourceRecord가 속한 대안만
 선택한다. 선택 결과는 `related_entity_canonical_selections.csv`에서 확인한다.

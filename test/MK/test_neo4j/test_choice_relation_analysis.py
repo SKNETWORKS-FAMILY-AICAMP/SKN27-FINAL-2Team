@@ -32,7 +32,9 @@ class ChoiceRelationAnalysisTest(unittest.TestCase):
             evaluate_relation_predictions,
             load_relation_goldset,
         )
-        from run_choice_relation_analysis import run_choice_relation_analysis
+        from runners.run_choice_relation_analysis import (
+            run_choice_relation_analysis,
+        )
 
         cls.build_tasks = staticmethod(build_choice_relation_tasks)
         cls.load_policy = staticmethod(load_choice_relation_policy)

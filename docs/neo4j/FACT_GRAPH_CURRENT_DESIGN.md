@@ -224,11 +224,20 @@ Fact ──SUPPORTED_BY──> EvidenceSpan
 하나의 `Fact`에는 하나의 원자 주장만 저장한다. 여러 사건과 관계를
 한 문장 그대로 하나의 Fact에 넣지 않는다.
 
-현재 MVP 구현은 별도 `Fact` 노드가 아니라 두
-`CanonicalEntity` 사이의 `FACT_RELATION` 관계에
-`canonical_relationship_id`, 관계 유형, 검증 상태와 근거 배열을
-저장한다. 별도 `Fact` 노드 전환은 시간 범위·복합 provenance를 그래프에서
-직접 조회해야 할 때 결정한다.
+신규 Fact DB 구현은 동일한 `(주어, predicate, 목적어)`를 하나의 `Fact`로
+합친다. 서로 다른 원천의 주장은 삭제하지 않고 `assertion_records_json`과
+`assertion_count`에 모두 보존한다.
+
+```text
+Fact ──SUBJECT──────> GraphEntity
+Fact ──OBJECT───────> GraphEntity
+Fact ──SUPPORTED_BY─> EvidenceSpan
+EvidenceSpan ──FROM_SOURCE─> SourceRecord
+```
+
+구조화 원천 관계의 endpoint는 승인된 `SourceRecord → CanonicalEntity`
+매핑이 있을 때만 canonical ID로 치환한다. 이름이 같다는 이유만으로는 합치지
+않으며, 승인 매핑이 없는 동명이인은 각각의 `SourceRecord`로 유지한다.
 
 #### Fact 예시
 
@@ -255,9 +264,20 @@ end_offset
 
 근거가 없는 Fact는 최종 사실 그래프에 적재하지 않는다.
 
-현재 MVP는 `EvidenceSpan` 노드를 아직 생성하지 않고 관계의
-`evidence_sentences_json`, `evidence_urls_json`, `detail_urls_json`에
-근거를 보존한다. 따라서 근거 offset 단위 조회는 아직 지원하지 않는다.
+신규 Fact DB는 `EvidenceSpan` 노드를 생성한다. 공식 설명문은
+`description_mention_id`, 구조화 원천 주장은 `source_relationship_id`,
+NLP 공식 문장은 `nlp_relation_evidence_id`를 근거 ID로 사용한다.
+근거 ID나 근거 메타데이터가 누락된 후보는 적재에서 제외한다.
+
+현재 원천이 문장 offset을 제공하지 않는 경우가 있어 `start_offset`과
+`end_offset`은 아직 선택 속성이다. 원문, 문서 ID, URL은 가능한 범위에서
+반드시 보존한다.
+
+관계 검토는 endpoint가 안정된 후보만 먼저 수행한다. 복수 독립 근거를
+통과하고 양쪽 endpoint가 `CanonicalEntity` 또는 공식 `SourceRecord`인 관계는
+코드 게이트로 승인한다. endpoint가 미확정된 관계는 삭제하지 않고
+`deferred_relation_candidates.csv`에 보류하며, 반복 빈도가 높거나 복수 근거
+관계에 포함된 endpoint만 우선 검토 큐에 올린다.
 
 ---
 
@@ -504,10 +524,9 @@ SourceRecord: 128,312개
 관계 후보가 있는 용어: 4,295개
 용어 커버리지: 82.42%
 
-출처별 관계 후보 단순 합계: 616,265개
-출처 간 중복 병합 후 관계 후보: 612,074개
-관계 근거: 641,110개
-양쪽 endpoint가 등록된 관계 후보: 63,945개
+출처 간 중복 병합 후 관계 후보: 708,130개
+관계 근거: 742,234개
+양쪽 endpoint가 등록된 관계 후보: 75,470개
 양쪽 endpoint가 모두 미등록인 관계: 0개
 ```
 
@@ -523,13 +542,13 @@ SourceRecord: 128,312개
 
 | 등급 | 관계 수 | 의미 |
 |---|---:|---|
-| 복수 독립 근거 | 116 | 엄격 문법을 통과하고 근거가 둘 이상 |
-| 단일 명시 근거 | 3,021 | 엄격 문법은 통과했으나 근거가 하나 |
-| 엄격 후보 합계 | 3,137 | 위 두 등급의 합계 |
-| 타입 검토 필요 | 7,062 | 문법은 통과했으나 endpoint 타입이 불명·불일치 |
-| 전체 명시 관계 후보 | 10,199 | 엄격 후보와 타입 검토 후보의 합계 |
+| 복수 독립 근거 | 145 | 엄격 문법을 통과하고 근거가 둘 이상 |
+| 단일 명시 근거 | 3,599 | 엄격 문법은 통과했으나 근거가 하나 |
+| 엄격 후보 합계 | 3,744 | 위 두 등급의 합계 |
+| 타입 검토 필요 | 8,354 | 문법은 통과했으나 endpoint 타입이 불명·불일치 |
+| 전체 명시 관계 후보 | 12,098 | 엄격 후보와 타입 검토 후보의 합계 |
 
-전체 명시 관계 후보가 직접 연결하는 기출 용어는 1,795개다. 양쪽
+전체 명시 관계 후보가 직접 연결하는 기출 용어는 1,899개다. 양쪽
 endpoint가 모두 미등록인 관계와 자기 자신을 잇는 관계는 0개다.
 
 엄격 문법 조건은 다음을 계속 차단한다.
@@ -541,11 +560,32 @@ endpoint가 모두 미등록인 관계와 자기 자신을 잇는 관계는 0개
 - `함종부사` 같은 문자열을 다른 등록 엔티티와 잘못 정렬
 - 부정·추정·전승 문장을 확정 사실로 해석
 
-`safe_relation_candidates.csv`에는 엄격 후보 3,137개만 들어간다.
-`type_review_relation_candidates.csv`에는 추가 7,062개를 분리하고,
-`all_explicit_relation_candidates.csv`에는 두 등급을 합친 10,199개를
+`safe_relation_candidates.csv`에는 엄격 후보 3,744개만 들어간다.
+`type_review_relation_candidates.csv`에는 추가 8,354개를 분리하고,
+`all_explicit_relation_candidates.csv`에는 두 등급을 합친 12,098개를
 저장한다. 모든 파일의 `auto_load_eligible`은 `false`이며 LLM 호출과
 Neo4j 적재는 수행하지 않았다.
+
+### 8.9 기출 Anchor 중심 통합 사실 그래프 후보
+
+문장 NLP만으로 수량을 늘리면 미등록 endpoint와 생략 주어 때문에 안전성이
+빠르게 낮아진다. 따라서 승인된 기출 Canonical과 동일성이 확인된
+SourceRecord를 시작점으로 ITKC 구조화 사실 관계를 2홉까지 포함한다.
+분류 관계인 `IN_TOP_CATEGORY`와 `ASSOCIATED_WITH_POLITY`는 제외한다.
+
+```text
+ITKC·공식 구조화 사실 관계(2홉): 37,636개
+Canonical core 사실 관계: 548개
+NLP 엄격 관계 후보: 3,744개
+NLP endpoint 타입 검토 후보: 8,354개
+통합 사실 그래프 후보: 50,282개
+```
+
+구조화 관계는 `SOURCE_ASSERTED`, Canonical 관계는
+`CANONICAL_FACT_ASSERTED`, NLP는 `NLP_STRICT`와
+`NLP_ENDPOINT_TYPE_REVIEW`로 분리한다. SourceRecord를 Canonical로
+억지 병합하지 않으므로 동명이인 안전성을 유지하면서 RAG가 1~2홉 사실
+경로를 탐색할 수 있다. 이 결과도 아직 Neo4j에 적재하지 않았다.
 
 ---
 
@@ -638,3 +678,27 @@ RAG 및 문제 생성 단계에서 수행한다.
 
 현재 Neo4j ETL은 오답 관계를 만드는 방향이 아니라, RAG가 안전하게
 탐색할 수 있는 사실·분류·근거 그래프를 만드는 방향으로 정리한다.
+
+---
+
+## 12. 검수 보류 관계의 적재 정책
+
+endpoint identity가 아직 확정되지 않은 관계는 삭제하지 않고
+`PROVISIONAL` 상태로 적재한다.
+
+- `Fact.trust_status = VERIFIED`: 기본 RAG 검색에 포함
+- `Fact.trust_status = REVIEWED`: 사람 검수 승인 후 기본 검색에 포함
+- `Fact.trust_status = PROVISIONAL`: 그래프에는 보존하지만 기본 검색에서 제외
+- `GraphEntity.resolution_status = PROVISIONAL`: identity가 아직 확정되지 않은 endpoint
+
+기본 RAG 조회는 반드시 다음 조건을 사용한다.
+
+```cypher
+MATCH (fact:Fact)-[:SUBJECT]->(subject:GraphEntity)
+MATCH (fact)-[:OBJECT]->(object:GraphEntity)
+WHERE fact.default_retrieval_eligible = true
+RETURN fact, subject, object
+```
+
+현재 적재 계획은 검증된 사실과 보류 사실을 함께 보존하지만,
+보류 사실이 문제 생성 후보에 자동으로 섞이지 않도록 상태를 분리한다.

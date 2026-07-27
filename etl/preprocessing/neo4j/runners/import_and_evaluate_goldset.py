@@ -1,3 +1,5 @@
+import _bootstrap
+
 from argparse import ArgumentParser
 from datetime import datetime, timezone
 from json import dumps
@@ -236,7 +238,7 @@ def run_goldset_evaluation(
 
 
 if __name__ == "__main__":
-    neo4j_directory = Path(__file__).resolve().parent
+    neo4j_directory = Path(__file__).resolve().parent.parent
     parser = ArgumentParser(
         description="Human Review import와 골든셋 LLM 평가만 실행"
     )

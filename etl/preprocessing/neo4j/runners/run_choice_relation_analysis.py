@@ -1,15 +1,14 @@
 from __future__ import annotations
 
+import _bootstrap
+
 from argparse import ArgumentParser, Namespace
 from datetime import datetime, timezone
 from hashlib import new as new_hash
 from json import dump
 from pathlib import Path
-import sys
 
 import pandas as pd
-
-sys.path.append(str(Path(__file__).resolve().parent))
 
 from choice_relation.analysis import (
     build_choice_relation_tasks,
@@ -77,7 +76,7 @@ def write_dataframe(dataframe: pd.DataFrame, output_path: Path) -> None:
 
 def parse_arguments() -> Namespace:
     """정답-오답 관계 분석 CLI 인자를 읽는다."""
-    project_root = Path(__file__).resolve().parents[3]
+    project_root = Path(__file__).resolve().parents[4]
     default_config = (
         project_root
         / "etl"
@@ -140,7 +139,7 @@ def parse_arguments() -> Namespace:
 
 def run_choice_relation_analysis(cli_args: Namespace) -> dict:
     """관계 제안 생성, 독립 평가, 최종 코드 게이트를 순서대로 처리한다."""
-    project_root = Path(__file__).resolve().parents[3]
+    project_root = Path(__file__).resolve().parents[4]
     policy = load_choice_relation_policy(cli_args.config)
     input_value = cli_args.input or policy["input"]["default_problem_json"]
     input_path = resolve_project_path(project_root, input_value)

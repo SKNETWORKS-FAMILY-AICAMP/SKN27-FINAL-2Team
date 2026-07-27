@@ -1,12 +1,11 @@
+import _bootstrap
+
 from argparse import ArgumentParser, Namespace
 from datetime import datetime, timezone
 from json import dump, dumps
 from pathlib import Path
-import sys
 
 import pandas as pd
-
-sys.path.append(str(Path(__file__).resolve().parent))
 
 from source_relationships.aks_attributes import (
     build_aks_attribute_tables,
@@ -16,7 +15,7 @@ from source_relationships.build import load_source_relationship_policy
 
 def parse_arguments() -> Namespace:
     """AKS 구조화 속성 관계 후보 생성 CLI 인자를 읽는다."""
-    neo4j_root = Path(__file__).resolve().parent
+    neo4j_root = Path(__file__).resolve().parent.parent
     project_root = neo4j_root.parents[2]
     parser = ArgumentParser(
         description=(

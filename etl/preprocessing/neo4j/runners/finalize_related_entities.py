@@ -1,3 +1,5 @@
+import _bootstrap
+
 from argparse import ArgumentParser
 from datetime import datetime, timezone
 from json import dumps, load
@@ -255,7 +257,7 @@ def run_related_entity_finalization(
 
 
 if __name__ == "__main__":
-    neo4j_directory = Path(__file__).resolve().parent
+    neo4j_directory = Path(__file__).resolve().parent.parent
     parser = ArgumentParser(
         description="검증된 관련 엔티티를 최종 identity CSV로 승격"
     )

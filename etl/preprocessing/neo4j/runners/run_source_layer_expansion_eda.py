@@ -1,14 +1,13 @@
 from __future__ import annotations
 
+import _bootstrap
+
 from argparse import ArgumentParser, Namespace
 from datetime import datetime, timezone
 from json import dump, dumps
 from pathlib import Path
-import sys
 
 import pandas as pd
-
-sys.path.append(str(Path(__file__).resolve().parent))
 
 from choice_relation.source_layer_expansion_eda import (
     build_source_layer_expansion_tables,
@@ -18,7 +17,7 @@ from choice_relation.source_layer_expansion_eda import (
 
 def parse_arguments() -> Namespace:
     """소스 레이어 확장 안전성 EDA 실행 인자를 읽는다."""
-    neo4j_root = Path(__file__).resolve().parent
+    neo4j_root = Path(__file__).resolve().parent.parent
     parser = ArgumentParser(
         description=(
             "미해결 공식 소스 endpoint를 사실로 승격하지 않고 "

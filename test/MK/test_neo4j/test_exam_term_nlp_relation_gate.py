@@ -15,7 +15,7 @@ sys.path.append(
     )
 )
 
-from run_exam_term_nlp_relation_gate import (
+from runners.run_exam_term_nlp_relation_gate import (
     evaluate_gate_evidence,
 )
 

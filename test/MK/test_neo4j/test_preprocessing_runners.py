@@ -14,18 +14,18 @@ class PreprocessingRunnerTest(unittest.TestCase):
         sys.path.insert(0, str(cls.neo4j_root))
 
         from common import load_pipeline_policy
-        from run_neo4j_preprocessing import (
+        from runners.run_neo4j_preprocessing import (
             resolve_pipeline_paths,
             resolve_stage_output_paths,
         )
-        from finalize_related_entities import (
+        from runners.finalize_related_entities import (
             resolve_related_finalization_paths,
             run_related_entity_finalization,
         )
-        from import_and_evaluate_goldset import (
+        from runners.import_and_evaluate_goldset import (
             resolve_goldset_evaluation_paths,
         )
-        from run_preprocessing_test import (
+        from runners.run_preprocessing_test import (
             resolve_shared_thesaurus_path,
             resolve_test_output_directory,
         )

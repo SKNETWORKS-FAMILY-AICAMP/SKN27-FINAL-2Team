@@ -1,9 +1,11 @@
+import _bootstrap
+
 import sys
 from argparse import ArgumentParser
 from json import dump
 from pathlib import Path
 
-sys.path.append(str(Path(__file__).resolve().parent / "terms"))
+sys.path.append(str(Path(__file__).resolve().parent.parent / "terms"))
 
 from common import load_pipeline_policy
 from entity_resolution.build_resolution_package import (
@@ -40,8 +42,8 @@ def resolve_pipeline_paths(
     itkc_events_csv_path: str = "",
 ) -> dict[str, str]:
     """명시된 경로를 우선하고 비어 있는 입력만 프로젝트 기본 경로로 채운다."""
-    project_root = Path(__file__).resolve().parents[3]
-    neo4j_root = Path(__file__).resolve().parent
+    project_root = Path(__file__).resolve().parents[4]
+    neo4j_root = Path(__file__).resolve().parent.parent
     resolved_exam_path = exam_json_path
     if not resolved_exam_path:
         resolved_exam_path = str(project_root / "ai" / "ml" / "ML_han_v1.json")
@@ -193,7 +195,7 @@ def run_preprocessing_pipeline(
     resolved_policy_path = Path(policy_path)
     if not policy_path:
         resolved_policy_path = (
-            Path(__file__).resolve().parent
+            Path(__file__).resolve().parent.parent
             / "config"
             / "resolution_policy.json"
         )
@@ -501,7 +503,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--policy",
         default=str(
-            Path(__file__).resolve().parent
+            Path(__file__).resolve().parent.parent
             / "config"
             / "resolution_policy.json"
         ),

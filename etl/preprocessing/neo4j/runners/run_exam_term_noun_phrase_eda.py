@@ -1,19 +1,18 @@
 from __future__ import annotations
 
+import _bootstrap
+
 from argparse import ArgumentParser, Namespace
 from datetime import datetime, timezone
 from json import dump, dumps, load
 from pathlib import Path
-import sys
 from typing import Iterator
 
 from kiwipiepy import Kiwi
 import pandas as pd
 
-sys.path.append(str(Path(__file__).resolve().parent))
-
-from choice_relation.exam_term_nlp_relations import (
-    build_exam_term_nlp_relation_tables,
+from choice_relation.exam_term_noun_phrases import (
+    build_noun_phrase_eda_tables,
 )
 from choice_relation.exam_term_raw_relations import (
     build_exam_endpoint_groups,
@@ -25,22 +24,15 @@ from choice_relation.exam_term_raw_relations import (
 
 
 def parse_arguments() -> Namespace:
-    """NLP 관계 후보 실행 인자를 읽는다."""
-    neo4j_root = Path(__file__).resolve().parent
+    """기출 용어 포함 문장의 NLP 명사구 EDA 실행 인자를 읽는다."""
+    neo4j_root = Path(__file__).resolve().parent.parent
     project_root = neo4j_root.parents[2]
     parser = ArgumentParser(
         description=(
-            "등록 기출 용어와 같은 절의 Kiwi 명사구를 관계 "
-            "후보로 연결합니다. LLM 호출과 적재는 하지 않습니다."
+            "기출 용어가 언급된 공식 원문에서 Kiwi로 명사구를 "
+            "수집합니다. 관계 생성, LLM 호출, Neo4j 적재는 "
+            "수행하지 않습니다."
         )
-    )
-    parser.add_argument(
-        "--nlp-config",
-        default=str(
-            neo4j_root
-            / "config"
-            / "exam_term_nlp_relations.json"
-        ),
     )
     parser.add_argument(
         "--noun-config",
@@ -133,7 +125,9 @@ def parse_arguments() -> Namespace:
     parser.add_argument(
         "--output-dir",
         default=str(
-            neo4j_root / "output" / "exam_term_nlp_relations"
+            neo4j_root
+            / "output"
+            / "exam_term_noun_phrase_eda"
         ),
     )
     parser.add_argument(
@@ -146,21 +140,13 @@ def parse_arguments() -> Namespace:
         type=int,
         default=None,
     )
-    parser.add_argument(
-        "--additional-predicates-only",
-        action="store_true",
-        help=(
-            "기존 결과에 추가할 신규 술어만 추출합니다. "
-            "LLM 호출과 Neo4j 적재는 하지 않습니다."
-        ),
-    )
     return parser.parse_args()
 
 
-def run_exam_term_nlp_relations(
+def run_exam_term_noun_phrase_eda(
     cli_args: Namespace,
 ) -> dict[str, object]:
-    """NLP 관계 후보를 생성하고 격리된 CSV로 저장한다."""
+    """공식 원문 NLP 명사구 EDA를 실행하고 격리 결과를 저장한다."""
     policy = load_exam_term_raw_relation_policy(
         cli_args.eda_config,
         cli_args.relation_config,
@@ -173,47 +159,6 @@ def run_exam_term_nlp_relations(
         encoding="utf-8",
     ) as input_file:
         noun_policy = load(input_file)
-    with open(
-        cli_args.nlp_config,
-        "r",
-        encoding="utf-8",
-    ) as input_file:
-        nlp_policy = load(input_file)
-    additional_trigger_rules = [
-        dict(rule)
-        for rule in nlp_policy[
-            "additional_relationship_trigger_rules"
-        ]
-    ]
-    configured_trigger_rules: list[dict[str, object]] = []
-    if cli_args.additional_predicates_only:
-        configured_trigger_rules = additional_trigger_rules
-    elif not cli_args.additional_predicates_only:
-        patterns_by_family: dict[str, list[str]] = {}
-        for rule in policy["exam_relation_candidates"][
-            "relationship_trigger_rules"
-        ]:
-            family = str(rule["predicate_family"])
-            patterns_by_family[family] = [
-                str(value) for value in rule["patterns"]
-            ]
-        for rule in additional_trigger_rules:
-            family = str(rule["predicate_family"])
-            patterns = patterns_by_family.setdefault(family, [])
-            for value in rule["patterns"]:
-                pattern = str(value)
-                if pattern not in patterns:
-                    patterns.append(pattern)
-        configured_trigger_rules = [
-            {
-                "predicate_family": family,
-                "patterns": patterns,
-            }
-            for family, patterns in patterns_by_family.items()
-        ]
-    policy["exam_relation_candidates"][
-        "relationship_trigger_rules"
-    ] = configured_trigger_rules
     configured_datasets = {
         str(dataset["name"]): dataset
         for dataset in policy["exam_term_raw_relation_eda"][
@@ -290,13 +235,12 @@ def run_exam_term_nlp_relations(
                 cli_args.document_limit_per_dataset,
             )
 
-    tables, statistics = build_exam_term_nlp_relation_tables(
+    tables, statistics = build_noun_phrase_eda_tables(
         iter_selected_documents(),
         exam_groups,
         target_groups,
         policy,
         noun_policy,
-        nlp_policy,
         Kiwi(),
     )
     statistics.update(exam_statistics)
@@ -307,29 +251,22 @@ def run_exam_term_nlp_relations(
     for table_name, table in tables.items():
         output_path = (
             output_directory
-            / str(nlp_policy["outputs"][table_name])
+            / str(noun_policy["outputs"][table_name])
         )
         table.to_csv(output_path, index=False, encoding="utf-8-sig")
         output_paths[table_name] = str(output_path)
     manifest = {
         "status": "COMPLETED",
-        "stage": "EXAM_TERM_NLP_RELATION_CANDIDATES",
+        "stage": "EXAM_TERM_NOUN_PHRASE_EDA",
         "generated_at": datetime.now(timezone.utc).isoformat(),
-        "policy_version": str(nlp_policy["policy_version"]),
+        "policy_version": str(noun_policy["policy_version"]),
         "selected_datasets": [
             str(dataset["name"]) for dataset in selected_datasets
         ],
         "document_limit_per_dataset": (
             cli_args.document_limit_per_dataset
         ),
-        "additional_predicates_only": bool(
-            cli_args.additional_predicates_only
-        ),
-        "minimum_registered_endpoint_count_per_relation": int(
-            nlp_policy[
-                "minimum_registered_endpoint_count_per_relation"
-            ]
-        ),
+        "relation_generation": False,
         "llm_used": False,
         "neo4j_load": False,
         "statistics": statistics,
@@ -337,7 +274,7 @@ def run_exam_term_nlp_relations(
     }
     manifest_path = (
         output_directory
-        / str(nlp_policy["outputs"]["manifest"])
+        / str(noun_policy["outputs"]["manifest"])
     )
     with manifest_path.open(
         "w",
@@ -349,8 +286,8 @@ def run_exam_term_nlp_relations(
 
 
 def main() -> None:
-    """CLI 실행 결과를 출력한다."""
-    result = run_exam_term_nlp_relations(parse_arguments())
+    """CLI 실행 결과를 JSON으로 출력한다."""
+    result = run_exam_term_noun_phrase_eda(parse_arguments())
     print(dumps(result, ensure_ascii=False, indent=2))
 
 

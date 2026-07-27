@@ -1,0 +1,115 @@
+{
+  "policy_version": "fact-graph-pipeline-v2.2",
+  "trusted_candidate_tiers": [
+    "STRUCTURED_SOURCE_ASSERTED",
+    "CANONICAL_FACT_ASSERTED",
+    "NLP_CORROBORATED_STABLE"
+  ],
+  "reviewed_candidate_tiers": [
+    "NLP_STRICT",
+    "NLP_ENDPOINT_TYPE_REVIEW"
+  ],
+  "auto_accepted_candidate_tiers": [
+    "NLP_CORROBORATED_STABLE"
+  ],
+  "review_routing": {
+    "stable_node_kinds": [
+      "CANONICAL",
+      "OFFICIAL_SOURCE"
+    ],
+    "unresolved_node_kinds": [
+      "OPEN_ENTITY_CANDIDATE",
+      "EXAM_TERM_CANDIDATE"
+    ],
+    "endpoint_priority_minimum_relation_count": 10,
+    "endpoint_priority_verification_statuses": [
+      "GATE_PASSED_CORROBORATED"
+    ],
+    "deferred_relation_reason": "ENDPOINT_RESOLUTION_REQUIRED"
+  },
+  "trust_policy": {
+    "verified_status": "VERIFIED",
+    "reviewed_status": "REVIEWED",
+    "provisional_status": "PROVISIONAL",
+    "default_retrieval_statuses": [
+      "VERIFIED",
+      "REVIEWED"
+    ]
+  },
+  "node_kind_precedence": [
+    "CANONICAL",
+    "SOURCE_RECORD",
+    "OFFICIAL_SOURCE",
+    "EXAM_TERM_CANDIDATE",
+    "OPEN_ENTITY_CANDIDATE"
+  ],
+  "entity_review_decisions": {
+    "keep": "KEEP_AS_IS",
+    "merge": "MERGE_INTO",
+    "link": "LINK_TO_EXISTING",
+    "exclude": "EXCLUDE"
+  },
+  "relation_review_decisions": {
+    "approve": "APPROVE",
+    "reject": "REJECT"
+  },
+  "mapping_review_statuses": {
+    "normal": "NOT_REQUIRED",
+    "self_relation": "SELF_RELATION_REVIEW_REQUIRED"
+  },
+  "evidence_policy": {
+    "require_evidence_ids": true,
+    "require_complete_metadata": true,
+    "missing_evidence_action": "EXCLUDE"
+  },
+  "eda_outputs": {
+    "entity_review": "entity_resolution_human_review.csv",
+    "relation_review": "nlp_relation_human_review.csv",
+    "deferred_relations": "deferred_relation_candidates.csv",
+    "summary": "fact_graph_eda_summary.csv",
+    "manifest": "manifest.json"
+  },
+  "load_outputs": {
+    "nodes": "fact_graph_nodes.csv",
+    "facts": "fact_graph_facts.csv",
+    "evidence": "fact_graph_evidence.csv",
+    "relationships": "fact_graph_relationships.csv",
+    "mapping_review": "relationship_mapping_human_review.csv",
+    "exclusions": "fact_graph_load_exclusions.csv",
+    "manifest": "load_plan_manifest.json"
+  },
+  "neo4j": {
+    "uri_environment_variable": "FACT_NEO4J_URI",
+    "default_uri": "bolt://localhost:7688",
+    "username_environment_variable": "FACT_NEO4J_USER",
+    "default_username": "neo4j",
+    "password_environment_variable": "FACT_NEO4J_PASSWORD",
+    "password_fallback_environment_variable": "NEO4J_PASSWORD",
+    "database_environment_variable": "FACT_NEO4J_DATABASE",
+    "default_database": "neo4j",
+    "batch_size": 1000,
+    "schema": {
+      "entity_base_label": "GraphEntity",
+      "fact_label": "Fact",
+      "evidence_label": "EvidenceSpan",
+      "constraint_names": {
+        "entity": "fact_graph_entity_node_id_unique",
+        "fact": "fact_graph_fact_id_unique",
+        "evidence": "fact_graph_evidence_id_unique"
+      },
+      "node_kind_labels": {
+        "CANONICAL": "CanonicalEntity",
+        "SOURCE_RECORD": "SourceRecord",
+        "OFFICIAL_SOURCE": "SourceRecord",
+        "EXAM_TERM_CANDIDATE": "ExamTerm",
+        "OPEN_ENTITY_CANDIDATE": "OpenEntityCandidate"
+      },
+      "relationship_types": {
+        "subject": "SUBJECT",
+        "object": "OBJECT",
+        "supported_by": "SUPPORTED_BY",
+        "from_source": "FROM_SOURCE"
+      }
+    }
+  }
+}

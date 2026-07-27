@@ -1,0 +1,33 @@
+services:
+  fact-neo4j:
+    image: neo4j:5.26.28-community
+    container_name: skn27-fact-neo4j
+    restart: unless-stopped
+    environment:
+      NEO4J_AUTH: ${FACT_NEO4J_USER:-neo4j}/${FACT_NEO4J_PASSWORD:-${NEO4J_PASSWORD}}
+      NEO4J_server_memory_heap_initial__size: ${FACT_NEO4J_HEAP_INITIAL:-512m}
+      NEO4J_server_memory_heap_max__size: ${FACT_NEO4J_HEAP_MAX:-1G}
+      NEO4J_server_memory_pagecache_size: ${FACT_NEO4J_PAGECACHE:-512m}
+      NEO4J_dbms_memory_transaction_total_max: ${FACT_NEO4J_TX_MEMORY_MAX:-512m}
+      TZ: Asia/Seoul
+    ports:
+      - "${FACT_NEO4J_HTTP_PORT:-7475}:7474"
+      - "${FACT_NEO4J_BOLT_PORT:-7688}:7687"
+    volumes:
+      - fact_neo4j_data:/data
+      - fact_neo4j_logs:/logs
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "auth=\"$${NEO4J_AUTH}\"; user=\"$${auth%%/*}\"; pass=\"$${auth#*/}\"; cypher-shell -u \"$${user}\" -p \"$${pass}\" 'RETURN 1'",
+        ]
+      interval: 15s
+      timeout: 10s
+      retries: 8
+
+volumes:
+  fact_neo4j_data:
+    name: skn27-fact-neo4j-data
+  fact_neo4j_logs:
+    name: skn27-fact-neo4j-logs

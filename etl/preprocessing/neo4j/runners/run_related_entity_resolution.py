@@ -1,3 +1,5 @@
+import _bootstrap
+
 import sys
 from argparse import ArgumentParser
 from datetime import datetime, timezone
@@ -6,7 +8,7 @@ from pathlib import Path
 
 import pandas as pd
 
-sys.path.append(str(Path(__file__).resolve().parent / "terms"))
+sys.path.append(str(Path(__file__).resolve().parent.parent / "terms"))
 
 from common import load_pipeline_policy
 from entity_resolution.build_resolution_package import (
@@ -46,7 +48,7 @@ def resolve_related_entity_paths(
     policy: dict,
 ) -> dict[str, Path]:
     """명시 경로를 우선하고 관련 엔티티 정책의 기본 경로를 적용한다."""
-    neo4j_root = Path(__file__).resolve().parent
+    neo4j_root = Path(__file__).resolve().parent.parent
     related_policy = policy["entity_resolution"][
         "related_entity_resolution"
     ]
@@ -225,7 +227,7 @@ def run_related_entity_review(
     """관련 엔티티 후보 생성부터 LLM 판정과 검증 게이트까지 실행한다."""
     policy = load_pipeline_policy(policy_path)
     paths = resolve_related_entity_paths(queue_path, output_dir, policy)
-    neo4j_root = Path(__file__).resolve().parent
+    neo4j_root = Path(__file__).resolve().parent.parent
     workflow_policy = policy["entity_resolution"]["semantic_review"][
         "gold_set"
     ]["workflow"]
@@ -411,7 +413,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--policy",
         default=str(
-            Path(__file__).resolve().parent
+            Path(__file__).resolve().parent.parent
             / "config"
             / "resolution_policy.json"
         ),
