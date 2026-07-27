@@ -76,6 +76,9 @@ class GoldSetImportTest(unittest.TestCase):
         alternative_key: str = "",
         display_name: str = "",
         entity_type: str = "",
+        related_entity_key: str = "",
+        related_display_name: str = "",
+        related_entity_type: str = "",
     ) -> dict[str, str]:
         return {
             "gold_case_order": "1",
@@ -91,9 +94,10 @@ class GoldSetImportTest(unittest.TestCase):
             "gold_alternative_key": alternative_key,
             "gold_display_name": display_name,
             "gold_entity_type": entity_type,
+            "gold_related_entity_key": related_entity_key,
+            "gold_related_display_name": related_display_name,
+            "gold_related_entity_type": related_entity_type,
             "gold_reason": f"후보 {candidate_number} 판정 근거",
-            "reviewer": "reviewer-1",
-            "candidate_review_status": "COMPLETE",
         }
 
     def make_valid_candidate_rows(self) -> list[dict[str, str]]:
@@ -109,8 +113,6 @@ class GoldSetImportTest(unittest.TestCase):
                 2,
                 "IDENTITY_MEMBER",
                 "ALT_001",
-                "검수용어(첫 번째)",
-                "Person",
             ),
             self.make_candidate_row(
                 3,
@@ -119,7 +121,13 @@ class GoldSetImportTest(unittest.TestCase):
                 "검수용어(두 번째)",
                 "Person",
             ),
-            self.make_candidate_row(4, "EVIDENCE_ONLY"),
+            self.make_candidate_row(
+                4,
+                "EVIDENCE_ONLY",
+                related_entity_key="REL_001",
+                related_display_name="관련 인물",
+                related_entity_type="Person",
+            ),
         ]
 
     def test_valid_multiple_alternatives_are_preserved(self):
@@ -144,11 +152,41 @@ class GoldSetImportTest(unittest.TestCase):
             decision["evidence_only_sources"][0]["source_candidate_id"],
             "candidate-4",
         )
+        self.assertEqual(
+            decision["proposed_related_entities"],
+            [
+                {
+                    "related_entity_key": "REL_001",
+                    "display_name": "관련 인물",
+                    "entity_type": "Person",
+                    "evidence_source_candidate_ids": ["candidate-4"],
+                    "reason": "후보 4 판정 근거",
+                }
+            ],
+        )
+        self.assertEqual(
+            outputs["gold_case_outcomes"].iloc[0]["related_entity_count"],
+            1,
+        )
+        related_tasks = outputs["related_entity_tasks"]
+        self.assertEqual(len(related_tasks), 1)
+        self.assertEqual(
+            related_tasks[0]["canonical_term"],
+            "관련 인물",
+        )
+        self.assertEqual(
+            related_tasks[0]["seed_source_candidate_ids"],
+            ["candidate-4"],
+        )
         self.assertEqual(decision["review_model"], "human_gold_adjudication")
 
-    def test_incomplete_candidate_blocks_case_export(self):
+    def test_blank_candidate_role_is_implicitly_rejected(self):
         candidate_rows = self.make_valid_candidate_rows()
-        candidate_rows[0]["candidate_review_status"] = "IN_PROGRESS"
+        candidate_rows[3]["gold_candidate_role"] = ""
+        candidate_rows[3]["gold_reason"] = ""
+        candidate_rows[3]["gold_related_entity_key"] = ""
+        candidate_rows[3]["gold_related_display_name"] = ""
+        candidate_rows[3]["gold_related_entity_type"] = ""
 
         outputs = self.import_gold_annotations(
             [self.make_case_row()],
@@ -157,11 +195,39 @@ class GoldSetImportTest(unittest.TestCase):
             self.policy,
         )
 
-        self.assertFalse(outputs["validation_errors"].empty)
+        self.assertTrue(outputs["validation_errors"].empty)
+        self.assertEqual(
+            outputs["gold_decisions"][0]["rejected_sources"][0][
+                "source_candidate_id"
+            ],
+            "candidate-4",
+        )
+
+    def test_incomplete_case_does_not_require_candidate_annotations(self):
+        case_row = self.make_case_row()
+        case_row["case_review_status"] = "IN_PROGRESS"
+        candidate_rows = self.make_valid_candidate_rows()
+        for candidate_row in candidate_rows:
+            candidate_row["gold_candidate_role"] = ""
+            candidate_row["gold_alternative_key"] = ""
+            candidate_row["gold_display_name"] = ""
+            candidate_row["gold_entity_type"] = ""
+            candidate_row["gold_related_entity_key"] = ""
+            candidate_row["gold_related_display_name"] = ""
+            candidate_row["gold_related_entity_type"] = ""
+            candidate_row["gold_reason"] = ""
+
+        outputs = self.import_gold_annotations(
+            [case_row],
+            candidate_rows,
+            [self.make_task()],
+            self.policy,
+        )
+
         self.assertEqual(outputs["gold_decisions"], [])
-        self.assertIn(
-            "CANDIDATE_REVIEW_NOT_COMPLETE",
+        self.assertEqual(
             set(outputs["validation_errors"]["error_code"]),
+            {"CASE_REVIEW_NOT_COMPLETE"},
         )
 
     def test_inconsistent_alternative_metadata_blocks_case_export(self):
@@ -178,6 +244,23 @@ class GoldSetImportTest(unittest.TestCase):
         self.assertEqual(outputs["gold_decisions"], [])
         self.assertIn(
             "INCONSISTENT_ALTERNATIVE_DISPLAY_NAME",
+            set(outputs["validation_errors"]["error_code"]),
+        )
+
+    def test_evidence_only_rejects_identity_alternative_fields(self):
+        candidate_rows = self.make_valid_candidate_rows()
+        candidate_rows[3]["gold_alternative_key"] = "ALT_003"
+
+        outputs = self.import_gold_annotations(
+            [self.make_case_row()],
+            candidate_rows,
+            [self.make_task()],
+            self.policy,
+        )
+
+        self.assertEqual(outputs["gold_decisions"], [])
+        self.assertIn(
+            "NON_IDENTITY_ALTERNATIVE_FIELDS_PRESENT",
             set(outputs["validation_errors"]["error_code"]),
         )
 

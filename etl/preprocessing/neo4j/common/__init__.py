@@ -11,14 +11,38 @@ if TYPE_CHECKING:
     from langchain_openai import ChatOpenAI
 
 
-def load_pipeline_policy(policy_path: str) -> dict:
-    """버전이 명시된 전처리·판별 정책 JSON을 읽고 필수 구성을 검증한다."""
-    path = Path(policy_path)
+def merge_policy_sections(base: dict, addition: dict) -> dict:
+    """분리된 정책 파일의 중첩 section을 충돌 없이 합친다."""
+    merged = dict(base)
+    for key, value in addition.items():
+        existing = merged.get(key)
+        if isinstance(existing, dict) and isinstance(value, dict):
+            merged[key] = merge_policy_sections(existing, value)
+        elif key in merged:
+            raise ValueError(f"정책 설정이 중복 정의되었습니다: {key}")
+        elif key not in merged:
+            merged[key] = value
+    return merged
+
+
+def load_policy_file(path: Path) -> dict:
+    """UTF-8 JSON 정책 파일 하나를 읽는다."""
     if not path.is_file():
         raise FileNotFoundError(f"판별 정책 파일을 찾을 수 없습니다: {path}")
-
     with path.open("r", encoding="utf-8") as policy_file:
-        policy = load(policy_file)
+        return load(policy_file)
+
+
+def load_pipeline_policy(policy_path: str) -> dict:
+    """분리된 전처리·판별 정책을 합치고 필수 구성을 검증한다."""
+    path = Path(policy_path)
+    entry_policy = load_policy_file(path)
+    include_files = entry_policy.pop("include_files", [])
+    policy: dict = {}
+    for include_file in include_files:
+        include_path = path.parent / str(include_file)
+        policy = merge_policy_sections(policy, load_policy_file(include_path))
+    policy = merge_policy_sections(policy, entry_policy)
 
     required_sections = {
         "policy_version",
@@ -28,6 +52,7 @@ def load_pipeline_policy(policy_path: str) -> dict:
         "output_layout",
         "candidate_retrieval",
         "definition_scan",
+        "body_mention_scan",
         "entity_resolution",
         "coverage",
         "noise",

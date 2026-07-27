@@ -42,7 +42,11 @@ class FinalizeEntityResolutionTest(unittest.TestCase):
                 "source_key": "E1",
                 "source_release": "release",
                 "source_metadata_json": json.dumps(
-                    {"headword": "이순신"},
+                    {
+                        "headword": "이순신",
+                        "era": "조선/조선 후기",
+                        "primary_type": "인물/전통 인물",
+                    },
                     ensure_ascii=False,
                 ),
             },
@@ -53,7 +57,11 @@ class FinalizeEntityResolutionTest(unittest.TestCase):
                 "source_key": "T1",
                 "source_release": "release",
                 "source_metadata_json": json.dumps(
-                    {"term_name": "이순신"},
+                    {
+                        "term_name": "이순신",
+                        "era": "조선",
+                        "thesaurus_category": "국방·군사>장군",
+                    },
                     ensure_ascii=False,
                 ),
             },
@@ -82,6 +90,7 @@ class FinalizeEntityResolutionTest(unittest.TestCase):
                     {
                         "resolution_case_id": "case-1",
                         "canonical_term": "이순신",
+                        "category": "인물",
                         "term_variants_json": json.dumps(
                             ["이순신", "충무공 이순신"],
                             ensure_ascii=False,
@@ -177,6 +186,40 @@ class FinalizeEntityResolutionTest(unittest.TestCase):
         self.assertEqual(set(resolutions["match_status"]), {"ACCEPTED"})
         self.assertEqual(final_assignments.iloc[0]["link_status"], "ACCEPTED")
         self.assertEqual(len(outputs["entity_name_nodes"]), 2)
+        self.assertEqual(len(outputs["exam_term_nodes"]), 1)
+        self.assertEqual(len(outputs["exam_term_references"]), 1)
+        self.assertEqual(len(outputs["topic_nodes"]), 10)
+        self.assertEqual(len(outputs["era_nodes"]), 10)
+        self.assertEqual(
+            set(outputs["canonical_topic_relationships"]["topic_id"]),
+            {"topic:person", "topic:military"},
+        )
+        self.assertEqual(
+            set(outputs["canonical_era_relationships"]["era_id"]),
+            {"era:joseon"},
+        )
+        self.assertTrue(outputs["canonical_classification_review"].empty)
+
+        preselected_outputs = self.finalize(
+            resolution_tables,
+            term_tables,
+            assignments.iloc[0:0],
+            self.load_registry(""),
+            self.policy,
+            uuid_factory=lambda: "uuid-preselected",
+            timestamp="2026-07-21T00:00:00+00:00",
+            preselected_alternative_methods={
+                "alternative-1": "verified_related_entity_seed"
+            },
+        )
+        self.assertEqual(len(preselected_outputs["canonical_registry"]), 1)
+        self.assertTrue(
+            preselected_outputs["final_problem_assignments"].empty
+        )
+        self.assertEqual(
+            set(preselected_outputs["entity_name_references"]["method"]),
+            {"verified_related_entity_seed"},
+        )
 
     def test_evidence_only_source_does_not_resolve_to_canonical(self):
         resolution_tables, term_tables, assignments = self.build_fixture()
@@ -196,7 +239,7 @@ class FinalizeEntityResolutionTest(unittest.TestCase):
             set(outputs["source_record_resolutions"]["source_record_id"]),
         )
 
-    def test_single_source_alternative_remains_in_review_queue(self):
+    def test_single_source_alternative_creates_source_backed_identity(self):
         resolution_tables, term_tables, assignments = self.build_fixture(
             member_candidate_ids=["candidate-aks"]
         )
@@ -207,16 +250,107 @@ class FinalizeEntityResolutionTest(unittest.TestCase):
             assignments,
             self.load_registry(""),
             self.policy,
-            uuid_factory=lambda: "unused",
+            uuid_factory=lambda: "uuid-single",
             timestamp="2026-07-21T00:00:00+00:00",
         )
 
-        self.assertTrue(outputs["canonical_registry"].empty)
-        self.assertEqual(len(outputs["canonical_acceptance_review_queue"]), 1)
+        self.assertEqual(len(outputs["canonical_registry"]), 1)
+        self.assertEqual(
+            outputs["canonical_registry"].iloc[0]["identity_confidence"],
+            "SOURCE_BACKED",
+        )
+        self.assertTrue(
+            outputs["canonical_acceptance_review_queue"].empty
+        )
+        self.assertEqual(len(outputs["exam_term_nodes"]), 1)
+        self.assertEqual(
+            outputs["exam_term_nodes"].iloc[0]["source_link_status"],
+            "ACCEPTED",
+        )
+        self.assertEqual(len(outputs["exam_term_references"]), 1)
         self.assertEqual(
             outputs["final_problem_assignments"].iloc[0]["link_status"],
-            "AMBIGUOUS",
+            "ACCEPTED",
         )
+
+        manually_approved_outputs = self.finalize(
+            resolution_tables,
+            term_tables,
+            assignments.iloc[0:0],
+            self.load_registry(""),
+            self.policy,
+            uuid_factory=lambda: "uuid-manual",
+            timestamp="2026-07-21T00:00:00+00:00",
+            preselected_alternative_methods={
+                "alternative-1": "verified_related_entity_seed"
+            },
+            manually_approved_alternative_ids={"alternative-1"},
+        )
+        self.assertEqual(
+            len(manually_approved_outputs["canonical_registry"]),
+            1,
+        )
+        self.assertTrue(
+            manually_approved_outputs[
+                "canonical_acceptance_review_queue"
+            ].empty
+        )
+
+    def test_duplicate_records_from_one_source_are_not_corroborated(self):
+        resolution_tables, term_tables, assignments = self.build_fixture()
+        candidates = resolution_tables["source_record_candidates"]
+        duplicate_mask = (
+            candidates["source_candidate_id"] == "candidate-thesaurus"
+        )
+        candidates.loc[duplicate_mask, "source"] = "AKS"
+        candidates.loc[
+            duplicate_mask,
+            "source_record_id",
+        ] = "AKS:ARTICLE:E2:release"
+        term_tables["reviewed_canonical_alternatives"].loc[
+            0,
+            "identity_member_source_ids_json",
+        ] = json.dumps(
+            [
+                "AKS:ARTICLE:E1:release",
+                "AKS:ARTICLE:E2:release",
+            ]
+        )
+
+        outputs = self.finalize(
+            resolution_tables,
+            term_tables,
+            assignments,
+            self.load_registry(""),
+            self.policy,
+            uuid_factory=lambda: "uuid-duplicate",
+            timestamp="2026-07-21T00:00:00+00:00",
+        )
+
+        registry = outputs["canonical_registry"].iloc[0]
+        self.assertEqual(registry["identity_confidence"], "SOURCE_BACKED")
+        self.assertEqual(registry["source_support_count"], "2")
+
+    def test_unselected_candidate_can_exist_without_term_link(self):
+        resolution_tables, term_tables, assignments = self.build_fixture(
+            member_candidate_ids=["candidate-aks"]
+        )
+
+        outputs = self.finalize(
+            resolution_tables,
+            term_tables,
+            assignments.iloc[0:0],
+            self.load_registry(""),
+            self.policy,
+            uuid_factory=lambda: "uuid-candidate",
+            timestamp="2026-07-21T00:00:00+00:00",
+            register_all_verified_candidates=True,
+        )
+
+        self.assertEqual(len(outputs["canonical_registry"]), 1)
+        self.assertTrue(outputs["exam_term_references"].empty)
+        self.assertTrue(outputs["entity_name_references"].empty)
+        self.assertTrue(outputs["final_problem_assignments"].empty)
 
     def test_registry_id_is_reused_when_one_source_record_persists(self):
         resolution_tables, term_tables, assignments = self.build_fixture()

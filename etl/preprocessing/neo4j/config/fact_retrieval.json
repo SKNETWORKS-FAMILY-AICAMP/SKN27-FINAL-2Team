@@ -1,0 +1,129 @@
+{
+  "policy_version": "fact-retrieval-v1.1",
+  "identifier": {
+    "hash_algorithm": "sha256",
+    "digest_length": 20,
+    "anchor_prefix": "EA-",
+    "anchor_fact_prefix": "AF-",
+    "canonical_link_prefix": "EAC-",
+    "source_link_prefix": "EAS-",
+    "swap_candidate_prefix": "SC-",
+    "truth_gate_prefix": "TG-",
+    "external_task_prefix": "EVT-"
+  },
+  "anchor_projection": {
+    "accepted_match_status": "ACCEPTED",
+    "included_source_relation_types": [
+      "SOCIAL_ASSOCIATE",
+      "HAS_TEACHER",
+      "HAS_STUDENT",
+      "HAS_FATHER",
+      "HAS_BIOLOGICAL_FATHER",
+      "HAS_MOTHER",
+      "HAS_BIOLOGICAL_MOTHER",
+      "HAS_GRANDFATHER",
+      "HAS_GREAT_GRANDFATHER",
+      "SIBLING_OF",
+      "HAS_CHILD",
+      "HAS_FATHER_IN_LAW",
+      "HAS_SON_IN_LAW",
+      "SPOUSE_OF",
+      "HAS_BIOLOGICAL_CHILD",
+      "INVOLVES_PERSON"
+    ],
+    "symmetric_relation_types": [
+      "SOCIAL_ASSOCIATE",
+      "SIBLING_OF",
+      "SPOUSE_OF"
+    ],
+    "source_record_type_to_entity_type": {
+      "PERSON": "Person",
+      "EVENT": "Event",
+      "TERM": "Concept"
+    },
+    "canonical_anchor_kind": "CANONICAL",
+    "source_anchor_kind": "OFFICIAL_SOURCE",
+    "resolved_status": "RESOLVED",
+    "unresolved_status": "UNRESOLVED_OFFICIAL_SOURCE",
+    "canonical_fact_scope": "CANONICAL_FACT",
+    "one_hop_scope": "OFFICIAL_ONE_HOP",
+    "canonical_search_status": "PRIMARY",
+    "source_neighbor_search_status": "FALLBACK"
+  },
+  "retrieval": {
+    "maximum_graph_hops": 4,
+    "maximum_candidates": 10,
+    "require_same_entity_type": true,
+    "require_same_relation_role": true,
+    "require_graph_path": true,
+    "minimum_signal_count": 2,
+    "exclude_same_normalized_name": true,
+    "require_shared_era_or_maximum_graph_distance": 2,
+    "require_exam_term_correct_fact_endpoints": true,
+    "require_exam_term_candidate": true,
+    "excluded_fact_relation_types": [
+      "ASSOCIATED_WITH_POLITY"
+    ],
+    "excluded_graph_path_relation_types": [
+      "ASSOCIATED_WITH_POLITY"
+    ],
+    "maximum_fallback_graph_edges": 2,
+    "weights": {
+      "same_relation_role": 5.0,
+      "shared_topic": 2.0,
+      "shared_era": 2.0,
+      "graph_path": 1.0,
+      "fallback_graph_edge_penalty": 1.0
+    }
+  },
+  "truth_gate": {
+    "known_true_status": "BLOCKED_KNOWN_TRUE",
+    "exclusive_contradiction_status": "AUTO_VERIFIED_CONTRADICTION",
+    "external_verification_status": "NEEDS_EXTERNAL_VERIFICATION",
+    "external_decision_statuses": {
+      "TRUE_RELATION": "BLOCKED_EXTERNALLY_VERIFIED_TRUE",
+      "FALSE_RELATION": "EXTERNALLY_VERIFIED_CONTRADICTION",
+      "UNVERIFIABLE": "UNVERIFIABLE"
+    },
+    "unverifiable_decision": "UNVERIFIABLE",
+    "exclusive_object_relation_types": [
+      "HAS_BIOLOGICAL_FATHER",
+      "HAS_MOTHER"
+    ],
+    "inverse_relation_types": {
+      "HAS_TEACHER": "HAS_STUDENT",
+      "HAS_STUDENT": "HAS_TEACHER",
+      "HAS_FATHER": "HAS_CHILD",
+      "HAS_CHILD": "HAS_FATHER",
+      "HAS_BIOLOGICAL_FATHER": "HAS_BIOLOGICAL_CHILD",
+      "HAS_BIOLOGICAL_CHILD": "HAS_BIOLOGICAL_FATHER",
+      "HAS_FATHER_IN_LAW": "HAS_SON_IN_LAW",
+      "HAS_SON_IN_LAW": "HAS_FATHER_IN_LAW"
+    },
+    "trusted_verification_statuses": [
+      "SOURCE_ASSERTED",
+      "PATTERN_ASSERTED"
+    ],
+    "external_task_batch_size": 300
+  },
+  "outputs": {
+    "default_directory": "etl/preprocessing/neo4j/output/fact_retrieval",
+    "anchor_nodes": "entity_anchor_nodes.csv",
+    "supporting_source_nodes": "supporting_source_nodes.csv",
+    "canonical_anchor_links": "canonical_anchor_links.csv",
+    "source_anchor_links": "source_anchor_links.csv",
+    "anchor_fact_relationships": "anchor_fact_relationships.csv",
+    "swap_candidates": "rag_swap_candidates.csv",
+    "truth_gate_results": "distractor_truth_gate_results.csv",
+    "final_truth_gate_results": "distractor_truth_gate_final.csv",
+    "external_verification_tasks": "external_fact_verification_tasks.jsonl",
+    "external_verification_backlog": "external_fact_verification_backlog.jsonl",
+    "manifest": "fact_retrieval_manifest.json",
+    "load_manifest": "fact_retrieval_load_manifest.json"
+  },
+  "neo4j_load": {
+    "import_scope": "fact-retrieval-v1",
+    "batch_size": 500,
+    "prune_stale_rows": true
+  }
+}

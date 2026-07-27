@@ -17,11 +17,11 @@ from prep_json import prep_json
 from prep_thesaurus import build_match_key
 
 
-def index_definition_candidates(definition_results: list[dict]) -> dict:
-    """definition 검색 결과를 용어와 category 복합 키로 인덱싱한다."""
+def index_enrichment_candidates(enrichment_results: list[dict]) -> dict:
+    """AKS 보강 검색 결과를 용어와 category 복합 키로 인덱싱한다."""
     return {
         (item["canonical_term"], item["category"]): item.get("candidates", [])
-        for item in definition_results
+        for item in enrichment_results
     }
 
 
@@ -30,12 +30,23 @@ def merge_normalized_match_items(
     resolution_policy: dict,
 ) -> list[dict]:
     """정규화 이름과 category가 같은 기존 집계 행을 손실 없이 합친다."""
-    merged_by_key: dict[tuple[str, str], dict] = {}
+    merged_by_key: dict[tuple[str, ...], dict] = {}
     candidate_collections = resolution_policy["candidate_collections"]
     for item in match_results:
         term = item["canonical_term"]
         category = item["category"]
-        normalized_key = (build_match_key(term), category)
+        entity_type_proposal = str(
+            item.get("entity_type_proposal") or ""
+        )
+        input_resolution_case_id = str(
+            item.get("input_resolution_case_id") or ""
+        )
+        normalized_key = (
+            build_match_key(term),
+            category,
+            entity_type_proposal,
+            input_resolution_case_id,
+        )
         existing = merged_by_key.get(normalized_key)
         if existing is None:
             stored = dict(item)
@@ -82,9 +93,10 @@ def merge_normalized_match_items(
 def collect_case_candidates(
     match_item: dict,
     definition_index: dict,
+    body_mention_index: dict,
     resolution_policy: dict,
 ) -> list[dict]:
-    """원천별 후보와 AKS definition 후보를 SourceRecord 단위로 합친다."""
+    """이름·definition·body 후보를 SourceRecord 단위로 합친다."""
     candidates_by_source_record: dict[str, dict] = {}
     for collection, channel in resolution_policy["candidate_collections"].items():
         for candidate in match_item.get(collection, []):
@@ -102,6 +114,18 @@ def collect_case_candidates(
                 candidates_by_source_record,
                 candidate,
                 definition_channel,
+            )
+
+    body_mention_channel = resolution_policy[
+        "body_mention_candidate_channel"
+    ]
+    for term_variant in match_item["term_variants"]:
+        body_mention_key = (term_variant, match_item["category"])
+        for candidate in body_mention_index.get(body_mention_key, []):
+            add_candidate(
+                candidates_by_source_record,
+                candidate,
+                body_mention_channel,
             )
 
     candidates = list(candidates_by_source_record.values())
@@ -278,41 +302,67 @@ def build_resolution_tables(
     definition_results: list[dict],
     problem_context_df: pd.DataFrame,
     policy: dict,
+    body_mention_results: list[dict] | None = None,
 ) -> dict[str, pd.DataFrame]:
     """문항별 검증기에 전달할 정규화된 ER staging 테이블을 만든다."""
     resolution_policy = policy["entity_resolution"]
     identifier_policy = resolution_policy["identifier_policy"]
-    definition_index = index_definition_candidates(definition_results)
+    definition_index = index_enrichment_candidates(definition_results)
+    body_mention_index = index_enrichment_candidates(
+        body_mention_results or []
+    )
     merged_match_results = merge_normalized_match_items(
         match_results,
         resolution_policy,
     )
-    context_by_problem = {
-        str(row.problem_id): str(row.full_text)
-        for row in problem_context_df.itertuples()
-    }
+    context_by_problem: dict[str, dict] = {}
+    for context in problem_context_df.to_dict("records"):
+        problem_id = str(context["problem_id"])
+        extraction_text = str(
+            context.get("extraction_text")
+            or context.get("full_text")
+            or ""
+        )
+        context_by_problem[problem_id] = {
+            **context,
+            "extraction_text": extraction_text,
+        }
 
     case_rows: list[dict] = []
     candidate_rows: list[dict] = []
     assignment_rows: list[dict] = []
     review_rows: list[dict] = []
-    referenced_problem_ids: set[str] = set()
 
     for match_item in merged_match_results:
         term = match_item["canonical_term"]
         category = match_item["category"]
         normalized_term = build_match_key(term)
-        entity_type = resolution_policy["entity_type_mapping"].get(category, "")
-        is_category_valid = bool(entity_type)
-
-        case_id = create_stable_id(
-            identifier_policy["resolution_case_prefix"],
-            [normalized_term, category, policy["normalization_policy_version"]],
-            identifier_policy,
+        entity_type = str(match_item.get("entity_type_proposal") or "")
+        if not entity_type:
+            entity_type = resolution_policy["entity_type_mapping"].get(
+                category,
+                "",
+            )
+        allowed_entity_types = set(
+            resolution_policy["entity_type_mapping"].values()
         )
+        is_category_valid = entity_type in allowed_entity_types
+
+        case_id = str(match_item.get("input_resolution_case_id") or "")
+        if not case_id:
+            case_id = create_stable_id(
+                identifier_policy["resolution_case_prefix"],
+                [
+                    normalized_term,
+                    category,
+                    policy["normalization_policy_version"],
+                ],
+                identifier_policy,
+            )
         candidates = collect_case_candidates(
             match_item,
             definition_index,
+            body_mention_index,
             resolution_policy,
         )
         is_noise = bool(match_item.get("is_noise"))
@@ -359,6 +409,14 @@ def build_resolution_tables(
                     "normalization_policy_version"
                 ],
                 "resolution_policy_version": policy["policy_version"],
+                "related_entity_task_id": match_item.get(
+                    "related_entity_task_id",
+                    "",
+                ),
+                "related_entity_origin_json": match_item.get(
+                    "related_entity_origin_json",
+                    "",
+                ),
             }
         )
 
@@ -383,7 +441,6 @@ def build_resolution_tables(
             for row in current_candidate_rows
         ]
         for problem_id in problem_ids:
-            referenced_problem_ids.add(problem_id)
             assignment_id = create_stable_id(
                 identifier_policy["problem_assignment_prefix"],
                 [problem_id, case_id],
@@ -446,13 +503,43 @@ def build_resolution_tables(
             )
 
     context_rows: list[dict] = []
-    for problem_id in sorted(referenced_problem_ids):
-        full_text = context_by_problem.get(problem_id, "")
+    exact_status = policy["text_preprocessing"][
+        "input_text_match_status"
+    ]["exact"]
+    for problem_id in sorted(context_by_problem):
+        context = context_by_problem[problem_id]
+        extraction_text = context["extraction_text"]
+        match_status = str(
+            context.get("input_text_match_status") or exact_status
+        )
+        duplicate_group_id = str(
+            context.get("duplicate_text_group_id") or ""
+        )
+        requires_detail = (
+            match_status != exact_status or bool(duplicate_group_id)
+        )
+        input_text_original = ""
+        reconstructed_stem = ""
+        if requires_detail:
+            input_text_original = str(
+                context.get("input_text_original") or ""
+            )
+            reconstructed_stem = str(
+                context.get("reconstructed_stem") or ""
+            )
         context_rows.append(
             {
                 "problem_id": problem_id,
-                "full_text": full_text,
-                "context_available": bool(full_text),
+                "extraction_text": extraction_text,
+                "input_text_original": input_text_original,
+                "reconstructed_stem": reconstructed_stem,
+                "input_text_match_status": match_status,
+                "duplicate_text_group_id": duplicate_group_id,
+                "text_policy_version": str(
+                    context.get("text_policy_version")
+                    or policy["text_preprocessing"]["version"]
+                ),
+                "context_available": bool(extraction_text),
                 "normalization_policy_version": policy[
                     "normalization_policy_version"
                 ],
@@ -462,9 +549,61 @@ def build_resolution_tables(
     tables = {
         "resolution_cases": pd.DataFrame(case_rows),
         "source_record_candidates": pd.DataFrame(candidate_rows),
-        "problem_contexts": pd.DataFrame(context_rows),
-        "problem_resolution_assignments": pd.DataFrame(assignment_rows),
-        "review_queue": pd.DataFrame(review_rows),
+        "problem_contexts": pd.DataFrame(
+            context_rows,
+            columns=[
+                "problem_id",
+                "extraction_text",
+                "input_text_original",
+                "reconstructed_stem",
+                "input_text_match_status",
+                "duplicate_text_group_id",
+                "text_policy_version",
+                "context_available",
+                "normalization_policy_version",
+            ],
+        ),
+        "problem_resolution_assignments": pd.DataFrame(
+            assignment_rows,
+            columns=[
+                "problem_assignment_id",
+                "problem_id",
+                "resolution_case_id",
+                "canonical_term",
+                "category",
+                "canonical_id",
+                "assignment_status",
+                "resolution_method",
+                "source_candidate_ids_json",
+                "canonical_alternative_ids_json",
+                "selected_canonical_alternative_id",
+                "resolution_policy_version",
+            ],
+        ),
+        "review_queue": pd.DataFrame(
+            review_rows,
+            columns=[
+                "review_queue_id",
+                "problem_assignment_id",
+                "problem_id",
+                "resolution_case_id",
+                "canonical_term",
+                "category",
+                "entity_type_proposal",
+                "source_candidate_ids_json",
+                "source_record_ids_json",
+                "canonical_alternative_ids_json",
+                "proposed_resolution_method",
+                "review_reason",
+                "review_status",
+                "llm_decision_status",
+                "identity_member_source_ids_json",
+                "selected_canonical_alternative_id",
+                "proposed_canonical_id",
+                "reviewer_reason",
+                "resolution_policy_version",
+            ],
+        ),
     }
     tables.update(build_source_candidate_proposal_tables(tables, policy))
     attach_canonical_alternative_references(tables)
@@ -505,15 +644,22 @@ def write_resolution_package(
     tables: dict[str, pd.DataFrame],
     output_dir: str,
     policy: dict,
+    output_path_overrides: dict[str, str | Path] | None = None,
 ) -> dict[str, str]:
     """ER staging 테이블을 정책에 지정된 CSV 파일명으로 저장한다."""
     validate_resolution_tables(tables, policy)
     output_directory = Path(output_dir)
     output_directory.mkdir(parents=True, exist_ok=True)
     output_files = policy["entity_resolution"]["output_files"]
+    path_overrides = output_path_overrides or {}
     written_paths: dict[str, str] = {}
     for table_name, table in tables.items():
-        output_path = output_directory / output_files[table_name]
+        configured_path = Path(
+            path_overrides.get(table_name, output_files[table_name])
+        )
+        output_path = configured_path
+        if not configured_path.is_absolute():
+            output_path = output_directory / configured_path
         output_path.parent.mkdir(parents=True, exist_ok=True)
         table.to_csv(output_path, index=False, encoding="utf-8-sig")
         written_paths[table_name] = str(output_path)
@@ -708,6 +854,7 @@ def summarize_resolution_tables(
 def run_resolution_package(
     match_json: str,
     definition_json: str,
+    body_mention_json: str,
     exam_json: str,
     output_dir: str,
     policy: dict,
@@ -720,13 +867,22 @@ def run_resolution_package(
     if definition_path.is_file():
         with definition_path.open("r", encoding="utf-8") as definition_file:
             definition_results = load(definition_file)
+    body_mention_results: list[dict] = []
+    body_mention_path = Path(body_mention_json)
+    if body_mention_path.is_file():
+        with body_mention_path.open("r", encoding="utf-8") as body_file:
+            body_mention_results = load(body_file)
 
-    problem_context_df = prep_json(exam_json)
+    problem_context_df = prep_json(
+        exam_json,
+        policy["text_preprocessing"],
+    )
     tables = build_resolution_tables(
         match_results,
         definition_results,
         problem_context_df,
         policy,
+        body_mention_results=body_mention_results,
     )
     written_paths = write_resolution_package(tables, output_dir, policy)
     summary = summarize_resolution_tables(tables)
@@ -747,6 +903,11 @@ if __name__ == "__main__":
         help="definition_scan_matches.json 경로",
     )
     parser.add_argument(
+        "--body-mention-json",
+        default="",
+        help="body_mention_candidates.json 경로",
+    )
+    parser.add_argument(
         "--policy",
         default=str(
             Path(__file__).resolve().parent.parent
@@ -760,6 +921,7 @@ if __name__ == "__main__":
     result_summary = run_resolution_package(
         cli_args.match_json,
         cli_args.definition_json,
+        cli_args.body_mention_json,
         cli_args.exam_json,
         cli_args.output_dir,
         pipeline_policy,

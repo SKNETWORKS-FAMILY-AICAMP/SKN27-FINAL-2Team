@@ -34,6 +34,30 @@ def read_short_number(digits: str) -> str:
     return digits
 
 
+def read_event_date(text: str) -> str:
+    """
+    월·일 형식 사건 표기를 관용 독음으로 바꾼다
+    (10·4 -> 십사, 6·15 -> 육일오, 6.25 -> 육이오, 6·10 -> 육십).
+    앞 숫자는 수사 독음으로, 뒤 숫자는 10 단위 수가 아니면 한 자리씩 읽는다.
+    """
+    def convert(match: re.Match) -> str:
+        month_part = match.group(1)
+        day_part = match.group(2)
+        month_reading = read_short_number(month_part)
+        day_reading = read_short_number(day_part)
+        if len(day_part) == 2 and day_part[1] != "0":
+            day_reading = "".join(
+                read_short_number(digit) for digit in day_part
+            )
+        return month_reading + day_reading
+
+    return re.sub(
+        r"(?<!\d)(\d{1,2})[·‧ㆍ・.](\d{1,2})(?!\d)",
+        convert,
+        text,
+    )
+
+
 def apply_dueum_rule(text: str) -> str:
     """
     첫 글자가 ㄹ 초성이면 두음법칙을 적용한다 (류성룡 -> 유성룡, 락랑 -> 낙랑).
@@ -67,11 +91,14 @@ def apply_dueum_rule(text: str) -> str:
 def build_match_key(term: str) -> str:
     """
     커버리지 대조용 키를 만든다.
-    - normalize_history_term(유니코드·공백 정리) 후 문장부호 제거
-    - 1~2자리 숫자는 한자어 독음으로 통일 (황룡사9층목탑 == 황룡사구층목탑, 12목 == 십이목)
+    - normalize_history_term(유니코드·공백 정리) 후 월·일 사건 표기를 독음으로 통일
+      (10·4 남북정상선언 == 십사 남북정상선언, 6·15 == 육일오)
+    - 문장부호를 제거하고 1~2자리 숫자는 한자어 독음으로 통일
+      (황룡사9층목탑 == 황룡사구층목탑, 12목 == 십이목)
     - 첫 글자에 두음법칙을 적용해 표기 차이를 흡수한다 (류성룡 == 유성룡)
     """
     normalized = normalize_history_term(term)
+    normalized = read_event_date(normalized)
     normalized = re.sub(r"[^0-9a-z가-힣一-龥]", "", normalized)
     normalized = re.sub(r"\d+", lambda match: read_short_number(match.group()), normalized)
     return apply_dueum_rule(normalized)

@@ -1,0 +1,58 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "verdict",
+    "subject_explicit",
+    "object_explicit",
+    "predicate_supported",
+    "causative_or_indirect",
+    "negated_hypothetical_or_quoted",
+    "start_type_supported",
+    "end_type_supported",
+    "start_graph_entity",
+    "end_graph_entity",
+    "safe_for_one_hop_retrieval",
+    "safe_for_multi_hop_retrieval",
+    "reason_codes",
+    "rationale"
+  ],
+  "properties": {
+    "verdict": {
+      "type": "string",
+      "enum": ["VERIFIED", "REJECTED", "NEEDS_REVIEW"]
+    },
+    "subject_explicit": {"type": "boolean"},
+    "object_explicit": {"type": "boolean"},
+    "predicate_supported": {"type": "boolean"},
+    "causative_or_indirect": {"type": "boolean"},
+    "negated_hypothetical_or_quoted": {"type": "boolean"},
+    "start_type_supported": {"type": "boolean"},
+    "end_type_supported": {"type": "boolean"},
+    "start_graph_entity": {"type": "boolean"},
+    "end_graph_entity": {"type": "boolean"},
+    "safe_for_one_hop_retrieval": {"type": "boolean"},
+    "safe_for_multi_hop_retrieval": {"type": "boolean"},
+    "reason_codes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "DIRECT_RELATION",
+          "SUBJECT_MISMATCH",
+          "OBJECT_MISMATCH",
+          "PREDICATE_MISMATCH",
+          "CAUSATIVE_OR_INDIRECT",
+          "NEGATED_OR_HYPOTHETICAL",
+          "CROSS_CLAUSE_ERROR",
+          "START_TYPE_MISMATCH",
+          "END_TYPE_MISMATCH",
+          "START_NOT_GRAPH_ENTITY",
+          "END_NOT_GRAPH_ENTITY",
+          "INSUFFICIENT_CONTEXT"
+        ]
+      }
+    },
+    "rationale": {"type": "string"}
+  }
+}

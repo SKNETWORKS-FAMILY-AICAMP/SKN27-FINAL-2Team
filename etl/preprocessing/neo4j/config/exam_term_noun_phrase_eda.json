@@ -1,0 +1,38 @@
+{
+  "policy_version": "exam-term-noun-phrase-eda-v1.0",
+  "noun_tags": [
+    "NNG",
+    "NNP",
+    "NR",
+    "SL",
+    "SH",
+    "SN"
+  ],
+  "noun_suffix_tags": [
+    "XSN"
+  ],
+  "minimum_compact_length": 2,
+  "maximum_phrase_length": 80,
+  "maximum_phrase_word_count": 3,
+  "maximum_candidates_per_sentence": 120,
+  "require_relation_trigger": true,
+  "blocked_phrase_patterns": [
+    "^[0-9]+$"
+  ],
+  "statuses": {
+    "exam_term": "REGISTERED_EXAM_TERM",
+    "registered": "REGISTERED_OFFICIAL_OR_CANONICAL",
+    "ambiguous": "AMBIGUOUS_REGISTERED_SURFACE",
+    "unregistered": "UNREGISTERED_NOUN_PHRASE"
+  },
+  "minimum_registered_endpoint_count_per_relation": 1,
+  "identifier": {
+    "candidate_prefix": "exam-noun-phrase:",
+    "surface_prefix": "exam-noun-surface:"
+  },
+  "outputs": {
+    "mentions": "exam_term_noun_phrase_mentions.csv",
+    "surfaces": "exam_term_noun_phrase_surfaces.csv",
+    "manifest": "exam_term_noun_phrase_eda_manifest.json"
+  }
+}

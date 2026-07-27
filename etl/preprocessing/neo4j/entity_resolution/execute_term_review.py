@@ -1,7 +1,9 @@
 from argparse import ArgumentParser
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 from json import dumps, load, loads
 from pathlib import Path
+from typing import Callable
 import sys
 
 import pandas as pd
@@ -9,7 +11,8 @@ import pandas as pd
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 
 from common import load_pipeline_policy
-from entity_resolution.build_gold_set import calculate_file_sha256
+from entity_resolution.identifiers import create_stable_id
+from goldset.build_gold_set import calculate_file_sha256
 from entity_resolution.semantic_review import (
     collect_classified_sources,
     load_jsonl,
@@ -33,6 +36,32 @@ def load_json_schema(input_path: str) -> dict:
     if not isinstance(schema, dict):
         raise ValueError("term decision schema는 JSON 객체여야 합니다.")
     return schema
+
+
+def validate_structured_output_schema(
+    schema: dict,
+    policy: dict,
+) -> list[str]:
+    """Responses API strict 출력에서 금지된 schema 키워드의 위치를 찾는다."""
+    schema_policy = policy["entity_resolution"]["semantic_review"][
+        "structured_output_schema"
+    ]
+    unsupported_keywords = set(schema_policy["unsupported_keywords"])
+    errors: list[str] = []
+
+    def visit_schema(value, path: str) -> None:
+        if isinstance(value, dict):
+            for key, child_value in value.items():
+                child_path = f"{path}.{key}"
+                if key in unsupported_keywords:
+                    errors.append(child_path)
+                visit_schema(child_value, child_path)
+        elif isinstance(value, list):
+            for item_index, child_value in enumerate(value):
+                visit_schema(child_value, f"{path}[{item_index}]")
+
+    visit_schema(schema, "$")
+    return errors
 
 
 def apply_controlled_decision_fields(
@@ -93,6 +122,45 @@ def validate_executor_decision(
     return errors
 
 
+def validate_term_review_task_metadata(
+    tasks: list[dict],
+    policy: dict,
+) -> list[str]:
+    """이전 모델·prompt·정책으로 생성된 term task가 재사용되지 않게 검사한다."""
+    semantic_policy = policy["entity_resolution"]["semantic_review"]
+    identifier_policy = policy["entity_resolution"]["identifier_policy"]
+    errors: list[str] = []
+    for task in tasks:
+        task_id = str(task.get("term_review_task_id") or "")
+        case_id = str(task.get("resolution_case_id") or "")
+        prompt_version = str(task.get("prompt_version") or "")
+        review_model = str(task.get("review_model") or "")
+        resolution_policy_version = str(
+            task.get("resolution_policy_version") or ""
+        )
+        expected_task_id = create_stable_id(
+            identifier_policy["term_review_task_prefix"],
+            [case_id, semantic_policy["prompt_version"]],
+            identifier_policy,
+        )
+        if prompt_version and prompt_version != semantic_policy[
+            "prompt_version"
+        ]:
+            errors.append(f"{task_id}: STALE_PROMPT_VERSION")
+        if review_model and review_model != semantic_policy["term_model"][
+            "model"
+        ]:
+            errors.append(f"{task_id}: STALE_REVIEW_MODEL")
+        if (
+            resolution_policy_version
+            and resolution_policy_version != policy["policy_version"]
+        ):
+            errors.append(f"{task_id}: STALE_RESOLUTION_POLICY")
+        if prompt_version and task_id != expected_task_id:
+            errors.append(f"{task_id}: STALE_TASK_ID")
+    return errors
+
+
 def request_term_decision(
     client,
     task: dict,
@@ -104,10 +172,13 @@ def request_term_decision(
     semantic_policy = policy["entity_resolution"]["semantic_review"]
     model_policy = semantic_policy["term_model"]
     executor_policy = semantic_policy["term_executor"]
+    request_task = dict(task)
+    request_task["review_model"] = model_policy["model"]
+    request_task["prompt_version"] = semantic_policy["prompt_version"]
     request_arguments: dict[str, object] = {
         "model": model_policy["model"],
         "instructions": prompt,
-        "input": dumps(task, ensure_ascii=False),
+        "input": dumps(request_task, ensure_ascii=False),
         "max_output_tokens": int(executor_policy["maximum_output_tokens"]),
         "reasoning": {"effort": model_policy["reasoning_effort"]},
         "store": bool(executor_policy["store_response"]),
@@ -144,6 +215,52 @@ def request_term_decision(
         "usage": usage,
     }
     return decision, response_metadata
+
+
+def request_term_decision_with_retries(
+    client: object,
+    task: dict,
+    prompt: str,
+    schema: dict,
+    policy: dict,
+    retry_count: int,
+    requester: Callable[
+        [object, dict, str, dict, dict],
+        tuple[dict, dict],
+    ],
+) -> dict:
+    """단일 term task를 정책 횟수만큼 재시도하고 결과를 반환한다."""
+    task_id = str(task["term_review_task_id"])
+    last_error = ""
+    for attempt in range(1, retry_count + 2):
+        try:
+            decision, response_metadata = requester(
+                client,
+                task,
+                prompt,
+                schema,
+                policy,
+            )
+            return {
+                "task": task,
+                "decision": decision,
+                "response_metadata": response_metadata,
+                "attempt_count": attempt,
+                "error": "",
+            }
+        except Exception as error:
+            last_error = str(error)
+            print(
+                f"term task 실패 {task_id} "
+                f"({attempt}/{retry_count + 1}): {last_error}"
+            )
+    return {
+        "task": task,
+        "decision": None,
+        "response_metadata": {},
+        "attempt_count": retry_count + 1,
+        "error": last_error,
+    }
 
 
 def load_compatible_checkpoint(
@@ -215,6 +332,10 @@ def build_execution_plan(
 ) -> dict[str, object]:
     """API 호출 없이 선택·재사용·미처리 task 수를 계산한다."""
     selected_tasks = select_execution_tasks(tasks, limit)
+    metadata_errors = validate_term_review_task_metadata(
+        selected_tasks,
+        policy,
+    )
     tasks_by_id = {
         task["term_review_task_id"]: task for task in selected_tasks
     }
@@ -232,6 +353,12 @@ def build_execution_plan(
         "selected_task_count": len(selected_tasks),
         "reused_checkpoint_count": len(checkpoint_records),
         "pending_task_count": len(pending_tasks),
+        "stale_task_metadata_error_count": len(metadata_errors),
+        "maximum_concurrency": int(
+            policy["entity_resolution"]["semantic_review"][
+                "term_executor"
+            ]["maximum_concurrency"]
+        ),
         "selected_input_character_count": sum(
             len(dumps(task, ensure_ascii=False)) for task in selected_tasks
         ),
@@ -247,9 +374,19 @@ def execute_term_review_tasks(
     client,
     limit: int = 0,
     maximum_retries: int | None = None,
-    requester=request_term_decision,
+    requester: Callable[
+        [object, dict, str, dict, dict],
+        tuple[dict, dict],
+    ] = request_term_decision,
 ) -> dict[str, object]:
-    """성공 응답을 즉시 checkpoint에 기록하며 term task를 순차 실행한다."""
+    """term task를 병렬 판정하고 성공 응답을 즉시 checkpoint에 기록한다."""
+    schema_errors = validate_structured_output_schema(schema, policy)
+    if schema_errors:
+        raise ValueError(
+            "OpenAI strict Structured Outputs에서 지원하지 않는 JSON Schema "
+            "키워드가 있습니다: "
+            + ", ".join(schema_errors)
+        )
     selected_tasks = select_execution_tasks(tasks, limit)
     tasks_by_id = {
         task["term_review_task_id"]: task for task in selected_tasks
@@ -267,75 +404,83 @@ def execute_term_review_tasks(
         retry_count = maximum_retries
     if retry_count < 0:
         raise ValueError("term review 재시도 횟수는 0 이상이어야 합니다.")
+    maximum_concurrency = int(executor_policy["maximum_concurrency"])
+    if maximum_concurrency < 1:
+        raise ValueError("term review 동시 실행 수는 1 이상이어야 합니다.")
     checkpoint = Path(checkpoint_path)
     checkpoint.parent.mkdir(parents=True, exist_ok=True)
     failure_rows: list[dict] = []
-    attempted_count = 0
+    pending_tasks = [
+        task
+        for task in selected_tasks
+        if task["term_review_task_id"] not in checkpoint_records
+    ]
+    attempted_count = len(pending_tasks)
     succeeded_count = 0
     with checkpoint.open("a", encoding="utf-8") as checkpoint_file:
-        for task in selected_tasks:
-            task_id = task["term_review_task_id"]
-            if task_id in checkpoint_records:
-                continue
-            attempted_count += 1
-            decision: dict | None = None
-            response_metadata: dict = {}
-            last_error = ""
-            for attempt in range(1, retry_count + 2):
-                try:
-                    decision, response_metadata = requester(
-                        client,
-                        task,
-                        prompt,
-                        schema,
-                        policy,
-                    )
-                    break
-                except Exception as error:
-                    last_error = str(error)
-                    print(
-                        f"term task 실패 {task_id} "
-                        f"({attempt}/{retry_count + 1}): {last_error}"
-                    )
-            if decision is None:
-                failure_rows.append(
-                    {
-                        "term_review_task_id": task_id,
-                        "resolution_case_id": task["resolution_case_id"],
-                        "attempt_count": retry_count + 1,
-                        "error": last_error,
-                        "review_model": policy["entity_resolution"][
-                            "semantic_review"
-                        ]["term_model"]["model"],
-                        "prompt_version": policy["entity_resolution"][
-                            "semantic_review"
-                        ]["prompt_version"],
-                        "resolution_policy_version": policy["policy_version"],
-                    }
-                )
-                continue
-            completed_at = datetime.now(timezone.utc).isoformat()
-            checkpoint_record = {
-                "term_review_task_id": task_id,
-                "resolution_case_id": task["resolution_case_id"],
-                "review_model": decision["review_model"],
-                "prompt_version": decision["prompt_version"],
-                "resolution_policy_version": policy["policy_version"],
-                "response_id": response_metadata.get("response_id", ""),
-                "usage": response_metadata.get("usage", {}),
-                "completed_at": completed_at,
-                "decision": decision,
+        with ThreadPoolExecutor(
+            max_workers=maximum_concurrency
+        ) as executor:
+            future_to_task = {
+                executor.submit(
+                    request_term_decision_with_retries,
+                    client,
+                    task,
+                    prompt,
+                    schema,
+                    policy,
+                    retry_count,
+                    requester,
+                ): task
+                for task in pending_tasks
             }
-            checkpoint_file.write(
-                dumps(checkpoint_record, ensure_ascii=False) + "\n"
-            )
-            checkpoint_file.flush()
-            checkpoint_records[task_id] = checkpoint_record
-            succeeded_count += 1
-            print(
-                "term review 진행: "
-                f"{len(checkpoint_records)}/{len(selected_tasks)}"
-            )
+            for future in as_completed(future_to_task):
+                result = future.result()
+                task = result["task"]
+                task_id = str(task["term_review_task_id"])
+                decision = result["decision"]
+                if decision is None:
+                    failure_rows.append(
+                        {
+                            "term_review_task_id": task_id,
+                            "resolution_case_id": task["resolution_case_id"],
+                            "attempt_count": result["attempt_count"],
+                            "error": result["error"],
+                            "review_model": policy["entity_resolution"][
+                                "semantic_review"
+                            ]["term_model"]["model"],
+                            "prompt_version": policy["entity_resolution"][
+                                "semantic_review"
+                            ]["prompt_version"],
+                            "resolution_policy_version": policy[
+                                "policy_version"
+                            ],
+                        }
+                    )
+                    continue
+                response_metadata = result["response_metadata"]
+                completed_at = datetime.now(timezone.utc).isoformat()
+                checkpoint_record = {
+                    "term_review_task_id": task_id,
+                    "resolution_case_id": task["resolution_case_id"],
+                    "review_model": decision["review_model"],
+                    "prompt_version": decision["prompt_version"],
+                    "resolution_policy_version": policy["policy_version"],
+                    "response_id": response_metadata.get("response_id", ""),
+                    "usage": response_metadata.get("usage", {}),
+                    "completed_at": completed_at,
+                    "decision": decision,
+                }
+                checkpoint_file.write(
+                    dumps(checkpoint_record, ensure_ascii=False) + "\n"
+                )
+                checkpoint_file.flush()
+                checkpoint_records[task_id] = checkpoint_record
+                succeeded_count += 1
+                print(
+                    "term review 진행: "
+                    f"{len(checkpoint_records)}/{len(selected_tasks)}"
+                )
     decisions = [
         checkpoint_records[task["term_review_task_id"]]["decision"]
         for task in selected_tasks
@@ -358,6 +503,7 @@ def execute_term_review_tasks(
         "attempted_count": attempted_count,
         "succeeded_count": succeeded_count,
         "failed_count": len(failure_rows),
+        "maximum_concurrency": maximum_concurrency,
     }
 
 
@@ -405,6 +551,7 @@ def write_execution_outputs(
         "attempted_count": execution_result["attempted_count"],
         "succeeded_count": execution_result["succeeded_count"],
         "failed_count": execution_result["failed_count"],
+        "maximum_concurrency": execution_result["maximum_concurrency"],
         "decision_count": len(execution_result["decisions"]),
         "generated_at": datetime.now(timezone.utc).isoformat(),
     }
@@ -489,6 +636,17 @@ if __name__ == "__main__":
     output_directory = Path(cli_args.output_dir)
     checkpoint_file = output_directory / executor_policy["checkpoint_file"]
     task_records = load_jsonl(cli_args.tasks)
+    decision_schema = load_json_schema(cli_args.schema)
+    schema_errors = validate_structured_output_schema(
+        decision_schema,
+        pipeline_policy,
+    )
+    if schema_errors:
+        raise ValueError(
+            "OpenAI strict Structured Outputs에서 지원하지 않는 JSON Schema "
+            "키워드가 있습니다: "
+            + ", ".join(schema_errors)
+        )
     if cli_args.dry_run:
         plan = build_execution_plan(
             task_records,
@@ -499,7 +657,6 @@ if __name__ == "__main__":
         print(dumps(plan, ensure_ascii=False, indent=2))
         raise SystemExit(0)
     review_prompt = load_text_file(cli_args.prompt)
-    decision_schema = load_json_schema(cli_args.schema)
     openai_client = create_openai_client(pipeline_policy)
     result = execute_term_review_tasks(
         task_records,

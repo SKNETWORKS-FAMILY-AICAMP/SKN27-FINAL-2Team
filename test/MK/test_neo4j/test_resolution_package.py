@@ -143,7 +143,12 @@ class ResolutionPackageTest(unittest.TestCase):
         assignments = tables["problem_resolution_assignments"]
         gojong = assignments[assignments["canonical_term"] == "고종"]
         self.assertEqual(set(gojong["problem_id"]), {"question-1", "question-2"})
-        self.assertTrue(all(value == "AMBIGUOUS" for value in gojong["assignment_status"]))
+        self.assertTrue(
+            all(
+                value == "AMBIGUOUS"
+                for value in gojong["assignment_status"]
+            )
+        )
         self.assertTrue(all(value == "" for value in gojong["canonical_id"]))
         alternative_ids = json.loads(
             gojong.iloc[0]["canonical_alternative_ids_json"]
@@ -154,6 +159,60 @@ class ResolutionPackageTest(unittest.TestCase):
             "",
         )
 
+    def test_problem_contexts_include_all_ids_and_only_exception_details(self):
+        match_results = [
+            {
+                "canonical_term": "고종",
+                "category": "인물",
+                "problem_ids": ["question-1"],
+                "is_noise": False,
+            }
+        ]
+        contexts = pd.DataFrame(
+            [
+                {
+                    "problem_id": "question-1",
+                    "extraction_text": "정상 문항\n선지",
+                    "input_text_original": "정상 문항",
+                    "reconstructed_stem": "정상 문항",
+                    "input_text_match_status": "EXACT",
+                    "duplicate_text_group_id": "",
+                    "text_policy_version": "test-text-policy",
+                },
+                {
+                    "problem_id": "question-2",
+                    "extraction_text": "재구성 문항\n선지",
+                    "input_text_original": "충돌 원본 문항",
+                    "reconstructed_stem": "재구성 문항",
+                    "input_text_match_status": "CONTENT_CONFLICT",
+                    "duplicate_text_group_id": "",
+                    "text_policy_version": "test-text-policy",
+                },
+            ]
+        )
+
+        tables = self.build_resolution_tables(
+            match_results,
+            [],
+            contexts,
+            self.policy,
+        )
+        problem_contexts = tables["problem_contexts"].set_index("problem_id")
+
+        self.assertEqual(set(problem_contexts.index), {"question-1", "question-2"})
+        self.assertNotIn("full_text", problem_contexts.columns)
+        self.assertEqual(
+            problem_contexts.loc["question-1", "input_text_original"],
+            "",
+        )
+        self.assertEqual(
+            problem_contexts.loc["question-2", "input_text_original"],
+            "충돌 원본 문항",
+        )
+        self.assertEqual(
+            problem_contexts.loc["question-2", "extraction_text"],
+            "재구성 문항\n선지",
+        )
     def test_duplicate_source_candidate_merges_retrieval_channels(self):
         tables = self.build_fixture_tables()
         candidates = tables["source_record_candidates"]
@@ -163,6 +222,50 @@ class ResolutionPackageTest(unittest.TestCase):
         self.assertEqual(len(first), 1)
         channels = json.loads(first.iloc[0]["retrieval_channels_json"])
         self.assertEqual(set(channels), {"aks_name", "aks_definition"})
+
+    def test_body_mention_channel_is_preserved_with_same_source_record(self):
+        candidate = self.make_candidate(
+            "AKS:ARTICLE:E1:sha256-test",
+            "E1",
+        )
+        match_results = [
+            {
+                "canonical_term": "진묘수",
+                "category": "유물",
+                "problem_ids": ["question-1"],
+                "is_noise": False,
+                "encyclopedia": [candidate],
+                "thesaurus": [],
+                "itkc_people": [],
+                "itkc_events": [],
+            }
+        ]
+        body_candidate = dict(candidate)
+        body_candidate["retrieval_method"] = "body_mention"
+        body_candidate["retrieval_methods"] = ["body_mention"]
+        body_candidate["retrieval_score"] = 1.0
+        body_results = [
+            {
+                "canonical_term": "진묘수",
+                "category": "유물",
+                "candidates": [body_candidate],
+            }
+        ]
+        contexts = pd.DataFrame(
+            [{"problem_id": "question-1", "full_text": "진묘수 문항"}]
+        )
+
+        tables = self.build_resolution_tables(
+            match_results,
+            [],
+            contexts,
+            self.policy,
+            body_mention_results=body_results,
+        )
+
+        row = tables["source_record_candidates"].iloc[0]
+        channels = set(json.loads(row["retrieval_channels_json"]))
+        self.assertEqual(channels, {"aks_name", "aks_body_mention"})
 
     def test_noise_is_not_added_to_review_queue(self):
         tables = self.build_fixture_tables()

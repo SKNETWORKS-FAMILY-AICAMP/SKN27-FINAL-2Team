@@ -108,6 +108,24 @@ class CanonicalAlternativeProposalTest(unittest.TestCase):
         self.assertEqual(int(clusters.iloc[0]["source_system_count"]), 3)
         self.assertEqual(set(members["proposed_case_role"]), {"IDENTITY_MEMBER"})
         self.assertEqual(set(features["proposed_role"]), {"IDENTITY_MEMBER"})
+
+    def test_clothing_source_type_maps_to_heritage(self):
+        candidate = self.make_candidate(
+            "candidate-clothing",
+            "AKS",
+            {
+                "headword": "몸뻬",
+                "primary_type_part": "의복",
+            },
+        )
+
+        tables = self.build_tables([candidate])
+        features = tables["source_candidate_features"]
+
+        self.assertEqual(
+            features.iloc[0]["source_entity_type_proposal"],
+            "Heritage",
+        )
         self.assertTrue(all(value == "PROPOSED" for value in features["role_status"]))
 
     def test_same_source_records_are_not_automatically_merged(self):
@@ -259,6 +277,39 @@ class CanonicalAlternativeProposalTest(unittest.TestCase):
             "candidate-conflict",
             set(members["source_candidate_id"]),
         )
+
+    def test_non_specific_era_value_is_not_a_merge_signal(self):
+        candidates = [
+            self.make_candidate(
+                "candidate-aks",
+                "AKS",
+                {
+                    "headword": "동명이인",
+                    "era": "통시대",
+                    "primary_type_part": "인물",
+                },
+            ),
+            self.make_candidate(
+                "candidate-thesaurus",
+                "THESAURUS",
+                {
+                    "term_name": "동명이인",
+                    "era": "통시대",
+                    "thesaurus_category": "인명",
+                },
+            ),
+        ]
+
+        tables = self.build_tables(candidates)
+
+        features = tables["source_candidate_features"]
+        self.assertTrue(
+            all(json.loads(value) == [] for value in features["era_values_json"])
+        )
+        pair = tables["source_candidate_pair_signals"].iloc[0]
+        signals = set(json.loads(pair["signal_dimensions_json"]))
+        self.assertNotIn("era_overlap", signals)
+        self.assertFalse(bool(pair["merge_eligible"]))
 
     def test_canonical_alternative_ids_are_stable(self):
         candidates = [

@@ -2,19 +2,220 @@ import sys
 from argparse import ArgumentParser
 from json import dumps, loads
 from pathlib import Path
+import re
 
 import pandas as pd
 
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 sys.path.append(str(Path(__file__).resolve().parent.parent / "terms"))
 
-from common import load_pipeline_policy
+from common import load_pipeline_policy, normalize_history_term
 from entity_resolution.identifiers import create_stable_id
 from entity_resolution.semantic_review import (
     load_jsonl,
     load_resolution_package,
     write_jsonl,
 )
+
+
+def collect_alternative_context_features(
+    member_ids: list[str],
+    feature_by_candidate_id: dict[str, dict],
+    entity_anchors_by_candidate_id: dict[str, list[str]],
+    canonical_term: str,
+) -> dict[str, list[str]]:
+    """대안 선택에 쓸 시대·별칭·한자·연도·엔티티 신호를 모은다."""
+    normalized_term = normalize_history_term(canonical_term)
+    era_tokens: set[str] = set()
+    aliases: set[str] = set()
+    hanja: set[str] = set()
+    years: set[str] = set()
+    entity_anchors: set[str] = set()
+    for member_id in member_ids:
+        feature = feature_by_candidate_id.get(member_id, {})
+        era_tokens.update(
+            normalize_history_term(value)
+            for value in loads(str(feature.get("era_tokens_json") or "[]"))
+            if normalize_history_term(value)
+        )
+        for name in loads(str(feature.get("names_json") or "[]")):
+            normalized_name = normalize_history_term(name)
+            overlaps_canonical_term = (
+                normalized_name in normalized_term
+                or normalized_term in normalized_name
+            )
+            if normalized_name and not overlaps_canonical_term:
+                aliases.add(normalized_name)
+        hanja.update(
+            normalize_history_term(value)
+            for value in loads(str(feature.get("hanja_json") or "[]"))
+            if normalize_history_term(value)
+        )
+        for field_name in ["birth_year", "death_year"]:
+            year = str(feature.get(field_name) or "")
+            if year:
+                years.add(year)
+        for anchor in entity_anchors_by_candidate_id.get(member_id, []):
+            overlaps_canonical_term = (
+                anchor in normalized_term
+                or normalized_term in anchor
+            )
+            if not overlaps_canonical_term:
+                entity_anchors.add(anchor)
+    return {
+        "era_tokens": sorted(era_tokens),
+        "aliases": sorted(aliases),
+        "hanja": sorted(hanja),
+        "years": sorted(years),
+        "entity_anchors": sorted(entity_anchors),
+    }
+
+
+def collect_verified_entity_anchor_terms(
+    alternatives_by_case: dict[str, list[dict]],
+    case_by_id: dict[str, dict],
+    context_policy: dict,
+) -> set[str]:
+    """검증 대안이 하나뿐인 구체 엔티티의 기출 용어만 앵커로 허용한다."""
+    minimum_length = int(
+        context_policy["entity_anchor_minimum_length"]
+    )
+    allowed_entity_types = set(
+        context_policy["entity_anchor_allowed_entity_types"]
+    )
+    types_requiring_multiple_sources = set(
+        context_policy[
+            "entity_anchor_types_requiring_multiple_sources"
+        ]
+    )
+    minimum_source_system_count = int(
+        context_policy["entity_anchor_minimum_source_system_count"]
+    )
+    anchor_terms: set[str] = set()
+    for case_id, alternatives in alternatives_by_case.items():
+        case = case_by_id.get(case_id, {})
+        if len(alternatives) != 1:
+            continue
+        entity_type = str(case.get("entity_type_proposal") or "")
+        if entity_type not in allowed_entity_types:
+            continue
+        if entity_type in types_requiring_multiple_sources:
+            source_record_ids = loads(
+                str(
+                    alternatives[0].get(
+                        "identity_member_source_ids_json"
+                    )
+                    or "[]"
+                )
+            )
+            source_systems = {
+                str(source_record_id).split(":", 1)[0]
+                for source_record_id in source_record_ids
+                if str(source_record_id)
+            }
+            if len(source_systems) < minimum_source_system_count:
+                continue
+        normalized_term = normalize_history_term(
+            str(case.get("canonical_term") or "")
+        )
+        if len(normalized_term) >= minimum_length:
+            anchor_terms.add(normalized_term)
+    return anchor_terms
+
+
+def collect_candidate_entity_anchors(
+    candidate_rows: list[dict],
+    anchor_terms: set[str],
+    context_policy: dict,
+) -> dict[str, list[str]]:
+    """공식 설명에 실제로 등장하는 검증 엔티티 앵커를 후보별로 찾는다."""
+    if not anchor_terms:
+        return {}
+    definition_fields_by_source = context_policy[
+        "entity_anchor_definition_fields_by_source"
+    ]
+    sorted_anchor_terms = sorted(
+        anchor_terms,
+        key=lambda value: (-len(value), value),
+    )
+    anchor_pattern = re.compile(
+        "(?=("
+        + "|".join(re.escape(value) for value in sorted_anchor_terms)
+        + "))"
+    )
+    anchors_by_candidate_id: dict[str, list[str]] = {}
+    for row in candidate_rows:
+        source = str(row.get("source") or "")
+        definition_fields = definition_fields_by_source.get(source, [])
+        if not definition_fields:
+            continue
+        try:
+            metadata = loads(str(row.get("source_metadata_json") or "{}"))
+        except (TypeError, ValueError):
+            continue
+        definition_text = " ".join(
+            str(metadata.get(field_name) or "")
+            for field_name in definition_fields
+        )
+        normalized_definition = normalize_history_term(definition_text)
+        if not normalized_definition:
+            continue
+        matched_anchors = sorted(
+            {
+                match.group(1)
+                for match in anchor_pattern.finditer(normalized_definition)
+            }
+        )
+        if matched_anchors:
+            anchors_by_candidate_id[
+                str(row["source_candidate_id"])
+            ] = matched_anchors
+    return anchors_by_candidate_id
+
+
+def extract_local_term_contexts(
+    problem_text: str,
+    canonical_term: str,
+    context_radius: int,
+    boundary_characters: list[str],
+) -> list[str]:
+    """용어가 나온 문장 경계를 넘지 않는 주변 문맥을 반환한다."""
+    local_contexts: list[str] = []
+    search_offset = 0
+    term_index = problem_text.find(canonical_term, search_offset)
+    while term_index >= 0:
+        start_index = max(0, term_index - context_radius)
+        end_index = min(
+            len(problem_text),
+            term_index + len(canonical_term) + context_radius,
+        )
+        for boundary in boundary_characters:
+            boundary_index = problem_text.rfind(
+                boundary,
+                start_index,
+                term_index,
+            )
+            if boundary_index >= start_index:
+                start_index = boundary_index + len(boundary)
+        boundary_end_indexes = [
+            problem_text.find(
+                boundary,
+                term_index + len(canonical_term),
+                end_index,
+            )
+            for boundary in boundary_characters
+        ]
+        valid_end_indexes = [
+            boundary_index
+            for boundary_index in boundary_end_indexes
+            if boundary_index >= 0
+        ]
+        if valid_end_indexes:
+            end_index = min(valid_end_indexes)
+        local_contexts.append(problem_text[start_index:end_index])
+        search_offset = term_index + len(canonical_term)
+        term_index = problem_text.find(canonical_term, search_offset)
+    return local_contexts
 
 
 def build_problem_review_inputs(
@@ -25,26 +226,41 @@ def build_problem_review_inputs(
     """검증된 term 대안으로 문항별 선택 task와 단일 대안 배정을 만든다."""
     resolution_policy = policy["entity_resolution"]
     semantic_policy = resolution_policy["semantic_review"]
+    context_policy = semantic_policy["problem_context_rule"]
     identifier_policy = resolution_policy["identifier_policy"]
     cases = resolution_tables["resolution_cases"]
     contexts = resolution_tables["problem_contexts"]
     assignments = resolution_tables["problem_resolution_assignments"]
-    term_decisions = term_decision_tables["term_resolution_decisions"]
     reviewed_alternatives = term_decision_tables[
         "reviewed_canonical_alternatives"
     ]
+    feature_table = resolution_tables.get(
+        "source_candidate_features",
+        pd.DataFrame(),
+    )
+    feature_by_candidate_id = {
+        str(row["source_candidate_id"]): row
+        for row in feature_table.to_dict("records")
+    }
     verified_case_ids = set(
-        term_decisions[
-            term_decisions["verification_status"] == "VERIFIED"
+        reviewed_alternatives[
+            reviewed_alternatives["verification_status"] == "VERIFIED"
         ]["resolution_case_id"]
     )
     case_by_id = {
         str(row["resolution_case_id"]): row
         for row in cases.to_dict("records")
     }
+    context_column = ""
+    if "extraction_text" in contexts.columns:
+        context_column = "extraction_text"
+    elif "full_text" in contexts.columns:
+        context_column = "full_text"
+    if not context_column:
+        raise ValueError("problem_contexts에 extraction_text가 없습니다.")
     context_by_problem = {
-        str(row.problem_id): str(row.full_text)
-        for row in contexts.itertuples()
+        str(row["problem_id"]): str(row[context_column])
+        for row in contexts.to_dict("records")
     }
     alternatives_by_case: dict[str, list[dict]] = {}
     for row in reviewed_alternatives.to_dict("records"):
@@ -55,6 +271,20 @@ def build_problem_review_inputs(
         )
     for alternative_rows in alternatives_by_case.values():
         alternative_rows.sort(key=lambda row: row["canonical_alternative_id"])
+    entity_anchor_terms = collect_verified_entity_anchor_terms(
+        alternatives_by_case,
+        case_by_id,
+        context_policy,
+    )
+    source_candidate_table = resolution_tables.get(
+        "source_record_candidates",
+        pd.DataFrame(),
+    )
+    entity_anchors_by_candidate_id = collect_candidate_entity_anchors(
+        source_candidate_table.to_dict("records"),
+        entity_anchor_terms,
+        context_policy,
+    )
 
     tasks: list[dict] = []
     deterministic_rows: list[dict] = []
@@ -72,6 +302,17 @@ def build_problem_review_inputs(
                     row["identity_member_source_ids_json"]
                 ),
                 "reason": row["decision_reason"],
+                "context_features": collect_alternative_context_features(
+                    loads(
+                        str(
+                            row.get("source_candidate_ids_json")
+                            or "[]"
+                        )
+                    ),
+                    feature_by_candidate_id,
+                    entity_anchors_by_candidate_id,
+                    case_by_id[case_id]["canonical_term"],
+                ),
             }
             for row in alternatives
         ]
@@ -149,6 +390,246 @@ def build_problem_review_inputs(
     return tasks, deterministic_df
 
 
+def score_problem_context_alternatives(
+    task: dict,
+    policy: dict,
+) -> tuple[str, dict[str, int], dict[str, dict[str, list[str]]]]:
+    """대안별 독점 문맥 신호를 점수화하고 안전한 단일 선택만 반환한다."""
+    context_policy = policy["entity_resolution"]["semantic_review"][
+        "problem_context_rule"
+    ]
+    problem_text = str(task["problem_full_text"])
+    canonical_term = str(task["canonical_term"])
+    context_radius = int(context_policy["term_context_radius"])
+    local_contexts = extract_local_term_contexts(
+        problem_text,
+        canonical_term,
+        context_radius,
+        context_policy["context_boundary_characters"],
+    )
+    local_context_text = " ".join(local_contexts)
+    normalized_text = normalize_history_term(local_context_text)
+    signal_weights = {
+        signal_type: int(weight)
+        for signal_type, weight in context_policy[
+            "signal_weights"
+        ].items()
+    }
+    blocked_era_tokens = {
+        normalize_history_term(value)
+        for value in context_policy["blocked_era_tokens"]
+    }
+    normalized_canonical_term = normalize_history_term(
+        task["canonical_term"]
+    )
+    minimum_signal_length = int(
+        context_policy["minimum_signal_length"]
+    )
+    value_owners: dict[tuple[str, str], set[str]] = {}
+    values_by_alternative: dict[str, dict[str, set[str]]] = {}
+    for alternative in task["canonical_alternatives"]:
+        alternative_id = str(alternative["canonical_alternative_id"])
+        features = alternative.get("context_features", {})
+        values_by_signal: dict[str, set[str]] = {}
+        for signal_type in signal_weights:
+            values = {
+                normalize_history_term(value)
+                for value in features.get(signal_type, [])
+                if len(normalize_history_term(value))
+                >= minimum_signal_length
+            }
+            if signal_type == "era_tokens":
+                values.difference_update(blocked_era_tokens)
+                values.discard(normalized_canonical_term)
+            values_by_signal[signal_type] = values
+            for value in values:
+                value_owners.setdefault(
+                    (signal_type, value),
+                    set(),
+                ).add(alternative_id)
+        values_by_alternative[alternative_id] = values_by_signal
+
+    scores: dict[str, int] = {}
+    evidence: dict[str, dict[str, list[str]]] = {}
+    for alternative_id, values_by_signal in values_by_alternative.items():
+        alternative_score = 0
+        alternative_evidence: dict[str, list[str]] = {}
+        for signal_type, values in values_by_signal.items():
+            def signal_is_in_context(value: str) -> bool:
+                if signal_type != "aliases":
+                    return value in normalized_text
+                alias_pattern = (
+                    r"(?<![0-9A-Za-z가-힣\u3400-\u9fff])"
+                    + re.escape(value)
+                    + r"(?![0-9A-Za-z가-힣\u3400-\u9fff])"
+                )
+                return re.search(alias_pattern, local_context_text) is not None
+
+            exclusive_matches = sorted(
+                value
+                for value in values
+                if signal_is_in_context(value)
+                and len(
+                    value_owners.get((signal_type, value), set())
+                )
+                == 1
+            )
+            if exclusive_matches:
+                alternative_evidence[signal_type] = exclusive_matches
+                alternative_score += (
+                    len(exclusive_matches) * signal_weights[signal_type]
+                )
+        scores[alternative_id] = alternative_score
+        evidence[alternative_id] = alternative_evidence
+
+    ranked = sorted(
+        scores.items(),
+        key=lambda item: (-item[1], item[0]),
+    )
+    if not ranked:
+        return "", scores, evidence
+    best_id, best_score = ranked[0]
+    second_score = 0
+    if len(ranked) > 1:
+        second_score = ranked[1][1]
+    matched_signal_count = sum(
+        len(values) for values in evidence[best_id].values()
+    )
+    if best_score < int(context_policy["minimum_score"]):
+        return "", scores, evidence
+    if best_score - second_score < int(
+        context_policy["minimum_score_margin"]
+    ):
+        return "", scores, evidence
+    if matched_signal_count < int(
+        context_policy["minimum_exclusive_signal_count"]
+    ):
+        return "", scores, evidence
+    return best_id, scores, evidence
+
+
+def resolve_problem_tasks_by_context(
+    tasks: list[dict],
+    policy: dict,
+) -> tuple[list[dict], pd.DataFrame, pd.DataFrame]:
+    """경쟁 대안을 코드 문맥 신호로 선택하고 나머지만 LLM 후보로 남긴다."""
+    remaining_tasks: list[dict] = []
+    assignment_rows: list[dict] = []
+    audit_rows: list[dict] = []
+    context_policy = policy["entity_resolution"]["semantic_review"][
+        "problem_context_rule"
+    ]
+    for task in tasks:
+        selected_id, scores, evidence = score_problem_context_alternatives(
+            task,
+            policy,
+        )
+        resolution_status = context_policy["deferred_status"]
+        if selected_id:
+            resolution_status = context_policy["resolved_status"]
+            assignment_rows.append(
+                {
+                    "problem_assignment_id": task[
+                        "problem_assignment_id"
+                    ],
+                    "problem_id": task["problem_id"],
+                    "resolution_case_id": task["resolution_case_id"],
+                    "selected_canonical_alternative_ids_json": dumps(
+                        [selected_id],
+                        ensure_ascii=False,
+                    ),
+                    "selection_mode": context_policy["selection_mode"],
+                    "resolution_method": context_policy[
+                        "resolution_method"
+                    ],
+                    "verification_status": context_policy[
+                        "resolved_verification_status"
+                    ],
+                    "problem_decision_id": "",
+                    "decision_reason": context_policy["decision_reason"],
+                    "resolution_policy_version": policy["policy_version"],
+                }
+            )
+        elif not selected_id:
+            remaining_tasks.append(task)
+            assignment_rows.append(
+                {
+                    "problem_assignment_id": task[
+                        "problem_assignment_id"
+                    ],
+                    "problem_id": task["problem_id"],
+                    "resolution_case_id": task["resolution_case_id"],
+                    "selected_canonical_alternative_ids_json": dumps(
+                        [],
+                        ensure_ascii=False,
+                    ),
+                    "selection_mode": context_policy[
+                        "deferred_selection_mode"
+                    ],
+                    "resolution_method": context_policy[
+                        "deferred_resolution_method"
+                    ],
+                    "verification_status": context_policy[
+                        "deferred_verification_status"
+                    ],
+                    "problem_decision_id": "",
+                    "decision_reason": context_policy[
+                        "deferred_decision_reason"
+                    ],
+                    "resolution_policy_version": policy["policy_version"],
+                }
+            )
+        audit_rows.append(
+            {
+                "problem_review_task_id": task[
+                    "problem_review_task_id"
+                ],
+                "problem_assignment_id": task[
+                    "problem_assignment_id"
+                ],
+                "problem_id": task["problem_id"],
+                "resolution_case_id": task["resolution_case_id"],
+                "canonical_term": task["canonical_term"],
+                "candidate_count": len(task["canonical_alternatives"]),
+                "resolution_status": resolution_status,
+                "selected_canonical_alternative_id": selected_id,
+                "scores_json": dumps(scores, ensure_ascii=False),
+                "evidence_json": dumps(evidence, ensure_ascii=False),
+                "resolution_policy_version": policy["policy_version"],
+            }
+        )
+    assignment_columns = [
+        "problem_assignment_id",
+        "problem_id",
+        "resolution_case_id",
+        "selected_canonical_alternative_ids_json",
+        "selection_mode",
+        "resolution_method",
+        "verification_status",
+        "problem_decision_id",
+        "decision_reason",
+        "resolution_policy_version",
+    ]
+    audit_columns = [
+        "problem_review_task_id",
+        "problem_assignment_id",
+        "problem_id",
+        "resolution_case_id",
+        "canonical_term",
+        "candidate_count",
+        "resolution_status",
+        "selected_canonical_alternative_id",
+        "scores_json",
+        "evidence_json",
+        "resolution_policy_version",
+    ]
+    return (
+        remaining_tasks,
+        pd.DataFrame(assignment_rows, columns=assignment_columns),
+        pd.DataFrame(audit_rows, columns=audit_columns),
+    )
+
+
 def validate_problem_decision_shape(decision: dict) -> list[str]:
     """문항 선택 결정의 핵심 JSON Schema 구조를 검사한다."""
     messages: list[str] = []
@@ -185,7 +666,15 @@ def validate_problem_decisions(
     identifier_policy = resolution_policy["identifier_policy"]
     task_by_id = {task["problem_review_task_id"]: task for task in tasks}
     decision_rows: list[dict] = []
-    verified_rows = deterministic_assignments.to_dict("records")
+    model_assignment_ids = {
+        str(decision.get("problem_assignment_id") or "")
+        for decision in decisions
+    }
+    verified_rows = [
+        row
+        for row in deterministic_assignments.to_dict("records")
+        if str(row["problem_assignment_id"]) not in model_assignment_ids
+    ]
     error_rows: list[dict] = []
     observed_task_ids: set[str] = set()
     allowed_modes = {"SINGLE", "MULTIPLE", "AMBIGUOUS", "NONE"}
@@ -543,13 +1032,42 @@ if __name__ == "__main__":
         reviewed_term_tables,
         pipeline_policy,
     )
+    initial_problem_task_count = len(problem_tasks)
+    (
+        problem_tasks,
+        context_assignments,
+        context_audit,
+    ) = resolve_problem_tasks_by_context(
+        problem_tasks,
+        pipeline_policy,
+    )
+    deterministic_assignments = pd.concat(
+        [deterministic_assignments, context_assignments],
+        ignore_index=True,
+    )
     semantic_policy = pipeline_policy["entity_resolution"]["semantic_review"]
+    context_audit_path = Path(cli_args.review_dir) / semantic_policy[
+        "problem_context_rule"
+    ]["audit_file"]
+    context_audit.to_csv(
+        context_audit_path,
+        index=False,
+        encoding="utf-8-sig",
+    )
+    resolved_status = semantic_policy["problem_context_rule"][
+        "resolved_status"
+    ]
+    code_resolved_count = int(
+        (context_audit["resolution_status"] == resolved_status).sum()
+    )
     task_path = Path(cli_args.review_dir) / semantic_policy[
         "problem_task_file"
     ]
     write_jsonl(problem_tasks, str(task_path))
     print(
-        f"problem review task: {len(problem_tasks)}건, "
+        f"initial problem review task: {initial_problem_task_count}건, "
+        f"code resolved: {code_resolved_count}건, "
+        f"remaining task: {len(problem_tasks)}건, "
         f"deterministic assignment: {len(deterministic_assignments)}건"
     )
     proposed_decisions: list[dict] = []

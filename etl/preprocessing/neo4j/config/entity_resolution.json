@@ -1,0 +1,732 @@
+{
+  "entity_resolution": {
+    "entity_type_mapping": {
+      "인물": "Person",
+      "사건": "Event",
+      "국가": "Polity",
+      "왕조": "Polity",
+      "제도": "Concept",
+      "정책": "Concept",
+      "단체": "Organization",
+      "기관": "Institution",
+      "문헌": "Work",
+      "문화재": "Heritage",
+      "조약": "Work",
+      "사상": "Concept",
+      "지명": "Place",
+      "유물": "Heritage",
+      "유적": "Heritage"
+    },
+    "candidate_collections": {
+      "encyclopedia": "aks_name",
+      "thesaurus": "thesaurus",
+      "itkc_people": "itkc_person",
+      "itkc_events": "itkc_event"
+    },
+    "definition_candidate_channel": "aks_definition",
+    "initial_link_status": {
+      "noise": "REJECTED",
+      "invalid_category": "REJECTED",
+      "candidate_found": "AMBIGUOUS",
+      "candidate_not_found": "UNRESOLVED"
+    },
+    "review_reason": {
+      "noise": "EXTRACTION_NOISE",
+      "invalid_category": "INVALID_EXTRACTION_CATEGORY",
+      "candidate_found": "CANDIDATE_VERIFICATION_REQUIRED",
+      "candidate_not_found": "NO_SOURCE_CANDIDATE"
+    },
+    "review_method": {
+      "invalid_category": "reextract_term",
+      "multiple_candidates": "llm_per_problem",
+      "single_candidate": "llm_term",
+      "candidate_not_found": "source_enrichment"
+    },
+    "proposal_status": "PROPOSED",
+    "review_status": "PENDING",
+    "link_status_vocabulary": [
+      "ACCEPTED",
+      "AMBIGUOUS",
+      "UNRESOLVED",
+      "REJECTED"
+    ],
+    "category_compatibility_status": {
+      "compatible": "COMPATIBLE",
+      "conflict": "CONFLICT",
+      "unknown": "UNKNOWN"
+    },
+    "source_candidate_role_vocabulary": [
+      "IDENTITY_MEMBER",
+      "EVIDENCE_ONLY",
+      "ALTERNATIVE_ENTITY",
+      "REJECTED",
+      "AMBIGUOUS"
+    ],
+    "source_feature_policy": {
+      "value_separators": [
+        "|",
+        "/",
+        ",",
+        ";",
+        "·",
+        ">"
+      ],
+      "sources": {
+        "AKS": {
+          "name_fields": [
+            "headword",
+            "aliases"
+          ],
+          "hanja_fields": [
+            "origin",
+            "headword_origin",
+            "aliases"
+          ],
+          "era_fields": [
+            "era"
+          ],
+          "type_field": "primary_type_part",
+          "type_mapping": {
+            "인물": "Person",
+            "사건": "Event",
+            "단체": "Organization",
+            "제도": "Concept",
+            "의례·행사": "Event",
+            "지명": "Place",
+            "유적": "Heritage",
+            "물품": "Heritage",
+            "의복": "Heritage",
+            "문헌": "Work",
+            "작품": "Work",
+            "개념": "Concept"
+          }
+        },
+        "THESAURUS": {
+          "name_fields": [
+            "term_name"
+          ],
+          "hanja_fields": [
+            "hanja"
+          ],
+          "era_fields": [
+            "era"
+          ],
+          "type_field": "thesaurus_category",
+          "type_mapping": {
+            "인명": "Person",
+            "지명": "Place",
+            "서명": "Work",
+            "문화재": "Heritage"
+          },
+          "type_contains_mapping": [
+            {
+              "value": "회사·기업",
+              "entity_type": "Organization"
+            },
+            {
+              "value": "정치조직·단체",
+              "entity_type": "Organization"
+            },
+            {
+              "value": "자치조직·단체",
+              "entity_type": "Organization"
+            },
+            {
+              "value": "상업·유통·서비스업단체",
+              "entity_type": "Organization"
+            },
+            {
+              "value": "법·법령",
+              "entity_type": "Work"
+            },
+            {
+              "value": "중앙행정기구",
+              "entity_type": "Institution"
+            },
+            {
+              "value": "외교기관·사절",
+              "entity_type": "Institution"
+            },
+            {
+              "value": "문화시설",
+              "entity_type": "Institution"
+            },
+            {
+              "value": "교통시설",
+              "entity_type": "Institution"
+            },
+            {
+              "value": "불교관련시설",
+              "entity_type": "Institution"
+            },
+            {
+              "value": "유교관련시설",
+              "entity_type": "Institution"
+            },
+            {
+              "value": "초등교육기관",
+              "entity_type": "Institution"
+            },
+            {
+              "value": "국가>고대국가",
+              "entity_type": "Polity"
+            },
+            {
+              "value": "사회사건·사고",
+              "entity_type": "Event"
+            },
+            {
+              "value": "정치>정치사건",
+              "entity_type": "Event"
+            },
+            {
+              "value": "역사일반>시기·시대",
+              "entity_type": "Concept"
+            }
+          ],
+          "description_field": "description",
+          "description_type_rules": [
+            {
+              "pattern": "(?:기관|관청|도서관|극장|서점|학교|숙박 시설|기숙사 시설)[.。]?$",
+              "entity_type": "Institution"
+            },
+            {
+              "pattern": "(?:회사|단체|집단|학파|지배세력|연합군|군대)[.。]?$",
+              "entity_type": "Organization"
+            },
+            {
+              "pattern": "(?:가요|노래|잡지|서사시|헌법|개헌안|맹서|논책|통일안|작품|악극|책|글)[.。]?$",
+              "entity_type": "Work"
+            },
+            {
+              "pattern": "(?:사건|집회|국제회의|상봉)[.。]?$",
+              "entity_type": "Event"
+            },
+            {
+              "pattern": "(?:고대 국가|국가|나라)[.。]?$",
+              "entity_type": "Polity"
+            },
+            {
+              "pattern": "(?:지역|도읍지|행정구역)[.。]?$",
+              "entity_type": "Place"
+            },
+            {
+              "pattern": "(?:시기|제도|명칭|복식형태|지붕|문자|강좌|교육과정)[.。]?$",
+              "entity_type": "Concept"
+            }
+          ],
+          "identity_deduplication_fields": [
+            "term_name",
+            "hanja",
+            "era",
+            "thesaurus_category",
+            "description",
+            "term_year",
+            "term_remark"
+          ],
+          "identity_deduplication_minimum_populated_fields": 2,
+          "identity_additional_deduplication_rules": [
+            {
+              "name": "same_identity_across_taxonomies",
+              "fields": [
+                "term_name",
+                "hanja",
+                "era",
+                "description",
+                "term_year",
+                "term_remark"
+              ],
+              "required_populated_fields": [
+                "term_name",
+                "description"
+              ],
+              "minimum_populated_fields": 3
+            }
+          ],
+          "reference_only_filter": {
+            "kind_field": "term_kind",
+            "kind_values": [
+              "1"
+            ],
+            "remark_field": "term_remark",
+            "remark_values": [
+              "인명",
+              "지명",
+              "문화재",
+              "서명"
+            ]
+          }
+        },
+        "ITKC_PERSON": {
+          "name_fields": [
+            "name"
+          ],
+          "hanja_fields": [
+            "hanja"
+          ],
+          "era_fields": [],
+          "birth_year_field": "birth_year",
+          "death_year_field": "death_year",
+          "bonkwan_fields": [
+            "bonkwan"
+          ],
+          "default_entity_type": "Person"
+        },
+        "ITKC_EVENT": {
+          "name_fields": [
+            "event_name"
+          ],
+          "hanja_fields": [],
+          "era_fields": [
+            "period",
+            "event_date"
+          ],
+          "default_entity_type": "Event"
+        }
+      },
+      "era_excluded_values": [
+        "통시대",
+        "미상",
+        "시대미상",
+        "불명"
+      ]
+    },
+    "classification_anchors": {
+      "policy_version": "classification-anchor-v1",
+      "node_status": "ACTIVE",
+      "relationship_status": "VERIFIED",
+      "relationship_method": "deterministic_structured_mapping",
+      "review_status": "PENDING",
+      "topics": [
+        {
+          "topic_id": "topic:event",
+          "name": "사건"
+        },
+        {
+          "topic_id": "topic:person",
+          "name": "인물"
+        },
+        {
+          "topic_id": "topic:politics",
+          "name": "정치"
+        },
+        {
+          "topic_id": "topic:institutional_system",
+          "name": "제도"
+        },
+        {
+          "topic_id": "topic:culture",
+          "name": "문화"
+        },
+        {
+          "topic_id": "topic:society",
+          "name": "사회"
+        },
+        {
+          "topic_id": "topic:military",
+          "name": "군사"
+        },
+        {
+          "topic_id": "topic:economy",
+          "name": "경제"
+        },
+        {
+          "topic_id": "topic:thought_religion",
+          "name": "사상·종교"
+        },
+        {
+          "topic_id": "topic:diplomacy",
+          "name": "외교"
+        }
+      ],
+      "eras": [
+        {
+          "era_id": "era:joseon",
+          "name": "조선"
+        },
+        {
+          "era_id": "era:goryeo",
+          "name": "고려"
+        },
+        {
+          "era_id": "era:three_kingdoms",
+          "name": "삼국시대"
+        },
+        {
+          "era_id": "era:opening_ports",
+          "name": "개항기"
+        },
+        {
+          "era_id": "era:modern",
+          "name": "현대"
+        },
+        {
+          "era_id": "era:japanese_colonial",
+          "name": "일제강점기"
+        },
+        {
+          "era_id": "era:north_south_states",
+          "name": "남북국시대"
+        },
+        {
+          "era_id": "era:early_states",
+          "name": "초기국가"
+        },
+        {
+          "era_id": "era:prehistoric",
+          "name": "선사시대"
+        },
+        {
+          "era_id": "era:gojoseon",
+          "name": "고조선"
+        }
+      ],
+      "entity_type_topics": {
+        "Person": [
+          "topic:person"
+        ],
+        "Event": [
+          "topic:event"
+        ]
+      },
+      "case_category_topics": {
+        "인물": [
+          "topic:person"
+        ],
+        "사건": [
+          "topic:event"
+        ],
+        "운동": [
+          "topic:event",
+          "topic:society"
+        ],
+        "제도": [
+          "topic:institutional_system"
+        ],
+        "정책": [
+          "topic:politics",
+          "topic:institutional_system"
+        ],
+        "법령": [
+          "topic:institutional_system"
+        ],
+        "관직": [
+          "topic:institutional_system"
+        ],
+        "기관": [
+          "topic:institutional_system"
+        ],
+        "문헌": [
+          "topic:culture"
+        ],
+        "문화재": [
+          "topic:culture"
+        ],
+        "유물": [
+          "topic:culture"
+        ],
+        "유적": [
+          "topic:culture"
+        ],
+        "사상": [
+          "topic:thought_religion"
+        ],
+        "조약": [
+          "topic:diplomacy"
+        ]
+      },
+      "source_topic_rules": [
+        {
+          "source": "THESAURUS",
+          "field": "thesaurus_category",
+          "pattern": "^인명(?:$|[>/])",
+          "topic_ids": [
+            "topic:person"
+          ]
+        },
+        {
+          "source": "THESAURUS",
+          "field": "thesaurus_category",
+          "pattern": "^정치·행정·법제(?:$|[>/])",
+          "topic_ids": [
+            "topic:politics"
+          ]
+        },
+        {
+          "source": "THESAURUS",
+          "field": "thesaurus_category",
+          "pattern": "(법령|법제|제도|관직|관청|행정기구|정부기구)",
+          "topic_ids": [
+            "topic:institutional_system"
+          ]
+        },
+        {
+          "source": "THESAURUS",
+          "field": "thesaurus_category",
+          "pattern": "^국방·군사(?:$|[>/])",
+          "topic_ids": [
+            "topic:military"
+          ]
+        },
+        {
+          "source": "THESAURUS",
+          "field": "thesaurus_category",
+          "pattern": "^(사회운동·독립운동|사회·생활|교육|교통·통신)(?:$|[>/])",
+          "topic_ids": [
+            "topic:society"
+          ]
+        },
+        {
+          "source": "THESAURUS",
+          "field": "thesaurus_category",
+          "pattern": "^(문화·예술|서명|문화재|학술·과학기술)(?:$|[>/])",
+          "topic_ids": [
+            "topic:culture"
+          ]
+        },
+        {
+          "source": "THESAURUS",
+          "field": "thesaurus_category",
+          "pattern": "^외교·국제관계(?:$|[>/])",
+          "topic_ids": [
+            "topic:diplomacy"
+          ]
+        },
+        {
+          "source": "THESAURUS",
+          "field": "thesaurus_category",
+          "pattern": "^(경제·산업|재정·금융)(?:$|[>/])",
+          "topic_ids": [
+            "topic:economy"
+          ]
+        },
+        {
+          "source": "THESAURUS",
+          "field": "thesaurus_category",
+          "pattern": "^전통사상·종교(?:$|[>/])",
+          "topic_ids": [
+            "topic:thought_religion"
+          ]
+        },
+        {
+          "source": "AKS",
+          "field": "primary_type",
+          "pattern": "^인물(?:$|/)",
+          "topic_ids": [
+            "topic:person"
+          ]
+        },
+        {
+          "source": "AKS",
+          "field": "primary_type",
+          "pattern": "^사건(?:$|/)",
+          "topic_ids": [
+            "topic:event"
+          ]
+        },
+        {
+          "source": "AKS",
+          "field": "primary_type",
+          "pattern": "^사건/전쟁",
+          "topic_ids": [
+            "topic:military"
+          ]
+        },
+        {
+          "source": "AKS",
+          "field": "primary_type",
+          "pattern": "^사건/사회운동",
+          "topic_ids": [
+            "topic:society"
+          ]
+        },
+        {
+          "source": "AKS",
+          "field": "primary_type",
+          "pattern": "^사건/조약·회담",
+          "topic_ids": [
+            "topic:diplomacy"
+          ]
+        },
+        {
+          "source": "AKS",
+          "field": "primary_type",
+          "pattern": "^제도(?:$|/)",
+          "topic_ids": [
+            "topic:institutional_system"
+          ]
+        },
+        {
+          "source": "AKS",
+          "field": "primary_type",
+          "pattern": "^(문헌|작품|유적|물품|의복)(?:$|/)",
+          "topic_ids": [
+            "topic:culture"
+          ]
+        },
+        {
+          "source": "ITKC_EVENT",
+          "field": "subject_category",
+          "pattern": "전쟁",
+          "topic_ids": [
+            "topic:event",
+            "topic:military"
+          ]
+        }
+      ],
+      "era_rules": [
+        {
+          "era_id": "era:gojoseon",
+          "pattern": "고조선"
+        },
+        {
+          "era_id": "era:prehistoric",
+          "pattern": "(선사|구석기|신석기|청동기)"
+        },
+        {
+          "era_id": "era:early_states",
+          "pattern": "(초기\\s*국가|원삼국|초기\\s*철기)"
+        },
+        {
+          "era_id": "era:three_kingdoms",
+          "pattern": "(삼국|고구려|백제|가야)"
+        },
+        {
+          "era_id": "era:north_south_states",
+          "pattern": "(남북국|통일\\s*신라|발해)"
+        },
+        {
+          "era_id": "era:goryeo",
+          "pattern": "(고려|^중세$)"
+        },
+        {
+          "era_id": "era:joseon",
+          "pattern": "(?<!고)조선"
+        },
+        {
+          "era_id": "era:opening_ports",
+          "pattern": "(개항기|대한제국)"
+        },
+        {
+          "era_id": "era:japanese_colonial",
+          "pattern": "일제\\s*(강점기|시기|시대)"
+        },
+        {
+          "era_id": "era:modern",
+          "pattern": "(현대|대한민국|북한)"
+        }
+      ]
+    },
+    "pair_signal_policy": {
+      "minimum_independent_signals": 2,
+      "minimum_disambiguating_signals": 1,
+      "required_signals": [
+        "normalized_name_match"
+      ],
+      "disambiguating_signals": [
+        "hanja_match",
+        "lifespan_match",
+        "era_overlap",
+        "bonkwan_match"
+      ],
+      "strong_conflicts": [
+        "entity_type_conflict",
+        "birth_year_conflict",
+        "death_year_conflict"
+      ],
+      "allow_same_source_merge": false,
+      "year_tolerance": 0
+    },
+    "canonical_registry": {
+      "registry_version": "canonical-registry-v1",
+      "canonical_id_prefix": "canonical:",
+      "active_status": "ACTIVE",
+      "minimum_automatic_identity_members": 2,
+      "minimum_independent_source_systems": 2,
+      "allow_single_source_candidate_creation": true,
+      "accepted_resolution_method": "verified_multi_source_cluster",
+      "single_source_resolution_method": "source_backed_exact_candidate",
+      "identity_confidence": {
+        "single_source": "SOURCE_BACKED",
+        "multi_source": "CORROBORATED"
+      },
+      "output_files": {
+        "canonical_registry": "canonical_entity_registry.csv",
+        "exam_term_nodes": "neo4j_exam_term_nodes.csv",
+        "canonical_entity_nodes": "neo4j_canonical_entity_nodes.csv",
+        "source_record_nodes": "neo4j_source_record_nodes.csv",
+        "entity_name_nodes": "neo4j_entity_name_nodes.csv",
+        "source_record_resolutions": "neo4j_source_to_entity_relationships.csv",
+        "entity_name_references": "neo4j_name_to_entity_relationships.csv",
+        "exam_term_references": "neo4j_exam_term_to_entity_relationships.csv",
+        "topic_nodes": "neo4j_topic_nodes.csv",
+        "era_nodes": "neo4j_era_nodes.csv",
+        "canonical_topic_relationships": "neo4j_canonical_to_topic_relationships.csv",
+        "canonical_era_relationships": "neo4j_canonical_to_era_relationships.csv",
+        "canonical_classification_review": "canonical_classification_review.csv",
+        "final_problem_assignments": "exam_problem_entity_assignments_final.csv",
+        "canonical_acceptance_review_queue": "single_source_entities_requiring_approval.csv"
+      }
+    },
+    "identifier_policy": {
+      "hash_algorithm": "sha256",
+      "digest_length": 20,
+      "resolution_case_prefix": "resolution-case:",
+      "source_candidate_prefix": "source-candidate:",
+      "source_candidate_pair_prefix": "source-candidate-pair:",
+      "canonical_alternative_prefix": "canonical-alternative:",
+      "exam_term_prefix": "exam-term:",
+      "term_review_task_prefix": "term-review-task:",
+      "term_decision_prefix": "term-decision:",
+      "problem_review_task_prefix": "problem-review-task:",
+      "problem_decision_prefix": "problem-decision:",
+      "gold_case_prefix": "gold-case:",
+      "related_resolution_case_prefix": "related-resolution-case:",
+      "related_entity_task_prefix": "related-entity-task:",
+      "entity_name_prefix": "entity-name:",
+      "canonical_acceptance_review_prefix": "canonical-acceptance-review:",
+      "problem_assignment_prefix": "problem-assignment:",
+      "review_queue_prefix": "resolution-review:"
+    },
+    "related_entity_resolution": {
+      "queue_status": "PROPOSED",
+      "seed_retrieval_method": "human_related_entity_seed",
+      "seed_retrieval_score": 1.0,
+      "final_identity": {
+        "default_output_directory": "goldset/final_identity",
+        "selection_file": "related_entity_canonical_selections.csv",
+        "selection_method": "verified_related_entity_seed",
+        "manifest_file": "related_entity_finalization_manifest.json"
+      },
+      "source_collection_by_source": {
+        "AKS": "encyclopedia",
+        "THESAURUS": "thesaurus",
+        "ITKC_PERSON": "itkc_people",
+        "ITKC_EVENT": "itkc_events"
+      },
+      "default_output_directory": "goldset/internal/related_entity",
+      "output_files": {
+        "terms": "related_entity_terms.csv",
+        "name_matches": "name_match_candidates.json",
+        "definition_matches": "definition_match_candidates.json",
+        "body_mention_matches": "body_mention_candidates.json",
+        "resolution_package": ".",
+        "term_review_tasks": "related_entity_review_tasks.jsonl",
+        "manifest": "related_entity_resolution_manifest.json",
+        "review_manifest": "related_entity_review_manifest.json"
+      }
+    },
+    "output_files": {
+      "resolution_cases": "entity_cases.csv",
+      "source_record_candidates": "candidate_source_records.csv",
+      "source_candidate_features": "candidate_comparison_features.csv",
+      "source_candidate_pair_signals": "candidate_pair_merge_signals.csv",
+      "canonical_alternative_clusters": "proposed_entity_groups.csv",
+      "canonical_cluster_members": "proposed_entity_group_members.csv",
+      "problem_contexts": "exam_problem_contexts.csv",
+      "problem_resolution_assignments": "exam_problem_entity_assignments_draft.csv",
+      "review_queue": "cases_requiring_review.csv"
+    },
+    "body_mention_candidate_channel": "aks_body_mention"
+  }
+}

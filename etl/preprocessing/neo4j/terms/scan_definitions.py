@@ -11,26 +11,36 @@ from match_names import get_primary_type_part, is_category_compatible
 from prep_thesaurus import iter_encyclopedia_rows
 
 
-def collect_unmatched_terms(match_results: list[dict]) -> list[dict]:
-    """이름·시소러스·ITKC 후보가 하나도 없는 비노이즈 용어를 고른다."""
-    unmatched: list[dict] = []
+def collect_aks_enrichment_terms(
+    match_results: list[dict],
+    retrieval_policy: dict,
+) -> list[dict]:
+    """AKS 정확 이름 후보가 없어 definition·body 보강이 필요한 용어를 고른다."""
+    skip_methods = set(
+        retrieval_policy["enrichment_skip_retrieval_methods"]
+    )
+    enrichment_terms: list[dict] = []
     for item in match_results:
         if item.get("is_noise"):
             continue
-        if (
-            item.get("encyclopedia")
-            or item.get("thesaurus")
-            or item.get("itkc_people")
-            or item.get("itkc_events")
-        ):
+        has_strong_aks_candidate = False
+        for candidate in item.get("encyclopedia", []):
+            candidate_methods = set(candidate.get("retrieval_methods", []))
+            primary_method = str(candidate.get("retrieval_method") or "")
+            if primary_method:
+                candidate_methods.add(primary_method)
+            if candidate_methods.intersection(skip_methods):
+                has_strong_aks_candidate = True
+                break
+        if has_strong_aks_candidate:
             continue
-        unmatched.append(
+        enrichment_terms.append(
             {
                 "canonical_term": item["canonical_term"],
                 "category": item["category"],
             }
         )
-    return unmatched
+    return enrichment_terms
 
 
 def build_definition_index(
@@ -96,15 +106,21 @@ def scan_definitions(
     max_candidates: int | None = None,
 ) -> list[dict]:
     """
-    이름 후보가 없는 용어를 AKS definition의 비연속 문자 유사도로 검색한다.
+    AKS 정확 이름 후보가 없는 용어를 definition 문자 유사도로 검색한다.
     결과는 확정하지 않고 항상 PROPOSED 후보로 반환한다.
     """
     with open(match_json, "r", encoding="utf-8") as input_file:
         match_results = load(input_file)
 
-    unmatched = collect_unmatched_terms(match_results)
-    print(f"원천 후보 미발견 용어: {len(unmatched)}개 (AKS definition 검색 대상)")
-    if not unmatched:
+    enrichment_terms = collect_aks_enrichment_terms(
+        match_results,
+        policy["candidate_retrieval"],
+    )
+    print(
+        "AKS 정확 이름 후보 미발견 용어: "
+        f"{len(enrichment_terms)}개 (definition 검색 대상)"
+    )
+    if not enrichment_terms:
         return []
 
     source_release = calculate_source_release(
@@ -123,7 +139,7 @@ def scan_definitions(
         candidate_limit = policy["definition_scan"]["max_candidates"]
 
     results: list[dict] = []
-    for item in unmatched:
+    for item in enrichment_terms:
         term = item["canonical_term"]
         category = item["category"]
         candidates = retrieve_candidates(
@@ -145,6 +161,13 @@ def scan_definitions(
                 candidate["primary_type_part"],
                 policy["category_compatibility"],
             )
+            if (
+                candidate["category_mismatch"]
+                and not policy["definition_scan"][
+                    "include_category_mismatch"
+                ]
+            ):
+                continue
             definition_candidates.append(candidate)
 
         definition_candidates.sort(

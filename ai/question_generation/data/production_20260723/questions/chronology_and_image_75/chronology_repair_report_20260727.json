@@ -1,0 +1,69 @@
+{
+  "status": "pass",
+  "repaired": 26,
+  "timeline_position": 13,
+  "order": 13,
+  "unchanged_period_between": 24,
+  "unchanged_image": 25,
+  "old_timeline_marker_failures": 10,
+  "new_timeline_marker_failures": 0,
+  "timeline_correct_positions": {
+    "(가)": 3,
+    "(다)": 3,
+    "(라)": 2,
+    "(마)": 2,
+    "(나)": 3
+  },
+  "order_correct_sequences": {
+    "(가)-(나)-(다)": 3,
+    "(나)-(가)-(다)": 2,
+    "(나)-(다)-(가)": 2,
+    "(다)-(가)-(나)": 2,
+    "(다)-(나)-(가)": 2,
+    "(가)-(다)-(나)": 2
+  },
+  "answer_number_distribution": {
+    "1": 4,
+    "3": 3,
+    "2": 8,
+    "5": 7,
+    "4": 4
+  },
+  "final_evaluation": {
+    "accepted": 26,
+    "rejected": 0,
+    "component_repairs": 5
+  },
+  "ml_review": {
+    "warning_tagged": 6,
+    "note": "fixed-choice advisory"
+  },
+  "api_calls": {
+    "generation": 31,
+    "evaluation": 31,
+    "explanation": 26,
+    "total": 88
+  },
+  "evaluation_usage": {
+    "prompt_tokens": 41401,
+    "completion_tokens": 14645,
+    "total_tokens": 56046
+  },
+  "canonical_integrity": {
+    "questions": 75,
+    "explanations": 75,
+    "classifications": 75
+  },
+  "database": {
+    "total_questions": 580,
+    "generated_questions": 380,
+    "verified": 75,
+    "errors": [],
+    "question_no_preserved": true
+  },
+  "artifacts": {
+    "pack": "C:\\dev\\project\\SKN27-FINAL-2Team\\ai\\question_generation\\data\\production_20260723\\packs\\chronology_10_balanced_20260727.json",
+    "questions": "C:\\dev\\project\\SKN27-FINAL-2Team\\ai\\question_generation\\data\\production_20260723\\questions\\chronology_and_image_75\\questions.json",
+    "run": "C:\\dev\\project\\SKN27-FINAL-2Team\\ai\\question_generation\\outputs\\chronology_repair_20260727"
+  }
+}

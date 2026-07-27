@@ -1,0 +1,69 @@
+{
+  "policy_version": "fact-relationship-goldset-v1.0",
+  "sample_size": 100,
+  "minimum_cases_per_relation_type": 2,
+  "deterministic_seed": "fact-relationship-goldset-20260726",
+  "case_id_prefix": "FRG-",
+  "excluded_relation_types": [
+    "ASSOCIATED_WITH_POLITY"
+  ],
+  "relation_labels": {
+    "HAS_TEACHER": "스승 관계: 시작 엔티티의 스승이 종료 엔티티",
+    "HAS_STUDENT": "제자 관계: 시작 엔티티의 제자가 종료 엔티티",
+    "SOCIAL_ASSOCIATE": "교유 관계",
+    "CREATED_BY": "제작자 관계: 시작 엔티티를 종료 인물이 제작",
+    "LOCATED_IN": "소재지 관계",
+    "SIBLING_OF": "형제·자매 관계",
+    "FOUNDED_IN": "설립 지역 관계",
+    "HAS_CHILD": "자녀 관계: 시작 인물의 자녀가 종료 인물",
+    "HAS_FATHER": "부친 관계: 시작 인물의 부친이 종료 인물",
+    "INVOLVES_PERSON": "사건 관련 인물",
+    "AUTHORED": "저술 관계: 시작 인물이 종료 저작물을 저술",
+    "FOUNDED": "설립 관계: 시작 인물이 종료 단체·기관을 설립",
+    "HAS_GRANDFATHER": "조부 관계",
+    "PARTICIPATED_IN": "사건 참여 관계",
+    "HAS_FATHER_IN_LAW": "장인 관계",
+    "HAS_GREAT_GRANDFATHER": "증조부 관계",
+    "HAS_SON_IN_LAW": "사위 관계",
+    "INVOLVES_ENTITY": "사건 관련 엔티티",
+    "DEDICATED_TO": "배향·추모 대상 관계",
+    "CHILD_OF": "자녀 관계: 시작 인물이 종료 인물의 자녀",
+    "OCCURRED_IN": "사건 발생 지역 관계",
+    "DESCENDANT_OF": "후손 관계",
+    "HAS_BIOLOGICAL_CHILD": "친생 자녀 관계",
+    "HAS_BIOLOGICAL_FATHER": "친생 부친 관계",
+    "HAS_MOTHER": "모친 관계",
+    "SPOUSE_OF": "배우자 관계"
+  },
+  "review": {
+    "initial_status": "NOT_STARTED",
+    "allowed_statuses": [
+      "NOT_STARTED",
+      "IN_PROGRESS",
+      "COMPLETE"
+    ],
+    "allowed_judgments": [
+      "CORRECT",
+      "INCORRECT",
+      "PARTIALLY_CORRECT",
+      "INSUFFICIENT_EVIDENCE"
+    ],
+    "annotation_fields": [
+      "gold_relation_judgment",
+      "gold_correct_relation_type",
+      "gold_correct_start_canonical_id",
+      "gold_correct_end_canonical_id",
+      "gold_error_types_json",
+      "gold_evidence_url",
+      "gold_reason",
+      "reviewer",
+      "reviewed_at"
+    ]
+  },
+  "outputs": {
+    "sample_snapshot": "internal/source/fact_relationship_gold_sample.csv",
+    "distribution": "internal/source/fact_relationship_gold_distribution.csv",
+    "manifest": "internal/source/fact_relationship_gold_manifest.json",
+    "human_review": "human_review_csv/fact_relationship_review.csv"
+  }
+}

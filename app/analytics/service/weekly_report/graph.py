@@ -116,6 +116,8 @@ class WeeklyReportGraphWorkflow:
             (
                 "strengths",
                 "priorityImprovements",
+                "conceptWeaknesses",
+                "examTrends",
                 "timeSummary",
                 "confusionPatterns",
             ),
@@ -151,6 +153,8 @@ class WeeklyReportGraphWorkflow:
             (
                 "strengths",
                 "priorityImprovements",
+                "conceptWeaknesses",
+                "examTrends",
                 "timeSummary",
                 "confusionPatterns",
             ),

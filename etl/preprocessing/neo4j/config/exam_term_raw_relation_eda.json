@@ -1,0 +1,303 @@
+{
+  "policy_version": "exam-term-raw-relation-eda-v2.1",
+  "accepted_registry_status": "ACTIVE",
+  "accepted_exam_status": "ACCEPTED",
+  "minimum_surface_length": 2,
+  "maximum_sentence_length": 1200,
+  "maximum_csv_field_size": 100000000,
+  "maximum_mentions_per_clause": 12,
+  "maximum_ambiguous_target_records": 8,
+  "maximum_argument_span_characters": 160,
+  "minimum_derived_alias_length": 3,
+  "maximum_unlinked_person_surface_length": 2,
+  "minimum_registered_endpoint_count_per_relation": 1,
+  "aks_source_record_prefix": "AKS:ARTICLE:",
+  "source_record_type_to_entity_type": {
+    "PERSON": "Person",
+    "EVENT": "Event",
+    "TERM": "Concept"
+  },
+  "following_particles": [
+    "은",
+    "는",
+    "이",
+    "가",
+    "을",
+    "를",
+    "의",
+    "에",
+    "에서",
+    "에게",
+    "께서",
+    "와",
+    "과",
+    "로",
+    "으로",
+    "도",
+    "만",
+    "부터",
+    "까지",
+    "라고",
+    "이라는",
+    "였다",
+    "이다"
+  ],
+  "sentence_split_pattern": "(?<=[.!?。])\\s+|\\s*[。]\\s*",
+  "whitespace_pattern": "\\s+",
+  "linked_entity_pattern": "\\[([^\\]]+)\\]\\(E[0-9]+\\)",
+  "parenthetical_hanja_pattern": "\\s*[\\(（][\\u3400-\\u9fff\\uf900-\\ufaff·\\s]+[\\)）]\\s*",
+  "uncertainty_patterns": [
+    "추정",
+    "전해지",
+    "가능성",
+    "불확실",
+    "미상",
+    "것으로 보",
+    "적어 보",
+    "견해"
+  ],
+  "negation_patterns": [
+    "않(?:았|는|다)",
+    "아니(?:었|라고|다)",
+    "없(?:었|는|다)",
+    "못하",
+    "실패",
+    "사실이 아니"
+  ],
+  "blocked_action_suffix_pattern": "^\\s*(?:은|는|이|가|을|를|의|에|에서|등|과|와|하게|적으로|(?:하는|한|되는|된|할|될)\\s+|하면서|해야|하여야|하기\\s*(?:위해|위하여|위한)|하러|하려|하려고|하고자|하고\\s+싶|(?:한|했|된|됐|였|았|었)다는|할\\s+(?:수|때|생각|계획|예정|목적)|것(?:이|입니|이다))",
+  "passive_action_suffix_pattern": "^\\s*(?:되|된|되어|됐|받|어졌|아졌)",
+  "intervening_predicate_pattern": "[가-힣]+(?:자|하자|되자|였고|했고|한\\s*(?:뒤|후|이후|다음|이듬해)|된\\s*(?:뒤|후|이후)|하여|해서|하고|하며|하면서|다가|으나|지만|아|어|여)(?:서)?\\s+",
+  "intervening_argument_boundary_pattern": "[,;:]",
+  "blocked_predicate_patterns_by_family": {
+    "AUTHOR_OR_COMPILE": [
+      "쓴",
+      "지었",
+      "지은",
+      "저자"
+    ]
+  },
+  "unsafe_start_role_bases": [
+    "PASSIVE_AGENT"
+  ],
+  "open_endpoint_extraction": {
+    "enabled": true,
+    "minimum_surface_length": 2,
+    "maximum_surface_length": 60,
+    "maximum_surface_word_count": 3,
+    "phrase_left_boundary_pattern": "(?:[,;:!?。]|(?:은|는|이|가|께서|에|에서|에게|으로|로|때|시기|후|뒤|전|전에|이후|직후)\\s+|(?:하자|되자|되고|되어|되며|되면서|하고|하며|하면서|하여|해서|다가|으나|지만|기 전에|한 뒤|한 후|하는|한|되는|된|있는|없는|여겨지는|구성된)\\s+|(?:그리고|그러나|하지만|이에|또한|한편|즉|곧|다만|내용|주요 활동|의의 및 평가))\\s*",
+    "phrase_leading_noise_pattern": "^(?:(?:내용|주요 활동|의의 및 평가|한편|이에|그리고|그러나|하지만|또한|즉|곧|다만|특히|아울러|따라서|반면|바꾸어 말하면|오늘날|이후|당시|뒤에|거기에다|여기서|실질적으로|따라|이르러서)\\s+|[0-9]{1,4}년(?:\\s*[0-9]{1,2}월)?(?:\\s*[0-9]{1,2}일)?(?:에는?|부터)?\\s*)+",
+    "phrase_trailing_noise_pattern": "\\s*(?:등|따위|또|더욱|새로|별)$",
+    "phrase_edge_strip_characters": " \\t\\r\\n#·ㆍ,;:!?。.'\"“”‘’()（）[]{}『』「」《》≪≫",
+    "blocked_surface_patterns": [
+      "^(?:이|그|저|것|이것|그것|저것|이를|그를|그녀|여기|거기|당시|이때|그때|내용|경우|사실|점|등|수|때)$",
+      ".*(?:이라|라고)$",
+      "^(?:하나|처음|첫째|둘째|셋째|별|시기|거기에다|여기서|실질적으로|집중적)$",
+      ".*(?:년|월|일|직후|이후|당시)(?:에)?$",
+      "^(?:더욱|새로|별|남쪽|북쪽|동쪽|서쪽)$",
+      ".*(?:았다|었다|였다|했다|됐다|갔다|왔다|도록|으며|면서|다가|지만|하여|해서|되어|기\\s+보다|시키려면|하기\\s+전|한\\s+뒤|한\\s+후|할|한|하는|된|되는|있는|없는|같|같은|위한|통한|따른|막|많|넓|목표로|이르러서|필요해진\\s+것|상태|중심|것)$",
+      ".*(?:하|되|있|없|않|보이|나타나|불리|확인되|이르)$",
+      ".*인\\s+자$",
+      "^[0-9]+$"
+    ],
+    "end_role_patterns": {
+      "TARGET": "(?P<surface>[^,;:!?。\\n\\r]{1,80}?)(?:을|를)\\s*(?:(?:직접|다시|새로|본격적으로|처음으로)\\s*)?$",
+      "LOCATION": "(?P<surface>[^,;:!?。\\n\\r]{1,80}?)(?:에|에서|으로|로)\\s*(?:(?:직접|다시|새로|본격적으로|처음으로)\\s*)?$",
+      "ROLE": "(?P<surface>[^,;:!?。\\n\\r]{1,80}?)(?:에|에서|으로|로)\\s*(?:(?:직접|다시|새로|본격적으로|처음으로)\\s*)?$",
+      "CONTEXT": "(?P<surface>[^,;:!?。\\n\\r]{1,80}?)(?:에|에서|으로|로)\\s*(?:(?:직접|다시|새로|본격적으로|처음으로)\\s*)?$"
+    },
+    "end_role_pattern_overrides": {
+      "PASSIVE:TARGET": "(?P<surface>[^,;:!?。\\n\\r]{1,80}?)(?:이|가|은|는)\\s*(?:(?:직접|다시|새로|본격적으로|처음으로)\\s*)?$",
+      "LOCATION_OR_OCCURRENCE:TARGET": "(?P<surface>[^,;:!?。\\n\\r]{1,80}?)(?:이|가|은|는)\\s*(?:(?:직접|다시|새로|본격적으로|처음으로)\\s*)?$"
+    },
+    "start_role_patterns": {
+      "ACTOR": "(?P<surface>[^,;:!?。\\n\\r]{1,80}?)(?:은|는|이|가|께서)(?![가-힣])",
+      "TARGET": "(?P<surface>[^,;:!?。\\n\\r]{1,80}?)(?:을|를|이|가|은|는)(?![가-힣])"
+    },
+    "start_role_pattern_overrides": {
+      "즉위:TARGET": "(?P<surface>[^,;:!?。\\n\\r]{1,80}?)(?:이|가|은|는)(?![가-힣])",
+      "취임:TARGET": "(?P<surface>[^,;:!?。\\n\\r]{1,80}?)(?:이|가|은|는)(?![가-힣])",
+      "재위:TARGET": "(?P<surface>[^,;:!?。\\n\\r]{1,80}?)(?:이|가|은|는)(?![가-힣])",
+      "역임:TARGET": "(?P<surface>[^,;:!?。\\n\\r]{1,80}?)(?:이|가|은|는)(?![가-힣])",
+      "임명:TARGET": "(?P<surface>[^,;:!?。\\n\\r]{1,80}?)(?:을|를)(?![가-힣])",
+      "기용:TARGET": "(?P<surface>[^,;:!?。\\n\\r]{1,80}?)(?:을|를)(?![가-힣])",
+      "등용:TARGET": "(?P<surface>[^,;:!?。\\n\\r]{1,80}?)(?:을|를)(?![가-힣])"
+    },
+    "default_entity_type_by_role": {
+      "ACTOR": "Unknown",
+      "TARGET": "Unknown",
+      "LOCATION": "Place",
+      "ROLE": "Concept",
+      "CONTEXT": "Event"
+    },
+    "entity_type_by_family_role": {
+      "AUTHOR_OR_COMPILE:TARGET": "Work",
+      "PUBLISH_OR_PRINT:TARGET": "Work",
+      "IMPLEMENT_OR_ENACT:TARGET": "Concept",
+      "LOCATION_OR_OCCURRENCE:TARGET": "Event",
+      "APPOINT_OR_SERVE:TARGET": "Person",
+      "APPOINT_OR_SERVE:ROLE": "Concept"
+    }
+  },
+  "direct_action_attachment_patterns": {
+    "TARGET": "^\\s*(?:등)?(?:을|를|이|가|은|는)\\s*(?:(?:직접|다시|새로|본격적으로|처음으로)\\s*)?$",
+    "LOCATION": "^\\s*(?:등)?(?:에|에서|으로|로)\\s*(?:(?:직접|다시|새로|본격적으로|처음으로)\\s*)?$",
+    "ROLE": "^\\s*(?:등)?(?:에|에서|으로|로)\\s*(?:(?:직접|다시|새로|본격적으로|처음으로)\\s*)?$",
+    "CONTEXT": "^\\s*(?:등)?(?:에|에서|으로|로)\\s*(?:(?:직접|다시|새로|본격적으로|처음으로)\\s*)?$"
+  },
+  "intervening_subject_pattern": "[가-힣A-Za-z0-9一-龥·()（）]{2,40}(?:이|가|은|는|께서)\\s*",
+  "relation_type_by_family": {
+    "FOUND_OR_ESTABLISH": "ESTABLISHED",
+    "CREATE_OR_PRODUCE": "CREATED",
+    "AUTHOR_OR_COMPILE": "AUTHORED",
+    "PUBLISH_OR_PRINT": "PUBLISHED",
+    "IMPLEMENT_OR_ENACT": "IMPLEMENTED",
+    "MOVE_OR_RETURN": "MOVED_TO",
+    "PARTICIPATE_OR_ACT": "PARTICIPATED_IN",
+    "CONFLICT_OR_SUPPRESS": "ACTED_AGAINST",
+    "DIPLOMACY_OR_AGREEMENT": "DIPLOMATICALLY_RELATED_TO",
+    "LOCATION_OR_OCCURRENCE": "LOCATED_IN",
+    "APPOINT_OR_SERVE": "APPOINTED_OR_SERVED"
+  },
+  "relation_type_by_predicate": {
+    "천도": "MOVED_CAPITAL_TO"
+  },
+  "target_node_kinds": {
+    "canonical": "CANONICAL",
+    "official_source": "OFFICIAL_SOURCE",
+    "exam_term": "EXAM_TERM_CANDIDATE",
+    "open_entity": "OPEN_ENTITY_CANDIDATE"
+  },
+  "candidate_statuses": {
+    "canonical": "CANONICAL_RELATION_CANDIDATE",
+    "official_source": "SOURCE_NODE_RELATION_CANDIDATE",
+    "unresolved_exam": "REVIEW_UNRESOLVED_EXAM_TERM",
+    "type_contract": "REVIEW_TYPE_CONTRACT",
+    "multiple_pairs": "REVIEW_MULTIPLE_ROLE_PAIRS",
+    "intervening_subject": "REVIEW_INTERVENING_SUBJECT",
+    "argument_structure": "REVIEW_ARGUMENT_STRUCTURE",
+    "unlinked_short_person": "REVIEW_UNLINKED_SHORT_PERSON",
+    "open_endpoint": "OPEN_ENDPOINT_RELATION_CANDIDATE"
+  },
+  "identifier": {
+    "hash_algorithm": "sha256",
+    "digest_length": 20,
+    "evidence_prefix": "raw-relation-evidence:",
+    "relation_prefix": "raw-relation-candidate:",
+    "exam_term_prefix": "exam-term-candidate:",
+    "open_entity_prefix": "open-entity-candidate:"
+  },
+  "datasets": [
+    {
+      "name": "AKS",
+      "enabled": true,
+      "format": "jsonl",
+      "path": "한국민족문화대백과사전/articles_detail.jsonl",
+      "record_id_field": "eid",
+      "title_field": "headword",
+      "text_fields": ["definition", "summary", "body"],
+      "url_field": "url",
+      "source_id_prefix": "AKS:ARTICLE:",
+      "supports_linked_entities": true,
+      "trust_tier": "OFFICIAL_REFERENCE"
+    },
+    {
+      "name": "NEW_KOREAN_HISTORY",
+      "enabled": true,
+      "format": "csv_glob",
+      "path": "신편 한국사 csv/*.csv",
+      "record_id_field": "페이지ID",
+      "title_field": "제목",
+      "text_fields": ["본문"],
+      "url_field": "원본URL",
+      "source_id_prefix": "NIKH:NEW_HISTORY:",
+      "trust_tier": "OFFICIAL_NARRATIVE"
+    },
+    {
+      "name": "HISTORICAL_SOURCES",
+      "enabled": true,
+      "format": "csv",
+      "path": "사료로 본 한국사/index.csv",
+      "record_id_field": "자료ID",
+      "title_field": "제목",
+      "text_fields": ["국문", "해설"],
+      "url_field": "상세URL",
+      "source_id_prefix": "NIKH:HISTORICAL_SOURCE:",
+      "trust_tier": "OFFICIAL_CURATED_SOURCE"
+    },
+    {
+      "name": "THESAURUS",
+      "enabled": true,
+      "format": "csv",
+      "path": "교육부 국사편찬위원회_한국역사용어시소러스 정보_20211028 (1).csv",
+      "record_id_field": "term_id",
+      "title_field": "term_name",
+      "text_fields": ["term_desc"],
+      "url_field": "",
+      "source_id_prefix": "THESAURUS:TERM:",
+      "trust_tier": "OFFICIAL_TERM_DESCRIPTION"
+    },
+    {
+      "name": "HISTORY_IMAGE",
+      "enabled": true,
+      "format": "csv",
+      "path": "한국사 이미지 자료/한국사_이미지_자료.csv",
+      "record_id_field": "이미지ID",
+      "title_field": "제목",
+      "text_fields": ["설명"],
+      "url_field": "상세요청URL",
+      "source_id_prefix": "NIKH:HISTORY_IMAGE:",
+      "trust_tier": "OFFICIAL_IMAGE_DESCRIPTION"
+    },
+    {
+      "name": "HISTORY_TIMELINE",
+      "enabled": true,
+      "format": "csv",
+      "path": "한국사연대기_연표/history_timeline.csv",
+      "record_id_field": "level_id",
+      "title_field": "title",
+      "text_fields": ["title", "period"],
+      "url_field": "source_url",
+      "source_id_prefix": "NIKH:TIMELINE:",
+      "trust_tier": "OFFICIAL_TIMELINE"
+    },
+    {
+      "name": "TEXTBOOK_TERMS",
+      "enabled": false,
+      "format": "csv",
+      "path": "교과서_용어해설/textbook_terms.csv",
+      "record_id_field": "term_id",
+      "title_field": "term_name",
+      "text_fields": ["content"],
+      "url_field": "source_url",
+      "source_id_prefix": "NIKH:TEXTBOOK_TERM:",
+      "trust_tier": "BOILERPLATE_ONLY",
+      "skip_reason": "현재 content가 용어 설명이 아니라 웹 탐색 UI 문구입니다."
+    },
+    {
+      "name": "ITKC_STRUCTURED",
+      "enabled": false,
+      "format": "structured",
+      "path": "한국고전종합DB_관계망",
+      "record_id_field": "",
+      "title_field": "",
+      "text_fields": [],
+      "url_field": "",
+      "source_id_prefix": "ITKC:",
+      "trust_tier": "STRUCTURED_RELATION",
+      "skip_reason": "이미 source_record_relationships로 전처리된 구조화 관계입니다."
+    }
+  ],
+  "audit": {
+    "maximum_rows": 160,
+    "maximum_exclusion_rows_per_reason": 80
+  },
+  "outputs": {
+    "mention_sentences": "exam_term_relation_mention_sentences.csv",
+    "evidence": "exam_term_raw_relation_evidence.csv",
+    "relations": "exam_term_raw_relation_candidates.csv",
+    "non_exam_nodes": "non_exam_target_node_candidates.csv",
+    "exclusions": "exam_term_raw_relation_exclusions.csv",
+    "audit_sample": "exam_term_raw_relation_audit_sample.csv",
+    "manifest": "exam_term_raw_relation_eda_manifest.json"
+  }
+}

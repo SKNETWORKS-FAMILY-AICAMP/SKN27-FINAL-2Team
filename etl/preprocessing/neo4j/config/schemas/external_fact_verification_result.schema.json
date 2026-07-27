@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "External fact verification result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "external_verification_task_id",
+    "decision",
+    "evidence_urls",
+    "reason"
+  ],
+  "properties": {
+    "external_verification_task_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "decision": {
+      "type": "string",
+      "enum": [
+        "TRUE_RELATION",
+        "FALSE_RELATION",
+        "UNVERIFIABLE"
+      ]
+    },
+    "evidence_urls": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1
+    },
+    "verifier": {
+      "type": "string"
+    },
+    "verified_at": {
+      "type": "string"
+    }
+  }
+}

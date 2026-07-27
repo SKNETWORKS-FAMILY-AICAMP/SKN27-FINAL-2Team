@@ -1,0 +1,262 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ChoiceRelationDecision",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "choice_relation_task_id",
+    "problem_id",
+    "decision_status",
+    "review_model",
+    "prompt_version",
+    "analysis_status",
+    "question_target",
+    "choice_claims",
+    "distractor_relations",
+    "confidence",
+    "reason"
+  ],
+  "properties": {
+    "choice_relation_task_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "problem_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "decision_status": {
+      "type": "string",
+      "const": "PROPOSED"
+    },
+    "review_model": {
+      "type": "string",
+      "minLength": 1
+    },
+    "prompt_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "analysis_status": {
+      "type": "string",
+      "enum": [
+        "ANALYZED",
+        "UNCERTAIN",
+        "UNSUPPORTED"
+      ]
+    },
+    "question_target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "entity_type",
+        "era",
+        "theme",
+        "inference_basis"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "entity_type": {
+          "type": "string"
+        },
+        "era": {
+          "type": "string"
+        },
+        "theme": {
+          "type": "string"
+        },
+        "inference_basis": {
+          "type": "string"
+        }
+      }
+    },
+    "choice_claims": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "choice_id",
+          "choice_index",
+          "contextual_validity",
+          "standalone_fact_status",
+          "contextual_claim",
+          "actual_fact",
+          "explanation"
+        ],
+        "properties": {
+          "choice_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "choice_index": {
+            "type": "integer"
+          },
+          "contextual_validity": {
+            "type": "string",
+            "enum": [
+              "MATCHES_TARGET",
+              "DOES_NOT_MATCH_TARGET",
+              "UNCERTAIN"
+            ]
+          },
+          "standalone_fact_status": {
+            "type": "string",
+            "enum": [
+              "VALID_FACT",
+              "INVALID_FACT",
+              "CONTEXT_DEPENDENT",
+              "UNCERTAIN"
+            ]
+          },
+          "contextual_claim": {
+            "$ref": "#/$defs/fact"
+          },
+          "actual_fact": {
+            "$ref": "#/$defs/fact"
+          },
+          "explanation": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "distractor_relations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "answer_choice_id",
+          "distractor_choice_id",
+          "primary_relation_type",
+          "secondary_relation_types",
+          "shared_dimensions",
+          "changed_dimensions",
+          "proximity",
+          "confidence",
+          "explanation"
+        ],
+        "properties": {
+          "answer_choice_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "distractor_choice_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "primary_relation_type": {
+            "type": "string",
+            "enum": [
+              "TARGET_SWAP",
+              "TIME_SHIFT",
+              "ATTRIBUTE_SWAP",
+              "CAUSE_RESULT_CONFUSION",
+              "LOCATION_SWAP",
+              "CATEGORY_MISMATCH",
+              "FALSE_COMBINATION",
+              "OTHER"
+            ]
+          },
+          "secondary_relation_types": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "TARGET_SWAP",
+                "TIME_SHIFT",
+                "ATTRIBUTE_SWAP",
+                "CAUSE_RESULT_CONFUSION",
+                "LOCATION_SWAP",
+                "CATEGORY_MISMATCH",
+                "FALSE_COMBINATION",
+                "OTHER"
+              ]
+            }
+          },
+          "shared_dimensions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/comparisonDimension"
+            }
+          },
+          "changed_dimensions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/comparisonDimension"
+            }
+          },
+          "proximity": {
+            "type": "string",
+            "enum": [
+              "NEAR",
+              "MEDIUM",
+              "FAR",
+              "UNCERTAIN"
+            ]
+          },
+          "confidence": {
+            "type": "number"
+          },
+          "explanation": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "confidence": {
+      "type": "number"
+    },
+    "reason": {
+      "type": "string"
+    }
+  },
+  "$defs": {
+    "comparisonDimension": {
+      "type": "string",
+      "enum": [
+        "TARGET",
+        "PREDICATE",
+        "OBJECT",
+        "ERA",
+        "LOCATION",
+        "THEME",
+        "ENTITY_TYPE",
+        "CAUSE",
+        "RESULT"
+      ]
+    },
+    "fact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "subject",
+        "predicate",
+        "object",
+        "era",
+        "location"
+      ],
+      "properties": {
+        "subject": {
+          "type": "string"
+        },
+        "predicate": {
+          "type": "string"
+        },
+        "object": {
+          "type": "string"
+        },
+        "era": {
+          "type": "string"
+        },
+        "location": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

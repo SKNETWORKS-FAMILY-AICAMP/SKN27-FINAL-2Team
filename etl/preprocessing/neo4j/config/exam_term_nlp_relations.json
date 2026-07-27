@@ -1,0 +1,122 @@
+{
+  "policy_version": "exam-term-nlp-relation-v1.1",
+  "additional_relationship_trigger_rules": [
+    {
+      "predicate_family": "FOUND_OR_ESTABLISH",
+      "patterns": ["개설", "수립"]
+    },
+    {
+      "predicate_family": "CREATE_OR_PRODUCE",
+      "patterns": ["발명", "개발", "복원", "재건", "증축"]
+    },
+    {
+      "predicate_family": "AUTHOR_OR_COMPILE",
+      "patterns": ["번역", "편집"]
+    },
+    {
+      "predicate_family": "PUBLISH_OR_PRINT",
+      "patterns": ["배포"]
+    },
+    {
+      "predicate_family": "IMPLEMENT_OR_ENACT",
+      "patterns": ["개혁", "개편", "정비", "공포", "금지"]
+    },
+    {
+      "predicate_family": "PARTICIPATE_OR_ACT",
+      "patterns": ["가입", "입당", "입회"]
+    },
+    {
+      "predicate_family": "CONFLICT_OR_SUPPRESS",
+      "patterns": [
+        "점령",
+        "병합",
+        "합병",
+        "정복",
+        "살해",
+        "처형",
+        "유배",
+        "축출",
+        "포획"
+      ]
+    },
+    {
+      "predicate_family": "LOCATION_OR_OCCURRENCE",
+      "patterns": ["발견"]
+    }
+  ],
+  "maximum_counterpart_distance": 100,
+  "maximum_counterpart_word_count": 3,
+  "maximum_candidates_per_anchor_action": 3,
+  "proper_noun_tags": [
+    "NNP",
+    "SH"
+  ],
+  "minimum_candidate_score": 3,
+  "high_confidence_score": 9,
+  "high_confidence_margin": 2,
+  "minimum_explicit_role_evidence_count_for_high_confidence": 2,
+  "require_type_contract_for_high_confidence": true,
+  "distance_score_bands": [
+    {
+      "maximum_distance": 5,
+      "score": 4
+    },
+    {
+      "maximum_distance": 15,
+      "score": 3
+    },
+    {
+      "maximum_distance": 40,
+      "score": 2
+    },
+    {
+      "maximum_distance": 100,
+      "score": 1
+    }
+  ],
+  "score_weights": {
+    "explicit_anchor_role": 4,
+    "explicit_counterpart_role": 4,
+    "argument_order": 2,
+    "registered_counterpart": 2,
+    "proper_noun": 1,
+    "multiword_phrase": 1,
+    "post_predicate_attributive": 4,
+    "compatible_entity_type": 4,
+    "incompatible_entity_type": -6,
+    "generic_surface_penalty": -4,
+    "role_mismatch_penalty": -6
+  },
+  "case_marker_patterns_by_role": {
+    "ACTOR": "^\\s*(?:은|는|이|가|께서)(?![가-힣])",
+    "TARGET": "^\\s*(?:을|를|이|가|은|는)(?![가-힣])",
+    "LOCATION": "^\\s*(?:에|에서|으로|로)(?![가-힣])",
+    "ROLE": "^\\s*(?:에|에서|으로|로)(?![가-힣])",
+    "CONTEXT": "^\\s*(?:에|에서|으로|로|의|때)(?![가-힣])"
+  },
+  "post_predicate_attributive_pattern": "^\\s*(?:한|하는|된|되는|할|될)\\s*",
+  "nlp_structural_conflict_pattern": "(?:에\\s*(?:따르면|의하면)|에서\\s*보(?:듯|면)|[가-힣]{2,}(?:으며|며|고|면서|자|다가|지만|거나|킨|린|긴|진|친|한|된|하는|되는)\\s+)",
+  "generic_surface_patterns": [
+    "^(?:것|수|등|때|곳|점|경우|사실|내용|기록|시기|당시|과정|연구|관련|중심|하나|다음|자료|논문|참고문헌)$",
+    "^[0-9]+$",
+    ".*(?:년|월|일)$"
+  ],
+  "statuses": {
+    "high_confidence_registered": "NLP_HIGH_CONFIDENCE_REGISTERED",
+    "high_confidence_open": "NLP_HIGH_CONFIDENCE_OPEN_ENDPOINT",
+    "review_registered": "NLP_REVIEW_REGISTERED",
+    "review_open": "NLP_REVIEW_OPEN_ENDPOINT",
+    "ambiguous": "NLP_REVIEW_AMBIGUOUS_COUNTERPART"
+  },
+  "minimum_registered_endpoint_count_per_relation": 1,
+  "identifier": {
+    "evidence_prefix": "exam-nlp-relation-evidence:",
+    "relation_prefix": "exam-nlp-relation:"
+  },
+  "outputs": {
+    "evidence": "exam_term_nlp_relation_evidence.csv",
+    "relations": "exam_term_nlp_relation_candidates.csv",
+    "coverage": "exam_term_nlp_relation_coverage.csv",
+    "manifest": "exam_term_nlp_relation_manifest.json"
+  }
+}

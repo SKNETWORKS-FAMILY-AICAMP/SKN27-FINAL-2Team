@@ -1,5 +1,6 @@
 import sys
 import unittest
+from copy import deepcopy
 from pathlib import Path
 
 import pandas as pd
@@ -18,12 +19,15 @@ class SemanticReviewTest(unittest.TestCase):
             build_resolution_tables,
         )
         from entity_resolution.semantic_review import (
+            build_validation_tables_from_review_tasks,
             build_term_review_tasks,
             validate_term_decisions,
         )
-
         cls.build_resolution_tables = staticmethod(build_resolution_tables)
         cls.build_term_review_tasks = staticmethod(build_term_review_tasks)
+        cls.build_validation_tables_from_review_tasks = staticmethod(
+            build_validation_tables_from_review_tasks
+        )
         cls.validate_term_decisions = staticmethod(validate_term_decisions)
         cls.policy = load_pipeline_policy(
             str(neo4j_root / "config" / "resolution_policy.json")
@@ -204,6 +208,31 @@ class SemanticReviewTest(unittest.TestCase):
             {"IDENTITY_MEMBER", "EVIDENCE_ONLY"},
         )
 
+        tasks[0]["canonical_term"] = "unrelated-upstream-input"
+        tasks[0]["term_variants"] = ["unrelated-upstream-input"]
+        alignment_outputs = self.validate_term_decisions(
+            [decision],
+            tasks,
+            tables,
+            self.policy,
+        )
+        alignment_summary = alignment_outputs[
+            "term_resolution_decisions"
+        ].iloc[0]
+        alignment_error_codes = set(
+            alignment_outputs["term_decision_validation_errors"][
+                "error_code"
+            ]
+        )
+        self.assertEqual(
+            alignment_summary["verification_status"],
+            "NEEDS_MANUAL_REVIEW",
+        )
+        self.assertIn(
+            "TERM_SOURCE_ALIGNMENT_REVIEW_REQUIRED",
+            alignment_error_codes,
+        )
+
     def test_candidate_omission_is_invalid(self):
         tables, tasks = self.build_fixture()
         decision = self.make_decision(tasks[0])
@@ -225,6 +254,97 @@ class SemanticReviewTest(unittest.TestCase):
         self.assertIn(
             "MISSING_CANDIDATE_CLASSIFICATION",
             set(outputs["term_decision_validation_errors"]["error_code"]),
+        )
+
+    def test_each_identity_member_must_align_with_target_term(self):
+        tables, tasks = self.build_fixture()
+        decision = self.make_decision(tasks[0])
+        thesaurus_candidate = next(
+            candidate
+            for candidate in tasks[0]["source_candidates"]
+            if candidate["source"] == "THESAURUS"
+        )
+        thesaurus_candidate["matched_name"] = "이순신전기"
+        thesaurus_candidate["normalized_names"] = ["이순신전기"]
+        tables["source_candidate_pair_signals"]["merge_eligible"] = False
+
+        outputs = self.validate_term_decisions(
+            [decision],
+            tasks,
+            tables,
+            self.policy,
+        )
+
+        decision_row = outputs["term_resolution_decisions"].iloc[0]
+        validation_errors = outputs["term_decision_validation_errors"]
+        alignment_errors = validation_errors.loc[
+            validation_errors["error_code"]
+            == "TERM_SOURCE_ALIGNMENT_REVIEW_REQUIRED"
+        ]
+        self.assertEqual(
+            decision_row["verification_status"],
+            "NEEDS_MANUAL_REVIEW",
+        )
+        self.assertEqual(len(alignment_errors), 1)
+        self.assertIn(
+            thesaurus_candidate["source_candidate_id"],
+            alignment_errors.iloc[0]["message"],
+        )
+
+    def test_connected_member_can_use_exact_target_anchor(self):
+        tables, tasks = self.build_fixture()
+        decision = self.make_decision(tasks[0])
+        thesaurus_candidate = next(
+            candidate
+            for candidate in tasks[0]["source_candidates"]
+            if candidate["source"] == "THESAURUS"
+        )
+        thesaurus_candidate["matched_name"] = "이순신전기"
+        thesaurus_candidate["normalized_names"] = ["이순신전기"]
+
+        outputs = self.validate_term_decisions(
+            [decision],
+            tasks,
+            tables,
+            self.policy,
+        )
+
+        decision_row = outputs["term_resolution_decisions"].iloc[0]
+        validation_errors = outputs["term_decision_validation_errors"]
+        self.assertEqual(
+            decision_row["verification_status"],
+            "VERIFIED",
+        )
+        self.assertNotIn(
+            "TERM_SOURCE_ALIGNMENT_REVIEW_REQUIRED",
+            set(validation_errors["error_code"]),
+        )
+
+    def test_containment_without_exact_target_anchor_requires_review(self):
+        tables, tasks = self.build_fixture()
+        decision = self.make_decision(tasks[0])
+        for candidate in tasks[0]["source_candidates"]:
+            if candidate["source"] not in {"AKS", "THESAURUS"}:
+                continue
+            candidate["matched_name"] = "이순신전기"
+            candidate["normalized_names"] = ["이순신전기"]
+
+        outputs = self.validate_term_decisions(
+            [decision],
+            tasks,
+            tables,
+            self.policy,
+        )
+
+        decision_row = outputs["term_resolution_decisions"].iloc[0]
+        validation_errors = outputs["term_decision_validation_errors"]
+        self.assertEqual(
+            decision_row["verification_status"],
+            "NEEDS_MANUAL_REVIEW",
+        )
+        self.assertIn(
+            "TERM_SOURCE_ALIGNMENT_REVIEW_REQUIRED",
+            set(validation_errors["error_code"]),
         )
 
     def test_strong_conflict_inside_identity_group_is_invalid(self):
@@ -253,6 +373,28 @@ class SemanticReviewTest(unittest.TestCase):
             "STRONG_PAIR_CONFLICT",
             set(outputs["term_decision_validation_errors"]["error_code"]),
         )
+        self.assertNotIn(
+            "INSUFFICIENT_PAIR_EVIDENCE",
+            set(outputs["term_decision_validation_errors"]["error_code"]),
+        )
+        manually_reviewed_outputs = self.validate_term_decisions(
+            [decision],
+            tasks,
+            tables,
+            self.policy,
+            manual_verifications={
+                tasks[0]["resolution_case_id"]: {
+                    "reviewer": "tester",
+                    "reviewed_at": "2026-07-22T00:00:00+00:00",
+                }
+            },
+        )
+        self.assertEqual(
+            manually_reviewed_outputs["term_resolution_decisions"].iloc[0][
+                "verification_status"
+            ],
+            "INVALID",
+        )
 
     def test_insufficient_pair_signal_requires_manual_review(self):
         tables, tasks = self.build_fixture(include_weak_person=True)
@@ -264,6 +406,103 @@ class SemanticReviewTest(unittest.TestCase):
         decision["proposed_alternatives"][0][
             "identity_member_source_candidate_ids"
         ].append(candidate_ids["ITKC_PERSON"])
+
+        reconstructed_tables = self.build_validation_tables_from_review_tasks(
+            tasks
+        )
+        outputs = self.validate_term_decisions(
+            [decision],
+            tasks,
+            reconstructed_tables,
+            self.policy,
+        )
+
+        self.assertEqual(
+            outputs["term_resolution_decisions"].iloc[0][
+                "verification_status"
+            ],
+            "NEEDS_MANUAL_REVIEW",
+        )
+        self.assertIn(
+            "INSUFFICIENT_PAIR_EVIDENCE",
+            set(outputs["term_decision_validation_errors"]["error_code"]),
+        )
+
+    def test_matching_descriptions_can_supply_exact_name_pair_evidence(self):
+        _, tasks = self.build_fixture()
+        decision = self.make_decision(tasks[0])
+        for candidate in tasks[0]["source_candidates"]:
+            if candidate["source"] == "AKS":
+                candidate["source_context"]["definition"] = (
+                    "흙을 파고 고르는 데 쓰는 농기구이다."
+                )
+            elif candidate["source"] == "THESAURUS":
+                candidate["source_context"]["description"] = (
+                    "흙을 파고 고르는 데 쓰는 농기구이다."
+                )
+        tables = self.build_validation_tables_from_review_tasks(tasks)
+        tables["source_candidate_pair_signals"]["merge_eligible"] = False
+
+        outputs = self.validate_term_decisions(
+            [decision],
+            tasks,
+            tables,
+            self.policy,
+        )
+
+        self.assertEqual(
+            outputs["term_resolution_decisions"].iloc[0][
+                "verification_status"
+            ],
+            "VERIFIED",
+        )
+
+    def test_structured_evidence_can_override_category_mapping_conflict(self):
+        _, tasks = self.build_fixture()
+        decision = self.make_decision(tasks[0])
+        for candidate in tasks[0]["source_candidates"]:
+            if candidate["source"] == "AKS":
+                candidate["category_compatibility"] = "CONFLICT"
+                candidate["source_context"]["definition"] = (
+                    "조선 시대의 무신이다."
+                )
+            elif candidate["source"] == "THESAURUS":
+                candidate["source_context"]["description"] = (
+                    "조선 시대의 무신이다."
+                )
+        tables = self.build_validation_tables_from_review_tasks(tasks)
+        tables["source_candidate_pair_signals"]["merge_eligible"] = False
+
+        outputs = self.validate_term_decisions(
+            [decision],
+            tasks,
+            tables,
+            self.policy,
+        )
+
+        self.assertEqual(
+            outputs["term_resolution_decisions"].iloc[0][
+                "verification_status"
+            ],
+            "VERIFIED",
+        )
+
+    def test_ocr_like_term_without_exact_anchor_is_not_auto_approved(self):
+        _, tasks = self.build_fixture()
+        decision = self.make_decision(tasks[0])
+        tasks[0]["canonical_term"] = "이순싣"
+        tasks[0]["term_variants"] = ["이순싣"]
+        for candidate in tasks[0]["source_candidates"]:
+            if candidate["source"] == "AKS":
+                candidate["source_context"]["definition"] = (
+                    "조선 시대의 무신이다."
+                )
+            elif candidate["source"] == "THESAURUS":
+                candidate["source_context"]["description"] = (
+                    "조선 시대의 무신이다."
+                )
+        tables = self.build_validation_tables_from_review_tasks(tasks)
+        tables["source_candidate_pair_signals"]["merge_eligible"] = False
 
         outputs = self.validate_term_decisions(
             [decision],
@@ -278,9 +517,132 @@ class SemanticReviewTest(unittest.TestCase):
             ],
             "NEEDS_MANUAL_REVIEW",
         )
+        self.assertFalse(
+            (
+                outputs["verified_identity_pairs"]["verification_status"]
+                == "VERIFIED"
+            ).any()
+        )
+        self.assertIn(
+            "TERM_SOURCE_ALIGNMENT_REVIEW_REQUIRED",
+            set(outputs["term_decision_validation_errors"]["error_code"]),
+        )
+
+    def test_different_descriptions_do_not_supply_exact_name_pair_evidence(self):
+        _, tasks = self.build_fixture()
+        decision = self.make_decision(tasks[0])
+        for candidate in tasks[0]["source_candidates"]:
+            if candidate["source"] == "AKS":
+                candidate["source_context"]["definition"] = (
+                    "조선시대 수군을 지휘한 무신이다."
+                )
+            elif candidate["source"] == "THESAURUS":
+                candidate["source_context"]["description"] = (
+                    "현대에 활동한 동명의 체육인이다."
+                )
+        tables = self.build_validation_tables_from_review_tasks(tasks)
+        tables["source_candidate_pair_signals"]["merge_eligible"] = False
+
+        outputs = self.validate_term_decisions(
+            [decision],
+            tasks,
+            tables,
+            self.policy,
+        )
+
+        self.assertEqual(
+            outputs["term_resolution_decisions"].iloc[0][
+                "verification_status"
+            ],
+            "NEEDS_MANUAL_REVIEW",
+        )
+        self.assertFalse(
+            (
+                outputs["verified_identity_pairs"]["verification_status"]
+                == "VERIFIED"
+            ).any()
+        )
         self.assertIn(
             "INSUFFICIENT_PAIR_EVIDENCE",
             set(outputs["term_decision_validation_errors"]["error_code"]),
+        )
+
+    def test_connected_pair_evidence_verifies_transitive_identity_group(self):
+        _, tasks = self.build_fixture(include_weak_person=True)
+        decision = self.make_decision(tasks[0])
+        candidate_ids = {
+            item["source"]: item["source_candidate_id"]
+            for item in tasks[0]["source_candidates"]
+        }
+        weak_candidate_id = candidate_ids["ITKC_PERSON"]
+        decision["proposed_alternatives"][0][
+            "identity_member_source_candidate_ids"
+        ].append(weak_candidate_id)
+        tables = self.build_validation_tables_from_review_tasks(tasks)
+        aks_candidate_id = candidate_ids["AKS"]
+        weak_edge_mask = (
+            (
+                tables["source_candidate_pair_signals"][
+                    "left_source_candidate_id"
+                ]
+                == aks_candidate_id
+            )
+            & (
+                tables["source_candidate_pair_signals"][
+                    "right_source_candidate_id"
+                ]
+                == weak_candidate_id
+            )
+        ) | (
+            (
+                tables["source_candidate_pair_signals"][
+                    "left_source_candidate_id"
+                ]
+                == weak_candidate_id
+            )
+            & (
+                tables["source_candidate_pair_signals"][
+                    "right_source_candidate_id"
+                ]
+                == aks_candidate_id
+            )
+        )
+        tables["source_candidate_pair_signals"].loc[
+            weak_edge_mask,
+            "merge_eligible",
+        ] = True
+
+        connected_outputs = self.validate_term_decisions(
+            [decision],
+            tasks,
+            tables,
+            self.policy,
+        )
+        complete_graph_policy = deepcopy(self.policy)
+        identity_pair_gate_policy = complete_graph_policy[
+            "entity_resolution"
+        ]["semantic_review"]["identity_pair_gate"]
+        identity_pair_gate_policy["active_evidence_mode"] = (
+            identity_pair_gate_policy["evidence_modes"]["complete"]
+        )
+        complete_outputs = self.validate_term_decisions(
+            [decision],
+            tasks,
+            tables,
+            complete_graph_policy,
+        )
+
+        self.assertEqual(
+            connected_outputs["term_resolution_decisions"].iloc[0][
+                "verification_status"
+            ],
+            "VERIFIED",
+        )
+        self.assertEqual(
+            complete_outputs["term_resolution_decisions"].iloc[0][
+                "verification_status"
+            ],
+            "NEEDS_MANUAL_REVIEW",
         )
 
     def test_remaining_ambiguous_source_requires_manual_review(self):
@@ -301,6 +663,20 @@ class SemanticReviewTest(unittest.TestCase):
                 "verification_status"
             ],
             "NEEDS_MANUAL_REVIEW",
+        )
+        self.assertEqual(
+            set(outputs["verified_identity_pairs"]["verification_status"]),
+            {"VERIFIED"},
+        )
+        self.assertEqual(
+            len(outputs["reviewed_canonical_alternatives"]),
+            1,
+        )
+        self.assertEqual(
+            outputs["reviewed_canonical_alternatives"].iloc[0][
+                "member_count"
+            ],
+            2,
         )
 
     def test_malformed_decision_is_recorded_without_crashing(self):

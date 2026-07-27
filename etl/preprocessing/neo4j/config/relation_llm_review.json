@@ -1,0 +1,28 @@
+{
+  "policy_version": "relation-llm-review-v1.1",
+  "minimum_type_signature_support": 3,
+  "evaluation": {
+    "model": "gpt-5.5",
+    "reasoning_effort": "medium",
+    "maximum_output_tokens": 1800,
+    "prompt_file": "prompts/relation_review_evaluation.md",
+    "schema_file": "schemas/relation_review_evaluation.schema.json",
+    "schema_name": "relation_review_evaluation"
+  },
+  "execution": {
+    "timeout_seconds": 180,
+    "maximum_retries": 4,
+    "retry_base_seconds": 2,
+    "maximum_workers": 16,
+    "progress_interval": 25,
+    "store_response": false,
+    "service_tier": "auto"
+  },
+  "pricing_usd_per_million_tokens": {
+    "gpt-5.5": {
+      "input": 5.0,
+      "cached_input": 0.5,
+      "output": 30.0
+    }
+  }
+}

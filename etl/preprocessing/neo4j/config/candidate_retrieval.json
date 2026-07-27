@@ -1,0 +1,138 @@
+{
+  "candidate_retrieval": {
+    "ngram_sizes": [
+      2,
+      3
+    ],
+    "minimum_score": 0.27,
+    "minimum_containment_length": 2,
+    "containment_length_power": 2,
+    "reverse_containment_minimum_length": 3,
+    "reverse_containment_minimum_ratio": 0.5,
+    "max_evaluated_candidates": 250,
+    "max_candidates": 5,
+    "minimum_expanded_score_with_exact_candidate": 0.45,
+    "posting_weights": {
+      "name": 2,
+      "description": 1
+    },
+    "score_weights": {
+      "bidirectional_containment": 0.28,
+      "name_ngram_coverage": 0.18,
+      "name_sequence_similarity": 0.12,
+      "name_character_overlap": 0.25,
+      "description_ngram_coverage": 0.17,
+      "description_containment": 0.3
+    },
+    "enrichment_skip_retrieval_methods": [
+      "exact"
+    ]
+  },
+  "definition_scan": {
+    "max_candidates": 10,
+    "include_category_mismatch": false
+  },
+  "body_mention_scan": {
+    "search_fields": [
+      "definition",
+      "body"
+    ],
+    "window_characters": 40,
+    "minimum_token_coverage": 0.75,
+    "minimum_token_length": 2,
+    "max_candidates": 5,
+    "include_category_mismatch": false
+  },
+  "coverage": {
+    "minimum_affix_length": 2,
+    "maximum_affix_difference": 3
+  },
+  "noise": {
+    "minimum_compact_length": 2,
+    "minimum_sentence_spaces": 2,
+    "sentence_endings": [
+      "하였다",
+      "되었다",
+      "있다",
+      "이다",
+      "한다",
+      "했다",
+      "됐다",
+      "인다"
+    ]
+  },
+  "category_compatibility": {
+    "인물": [
+      "인물"
+    ],
+    "사건": [
+      "사건"
+    ],
+    "국가": [
+      "지명",
+      "개념"
+    ],
+    "왕조": [
+      "지명",
+      "개념",
+      "인물"
+    ],
+    "제도": [
+      "제도",
+      "개념",
+      "의례·행사"
+    ],
+    "정책": [
+      "제도",
+      "개념",
+      "사건"
+    ],
+    "단체": [
+      "단체",
+      "제도"
+    ],
+    "기관": [
+      "단체",
+      "제도",
+      "지명"
+    ],
+    "문헌": [
+      "문헌",
+      "작품",
+      "개념"
+    ],
+    "문화재": [
+      "작품",
+      "유적",
+      "물품",
+      "문헌",
+      "의복"
+    ],
+    "조약": [
+      "사건",
+      "문헌",
+      "제도",
+      "개념"
+    ],
+    "사상": [
+      "개념",
+      "단체",
+      "작품"
+    ],
+    "지명": [
+      "지명",
+      "유적"
+    ],
+    "유물": [
+      "물품",
+      "작품",
+      "유적",
+      "문헌",
+      "의복"
+    ],
+    "유적": [
+      "유적",
+      "지명"
+    ]
+  }
+}

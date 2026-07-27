@@ -1,7 +1,9 @@
 import sys
 import tempfile
 import unittest
+from json import dumps, loads
 from pathlib import Path
+from types import SimpleNamespace
 
 
 class TermReviewExecutorTest(unittest.TestCase):
@@ -9,6 +11,7 @@ class TermReviewExecutorTest(unittest.TestCase):
     def setUpClass(cls):
         project_root = Path(__file__).resolve().parents[3]
         neo4j_root = project_root / "etl" / "preprocessing" / "neo4j"
+        cls.neo4j_root = neo4j_root
         sys.path.insert(0, str(neo4j_root))
 
         from common import load_pipeline_policy
@@ -16,7 +19,10 @@ class TermReviewExecutorTest(unittest.TestCase):
             apply_controlled_decision_fields,
             build_execution_plan,
             execute_term_review_tasks,
+            load_json_schema,
+            request_term_decision,
             validate_executor_decision,
+            validate_structured_output_schema,
         )
 
         cls.apply_controlled_decision_fields = staticmethod(
@@ -24,8 +30,13 @@ class TermReviewExecutorTest(unittest.TestCase):
         )
         cls.build_execution_plan = staticmethod(build_execution_plan)
         cls.execute_term_review_tasks = staticmethod(execute_term_review_tasks)
+        cls.load_json_schema = staticmethod(load_json_schema)
+        cls.request_term_decision = staticmethod(request_term_decision)
         cls.validate_executor_decision = staticmethod(
             validate_executor_decision
+        )
+        cls.validate_structured_output_schema = staticmethod(
+            validate_structured_output_schema
         )
         cls.policy = load_pipeline_policy(
             str(neo4j_root / "config" / "resolution_policy.json")
@@ -95,6 +106,41 @@ class TermReviewExecutorTest(unittest.TestCase):
             semantic_policy["prompt_version"],
         )
 
+    def test_request_uses_current_review_metadata_without_mutating_task(self):
+        task = self.make_task(1)
+        task["review_model"] = "previous-model"
+        task["prompt_version"] = "previous-prompt"
+        semantic_policy = self.policy["entity_resolution"]["semantic_review"]
+        captured_arguments: dict = {}
+
+        class FakeResponses:
+            def create(self, **request_arguments):
+                captured_arguments.update(request_arguments)
+                return SimpleNamespace(
+                    id="response-1",
+                    output_text=dumps(
+                        self_test.make_decision(task),
+                        ensure_ascii=False,
+                    ),
+                    usage=None,
+                )
+
+        self_test = self
+        client = SimpleNamespace(responses=FakeResponses())
+        self.request_term_decision(client, task, "prompt", {}, self.policy)
+        request_task = loads(captured_arguments["input"])
+
+        self.assertEqual(
+            request_task["review_model"],
+            semantic_policy["term_model"]["model"],
+        )
+        self.assertEqual(
+            request_task["prompt_version"],
+            semantic_policy["prompt_version"],
+        )
+        self.assertEqual(task["review_model"], "previous-model")
+        self.assertEqual(task["prompt_version"], "previous-prompt")
+
     def test_missing_candidate_is_rejected_before_checkpoint(self):
         task = self.make_task(1)
         decision = self.make_decision(task)
@@ -145,7 +191,7 @@ class TermReviewExecutorTest(unittest.TestCase):
                 requester=unexpected_requester,
             )
 
-        self.assertEqual(calls, ["task-1", "task-2"])
+        self.assertEqual(sorted(calls), ["task-1", "task-2"])
         self.assertEqual(first_result["succeeded_count"], 2)
         self.assertEqual(second_result["attempted_count"], 0)
         self.assertEqual(second_result["reused_checkpoint_count"], 2)
@@ -190,6 +236,46 @@ class TermReviewExecutorTest(unittest.TestCase):
 
         self.assertEqual(plan["selected_task_count"], 2)
         self.assertEqual(plan["pending_task_count"], 2)
+
+    def test_structured_output_schema_is_checked_before_requests(self):
+        schema_directory = self.neo4j_root / "config" / "schemas"
+        for schema_name in [
+            "term_resolution_decision.schema.json",
+            "problem_resolution_decision.schema.json",
+        ]:
+            schema = self.load_json_schema(
+                str(schema_directory / schema_name)
+            )
+            self.assertEqual(
+                self.validate_structured_output_schema(schema, self.policy),
+                [],
+            )
+
+        request_count = 0
+
+        def requester(client, task, prompt, schema, policy):
+            nonlocal request_count
+            request_count += 1
+            return self.make_decision(task), {}
+
+        unsupported_schema = {
+            "type": "array",
+            "uniqueItems": True,
+            "items": {"type": "string"},
+        }
+        with tempfile.TemporaryDirectory() as temp_dir:
+            with self.assertRaisesRegex(ValueError, "uniqueItems"):
+                self.execute_term_review_tasks(
+                    [self.make_task(1)],
+                    "prompt",
+                    unsupported_schema,
+                    str(Path(temp_dir) / "checkpoint.jsonl"),
+                    self.policy,
+                    object(),
+                    requester=requester,
+                )
+
+        self.assertEqual(request_count, 0)
 
 
 if __name__ == "__main__":

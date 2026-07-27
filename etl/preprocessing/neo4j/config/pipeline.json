@@ -1,0 +1,75 @@
+{
+  "policy_version": "entity-resolution-candidate-v2.4",
+  "normalization_policy_version": "history-term-v2.0",
+  "text_preprocessing": {
+    "version": "exam-extraction-text-v1.0",
+    "field_separator": "\n",
+    "duplicate_group_prefix": "DTG-",
+    "duplicate_group_hash_algorithm": "sha256",
+    "duplicate_group_digest_length": 16,
+    "input_text_match_status": {
+      "exact": "EXACT",
+      "whitespace_equivalent": "WHITESPACE_EQUIVALENT",
+      "content_conflict": "CONTENT_CONFLICT",
+      "component_missing": "INPUT_COMPONENT_MISSING"
+    }
+  },
+  "source_release": {
+    "hash_algorithm": "sha256",
+    "digest_length": 16,
+    "chunk_size_bytes": 1048576
+  },
+  "term_extraction": {
+    "model": "gpt-5.6-terra",
+    "temperature": 0,
+    "reasoning_effort": "none"
+  },
+  "output_layout": {
+    "version": "neo4j-output-layout-v2",
+    "default_output_root": "output",
+    "directories": {
+      "review": "review",
+      "final_identity": "final_identity",
+      "internal": "internal",
+      "shared": "shared",
+      "term_extraction": "term_extraction",
+      "candidate_retrieval": "candidate_retrieval",
+      "entity_resolution": "entity_resolution",
+      "model_review": "model_review"
+    },
+    "files": {
+      "term_checkpoint": "term_extraction_checkpoint.jsonl",
+      "extracted_terms_json": "exam_terms_by_problem.json",
+      "extracted_terms_csv": "unique_exam_terms.csv",
+      "normalized_thesaurus": "normalized_history_thesaurus.json",
+      "coverage_report": "source_coverage_report.json",
+      "name_matches": "name_match_candidates.json",
+      "definition_matches": "definition_match_candidates.json",
+      "body_mention_matches": "body_mention_candidates.json"
+    }
+  },
+  "output_retention": {
+    "keep_candidate_retrieval_cache_after_resolution": false
+  },
+  "full_pipeline": {
+    "pipeline_version": "neo4j-full-load-v1",
+    "manifest_file": "full_pipeline_manifest.json",
+    "neo4j_load_manifest_file": "neo4j_load_manifest.json",
+    "require_goldset_gate": true,
+    "goldset_manifest": "goldset/internal/evaluation/goldset_evaluation_manifest.json",
+    "minimum_auto_accepted_identity_pair_precision": 1.0,
+    "maximum_verified_false_merge_pair_count": 0,
+    "neo4j_import_scope": "entity-resolution-final-v1",
+    "neo4j_batch_size": 500,
+    "problem_review_prompt": "config/prompts/problem_resolution_review.md",
+    "problem_review_schema": "config/schemas/problem_resolution_decision.schema.json"
+  },
+  "test_run": {
+    "output_subdirectory": "test_run",
+    "limit": 20,
+    "batch_size": 10,
+    "max_retries": 1,
+    "coverage_threshold": 90,
+    "display_limit": 20
+  }
+}

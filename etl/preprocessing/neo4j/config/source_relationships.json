@@ -1,0 +1,821 @@
+{
+  "policy_version": "source-relationship-v1.0",
+  "source_release": {
+    "hash_algorithm": "sha256",
+    "digest_length": 16,
+    "chunk_size_bytes": 1048576
+  },
+  "identifier": {
+    "hash_algorithm": "sha256",
+    "digest_length": 20,
+    "relationship_prefix": "SR-",
+    "category_prefix": "TC-",
+    "category_relationship_prefix": "TCR-",
+    "canonical_relationship_prefix": "CR-",
+    "description_mention_prefix": "DM-",
+    "description_relationship_prefix": "DR-",
+    "canonical_fact_relationship_prefix": "CF-",
+    "aks_attribute_relationship_prefix": "AAR-",
+    "aks_related_article_prefix": "AKR-"
+  },
+  "inputs": {
+    "itkc_people": "etl/raw_data/한국고전종합DB_관계망/itkc_people.csv",
+    "itkc_person_relations": "etl/raw_data/한국고전종합DB_관계망/itkc_person_relations.csv",
+    "itkc_events": "etl/raw_data/한국고전종합DB_관계망/itkc_events.csv",
+    "itkc_event_relations": "etl/raw_data/한국고전종합DB_관계망/itkc_event_relations.csv",
+    "thesaurus": "etl/raw_data/교육부 국사편찬위원회_한국역사용어시소러스 정보_20211028 (1).csv",
+    "canonical_resolutions": "etl/preprocessing/neo4j/output/final_identity/neo4j_source_to_entity_relationships.csv",
+    "canonical_registry": "etl/preprocessing/neo4j/output/final_identity/canonical_entity_registry.csv"
+  },
+  "outputs": {
+    "default_directory": "etl/preprocessing/neo4j/output/source_relationships",
+    "source_record_nodes": "source_record_nodes.csv",
+    "source_record_relationships": "source_record_relationships.csv",
+    "thesaurus_category_nodes": "thesaurus_category_nodes.csv",
+    "source_category_relationships": "source_category_relationships.csv",
+    "thesaurus_category_relationships": "thesaurus_category_relationships.csv",
+    "canonical_entity_relationships": "canonical_entity_relationships.csv",
+    "canonical_projection_exclusions": "canonical_projection_exclusions.csv",
+    "description_mention_candidates": "description_mention_candidates.csv",
+    "description_canonical_relationships": "description_canonical_relationships.csv",
+    "description_relation_review": "description_relation_review.csv",
+    "description_manifest": "description_fact_manifest.json",
+    "aks_attribute_relationships": "aks_attribute_canonical_relationships.csv",
+    "aks_attribute_exclusions": "aks_attribute_projection_exclusions.csv",
+    "aks_related_article_candidates": "aks_related_article_candidates.csv",
+    "aks_attribute_manifest": "aks_attribute_manifest.json",
+    "canonical_fact_relationships": "canonical_fact_relationships.csv",
+    "canonical_fact_manifest": "canonical_fact_manifest.json",
+    "manifest": "source_relationship_manifest.json"
+  },
+  "sources": {
+    "itkc_person": {
+      "source": "ITKC_PERSON",
+      "record_type": "PERSON",
+      "source_record_id_template": "ITKC:PERSON:{source_key}:{source_release}"
+    },
+    "itkc_event": {
+      "source": "ITKC_EVENT",
+      "record_type": "EVENT",
+      "source_record_id_template": "ITKC:EVENT:{source_key}:{source_release}"
+    },
+    "thesaurus_term": {
+      "source": "THESAURUS",
+      "record_type": "TERM",
+      "source_record_id_template": "THESAURUS:TERM:{source_key}:{source_release}"
+    }
+  },
+  "relationships": {
+    "verification_status": "SOURCE_ASSERTED",
+    "itkc_person_dataset": "ITKC_PERSON_RELATION",
+    "itkc_event_dataset": "ITKC_EVENT_RELATION",
+    "thesaurus_top_category_dataset": "THESAURUS_TOP_CATEGORY",
+    "thesaurus_category_dataset": "THESAURUS_CATEGORY_PATH",
+    "itkc_event_relation_type": "INVOLVES_PERSON",
+    "thesaurus_top_category_relation_type": "IN_TOP_CATEGORY",
+    "thesaurus_term_category_relation_type": "IN_CATEGORY",
+    "thesaurus_subcategory_relation_type": "SUBCATEGORY_OF",
+    "raw_type_distinct_relation_types": [
+      "SPOUSE_OF"
+    ],
+    "itkc_person_type_map": {
+      "교유": "SOCIAL_ASSOCIATE",
+      "스승": "HAS_TEACHER",
+      "제자": "HAS_STUDENT",
+      "부": "HAS_FATHER",
+      "생부": "HAS_BIOLOGICAL_FATHER",
+      "모": "HAS_MOTHER",
+      "생모": "HAS_BIOLOGICAL_MOTHER",
+      "조부": "HAS_GRANDFATHER",
+      "증조부": "HAS_GREAT_GRANDFATHER",
+      "형제": "SIBLING_OF",
+      "자": "HAS_CHILD",
+      "장인": "HAS_FATHER_IN_LAW",
+      "사위": "HAS_SON_IN_LAW",
+      "남편": "SPOUSE_OF",
+      "아내": "SPOUSE_OF",
+      "출자": "HAS_BIOLOGICAL_CHILD"
+    }
+  },
+  "thesaurus_categories": {
+    "separator": ">",
+    "null_values": [
+      "",
+      "_NULL_"
+    ]
+  },
+  "canonical_projection": {
+    "accepted_match_status": "ACCEPTED",
+    "accepted_registry_status": "ACTIVE",
+    "exclude_self_relationships": true,
+    "write_both_unresolved_exclusions": false,
+    "relation_type_contracts": {
+      "SOCIAL_ASSOCIATE": {
+        "start_entity_types": [
+          "Person"
+        ],
+        "end_entity_types": [
+          "Person"
+        ]
+      },
+      "HAS_TEACHER": {
+        "start_entity_types": [
+          "Person"
+        ],
+        "end_entity_types": [
+          "Person"
+        ]
+      },
+      "HAS_STUDENT": {
+        "start_entity_types": [
+          "Person"
+        ],
+        "end_entity_types": [
+          "Person"
+        ]
+      },
+      "HAS_FATHER": {
+        "start_entity_types": [
+          "Person"
+        ],
+        "end_entity_types": [
+          "Person"
+        ]
+      },
+      "HAS_BIOLOGICAL_FATHER": {
+        "start_entity_types": [
+          "Person"
+        ],
+        "end_entity_types": [
+          "Person"
+        ]
+      },
+      "HAS_MOTHER": {
+        "start_entity_types": [
+          "Person"
+        ],
+        "end_entity_types": [
+          "Person"
+        ]
+      },
+      "HAS_BIOLOGICAL_MOTHER": {
+        "start_entity_types": [
+          "Person"
+        ],
+        "end_entity_types": [
+          "Person"
+        ]
+      },
+      "HAS_GRANDFATHER": {
+        "start_entity_types": [
+          "Person"
+        ],
+        "end_entity_types": [
+          "Person"
+        ]
+      },
+      "HAS_GREAT_GRANDFATHER": {
+        "start_entity_types": [
+          "Person"
+        ],
+        "end_entity_types": [
+          "Person"
+        ]
+      },
+      "SIBLING_OF": {
+        "start_entity_types": [
+          "Person"
+        ],
+        "end_entity_types": [
+          "Person"
+        ]
+      },
+      "HAS_CHILD": {
+        "start_entity_types": [
+          "Person"
+        ],
+        "end_entity_types": [
+          "Person"
+        ]
+      },
+      "HAS_FATHER_IN_LAW": {
+        "start_entity_types": [
+          "Person"
+        ],
+        "end_entity_types": [
+          "Person"
+        ]
+      },
+      "HAS_SON_IN_LAW": {
+        "start_entity_types": [
+          "Person"
+        ],
+        "end_entity_types": [
+          "Person"
+        ]
+      },
+      "SPOUSE_OF": {
+        "start_entity_types": [
+          "Person"
+        ],
+        "end_entity_types": [
+          "Person"
+        ]
+      },
+      "HAS_BIOLOGICAL_CHILD": {
+        "start_entity_types": [
+          "Person"
+        ],
+        "end_entity_types": [
+          "Person"
+        ]
+      },
+      "INVOLVES_PERSON": {
+        "start_entity_types": [
+          "Event"
+        ],
+        "end_entity_types": [
+          "Person"
+        ]
+      }
+    },
+    "symmetric_relation_types": [
+      "SOCIAL_ASSOCIATE",
+      "SIBLING_OF",
+      "SPOUSE_OF"
+    ],
+    "included_relation_types": [
+      "SOCIAL_ASSOCIATE",
+      "HAS_TEACHER",
+      "HAS_STUDENT",
+      "HAS_FATHER",
+      "HAS_BIOLOGICAL_FATHER",
+      "HAS_MOTHER",
+      "HAS_BIOLOGICAL_MOTHER",
+      "HAS_GRANDFATHER",
+      "HAS_GREAT_GRANDFATHER",
+      "SIBLING_OF",
+      "HAS_CHILD",
+      "HAS_FATHER_IN_LAW",
+      "HAS_SON_IN_LAW",
+      "SPOUSE_OF",
+      "HAS_BIOLOGICAL_CHILD",
+      "INVOLVES_PERSON"
+    ]
+  },
+  "description_projection": {
+    "policy_version": "description-fact-v1.0",
+    "minimum_mention_length": 2,
+    "verification_status": "PATTERN_ASSERTED",
+    "candidate_status": "CANDIDATE",
+    "review_status": "PENDING",
+    "uncertainty_patterns": [
+      "추정",
+      "전해지",
+      "가능성이",
+      "불확실",
+      "미상"
+    ],
+    "sources": {
+      "AKS": {
+        "text_field": "definition"
+      },
+      "THESAURUS": {
+        "text_field": "description"
+      }
+    },
+    "following_particles": [
+      "은",
+      "는",
+      "이",
+      "가",
+      "을",
+      "를",
+      "의",
+      "에",
+      "에서",
+      "에게",
+      "께서",
+      "와",
+      "과",
+      "로",
+      "으로",
+      "도",
+      "만",
+      "부터",
+      "까지",
+      "보다",
+      "라고",
+      "이라는",
+      "등"
+    ],
+    "allowed_compound_suffixes": [
+      "시대",
+      "왕조",
+      "정부",
+      "군",
+      "지역",
+      "출신",
+      "사건",
+      "운동",
+      "전쟁",
+      "제도",
+      "사상",
+      "계열"
+    ],
+    "relation_rules": [
+      {
+        "rule_id": "POLITY_PERIOD_CONTEXT",
+        "relation_type": "ASSOCIATED_WITH_POLITY",
+        "subject_entity_types": [],
+        "object_entity_types": [
+          "Polity"
+        ],
+        "patterns": [
+          "{mention}\\s*(?:시대|왕조|중고기|전기|후기|말기|초기)"
+        ]
+      },
+      {
+        "rule_id": "ORGANIZATION_FOUNDED_IN",
+        "relation_type": "FOUNDED_IN",
+        "subject_entity_types": [
+          "Organization",
+          "Institution"
+        ],
+        "object_entity_types": [
+          "Place",
+          "Polity"
+        ],
+        "patterns": [
+          "{mention}(?:에서|에).{0,30}(?:조직|창립|결성|설립|발족|창건)"
+        ]
+      },
+      {
+        "rule_id": "ENTITY_LOCATED_IN",
+        "relation_type": "LOCATED_IN",
+        "subject_entity_types": [
+          "Heritage",
+          "Institution",
+          "Place"
+        ],
+        "object_entity_types": [
+          "Place"
+        ],
+        "patterns": [
+          "{mention}(?:(?:\\s+[가-힣]{1,12}(?:시|군|구|읍|면|리))|(?:\\s+(?:하류|상류|일대|부근)))?(?:에|에서).{0,15}(?:있|위치|소재|건립|창건)"
+        ]
+      },
+      {
+        "rule_id": "EVENT_OCCURRED_IN",
+        "relation_type": "OCCURRED_IN",
+        "subject_entity_types": [
+          "Event"
+        ],
+        "object_entity_types": [
+          "Place"
+        ],
+        "patterns": [
+          "{mention}(?:\\s+(?:일대|부근))?에서.{0,20}(?:발생|일어나|전개|벌어|치러|전투)"
+        ]
+      },
+      {
+        "rule_id": "CREATED_BY_PERSON",
+        "relation_type": "CREATED_BY",
+        "subject_entity_types": [
+          "Work",
+          "Heritage",
+          "Institution"
+        ],
+        "object_entity_types": [
+          "Person"
+        ],
+        "requires_specific_person_object": true,
+        "patterns": [
+          "{mention}(?:(?:[·ㆍ,]\\s*[가-힣]{2,4}(?:\\([^)]+\\))?))*\\s*(?:등)?(?:이|가|은|는|께서|에\\s*의해).{0,30}(?:지은|저술(?:한|하|해|했)|편찬(?:한|하|해|했)|제작(?:한|하|해|했)|창제(?:한|하|해|했)|창건(?:한|하|해|했)|건립(?:한|하|해|했)|설립(?:한|하|해|했)|중건(?:한|하|해|했))",
+          "{mention}의\\s*(?:저술|편찬|작품|원작)"
+        ]
+      },
+      {
+        "rule_id": "DEDICATED_TO_PERSON",
+        "relation_type": "DEDICATED_TO",
+        "subject_entity_types": [
+          "Heritage",
+          "Institution"
+        ],
+        "object_entity_types": [
+          "Person"
+        ],
+        "requires_specific_person_object": true,
+        "requires_local_hanja_for_short_person_object": true,
+        "patterns": [
+          "{mention}.{0,30}(?:배향|추모|기리)"
+        ]
+      },
+      {
+        "rule_id": "PERSON_HAS_TEACHER",
+        "relation_type": "HAS_TEACHER",
+        "subject_entity_types": [
+          "Person"
+        ],
+        "object_entity_types": [
+          "Person"
+        ],
+        "requires_specific_person_object": true,
+        "patterns": [
+          "{mention}(?:의\\s*)?(?:문인|제자|문하생)",
+          "{mention}(?:을|를)\\s*스승으로"
+        ]
+      },
+      {
+        "rule_id": "PERSON_CHILD_OF",
+        "relation_type": "CHILD_OF",
+        "subject_entity_types": [
+          "Person"
+        ],
+        "object_entity_types": [
+          "Person"
+        ],
+        "requires_specific_person_object": true,
+        "patterns": [
+          "{mention}(?:의\\s*)?(?:아들|딸|자녀)(?:이다|이며|이자|로|임|\\.|$)"
+        ]
+      },
+      {
+        "rule_id": "PERSON_DESCENDANT_OF",
+        "relation_type": "DESCENDANT_OF",
+        "subject_entity_types": [
+          "Person"
+        ],
+        "object_entity_types": [
+          "Person"
+        ],
+        "requires_specific_person_object": true,
+        "patterns": [
+          "{mention}(?:의\\s*)?(?:후손|후예)"
+        ]
+      },
+      {
+        "rule_id": "ENTITY_PARTICIPATED_IN_EVENT",
+        "relation_type": "PARTICIPATED_IN",
+        "subject_entity_types": [
+          "Person",
+          "Organization",
+          "Institution"
+        ],
+        "object_entity_types": [
+          "Event"
+        ],
+        "patterns": [
+          "{mention}(?:에|에서|에는|에서는|당시|\\s*때|을|를).{0,18}(?:참여(?:한|하|해|했)|가담(?:한|하|해|했)|참전(?:한|하|해|했)|활약(?:한|하|해|했)|주도(?:한|하|해|했)|일으킨|일으켜|일으키|일으켰)",
+          "{mention}(?:이|가)\\s*일어나자.{0,30}(?:의병|참전|활약)"
+        ],
+        "negative_patterns": [
+          "{mention}(?:을|를)\\s*일으킨\\s+[가-힣]{2,12}(?:과|와|이|가|은|는)"
+        ]
+      },
+      {
+        "rule_id": "EVENT_INVOLVES_ENTITY",
+        "relation_type": "INVOLVES_ENTITY",
+        "subject_entity_types": [
+          "Event"
+        ],
+        "object_entity_types": [
+          "Person",
+          "Organization",
+          "Institution"
+        ],
+        "requires_specific_person_object": true,
+        "patterns": [
+          "{mention}(?:(?:[·ㆍ,]\\s*[가-힣]{2,4}(?:\\([^)]+\\))?))*\\s*(?:등)?(?:이|가|은|는|께서).{0,22}(?:주도(?:한|하|해|했)|일으킨|일으켜|일으키|일으켰|참여(?:한|하|해|했)|가담(?:한|하|해|했)|지휘(?:한|하|해|했)|공격(?:한|하|해|했))"
+        ]
+      },
+      {
+        "rule_id": "PERSON_AUTHORED_WORK",
+        "relation_type": "AUTHORED",
+        "subject_entity_types": [
+          "Person"
+        ],
+        "object_entity_types": [
+          "Work"
+        ],
+        "patterns": [
+          "{mention}.{0,35}(?:저술(?:한|하|해|했)|편찬(?:한|하|해|했)|지었|지은|창제(?:한|하|해|했)|제작(?:한|하|해|했))"
+        ]
+      },
+      {
+        "rule_id": "PERSON_FOUNDED_ENTITY",
+        "relation_type": "FOUNDED",
+        "subject_entity_types": [
+          "Person"
+        ],
+        "object_entity_types": [
+          "Organization",
+          "Institution"
+        ],
+        "patterns": [
+          "{mention}.{0,35}(?:조직(?:한|하|해|했)|창립(?:한|하|해|했)|설립(?:한|하|해|했)|결성(?:한|하|해|했)|발족(?:한|하|해|했)|창설(?:한|하|해|했))"
+        ]
+      },
+      {
+        "rule_id": "PERSON_BUILT_ENTITY",
+        "relation_type": "BUILT",
+        "subject_entity_types": [
+          "Person"
+        ],
+        "object_entity_types": [
+          "Heritage",
+          "Institution"
+        ],
+        "patterns": [
+          "{mention}.{0,30}(?:건립(?:한|하|해|했)|창건(?:한|하|해|했)|중건(?:한|하|해|했)|축조(?:한|하|해|했))"
+        ]
+      }
+    ]
+  },
+  "aks_attribute_projection": {
+    "policy_version": "aks-attribute-fact-v1.0",
+    "accepted_match_status": "ACCEPTED",
+    "accepted_registry_status": "ACTIVE",
+    "source_dataset": "AKS_STRUCTURED_ATTRIBUTE",
+    "verification_status": "SOURCE_ASSERTED",
+    "fact_scope": "FACT_CANDIDATE",
+    "discovery_scope": "DISCOVERY_ONLY",
+    "fact_candidate_status": "READY_TO_PROJECT",
+    "discovery_candidate_status": "DISCOVERY_ONLY",
+    "value_delimiter_pattern": "\\|",
+    "strip_trailing_parenthetical": true,
+    "related_article_relation_type": "RELATED_ARTICLE",
+    "attribute_rules": {
+      "출생지": {
+        "relation_type": "BORN_IN",
+        "direction": "source_to_target",
+        "scope": "FACT_CANDIDATE",
+        "source_entity_types": [
+          "Person"
+        ],
+        "target_entity_types": [
+          "Place",
+          "Polity"
+        ]
+      },
+      "주요 저서": {
+        "relation_type": "AUTHORED",
+        "direction": "source_to_target",
+        "scope": "FACT_CANDIDATE",
+        "source_entity_types": [
+          "Person"
+        ],
+        "target_entity_types": [
+          "Work"
+        ]
+      },
+      "주요 작품": {
+        "relation_type": "CREATED",
+        "direction": "source_to_target",
+        "scope": "FACT_CANDIDATE",
+        "source_entity_types": [
+          "Person"
+        ],
+        "target_entity_types": [
+          "Work"
+        ]
+      },
+      "저자": {
+        "relation_type": "CREATED_BY",
+        "direction": "source_to_target",
+        "scope": "FACT_CANDIDATE",
+        "source_entity_types": [
+          "Work"
+        ],
+        "target_entity_types": [
+          "Person",
+          "Institution",
+          "Organization"
+        ]
+      },
+      "작가": {
+        "relation_type": "CREATED_BY",
+        "direction": "source_to_target",
+        "scope": "FACT_CANDIDATE",
+        "source_entity_types": [
+          "Work",
+          "Heritage"
+        ],
+        "target_entity_types": [
+          "Person"
+        ]
+      },
+      "편자": {
+        "relation_type": "EDITED_BY",
+        "direction": "source_to_target",
+        "scope": "FACT_CANDIDATE",
+        "source_entity_types": [
+          "Work"
+        ],
+        "target_entity_types": [
+          "Person",
+          "Institution",
+          "Organization"
+        ]
+      },
+      "원작자": {
+        "relation_type": "ORIGINAL_CREATED_BY",
+        "direction": "source_to_target",
+        "scope": "FACT_CANDIDATE",
+        "source_entity_types": [
+          "Work"
+        ],
+        "target_entity_types": [
+          "Person"
+        ]
+      },
+      "설립자": {
+        "relation_type": "FOUNDED",
+        "direction": "target_to_source",
+        "scope": "FACT_CANDIDATE",
+        "source_entity_types": [
+          "Organization",
+          "Institution"
+        ],
+        "target_entity_types": [
+          "Person"
+        ]
+      },
+      "소재지": {
+        "relation_type": "LOCATED_IN",
+        "direction": "source_to_target",
+        "scope": "FACT_CANDIDATE",
+        "source_entity_types": [
+          "Heritage",
+          "Institution",
+          "Organization"
+        ],
+        "target_entity_types": [
+          "Place",
+          "Polity"
+        ]
+      },
+      "설립지": {
+        "relation_type": "FOUNDED_IN",
+        "direction": "source_to_target",
+        "scope": "FACT_CANDIDATE",
+        "source_entity_types": [
+          "Institution",
+          "Organization"
+        ],
+        "target_entity_types": [
+          "Place",
+          "Polity"
+        ]
+      },
+      "발발 장소": {
+        "relation_type": "OCCURRED_IN",
+        "direction": "source_to_target",
+        "scope": "FACT_CANDIDATE",
+        "source_entity_types": [
+          "Event"
+        ],
+        "target_entity_types": [
+          "Place",
+          "Heritage"
+        ]
+      },
+      "발생 장소": {
+        "relation_type": "OCCURRED_IN",
+        "direction": "source_to_target",
+        "scope": "FACT_CANDIDATE",
+        "source_entity_types": [
+          "Event"
+        ],
+        "target_entity_types": [
+          "Place",
+          "Heritage"
+        ]
+      },
+      "상급 기관": {
+        "relation_type": "SUBORDINATE_TO",
+        "direction": "source_to_target",
+        "scope": "FACT_CANDIDATE",
+        "source_entity_types": [
+          "Institution",
+          "Organization"
+        ],
+        "target_entity_types": [
+          "Institution",
+          "Organization"
+        ]
+      },
+      "상위 단체": {
+        "relation_type": "SUBORDINATE_TO",
+        "direction": "source_to_target",
+        "scope": "FACT_CANDIDATE",
+        "source_entity_types": [
+          "Organization"
+        ],
+        "target_entity_types": [
+          "Organization",
+          "Institution",
+          "Polity"
+        ]
+      },
+      "소속 인물": {
+        "relation_type": "HAS_MEMBER",
+        "direction": "source_to_target",
+        "scope": "FACT_CANDIDATE",
+        "source_entity_types": [
+          "Institution",
+          "Organization"
+        ],
+        "target_entity_types": [
+          "Person"
+        ]
+      },
+      "관련 사건": {
+        "relation_type": "ASSOCIATED_WITH_EVENT",
+        "direction": "source_to_target",
+        "scope": "DISCOVERY_ONLY",
+        "source_entity_types": [
+          "Person",
+          "Organization",
+          "Institution",
+          "Work",
+          "Heritage",
+          "Concept",
+          "Place",
+          "Polity"
+        ],
+        "target_entity_types": [
+          "Event"
+        ]
+      },
+      "관련 인물": {
+        "relation_type": "ASSOCIATED_WITH_PERSON",
+        "direction": "source_to_target",
+        "scope": "DISCOVERY_ONLY",
+        "source_entity_types": [
+          "Person",
+          "Event",
+          "Organization",
+          "Institution",
+          "Work",
+          "Heritage",
+          "Concept",
+          "Place",
+          "Polity"
+        ],
+        "target_entity_types": [
+          "Person"
+        ]
+      },
+      "관련 국가": {
+        "relation_type": "ASSOCIATED_WITH_POLITY",
+        "direction": "source_to_target",
+        "scope": "DISCOVERY_ONLY",
+        "source_entity_types": [
+          "Person",
+          "Event",
+          "Organization",
+          "Institution",
+          "Work",
+          "Heritage",
+          "Concept",
+          "Place"
+        ],
+        "target_entity_types": [
+          "Polity"
+        ]
+      },
+      "관련 단체": {
+        "relation_type": "ASSOCIATED_WITH_ORGANIZATION",
+        "direction": "source_to_target",
+        "scope": "DISCOVERY_ONLY",
+        "source_entity_types": [
+          "Person",
+          "Event",
+          "Institution",
+          "Work",
+          "Heritage",
+          "Concept",
+          "Place",
+          "Polity"
+        ],
+        "target_entity_types": [
+          "Organization"
+        ]
+      }
+    }
+  },
+  "canonical_fact_projection": {
+    "policy_version": "canonical-fact-graph-v1.0",
+    "classification_relation_types": [
+      "ASSOCIATED_WITH_POLITY"
+    ]
+  },
+  "neo4j_load": {
+    "import_scope": "source-relationships-v1",
+    "canonical_fact_import_scope": "canonical-facts-v1",
+    "batch_size": 500,
+    "manifest_file": "source_relationship_load_manifest.json",
+    "canonical_fact_manifest_file": "canonical_fact_load_manifest.json"
+  }
+}

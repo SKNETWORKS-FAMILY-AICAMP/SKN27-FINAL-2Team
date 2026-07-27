@@ -27,7 +27,6 @@
     },
     "selected_canonical_alternative_ids": {
       "type": "array",
-      "uniqueItems": true,
       "items": {"type": "string", "minLength": 1}
     },
     "reason": {"type": "string", "minLength": 1}

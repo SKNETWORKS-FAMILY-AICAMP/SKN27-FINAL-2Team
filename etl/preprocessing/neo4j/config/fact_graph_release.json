@@ -1,0 +1,45 @@
+{
+  "policy_version": "fact-graph-release-v1.1",
+  "graph_release_id": "korean-history-fact-graph-2026-07-27-contextual-v1",
+  "graph_release_prefix": "korean-history-fact-graph-",
+  "input_paths": {
+    "fact_graph_facts": "fact_graph_load/fact_graph_facts.csv",
+    "fact_graph_nodes": "fact_graph_load/fact_graph_nodes.csv",
+    "all_fact_graph_candidates": "exam_anchor_fact_graph/all_fact_graph_candidates.csv",
+    "relation_review_tasks": "internal/model_review/relation_review/relation_review_tasks.jsonl",
+    "relation_review_decisions": "internal/model_review/relation_review/relation_review_final_decisions.csv",
+    "canonical_entities": "final_identity/neo4j_canonical_entity_nodes.csv",
+    "entity_names": "final_identity/neo4j_entity_name_nodes.csv",
+    "entity_name_links": "final_identity/neo4j_name_to_entity_relationships.csv",
+    "exam_terms": "final_identity/neo4j_exam_term_nodes.csv",
+    "exam_term_links": "final_identity/neo4j_exam_term_to_entity_relationships.csv",
+    "source_records": "final_identity/neo4j_source_record_nodes.csv",
+    "source_resolution_links": "final_identity/neo4j_source_to_entity_relationships.csv",
+    "topics": "final_identity/neo4j_topic_nodes.csv",
+    "eras": "final_identity/neo4j_era_nodes.csv",
+    "entity_topic_links": "final_identity/neo4j_canonical_to_topic_relationships.csv",
+    "entity_era_links": "final_identity/neo4j_canonical_to_era_relationships.csv",
+    "evidence": "fact_graph_load/fact_graph_evidence.csv"
+  },
+  "output_directory": "fact_graph_release",
+  "existing_fact_status": "VERIFIED",
+  "accepted_relation_review_statuses": [
+    "REVIEWED_APPROVED_ONE_HOP",
+    "REVIEWED_APPROVED_MULTI_HOP"
+  ],
+  "accepted_match_status": "ACCEPTED",
+  "accepted_classification_status": "VERIFIED",
+  "resolved_node_kind": "CANONICAL",
+  "provisional_source_node_kinds": [
+    "SOURCE_RECORD",
+    "OFFICIAL_SOURCE"
+  ],
+  "contextual_merge": {
+    "enabled": true,
+    "anchor_entity_type": "Person",
+    "minimum_distinct_source_node_count": 2,
+    "minimum_normalized_name_length": 2,
+    "merge_scope": "ANCHOR_LOCAL"
+  },
+  "relation_type_pattern": "^[A-Z][A-Z0-9_]*$"
+}

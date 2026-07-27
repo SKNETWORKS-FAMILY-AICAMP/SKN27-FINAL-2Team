@@ -1,0 +1,187 @@
+{
+  "policy_version": "source-first-fact-eda-v1.0",
+  "accepted_registry_status": "ACTIVE",
+  "exam_anchor_status": "ACCEPTED",
+  "source_prefixes": {
+    "aks_article": "AKS:ARTICLE:",
+    "thesaurus_term": "THESAURUS:TERM:"
+  },
+  "aks": {
+    "source": "AKS",
+    "linked_entity_pattern": "\\[(?P<label>[^\\]]+)\\]\\((?P<eid>E[0-9]+)\\)",
+    "maximum_linked_entities_per_sentence": 8,
+    "maximum_argument_span_characters": 120,
+    "subject_inference_fields": [
+      "definition"
+    ],
+    "unsafe_target_suffix_patterns": [
+      "^\\s*(?:을|를)\\s*(?:위해|위하여|보내|보내어|시켜|시키어|맡아|맡아서|거쳐)"
+    ],
+    "unsafe_action_suffix_patterns": [
+      "^\\s*(?:하려|하려고|하고자|할\\s+생각|할\\s+계획|할\\s+예정)"
+    ],
+    "auto_accept_excluded_predicate_patterns": [
+      "즉위"
+    ],
+    "uncertainty_patterns": [
+      "추정",
+      "전해지",
+      "가능성이",
+      "불확실",
+      "미상"
+    ],
+    "negation_patterns": [
+      "않았",
+      "아니었",
+      "없었",
+      "못하",
+      "실패"
+    ],
+    "direct_link_rule": "AKS_TWO_LINKED_ROLE_PAIR",
+    "subject_inference_rule": "AKS_SUBJECT_AND_LINKED_ROLE"
+  },
+  "auto_accept_role_type_contracts": {
+    "FOUND_OR_ESTABLISH": [
+      {
+        "start_role": "ACTOR",
+        "start_types": ["Person", "Organization", "Institution", "Polity"],
+        "end_role": "TARGET",
+        "end_types": ["Organization", "Institution", "Heritage", "Work", "Concept", "Place"]
+      }
+    ],
+    "CREATE_OR_PRODUCE": [
+      {
+        "start_role": "ACTOR",
+        "start_types": ["Person", "Organization", "Institution", "Polity"],
+        "end_role": "TARGET",
+        "end_types": ["Organization", "Institution", "Heritage", "Work", "Concept", "Place"]
+      }
+    ],
+    "AUTHOR_OR_COMPILE": [
+      {
+        "start_role": "ACTOR",
+        "start_types": ["Person", "Organization", "Institution"],
+        "end_role": "TARGET",
+        "end_types": ["Work"]
+      }
+    ],
+    "PUBLISH_OR_PRINT": [
+      {
+        "start_role": "ACTOR",
+        "start_types": ["Person", "Organization", "Institution"],
+        "end_role": "TARGET",
+        "end_types": ["Work"]
+      }
+    ],
+    "IMPLEMENT_OR_ENACT": [
+      {
+        "start_role": "ACTOR",
+        "start_types": ["Person", "Organization", "Institution", "Polity"],
+        "end_role": "TARGET",
+        "end_types": ["Concept", "Institution", "Event"]
+      }
+    ],
+    "MOVE_OR_RETURN": [
+      {
+        "start_role": "ACTOR",
+        "start_types": ["Person", "Organization", "Polity"],
+        "end_role": "LOCATION",
+        "end_types": ["Place"]
+      }
+    ],
+    "PARTICIPATE_OR_ACT": [
+      {
+        "start_role": "ACTOR",
+        "start_types": ["Person", "Organization", "Polity"],
+        "end_role": "CONTEXT",
+        "end_types": ["Event", "Polity"]
+      }
+    ],
+    "CONFLICT_OR_SUPPRESS": [
+      {
+        "start_role": "ACTOR",
+        "start_types": ["Person", "Organization", "Institution", "Polity"],
+        "end_role": "TARGET",
+        "end_types": ["Person", "Organization", "Institution", "Event", "Polity", "Place"]
+      }
+    ],
+    "DIPLOMACY_OR_AGREEMENT": [
+      {
+        "start_role": "ACTOR",
+        "start_types": ["Person", "Organization", "Institution", "Polity"],
+        "end_role": "TARGET",
+        "end_types": ["Person", "Organization", "Institution", "Event", "Polity"]
+      }
+    ],
+    "LOCATION_OR_OCCURRENCE": [
+      {
+        "start_role": "TARGET",
+        "start_types": ["Event", "Heritage", "Institution", "Organization"],
+        "end_role": "LOCATION",
+        "end_types": ["Place"]
+      }
+    ],
+    "APPOINT_OR_SERVE": [
+      {
+        "start_role": "ACTOR",
+        "start_types": ["Person", "Organization", "Institution", "Polity"],
+        "end_role": "TARGET",
+        "end_types": ["Person"]
+      },
+      {
+        "start_role": "TARGET",
+        "start_types": ["Person"],
+        "end_role": "ROLE",
+        "end_types": ["Concept"]
+      }
+    ]
+  },
+  "thesaurus": {
+    "source": "THESAURUS",
+    "minimum_unique_name_length": 2,
+    "maximum_named_entities_per_context": 8,
+    "following_particles": [
+      "은",
+      "는",
+      "이",
+      "가",
+      "을",
+      "를",
+      "의",
+      "에",
+      "에서",
+      "에게",
+      "께서",
+      "와",
+      "과",
+      "로",
+      "으로",
+      "도",
+      "만"
+    ],
+    "hanja_parenthetical_pattern": "(?<=[가-힣])\\([一-龥·ㆍ\\s]+\\)",
+    "subject_inference_rule": "THESAURUS_SUBJECT_AND_UNIQUE_NAME_ROLE"
+  },
+  "trust_tiers": {
+    "auto_accept": "AUTO_ACCEPT_CANDIDATE",
+    "review": "REVIEW_CANDIDATE"
+  },
+  "excluded_swap_context_relation_types": [
+    "ASSOCIATED_WITH_POLITY"
+  ],
+  "identifier": {
+    "hash_algorithm": "sha256",
+    "digest_length": 20,
+    "evidence_prefix": "source-first-evidence:",
+    "fact_prefix": "source-first-fact:"
+  },
+  "audit": {
+    "maximum_rows": 120
+  },
+  "outputs": {
+    "evidence": "source_first_fact_evidence.csv",
+    "facts": "source_first_fact_candidates.csv",
+    "audit_sample": "source_first_fact_audit_sample.csv",
+    "manifest": "source_first_fact_eda_manifest.json"
+  }
+}

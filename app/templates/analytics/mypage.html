@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="{% static 'himate.css' %}" />
   <link rel="stylesheet" href="{% static 'layout.css' %}" />
   <link rel="stylesheet" href="{% static 'analytics/css/mypage.css' %}?v=weakness-item-17" />
+  <link rel="stylesheet" href="{% static 'analytics/css/mypage-weekly-report.css' %}?v=weekly-report-1" />
 </head>
 <body>
   <header class="site-header" aria-label="마이페이지 메뉴">
@@ -65,6 +66,76 @@
           <strong>{{ diagnosis_comparison.empty.title }}</strong>
           <p>{{ diagnosis_comparison.empty.description }}</p>
         </article>
+      {% endif %}
+    </section>
+
+    <section class="weekly-report-panel" id="weeklyReportPanel" aria-label="주간 학습 리포트"
+             data-report-url="{% url 'analytics:weekly_report' %}">
+      <div class="panel-heading compact">
+        <h2>주간 리포트{% if weekly_report.reportType == "first_week" %} <span id="weeklyReportType">첫 주</span>{% endif %}</h2>
+        <span class="weekly-report-status" id="weeklyReportStatus" hidden>작성 중</span>
+      </div>
+
+      {% if weekly_report %}
+        <div class="weekly-report-body" id="weeklyReportBody" data-status="{{ weekly_report.status }}">
+          <div class="weekly-report-metrics">
+            <article><span>이번 평가</span><strong id="weeklyReportScore">{{ weekly_report.scoreSummary }}</strong></article>
+            <article><span>지난 평가 대비</span><strong id="weeklyReportComparison">{{ weekly_report.comparisonSummary }}</strong></article>
+            <article><span>계획 완료율</span><strong id="weeklyReportCompletion">{{ weekly_report.completionSummary }}</strong></article>
+          </div>
+
+          <p class="weekly-report-comment" id="weeklyReportComment">
+            {% if weekly_report.comment %}{{ weekly_report.comment.text }}{% else %}리포트를 만들고 있어요. 잠시 후 다시 확인해 주세요.{% endif %}
+          </p>
+
+          <ul class="weekly-report-tips" id="weeklyReportTips">
+            {% for tip in weekly_report.tips %}
+              <li>{{ tip.text }}</li>
+            {% endfor %}
+          </ul>
+
+          {% if weekly_report.priorityImprovements %}
+            <div class="weekly-report-targets">
+              <h3>먼저 보완할 영역</h3>
+              <ul id="weeklyReportImprovements">
+                {% for item in weekly_report.priorityImprovements %}
+                  <li>
+                    {{ item.label }}
+                    {% if item.examTrendRank %}<b class="trend-badge">출제 {{ item.examTrendRank }}위</b>{% endif %}
+                    {% if item.trend == "worsening" %}<i class="trend-mark worse">나빠지는 중</i>{% endif %}
+                    {% if item.trend == "improving" %}<i class="trend-mark better">좋아지는 중</i>{% endif %}
+                  </li>
+                {% endfor %}
+              </ul>
+            </div>
+          {% endif %}
+
+          {% if weekly_report.conceptWeaknesses %}
+            <div class="weekly-report-targets">
+              <h3>반복해서 막히는 개념</h3>
+              <ul id="weeklyReportConcepts">
+                {% for item in weekly_report.conceptWeaknesses %}
+                  <li>{{ item.label }}<b class="concept-count">{{ item.wrongCount }}/{{ item.sampleCount }}</b></li>
+                {% endfor %}
+              </ul>
+            </div>
+          {% endif %}
+
+          {% if weekly_report.examTrends %}
+            <div class="weekly-report-trends">
+              <h3>최근 5회차 출제 경향 <span>{{ weekly_report.examTrends.0.recentRounds }}회</span></h3>
+              <ol id="weeklyReportTrends">
+                {% for item in weekly_report.examTrends %}
+                  <li><span>{{ item.label }}</span><b>{{ item.ratioPercent }}%</b></li>
+                {% endfor %}
+              </ol>
+            </div>
+          {% endif %}
+        </div>
+      {% else %}
+        <div class="weekly-report-body weekly-report-empty" id="weeklyReportBody" data-status="none">
+          <p>주간 평가를 완료하면 리포트가 만들어집니다.</p>
+        </div>
       {% endif %}
     </section>
 
@@ -152,12 +223,12 @@
         </div>
 
         <section class="planner-progress-summary" aria-label="학습계획 달성률">
-          <span>이번 달 학습 진행률</span>
-          <div class="planner-progress-meter" aria-label="현재 계획 달성률 {{ planner_summary.progress.completionPercent }}%">
+          <span>이번 주 학습 진행률</span>
+          <div class="planner-progress-meter" aria-label="{{ planner_summary.progress.periodLabel }} 학습계획 달성률 {{ planner_summary.progress.completionPercent }}%">
             <i style="width: {{ planner_summary.progress.completionPercent }}%"></i>
           </div>
           <strong>{{ planner_summary.progress.completionPercent }}%</strong>
-          <p>{{ planner_summary.progress.achievedCount }} / {{ planner_summary.progress.targetCount }}문항</p>
+          <p>{{ planner_summary.progress.achievedCount }} / {{ planner_summary.progress.targetCount }}블록</p>
         </section>
 
         <div class="planner-board">
@@ -635,6 +706,94 @@
     renderPlannerCalendar();
     renderPlannerLessons();
     void synchronizeStudyPlan();
+
+    // 주간 리포트는 워커가 백그라운드에서 만든다.
+    // 아직 pending / running 이면 완성될 때까지 주기적으로 다시 조회한다.
+    const weeklyReportPanel = document.getElementById("weeklyReportPanel");
+    const weeklyReportBody = document.getElementById("weeklyReportBody");
+    const weeklyReportStatus = document.getElementById("weeklyReportStatus");
+    const weeklyReportPollIntervalMs = 15000;
+    const weeklyReportMaxPollCount = 20;
+    let weeklyReportPollCount = 0;
+
+    const isWeeklyReportPending = (status) => status === "pending" || status === "running";
+
+    const setWeeklyReportText = (elementId, text) => {
+      const element = document.getElementById(elementId);
+      if (element && typeof text === "string") {
+        element.textContent = text;
+      }
+    };
+
+    const renderWeeklyReportList = (elementId, items, getText) => {
+      const element = document.getElementById(elementId);
+      if (!element || !Array.isArray(items)) {
+        return;
+      }
+      element.replaceChildren();
+      for (const item of items) {
+        const listItem = document.createElement("li");
+        listItem.textContent = getText(item);
+        element.append(listItem);
+      }
+    };
+
+    const renderWeeklyReport = (report) => {
+      if (!report || !weeklyReportBody) {
+        return;
+      }
+      weeklyReportBody.dataset.status = report.status || "";
+      setWeeklyReportText("weeklyReportScore", report.scoreSummary);
+      setWeeklyReportText("weeklyReportComparison", report.comparisonSummary);
+      setWeeklyReportText("weeklyReportCompletion", report.completionSummary);
+      setWeeklyReportText("weeklyReportType", report.reportType === "first_week" ? "첫 주" : "");
+      if (report.comment && report.comment.text) {
+        setWeeklyReportText("weeklyReportComment", report.comment.text);
+      }
+      renderWeeklyReportList("weeklyReportTips", report.tips, (tip) => tip.text || "");
+      renderWeeklyReportList(
+        "weeklyReportImprovements",
+        report.priorityImprovements,
+        (item) => item.label || "",
+      );
+    };
+
+    const pollWeeklyReport = async () => {
+      if (!weeklyReportPanel || !weeklyReportBody) {
+        return;
+      }
+      if (!isWeeklyReportPending(weeklyReportBody.dataset.status)) {
+        weeklyReportStatus?.setAttribute("hidden", "");
+        return;
+      }
+      if (weeklyReportPollCount >= weeklyReportMaxPollCount) {
+        if (weeklyReportStatus) {
+          weeklyReportStatus.textContent = "잠시 후 새로고침해 주세요";
+        }
+        return;
+      }
+
+      weeklyReportStatus?.removeAttribute("hidden");
+      weeklyReportPollCount += 1;
+      try {
+        const response = await fetch(weeklyReportPanel.dataset.reportUrl, {
+          headers: { "X-Requested-With": "XMLHttpRequest" },
+        });
+        if (response.ok) {
+          const payload = await response.json();
+          renderWeeklyReport(payload.weeklyReport);
+          if (payload.weeklyReport && !isWeeklyReportPending(payload.weeklyReport.status)) {
+            weeklyReportStatus?.setAttribute("hidden", "");
+            return;
+          }
+        }
+      } catch (error) {
+        // 네트워크 오류는 다음 폴링에서 다시 시도한다.
+      }
+      window.setTimeout(pollWeeklyReport, weeklyReportPollIntervalMs);
+    };
+
+    void pollWeeklyReport();
   </script>
 </body>
 </html>

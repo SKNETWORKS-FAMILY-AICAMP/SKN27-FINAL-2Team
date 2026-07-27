@@ -1,0 +1,48 @@
+{
+  "exam_match_recovery": {
+    "policy_version": "exam-match-recovery-v1.0",
+    "active_lifecycle_status": "ACTIVE",
+    "accepted_link_status": "ACCEPTED",
+    "ambiguous_link_status": "AMBIGUOUS",
+    "verified_era_status": "VERIFIED",
+    "allowed_sources": [
+      "AKS",
+      "THESAURUS",
+      "ITKC_PERSON",
+      "ITKC_EVENT"
+    ],
+    "allowed_category_compatibility": [
+      "COMPATIBLE"
+    ],
+    "exact_retrieval_method": "exact",
+    "minimum_retrieval_score": 1.0,
+    "maximum_neighbor_era_count": 1,
+    "minimum_dominant_era_votes": 2,
+    "minimum_era_vote_margin": 1,
+    "decision_statuses": {
+      "auto_accept": "AUTO_ACCEPT_CANDIDATE",
+      "review_required": "REVIEW_REQUIRED"
+    },
+    "selection_methods": {
+      "unique_exact": "UNIQUE_EXACT_OFFICIAL_NAME",
+      "problem_era": "EXACT_NAME_AND_PROBLEM_ERA",
+      "no_candidate": "NO_EXACT_OFFICIAL_CANDIDATE",
+      "insufficient_context": "INSUFFICIENT_PROBLEM_ERA_CONTEXT",
+      "era_conflict": "PROBLEM_ERA_CONFLICT",
+      "duplicate_or_homonym": "DUPLICATE_OR_HOMONYM_REVIEW"
+    },
+    "current_fact_classification_relation_types": [
+      "ASSOCIATED_WITH_POLITY"
+    ],
+    "staged_fact_ready_statuses": [
+      "READY_TO_PROJECT"
+    ],
+    "outputs": {
+      "problem_recovery": "exam_problem_match_recovery.csv",
+      "term_recovery": "exam_term_match_recovery.csv",
+      "problem_fact_coverage": "exam_problem_fact_coverage.csv",
+      "duplicate_review": "duplicate_canonical_review.csv",
+      "manifest": "exam_match_recovery_manifest.json"
+    }
+  }
+}

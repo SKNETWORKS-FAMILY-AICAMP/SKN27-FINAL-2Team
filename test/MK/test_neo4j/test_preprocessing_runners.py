@@ -1,6 +1,7 @@
 import sys
 import unittest
 from pathlib import Path
+from tempfile import TemporaryDirectory
 
 
 class PreprocessingRunnerTest(unittest.TestCase):
@@ -13,11 +14,19 @@ class PreprocessingRunnerTest(unittest.TestCase):
         sys.path.insert(0, str(cls.neo4j_root))
 
         from common import load_pipeline_policy
-        from run_neo4j_preprocessing import (
+        from runners.run_neo4j_preprocessing import (
             resolve_pipeline_paths,
             resolve_stage_output_paths,
         )
-        from run_neo4j_preprocessing_test import (
+        from runners.finalize_related_entities import (
+            resolve_related_finalization_paths,
+            run_related_entity_finalization,
+        )
+        from runners.import_and_evaluate_goldset import (
+            resolve_goldset_evaluation_paths,
+        )
+        from runners.run_preprocessing_test import (
+            resolve_shared_thesaurus_path,
             resolve_test_output_directory,
         )
 
@@ -26,8 +35,20 @@ class PreprocessingRunnerTest(unittest.TestCase):
         cls.resolve_stage_output_paths = staticmethod(
             resolve_stage_output_paths
         )
+        cls.resolve_goldset_evaluation_paths = staticmethod(
+            resolve_goldset_evaluation_paths
+        )
+        cls.resolve_related_finalization_paths = staticmethod(
+            resolve_related_finalization_paths
+        )
+        cls.run_related_entity_finalization = staticmethod(
+            run_related_entity_finalization
+        )
         cls.resolve_test_output_directory = staticmethod(
             resolve_test_output_directory
+        )
+        cls.resolve_shared_thesaurus_path = staticmethod(
+            resolve_shared_thesaurus_path
         )
 
     def test_explicit_pipeline_paths_are_preserved(self):
@@ -87,40 +108,150 @@ class PreprocessingRunnerTest(unittest.TestCase):
 
         self.assertEqual(
             paths["extracted_terms_csv"],
-            Path("pipeline-output/01_term_extraction/unique_exam_terms.csv"),
+            Path("pipeline-output/review/unique_exam_terms.csv"),
         )
         self.assertEqual(
             paths["term_checkpoint"],
             Path(
-                "pipeline-output/01_term_extraction/internal/"
+                "pipeline-output/internal/term_extraction/"
                 "term_extraction_checkpoint.jsonl"
+            ),
+        )
+        self.assertEqual(
+            paths["normalized_thesaurus"],
+            Path(
+                "pipeline-output/internal/shared/"
+                "normalized_history_thesaurus.json"
             ),
         )
         self.assertEqual(
             paths["coverage_report"],
             Path(
-                "pipeline-output/02_candidate_retrieval/"
+                "pipeline-output/review/"
                 "source_coverage_report.json"
             ),
         )
         self.assertEqual(
             paths["name_matches"],
             Path(
-                "pipeline-output/02_candidate_retrieval/internal/"
+                "pipeline-output/internal/candidate_retrieval/"
                 "name_match_candidates.json"
             ),
         )
         self.assertEqual(
+            paths["body_mention_matches"],
+            Path(
+                "pipeline-output/internal/candidate_retrieval/"
+                "body_mention_candidates.json"
+            ),
+        )
+        self.assertEqual(
             paths["entity_resolution_directory"],
-            Path("pipeline-output/03_entity_resolution"),
+            Path("pipeline-output/internal/entity_resolution"),
+        )
+        self.assertEqual(
+            paths["entity_resolution_review_queue"],
+            Path("pipeline-output/review/cases_requiring_review.csv"),
         )
         self.assertEqual(
             paths["term_review_tasks"],
             Path(
-                "pipeline-output/04_llm_review/internal/"
+                "pipeline-output/internal/model_review/"
                 "term_identity_review_tasks.jsonl"
             ),
         )
+
+    def test_test_run_uses_the_shared_normalized_thesaurus(self):
+        policy = self.load_pipeline_policy(
+            str(self.neo4j_root / "config" / "resolution_policy.json")
+        )
+
+        shared_path = self.resolve_shared_thesaurus_path(
+            self.neo4j_root,
+            policy,
+        )
+
+        self.assertEqual(
+            Path(shared_path),
+            (
+                self.neo4j_root
+                / "output"
+                / "internal"
+                / "shared"
+                / "normalized_history_thesaurus.json"
+            ).resolve(),
+        )
+        self.assertFalse(
+            policy["output_retention"][
+                "keep_candidate_retrieval_cache_after_resolution"
+            ]
+        )
+
+    def test_goldset_evaluation_paths_stay_under_goldset_internal(self):
+        policy = self.load_pipeline_policy(
+            str(self.neo4j_root / "config" / "resolution_policy.json")
+        )
+        paths = self.resolve_goldset_evaluation_paths(
+            self.neo4j_root,
+            policy,
+        )
+
+        self.assertEqual(
+            paths["annotation_directory"],
+            (self.neo4j_root / "goldset" / "human_review_csv").resolve(),
+        )
+        self.assertEqual(
+            paths["model_prediction_directory"],
+            (
+                self.neo4j_root
+                / "goldset"
+                / "internal"
+                / "model"
+            ).resolve(),
+        )
+
+    def test_related_finalization_paths_are_separate_from_review(self):
+        policy = self.load_pipeline_policy(
+            str(self.neo4j_root / "config" / "resolution_policy.json")
+        )
+        paths = self.resolve_related_finalization_paths(
+            self.neo4j_root,
+            policy,
+        )
+
+        self.assertEqual(
+            paths["related_output_directory"],
+            (
+                self.neo4j_root
+                / "goldset"
+                / "internal"
+                / "related_entity"
+            ).resolve(),
+        )
+        self.assertEqual(
+            paths["final_output_directory"],
+            (self.neo4j_root / "goldset" / "final_identity").resolve(),
+        )
+
+    def test_related_finalization_blocks_missing_review_manifest(self):
+        with TemporaryDirectory() as temporary_directory:
+            result = self.run_related_entity_finalization(
+                neo4j_root=str(self.neo4j_root),
+                policy_path=str(
+                    self.neo4j_root
+                    / "config"
+                    / "resolution_policy.json"
+                ),
+                related_output_dir=temporary_directory,
+                final_output_dir=temporary_directory,
+                dry_run=True,
+            )
+
+        self.assertEqual(
+            result["status"],
+            "BLOCKED_BY_STALE_RELATED_REVIEW",
+        )
+        self.assertEqual(len(result["provenance_errors"]), 2)
 
 
 if __name__ == "__main__":

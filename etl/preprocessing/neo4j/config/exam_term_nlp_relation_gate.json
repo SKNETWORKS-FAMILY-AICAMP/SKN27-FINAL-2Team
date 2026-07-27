@@ -1,0 +1,447 @@
+{
+  "policy_version": "exam-term-nlp-relation-gate-v1.2",
+  "allowed_candidate_statuses": [
+    "NLP_HIGH_CONFIDENCE_REGISTERED",
+    "NLP_REVIEW_REGISTERED",
+    "NLP_REVIEW_AMBIGUOUS_COUNTERPART",
+    "NLP_HIGH_CONFIDENCE_OPEN_ENDPOINT",
+    "NLP_REVIEW_OPEN_ENDPOINT"
+  ],
+  "allowed_evidence_statuses": [
+    "NLP_HIGH_CONFIDENCE_REGISTERED",
+    "NLP_REVIEW_REGISTERED",
+    "NLP_REVIEW_AMBIGUOUS_COUNTERPART",
+    "NLP_HIGH_CONFIDENCE_OPEN_ENDPOINT",
+    "NLP_REVIEW_OPEN_ENDPOINT"
+  ],
+  "blocked_node_kinds": [],
+  "blocked_entity_types": [
+    "Unknown"
+  ],
+  "review_only_reasons": [
+    "START_ENTITY_TYPE_NOT_ALLOWED",
+    "END_ENTITY_TYPE_NOT_ALLOWED",
+    "BLOCKED_ENTITY_TYPE"
+  ],
+  "minimum_candidate_score": 0,
+  "minimum_explicit_role_evidence_count": 0,
+  "minimum_endpoint_surface_length": 2,
+  "minimum_alias_containment_length": 3,
+  "maximum_case_marker_tail_length": 50,
+  "maximum_explicit_argument_span": 120,
+  "require_endpoint_mention_display_alignment": true,
+  "require_type_contract_compatible": false,
+  "require_no_structural_conflict": false,
+  "require_rank_one": false,
+  "require_start_before_end_before_predicate": true,
+  "block_passive_voice_by_default": true,
+  "passive_predicate_tail_pattern": "[^,.]{0,12}(?:되|받)",
+  "blocked_assertion_patterns": [
+    "(?:기|고)\\s*(?:위해|위하여|위해서|위한|위하려|위하고)",
+    "(?:코자|고자|기로\\s*하|하려고|하도록\\s*하)",
+    "(?:기록|자료|근거)[^,.]{0,40}(?:없|찾아볼\\s*수\\s*없)",
+    "(?:지\\s*않|지\\s*못|수\\s*없|할\\s*수\\s*있)",
+    "(?:속전|전승|설화|전설|전해|추정|하였을\\s*것|했을\\s*것)",
+    "[\"“”‘’]"
+  ],
+  "minimum_distinct_support_count": 2,
+  "minimum_distinct_source_count": 2,
+  "blocked_endpoint_surface_patterns": [
+    "^[0-9]+\\s+[가-힣]",
+    "^[0-9]+\\s*부$",
+    "^(?:건물|초고|사회|깃발|관청|장군|제도|조직|단체|지역|사업|정책|시설|내용|자료|국책회사)$"
+  ],
+  "case_marker_patterns_by_role": {
+    "ACTOR": "^\\s*(?:\\([^)]{1,40}\\))?\\s*(?:은|는|이|가)(?![가-힣])",
+    "TARGET": "^\\s*(?:\\([^)]{1,40}\\))?\\s*(?:을|를)(?![가-힣])",
+    "LOCATION": "^\\s*(?:\\([^)]{1,40}\\))?\\s*(?:에|에서|으로|로)(?![가-힣])",
+    "CONTEXT": "^\\s*(?:\\([^)]{1,40}\\))?\\s*(?:에|에서|으로|로)(?![가-힣])",
+    "ROLE": "^\\s*(?:\\([^)]{1,40}\\))?\\s*(?:에|으로|로)(?![가-힣])"
+  },
+  "case_marker_pattern_overrides": {
+    "APPOINT_OR_SERVE:START:TARGET": "^\\s*(?:\\([^)]{1,40}\\))?\\s*(?:은|는|이|가)(?![가-힣])",
+    "LOCATION_OR_OCCURRENCE:START:TARGET": "^\\s*(?:\\([^)]{1,40}\\))?\\s*(?:은|는|이|가)(?![가-힣])",
+    "MOVE_OR_RETURN:END:LOCATION": "^\\s*(?:\\([^)]{1,40}\\))?\\s*(?:으로|로)(?![가-힣])"
+  },
+  "competing_subject_pattern": "[가-힣A-Za-z0-9·]+(?:\\s+[가-힣A-Za-z0-9·]+){0,3}\\s*(?:\\([^)]{1,40}\\))?\\s*(?:은|는|이|가)(?![가-힣])",
+  "competing_argument_patterns_by_role": {
+    "TARGET": "[가-힣A-Za-z0-9·]+(?:\\s+[가-힣A-Za-z0-9·]+){0,3}\\s*(?:\\([^)]{1,40}\\))?\\s*(?:을|를)(?![가-힣])",
+    "LOCATION": "[가-힣A-Za-z0-9·]+(?:\\s+[가-힣A-Za-z0-9·]+){0,3}\\s*(?:\\([^)]{1,40}\\))?\\s*(?:으로|로)(?![가-힣])",
+    "CONTEXT": "[가-힣A-Za-z0-9·]+(?:\\s+[가-힣A-Za-z0-9·]+){0,3}\\s*(?:\\([^)]{1,40}\\))?\\s*(?:에|에서)(?![가-힣])",
+    "ROLE": "[가-힣A-Za-z0-9·]+(?:\\s+[가-힣A-Za-z0-9·]+){0,3}\\s*(?:\\([^)]{1,40}\\))?\\s*(?:에|으로|로)(?![가-힣])"
+  },
+  "family_contracts": {
+    "FOUND_OR_ESTABLISH": {
+      "allowed_role_pairs": [
+        ["ACTOR", "TARGET"]
+      ],
+      "allowed_start_entity_types": [
+        "Person",
+        "Polity",
+        "Institution",
+        "Organization"
+      ],
+      "allowed_end_entity_types": [
+        "Institution",
+        "Organization",
+        "Heritage",
+        "Concept",
+        "Place"
+      ]
+    },
+    "CREATE_OR_PRODUCE": {
+      "allowed_role_pairs": [
+        ["ACTOR", "TARGET"]
+      ],
+      "allowed_start_entity_types": [
+        "Person",
+        "Polity",
+        "Institution",
+        "Organization"
+      ],
+      "allowed_end_entity_types": [
+        "Work",
+        "Heritage",
+        "Institution",
+        "Organization",
+        "Place",
+        "Concept"
+      ]
+    },
+    "AUTHOR_OR_COMPILE": {
+      "allowed_role_pairs": [
+        ["ACTOR", "TARGET"]
+      ],
+      "allowed_start_entity_types": [
+        "Person",
+        "Institution",
+        "Organization"
+      ],
+      "allowed_end_entity_types": [
+        "Work"
+      ]
+    },
+    "PUBLISH_OR_PRINT": {
+      "allowed_role_pairs": [
+        ["ACTOR", "TARGET"]
+      ],
+      "allowed_start_entity_types": [
+        "Person",
+        "Institution",
+        "Organization"
+      ],
+      "allowed_end_entity_types": [
+        "Work"
+      ]
+    },
+    "IMPLEMENT_OR_ENACT": {
+      "allowed_role_pairs": [
+        ["ACTOR", "TARGET"]
+      ],
+      "allowed_start_entity_types": [
+        "Person",
+        "Polity",
+        "Institution",
+        "Organization"
+      ],
+      "allowed_end_entity_types": [
+        "Concept",
+        "Institution",
+        "Event"
+      ]
+    },
+    "MOVE_OR_RETURN": {
+      "allowed_role_pairs": [
+        ["ACTOR", "LOCATION"]
+      ],
+      "allowed_start_entity_types": [
+        "Person",
+        "Polity",
+        "Institution",
+        "Organization"
+      ],
+      "allowed_end_entity_types": [
+        "Place"
+      ]
+    },
+    "PARTICIPATE_OR_ACT": {
+      "allowed_role_pairs": [
+        ["ACTOR", "CONTEXT"]
+      ],
+      "allowed_start_entity_types": [
+        "Person",
+        "Polity",
+        "Institution",
+        "Organization"
+      ],
+      "allowed_end_entity_types": [
+        "Event"
+      ]
+    },
+    "CONFLICT_OR_SUPPRESS": {
+      "allowed_role_pairs": [
+        ["ACTOR", "TARGET"]
+      ],
+      "allowed_start_entity_types": [
+        "Person",
+        "Polity",
+        "Institution",
+        "Organization"
+      ],
+      "allowed_end_entity_types": [
+        "Person",
+        "Polity",
+        "Institution",
+        "Organization",
+        "Place"
+      ]
+    },
+    "DIPLOMACY_OR_AGREEMENT": {
+      "allowed_role_pairs": [
+        ["ACTOR", "TARGET"]
+      ],
+      "allowed_start_entity_types": [
+        "Person",
+        "Polity",
+        "Institution",
+        "Organization"
+      ],
+      "allowed_end_entity_types": [
+        "Person",
+        "Polity",
+        "Institution",
+        "Organization",
+        "Concept",
+        "Work"
+      ]
+    },
+    "LOCATION_OR_OCCURRENCE": {
+      "allow_passive_voice": true,
+      "allowed_role_pairs": [
+        ["TARGET", "LOCATION"]
+      ],
+      "allowed_start_entity_types": [
+        "Event",
+        "Heritage",
+        "Work",
+        "Institution",
+        "Organization",
+        "Place"
+      ],
+      "allowed_end_entity_types": [
+        "Place"
+      ]
+    },
+    "APPOINT_OR_SERVE": {
+      "allow_passive_voice": true,
+      "allowed_role_pairs": [
+        ["TARGET", "ROLE"]
+      ],
+      "allowed_start_entity_types": [
+        "Person"
+      ],
+      "allowed_end_entity_types": [
+        "Concept"
+      ]
+    }
+  },
+  "predicate_rules": [
+    {"family": "FOUND_OR_ESTABLISH", "predicate": "설립", "relation_type": "ESTABLISHED"},
+    {"family": "FOUND_OR_ESTABLISH", "predicate": "창설", "relation_type": "ESTABLISHED"},
+    {"family": "FOUND_OR_ESTABLISH", "predicate": "창건", "relation_type": "FOUNDED"},
+    {"family": "FOUND_OR_ESTABLISH", "predicate": "건립", "relation_type": "BUILT"},
+    {"family": "FOUND_OR_ESTABLISH", "predicate": "설치", "relation_type": "ESTABLISHED"},
+    {"family": "FOUND_OR_ESTABLISH", "predicate": "조직", "relation_type": "ORGANIZED"},
+    {"family": "FOUND_OR_ESTABLISH", "predicate": "결성", "relation_type": "ORGANIZED"},
+    {"family": "FOUND_OR_ESTABLISH", "predicate": "발족", "relation_type": "ESTABLISHED"},
+    {"family": "FOUND_OR_ESTABLISH", "predicate": "세웠", "relation_type": "ESTABLISHED"},
+    {"family": "FOUND_OR_ESTABLISH", "predicate": "창시", "relation_type": "FOUNDED"},
+    {"family": "FOUND_OR_ESTABLISH", "predicate": "창도", "relation_type": "FOUNDED"},
+    {"family": "FOUND_OR_ESTABLISH", "predicate": "개설", "relation_type": "ESTABLISHED"},
+    {"family": "FOUND_OR_ESTABLISH", "predicate": "수립", "relation_type": "ESTABLISHED"},
+
+    {"family": "CREATE_OR_PRODUCE", "predicate": "제작", "relation_type": "CREATED"},
+    {"family": "CREATE_OR_PRODUCE", "predicate": "만들", "relation_type": "CREATED"},
+    {"family": "CREATE_OR_PRODUCE", "predicate": "조성", "relation_type": "CREATED"},
+    {"family": "CREATE_OR_PRODUCE", "predicate": "축조", "relation_type": "BUILT"},
+    {"family": "CREATE_OR_PRODUCE", "predicate": "주조", "relation_type": "CAST"},
+    {"family": "CREATE_OR_PRODUCE", "predicate": "창제", "relation_type": "CREATED"},
+    {"family": "CREATE_OR_PRODUCE", "predicate": "건축", "relation_type": "BUILT"},
+    {"family": "CREATE_OR_PRODUCE", "predicate": "중건", "relation_type": "RESTORED"},
+    {"family": "CREATE_OR_PRODUCE", "predicate": "발명", "relation_type": "INVENTED"},
+    {"family": "CREATE_OR_PRODUCE", "predicate": "개발", "relation_type": "DEVELOPED"},
+    {"family": "CREATE_OR_PRODUCE", "predicate": "복원", "relation_type": "RESTORED"},
+    {"family": "CREATE_OR_PRODUCE", "predicate": "재건", "relation_type": "REBUILT"},
+    {"family": "CREATE_OR_PRODUCE", "predicate": "증축", "relation_type": "EXPANDED"},
+
+    {"family": "AUTHOR_OR_COMPILE", "predicate": "저술", "relation_type": "AUTHORED"},
+    {"family": "AUTHOR_OR_COMPILE", "predicate": "편찬", "relation_type": "COMPILED"},
+    {"family": "AUTHOR_OR_COMPILE", "predicate": "집필", "relation_type": "AUTHORED"},
+    {"family": "AUTHOR_OR_COMPILE", "predicate": "지었", "relation_type": "AUTHORED"},
+    {"family": "AUTHOR_OR_COMPILE", "predicate": "지은", "relation_type": "AUTHORED"},
+    {"family": "AUTHOR_OR_COMPILE", "predicate": "쓴", "relation_type": "AUTHORED"},
+    {"family": "AUTHOR_OR_COMPILE", "predicate": "작성", "relation_type": "AUTHORED"},
+    {"family": "AUTHOR_OR_COMPILE", "predicate": "번역", "relation_type": "TRANSLATED"},
+    {"family": "AUTHOR_OR_COMPILE", "predicate": "편집", "relation_type": "EDITED"},
+
+    {"family": "PUBLISH_OR_PRINT", "predicate": "간행", "relation_type": "PUBLISHED"},
+    {"family": "PUBLISH_OR_PRINT", "predicate": "발행", "relation_type": "PUBLISHED"},
+    {"family": "PUBLISH_OR_PRINT", "predicate": "인쇄", "relation_type": "PRINTED"},
+    {"family": "PUBLISH_OR_PRINT", "predicate": "판각", "relation_type": "WOODBLOCK_CARVED"},
+    {"family": "PUBLISH_OR_PRINT", "predicate": "발간", "relation_type": "PUBLISHED"},
+    {"family": "PUBLISH_OR_PRINT", "predicate": "출판", "relation_type": "PUBLISHED"},
+    {"family": "PUBLISH_OR_PRINT", "predicate": "배포", "relation_type": "DISTRIBUTED"},
+
+    {"family": "IMPLEMENT_OR_ENACT", "predicate": "실시", "relation_type": "IMPLEMENTED"},
+    {"family": "IMPLEMENT_OR_ENACT", "predicate": "시행", "relation_type": "IMPLEMENTED"},
+    {"family": "IMPLEMENT_OR_ENACT", "predicate": "반포", "relation_type": "PROMULGATED"},
+    {"family": "IMPLEMENT_OR_ENACT", "predicate": "제정", "relation_type": "ENACTED"},
+    {"family": "IMPLEMENT_OR_ENACT", "predicate": "폐지", "relation_type": "ABOLISHED"},
+    {"family": "IMPLEMENT_OR_ENACT", "predicate": "혁파", "relation_type": "ABOLISHED"},
+    {"family": "IMPLEMENT_OR_ENACT", "predicate": "단행", "relation_type": "IMPLEMENTED"},
+    {"family": "IMPLEMENT_OR_ENACT", "predicate": "도입", "relation_type": "INTRODUCED"},
+    {"family": "IMPLEMENT_OR_ENACT", "predicate": "실행", "relation_type": "IMPLEMENTED"},
+    {"family": "IMPLEMENT_OR_ENACT", "predicate": "개혁", "relation_type": "REFORMED"},
+    {"family": "IMPLEMENT_OR_ENACT", "predicate": "개편", "relation_type": "REORGANIZED"},
+    {"family": "IMPLEMENT_OR_ENACT", "predicate": "정비", "relation_type": "REORGANIZED"},
+    {"family": "IMPLEMENT_OR_ENACT", "predicate": "공포", "relation_type": "PROMULGATED"},
+    {"family": "IMPLEMENT_OR_ENACT", "predicate": "금지", "relation_type": "BANNED"},
+
+    {"family": "MOVE_OR_RETURN", "predicate": "천도", "relation_type": "MOVED_CAPITAL_TO"},
+    {"family": "MOVE_OR_RETURN", "predicate": "이주", "relation_type": "MIGRATED_TO"},
+    {"family": "MOVE_OR_RETURN", "predicate": "피란", "relation_type": "EVACUATED_TO"},
+    {"family": "MOVE_OR_RETURN", "predicate": "환궁", "relation_type": "RETURNED_TO"},
+    {"family": "MOVE_OR_RETURN", "predicate": "이전", "relation_type": "MOVED_TO"},
+    {"family": "MOVE_OR_RETURN", "predicate": "옮겨", "relation_type": "MOVED_TO"},
+    {"family": "MOVE_OR_RETURN", "predicate": "이동", "relation_type": "MOVED_TO"},
+
+    {"family": "PARTICIPATE_OR_ACT", "predicate": "참여", "relation_type": "PARTICIPATED_IN"},
+    {"family": "PARTICIPATE_OR_ACT", "predicate": "활동", "relation_type": "PARTICIPATED_IN"},
+    {"family": "PARTICIPATE_OR_ACT", "predicate": "활약", "relation_type": "PARTICIPATED_IN"},
+    {"family": "PARTICIPATE_OR_ACT", "predicate": "농성", "relation_type": "PARTICIPATED_IN"},
+    {"family": "PARTICIPATE_OR_ACT", "predicate": "시위", "relation_type": "PARTICIPATED_IN"},
+    {"family": "PARTICIPATE_OR_ACT", "predicate": "가담", "relation_type": "PARTICIPATED_IN"},
+    {"family": "PARTICIPATE_OR_ACT", "predicate": "참전", "relation_type": "PARTICIPATED_IN"},
+    {"family": "PARTICIPATE_OR_ACT", "predicate": "주도", "relation_type": "LED"},
+    {
+      "family": "PARTICIPATE_OR_ACT",
+      "predicate": "가입",
+      "relation_type": "JOINED",
+      "allowed_end_entity_types": ["Institution", "Organization", "Polity"]
+    },
+    {
+      "family": "PARTICIPATE_OR_ACT",
+      "predicate": "입당",
+      "relation_type": "JOINED",
+      "allowed_end_entity_types": ["Organization"]
+    },
+    {
+      "family": "PARTICIPATE_OR_ACT",
+      "predicate": "입회",
+      "relation_type": "JOINED",
+      "allowed_end_entity_types": ["Organization", "Institution"]
+    },
+
+    {"family": "CONFLICT_OR_SUPPRESS", "predicate": "격퇴", "relation_type": "DEFEATED"},
+    {"family": "CONFLICT_OR_SUPPRESS", "predicate": "토벌", "relation_type": "SUPPRESSED"},
+    {"family": "CONFLICT_OR_SUPPRESS", "predicate": "진압", "relation_type": "SUPPRESSED"},
+    {"family": "CONFLICT_OR_SUPPRESS", "predicate": "정벌", "relation_type": "CONQUERED"},
+    {"family": "CONFLICT_OR_SUPPRESS", "predicate": "침략", "relation_type": "INVADED"},
+    {"family": "CONFLICT_OR_SUPPRESS", "predicate": "시해", "relation_type": "ASSASSINATED"},
+    {"family": "CONFLICT_OR_SUPPRESS", "predicate": "격파", "relation_type": "DEFEATED"},
+    {"family": "CONFLICT_OR_SUPPRESS", "predicate": "물리", "relation_type": "DEFEATED"},
+    {"family": "CONFLICT_OR_SUPPRESS", "predicate": "공격", "relation_type": "ATTACKED"},
+    {"family": "CONFLICT_OR_SUPPRESS", "predicate": "항전", "relation_type": "RESISTED"},
+    {"family": "CONFLICT_OR_SUPPRESS", "predicate": "점령", "relation_type": "OCCUPIED"},
+    {"family": "CONFLICT_OR_SUPPRESS", "predicate": "병합", "relation_type": "ANNEXED"},
+    {"family": "CONFLICT_OR_SUPPRESS", "predicate": "합병", "relation_type": "ANNEXED"},
+    {"family": "CONFLICT_OR_SUPPRESS", "predicate": "정복", "relation_type": "CONQUERED"},
+    {"family": "CONFLICT_OR_SUPPRESS", "predicate": "살해", "relation_type": "KILLED"},
+    {"family": "CONFLICT_OR_SUPPRESS", "predicate": "처형", "relation_type": "EXECUTED"},
+    {"family": "CONFLICT_OR_SUPPRESS", "predicate": "유배", "relation_type": "EXILED"},
+    {"family": "CONFLICT_OR_SUPPRESS", "predicate": "축출", "relation_type": "EXPELLED"},
+    {"family": "CONFLICT_OR_SUPPRESS", "predicate": "포획", "relation_type": "CAPTURED"},
+
+    {"family": "DIPLOMACY_OR_AGREEMENT", "predicate": "체결", "relation_type": "SIGNED"},
+    {"family": "DIPLOMACY_OR_AGREEMENT", "predicate": "회담", "relation_type": "HELD_TALKS_WITH"},
+    {"family": "DIPLOMACY_OR_AGREEMENT", "predicate": "교섭", "relation_type": "NEGOTIATED_WITH"},
+    {
+      "family": "DIPLOMACY_OR_AGREEMENT",
+      "predicate": "파견",
+      "relation_type": "DISPATCHED",
+      "allowed_end_entity_types": [
+        "Person",
+        "Institution",
+        "Organization"
+      ]
+    },
+    {"family": "DIPLOMACY_OR_AGREEMENT", "predicate": "수교", "relation_type": "ESTABLISHED_DIPLOMATIC_RELATIONS_WITH"},
+
+    {
+      "family": "LOCATION_OR_OCCURRENCE",
+      "predicate": "개최",
+      "relation_type": "HELD_IN",
+      "allowed_start_entity_types": ["Event"]
+    },
+    {
+      "family": "LOCATION_OR_OCCURRENCE",
+      "predicate": "발생",
+      "relation_type": "OCCURRED_IN",
+      "allowed_start_entity_types": ["Event"]
+    },
+    {
+      "family": "LOCATION_OR_OCCURRENCE",
+      "predicate": "출토",
+      "relation_type": "EXCAVATED_AT",
+      "allowed_start_entity_types": ["Heritage", "Work"]
+    },
+    {"family": "LOCATION_OR_OCCURRENCE", "predicate": "위치", "relation_type": "LOCATED_IN"},
+    {"family": "LOCATION_OR_OCCURRENCE", "predicate": "소재", "relation_type": "LOCATED_IN"},
+    {
+      "family": "LOCATION_OR_OCCURRENCE",
+      "predicate": "발견",
+      "relation_type": "DISCOVERED_AT",
+      "allowed_start_entity_types": ["Heritage", "Work", "Event"]
+    },
+
+    {
+      "family": "APPOINT_OR_SERVE",
+      "predicate": "임명",
+      "relation_type": "APPOINTED_AS",
+      "required_clause_pattern": "임명[^,.]{0,12}(?:되|받)"
+    },
+    {
+      "family": "APPOINT_OR_SERVE",
+      "predicate": "기용",
+      "relation_type": "APPOINTED_AS",
+      "required_clause_pattern": "기용[^,.]{0,12}(?:되|받)"
+    },
+    {
+      "family": "APPOINT_OR_SERVE",
+      "predicate": "등용",
+      "relation_type": "APPOINTED_AS",
+      "required_clause_pattern": "등용[^,.]{0,12}(?:되|받)"
+    },
+    {"family": "APPOINT_OR_SERVE", "predicate": "역임", "relation_type": "SERVED_AS"},
+    {"family": "APPOINT_OR_SERVE", "predicate": "취임", "relation_type": "SERVED_AS"}
+  ],
+  "identifier_prefix": "safe-exam-relation:",
+  "statuses": {
+    "passed": "GATE_PASSED_CORROBORATED",
+    "single_evidence_review": "GATE_PASSED_SINGLE_EVIDENCE_REVIEW",
+    "type_review": "GATE_PASSED_TYPE_REVIEW_REQUIRED",
+    "rejected": "GATE_REJECTED"
+  },
+  "outputs": {
+    "safe_candidates": "safe_relation_candidates.csv",
+    "all_explicit_candidates": "all_explicit_relation_candidates.csv",
+    "corroborated_candidates": "corroborated_relation_candidates.csv",
+    "registered_candidates": "registered_relation_candidates.csv",
+    "open_endpoint_candidates": "open_endpoint_relation_candidates.csv",
+    "single_evidence_review": "single_evidence_relation_review.csv",
+    "type_review_candidates": "type_review_relation_candidates.csv",
+    "exclusions": "relation_gate_exclusions.csv",
+    "evidence_audit": "relation_gate_evidence_audit.csv",
+    "summary": "safe_relation_candidate_summary.csv"
+  }
+}

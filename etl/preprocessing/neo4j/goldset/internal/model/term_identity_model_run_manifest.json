@@ -1,0 +1,21 @@
+{
+  "review_model": "gpt-5.6-terra",
+  "reasoning_effort": "high",
+  "prompt_version": "entity-semantic-review-v3",
+  "resolution_policy_version": "entity-resolution-candidate-v2.4",
+  "tasks_path": "C:\\Users\\MK\\Desktop\\dev\\project\\SKN27-FINAL-2Team\\etl\\preprocessing\\neo4j\\goldset\\internal\\source\\gold_review_tasks.jsonl",
+  "tasks_sha256": "d0eba3e96e5891e7b7aeeeb3f574ea9607211f2574c7ba95de926a3a65f0af39",
+  "prompt_path": "C:\\Users\\MK\\Desktop\\dev\\project\\SKN27-FINAL-2Team\\etl\\preprocessing\\neo4j\\config\\prompts\\term_resolution_review.md",
+  "prompt_sha256": "889cc77504515fb621b4e871dc7cdde1c68b242f973ccd49e6af8d3541f6e818",
+  "schema_path": "C:\\Users\\MK\\Desktop\\dev\\project\\SKN27-FINAL-2Team\\etl\\preprocessing\\neo4j\\config\\schemas\\term_resolution_decision.schema.json",
+  "schema_sha256": "2f5de537ea32c8e032e0268486b0d56226d697a291fabbcee561d2d8ecc7f53d",
+  "checkpoint_path": "C:\\Users\\MK\\Desktop\\dev\\project\\SKN27-FINAL-2Team\\etl\\preprocessing\\neo4j\\goldset\\internal\\model\\term_identity_review_checkpoint.jsonl",
+  "selected_task_count": 100,
+  "reused_checkpoint_count": 100,
+  "attempted_count": 0,
+  "succeeded_count": 0,
+  "failed_count": 0,
+  "maximum_concurrency": 5,
+  "decision_count": 100,
+  "generated_at": "2026-07-26T04:30:24.584318+00:00"
+}

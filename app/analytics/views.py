@@ -42,6 +42,8 @@ from analytics.service.studyplan import (
 )
 from analytics.service.study_plan.config import get_study_plan_config
 from analytics.service.study_plan.service import synchronize_active_study_plan
+from analytics.service.weekly_report.repository import load_report
+from analytics.service.weekly_report.service import render_report_dto
 
 
 @login_required
@@ -53,7 +55,9 @@ def mypage(request):
     study_plan = get_study_plan_info(user_id)
     if request.GET.get("format") == "json":
         active_plan = study_plan[0] if study_plan else None
-        return JsonResponse({"studyPlan": active_plan, "weeklyReport": None})
+        return JsonResponse(
+            {"studyPlan": active_plan, "weeklyReport": get_weekly_report_dto(user_id)},
+        )
     plan_generation_available = True
     planner_summary = build_planner_summary(
         study_plan,
@@ -67,7 +71,9 @@ def mypage(request):
         {"title": "시대별 오답률", **build_wrong_rate_summary(request.user, "era", today)},
     ]
     weakness_summary = build_weakness_summary(request.user, today)
+    weekly_report = get_weekly_report_dto(user_id)
     context = {
+        "weekly_report": weekly_report,
         "learning_summary": build_learning_summary(request.user, today),
         "diagnosis_comparison": build_diagnosis_comparison_summary(request.user),
         "wrong_type_summary": wrong_type_summary,
@@ -83,6 +89,25 @@ def mypage(request):
         "analytics/mypage.html",
         context,
     )
+
+
+def get_weekly_report_dto(user_id):
+    """저장된 주간 리포트를 화면용 DTO 로 바꾼다. 없으면 None."""
+    report = load_report(user_id)
+    if report is None:
+        return None
+
+    return render_report_dto(report)
+
+
+@login_required
+def weekly_report(request):
+    """마이페이지가 리포트 생성 완료를 확인할 때 쓰는 조회 엔드포인트."""
+    report = get_weekly_report_dto(request.user.user_id)
+    if report is None:
+        return JsonResponse({"ok": True, "weeklyReport": None})
+
+    return JsonResponse({"ok": True, "weeklyReport": report})
 
 
 @login_required
@@ -254,7 +279,9 @@ def create_study_plan_view(request):
         return redirect("analytics:mypage")
 
     if request.content_type == "application/json":
-        return JsonResponse({"ok": True, "weeklyReport": None, **result})
+        return JsonResponse(
+            {"ok": True, "weeklyReport": get_weekly_report_dto(request.user.user_id), **result},
+        )
     return redirect("analytics:mypage")
 
 
@@ -270,7 +297,9 @@ def synchronize_study_plan_view(request):
     result = synchronize_active_study_plan(request.user.user_id, study_plan_id)
     if result is None:
         return JsonResponse({"ok": False}, status=404)
-    return JsonResponse({"ok": True, "weeklyReport": None, **result})
+    return JsonResponse(
+        {"ok": True, "weeklyReport": get_weekly_report_dto(request.user.user_id), **result},
+    )
 
 
 def get_json_request_data(request):

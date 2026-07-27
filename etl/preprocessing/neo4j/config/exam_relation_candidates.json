@@ -1,0 +1,547 @@
+{
+  "exam_relation_candidates": {
+    "policy_version": "exam-relation-candidate-v1.0",
+    "supported_data_sources": [
+      "han_cj_v41",
+      "han_cj_v41_image"
+    ],
+    "expected_choice_count": 5,
+    "minimum_term_length": 2,
+    "maximum_entities_per_segment": 8,
+    "accepted_link_status": "ACCEPTED",
+    "truth_statuses": {
+      "true": "CONTEXTUALLY_TRUE",
+      "false": "CONTEXTUALLY_FALSE",
+      "dependent": "CONTEXT_DEPENDENT"
+    },
+    "question_task_truth_policy": {
+      "standard_select": {
+        "polarity": "POSITIVE_SELECT",
+        "answer_truth": "CONTEXTUALLY_TRUE",
+        "non_answer_truth": "CONTEXTUALLY_FALSE"
+      },
+      "negative_select": {
+        "polarity": "NEGATIVE_SELECT",
+        "answer_truth": "CONTEXTUALLY_FALSE",
+        "non_answer_truth": "CONTEXTUALLY_TRUE"
+      },
+      "period_between": {
+        "polarity": "COMPLEX_TASK",
+        "answer_truth": "CONTEXT_DEPENDENT",
+        "non_answer_truth": "CONTEXT_DEPENDENT"
+      },
+      "timeline_position": {
+        "polarity": "COMPLEX_TASK",
+        "answer_truth": "CONTEXT_DEPENDENT",
+        "non_answer_truth": "CONTEXT_DEPENDENT"
+      },
+      "order": {
+        "polarity": "COMPLEX_TASK",
+        "answer_truth": "CONTEXT_DEPENDENT",
+        "non_answer_truth": "CONTEXT_DEPENDENT"
+      },
+      "multi_select_combo": {
+        "polarity": "COMPLEX_TASK",
+        "answer_truth": "CONTEXT_DEPENDENT",
+        "non_answer_truth": "CONTEXT_DEPENDENT"
+      },
+      "map_location": {
+        "polarity": "COMPLEX_TASK",
+        "answer_truth": "CONTEXT_DEPENDENT",
+        "non_answer_truth": "CONTEXT_DEPENDENT"
+      }
+    },
+    "claim_roles": {
+      "material": "SOURCE_CONTEXT_CANDIDATE",
+      "contextually_true": "TRUE_CHOICE_CLAIM",
+      "contextually_false": "TARGET_MISALIGNED_RELATION_TEMPLATE",
+      "context_dependent": "CONTEXT_DEPENDENT_CHOICE"
+    },
+    "candidate_statuses": {
+      "official_corroboration_required": "NEEDS_OFFICIAL_CORROBORATION",
+      "target_resolution_required": "TARGET_RESOLUTION_REQUIRED",
+      "discovery_only": "DISCOVERY_ONLY",
+      "blocked_false_context": "BLOCKED_FALSE_CONTEXT"
+    },
+    "claim_shape_patterns": [
+      {
+        "claim_shape": "LABELED_MAPPING",
+        "pattern": "^[\\(\\[]?[가-하A-Za-z0-9]+[\\)\\]]?\\s*[-–:]"
+      },
+      {
+        "claim_shape": "DECLARATIVE_CLAIM",
+        "pattern": "(?:다|이다|하였다|되었다|있었다|없었다)\\.?$"
+      },
+      {
+        "claim_shape": "SCENE_FRAGMENT",
+        "pattern": "(?:하는|있는|없는)\\s+[^.]+$"
+      }
+    ],
+    "default_claim_shape": "NOUN_OR_ACTIVITY_FRAGMENT",
+    "relationship_trigger_rules": [
+      {
+        "predicate_family": "FOUND_OR_ESTABLISH",
+        "patterns": [
+          "설립",
+          "창설",
+          "창건",
+          "건립",
+          "세웠",
+          "설치",
+          "창시",
+          "창도",
+          "조직",
+          "결성",
+          "발족"
+        ]
+      },
+      {
+        "predicate_family": "CREATE_OR_PRODUCE",
+        "patterns": [
+          "제작",
+          "만들",
+          "조성",
+          "축조",
+          "주조",
+          "창제",
+          "건축",
+          "중건"
+        ]
+      },
+      {
+        "predicate_family": "AUTHOR_OR_COMPILE",
+        "patterns": [
+          "저술",
+          "편찬",
+          "집필",
+          "지었",
+          "지은",
+          "쓴",
+          "작성",
+          "저자"
+        ]
+      },
+      {
+        "predicate_family": "PUBLISH_OR_PRINT",
+        "patterns": [
+          "간행",
+          "발행",
+          "인쇄",
+          "판각",
+          "발간",
+          "출판"
+        ]
+      },
+      {
+        "predicate_family": "IMPLEMENT_OR_ENACT",
+        "patterns": [
+          "실시",
+          "시행",
+          "반포",
+          "제정",
+          "폐지",
+          "혁파",
+          "단행",
+          "도입",
+          "실행"
+        ]
+      },
+      {
+        "predicate_family": "MOVE_OR_RETURN",
+        "patterns": [
+          "천도",
+          "이주",
+          "피란",
+          "환궁",
+          "이전",
+          "옮겨",
+          "이동"
+        ]
+      },
+      {
+        "predicate_family": "PARTICIPATE_OR_ACT",
+        "patterns": [
+          "참여",
+          "활약",
+          "활동",
+          "농성",
+          "시위",
+          "주도",
+          "가담",
+          "참전"
+        ]
+      },
+      {
+        "predicate_family": "CONFLICT_OR_SUPPRESS",
+        "patterns": [
+          "전투",
+          "항전",
+          "격퇴",
+          "토벌",
+          "진압",
+          "정벌",
+          "침략",
+          "시해",
+          "난을 일으",
+          "격파",
+          "물리",
+          "승리",
+          "공격",
+          "항쟁",
+          "봉기"
+        ]
+      },
+      {
+        "predicate_family": "DIPLOMACY_OR_AGREEMENT",
+        "patterns": [
+          "체결",
+          "협정",
+          "조약",
+          "회담",
+          "파견",
+          "교섭",
+          "사절",
+          "통상",
+          "수교"
+        ]
+      },
+      {
+        "predicate_family": "LOCATION_OR_OCCURRENCE",
+        "patterns": [
+          "발생",
+          "출토",
+          "발견",
+          "개최",
+          "위치",
+          "소재",
+          "하구",
+          "하류",
+          "상류"
+        ]
+      },
+      {
+        "predicate_family": "APPOINT_OR_SERVE",
+        "patterns": [
+          "임명",
+          "기용",
+          "역임",
+          "즉위",
+          "등용",
+          "취임",
+          "재위"
+        ]
+      }
+    ],
+    "identifier": {
+      "hash_algorithm": "sha256",
+      "digest_length": 20,
+      "segment_prefix": "exam-claim-segment:",
+      "candidate_prefix": "exam-relation-candidate:"
+    },
+    "outputs": {
+      "segment_claims": "exam_segment_claims.csv",
+      "relation_candidates": "exam_relation_candidates.csv",
+      "manifest": "exam_relation_candidate_manifest.json"
+    }
+  },
+  "exam_relation_official_corroboration": {
+    "policy_version": "exam-relation-official-corroboration-v1.1",
+    "input_candidate_statuses": [
+      "NEEDS_OFFICIAL_CORROBORATION",
+      "TARGET_RESOLUTION_REQUIRED"
+    ],
+    "trusted_fact_verification_statuses": [
+      "SOURCE_ASSERTED",
+      "PATTERN_ASSERTED"
+    ],
+    "minimum_recovered_name_length_with_known_endpoint": 2,
+    "minimum_recovered_name_length_without_known_endpoint": 3,
+    "accepted_registry_status": "ACTIVE",
+    "official_fact_neighbor_resolution_method": "OFFICIAL_FACT_NEIGHBOR",
+    "following_particles": [
+      "은",
+      "는",
+      "이",
+      "가",
+      "을",
+      "를",
+      "의",
+      "에",
+      "에서",
+      "에게",
+      "께서",
+      "와",
+      "과",
+      "로",
+      "으로",
+      "도",
+      "만",
+      "부터",
+      "까지",
+      "라고",
+      "이라는",
+      "였다",
+      "이다"
+    ],
+    "predicate_family_relation_types": {
+      "FOUND_OR_ESTABLISH": [
+        "FOUNDED",
+        "BUILT"
+      ],
+      "CREATE_OR_PRODUCE": [
+        "CREATED",
+        "CREATED_BY",
+        "BUILT"
+      ],
+      "AUTHOR_OR_COMPILE": [
+        "AUTHORED",
+        "CREATED_BY",
+        "EDITED_BY",
+        "ORIGINAL_CREATED_BY"
+      ],
+      "PUBLISH_OR_PRINT": [],
+      "IMPLEMENT_OR_ENACT": [],
+      "MOVE_OR_RETURN": [],
+      "PARTICIPATE_OR_ACT": [
+        "PARTICIPATED_IN",
+        "INVOLVES_PERSON",
+        "INVOLVES_ENTITY"
+      ],
+      "CONFLICT_OR_SUPPRESS": [
+        "PARTICIPATED_IN",
+        "INVOLVES_PERSON",
+        "INVOLVES_ENTITY"
+      ],
+      "DIPLOMACY_OR_AGREEMENT": [
+        "PARTICIPATED_IN",
+        "INVOLVES_PERSON",
+        "INVOLVES_ENTITY"
+      ],
+      "LOCATION_OR_OCCURRENCE": [
+        "LOCATED_IN",
+        "OCCURRED_IN",
+        "FOUNDED_IN"
+      ],
+      "APPOINT_OR_SERVE": []
+    },
+    "verification_statuses": {
+      "verified": "VERIFIED_EXISTING_FACT",
+      "predicate_unresolved": "PREDICATE_UNRESOLVED",
+      "relation_type_mismatch": "RELATION_TYPE_MISMATCH",
+      "official_fact_not_found": "OFFICIAL_FACT_NOT_FOUND",
+      "endpoints_unresolved": "ENDPOINTS_UNRESOLVED",
+      "ambiguous_official_fact": "AMBIGUOUS_OFFICIAL_FACT"
+    },
+    "identifier": {
+      "hash_algorithm": "sha256",
+      "digest_length": 20,
+      "verification_prefix": "exam-relation-verification:",
+      "link_prefix": "exam-official-fact-link:"
+    },
+    "outputs": {
+      "official_checks": "exam_relation_official_checks.csv",
+      "verified_links": "exam_relation_verified_fact_links.csv",
+      "manifest": "exam_relation_official_corroboration_manifest.json"
+    }
+  },
+  "exam_relation_official_text_corroboration": {
+    "policy_version": "exam-relation-official-text-v1.4",
+    "source": "AKS",
+    "source_record_prefix": "AKS:ARTICLE:",
+    "text_fields": [
+      "definition",
+      "summary",
+      "body"
+    ],
+    "supported_check_statuses": [
+      "ENDPOINTS_UNRESOLVED",
+      "OFFICIAL_FACT_NOT_FOUND",
+      "RELATION_TYPE_MISMATCH",
+      "PREDICATE_UNRESOLVED"
+    ],
+    "uncertainty_patterns": [
+      "추정",
+      "전해지",
+      "가능성이",
+      "불확실",
+      "미상"
+    ],
+    "negation_patterns": [
+      "않았",
+      "아니었",
+      "없었",
+      "못하",
+      "실패"
+    ],
+    "maximum_mentions_per_sentence": 12,
+    "maximum_evidence_per_candidate": 5,
+    "maximum_discovered_pairs_per_candidate": 25,
+    "maximum_sentence_length": 1200,
+    "minimum_two_explicit_source_count": 2,
+    "safe_disambiguation": {
+      "policy_version": "aks-canonical-disambiguation-v1.0",
+      "minimum_definition_token_length": 2,
+      "minimum_definition_overlap_count": 2,
+      "minimum_definition_overlap_ratio": 0.2,
+      "definition_stopwords": [
+        "시대",
+        "우리나라",
+        "한국",
+        "관련",
+        "대한",
+        "있는",
+        "하는",
+        "하던",
+        "이다"
+      ],
+      "linked_eid_pattern": "\\[[^\\]]+\\]\\((?P<eid>E[0-9]+)\\)",
+      "statuses": {
+        "safe_match": "SAFE_MATCH",
+        "ambiguous": "AMBIGUOUS",
+        "no_safe_match": "NO_SAFE_MATCH"
+      }
+    },
+    "search_statuses": {
+      "supported": "SUPPORTED_BY_AKS_TEXT_STRICT",
+      "insufficient_evidence": "AKS_TEXT_EVIDENCE_INSUFFICIENT",
+      "no_support": "NO_AKS_TEXT_SUPPORT",
+      "ambiguous_endpoints": "AMBIGUOUS_AKS_ENDPOINT_RECOVERY",
+      "already_verified": "SKIPPED_ALREADY_VERIFIED",
+      "predicate_missing": "SKIPPED_PREDICATE_UNRESOLVED",
+      "endpoints_missing": "SKIPPED_ENDPOINTS_UNRESOLVED"
+    },
+    "identifier": {
+      "hash_algorithm": "sha256",
+      "digest_length": 20,
+      "evidence_prefix": "exam-official-text-evidence:"
+    },
+    "outputs": {
+      "text_checks": "exam_relation_official_text_checks.csv",
+      "text_evidence": "exam_relation_official_text_evidence.csv",
+      "aks_disambiguation": "aks_canonical_disambiguation.csv",
+      "manifest": "exam_relation_official_text_manifest.json"
+    }
+  },
+  "exam_relation_frames": {
+    "policy_version": "exam-relation-frame-v1.0",
+    "supported_search_statuses": [
+      "SUPPORTED_BY_AKS_TEXT_STRICT"
+    ],
+    "atomic_clause_separator_pattern": "(?:하였으며|하였고|되었으며|되었고|시키고|시켜서|하면서|하지만|하고|하여|해서|되고|면서|지만|는데|으나|거나)\\s*|[.!?。]\\s*",
+    "non_assertive_suffix_pattern": "^\\s*(?:을|를|의|에|에서|때)",
+    "assertive_light_verb_suffix_pattern": "^\\s*(?:을|를)\\s*(?:하|했|하였다|함)",
+    "passive_suffix_pattern": "^\\s*(?:되|됐|받)",
+    "role_suffix_rules": [
+      {
+        "role": "ACTOR",
+        "basis": "CENTERED_ON",
+        "pattern": "^\\s*(?:을|를)\\s+중심으로"
+      },
+      {
+        "role": "ACTOR",
+        "basis": "POSSESSIVE_ACTOR_GROUP",
+        "pattern": "^\\s*의\\s+(?:군대|세력|정부|일파|부대)(?:이|가|은|는)"
+      },
+      {
+        "role": "ACTOR",
+        "basis": "PASSIVE_AGENT",
+        "pattern": "^\\s*(?:에\\s+의해|에게)"
+      },
+      {
+        "role": "ACTOR",
+        "basis": "COACTOR_WITH",
+        "pattern": "^\\s*(?:등)?(?:와|과)\\s+함께"
+      },
+      {
+        "role": "GRAMMATICAL_SUBJECT",
+        "basis": "GROUP_SUBJECT_MARKER",
+        "pattern": "^\\s*(?:세력\\s+)?등(?:의\\s+(?:단체|세력|인물))?(?:이|가|은|는)(?![가-힣])"
+      },
+      {
+        "role": "GRAMMATICAL_SUBJECT",
+        "basis": "SUBJECT_MARKER",
+        "pattern": "^\\s*(?:이|가|은|는|께서)(?![가-힣])"
+      },
+      {
+        "role": "TARGET",
+        "basis": "OBJECT_MARKER",
+        "pattern": "^\\s*(?:등)?(?:을|를)(?![가-힣])"
+      },
+      {
+        "role": "LOCATION_OR_ROLE",
+        "basis": "LOCATIVE_OR_ROLE_MARKER",
+        "pattern": "^\\s*(?:등)?(?:에서|에|으로|로)(?![가-힣])"
+      },
+      {
+        "role": "CONTEXT",
+        "basis": "GENITIVE_OR_TIME_CONTEXT",
+        "pattern": "^\\s*(?:의|때)(?![가-힣])"
+      },
+      {
+        "role": "COORDINATED",
+        "basis": "COORDINATION_MARKER",
+        "pattern": "^\\s*(?:,|·|와|과)(?![가-힣])"
+      }
+    ],
+    "place_entity_types": [
+      "Place"
+    ],
+    "pair_role_sets_by_family": {
+      "FOUND_OR_ESTABLISH": [
+        ["ACTOR", "TARGET"]
+      ],
+      "CREATE_OR_PRODUCE": [
+        ["ACTOR", "TARGET"]
+      ],
+      "AUTHOR_OR_COMPILE": [
+        ["ACTOR", "TARGET"]
+      ],
+      "PUBLISH_OR_PRINT": [
+        ["ACTOR", "TARGET"]
+      ],
+      "IMPLEMENT_OR_ENACT": [
+        ["ACTOR", "TARGET"]
+      ],
+      "MOVE_OR_RETURN": [
+        ["ACTOR", "LOCATION"]
+      ],
+      "PARTICIPATE_OR_ACT": [
+        ["ACTOR", "CONTEXT"]
+      ],
+      "CONFLICT_OR_SUPPRESS": [
+        ["ACTOR", "TARGET"]
+      ],
+      "DIPLOMACY_OR_AGREEMENT": [
+        ["ACTOR", "TARGET"]
+      ],
+      "LOCATION_OR_OCCURRENCE": [
+        ["TARGET", "LOCATION"]
+      ],
+      "APPOINT_OR_SERVE": [
+        ["ACTOR", "TARGET"],
+        ["TARGET", "ROLE"]
+      ]
+    },
+    "frame_statuses": {
+      "resolved": "ROLE_RESOLVED",
+      "partial": "ROLE_PARTIAL",
+      "ambiguous": "ROLE_AMBIGUOUS",
+      "action_not_asserted": "ACTION_NOT_ASSERTED"
+    },
+    "pair_statuses": {
+      "ready": "PAIR_READY_FOR_FACT_VALIDATION",
+      "not_available": "PAIR_NOT_AVAILABLE",
+      "action_not_asserted": "PAIR_BLOCKED_ACTION_NOT_ASSERTED"
+    },
+    "identifier": {
+      "hash_algorithm": "sha256",
+      "digest_length": 20,
+      "frame_prefix": "exam-relation-frame:"
+    },
+    "outputs": {
+      "frames": "exam_relation_frames.csv",
+      "participants": "exam_relation_frame_participants.csv",
+      "manifest": "exam_relation_frame_manifest.json"
+    }
+  }
+}
