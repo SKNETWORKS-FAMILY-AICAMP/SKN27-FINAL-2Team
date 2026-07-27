@@ -1,0 +1,43 @@
+{
+  "policy_version": "source-layer-expansion-eda-v1.0",
+  "accepted_registry_status": "ACTIVE",
+  "accepted_exam_match_status": "ACCEPTED",
+  "candidate_anchor_kind": "OFFICIAL_SOURCE",
+  "candidate_resolution_status": "UNRESOLVED_OFFICIAL_SOURCE",
+  "canonical_anchor_kind": "CANONICAL",
+  "name_normalization": {
+    "parenthetical_hanja_pattern": "\\s*[\\(（][\\u3400-\\u9fff\\uf900-\\ufaff·\\s]+[\\)）]\\s*",
+    "non_name_character_pattern": "[^0-9a-z가-힣]+"
+  },
+  "identity_signal_fields": [
+    "birth_year",
+    "death_year",
+    "bonkwan",
+    "ja",
+    "ho",
+    "event_dates",
+    "periods",
+    "subject_categories",
+    "era",
+    "year",
+    "hanja",
+    "category_path"
+  ],
+  "temporal_metadata_fields": [
+    "birth_year",
+    "death_year",
+    "event_dates",
+    "periods",
+    "era",
+    "year"
+  ],
+  "audit": {
+    "maximum_rows": 120
+  },
+  "outputs": {
+    "candidates": "source_layer_expansion_candidates.csv",
+    "collision_groups": "source_layer_name_collision_groups.csv",
+    "audit_sample": "source_layer_expansion_audit_sample.csv",
+    "manifest": "source_layer_expansion_eda_manifest.json"
+  }
+}

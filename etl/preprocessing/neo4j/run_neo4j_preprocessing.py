@@ -1,6 +1,6 @@
 import sys
 from argparse import ArgumentParser
-from json import dump, dumps
+from json import dump
 from pathlib import Path
 
 sys.path.append(str(Path(__file__).resolve().parent / "terms"))
@@ -499,41 +499,6 @@ if __name__ == "__main__":
         help="커버리지 보고서 JSON 저장 경로",
     )
     parser.add_argument(
-        "--goldset",
-        action="store_true",
-        help=(
-            "사람 검수 골든셋 import·모델 평가·관련 엔티티 2차 판정을 "
-            "한 번에 실행"
-        ),
-    )
-    parser.add_argument(
-        "--dry-run",
-        action="store_true",
-        help="골든셋 검증과 실행 예정 건수만 확인하고 API·파일 출력을 생략",
-    )
-    parser.add_argument(
-        "--gold-annotations",
-        default="",
-        help="사람이 작성한 골든셋 CSV 폴더 경로",
-    )
-    parser.add_argument(
-        "--gold-tasks",
-        default="",
-        help="골든셋 원본 review task JSONL 경로",
-    )
-    parser.add_argument(
-        "--gold-review-limit",
-        type=int,
-        default=0,
-        help="골든셋 모델 판정 건수, 0이면 전체",
-    )
-    parser.add_argument(
-        "--related-review-limit",
-        type=int,
-        default=0,
-        help="관련 엔티티 모델 판정 건수, 0이면 전체",
-    )
-    parser.add_argument(
         "--policy",
         default=str(
             Path(__file__).resolve().parent
@@ -552,31 +517,6 @@ if __name__ == "__main__":
         itkc_people_csv_path=cli_args.itkc_people,
         itkc_events_csv_path=cli_args.itkc_events,
     )
-
-    if cli_args.goldset:
-        from entity_resolution.goldset_workflow import run_goldset_workflow
-
-        goldset_result = run_goldset_workflow(
-            neo4j_root=str(Path(__file__).resolve().parent),
-            thesaurus_csv_path=pipeline_paths["thesaurus_csv_path"],
-            encyclopedia_jsonl_path=pipeline_paths[
-                "encyclopedia_jsonl_path"
-            ],
-            itkc_people_csv_path=pipeline_paths["itkc_people_csv_path"],
-            itkc_events_csv_path=pipeline_paths["itkc_events_csv_path"],
-            policy_path=cli_args.policy,
-            annotation_directory=cli_args.gold_annotations,
-            gold_task_file=cli_args.gold_tasks,
-            gold_review_limit=cli_args.gold_review_limit,
-            related_review_limit=cli_args.related_review_limit,
-            maximum_retries=cli_args.retries,
-            dry_run=cli_args.dry_run,
-        )
-        print(dumps(goldset_result, ensure_ascii=False, indent=2))
-        successful_statuses = {"READY", "COMPLETED"}
-        if goldset_result["status"] not in successful_statuses:
-            raise SystemExit(1)
-        raise SystemExit(0)
 
     run_preprocessing_pipeline(
         exam_json_path=pipeline_paths["exam_json_path"],

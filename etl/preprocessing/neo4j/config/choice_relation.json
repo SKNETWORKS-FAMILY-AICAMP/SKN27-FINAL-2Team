@@ -1,0 +1,194 @@
+{
+  "policy_version": "choice-relation-v1.2",
+  "prompt_version": "choice-relation-extraction-v3",
+  "input": {
+    "default_problem_json": "ai/ml/ML_han_v1.json",
+    "included_data_sources": [
+      "han_cj_v41",
+      "han_cj_v41_image"
+    ],
+    "included_question_tasks": [
+      "standard_select"
+    ],
+    "exclude_missing_references": false,
+    "expected_choice_count": 5,
+    "expected_answer_count": 1,
+    "negative_question_patterns": [
+      "옳지\\s*않",
+      "적절\\s*하지\\s*않",
+      "아닌\\s*것",
+      "잘못된",
+      "틀린"
+    ],
+    "reference_marker_patterns": [
+      "\\([가-하]\\)",
+      "[㉠-㉻]"
+    ]
+  },
+  "identifier": {
+    "task_prefix": "CRT-",
+    "choice_separator": ":CHOICE:",
+    "hash_algorithm": "sha256",
+    "digest_length": 16,
+    "chunk_size_bytes": 1048576
+  },
+  "generator_model": {
+    "model": "gpt-5.6-terra",
+    "reasoning_effort": "medium",
+    "send_temperature": false,
+    "temperature": 0
+  },
+  "evaluator_model": {
+    "model": "gpt-5.6-sol",
+    "reasoning_effort": "high",
+    "send_temperature": false,
+    "temperature": 0
+  },
+  "evaluator": {
+    "policy_version": "choice-relation-evaluator-v4",
+    "prompt_version": "choice-relation-evaluation-v4",
+    "final_gate_version": "choice-relation-final-gate-v3",
+    "task_prefix": "CRE-",
+    "minimum_final_verified_confidence": 0.9,
+    "clean_input_status": "CLEAN",
+    "final_verified_status": "FINAL_VERIFIED",
+    "auto_corrected_status": "AUTO_CORRECTED",
+    "manual_review_status": "NEEDS_MANUAL_REVIEW",
+    "invalid_status": "INVALID",
+    "supported_status": "SUPPORTED",
+    "contradicted_status": "CONTRADICTED",
+    "unverifiable_status": "UNVERIFIABLE",
+    "pending_status": "PENDING_EVALUATION",
+    "concurrent_workers": 4,
+    "input_quality_statuses": [
+      "CLEAN",
+      "OCR_SUSPECTED",
+      "MISSING_CONTEXT"
+    ],
+    "blocking_input_quality_statuses": [
+      "OCR_SUSPECTED"
+    ],
+    "web_search": {
+      "enabled": true,
+      "require_evidence_for_final_verification": true,
+      "tool_choice": "auto",
+      "maximum_tool_calls": 5,
+      "tool": {
+        "type": "web_search",
+        "filters": {
+          "allowed_domains": [
+            "contents.history.go.kr",
+            "db.history.go.kr",
+            "encykorea.aks.ac.kr",
+            "heritage.go.kr",
+            "history.go.kr",
+            "museum.go.kr"
+          ]
+        }
+      },
+      "include": [
+        "web_search_call.action.sources"
+      ]
+    }
+  },
+  "executor": {
+    "maximum_output_tokens": 7000,
+    "timeout_seconds": 180,
+    "maximum_retries": 2,
+    "non_retryable_error_markers": [
+      "insufficient_quota",
+      "invalid_api_key",
+      "model_not_found"
+    ],
+    "store_response": false,
+    "service_tier": "auto"
+  },
+  "validation": {
+    "version": "choice-relation-validation-v3",
+    "minimum_auto_verified_confidence": 0.8,
+    "decision_status": "PROPOSED",
+    "verified_status": "VERIFIED",
+    "manual_review_status": "NEEDS_MANUAL_REVIEW",
+    "invalid_status": "INVALID",
+    "complete_input_status": "COMPLETE",
+    "missing_reference_status": "MISSING_REFERENCE"
+  },
+  "goldset": {
+    "path": "etl/preprocessing/neo4j/choice_relation/goldset/seed_expected_relations.csv",
+    "reviewed_status": "REVIEWED"
+  },
+  "allowed_values": {
+    "analysis_status": [
+      "ANALYZED",
+      "UNCERTAIN",
+      "UNSUPPORTED"
+    ],
+    "contextual_validity": [
+      "MATCHES_TARGET",
+      "DOES_NOT_MATCH_TARGET",
+      "UNCERTAIN"
+    ],
+    "standalone_fact_status": [
+      "VALID_FACT",
+      "INVALID_FACT",
+      "CONTEXT_DEPENDENT",
+      "UNCERTAIN"
+    ],
+    "primary_relation_type": [
+      "TARGET_SWAP",
+      "TIME_SHIFT",
+      "ATTRIBUTE_SWAP",
+      "CAUSE_RESULT_CONFUSION",
+      "LOCATION_SWAP",
+      "CATEGORY_MISMATCH",
+      "FALSE_COMBINATION",
+      "OTHER"
+    ],
+    "comparison_dimension": [
+      "TARGET",
+      "PREDICATE",
+      "OBJECT",
+      "ERA",
+      "LOCATION",
+      "THEME",
+      "ENTITY_TYPE",
+      "CAUSE",
+      "RESULT"
+    ],
+    "proximity": [
+      "NEAR",
+      "MEDIUM",
+      "FAR",
+      "UNCERTAIN"
+    ]
+  },
+  "paths": {
+    "prompt": "etl/preprocessing/neo4j/config/prompts/choice_relation_extraction.md",
+    "schema": "etl/preprocessing/neo4j/config/schemas/choice_relation_decision.schema.json",
+    "evaluator_prompt": "etl/preprocessing/neo4j/config/prompts/choice_relation_evaluation.md",
+    "evaluator_schema": "etl/preprocessing/neo4j/config/schemas/choice_relation_evaluation.schema.json",
+    "default_output_directory": "etl/preprocessing/neo4j/output/choice_relation",
+    "tasks": "choice_relation_tasks.jsonl",
+    "source_choices": "source_choices.csv",
+    "preparation_exclusions": "choice_relation_preparation_exclusions.csv",
+    "input_integrity_issues": "choice_relation_input_integrity_issues.csv",
+    "checkpoint": "choice_relation_checkpoint.jsonl",
+    "decisions": "choice_relation_decisions.jsonl",
+    "evaluator_checkpoint": "choice_relation_evaluator_checkpoint.jsonl",
+    "evaluator_decisions": "choice_relation_evaluator_decisions.jsonl",
+    "evaluator_summary": "choice_relation_evaluator_summary.csv",
+    "evaluator_validation_errors": "choice_relation_evaluator_validation_errors.csv",
+    "final_decision_summary": "choice_relation_final_decision_summary.csv",
+    "final_choice_claims": "choice_relation_final_choice_claims.csv",
+    "final_distractor_relations": "choice_relation_final_distractor_relations.csv",
+    "evaluator_failures": "choice_relation_evaluator_failures.csv",
+    "decision_summary": "choice_relation_decision_summary.csv",
+    "choice_claims": "choice_claims.csv",
+    "distractor_relations": "distractor_relations.csv",
+    "validation_errors": "choice_relation_validation_errors.csv",
+    "evaluation_comparison": "choice_relation_evaluation_comparison.csv",
+    "evaluation_metrics": "choice_relation_evaluation_metrics.json",
+    "execution_failures": "choice_relation_execution_failures.csv",
+    "manifest": "choice_relation_manifest.json"
+  }
+}

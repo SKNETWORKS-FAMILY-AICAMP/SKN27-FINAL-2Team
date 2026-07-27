@@ -6,8 +6,6 @@
 - `human_review_candidates.csv`: 100개 case의 후보 550행을 비교한다. 모든 행을 작성하지 않는다.
 - `human_review_cases.csv`: 용어 case 100건의 최종 상태·공통 근거·검수자를 기록한다.
   실제 완료 상태는 `case_review_status`로 확인한다.
-- `related_entity_manual_review.csv`: 관련 엔티티 모델 판정 중 자동 검증 게이트가 보류한
-  case만 기록한다. 첫 `--goldset` 실행 뒤 자동 생성되며, 보류 건이 없으면 헤더만 남는다.
 - `role_conflict_manual_review.csv`: 사람 gold와 모델이 `EVIDENCE_ONLY`·`REJECTED`를 서로
   반대로 판정한 후보만 모은 재검토 큐다. 모델 평가 뒤 자동 생성된다.
 - `case_review_status=COMPLETE`인 case에서 역할이 빈 후보는 자동으로 `REJECTED`가 된다.
@@ -82,6 +80,17 @@
 역할은 `IDENTITY_MEMBER` 여부를 먼저 판단하고, target과 다른 실체라면 명시적인 관계
 근거가 있는지 확인한다. 관계가 있으면 `EVIDENCE_ONLY`, 문자열만 겹치고 관계가 없으면
 `REJECTED`, 현재 정보로 두 경우를 구분할 수 없을 때만 `AMBIGUOUS`다.
+
+기출문제 문맥은 용어가 실제로 등장한 문장·선택지를 기준으로 해석한다.
+
+- 오답 선택지에서 추출된 일반명사를 문제 전체의 시대 단서만으로 특정 재질·시대의
+  하위 유형으로 바꾸지 않는다.
+- 예를 들어 선택지의 `괭이`는 원문이 `돌괭이`를 명시하지 않는 한 일반 `괭이`로
+  판정한다. `돌괭이`처럼 범위가 좁은 후보는 같은 identity로 합치지 않는다.
+- 서로 다른 원천이 같은 이름과 정의로 target 자체를 직접 설명하면 둘 다
+  `IDENTITY_MEMBER`인지 확인한다. 한 원천만 빠뜨리지 않는다.
+- OCR 오류로 표면형과 후보명이 달라졌고 정정 근거를 확정할 수 없으면
+  임의로 교정하지 않고 `AMBIGUOUS`를 유지한다.
 
 case를 `COMPLETE`로 확정하면 역할이 빈 후보는 importer가 `REJECTED`로 변환한다. 따라서
 사람은 `IDENTITY_MEMBER`, `EVIDENCE_ONLY`, `AMBIGUOUS` 후보를 중심으로 입력한다.
@@ -315,80 +324,13 @@ case                                  -> UNRESOLVED / requires_problem_review=NO
 - `--force-overwrite-review`는 활성 검수본 전체를 새 표본으로 재생성하므로 일반 확장에는
   사용하지 않는다.
 
-## 8. `related_entity_manual_review.csv`
-
-이 파일은 처음부터 작성하는 골든셋 파일이 아니다. `EVIDENCE_ONLY`에서 별도 엔티티로
-표시한 용어를 재검색하고 LLM이 판정한 뒤, 다음 조건 때문에 자동 `VERIFIED`가 되지 못한
-case만 한 행씩 생성된다.
-
-- 이름은 다르지만 설명상 동일 실체로 보이는 원천을 LLM이 병합한 경우
-- 자동 병합에 필요한 독립 신호 2종을 충족하지 못한 경우
-- 최초 EntityType 제안과 LLM의 최종 EntityType이 다른 경우
-
-### 8.1 확인만 하는 컬럼
-
-| 컬럼 | 의미 |
-|---|---|
-| `resolution_case_id` | 수동 판정을 적용할 관련 엔티티 case의 안정 ID다. 수정하지 않는다. |
-| `canonical_term` | 재검색한 관련 용어다. |
-| `model_verification_status` | 자동 게이트 결과다. 이 파일에는 보통 `NEEDS_MANUAL_REVIEW`가 들어간다. |
-| `validation_error_codes` | 보류 원인 JSON 배열이다. `INSUFFICIENT_PAIR_EVIDENCE`, `ENTITY_TYPE_REVIEW_REQUIRED` 등이 들어간다. |
-| `candidate_reference_json` | candidate ID, 원천, 원천 레코드 ID, 표제명, 정규화 유형, 한자, 시대와 `source_context` 원문 근거를 모은 읽기 전용 안내 배열이다. `term_remark`는 원문 판단 근거로만 표시하며 정규화 유형을 자동 추론하지 않는다. |
-| `model_decision_reason` | LLM이 case 전체에 대해 작성한 판정 사유다. 사람 승인 근거를 대신하지 않는다. |
-
-### 8.2 사람이 확인·수정하는 컬럼
-
-| 컬럼 | 입력 방법 |
-|---|---|
-| `canonical_alternatives_json` | canonical 대안 배열이다. 각 객체는 `display_name`, `entity_type`, `identity_member_source_candidate_ids`, `reason`을 가진다. 모델 제안이 맞으면 수정하지 않는다. 동음이의어면 객체를 여러 개 두고 candidate ID를 서로 다른 대안에 배정한다. |
-| `evidence_only_source_candidate_ids_json` | 관계 근거만 제공하는 원천 후보 ID 배열이다. 예: 인물 문서가 단체를 언급하지만 문서 주 대상은 인물인 경우. |
-| `rejected_source_candidate_ids_json` | 검색 오탐 또는 별개 대상 후보 ID 배열이다. |
-| `ambiguous_source_candidate_ids_json` | 아직 결정하지 못한 후보 ID 배열이다. `manual_status=VERIFIED`로 확정할 때는 반드시 `[]`여야 한다. |
-| `manual_status` | 기본값 `PENDING`. 모델 제안 또는 수정한 분류를 승인하면 `VERIFIED`, 관련 용어 자체와 모든 후보를 거절하면 `REJECTED`를 입력한다. |
-| `manual_reason` | 사람이 원천 내용을 대조해 내린 최종 판단 근거다. `VERIFIED` 또는 `REJECTED`에서 필수다. |
-| `reviewer` | 검수자 이름 또는 팀 식별자다. 완료 판정에서 필수다. |
-| `reviewed_at` | ISO 8601 검수 시각이다. 비워 두면 적용 실행 시 UTC 시각이 자동 기록된다. |
-
-`manual_status=PENDING`은 아직 사람 판정이 확정되지 않은 상태이므로 다시 `--goldset`을
-실행하면 네 JSON 분류 컬럼이 현재 모델 판정으로 갱신된다. 이전 모델 결과를 사람 판정으로
-오인하지 않도록 하기 위한 동작이다. 사람이 수정한 분류를 보존하려면 검수를 끝낸 뒤
-`manual_status=VERIFIED` 또는 `REJECTED`와 함께 `manual_reason`, `reviewer`를 작성한다.
-
-### 8.3 가장 쉬운 작성 방법
-
-1. `candidate_reference_json`에서 대안에 묶인 candidate ID의 실제 표제명·시대·유형을 확인한다.
-2. 모델의 대안과 역할 분류가 맞으면 네 JSON 분류 컬럼은 수정하지 않는다.
-3. `manual_status`를 `VERIFIED`로 바꾼다.
-4. `manual_reason`과 `reviewer`를 입력한다.
-5. 프로젝트 루트에서 다시 다음 명령 하나만 실행한다.
-
-```powershell
-.\.venv\Scripts\python.exe `
-  etl/preprocessing/neo4j/run_neo4j_preprocessing.py `
-  --goldset
-```
-
-`REJECTED`는 JSON 분류값과 관계없이 해당 case의 모든 후보를 `REJECTED`로 확정한다.
-`VERIFIED`는 후보가 정확히 한 역할에 한 번씩만 배정됐는지 검사한다. 사람 승인은 약한
-병합 신호와 EntityType 변경만 승인할 수 있으며, 생몰년·유형 등 강한 충돌은 우회할 수 없다.
-입력 오류는
-`goldset/internal/related_entity/related_entity_manual_review_errors.csv`
-에 기록되고 해당 case는 계속 `NEEDS_MANUAL_REVIEW`로 남는다.
-
-수동 검토까지 통과하면 같은 실행에서 `goldset/final_identity`에 최종 CSV가 생성된다.
-`related_entity_canonical_selections.csv`는 seed 원천이 어느 canonical 대안으로 선택됐는지,
-`canonical_entity_registry.csv`와 `neo4j_*` 파일은 실제 identity 노드·관계 적재값을 담는다.
-사람이 이 골든셋에서 직접 지정한 seed가 유일한 검증 대안에 속하면 단일 원천이어도
-`verified_related_entity_seed`로 승격한다. 그 외 단일 원천만
-`single_source_entities_requiring_approval.csv`에서 별도 승인한다.
-
-## 9. `role_conflict_manual_review.csv`
+## 8. `role_conflict_manual_review.csv`
 
 이 파일은 기존 gold를 자동으로 바꾸는 파일이 아니다. 현재 사람 정답과 모델 결과 사이의
 `EVIDENCE_ONLY`·`REJECTED` 경계 충돌만 모아, gold 오류인지 모델 오류인지 다시 확인하는
 감사 큐다.
 
-### 9.1 확인할 컬럼
+### 8.1 확인할 컬럼
 
 | 컬럼 | 의미 |
 |---|---|
@@ -398,7 +340,7 @@ case만 한 행씩 생성된다.
 | `model_role`, `model_reason` | 현재 모델 판정과 근거 |
 | `candidate_pair_signals_json` | 같은 case 후보와의 코드 비교 신호. 최종 정답은 아님 |
 
-### 9.2 사람이 입력할 컬럼
+### 8.2 사람이 입력할 컬럼
 
 | 컬럼 | 입력 방법 |
 |---|---|

@@ -1,25 +1,36 @@
 # Entity Resolution 골든셋 안내
 
-## 한 번에 실행
+## 실행 순서
 
-사람 검수 CSV 저장이 끝났다면 최종 진입점 하나만 실행한다.
+사람 검수 CSV 저장이 끝나면 아래 세 단계를 순서대로 실행한다. 각 단계는 먼저
+`--dry-run`으로 입력과 예정 건수를 확인한 뒤 실제 실행한다.
 
 ```powershell
-# API 호출과 파일 생성 없이 검수 상태·예정 건수 확인
+# 1. HUMAN_REVIEW import → 골든셋 모델 실행/재사용 → 평가
 .\.venv\Scripts\python.exe `
-  etl/preprocessing/neo4j/run_neo4j_preprocessing.py `
-  --goldset `
+  etl/preprocessing/neo4j/import_and_evaluate_goldset.py `
   --dry-run
-
-# 검수본 import → 골든셋 모델 평가 → 관련 엔티티 재검색·모델 판정
 .\.venv\Scripts\python.exe `
-  etl/preprocessing/neo4j/run_neo4j_preprocessing.py `
-  --goldset
+  etl/preprocessing/neo4j/import_and_evaluate_goldset.py
+
+# 2. EVIDENCE_ONLY 관련 엔티티 재검색 → LLM 판정 → 검증 게이트
+.\.venv\Scripts\python.exe `
+  etl/preprocessing/neo4j/run_related_entity_resolution.py `
+  --dry-run
+.\.venv\Scripts\python.exe `
+  etl/preprocessing/neo4j/run_related_entity_resolution.py
+
+# 3. VERIFIED 관련 엔티티만 최종 identity CSV로 승격
+.\.venv\Scripts\python.exe `
+  etl/preprocessing/neo4j/finalize_related_entities.py `
+  --dry-run
+.\.venv\Scripts\python.exe `
+  etl/preprocessing/neo4j/finalize_related_entities.py
 ```
 
 검증 오류가 있으면 LLM API를 호출하기 전에 중단한다. 성공한 모델 응답은 checkpoint에
-저장되므로 같은 정책·모델로 재실행해도 완료 건을 다시 호출하지 않는다. 아래 개별 명령은
-특정 단계만 다시 확인할 때 사용한다.
+저장되므로 같은 정책·모델로 재실행해도 완료 건을 다시 호출하지 않는다. 1단계가 만든
+관련 엔티티 queue를 2단계가 사용하고, 2단계의 검증 결과를 3단계가 사용한다.
 
 ## 표본 생성·확장
 
@@ -59,14 +70,12 @@
 명시적 초기화 옵션이다. 일반적인 표본 확대에는 사용하지 않는다.
 
 사람이 실제로 작성할 파일은 `human_review_csv` 안에 있다. 최초 골든셋 검수는 두 CSV로
-진행한다. 평가와 관련 엔티티 자동 게이트가 보류하거나 충돌한 건은 별도 검수 CSV로
-자동 생성된다.
+진행한다. 사람 gold와 모델의 역할 충돌은 별도 검수 CSV로 자동 생성된다.
 
 | 위치 | 의미 |
 |---|---|
 | `human_review_csv/human_review_cases.csv` | 용어 case 100건의 최종 상태·공통 근거·검수자 입력. 실제 진행 상태는 `case_review_status`로 확인 |
 | `human_review_csv/human_review_candidates.csv` | 정답·근거·애매 후보의 역할, 동일 실체 묶음, `EVIDENCE_ONLY`의 별도 관련 엔티티 입력. 빈 역할은 case 완료 시 `REJECTED` |
-| `human_review_csv/related_entity_manual_review.csv` | 관련 엔티티 모델 판정 중 자동 게이트가 보류한 case 승인·수정. 최초 `--goldset` 실행 뒤 생성 |
 | `human_review_csv/role_conflict_manual_review.csv` | 사람 gold와 모델의 `EVIDENCE_ONLY`·`REJECTED` 상호 오분류 재검토 큐. 평가 뒤 생성 |
 | `final_identity` | seed 원천이 속한 검증 대안만 승격한 관련 엔티티 canonical registry와 Neo4j identity CSV |
 | `internal/source` | 표본 task, 빈 CSV 양식, 코드 baseline, 표본 생성 기록 |
@@ -103,8 +112,8 @@
 verified TP / (verified TP + verified FN + deferred gold pair)
 ```
 
-현재 v3 결과는 `24 / (24 + 0 + 35) = 0.406780`이다. verified precision 1.0은 자동 승인된
-pair의 안전성을 뜻하고, 40.7%는 전체 gold pair 중 자동 승인된 범위를 뜻한다.
+현재 v6 결과는 `42 / 63 = 0.666667`이다. verified precision 1.0은 자동 승인된
+pair의 안전성을 뜻하고, 66.7%는 전체 gold pair 중 자동 승인된 범위를 뜻한다.
 
 이 계산은 `model_vs_gold_metrics.json`의
 `auto_accepted_identity_pair_precision`, `auto_accepted_identity_pair_recall`,
@@ -117,14 +126,11 @@ case 수와 영향받은 pair 수를 각각 확인한다.
 identity pair evidence gate의 활성 방식은 `connected_graph`다. 강한 충돌이 없는
 `merge_eligible=true` edge로 identity 멤버 전체가 연결되면 pair evidence를 통과한다.
 모든 pair 직접 근거를 요구하는 기존 방식은 `complete_graph`이며 정책값으로 회귀할 수
-있다. 연결 방식도 강한 pair 충돌, pair 행 누락, category 충돌, term alignment와
-EntityType 검토를 우회하지 않는다.
+있다. v6부터 pair 승인은 case 최종 승인과 분리한다. 안전한 pair는 독립적으로
+`model_identity_pair_gate_results.csv`에 기록하지만, case가 보류되면 canonical entity와
+EntityType 확정은 계속 차단한다.
 metrics JSON의 `identity_pair_gate_policy_version`과
 `identity_pair_gate_evidence_mode`가 실제 평가에 적용된 게이트 정책을 기록한다.
-
-현재 v3 결과에서 연결 그래프는 `비무장지대`의 정답 pair 3개를 추가 승인했다.
-자동 승인 precision 1.0과 false merge 0을 유지하면서 자동 승인 recall은
-`0.406780`에서 `0.457627`로 증가했다.
 
 `role_conflict_manual_review.csv`는 현재 모델과 gold가 `EVIDENCE_ONLY`·`REJECTED`를 반대로
 고른 후보만 모은다. 검수자는 target 문맥과 후보 원천의 주 대상을 비교해
@@ -165,14 +171,9 @@ metrics JSON의 `identity_pair_gate_policy_version`과
 기본 출력은 `goldset/internal/related_entity`이다. 같은 표시명의 관련 엔티티가
 여러 원래 case에서 나와도 이름만으로 자동 병합하지 않고 각각 독립 case로 유지한다.
 
-관련 엔티티 결과가 `NEEDS_MANUAL_REVIEW`이면
-`human_review_csv/related_entity_manual_review.csv`에 행이 생성된다. 모델 제안이 맞으면
-`manual_status=VERIFIED`, `manual_reason`, `reviewer`만 작성하고 다시 `--goldset`을 실행한다.
-완료된 사람 판정은 `verification_method=HUMAN_REVIEW`와 검수자·시각을 함께 기록한다.
-`PENDING` 행의 분류 JSON은 재실행할 때 현재 모델 판정으로 갱신되며,
-`VERIFIED`·`REJECTED`로 완료한 사람 판정만 다음 실행에서도 보존된다.
-
-모든 관련 엔티티 판정이 끝나면 같은 `--goldset` 실행에서 `final_identity`도 생성한다.
+관련 엔티티는 자동 검증 게이트에서 `VERIFIED`된 대안만
+`finalize_related_entities.py` 실행에서 `final_identity`로 승격한다.
+`NEEDS_MANUAL_REVIEW`와 `INVALID`는 승격하지 않는다.
 동명이인 대안이 여러 개여도 사람이 관련 엔티티로 지정했던 seed SourceRecord가 속한 대안만
 선택한다. 선택 결과는 `related_entity_canonical_selections.csv`에서 확인한다.
 

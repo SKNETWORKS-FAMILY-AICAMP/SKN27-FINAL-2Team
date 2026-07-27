@@ -51,6 +51,19 @@
   "output_retention": {
     "keep_candidate_retrieval_cache_after_resolution": false
   },
+  "full_pipeline": {
+    "pipeline_version": "neo4j-full-load-v1",
+    "manifest_file": "full_pipeline_manifest.json",
+    "neo4j_load_manifest_file": "neo4j_load_manifest.json",
+    "require_goldset_gate": true,
+    "goldset_manifest": "goldset/internal/evaluation/goldset_evaluation_manifest.json",
+    "minimum_auto_accepted_identity_pair_precision": 1.0,
+    "maximum_verified_false_merge_pair_count": 0,
+    "neo4j_import_scope": "entity-resolution-final-v1",
+    "neo4j_batch_size": 500,
+    "problem_review_prompt": "config/prompts/problem_resolution_review.md",
+    "problem_review_schema": "config/schemas/problem_resolution_decision.schema.json"
+  },
   "test_run": {
     "output_subdirectory": "test_run",
     "limit": 20,

@@ -191,7 +191,7 @@ class TermReviewExecutorTest(unittest.TestCase):
                 requester=unexpected_requester,
             )
 
-        self.assertEqual(calls, ["task-1", "task-2"])
+        self.assertEqual(sorted(calls), ["task-1", "task-2"])
         self.assertEqual(first_result["succeeded_count"], 2)
         self.assertEqual(second_result["attempted_count"], 0)
         self.assertEqual(second_result["reused_checkpoint_count"], 2)

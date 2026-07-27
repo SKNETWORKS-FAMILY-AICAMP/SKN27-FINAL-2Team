@@ -1,6 +1,4 @@
-import json
 import sys
-import tempfile
 import unittest
 from copy import deepcopy
 from pathlib import Path
@@ -25,23 +23,12 @@ class SemanticReviewTest(unittest.TestCase):
             build_term_review_tasks,
             validate_term_decisions,
         )
-        from entity_resolution.manual_term_review import (
-            build_manual_review_table,
-            prepare_manual_decisions,
-        )
-
         cls.build_resolution_tables = staticmethod(build_resolution_tables)
         cls.build_term_review_tasks = staticmethod(build_term_review_tasks)
         cls.build_validation_tables_from_review_tasks = staticmethod(
             build_validation_tables_from_review_tasks
         )
         cls.validate_term_decisions = staticmethod(validate_term_decisions)
-        cls.build_manual_review_table = staticmethod(
-            build_manual_review_table
-        )
-        cls.prepare_manual_decisions = staticmethod(
-            prepare_manual_decisions
-        )
         cls.policy = load_pipeline_policy(
             str(neo4j_root / "config" / "resolution_policy.json")
         )
@@ -279,6 +266,7 @@ class SemanticReviewTest(unittest.TestCase):
         )
         thesaurus_candidate["matched_name"] = "이순신전기"
         thesaurus_candidate["normalized_names"] = ["이순신전기"]
+        tables["source_candidate_pair_signals"]["merge_eligible"] = False
 
         outputs = self.validate_term_decisions(
             [decision],
@@ -301,6 +289,62 @@ class SemanticReviewTest(unittest.TestCase):
         self.assertIn(
             thesaurus_candidate["source_candidate_id"],
             alignment_errors.iloc[0]["message"],
+        )
+
+    def test_connected_member_can_use_exact_target_anchor(self):
+        tables, tasks = self.build_fixture()
+        decision = self.make_decision(tasks[0])
+        thesaurus_candidate = next(
+            candidate
+            for candidate in tasks[0]["source_candidates"]
+            if candidate["source"] == "THESAURUS"
+        )
+        thesaurus_candidate["matched_name"] = "이순신전기"
+        thesaurus_candidate["normalized_names"] = ["이순신전기"]
+
+        outputs = self.validate_term_decisions(
+            [decision],
+            tasks,
+            tables,
+            self.policy,
+        )
+
+        decision_row = outputs["term_resolution_decisions"].iloc[0]
+        validation_errors = outputs["term_decision_validation_errors"]
+        self.assertEqual(
+            decision_row["verification_status"],
+            "VERIFIED",
+        )
+        self.assertNotIn(
+            "TERM_SOURCE_ALIGNMENT_REVIEW_REQUIRED",
+            set(validation_errors["error_code"]),
+        )
+
+    def test_containment_without_exact_target_anchor_requires_review(self):
+        tables, tasks = self.build_fixture()
+        decision = self.make_decision(tasks[0])
+        for candidate in tasks[0]["source_candidates"]:
+            if candidate["source"] not in {"AKS", "THESAURUS"}:
+                continue
+            candidate["matched_name"] = "이순신전기"
+            candidate["normalized_names"] = ["이순신전기"]
+
+        outputs = self.validate_term_decisions(
+            [decision],
+            tasks,
+            tables,
+            self.policy,
+        )
+
+        decision_row = outputs["term_resolution_decisions"].iloc[0]
+        validation_errors = outputs["term_decision_validation_errors"]
+        self.assertEqual(
+            decision_row["verification_status"],
+            "NEEDS_MANUAL_REVIEW",
+        )
+        self.assertIn(
+            "TERM_SOURCE_ALIGNMENT_REVIEW_REQUIRED",
+            set(validation_errors["error_code"]),
         )
 
     def test_strong_conflict_inside_identity_group_is_invalid(self):
@@ -378,6 +422,145 @@ class SemanticReviewTest(unittest.TestCase):
                 "verification_status"
             ],
             "NEEDS_MANUAL_REVIEW",
+        )
+        self.assertIn(
+            "INSUFFICIENT_PAIR_EVIDENCE",
+            set(outputs["term_decision_validation_errors"]["error_code"]),
+        )
+
+    def test_matching_descriptions_can_supply_exact_name_pair_evidence(self):
+        _, tasks = self.build_fixture()
+        decision = self.make_decision(tasks[0])
+        for candidate in tasks[0]["source_candidates"]:
+            if candidate["source"] == "AKS":
+                candidate["source_context"]["definition"] = (
+                    "흙을 파고 고르는 데 쓰는 농기구이다."
+                )
+            elif candidate["source"] == "THESAURUS":
+                candidate["source_context"]["description"] = (
+                    "흙을 파고 고르는 데 쓰는 농기구이다."
+                )
+        tables = self.build_validation_tables_from_review_tasks(tasks)
+        tables["source_candidate_pair_signals"]["merge_eligible"] = False
+
+        outputs = self.validate_term_decisions(
+            [decision],
+            tasks,
+            tables,
+            self.policy,
+        )
+
+        self.assertEqual(
+            outputs["term_resolution_decisions"].iloc[0][
+                "verification_status"
+            ],
+            "VERIFIED",
+        )
+
+    def test_structured_evidence_can_override_category_mapping_conflict(self):
+        _, tasks = self.build_fixture()
+        decision = self.make_decision(tasks[0])
+        for candidate in tasks[0]["source_candidates"]:
+            if candidate["source"] == "AKS":
+                candidate["category_compatibility"] = "CONFLICT"
+                candidate["source_context"]["definition"] = (
+                    "조선 시대의 무신이다."
+                )
+            elif candidate["source"] == "THESAURUS":
+                candidate["source_context"]["description"] = (
+                    "조선 시대의 무신이다."
+                )
+        tables = self.build_validation_tables_from_review_tasks(tasks)
+        tables["source_candidate_pair_signals"]["merge_eligible"] = False
+
+        outputs = self.validate_term_decisions(
+            [decision],
+            tasks,
+            tables,
+            self.policy,
+        )
+
+        self.assertEqual(
+            outputs["term_resolution_decisions"].iloc[0][
+                "verification_status"
+            ],
+            "VERIFIED",
+        )
+
+    def test_ocr_like_term_without_exact_anchor_is_not_auto_approved(self):
+        _, tasks = self.build_fixture()
+        decision = self.make_decision(tasks[0])
+        tasks[0]["canonical_term"] = "이순싣"
+        tasks[0]["term_variants"] = ["이순싣"]
+        for candidate in tasks[0]["source_candidates"]:
+            if candidate["source"] == "AKS":
+                candidate["source_context"]["definition"] = (
+                    "조선 시대의 무신이다."
+                )
+            elif candidate["source"] == "THESAURUS":
+                candidate["source_context"]["description"] = (
+                    "조선 시대의 무신이다."
+                )
+        tables = self.build_validation_tables_from_review_tasks(tasks)
+        tables["source_candidate_pair_signals"]["merge_eligible"] = False
+
+        outputs = self.validate_term_decisions(
+            [decision],
+            tasks,
+            tables,
+            self.policy,
+        )
+
+        self.assertEqual(
+            outputs["term_resolution_decisions"].iloc[0][
+                "verification_status"
+            ],
+            "NEEDS_MANUAL_REVIEW",
+        )
+        self.assertFalse(
+            (
+                outputs["verified_identity_pairs"]["verification_status"]
+                == "VERIFIED"
+            ).any()
+        )
+        self.assertIn(
+            "TERM_SOURCE_ALIGNMENT_REVIEW_REQUIRED",
+            set(outputs["term_decision_validation_errors"]["error_code"]),
+        )
+
+    def test_different_descriptions_do_not_supply_exact_name_pair_evidence(self):
+        _, tasks = self.build_fixture()
+        decision = self.make_decision(tasks[0])
+        for candidate in tasks[0]["source_candidates"]:
+            if candidate["source"] == "AKS":
+                candidate["source_context"]["definition"] = (
+                    "조선시대 수군을 지휘한 무신이다."
+                )
+            elif candidate["source"] == "THESAURUS":
+                candidate["source_context"]["description"] = (
+                    "현대에 활동한 동명의 체육인이다."
+                )
+        tables = self.build_validation_tables_from_review_tasks(tasks)
+        tables["source_candidate_pair_signals"]["merge_eligible"] = False
+
+        outputs = self.validate_term_decisions(
+            [decision],
+            tasks,
+            tables,
+            self.policy,
+        )
+
+        self.assertEqual(
+            outputs["term_resolution_decisions"].iloc[0][
+                "verification_status"
+            ],
+            "NEEDS_MANUAL_REVIEW",
+        )
+        self.assertFalse(
+            (
+                outputs["verified_identity_pairs"]["verification_status"]
+                == "VERIFIED"
+            ).any()
         )
         self.assertIn(
             "INSUFFICIENT_PAIR_EVIDENCE",
@@ -462,182 +645,6 @@ class SemanticReviewTest(unittest.TestCase):
             "NEEDS_MANUAL_REVIEW",
         )
 
-    def test_completed_manual_review_promotes_safe_model_proposal(self):
-        tables, tasks = self.build_fixture(include_weak_person=True)
-        decision = self.make_decision(tasks[0])
-        candidate_ids = {
-            item["source"]: item["source_candidate_id"]
-            for item in tasks[0]["source_candidates"]
-        }
-        decision["proposed_alternatives"][0][
-            "identity_member_source_candidate_ids"
-        ].append(candidate_ids["ITKC_PERSON"])
-        automatic_outputs = self.validate_term_decisions(
-            [decision],
-            tasks,
-            tables,
-            self.policy,
-        )
-
-        with tempfile.TemporaryDirectory() as temporary_directory:
-            review_path = str(
-                Path(temporary_directory) / "related_manual_review.csv"
-            )
-            review_table = self.build_manual_review_table(
-                [decision],
-                tasks,
-                automatic_outputs,
-                review_path,
-                self.policy,
-            )
-
-        review_table.at[0, "manual_status"] = "VERIFIED"
-        review_table.at[0, "manual_reason"] = "사람이 동일 인물로 확인함"
-        review_table.at[0, "reviewer"] = "tester"
-        prepared = self.prepare_manual_decisions(
-            review_table,
-            [decision],
-            tasks,
-            automatic_outputs,
-            self.policy,
-        )
-        reviewed_outputs = self.validate_term_decisions(
-            prepared["decisions"],
-            tasks,
-            tables,
-            self.policy,
-            manual_verifications=prepared["manual_verifications"],
-        )
-
-        summary = reviewed_outputs["term_resolution_decisions"].iloc[0]
-        self.assertTrue(prepared["validation_errors"].empty)
-        self.assertEqual(summary["verification_status"], "VERIFIED")
-        self.assertEqual(summary["verification_method"], "HUMAN_REVIEW")
-        self.assertEqual(summary["verified_by"], "tester")
-
-    def test_pending_review_refreshes_model_fields_and_keeps_source_context(
-        self,
-    ):
-        tables, tasks = self.build_fixture(include_weak_person=True)
-        decision = self.make_decision(tasks[0])
-        candidate_ids = {
-            item["source"]: item["source_candidate_id"]
-            for item in tasks[0]["source_candidates"]
-        }
-        decision["proposed_alternatives"][0][
-            "identity_member_source_candidate_ids"
-        ].append(candidate_ids["ITKC_PERSON"])
-        automatic_outputs = self.validate_term_decisions(
-            [decision],
-            tasks,
-            tables,
-            self.policy,
-        )
-
-        with tempfile.TemporaryDirectory() as temporary_directory:
-            review_path = str(
-                Path(temporary_directory) / "related_manual_review.csv"
-            )
-            existing_table = self.build_manual_review_table(
-                [decision],
-                tasks,
-                automatic_outputs,
-                review_path,
-                self.policy,
-            )
-            existing_table.at[0, "canonical_alternatives_json"] = json.dumps(
-                [{"display_name": "stale-model-output"}],
-                ensure_ascii=False,
-            )
-            existing_table.to_csv(
-                review_path,
-                index=False,
-                encoding="utf-8-sig",
-            )
-
-            refreshed_table = self.build_manual_review_table(
-                [decision],
-                tasks,
-                automatic_outputs,
-                review_path,
-                self.policy,
-            )
-
-        alternatives = json.loads(
-            refreshed_table.iloc[0]["canonical_alternatives_json"]
-        )
-        candidate_reference = json.loads(
-            refreshed_table.iloc[0]["candidate_reference_json"]
-        )
-        self.assertNotEqual(
-            alternatives[0]["display_name"],
-            "stale-model-output",
-        )
-        self.assertTrue(
-            all("source_context" in item for item in candidate_reference)
-        )
-
-    def test_completed_review_preserves_human_decision_fields(self):
-        tables, tasks = self.build_fixture(include_weak_person=True)
-        decision = self.make_decision(tasks[0])
-        candidate_ids = {
-            item["source"]: item["source_candidate_id"]
-            for item in tasks[0]["source_candidates"]
-        }
-        decision["proposed_alternatives"][0][
-            "identity_member_source_candidate_ids"
-        ].append(candidate_ids["ITKC_PERSON"])
-        automatic_outputs = self.validate_term_decisions(
-            [decision],
-            tasks,
-            tables,
-            self.policy,
-        )
-
-        with tempfile.TemporaryDirectory() as temporary_directory:
-            review_path = str(
-                Path(temporary_directory) / "related_manual_review.csv"
-            )
-            existing_table = self.build_manual_review_table(
-                [decision],
-                tasks,
-                automatic_outputs,
-                review_path,
-                self.policy,
-            )
-            human_alternatives = [{"display_name": "human-reviewed-output"}]
-            existing_table.at[0, "canonical_alternatives_json"] = json.dumps(
-                human_alternatives,
-                ensure_ascii=False,
-            )
-            existing_table.at[0, "manual_status"] = "VERIFIED"
-            existing_table.at[0, "manual_reason"] = "사람이 판정을 완료함"
-            existing_table.at[0, "reviewer"] = "tester"
-            existing_table.to_csv(
-                review_path,
-                index=False,
-                encoding="utf-8-sig",
-            )
-
-            refreshed_table = self.build_manual_review_table(
-                [decision],
-                tasks,
-                automatic_outputs,
-                review_path,
-                self.policy,
-            )
-
-        self.assertEqual(
-            json.loads(
-                refreshed_table.iloc[0]["canonical_alternatives_json"]
-            ),
-            human_alternatives,
-        )
-        self.assertEqual(
-            refreshed_table.iloc[0]["manual_status"],
-            "VERIFIED",
-        )
-
     def test_remaining_ambiguous_source_requires_manual_review(self):
         tables, tasks = self.build_fixture()
         decision = self.make_decision(tasks[0])
@@ -656,6 +663,20 @@ class SemanticReviewTest(unittest.TestCase):
                 "verification_status"
             ],
             "NEEDS_MANUAL_REVIEW",
+        )
+        self.assertEqual(
+            set(outputs["verified_identity_pairs"]["verification_status"]),
+            {"VERIFIED"},
+        )
+        self.assertEqual(
+            len(outputs["reviewed_canonical_alternatives"]),
+            1,
+        )
+        self.assertEqual(
+            outputs["reviewed_canonical_alternatives"].iloc[0][
+                "member_count"
+            ],
+            2,
         )
 
     def test_malformed_decision_is_recorded_without_crashing(self):

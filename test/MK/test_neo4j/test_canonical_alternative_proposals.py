@@ -108,6 +108,24 @@ class CanonicalAlternativeProposalTest(unittest.TestCase):
         self.assertEqual(int(clusters.iloc[0]["source_system_count"]), 3)
         self.assertEqual(set(members["proposed_case_role"]), {"IDENTITY_MEMBER"})
         self.assertEqual(set(features["proposed_role"]), {"IDENTITY_MEMBER"})
+
+    def test_clothing_source_type_maps_to_heritage(self):
+        candidate = self.make_candidate(
+            "candidate-clothing",
+            "AKS",
+            {
+                "headword": "몸뻬",
+                "primary_type_part": "의복",
+            },
+        )
+
+        tables = self.build_tables([candidate])
+        features = tables["source_candidate_features"]
+
+        self.assertEqual(
+            features.iloc[0]["source_entity_type_proposal"],
+            "Heritage",
+        )
         self.assertTrue(all(value == "PROPOSED" for value in features["role_status"]))
 
     def test_same_source_records_are_not_automatically_merged(self):

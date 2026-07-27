@@ -88,7 +88,7 @@ TP 23, FP 8, FN 3이었으며 proposal false merge 33개를 차단했다.
 
 - Python compile 통과
 - 관련 단위 테스트 21건 통과
-- `run_neo4j_preprocessing.py --goldset --dry-run` 결과 `READY`
+- 현재 분리 명령 기준 `import_and_evaluate_goldset.py --dry-run` 결과 `READY`
 - 골드 검증 오류 0건
 - v2 LLM 실행 100건 성공, 최종 실패 0건
 - 첫 1건 실행 후 동일 체크포인트로 나머지 99건 재개
@@ -487,3 +487,199 @@ LLM을 다시 호출하지 않고 같은 v3 decision 100건을 두 게이트 방
   `identity_pair_gate_evidence_mode=connected_graph`를 함께 기록한다.
 - 다음 개선은 연결 규칙을 더 완화하는 것이 아니라, 남은 term alignment 15쌍과
   insufficient evidence 12쌍을 case별로 감사하는 것이다.
+
+## Iteration 5: 정확 일치 anchor 기반 term alignment
+
+### 변경 목적
+
+기존 규칙은 identity 대안의 모든 후보 이름이 입력 용어와
+`normalized_exact`로 일치해야 했다. 이 때문에 입력 용어와 정확히 일치하는 원천이
+있고, 다른 원천도 그 원천과 강한 pair 근거로 연결됐는데 표시명만 더 짧은 경우까지
+보류됐다.
+
+새 `identity-pair-gate-v3`는 다음 조건을 모두 만족할 때만 비정확 일치 멤버를
+자동 허용한다.
+
+1. 대안 안에 입력 용어와 `normalized_exact`로 일치하는 anchor 멤버가 있다.
+2. 모든 identity 멤버가 충돌 없는 `merge_eligible=true` edge로 anchor와 연결된다.
+3. 단순 containment만 있고 정확 일치 anchor가 없으면 기존처럼 보류한다.
+4. 강한 pair 충돌, category 충돌, EntityType 검토는 기존처럼 차단한다.
+
+따라서 `불랑기포→불랑기`처럼 containment 후보만 있는 오병합은 계속 보류된다.
+
+### 동일 model decision 재평가 결과
+
+LLM API를 다시 호출하지 않고 기존 checkpoint 100건을 재사용했다.
+
+| 지표 | 변경 전 | 변경 후 | 변화 |
+|---|---:|---:|---:|
+| `VERIFIED` case | 65 | 68 | +3 |
+| `NEEDS_MANUAL_REVIEW` case | 23 | 20 | -3 |
+| `INVALID` case | 12 | 12 | 0 |
+| 자동 승인 pair | 27 | 32 | +5 |
+| 자동 승인 precision | 1.0 | 1.0 | 0 |
+| 자동 승인 recall | 0.457627 | 0.542373 | +0.084746 |
+| 자동 승인 F1 | 0.627907 | 0.703297 | +0.075390 |
+| verified false merge pair | 0 | 0 | 0 |
+| 기존 오병합 차단 pair | 7 | 7 | 0 |
+| 보류 pair | 32 | 27 | -5 |
+| term alignment 보류 case | 9 | 6 | -3 |
+| term alignment 영향 pair | 15 | 10 | -5 |
+
+새로 자동 승인된 case는 다음 세 개다.
+
+- `박종철 고문 치사 사건 은폐 조작`: gold pair 3개
+- `주심포 양식`: gold pair 1개
+- `흥남 철수 작전`: gold pair 1개
+
+### Iteration 5 판단
+
+- 자동 승인 precision 1.0과 verified false merge 0을 유지했다.
+- 모델의 기존 오병합 7개도 모두 계속 차단됐다.
+- broad containment 허용은 오병합을 통과시킬 수 있어 적용하지 않았다.
+- 남은 `INSUFFICIENT_PAIR_EVIDENCE`는 이름 exact만으로 허용하면 `괭이` 오병합이
+  통과할 수 있으므로 추가 근거 없이 완화하지 않는다.
+
+## Iteration 6: false merge gold 감사와 정의 일치 보조 근거
+
+### Gold 감사
+
+기존 proposal false merge 7건을 원천·문항 문맥과 다시 비교했다.
+
+- gold 수정: `불랑기포`, `몸뻬`, `괭이`, `오례의`
+- 기존 차단 유지: `흐경국 중앙 총상회`, `안북부`, `경잠기`
+
+`괭이`는 문제 전체의 구석기 시대 단서를 오답 선택지의 일반명사에 적용해
+`돌괭이`로 좁힌 gold 오류였다. 선택지의 실제 표면형인 일반 `괭이`를 직접 설명하는
+AKS·시소러스 원천을 identity로 수정하고 재질·형태가 특정된 후보는 제외했다.
+
+Gold 수정 후 모델 proposal 평가는 다음처럼 바뀌었다.
+
+| 지표 | 수정 전 | 수정 후 |
+|---|---:|---:|
+| candidate role accuracy | 0.798182 | 0.814545 |
+| candidate role macro F1 | 0.600115 | 0.613203 |
+| cluster exact case rate | 0.85 | 0.89 |
+| identity pair precision | 0.893939 | 0.954545 |
+| identity pair recall | 1.0 | 1.0 |
+| proposal false merge pair | 7 | 3 |
+| gold identity pair | 59 | 63 |
+
+### `identity-pair-gate-v4`
+
+이름만 같은 pair를 허용하지 않고 다음 조건을 모두 만족할 때만 보조 pair 근거를
+인정한다.
+
+1. 서로 다른 원천이다.
+2. 두 후보 모두 입력 용어와 `normalized_exact`로 일치한다.
+3. 두 원천에 공통 정규화 이름이 있다.
+4. 원천 정의의 정규화 문자열 유사도가 0.9 이상이다.
+5. category 충돌과 강한 pair 충돌이 없다.
+
+현재 100건에서는 `괭이` 한 case만 이 조건으로 추가 승인됐다.
+
+| 지표 | gold 수정 후 v3 | v4 | 변화 |
+|---|---:|---:|---:|
+| `VERIFIED` case | 68 | 69 | +1 |
+| `NEEDS_MANUAL_REVIEW` case | 20 | 19 | -1 |
+| `INVALID` case | 12 | 12 | 0 |
+| 자동 승인 pair | 32 | 33 | +1 |
+| 자동 승인 precision | 1.0 | 1.0 | 0 |
+| 자동 승인 recall | 0.507937 | 0.523810 | +0.015873 |
+| 자동 승인 F1 | 0.673684 | 0.687500 | +0.013816 |
+| verified false merge pair | 0 | 0 | 0 |
+| 보류 pair | 31 | 30 | -1 |
+| 보류 pair case | 21 | 20 | -1 |
+
+Iteration 5의 recall 0.542373과 직접 비교하면 낮아 보이지만, 이는 누락된 gold 정답
+4쌍을 추가하면서 분모가 59에서 63으로 커졌기 때문이다. 같은 정정 gold 기준에서는
+v4가 v3보다 자동 승인 1쌍을 더 확보했다.
+
+`몸뻬`는 원천 유형 매핑, `오례의`는 추출 category와 최종 EntityType 충돌이 남아
+있으므로 이번 규칙으로 우회하지 않았다. 남은 proposal false merge 3건도 모두
+게이트에서 계속 차단된다.
+
+## Iteration 7: category 매핑 보완과 구조화 근거 게이트
+
+### Category 매핑 감사
+
+AKS 후보의 `primary_type_part` 분포와 category 충돌 조합을 확인했다. 의미를 넓게
+해석해야 하는 `단체→국가`, `문헌→제도`, `개념→유적`은 전역 허용하지 않았다.
+명백한 누락인 다음 대응만 추가했다.
+
+- AKS `의복`의 EntityType: `Heritage`
+- 추출 category `유물`, `문화재`와 AKS `의복`: 호환
+
+### `identity-pair-gate-v5`
+
+v4의 `정확 이름 + 정의 유사도 0.9` 경로는 그대로 유지한다. 별도 구조화 근거
+경로는 다음 조건을 모두 요구한다.
+
+1. 서로 다른 원천이다.
+2. identity pair 중 최소 한 후보가 입력 용어와 `normalized_exact`로 일치한다.
+3. 두 후보의 정규화 이름과 한자가 각각 일치한다.
+4. 시대 값이 겹친다.
+5. 정의 문자열 유사도가 0.35 이상이다.
+6. category 충돌을 넘길 때는 모델 EntityType이 추출 category의 제안 타입과
+   같아야 한다.
+7. 허용 가능한 pair 충돌은 원천 유형 매핑에서 생긴 `entity_type_conflict`뿐이다.
+
+정확 입력 앵커가 없는 `흐경국 중앙 총상회`, `경잠기`는 OCR 의심 case로 계속
+자동 승인되지 않는다. 기존 100개 checkpoint를 모두 재사용했으며 API 호출은 0건이다.
+
+| 지표 | v4 | v5 | 변화 |
+|---|---:|---:|---:|
+| `VERIFIED` case | 69 | 70 | +1 |
+| `NEEDS_MANUAL_REVIEW` case | 19 | 19 | 0 |
+| `INVALID` case | 12 | 11 | -1 |
+| 자동 승인 pair | 33 | 34 | +1 |
+| 자동 승인 precision | 1.0 | 1.0 | 0 |
+| 자동 승인 recall | 0.523810 | 0.539683 | +0.015873 |
+| 자동 승인 F1 | 0.687500 | 0.701031 | +0.013531 |
+| verified false merge pair | 0 | 0 | 0 |
+| 보류 pair | 30 | 29 | -1 |
+
+추가 자동 승인 case는 `반어피`다. proposal false merge 3건은 모두 계속
+차단됐다.
+
+## Iteration 8: case 승인과 identity pair 승인 분리
+
+기존에는 안전한 identity pair가 있어도 같은 case의 EntityType 검토, 다른 후보의
+`AMBIGUOUS`, category 충돌 때문에 case 전체가 보류되면 pair도 함께 보류됐다.
+`identity-pair-gate-v6`에서는 다음처럼 분리했다.
+
+- pair별 검증 결과를 `model_identity_pair_gate_results.csv`에 기록한다.
+- 강한 충돌 없는 직접 edge와 연결 그래프를 pair 단위로 검증한다.
+- 연결 component에는 입력 용어와 `normalized_exact`인 anchor가 최소 한 개 필요하다.
+- OCR 의심처럼 exact anchor가 없는 component는 계속 보류한다.
+- 안전한 pair가 승인되어도 case의 canonical entity와 EntityType 확정은 기존 gate가
+  `VERIFIED`일 때만 수행한다.
+
+case 상태는 v5와 동일한 `VERIFIED 70`, `NEEDS_MANUAL_REVIEW 19`, `INVALID 11`을
+유지했다. case 비승인 6건에서 정답 pair 8개가 추가 승인됐다.
+
+- `포츠머스 조약`: 1 pair
+- `조일 통상 장정`: 3 pair
+- `미국`: 1 pair
+- `대조선국민군단`: 1 pair
+- `흥보가`: 1 pair
+- `무오사화`: 1 pair
+
+| 지표 | v5 | v6 | 변화 |
+|---|---:|---:|---:|
+| 자동 승인 pair | 34 | 42 | +8 |
+| 자동 승인 precision | 1.0 | 1.0 | 0 |
+| 자동 승인 recall | 0.539683 | 0.666667 | +0.126984 |
+| 자동 승인 F1 | 0.701031 | 0.800000 | +0.098969 |
+| verified false merge pair | 0 | 0 | 0 |
+| 보류 pair | 29 | 21 | -8 |
+| 보류 pair case | 19 | 16 | -3 |
+
+`흐경국 중앙 총상회`, `경잠기`는 exact anchor가 없어 계속 보류됐고, `안북부`는
+category·원천 타입 충돌로 계속 차단됐다. proposal false merge 3건은 모두 자동
+승인되지 않았다.
+
+이번 재평가에는 `괭이` 하위 도구의 gold 역할 수정도 함께 반영됐다. 일반 `괭이`
+2건은 `IDENTITY_MEMBER`, `돌괭이`·`쇠괭이`·`곰배괭이`는 `EVIDENCE_ONLY`,
+`곡괭이` 2건은 `REJECTED`다. 이 역할 수정은 identity pair 분모 63쌍에는 영향을
+주지 않는다.

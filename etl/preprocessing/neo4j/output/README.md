@@ -8,7 +8,14 @@
 | 폴더 | 의미 | 대표 파일 |
 |---|---|---|
 | `review` | 추출 용어·원천 커버리지·Entity Resolution 검토 대상 | `unique_exam_terms.csv`, `source_coverage_report.json`, `cases_requiring_review.csv` |
-| `final_identity` | 승인 후 Neo4j identity import 파일 | `canonical_entity_registry.csv`, `neo4j_*` |
+| `final_identity` | 기출 용어와 승인된 Neo4j identity import 파일 | `canonical_entity_registry.csv`, `neo4j_*` |
+
+`neo4j_exam_term_nodes.csv`에는 원천 연결이 보류된 기출 용어도 남는다.
+`neo4j_exam_term_to_entity_relationships.csv`에는 검증된 canonical 연결만 기록한다.
+
+`run_full_neo4j_pipeline.py --execute`가 끝나면 output 루트에
+`full_pipeline_manifest.json`이 생성된다. `--load-neo4j`까지 실행한 경우
+`final_identity/neo4j_load_manifest.json`에서 실제 DB upsert 건수를 확인한다.
 | `test_run/review` | 운영 데이터와 분리된 소량 테스트 검토 결과 | 운영 `review`와 같은 파일명 |
 | `test_run/final_identity` | 소량 테스트의 최종 identity 결과 | 운영 `final_identity`와 같은 구조 |
 

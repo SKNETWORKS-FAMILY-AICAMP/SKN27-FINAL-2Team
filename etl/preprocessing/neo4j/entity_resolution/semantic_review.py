@@ -1,4 +1,5 @@
 from argparse import ArgumentParser
+from difflib import SequenceMatcher
 from itertools import combinations
 from json import dumps, loads
 from pathlib import Path
@@ -10,6 +11,9 @@ sys.path.append(str(Path(__file__).resolve().parent.parent))
 sys.path.append(str(Path(__file__).resolve().parent.parent / "terms"))
 
 from common import load_pipeline_policy, normalize_history_term
+from entity_resolution.deterministic_triage import (
+    build_candidate_deduplication_keys,
+)
 from entity_resolution.identifiers import create_stable_id
 
 
@@ -580,9 +584,22 @@ def collect_term_source_alignment_modes(
 def identity_members_have_connected_pair_evidence(
     member_ids: list[str],
     pair_by_ids: dict[frozenset[str], dict],
+    anchor_member_ids: set[str] | None = None,
+    supplemental_pair_ids: set[frozenset[str]] | None = None,
 ) -> bool:
     """강한 충돌 없는 양성 pair edge가 identity 멤버 전체를 연결하는지 확인한다."""
     normalized_member_ids = [str(member_id) for member_id in member_ids]
+    normalized_anchor_ids: set[str] = set()
+    if anchor_member_ids is None and normalized_member_ids:
+        normalized_anchor_ids = {normalized_member_ids[0]}
+    elif anchor_member_ids is not None:
+        normalized_anchor_ids = {
+            str(member_id)
+            for member_id in anchor_member_ids
+            if str(member_id) in normalized_member_ids
+        }
+        if not normalized_anchor_ids:
+            return False
     if len(normalized_member_ids) < 2:
         return True
     adjacency = {
@@ -590,7 +607,12 @@ def identity_members_have_connected_pair_evidence(
         for member_id in normalized_member_ids
     }
     for left_id, right_id in combinations(normalized_member_ids, 2):
-        pair = pair_by_ids.get(frozenset([left_id, right_id]))
+        pair_ids = frozenset([left_id, right_id])
+        if supplemental_pair_ids and pair_ids in supplemental_pair_ids:
+            adjacency[left_id].add(right_id)
+            adjacency[right_id].add(left_id)
+            continue
+        pair = pair_by_ids.get(pair_ids)
         if pair is None:
             continue
         conflicts = loads(pair["conflict_signals_json"])
@@ -603,7 +625,7 @@ def identity_members_have_connected_pair_evidence(
         adjacency[right_id].add(left_id)
 
     visited: set[str] = set()
-    pending = [normalized_member_ids[0]]
+    pending = list(normalized_anchor_ids)
     while pending:
         member_id = pending.pop()
         if member_id in visited:
@@ -611,6 +633,575 @@ def identity_members_have_connected_pair_evidence(
         visited.add(member_id)
         pending.extend(adjacency[member_id].difference(visited))
     return visited == set(normalized_member_ids)
+
+
+def collect_exact_name_description_pair_evidence(
+    task: dict,
+    pair_by_ids: dict[frozenset[str], dict],
+    identity_pair_gate_policy: dict,
+) -> set[frozenset[str]]:
+    """정확 이름과 거의 같은 정의가 있는 교차 원천 pair를 수집한다."""
+    evidence_policy = identity_pair_gate_policy[
+        "exact_name_description_evidence"
+    ]
+    if not bool(evidence_policy["enabled"]):
+        return set()
+    candidates = {
+        str(candidate["source_candidate_id"]): candidate
+        for candidate in task.get("source_candidates", [])
+    }
+    candidate_ids = sorted(candidates)
+    alignment_modes_by_member = collect_term_source_alignment_modes_by_member(
+        task,
+        candidate_ids,
+    )
+    required_alignment_mode = str(
+        evidence_policy["required_alignment_mode"]
+    )
+    blocked_compatibilities = set(
+        evidence_policy["blocked_category_compatibilities"]
+    )
+    description_fields_by_source = evidence_policy[
+        "description_fields_by_source"
+    ]
+    minimum_similarity = float(
+        evidence_policy["minimum_description_similarity"]
+    )
+    evidence_pairs: set[frozenset[str]] = set()
+
+    for left_id, right_id in combinations(candidate_ids, 2):
+        pair_ids = frozenset([left_id, right_id])
+        pair = pair_by_ids.get(pair_ids)
+        if pair is None:
+            continue
+        if loads(pair["conflict_signals_json"]):
+            continue
+        left = candidates[left_id]
+        right = candidates[right_id]
+        if (
+            bool(evidence_policy["require_distinct_sources"])
+            and left.get("source") == right.get("source")
+        ):
+            continue
+        if (
+            str(left.get("category_compatibility") or "")
+            in blocked_compatibilities
+            or str(right.get("category_compatibility") or "")
+            in blocked_compatibilities
+        ):
+            continue
+        if (
+            required_alignment_mode
+            not in alignment_modes_by_member.get(left_id, set())
+            or required_alignment_mode
+            not in alignment_modes_by_member.get(right_id, set())
+        ):
+            continue
+        left_names = {
+            normalize_history_term(value)
+            for value in left.get("normalized_names", [])
+            if normalize_history_term(value)
+        }
+        right_names = {
+            normalize_history_term(value)
+            for value in right.get("normalized_names", [])
+            if normalize_history_term(value)
+        }
+        if (
+            bool(evidence_policy["require_shared_normalized_name"])
+            and not left_names.intersection(right_names)
+        ):
+            continue
+        descriptions: list[str] = []
+        for candidate in [left, right]:
+            source = str(candidate.get("source") or "")
+            source_context = candidate.get("source_context", {})
+            description = ""
+            for field_name in description_fields_by_source.get(source, []):
+                field_value = str(source_context.get(field_name) or "").strip()
+                if field_value:
+                    description = normalize_history_term(field_value)
+                    break
+            descriptions.append(description)
+        if not all(descriptions):
+            continue
+        similarity = SequenceMatcher(
+            None,
+            descriptions[0],
+            descriptions[1],
+        ).ratio()
+        if similarity < minimum_similarity:
+            continue
+        evidence_pairs.add(pair_ids)
+    return evidence_pairs
+
+
+def collect_strict_source_duplicate_pair_evidence(
+    task: dict,
+    pair_by_ids: dict[frozenset[str], dict],
+    policy: dict,
+) -> set[frozenset[str]]:
+    """같은 출처의 메타데이터가 완전히 같은 레코드 pair를 수집한다."""
+    candidate_groups: dict[str, list[str]] = {}
+    for candidate in task.get("source_candidates", []):
+        deduplication_keys = build_candidate_deduplication_keys(
+            candidate,
+            policy,
+        )
+        for deduplication_key in deduplication_keys:
+            candidate_groups.setdefault(
+                deduplication_key,
+                [],
+            ).append(str(candidate["source_candidate_id"]))
+
+    evidence_pairs: set[frozenset[str]] = set()
+    for candidate_ids in candidate_groups.values():
+        for left_id, right_id in combinations(
+            sorted(candidate_ids),
+            2,
+        ):
+            pair_ids = frozenset([left_id, right_id])
+            pair = pair_by_ids.get(pair_ids)
+            if pair is None:
+                continue
+            if loads(pair["conflict_signals_json"]):
+                continue
+            evidence_pairs.add(pair_ids)
+    return evidence_pairs
+
+
+def collect_structured_identity_pair_evidence(
+    task: dict,
+    pair_by_ids: dict[frozenset[str], dict],
+    identity_pair_gate_policy: dict,
+) -> set[frozenset[str]]:
+    """이름·한자·시대·정의가 일치하는 교차 원천 pair를 수집한다."""
+    evidence_policy = identity_pair_gate_policy[
+        "structured_identity_evidence"
+    ]
+    if not bool(evidence_policy["enabled"]):
+        return set()
+    candidates = {
+        str(candidate["source_candidate_id"]): candidate
+        for candidate in task.get("source_candidates", [])
+    }
+    candidate_ids = sorted(candidates)
+    alignment_modes_by_member = collect_term_source_alignment_modes_by_member(
+        task,
+        candidate_ids,
+    )
+    required_alignment_mode = str(
+        evidence_policy["required_alignment_mode"]
+    )
+    minimum_aligned_member_count = int(
+        evidence_policy["minimum_aligned_member_count"]
+    )
+    blocked_compatibilities = set(
+        evidence_policy["blocked_category_compatibilities"]
+    )
+    allowed_pair_conflicts = set(
+        evidence_policy["allowed_pair_conflicts"]
+    )
+    description_fields_by_source = evidence_policy[
+        "description_fields_by_source"
+    ]
+    minimum_similarity = float(
+        evidence_policy["minimum_description_similarity"]
+    )
+    evidence_pairs: set[frozenset[str]] = set()
+
+    for left_id, right_id in combinations(candidate_ids, 2):
+        pair_ids = frozenset([left_id, right_id])
+        pair = pair_by_ids.get(pair_ids)
+        if pair is None:
+            continue
+        pair_conflicts = set(loads(pair["conflict_signals_json"]))
+        if pair_conflicts.difference(allowed_pair_conflicts):
+            continue
+        left = candidates[left_id]
+        right = candidates[right_id]
+        if (
+            bool(evidence_policy["require_distinct_sources"])
+            and left.get("source") == right.get("source")
+        ):
+            continue
+        if (
+            str(left.get("category_compatibility") or "")
+            in blocked_compatibilities
+            or str(right.get("category_compatibility") or "")
+            in blocked_compatibilities
+        ):
+            continue
+        aligned_member_count = sum(
+            required_alignment_mode
+            in alignment_modes_by_member.get(candidate_id, set())
+            for candidate_id in [left_id, right_id]
+        )
+        if aligned_member_count < minimum_aligned_member_count:
+            continue
+        left_names = {
+            normalize_history_term(value)
+            for value in left.get("normalized_names", [])
+            if normalize_history_term(value)
+        }
+        right_names = {
+            normalize_history_term(value)
+            for value in right.get("normalized_names", [])
+            if normalize_history_term(value)
+        }
+        if (
+            bool(evidence_policy["require_shared_normalized_name"])
+            and not left_names.intersection(right_names)
+        ):
+            continue
+        left_hanja = {
+            normalize_history_term(value)
+            for value in left.get("hanja", [])
+            if normalize_history_term(value)
+        }
+        right_hanja = {
+            normalize_history_term(value)
+            for value in right.get("hanja", [])
+            if normalize_history_term(value)
+        }
+        if (
+            bool(evidence_policy["require_hanja_match"])
+            and not left_hanja.intersection(right_hanja)
+        ):
+            continue
+        left_eras = {
+            normalize_history_term(value)
+            for value in left.get("era_values", [])
+            if normalize_history_term(value)
+        }
+        right_eras = {
+            normalize_history_term(value)
+            for value in right.get("era_values", [])
+            if normalize_history_term(value)
+        }
+        if (
+            bool(evidence_policy["require_era_overlap"])
+            and not left_eras.intersection(right_eras)
+        ):
+            continue
+        descriptions: list[str] = []
+        for candidate in [left, right]:
+            source = str(candidate.get("source") or "")
+            source_context = candidate.get("source_context", {})
+            description = ""
+            for field_name in description_fields_by_source.get(source, []):
+                field_value = str(source_context.get(field_name) or "").strip()
+                if field_value:
+                    description = normalize_history_term(field_value)
+                    break
+            descriptions.append(description)
+        if not all(descriptions):
+            continue
+        similarity = SequenceMatcher(
+            None,
+            descriptions[0],
+            descriptions[1],
+        ).ratio()
+        if similarity < minimum_similarity:
+            continue
+        evidence_pairs.add(pair_ids)
+    return evidence_pairs
+
+
+def build_identity_pair_verification_rows(
+    alternative_specs: list[tuple[dict, str]],
+    task: dict | None,
+    decision_id: str,
+    decision_input_invalid: bool,
+    manual_override: bool,
+    candidate_rows: dict[str, dict],
+    pair_by_ids: dict[frozenset[str], dict],
+    exact_description_pair_ids: set[frozenset[str]],
+    structured_identity_pair_ids: set[frozenset[str]],
+    strict_duplicate_pair_ids: set[frozenset[str]],
+    policy: dict,
+) -> list[dict]:
+    """case 상태와 분리해 모델이 제안한 identity pair를 검증한다."""
+    if task is None:
+        return []
+
+    resolution_policy = policy["entity_resolution"]
+    semantic_policy = resolution_policy["semantic_review"]
+    gate_policy = semantic_policy["identity_pair_gate"]
+    structured_policy = gate_policy["structured_identity_evidence"]
+    automatic_alignment_modes = set(
+        semantic_policy["term_source_alignment"][
+            "automatic_acceptance_modes"
+        ]
+    )
+    verification_methods = semantic_policy["verification_methods"]
+    identifier_policy = resolution_policy["identifier_policy"]
+    allowed_entity_types = set(
+        resolution_policy["entity_type_mapping"].values()
+    )
+    allowed_pair_conflicts = set(
+        structured_policy["allowed_pair_conflicts"]
+    )
+    allow_category_conflict = bool(
+        structured_policy[
+            "allow_category_conflict_when_entity_type_matches"
+        ]
+    )
+    supplemental_pair_ids = (
+        exact_description_pair_ids
+        | structured_identity_pair_ids
+        | strict_duplicate_pair_ids
+    )
+    rows: list[dict] = []
+
+    for alternative, alternative_id in alternative_specs:
+        member_ids = sorted(
+            {
+                str(candidate_id)
+                for candidate_id in alternative[
+                    "identity_member_source_candidate_ids"
+                ]
+            }
+        )
+        if len(member_ids) < 2:
+            continue
+        alignment_modes_by_member = (
+            collect_term_source_alignment_modes_by_member(
+                task,
+                member_ids,
+            )
+        )
+        aligned_member_ids = {
+            member_id
+            for member_id in member_ids
+            if alignment_modes_by_member.get(member_id, set()).intersection(
+                automatic_alignment_modes
+            )
+        }
+        adjacency = {member_id: set() for member_id in member_ids}
+        error_codes_by_pair: dict[frozenset[str], set[str]] = {}
+        direct_evidence_pairs: set[frozenset[str]] = set()
+        fatal_error_codes = {
+            "CATEGORY_CONFLICT_IDENTITY_MEMBER",
+            "INVALID_DECISION_INPUT",
+            "INVALID_ENTITY_TYPE",
+            "MISSING_PAIR_EVIDENCE",
+            "STRONG_PAIR_CONFLICT",
+            "UNKNOWN_SOURCE_CANDIDATE",
+        }
+
+        for left_id, right_id in combinations(member_ids, 2):
+            pair_ids = frozenset([left_id, right_id])
+            error_codes: set[str] = set()
+            error_codes_by_pair[pair_ids] = error_codes
+            left_candidate = candidate_rows.get(left_id)
+            right_candidate = candidate_rows.get(right_id)
+            pair = pair_by_ids.get(pair_ids)
+
+            if decision_input_invalid:
+                error_codes.add("INVALID_DECISION_INPUT")
+            if alternative["entity_type"] not in allowed_entity_types:
+                error_codes.add("INVALID_ENTITY_TYPE")
+            if left_candidate is None or right_candidate is None:
+                error_codes.add("UNKNOWN_SOURCE_CANDIDATE")
+            if pair is None:
+                error_codes.add("MISSING_PAIR_EVIDENCE")
+
+            structured_pair = pair_ids in structured_identity_pair_ids
+            category_override = (
+                structured_pair
+                and allow_category_conflict
+                and alternative["entity_type"]
+                == task["entity_type_proposal"]
+            )
+            if left_candidate is not None and (
+                left_candidate["category_compatibility"] == "CONFLICT"
+                and not category_override
+            ):
+                error_codes.add("CATEGORY_CONFLICT_IDENTITY_MEMBER")
+            if right_candidate is not None and (
+                right_candidate["category_compatibility"] == "CONFLICT"
+                and not category_override
+            ):
+                error_codes.add("CATEGORY_CONFLICT_IDENTITY_MEMBER")
+
+            merge_eligible = False
+            if pair is not None:
+                conflicts = set(loads(pair["conflict_signals_json"]))
+                conflict_override = (
+                    structured_pair
+                    and conflicts.issubset(allowed_pair_conflicts)
+                )
+                if conflicts and not conflict_override:
+                    error_codes.add("STRONG_PAIR_CONFLICT")
+                merge_eligible = (
+                    str(pair["merge_eligible"]).lower() == "true"
+                )
+            has_pair_evidence = (
+                merge_eligible or pair_ids in supplemental_pair_ids
+            )
+            if not has_pair_evidence:
+                error_codes.add("INSUFFICIENT_PAIR_EVIDENCE")
+            if error_codes.intersection(fatal_error_codes):
+                continue
+            if not has_pair_evidence:
+                continue
+            adjacency[left_id].add(right_id)
+            adjacency[right_id].add(left_id)
+            direct_evidence_pairs.add(pair_ids)
+
+        verified_pairs: set[frozenset[str]] = set()
+        evidence_mode_by_pair: dict[frozenset[str], str] = {}
+        unvisited = set(member_ids)
+        while unvisited:
+            pending = [next(iter(unvisited))]
+            component: set[str] = set()
+            while pending:
+                member_id = pending.pop()
+                if member_id in component:
+                    continue
+                component.add(member_id)
+                unvisited.discard(member_id)
+                pending.extend(adjacency[member_id].difference(component))
+            if len(component) < 2:
+                continue
+            component_pairs = {
+                frozenset([left_id, right_id])
+                for left_id, right_id in combinations(
+                    sorted(component),
+                    2,
+                )
+            }
+            component_has_fatal_conflict = any(
+                error_codes_by_pair[pair_ids].intersection(
+                    fatal_error_codes
+                )
+                for pair_ids in component_pairs
+            )
+            if not component_has_fatal_conflict and component.intersection(
+                aligned_member_ids
+            ):
+                verified_pairs.update(component_pairs)
+                for pair_ids in component_pairs:
+                    evidence_mode_by_pair[pair_ids] = "CONNECTED_GRAPH"
+                for pair_ids in component_pairs.intersection(
+                    direct_evidence_pairs
+                ):
+                    evidence_mode_by_pair[pair_ids] = "DIRECT_PAIR"
+                continue
+            for pair_ids in component_pairs.intersection(
+                direct_evidence_pairs
+            ):
+                if not pair_ids.intersection(aligned_member_ids):
+                    continue
+                verified_pairs.add(pair_ids)
+                evidence_mode_by_pair[pair_ids] = "DIRECT_PAIR"
+
+        for left_id, right_id in combinations(member_ids, 2):
+            pair_ids = frozenset([left_id, right_id])
+            error_codes = set(error_codes_by_pair[pair_ids])
+            verification_status = "NEEDS_MANUAL_REVIEW"
+            verification_method = verification_methods["pending"]
+            if manual_override and not decision_input_invalid:
+                verification_status = "VERIFIED"
+                verification_method = verification_methods["human"]
+                error_codes.clear()
+                evidence_mode_by_pair[pair_ids] = "HUMAN_REVIEW"
+            elif pair_ids in verified_pairs:
+                verification_status = "VERIFIED"
+                verification_method = verification_methods["automatic"]
+                error_codes.clear()
+            elif error_codes.intersection(fatal_error_codes):
+                verification_status = "INVALID"
+                verification_method = verification_methods["invalid"]
+            if (
+                verification_status != "VERIFIED"
+                and not pair_ids.intersection(aligned_member_ids)
+            ):
+                error_codes.add("TERM_SOURCE_ALIGNMENT_REVIEW_REQUIRED")
+            pair_candidate_ids = sorted(pair_ids)
+            pair_id = create_stable_id(
+                identifier_policy["source_candidate_pair_prefix"],
+                [task["resolution_case_id"], *pair_candidate_ids],
+                identifier_policy,
+            )
+            rows.append(
+                {
+                    "source_candidate_pair_id": pair_id,
+                    "term_decision_id": decision_id,
+                    "term_review_task_id": task["term_review_task_id"],
+                    "resolution_case_id": task["resolution_case_id"],
+                    "canonical_alternative_id": alternative_id,
+                    "left_source_candidate_id": pair_candidate_ids[0],
+                    "right_source_candidate_id": pair_candidate_ids[1],
+                    "verification_status": verification_status,
+                    "verification_method": verification_method,
+                    "evidence_mode": evidence_mode_by_pair.get(
+                        pair_ids,
+                        "",
+                    ),
+                    "error_codes_json": dumps(
+                        sorted(error_codes),
+                        ensure_ascii=False,
+                    ),
+                    "identity_pair_gate_policy_version": gate_policy[
+                        "policy_version"
+                    ],
+                    "resolution_policy_version": policy["policy_version"],
+                }
+            )
+    return rows
+
+
+def collect_verified_identity_components(
+    alternative_specs: list[tuple[dict, str]],
+    pair_verification_rows: list[dict],
+    minimum_member_count: int,
+) -> list[tuple[dict, list[str]]]:
+    """자동 검증된 pair로 연결된 안전한 identity 하위 집합을 찾는다."""
+    alternative_by_id = {
+        alternative_id: alternative
+        for alternative, alternative_id in alternative_specs
+    }
+    adjacency_by_alternative: dict[str, dict[str, set[str]]] = {}
+    for pair_row in pair_verification_rows:
+        if pair_row["verification_status"] != "VERIFIED":
+            continue
+        alternative_id = str(pair_row["canonical_alternative_id"])
+        if alternative_id not in alternative_by_id:
+            continue
+        left_id = str(pair_row["left_source_candidate_id"])
+        right_id = str(pair_row["right_source_candidate_id"])
+        adjacency = adjacency_by_alternative.setdefault(
+            alternative_id,
+            {},
+        )
+        adjacency.setdefault(left_id, set()).add(right_id)
+        adjacency.setdefault(right_id, set()).add(left_id)
+
+    components: list[tuple[dict, list[str]]] = []
+    for alternative_id, adjacency in adjacency_by_alternative.items():
+        visited: set[str] = set()
+        for start_id in sorted(adjacency):
+            if start_id in visited:
+                continue
+            pending = [start_id]
+            component: set[str] = set()
+            while pending:
+                candidate_id = pending.pop()
+                if candidate_id in component:
+                    continue
+                component.add(candidate_id)
+                pending.extend(adjacency.get(candidate_id, set()))
+            visited.update(component)
+            if len(component) >= minimum_member_count:
+                components.append(
+                    (
+                        alternative_by_id[alternative_id],
+                        sorted(component),
+                    )
+                )
+    return components
 
 
 def validate_term_decisions(
@@ -624,9 +1215,6 @@ def validate_term_decisions(
     resolution_policy = policy["entity_resolution"]
     semantic_policy = resolution_policy["semantic_review"]
     identifier_policy = resolution_policy["identifier_policy"]
-    manual_review_policy = resolution_policy["related_entity_resolution"][
-        "manual_review"
-    ]
     term_alignment_policy = semantic_policy["term_source_alignment"]
     identity_pair_gate_policy = semantic_policy["identity_pair_gate"]
     pair_evidence_modes = identity_pair_gate_policy["evidence_modes"]
@@ -641,7 +1229,7 @@ def validate_term_decisions(
     automatic_alignment_modes = set(
         term_alignment_policy["automatic_acceptance_modes"]
     )
-    verification_methods = manual_review_policy["verification_methods"]
+    verification_methods = semantic_policy["verification_methods"]
     manual_verification_by_case = manual_verifications or {}
     task_by_id = {task["term_review_task_id"]: task for task in tasks}
     candidate_rows = {
@@ -654,9 +1242,40 @@ def validate_term_decisions(
         ): row
         for row in tables["source_candidate_pair_signals"].to_dict("records")
     }
+    exact_description_pair_ids: set[frozenset[str]] = set()
+    structured_identity_pair_ids: set[frozenset[str]] = set()
+    strict_duplicate_pair_ids: set[frozenset[str]] = set()
+    for review_task in tasks:
+        exact_description_pair_ids.update(
+            collect_exact_name_description_pair_evidence(
+                review_task,
+                pair_by_ids,
+                identity_pair_gate_policy,
+            )
+        )
+        structured_identity_pair_ids.update(
+            collect_structured_identity_pair_evidence(
+                review_task,
+                pair_by_ids,
+                identity_pair_gate_policy,
+            )
+        )
+        strict_duplicate_pair_ids.update(
+            collect_strict_source_duplicate_pair_evidence(
+                review_task,
+                pair_by_ids,
+                policy,
+            )
+        )
+    supplemental_pair_ids = (
+        exact_description_pair_ids
+        | structured_identity_pair_ids
+        | strict_duplicate_pair_ids
+    )
     decision_rows: list[dict] = []
     alternative_rows: list[dict] = []
     role_rows: list[dict] = []
+    pair_verification_rows: list[dict] = []
     error_rows: list[dict] = []
     observed_task_ids: set[str] = set()
 
@@ -750,16 +1369,18 @@ def validate_term_decisions(
                 "task와 결정의 prompt version이 다릅니다.",
             )
             invalid = True
-        if decision.get("review_model") != semantic_policy["term_model"][
-            "model"
-        ]:
+        allowed_review_models = {
+            semantic_policy["term_model"]["model"],
+            semantic_policy["deterministic_triage"]["review_model"],
+        }
+        if decision.get("review_model") not in allowed_review_models:
             add_validation_error(
                 error_rows,
                 decision_id,
                 case_id,
                 "INVALID",
                 "REVIEW_MODEL_MISMATCH",
-                "정책에 지정된 term review model이 아닙니다.",
+                "정책에 지정된 term review 방식이 아닙니다.",
             )
             invalid = True
 
@@ -801,6 +1422,7 @@ def validate_term_decisions(
             )
             invalid = True
 
+        decision_input_invalid = invalid
         alternative_specs: list[tuple[dict, str]] = []
         proposed_alternatives = decision.get("proposed_alternatives", [])
         if not isinstance(proposed_alternatives, list):
@@ -830,6 +1452,26 @@ def validate_term_decisions(
                 identifier_policy,
             )
             alternative_specs.append((alternative, alternative_id))
+            structured_evidence_connects_alternative = (
+                len(member_ids) > 1
+                and identity_members_have_connected_pair_evidence(
+                    member_ids,
+                    {},
+                    supplemental_pair_ids=structured_identity_pair_ids,
+                )
+            )
+            allow_category_conflict = bool(
+                identity_pair_gate_policy[
+                    "structured_identity_evidence"
+                ]["allow_category_conflict_when_entity_type_matches"]
+            )
+            category_conflict_override = (
+                structured_evidence_connects_alternative
+                and allow_category_conflict
+                and task is not None
+                and alternative["entity_type"]
+                == task["entity_type_proposal"]
+            )
             alignment_modes_by_member: dict[str, set[str]] = {}
             if task is not None:
                 alignment_modes_by_member = (
@@ -856,6 +1498,30 @@ def validate_term_decisions(
                 for alignment_modes in alignment_modes_by_member.values()
             ):
                 members_requiring_alignment_review = list(member_ids)
+            allow_connected_members = bool(
+                term_alignment_policy[
+                    "allow_connected_members_from_automatic_anchor"
+                ]
+            )
+            if (
+                members_requiring_alignment_review
+                and allow_connected_members
+            ):
+                automatically_aligned_member_ids = {
+                    str(member_id)
+                    for member_id in member_ids
+                    if alignment_modes_by_member.get(
+                        str(member_id),
+                        set(),
+                    ).intersection(automatic_alignment_modes)
+                }
+                if identity_members_have_connected_pair_evidence(
+                    member_ids,
+                    pair_by_ids,
+                    anchor_member_ids=automatically_aligned_member_ids,
+                    supplemental_pair_ids=supplemental_pair_ids,
+                ):
+                    members_requiring_alignment_review = []
             if (
                 task is not None
                 and members_requiring_alignment_review
@@ -918,7 +1584,10 @@ def validate_term_decisions(
                 candidate = candidate_rows.get(candidate_id)
                 if candidate is None:
                     continue
-                if candidate["category_compatibility"] == "CONFLICT":
+                if (
+                    candidate["category_compatibility"] == "CONFLICT"
+                    and not category_conflict_override
+                ):
                     add_validation_error(
                         error_rows,
                         decision_id,
@@ -944,7 +1613,18 @@ def validate_term_decisions(
                     alternative_has_invalid_pair = True
                     continue
                 conflicts = loads(pair["conflict_signals_json"])
-                if conflicts:
+                allowed_pair_conflicts = set(
+                    identity_pair_gate_policy[
+                        "structured_identity_evidence"
+                    ]["allowed_pair_conflicts"]
+                )
+                strong_evidence_override = (
+                    structured_evidence_connects_alternative
+                    and frozenset([left_id, right_id])
+                    in structured_identity_pair_ids
+                    and set(conflicts).issubset(allowed_pair_conflicts)
+                )
+                if conflicts and not strong_evidence_override:
                     add_validation_error(
                         error_rows,
                         decision_id,
@@ -959,6 +1639,8 @@ def validate_term_decisions(
                 if (
                     pair_evidence_mode == pair_evidence_modes["complete"]
                     and str(pair["merge_eligible"]).lower() != "true"
+                    and frozenset([left_id, right_id])
+                    not in strict_duplicate_pair_ids
                     and not manual_override
                 ):
                     add_validation_error(
@@ -976,6 +1658,7 @@ def validate_term_decisions(
                 and not identity_members_have_connected_pair_evidence(
                     member_ids,
                     pair_by_ids,
+                    supplemental_pair_ids=supplemental_pair_ids,
                 )
                 and not manual_override
             ):
@@ -997,6 +1680,20 @@ def validate_term_decisions(
                 )
                 manual_review = True
 
+        decision_pair_rows = build_identity_pair_verification_rows(
+            alternative_specs,
+            task,
+            decision_id,
+            decision_input_invalid,
+            manual_override,
+            candidate_rows,
+            pair_by_ids,
+            exact_description_pair_ids,
+            structured_identity_pair_ids,
+            strict_duplicate_pair_ids,
+            policy,
+        )
+        pair_verification_rows.extend(decision_pair_rows)
         if isinstance(decision.get("ambiguous_sources"), list) and decision.get(
             "ambiguous_sources"
         ):
@@ -1059,6 +1756,88 @@ def validate_term_decisions(
                 "resolution_policy_version": policy["policy_version"],
             }
         )
+        if verification_status == "NEEDS_MANUAL_REVIEW":
+            minimum_member_count = int(
+                resolution_policy["canonical_registry"][
+                    "minimum_automatic_identity_members"
+                ]
+            )
+            verified_components = collect_verified_identity_components(
+                alternative_specs,
+                decision_pair_rows,
+                minimum_member_count,
+            )
+            for alternative, member_ids in verified_components:
+                component_alternative_id = create_stable_id(
+                    identifier_policy["canonical_alternative_prefix"],
+                    [case_id] + member_ids,
+                    identifier_policy,
+                )
+                source_record_ids = [
+                    candidate_rows[candidate_id]["source_record_id"]
+                    for candidate_id in member_ids
+                ]
+                alternative_rows.append(
+                    {
+                        "canonical_alternative_id": (
+                            component_alternative_id
+                        ),
+                        "resolution_case_id": case_id,
+                        "canonical_id": "",
+                        "display_name_proposal": alternative["display_name"],
+                        "entity_type_proposal": alternative["entity_type"],
+                        "source_candidate_ids_json": dumps(
+                            member_ids,
+                            ensure_ascii=False,
+                        ),
+                        "identity_member_source_ids_json": dumps(
+                            source_record_ids,
+                            ensure_ascii=False,
+                        ),
+                        "member_count": len(member_ids),
+                        "merge_gate_passed": True,
+                        "verification_status": "VERIFIED",
+                        "verification_method": verification_methods[
+                            "automatic"
+                        ],
+                        "verified_by": "",
+                        "verified_at": "",
+                        "term_decision_id": decision_id,
+                        "decision_reason": (
+                            f"{alternative['reason']} "
+                            "전체 후보 판정은 보류했지만 자동 검증된 "
+                            "identity pair 연결 성분만 먼저 승인했다."
+                        ),
+                        "resolution_policy_version": policy[
+                            "policy_version"
+                        ],
+                    }
+                )
+                for candidate_id in member_ids:
+                    role_rows.append(
+                        {
+                            "source_candidate_id": candidate_id,
+                            "source_record_id": candidate_rows[
+                                candidate_id
+                            ]["source_record_id"],
+                            "resolution_case_id": case_id,
+                            "canonical_alternative_id": (
+                                component_alternative_id
+                            ),
+                            "verified_role": "IDENTITY_MEMBER",
+                            "verification_status": "VERIFIED",
+                            "verification_method": verification_methods[
+                                "automatic"
+                            ],
+                            "verified_by": "",
+                            "verified_at": "",
+                            "term_decision_id": decision_id,
+                            "role_reason": classified[candidate_id][2],
+                            "resolution_policy_version": policy[
+                                "policy_version"
+                            ],
+                        }
+                    )
         if verification_status != "VERIFIED":
             continue
 
@@ -1174,6 +1953,21 @@ def validate_term_decisions(
             "role_reason",
             "resolution_policy_version",
         ],
+        "verified_identity_pairs": [
+            "source_candidate_pair_id",
+            "term_decision_id",
+            "term_review_task_id",
+            "resolution_case_id",
+            "canonical_alternative_id",
+            "left_source_candidate_id",
+            "right_source_candidate_id",
+            "verification_status",
+            "verification_method",
+            "evidence_mode",
+            "error_codes_json",
+            "identity_pair_gate_policy_version",
+            "resolution_policy_version",
+        ],
         "term_decision_validation_errors": [
             "term_decision_id",
             "resolution_case_id",
@@ -1186,6 +1980,7 @@ def validate_term_decisions(
         "term_resolution_decisions": decision_rows,
         "reviewed_canonical_alternatives": alternative_rows,
         "reviewed_source_roles": role_rows,
+        "verified_identity_pairs": pair_verification_rows,
         "term_decision_validation_errors": error_rows,
     }
     return {

@@ -1,6 +1,7 @@
 import sys
 from argparse import ArgumentParser
-from json import dump
+from datetime import datetime, timezone
+from json import dump, dumps, load
 from pathlib import Path
 
 import pandas as pd
@@ -17,9 +18,19 @@ from entity_resolution.related_entity_resolution import (
     build_related_term_table,
     inject_related_entity_seed_candidates,
 )
+from entity_resolution.execute_term_review import (
+    build_execution_plan,
+    create_openai_client,
+    load_json_schema,
+    validate_structured_output_schema,
+)
+from entity_resolution.review_execution import execute_review_batch
 from entity_resolution.semantic_review import (
     build_term_review_tasks,
     load_jsonl,
+    load_resolution_package,
+    validate_term_decisions,
+    write_term_decision_tables,
     write_jsonl,
 )
 from goldset.build_gold_set import calculate_file_sha256
@@ -72,6 +83,8 @@ def resolve_related_entity_paths(
         "term_review_tasks": resolved_output_directory
         / output_files["term_review_tasks"],
         "manifest": resolved_output_directory / output_files["manifest"],
+        "review_manifest": resolved_output_directory
+        / output_files["review_manifest"],
     }
 
 
@@ -168,6 +181,9 @@ def run_related_entity_resolution(
     manifest = {
         "queue_path": str(paths["queue"].resolve()),
         "queue_sha256": calculate_file_sha256(str(paths["queue"])),
+        "term_review_tasks_sha256": calculate_file_sha256(
+            str(paths["term_review_tasks"])
+        ),
         "related_entity_count": len(related_tasks),
         "review_task_count": len(review_tasks),
         "resolution_summary": summarize_resolution_tables(
@@ -192,9 +208,196 @@ def run_related_entity_resolution(
     with paths["manifest"].open("w", encoding="utf-8") as output_file:
         dump(manifest, output_file, ensure_ascii=False, indent=2)
     return manifest
+
+
+def run_related_entity_review(
+    queue_path: str,
+    output_dir: str,
+    thesaurus_csv_path: str,
+    encyclopedia_jsonl_path: str,
+    itkc_people_csv_path: str,
+    itkc_events_csv_path: str,
+    policy_path: str,
+    review_limit: int = 0,
+    maximum_retries: int | None = None,
+    dry_run: bool = False,
+) -> dict[str, object]:
+    """관련 엔티티 후보 생성부터 LLM 판정과 검증 게이트까지 실행한다."""
+    policy = load_pipeline_policy(policy_path)
+    paths = resolve_related_entity_paths(queue_path, output_dir, policy)
+    neo4j_root = Path(__file__).resolve().parent
+    workflow_policy = policy["entity_resolution"]["semantic_review"][
+        "gold_set"
+    ]["workflow"]
+    prompt_path = (neo4j_root / workflow_policy["term_review_prompt"]).resolve()
+    schema_path = (neo4j_root / workflow_policy["term_review_schema"]).resolve()
+    required_inputs = {
+        "related entity queue": paths["queue"],
+        "thesaurus": Path(thesaurus_csv_path),
+        "encyclopedia": Path(encyclopedia_jsonl_path),
+        "ITKC people": Path(itkc_people_csv_path),
+        "ITKC events": Path(itkc_events_csv_path),
+        "term review prompt": prompt_path,
+        "term review schema": schema_path,
+    }
+    for input_name, input_path in required_inputs.items():
+        if not input_path.is_file():
+            raise FileNotFoundError(
+                f"{input_name} 입력 파일을 찾을 수 없습니다: {input_path}"
+            )
+
+    schema_errors = validate_structured_output_schema(
+        load_json_schema(str(schema_path)),
+        policy,
+    )
+    related_tasks = load_jsonl(str(paths["queue"]))
+    if not related_tasks:
+        raise ValueError("관련 엔티티 resolution queue가 비어 있습니다.")
+
+    if dry_run:
+        staging_is_current = False
+        review_tasks: list[dict] = []
+        if paths["manifest"].is_file() and paths["term_review_tasks"].is_file():
+            with paths["manifest"].open("r", encoding="utf-8") as input_file:
+                staging_manifest = load(input_file)
+            staging_is_current = (
+                staging_manifest.get("queue_sha256")
+                == calculate_file_sha256(str(paths["queue"]))
+                and staging_manifest.get("term_review_tasks_sha256")
+                == calculate_file_sha256(str(paths["term_review_tasks"]))
+            )
+            if staging_is_current:
+                review_tasks = load_jsonl(str(paths["term_review_tasks"]))
+        execution_plan: dict[str, object] = {}
+        if staging_is_current:
+            executor_policy = policy["entity_resolution"]["semantic_review"][
+                "term_executor"
+            ]
+            checkpoint_path = (
+                paths["output_directory"]
+                / executor_policy["checkpoint_file"]
+            )
+            execution_plan = build_execution_plan(
+                review_tasks,
+                str(checkpoint_path),
+                policy,
+                review_limit,
+            )
+        status = "READY_FOR_REBUILD"
+        if staging_is_current:
+            status = "READY"
+        if schema_errors:
+            status = "BLOCKED_BY_SCHEMA_VALIDATION"
+        return {
+            "status": status,
+            "stage": "RELATED_ENTITY_REVIEW",
+            "dry_run": True,
+            "related_entity_count": len(related_tasks),
+            "staging_is_current": staging_is_current,
+            "review_task_count": len(review_tasks),
+            "structured_output_schema_errors": schema_errors,
+            "model_execution_plan": execution_plan,
+            "paths": {name: str(path) for name, path in paths.items()},
+        }
+
+    if schema_errors:
+        raise ValueError(
+            "term review schema 오류를 먼저 수정해야 합니다: "
+            + ", ".join(schema_errors)
+        )
+    staging_manifest = run_related_entity_resolution(
+        queue_path=queue_path,
+        output_dir=output_dir,
+        thesaurus_csv_path=thesaurus_csv_path,
+        encyclopedia_jsonl_path=encyclopedia_jsonl_path,
+        itkc_people_csv_path=itkc_people_csv_path,
+        itkc_events_csv_path=itkc_events_csv_path,
+        policy_path=policy_path,
+    )
+    review_tasks = load_jsonl(str(paths["term_review_tasks"]))
+    executor_policy = policy["entity_resolution"]["semantic_review"][
+        "term_executor"
+    ]
+    checkpoint_path = (
+        paths["output_directory"] / executor_policy["checkpoint_file"]
+    )
+    execution_plan = build_execution_plan(
+        review_tasks,
+        str(checkpoint_path),
+        policy,
+        review_limit,
+    )
+    client = None
+    if execution_plan["pending_task_count"]:
+        client = create_openai_client(policy)
+    execution, model_paths = execute_review_batch(
+        review_tasks,
+        paths["term_review_tasks"],
+        paths["output_directory"],
+        prompt_path,
+        schema_path,
+        policy,
+        client,
+        review_limit,
+        maximum_retries,
+    )
+    resolution_tables = load_resolution_package(
+        str(paths["resolution_package"]),
+        policy,
+    )
+    decision_tables = validate_term_decisions(
+        execution["decisions"],
+        review_tasks,
+        resolution_tables,
+        policy,
+    )
+    gate_paths = write_term_decision_tables(
+        decision_tables,
+        str(paths["output_directory"]),
+        policy,
+    )
+    verification_series = decision_tables["term_resolution_decisions"][
+        "verification_status"
+    ].value_counts()
+    verification_counts = {
+        str(status): int(count)
+        for status, count in verification_series.items()
+    }
+    gate_output_sha256 = {
+        name: calculate_file_sha256(path)
+        for name, path in gate_paths.items()
+    }
+    manifest = {
+        "status": "COMPLETED",
+        "stage": "RELATED_ENTITY_REVIEW",
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "resolution_policy_version": policy["policy_version"],
+        "related_entity_count": len(related_tasks),
+        "review_task_count": len(review_tasks),
+        "model_decision_count": len(execution["decisions"]),
+        "verification_counts": verification_counts,
+        "queue_sha256": staging_manifest["queue_sha256"],
+        "term_review_tasks_sha256": staging_manifest[
+            "term_review_tasks_sha256"
+        ],
+        "gate_output_sha256": gate_output_sha256,
+        "outputs": {
+            "candidate_staging": staging_manifest["output_files"],
+            "model": model_paths,
+            "gate": gate_paths,
+        },
+    }
+    paths["review_manifest"].parent.mkdir(parents=True, exist_ok=True)
+    paths["review_manifest"].write_text(
+        dumps(manifest, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+    return manifest
+
+
 if __name__ == "__main__":
     parser = ArgumentParser(
-        description="EVIDENCE_ONLY 관련 엔티티를 2차 Entity Resolution에 투입"
+        description="관련 엔티티 후보 생성, LLM 판정, 검증 게이트 실행"
     )
     parser.add_argument("queue_path", nargs="?", default="")
     parser.add_argument("output_dir", nargs="?", default="")
@@ -202,6 +405,9 @@ if __name__ == "__main__":
     parser.add_argument("--encyclopedia-jsonl", default="")
     parser.add_argument("--itkc-people", default="")
     parser.add_argument("--itkc-events", default="")
+    parser.add_argument("--limit", type=int, default=0)
+    parser.add_argument("--retries", type=int, default=2)
+    parser.add_argument("--dry-run", action="store_true")
     parser.add_argument(
         "--policy",
         default=str(
@@ -217,7 +423,7 @@ if __name__ == "__main__":
         itkc_people_csv_path=cli_args.itkc_people,
         itkc_events_csv_path=cli_args.itkc_events,
     )
-    result = run_related_entity_resolution(
+    result = run_related_entity_review(
         queue_path=cli_args.queue_path,
         output_dir=cli_args.output_dir,
         thesaurus_csv_path=pipeline_paths["thesaurus_csv_path"],
@@ -227,5 +433,14 @@ if __name__ == "__main__":
         itkc_people_csv_path=pipeline_paths["itkc_people_csv_path"],
         itkc_events_csv_path=pipeline_paths["itkc_events_csv_path"],
         policy_path=cli_args.policy,
+        review_limit=cli_args.limit,
+        maximum_retries=cli_args.retries,
+        dry_run=cli_args.dry_run,
     )
-    print(result)
+    print(dumps(result, ensure_ascii=False, indent=2))
+    if result["status"] not in {
+        "READY",
+        "READY_FOR_REBUILD",
+        "COMPLETED",
+    }:
+        raise SystemExit(1)

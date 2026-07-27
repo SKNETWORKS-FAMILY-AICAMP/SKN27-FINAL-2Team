@@ -11,6 +11,9 @@ sys.path.append(str(Path(__file__).resolve().parent.parent))
 sys.path.append(str(Path(__file__).resolve().parent.parent / "terms"))
 
 from common import load_pipeline_policy
+from entity_resolution.classification_anchors import (
+    build_classification_anchor_tables,
+)
 from entity_resolution.identifiers import create_stable_id
 from entity_resolution.problem_review import (
     load_term_decision_tables,
@@ -38,6 +41,20 @@ def create_canonical_registry_id(
     return canonical_id, canonical_uuid
 
 
+def count_source_systems(
+    source_record_ids: set[str],
+    source_system_by_record_id: dict[str, str],
+) -> int:
+    """SourceRecord 집합을 독립 출처 시스템 수로 센다."""
+    source_systems = {
+        source_system_by_record_id.get(source_record_id)
+        or source_record_id.split(":", 1)[0]
+        for source_record_id in source_record_ids
+    }
+    source_systems.discard("")
+    return len(source_systems)
+
+
 def load_existing_registry(registry_path: str) -> pd.DataFrame:
     """기존 registry가 있으면 읽고, 최초 실행이면 빈 계약을 반환한다."""
     columns = [
@@ -46,6 +63,8 @@ def load_existing_registry(registry_path: str) -> pd.DataFrame:
         "entity_type",
         "display_name",
         "lifecycle_status",
+        "identity_confidence",
+        "source_support_count",
         "identity_member_source_ids_json",
         "resolution_case_ids_json",
         "created_at",
@@ -58,6 +77,12 @@ def load_existing_registry(registry_path: str) -> pd.DataFrame:
     if not path.is_file():
         return pd.DataFrame(columns=columns)
     registry = pd.read_csv(path, dtype=str).fillna("")
+    if "identity_confidence" not in registry.columns:
+        registry["identity_confidence"] = ""
+    if "source_support_count" not in registry.columns:
+        registry["source_support_count"] = registry[
+            "identity_member_source_ids_json"
+        ].map(lambda value: str(len(loads(value or "[]"))))
     missing_columns = set(columns).difference(registry.columns)
     if missing_columns:
         missing_text = ", ".join(sorted(missing_columns))
@@ -75,6 +100,7 @@ def finalize_entity_resolution(
     timestamp: str = "",
     preselected_alternative_methods: dict[str, str] | None = None,
     manually_approved_alternative_ids: set[str] | None = None,
+    register_all_verified_candidates: bool = False,
 ) -> dict[str, pd.DataFrame]:
     """검증된 identity만 registry와 Neo4j import용 테이블로 승격한다."""
     resolution_policy = policy["entity_resolution"]
@@ -89,6 +115,8 @@ def finalize_entity_resolution(
         "entity_type",
         "display_name",
         "lifecycle_status",
+        "identity_confidence",
+        "source_support_count",
         "identity_member_source_ids_json",
         "resolution_case_ids_json",
         "created_at",
@@ -115,6 +143,95 @@ def finalize_entity_resolution(
         str(row["source_candidate_id"]): row
         for row in candidates.to_dict("records")
     }
+    source_system_by_record_id = {
+        str(row["source_record_id"]): str(row["source"])
+        for row in candidates.to_dict("records")
+    }
+    exam_term_accumulators: dict[str, dict] = {}
+    exam_term_id_by_case: dict[str, str] = {}
+    for case in cases.to_dict("records"):
+        if str(case.get("related_entity_task_id") or ""):
+            continue
+        if str(case.get("is_noise") or "").lower() == "true":
+            continue
+        case_id = str(case["resolution_case_id"])
+        canonical_term = str(case.get("canonical_term") or "")
+        normalized_term = str(
+            case.get("normalized_term") or canonical_term
+        )
+        exam_term_id = create_stable_id(
+            identifier_policy["exam_term_prefix"],
+            [normalized_term, policy["normalization_policy_version"]],
+            identifier_policy,
+        )
+        exam_term_id_by_case[case_id] = exam_term_id
+        accumulator = exam_term_accumulators.setdefault(
+            exam_term_id,
+            {
+                "term_values": set(),
+                "normalized_term": normalized_term,
+                "term_variants": set(),
+                "resolution_case_ids": set(),
+                "categories": set(),
+                "entity_type_proposals": set(),
+                "problem_ids": set(),
+            },
+        )
+        accumulator["term_values"].add(canonical_term)
+        accumulator["resolution_case_ids"].add(case_id)
+        category = str(case.get("category") or "")
+        if category:
+            accumulator["categories"].add(category)
+        entity_type_proposal = str(
+            case.get("entity_type_proposal") or ""
+        )
+        if entity_type_proposal:
+            accumulator["entity_type_proposals"].add(
+                entity_type_proposal
+            )
+        accumulator["term_variants"].update(
+            loads(str(case.get("term_variants_json") or "[]"))
+        )
+        accumulator["problem_ids"].update(
+            loads(str(case.get("problem_ids_json") or "[]"))
+        )
+    exam_term_rows: dict[str, dict] = {}
+    for exam_term_id, accumulator in exam_term_accumulators.items():
+        term_values = sorted(
+            accumulator["term_values"],
+            key=lambda value: (len(value), value),
+        )
+        exam_term_rows[exam_term_id] = {
+            "exam_term_id": exam_term_id,
+            "term": term_values[0],
+            "normalized_term": accumulator["normalized_term"],
+            "term_variants_json": dumps(
+                sorted(accumulator["term_variants"]),
+                ensure_ascii=False,
+            ),
+            "resolution_case_ids_json": dumps(
+                sorted(accumulator["resolution_case_ids"]),
+                ensure_ascii=False,
+            ),
+            "categories_json": dumps(
+                sorted(accumulator["categories"]),
+                ensure_ascii=False,
+            ),
+            "entity_type_proposals_json": dumps(
+                sorted(accumulator["entity_type_proposals"]),
+                ensure_ascii=False,
+            ),
+            "problem_count": str(len(accumulator["problem_ids"])),
+            "problem_ids_json": dumps(
+                sorted(accumulator["problem_ids"]),
+                ensure_ascii=False,
+            ),
+            "source_link_status": "PENDING",
+            "normalization_policy_version": policy[
+                "normalization_policy_version"
+            ],
+            "resolution_policy_version": policy["policy_version"],
+        }
     alternative_by_id = {
         str(row["canonical_alternative_id"]): row
         for row in reviewed_alternatives.to_dict("records")
@@ -156,15 +273,33 @@ def finalize_entity_resolution(
     registry_rows = existing_registry[registry_columns].to_dict("records")
     acceptance_rows: list[dict] = []
     alternative_to_canonical: dict[str, str] = {}
-    minimum_members = int(
-        registry_policy["minimum_automatic_identity_members"]
+    minimum_source_systems = int(
+        registry_policy["minimum_independent_source_systems"]
     )
+    allow_single_source_candidates = bool(
+        registry_policy["allow_single_source_candidate_creation"]
+    )
+    identity_confidence_policy = registry_policy["identity_confidence"]
     manually_approved_ids = manually_approved_alternative_ids or set()
-    for alternative_id in sorted(selected_alternative_ids):
+    registry_alternative_ids = set(selected_alternative_ids)
+    if register_all_verified_candidates:
+        registry_alternative_ids.update(alternative_by_id)
+    ordered_registry_alternative_ids = sorted(
+        registry_alternative_ids,
+        key=lambda alternative_id: (
+            -int(alternative_by_id[alternative_id]["member_count"]),
+            alternative_id,
+        ),
+    )
+    for alternative_id in ordered_registry_alternative_ids:
         alternative = alternative_by_id[alternative_id]
         member_ids = loads(alternative["source_candidate_ids_json"])
         source_record_ids = set(
             loads(alternative["identity_member_source_ids_json"])
+        )
+        alternative_source_system_count = count_source_systems(
+            source_record_ids,
+            source_system_by_record_id,
         )
         all_roles_are_identity = all(
             role_by_candidate.get(candidate_id, {}).get("verified_role")
@@ -175,7 +310,8 @@ def finalize_entity_resolution(
             str(alternative["merge_gate_passed"]).lower() == "true"
         )
         below_automatic_member_minimum = (
-            len(member_ids) < minimum_members
+            alternative_source_system_count < minimum_source_systems
+            and not allow_single_source_candidates
             and alternative_id not in manually_approved_ids
         )
         if (
@@ -290,6 +426,18 @@ def finalize_entity_resolution(
             )
             existing_source_ids.update(source_record_ids)
             existing_case_ids.add(alternative["resolution_case_id"])
+            source_support_count = len(existing_source_ids)
+            source_system_count = count_source_systems(
+                existing_source_ids,
+                source_system_by_record_id,
+            )
+            identity_confidence = identity_confidence_policy[
+                "single_source"
+            ]
+            if source_system_count >= minimum_source_systems:
+                identity_confidence = identity_confidence_policy[
+                    "multi_source"
+                ]
             registry_row["identity_member_source_ids_json"] = dumps(
                 sorted(existing_source_ids),
                 ensure_ascii=False,
@@ -298,6 +446,10 @@ def finalize_entity_resolution(
                 sorted(existing_case_ids),
                 ensure_ascii=False,
             )
+            registry_row["source_support_count"] = str(
+                source_support_count
+            )
+            registry_row["identity_confidence"] = identity_confidence
             registry_row["updated_at"] = current_timestamp
         elif len(overlapping_registry_rows) == 0:
             canonical_id, canonical_uuid = create_canonical_registry_id(
@@ -305,12 +457,24 @@ def finalize_entity_resolution(
                 registry_policy,
                 uuid_factory,
             )
+            identity_confidence = identity_confidence_policy[
+                "single_source"
+            ]
+            if (
+                alternative_source_system_count
+                >= minimum_source_systems
+            ):
+                identity_confidence = identity_confidence_policy[
+                    "multi_source"
+                ]
             registry_row = {
                 "canonical_id": canonical_id,
                 "canonical_uuid": canonical_uuid,
                 "entity_type": entity_type,
                 "display_name": alternative["display_name_proposal"],
                 "lifecycle_status": registry_policy["active_status"],
+                "identity_confidence": identity_confidence,
+                "source_support_count": str(len(source_record_ids)),
                 "identity_member_source_ids_json": dumps(
                     sorted(source_record_ids),
                     ensure_ascii=False,
@@ -349,13 +513,26 @@ def finalize_entity_resolution(
                 "source_release": candidate["source_release"],
                 "source_metadata_json": candidate["source_metadata_json"],
             }
+            default_resolution_method = registry_policy[
+                "single_source_resolution_method"
+            ]
+            member_source_system_count = len(
+                {
+                    str(candidate_by_id[member_id]["source"])
+                    for member_id in member_ids
+                }
+            )
+            if member_source_system_count >= minimum_source_systems:
+                default_resolution_method = registry_policy[
+                    "accepted_resolution_method"
+                ]
             resolution_rows[(source_record_id, canonical_id)] = {
                 "source_record_id": source_record_id,
                 "canonical_id": canonical_id,
                 "match_status": "ACCEPTED",
                 "method": selection_method_by_alternative.get(
                     alternative_id,
-                    registry_policy["accepted_resolution_method"],
+                    default_resolution_method,
                 ),
                 "version": policy["policy_version"],
                 "term_decision_id": alternative["term_decision_id"],
@@ -363,9 +540,24 @@ def finalize_entity_resolution(
 
     entity_name_rows: dict[str, dict] = {}
     entity_name_reference_rows: dict[tuple[str, str], dict] = {}
+    exam_term_reference_rows: dict[tuple[str, str], dict] = {}
     for alternative_id, canonical_id in alternative_to_canonical.items():
+        if alternative_id not in selected_alternative_ids:
+            continue
         alternative = alternative_by_id[alternative_id]
         case = case_by_id[alternative["resolution_case_id"]]
+        exam_term_id = exam_term_id_by_case.get(
+            alternative["resolution_case_id"]
+        )
+        if exam_term_id:
+            exam_term_reference_rows[(exam_term_id, canonical_id)] = {
+                "exam_term_id": exam_term_id,
+                "canonical_id": canonical_id,
+                "match_status": "ACCEPTED",
+                "method": selection_method_by_alternative[alternative_id],
+                "version": policy["policy_version"],
+                "term_decision_id": alternative["term_decision_id"],
+            }
         term_variants = loads(case["term_variants_json"])
         for term_variant in term_variants:
             normalized_name = build_match_key(term_variant)
@@ -397,6 +589,18 @@ def finalize_entity_resolution(
                 "method": selection_method_by_alternative[alternative_id],
                 "version": policy["policy_version"],
             }
+    reference_count_by_term: dict[str, int] = {}
+    for exam_term_id, _ in exam_term_reference_rows:
+        reference_count_by_term[exam_term_id] = (
+            reference_count_by_term.get(exam_term_id, 0) + 1
+        )
+    for exam_term_id, reference_count in reference_count_by_term.items():
+        source_link_status = "ACCEPTED"
+        if reference_count > 1:
+            source_link_status = "MULTIPLE_ACCEPTED"
+        exam_term_rows[exam_term_id][
+            "source_link_status"
+        ] = source_link_status
 
     final_assignment_rows: list[dict] = []
     for assignment in verified_problem_assignments.to_dict("records"):
@@ -409,9 +613,15 @@ def finalize_entity_resolution(
             if alternative_id in alternative_to_canonical
         ]
         link_status = "AMBIGUOUS"
-        if not selected_ids:
+        if (
+            assignment["verification_status"] == "VERIFIED"
+            and not selected_ids
+        ):
             link_status = "UNRESOLVED"
-        elif len(canonical_ids) == len(selected_ids):
+        elif (
+            assignment["verification_status"] == "VERIFIED"
+            and len(canonical_ids) == len(selected_ids)
+        ):
             link_status = "ACCEPTED"
         final_assignment_rows.append(
             {
@@ -439,7 +649,23 @@ def finalize_entity_resolution(
         "display_name",
         "entity_type",
         "lifecycle_status",
+        "identity_confidence",
+        "source_support_count",
         "registry_version",
+    ]
+    exam_term_columns = [
+        "exam_term_id",
+        "term",
+        "normalized_term",
+        "term_variants_json",
+        "resolution_case_ids_json",
+        "categories_json",
+        "entity_type_proposals_json",
+        "problem_count",
+        "problem_ids_json",
+        "source_link_status",
+        "normalization_policy_version",
+        "resolution_policy_version",
     ]
     source_node_columns = [
         "source_record_id",
@@ -470,6 +696,14 @@ def finalize_entity_resolution(
         "method",
         "version",
     ]
+    exam_term_reference_columns = [
+        "exam_term_id",
+        "canonical_id",
+        "match_status",
+        "method",
+        "version",
+        "term_decision_id",
+    ]
     assignment_columns = [
         "problem_assignment_id",
         "problem_id",
@@ -499,10 +733,18 @@ def finalize_entity_resolution(
             "display_name": row["display_name"],
             "entity_type": row["entity_type"],
             "lifecycle_status": row["lifecycle_status"],
+            "identity_confidence": row["identity_confidence"],
+            "source_support_count": row["source_support_count"],
             "registry_version": row["registry_version"],
         }
         for row in registry_rows
     ]
+    classification_tables = build_classification_anchor_tables(
+        build_dataframe(registry_rows, registry_columns),
+        candidates,
+        cases,
+        policy,
+    )
     return {
         "canonical_registry": build_dataframe(
             registry_rows,
@@ -511,6 +753,10 @@ def finalize_entity_resolution(
         "canonical_entity_nodes": build_dataframe(
             canonical_node_rows,
             canonical_node_columns,
+        ),
+        "exam_term_nodes": build_dataframe(
+            list(exam_term_rows.values()),
+            exam_term_columns,
         ),
         "source_record_nodes": build_dataframe(
             list(source_node_rows.values()),
@@ -528,6 +774,10 @@ def finalize_entity_resolution(
             list(entity_name_reference_rows.values()),
             reference_columns,
         ),
+        "exam_term_references": build_dataframe(
+            list(exam_term_reference_rows.values()),
+            exam_term_reference_columns,
+        ),
         "final_problem_assignments": build_dataframe(
             final_assignment_rows,
             assignment_columns,
@@ -536,6 +786,7 @@ def finalize_entity_resolution(
             acceptance_rows,
             acceptance_columns,
         ),
+        **classification_tables,
     }
 
 

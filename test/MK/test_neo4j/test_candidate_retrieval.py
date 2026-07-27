@@ -18,7 +18,11 @@ class CandidateRetrievalRegressionTest(unittest.TestCase):
 
         from candidate_retrieval import build_search_index, retrieve_candidates
         from common import load_pipeline_policy
-        from match_names import build_encyclopedia_index, parse_problem_ids
+        from match_names import (
+            build_encyclopedia_index,
+            is_category_compatible,
+            parse_problem_ids,
+        )
         from scan_body_mentions import (
             build_anchor_automaton,
             find_anchor_entry_indexes,
@@ -30,6 +34,7 @@ class CandidateRetrievalRegressionTest(unittest.TestCase):
         cls.retrieve_candidates = staticmethod(retrieve_candidates)
         cls.build_search_index = staticmethod(build_search_index)
         cls.build_encyclopedia_index = staticmethod(build_encyclopedia_index)
+        cls.is_category_compatible = staticmethod(is_category_compatible)
         cls.parse_problem_ids = staticmethod(parse_problem_ids)
         cls.scan_body_mentions = staticmethod(scan_body_mentions)
         cls.build_anchor_automaton = staticmethod(build_anchor_automaton)
@@ -98,6 +103,24 @@ class CandidateRetrievalRegressionTest(unittest.TestCase):
         self.assert_top_candidate(
             "한반도 비핵화 공동 선언",
             "AKS:ARTICLE:E0078904",
+        )
+
+    def test_clothing_is_compatible_with_artifact_categories(self):
+        compatibility_policy = self.policy["category_compatibility"]
+
+        self.assertTrue(
+            self.is_category_compatible(
+                "유물",
+                "의복",
+                compatibility_policy,
+            )
+        )
+        self.assertTrue(
+            self.is_category_compatible(
+                "문화재",
+                "의복",
+                compatibility_policy,
+            )
         )
 
     def test_object_alias_is_indexed(self):

@@ -1,6 +1,7 @@
 import sys
 import unittest
 from pathlib import Path
+from tempfile import TemporaryDirectory
 
 
 class PreprocessingRunnerTest(unittest.TestCase):
@@ -17,8 +18,12 @@ class PreprocessingRunnerTest(unittest.TestCase):
             resolve_pipeline_paths,
             resolve_stage_output_paths,
         )
-        from entity_resolution.goldset_workflow import (
-            resolve_goldset_workflow_paths,
+        from finalize_related_entities import (
+            resolve_related_finalization_paths,
+            run_related_entity_finalization,
+        )
+        from import_and_evaluate_goldset import (
+            resolve_goldset_evaluation_paths,
         )
         from run_preprocessing_test import (
             resolve_shared_thesaurus_path,
@@ -30,8 +35,14 @@ class PreprocessingRunnerTest(unittest.TestCase):
         cls.resolve_stage_output_paths = staticmethod(
             resolve_stage_output_paths
         )
-        cls.resolve_goldset_workflow_paths = staticmethod(
-            resolve_goldset_workflow_paths
+        cls.resolve_goldset_evaluation_paths = staticmethod(
+            resolve_goldset_evaluation_paths
+        )
+        cls.resolve_related_finalization_paths = staticmethod(
+            resolve_related_finalization_paths
+        )
+        cls.run_related_entity_finalization = staticmethod(
+            run_related_entity_finalization
         )
         cls.resolve_test_output_directory = staticmethod(
             resolve_test_output_directory
@@ -176,11 +187,11 @@ class PreprocessingRunnerTest(unittest.TestCase):
             ]
         )
 
-    def test_goldset_workflow_paths_stay_under_goldset_internal(self):
+    def test_goldset_evaluation_paths_stay_under_goldset_internal(self):
         policy = self.load_pipeline_policy(
             str(self.neo4j_root / "config" / "resolution_policy.json")
         )
-        paths = self.resolve_goldset_workflow_paths(
+        paths = self.resolve_goldset_evaluation_paths(
             self.neo4j_root,
             policy,
         )
@@ -190,7 +201,26 @@ class PreprocessingRunnerTest(unittest.TestCase):
             (self.neo4j_root / "goldset" / "human_review_csv").resolve(),
         )
         self.assertEqual(
-            paths["related_model_prediction_directory"],
+            paths["model_prediction_directory"],
+            (
+                self.neo4j_root
+                / "goldset"
+                / "internal"
+                / "model"
+            ).resolve(),
+        )
+
+    def test_related_finalization_paths_are_separate_from_review(self):
+        policy = self.load_pipeline_policy(
+            str(self.neo4j_root / "config" / "resolution_policy.json")
+        )
+        paths = self.resolve_related_finalization_paths(
+            self.neo4j_root,
+            policy,
+        )
+
+        self.assertEqual(
+            paths["related_output_directory"],
             (
                 self.neo4j_root
                 / "goldset"
@@ -198,6 +228,30 @@ class PreprocessingRunnerTest(unittest.TestCase):
                 / "related_entity"
             ).resolve(),
         )
+        self.assertEqual(
+            paths["final_output_directory"],
+            (self.neo4j_root / "goldset" / "final_identity").resolve(),
+        )
+
+    def test_related_finalization_blocks_missing_review_manifest(self):
+        with TemporaryDirectory() as temporary_directory:
+            result = self.run_related_entity_finalization(
+                neo4j_root=str(self.neo4j_root),
+                policy_path=str(
+                    self.neo4j_root
+                    / "config"
+                    / "resolution_policy.json"
+                ),
+                related_output_dir=temporary_directory,
+                final_output_dir=temporary_directory,
+                dry_run=True,
+            )
+
+        self.assertEqual(
+            result["status"],
+            "BLOCKED_BY_STALE_RELATED_REVIEW",
+        )
+        self.assertEqual(len(result["provenance_errors"]), 2)
 
 
 if __name__ == "__main__":

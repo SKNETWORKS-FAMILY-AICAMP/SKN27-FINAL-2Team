@@ -28,11 +28,13 @@
 - `execute_term_review.py`: term-level task를 LLM으로 판정한다.
 - `semantic_review.py`: term-level LLM 판정을 검증한다.
 - `problem_review.py`: problem-level task를 생성하고, 이미 존재하는 decision을 검증한다.
+- `execute_problem_review.py`: problem-level task를 LLM으로 판정한다.
 - `finalize_entity_resolution.py`: 최종 canonical registry와 Neo4j import CSV를 만든다.
-- **현재 problem-level decision을 API로 생성하는 전용 executor는 없다.**
-- **현재 이 폴더에는 최종 CSV를 실제 Neo4j DB에 적재하는 loader가 없다.**
+- `load_final_identity.py`: 승인된 최종 identity CSV를 Neo4j에 upsert한다.
+- `run_full_neo4j_pipeline.py`: 위 단계를 안전 게이트와 함께 순서대로 실행한다.
 
-따라서 지금 실행 가능한 전처리만 끝냈다고 Neo4j 적재까지 완료된 것은 아니다.
+전처리만 끝냈다고 Neo4j 적재까지 완료된 것은 아니다. 통합 runner도 기본 동작은
+dry-run이며, 실제 실행에는 `--execute`, DB 적재에는 `--load-neo4j`가 추가로 필요하다.
 
 ## 2. 폴더를 어디부터 보면 되는가
 
@@ -240,8 +242,7 @@ $contexts |
 
 ```powershell
 .\.venv\Scripts\python.exe `
-  etl/preprocessing/neo4j/run_neo4j_preprocessing.py `
-  --goldset `
+  etl/preprocessing/neo4j/import_and_evaluate_goldset.py `
   --dry-run
 ```
 
@@ -254,7 +255,7 @@ $contexts |
 
 | 확인 파일 | 의미 | 진행 조건 |
 |---|---|---|
-| `goldset/internal/evaluation/goldset_workflow_manifest.json` | 전체 workflow 상태·입출력·건수 | `status`와 validation 건수 확인 |
+| `goldset/internal/evaluation/goldset_evaluation_manifest.json` | HUMAN_REVIEW import·모델 평가 상태와 건수 | `status`와 validation 건수 확인 |
 | `goldset/internal/evaluation/goldset_validation_errors.csv` | 사람 정답의 누락·모순 | 처리하지 않은 오류가 없어야 함 |
 | `goldset/internal/evaluation/model_vs_gold_metrics.json` | 모델 대 사람 정답 전체 지표 | 합의한 승인 기준으로 판단 |
 | `goldset/internal/evaluation/model_vs_gold_case_results.csv` | case별 오병합·오분리 원인 | 대표 실패 사례 직접 확인 |
@@ -283,6 +284,11 @@ pair 지표는 다음처럼 구분해 읽는다.
 | `auto_accepted_identity_pair_precision` | 자동 승인된 pair 중 gold와 일치한 비율 | 자동 병합 안전성으로 사용한다. |
 | `deferred_gold_identity_pair_count` | 게이트가 확정하지 않은 gold pair 수 | 전체 gold pair와 함께 자동 병합 coverage를 계산한다. |
 | `deferred_gold_identity_pair_rate` | 전체 gold pair 중 보류된 비율 | 자동화되지 않은 범위를 직접 보여 준다. |
+
+`model_identity_pair_gate_results.csv`는 case 최종 상태와 분리된 pair별
+`VERIFIED`, `NEEDS_MANUAL_REVIEW`, `INVALID` 결과와 차단 사유를 기록한다. case가
+EntityType이나 다른 후보 때문에 보류되어도 이 파일의 안전한 pair는 독립 승인될 수 있다.
+단, 보류 case의 canonical entity와 EntityType을 확정하는 용도로는 사용하지 않는다.
 
 평가 JSON의 `auto_accepted_identity_pair_recall`은 다음 식으로 계산한다.
 
@@ -313,11 +319,11 @@ CSV 없이 집계해 확인한다.
 - v3 기준 연결 그래프 적용 후 자동 승인 precision은 1.0을 유지했고,
   자동 승인 recall은 `0.406780 → 0.457627`로 증가했다.
 
-`--goldset` 실제 실행은 API 호출과 파일 갱신을 포함하므로 승인 후에만 `--dry-run`을 뺀다.
+실제 평가는 API 호출과 파일 갱신을 포함하므로 승인 후에만 `--dry-run`을 뺀다.
 프롬프트 버전이나 프롬프트 본문이 바뀌면 기존 checkpoint를 재사용하지 않으므로 dry-run의
 `pending_task_count`를 확인한 뒤 실제 호출을 승인한다.
 
-실제 `--goldset` 실행이 평가를 끝내면 같은 실행에서
+`import_and_evaluate_goldset.py`가 평가를 끝내면
 `role_conflict_manual_review.csv`가 갱신된다. 큐만 다시 만들 때는 다음 명령을 실행한다.
 같은 task·candidate에 이미 작성한 사람 입력 컬럼은 보존된다.
 
@@ -591,14 +597,24 @@ decision 없이 이 명령을 실행하면 unresolved problem task는 validation
 - `config/prompts/problem_resolution_review.md`
 - `config/schemas/problem_resolution_decision.schema.json`
 
-그러나 현재 저장소에는 이 task를 OpenAI API로 실행하여
-`problem_entity_model_decisions.jsonl`을 만드는 전용 executor가 없다. 따라서 아래 중 하나가
-추가로 필요하다.
+전용 executor로 API 호출 예정 건수를 먼저 확인한다.
 
-1. schema를 따르는 decision JSONL을 승인된 외부·수동 절차로 만든다.
-2. term executor와 분리된 problem executor를 별도 구현하고 검증한다.
+```powershell
+.\.venv\Scripts\python.exe `
+  etl/preprocessing/neo4j/entity_resolution/execute_problem_review.py `
+  etl/preprocessing/neo4j/output/internal/model_review/problem_entity_choice_tasks.jsonl `
+  etl/preprocessing/neo4j/output/internal/model_review `
+  --dry-run
+```
 
-이 파일이 없는 상태에서는 전체 자동 파이프라인이 final identity까지 완주하지 않는다.
+확인 후 실제 판정을 실행한다.
+
+```powershell
+.\.venv\Scripts\python.exe `
+  etl/preprocessing/neo4j/entity_resolution/execute_problem_review.py `
+  etl/preprocessing/neo4j/output/internal/model_review/problem_entity_choice_tasks.jsonl `
+  etl/preprocessing/neo4j/output/internal/model_review
+```
 
 decision 파일이 준비되면 gate를 실행한다.
 
@@ -636,36 +652,131 @@ term·problem validation error를 처리한 뒤 실행한다.
 최초 실행에는 registry 파일이 없어도 빈 registry에서 시작한다. 재실행에서는 기존 registry를
 읽어 이미 발급된 canonical ID를 가능한 경우 재사용한다.
 
-최종 8개 파일은 모두 `output/final_identity`에 생성된다.
+최종 10개 파일은 모두 `output/final_identity`에 생성된다.
 
 | 파일 | 의미 |
 |---|---|
 | `canonical_entity_registry.csv` | 영구 canonical ID와 표시명·유형·identity member의 기준표 |
+| `neo4j_exam_term_nodes.csv` | 원천 매칭 여부와 무관하게 보존하는 기출 추출 용어 |
 | `neo4j_canonical_entity_nodes.csv` | Neo4j CanonicalEntity 노드 입력 |
 | `neo4j_source_record_nodes.csv` | AKS·시소러스·ITKC SourceRecord 노드 입력 |
 | `neo4j_entity_name_nodes.csv` | 검색·표시용 EntityName 노드 입력 |
 | `neo4j_source_to_entity_relationships.csv` | SourceRecord에서 CanonicalEntity로 가는 identity 관계 |
 | `neo4j_name_to_entity_relationships.csv` | EntityName에서 CanonicalEntity로 가는 이름 참조 관계 |
+| `neo4j_exam_term_to_entity_relationships.csv` | 검증된 ExamTerm에서 CanonicalEntity로 가는 참조 관계 |
 | `exam_problem_entity_assignments_final.csv` | 문항별 최종 canonical entity 배정 |
 | `single_source_entities_requiring_approval.csv` | 다원천 자동 확정 조건을 충족하지 못한 단일 원천 승인 대기열 |
 
-`single_source_entities_requiring_approval.csv`가 비어 있지 않으면 해당 행은 추가 승인 대상이다.
+`single_source_entities_requiring_approval.csv`가 비어 있지 않아도 해당 기출 용어는
+`ExamTerm`으로 보존된다. 공식 원천 연결을 확정하려는 행만 추가 승인 대상이다.
 
 다음 조건을 모두 만족해야 final identity 생성 완료로 판단한다.
 
 - term executor failure가 없거나 모두 처리됐다.
-- term validation error와 수동 검토 대상이 처리됐다.
+- 안전한 identity pair 연결 성분이 검증됐고 나머지 후보는 보류됐다.
 - problem task에 필요한 decision이 모두 준비됐다.
 - problem validation error가 처리됐다.
-- final identity 8개 CSV가 모두 생성됐다.
+- final identity 10개 CSV가 모두 생성됐다.
 - single-source 승인 대기열을 별도로 검토했다.
 - 최종 문항 배정 수와 정책상 제외·보류 수를 대조했다.
 
 ### 4.11 실제 Neo4j 적재
 
-이 폴더의 finalizer는 import용 CSV까지만 만든다. 현재 `etl/preprocessing/neo4j`에는 위 CSV를
-실제 Neo4j에 넣는 loader 또는 `neo4j-admin import` 실행기가 없다. 따라서 DB 적재는 별도
-작업이며, label·relationship type·constraint·index·재실행 정책을 확정한 loader가 필요하다.
+loader는 먼저 CSV 참조 무결성과 `ACCEPTED` 상태만 검사한다.
+
+```powershell
+.\.venv\Scripts\python.exe `
+  etl/preprocessing/neo4j/entity_resolution/load_final_identity.py `
+  etl/preprocessing/neo4j/output/final_identity `
+  --dry-run
+```
+
+검증 결과가 `READY`일 때 실제 적재한다.
+
+```powershell
+.\.venv\Scripts\python.exe `
+  etl/preprocessing/neo4j/entity_resolution/load_final_identity.py `
+  etl/preprocessing/neo4j/output/final_identity
+```
+
+이 loader는 DB 전체를 초기화하지 않는다. `ExamTerm`, `CanonicalEntity`,
+`SourceRecord`, `EntityName`, `HAS_ENTITY_TYPE`, `RESOLVES_TO`, `REFERS_TO`만
+ID 기준으로 upsert한다.
+`exam_problem_entity_assignments_final.csv`와
+`single_source_entities_requiring_approval.csv`는 감사·검토 파일이므로 DB에 넣지 않는다.
+
+### 4.12 통합 실행 파일
+
+별도 명령을 순서대로 입력하지 않으려면 다음 통합 runner를 사용한다. 인자 없이 실행하면
+파일을 생성하거나 API·DB를 호출하지 않고 전체 계획만 출력한다.
+
+```powershell
+.\.venv\Scripts\python.exe `
+  etl/preprocessing/neo4j/run_full_neo4j_pipeline.py
+```
+
+최종 CSV까지 실제 실행:
+
+```powershell
+.\.venv\Scripts\python.exe `
+  etl/preprocessing/neo4j/run_full_neo4j_pipeline.py `
+  --execute
+```
+
+최종 CSV 생성 후 Neo4j upsert까지 실행:
+
+```powershell
+.\.venv\Scripts\python.exe `
+  etl/preprocessing/neo4j/run_full_neo4j_pipeline.py `
+  --execute `
+  --load-neo4j
+```
+
+통합 runner의 순서는 다음과 같다.
+
+```text
+골드셋 안전성 gate
+  -> 전체 용어 추출·후보 생성
+  -> term LLM·pair/case gate
+  -> problem LLM·gate
+  -> final identity CSV
+  -> 명시적으로 요청한 경우에만 Neo4j upsert
+```
+
+제한 실행(`--limit`, `--term-limit`, `--problem-limit`) 결과에는
+`--load-neo4j`를 사용할 수 없다. 골드셋 gate는 자동 승인 pair precision과 검증 후
+오병합 수를 확인하며, 우회가 꼭 필요할 때만 `--skip-goldset-gate`를 명시한다.
+
+### 4.13 사실 검색 그래프
+
+`run_full_neo4j_pipeline.py`는 final identity까지의 runner다. 공식 관계,
+canonical 사실, 검색 Anchor와 RAG 후보는 다음 runner에서 기존 최종 출력을 입력으로
+사용한다.
+
+```powershell
+.\.venv\Scripts\python.exe `
+  etl/preprocessing/neo4j/run_fact_retrieval_pipeline.py
+```
+
+기본 실행은 CSV·JSONL을 만들고 Neo4j 적재는 dry-run으로만 검사한다. LLM도 호출하지
+않는다. 외부 사실 검증 결과를 적용할 때는 schema에 맞는 JSONL을 전달한다.
+
+```powershell
+.\.venv\Scripts\python.exe `
+  etl/preprocessing/neo4j/run_fact_retrieval_pipeline.py `
+  --external-verification-results verified_facts.jsonl
+```
+
+실제 DB 적재는 출력과 사실 검증 상태를 확인한 뒤에만 별도로 실행한다.
+
+```powershell
+.\.venv\Scripts\python.exe `
+  etl/preprocessing/neo4j/run_fact_retrieval_pipeline.py `
+  --load-neo4j
+```
+
+외부 검증 입력 schema:
+`config/schemas/external_fact_verification_result.schema.json`
 
 ## 5. 문항 텍스트 정책과 중복 처리
 
@@ -743,5 +854,5 @@ Get-Content -Raw -Encoding UTF8 $jsonPath | ConvertFrom-Json
 - `config/README.md`: 분할 정책 파일 구성
 - `goldset/README.md`: 골든셋 생성·검수 흐름
 - `goldset/human_review_csv/README.md`: 사람이 작성하는 검수 CSV 규칙
-- `docs/neo4j/10_entity_resolution_candidate_eda.md`: ER 후보·검증 설계
-- `docs/neo4j/11_entity_resolution_gold_set.md`: 골든셋 평가 상세
+- `docs/neo4j/01_fact_graph_current_data_eda.md`: 현재 데이터와 사실 그래프 구축 가능성 EDA
+- `etl/preprocessing/neo4j/goldset/README.md`: 골든셋 평가 상세

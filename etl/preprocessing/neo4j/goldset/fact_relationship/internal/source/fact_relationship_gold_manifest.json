@@ -1,0 +1,26 @@
+{
+  "status": "COMPLETED",
+  "stage": "FACT_RELATIONSHIP_GOLDSET_BUILD",
+  "generated_at": "2026-07-26T07:04:31.747242+00:00",
+  "policy_version": "fact-relationship-goldset-v1.0",
+  "input_fact_path": "C:\\Users\\MK\\Desktop\\dev\\project\\SKN27-FINAL-2Team\\etl\\preprocessing\\neo4j\\output\\source_relationships\\canonical_fact_relationships.csv",
+  "input_fact_sha256": "61c7da137a23a9019014a16ba98fdf936eb14c154c3417cb0b789c554580ad9d",
+  "input_registry_path": "C:\\Users\\MK\\Desktop\\dev\\project\\SKN27-FINAL-2Team\\etl\\preprocessing\\neo4j\\output\\final_identity\\canonical_entity_registry.csv",
+  "population_fact_count": 548,
+  "sample_fact_count": 100,
+  "sample_relation_type_count": 26,
+  "population_verification_status_counts": {
+    "SOURCE_ASSERTED": 354,
+    "PATTERN_ASSERTED": 194
+  },
+  "sample_verification_status_counts": {
+    "SOURCE_ASSERTED": 60,
+    "PATTERN_ASSERTED": 40
+  },
+  "output_paths": {
+    "sample_snapshot": "C:\\Users\\MK\\Desktop\\dev\\project\\SKN27-FINAL-2Team\\etl\\preprocessing\\neo4j\\goldset\\fact_relationship\\internal\\source\\fact_relationship_gold_sample.csv",
+    "distribution": "C:\\Users\\MK\\Desktop\\dev\\project\\SKN27-FINAL-2Team\\etl\\preprocessing\\neo4j\\goldset\\fact_relationship\\internal\\source\\fact_relationship_gold_distribution.csv",
+    "manifest": "C:\\Users\\MK\\Desktop\\dev\\project\\SKN27-FINAL-2Team\\etl\\preprocessing\\neo4j\\goldset\\fact_relationship\\internal\\source\\fact_relationship_gold_manifest.json",
+    "human_review": "C:\\Users\\MK\\Desktop\\dev\\project\\SKN27-FINAL-2Team\\etl\\preprocessing\\neo4j\\goldset\\fact_relationship\\human_review_csv\\fact_relationship_review.csv"
+  }
+}

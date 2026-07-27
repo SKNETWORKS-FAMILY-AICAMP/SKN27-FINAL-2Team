@@ -5,6 +5,9 @@ from json import dumps, loads
 import pandas as pd
 
 from entity_resolution.identifiers import create_stable_id
+from entity_resolution.source_entity_type import (
+    resolve_source_entity_type as resolve_source_entity_type_from_policy,
+)
 from prep_thesaurus import build_match_key
 
 
@@ -80,16 +83,10 @@ def parse_year(value: object) -> int | None:
 
 def resolve_source_entity_type(metadata: dict, source_policy: dict) -> str:
     """원천별 외부 정책으로 보조 EntityType을 제안한다."""
-    default_entity_type = str(
-        source_policy.get("default_entity_type") or ""
-    ).strip()
-    if default_entity_type:
-        return default_entity_type
-    type_field = str(source_policy.get("type_field") or "").strip()
-    raw_type = str(metadata.get(type_field) or "").strip()
-    if not raw_type:
-        return ""
-    return str(source_policy.get("type_mapping", {}).get(raw_type) or "")
+    return resolve_source_entity_type_from_policy(
+        metadata,
+        source_policy,
+    )
 
 
 def build_source_candidate_features(

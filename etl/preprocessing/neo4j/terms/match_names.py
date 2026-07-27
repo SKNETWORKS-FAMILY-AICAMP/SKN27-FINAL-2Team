@@ -132,6 +132,7 @@ def build_thesaurus_index(
     required_columns = {
         "term_id",
         "term_name",
+        "term_kind",
         "term_ch",
         "term_times",
         "term_lk",
@@ -165,6 +166,7 @@ def build_thesaurus_index(
                     ),
                     "term_id": term_id,
                     "term_name": term_name,
+                    "term_kind": str(row.get("term_kind") or "").strip(),
                     "hanja": hanja,
                     "era": row["term_times"].strip(),
                     "thesaurus_category": row["term_lk"].strip(),

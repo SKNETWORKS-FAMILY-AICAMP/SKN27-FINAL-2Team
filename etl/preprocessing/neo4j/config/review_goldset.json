@@ -32,6 +32,7 @@
         ],
         "THESAURUS": [
           "term_name",
+          "term_kind",
           "hanja",
           "era",
           "thesaurus_category",
@@ -63,18 +64,102 @@
         "NEEDS_MANUAL_REVIEW",
         "INVALID"
       ],
+      "verification_methods": {
+        "automatic": "AUTOMATIC_GATE",
+        "human": "HUMAN_REVIEW",
+        "pending": "PENDING_HUMAN_REVIEW",
+        "invalid": "VALIDATION_FAILED"
+      },
+      "deterministic_triage": {
+        "enabled": true,
+        "review_model": "deterministic-code-gate-v1",
+        "minimum_member_count": 2,
+        "minimum_distinct_source_count": 2,
+        "minimum_competing_alternative_count": 2,
+        "required_confidence_tier": "MULTI_SOURCE_SUPPORTED",
+        "require_entity_type_proposal": true,
+        "allowed_entity_candidate_matched_fields": [
+          "name"
+        ],
+        "allowed_entity_candidate_retrieval_methods": [
+          "exact"
+        ],
+        "blocked_category_compatibilities": [
+          "CONFLICT"
+        ],
+        "dispositions": {
+          "single_candidate": "CODE_LINKABLE",
+          "multiple_candidates": "CONTEXT_REQUIRED",
+          "term_only": "TERM_ONLY"
+        },
+      "reason_codes": {
+        "single_exact_official_candidate": "SINGLE_EXACT_OFFICIAL_CANDIDATE",
+        "exact_name_ambiguity": "EXACT_NAME_AMBIGUITY",
+        "insufficient_code_evidence": "INSUFFICIENT_CODE_EVIDENCE",
+        "source_entity_type_ambiguous": "SOURCE_ENTITY_TYPE_AMBIGUOUS"
+      },
+        "accepted_alternative_reason": "공식 출처의 exact 후보이며 병합 근거가 없는 후보는 별도 엔티티로 유지함",
+        "accepted_decision_reason": "공식 출처 exact 후보를 생성하고 경쟁 후보를 별도 대안으로 보존함",
+        "rejected_candidate_reason": "공식 출처 exact identity 후보 조건을 충족하지 않음",
+        "output_files": {
+          "report": "term_identity_triage.csv",
+          "context_tasks": "term_identity_context_required.jsonl"
+        }
+      },
       "term_source_alignment": {
         "automatic_acceptance_modes": [
           "normalized_exact"
         ],
-        "require_each_identity_member": true
+        "require_each_identity_member": true,
+        "allow_connected_members_from_automatic_anchor": true
       },
       "identity_pair_gate": {
-        "policy_version": "identity-pair-gate-v2",
+        "policy_version": "identity-pair-gate-v6",
         "active_evidence_mode": "connected_graph",
         "evidence_modes": {
           "complete": "complete_graph",
           "connected": "connected_graph"
+        },
+        "exact_name_description_evidence": {
+          "enabled": true,
+          "required_alignment_mode": "normalized_exact",
+          "require_distinct_sources": true,
+          "require_shared_normalized_name": true,
+          "minimum_description_similarity": 0.9,
+          "blocked_category_compatibilities": [
+            "CONFLICT"
+          ],
+          "description_fields_by_source": {
+            "AKS": [
+              "definition"
+            ],
+            "THESAURUS": [
+              "description"
+            ]
+          }
+        },
+        "structured_identity_evidence": {
+          "enabled": true,
+          "required_alignment_mode": "normalized_exact",
+          "minimum_aligned_member_count": 1,
+          "require_distinct_sources": true,
+          "require_shared_normalized_name": true,
+          "require_hanja_match": true,
+          "require_era_overlap": true,
+          "minimum_description_similarity": 0.35,
+          "blocked_category_compatibilities": [],
+          "allowed_pair_conflicts": [
+            "entity_type_conflict"
+          ],
+          "allow_category_conflict_when_entity_type_matches": true,
+          "description_fields_by_source": {
+            "AKS": [
+              "definition"
+            ],
+            "THESAURUS": [
+              "description"
+            ]
+          }
         }
       },
       "structured_output_schema": {
@@ -94,12 +179,99 @@
         "maximum_output_tokens": 8000,
         "timeout_seconds": 180,
         "maximum_retries": 2,
+        "maximum_concurrency": 5,
+        "default_task_limit": 0,
         "store_response": false,
         "service_tier": "auto",
         "checkpoint_file": "term_identity_review_checkpoint.jsonl",
         "decision_file": "term_identity_model_decisions.jsonl",
         "failure_file": "term_identity_model_failures.csv",
         "run_manifest_file": "term_identity_model_run_manifest.json"
+      },
+      "problem_executor": {
+        "maximum_output_tokens": 4000,
+        "timeout_seconds": 180,
+        "maximum_retries": 2,
+        "default_task_limit": 0,
+        "store_response": false,
+        "service_tier": "auto",
+        "checkpoint_file": "problem_entity_review_checkpoint.jsonl",
+        "decision_file": "problem_entity_model_decisions.jsonl",
+        "failure_file": "problem_entity_model_failures.csv",
+        "run_manifest_file": "problem_entity_model_run_manifest.json"
+      },
+      "problem_context_rule": {
+        "term_context_radius": 80,
+        "context_boundary_characters": [
+          ".",
+          "?",
+          "!",
+          "。",
+          "\n"
+        ],
+        "minimum_signal_length": 2,
+        "minimum_exclusive_signal_count": 1,
+        "minimum_score": 4,
+        "minimum_score_margin": 4,
+        "entity_anchor_minimum_length": 3,
+        "entity_anchor_allowed_entity_types": [
+          "Person",
+          "Event",
+          "Institution",
+          "Heritage",
+          "Work",
+          "Organization",
+          "Place",
+          "Polity",
+          "Concept"
+        ],
+        "entity_anchor_types_requiring_multiple_sources": [
+          "Concept"
+        ],
+        "entity_anchor_minimum_source_system_count": 2,
+        "entity_anchor_definition_fields_by_source": {
+          "AKS": [
+            "definition"
+          ],
+          "THESAURUS": [
+            "description"
+          ]
+        },
+        "signal_weights": {
+          "era_tokens": 4,
+          "aliases": 5,
+          "hanja": 5,
+          "years": 5,
+          "entity_anchors": 6
+        },
+        "blocked_era_tokens": [
+          "고대",
+          "근대",
+          "현대",
+          "삼국",
+          "남북국",
+          "초기국가",
+          "고려",
+          "고려시대",
+          "조선",
+          "조선시대",
+          "고려시대조선시대",
+          "통시대",
+          "미상",
+          "시대미상",
+          "불명"
+        ],
+        "resolved_status": "RESOLVED",
+        "deferred_status": "DEFERRED",
+        "selection_mode": "SINGLE",
+        "deferred_selection_mode": "AMBIGUOUS",
+        "resolved_verification_status": "VERIFIED",
+        "deferred_verification_status": "NEEDS_MANUAL_REVIEW",
+        "resolution_method": "deterministic_context_rule",
+        "deferred_resolution_method": "pending_context_review",
+        "decision_reason": "대안에만 존재하는 시대·별칭·한자·연도·검증 엔티티 신호가 문제 문맥에서 충분한 점수 차이로 확인됨",
+        "deferred_decision_reason": "코드 문맥 신호만으로 경쟁 대안을 안전하게 선택할 수 없음",
+        "audit_file": "deterministic_problem_context_audit.csv"
       },
       "gold_evaluation": {
         "zero_division_value": 0,
@@ -133,6 +305,7 @@
           "case_results": "model_vs_gold_case_results.csv",
           "role_metrics": "model_vs_gold_candidate_role_metrics.csv",
           "stratum_metrics": "model_vs_gold_group_metrics.csv",
+          "pair_gate_results": "model_identity_pair_gate_results.csv",
           "evaluation_errors": "model_vs_gold_evaluation_errors.csv"
         }
       },
@@ -141,6 +314,7 @@
         "term_resolution_decisions": "verified_term_review_summary.csv",
         "reviewed_canonical_alternatives": "verified_entity_alternatives.csv",
         "reviewed_source_roles": "verified_candidate_roles.csv",
+        "verified_identity_pairs": "verified_identity_pairs.csv",
         "term_decision_validation_errors": "term_review_validation_errors.csv"
       },
       "problem_task_file": "problem_entity_choice_tasks.jsonl",
@@ -157,11 +331,10 @@
           "validation_directory": "goldset/internal/evaluation",
           "model_prediction_directory": "goldset/internal/model",
           "evaluation_directory": "goldset/internal/evaluation",
-          "related_model_prediction_directory": "goldset/internal/related_entity",
           "role_conflict_manual_review": "goldset/human_review_csv/role_conflict_manual_review.csv",
           "term_review_prompt": "config/prompts/term_resolution_review.md",
           "term_review_schema": "config/schemas/term_resolution_decision.schema.json",
-          "manifest_file": "goldset_workflow_manifest.json"
+          "manifest_file": "goldset_evaluation_manifest.json"
         },
         "selection_policy_version": "entity-resolution-gold-pilot-v2",
         "default_output_directory": "goldset/internal/source",

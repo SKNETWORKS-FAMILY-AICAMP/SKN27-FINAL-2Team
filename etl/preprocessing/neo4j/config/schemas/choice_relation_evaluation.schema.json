@@ -1,0 +1,183 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ChoiceRelationEvaluation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "choice_relation_evaluation_id",
+    "choice_relation_task_id",
+    "problem_id",
+    "review_model",
+    "prompt_version",
+    "input_quality_status",
+    "input_quality_issues",
+    "target_status",
+    "target_reason",
+    "choice_reviews",
+    "relation_reviews",
+    "confidence",
+    "summary"
+  ],
+  "properties": {
+    "choice_relation_evaluation_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "choice_relation_task_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "problem_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "review_model": {
+      "type": "string",
+      "minLength": 1
+    },
+    "prompt_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "input_quality_status": {
+      "type": "string",
+      "enum": [
+        "CLEAN",
+        "OCR_SUSPECTED",
+        "MISSING_CONTEXT"
+      ]
+    },
+    "input_quality_issues": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "target_status": {
+      "$ref": "#/$defs/reviewStatus"
+    },
+    "target_reason": {
+      "type": "string"
+    },
+    "choice_reviews": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "choice_id",
+          "claim_status",
+          "corrected_actual_fact",
+          "reason"
+        ],
+        "properties": {
+          "choice_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "claim_status": {
+            "$ref": "#/$defs/reviewStatus"
+          },
+          "corrected_actual_fact": {
+            "$ref": "#/$defs/fact"
+          },
+          "reason": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "relation_reviews": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "distractor_choice_id",
+          "relation_status",
+          "corrected_primary_relation_type",
+          "corrected_secondary_relation_types",
+          "reason"
+        ],
+        "properties": {
+          "distractor_choice_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "relation_status": {
+            "$ref": "#/$defs/reviewStatus"
+          },
+          "corrected_primary_relation_type": {
+            "$ref": "#/$defs/relationType"
+          },
+          "corrected_secondary_relation_types": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/relationType"
+            }
+          },
+          "reason": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "confidence": {
+      "type": "number"
+    },
+    "summary": {
+      "type": "string"
+    }
+  },
+  "$defs": {
+    "reviewStatus": {
+      "type": "string",
+      "enum": [
+        "SUPPORTED",
+        "CONTRADICTED",
+        "UNVERIFIABLE"
+      ]
+    },
+    "relationType": {
+      "type": "string",
+      "enum": [
+        "TARGET_SWAP",
+        "TIME_SHIFT",
+        "ATTRIBUTE_SWAP",
+        "CAUSE_RESULT_CONFUSION",
+        "LOCATION_SWAP",
+        "CATEGORY_MISMATCH",
+        "FALSE_COMBINATION",
+        "OTHER"
+      ]
+    },
+    "fact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "subject",
+        "predicate",
+        "object",
+        "era",
+        "location"
+      ],
+      "properties": {
+        "subject": {
+          "type": "string"
+        },
+        "predicate": {
+          "type": "string"
+        },
+        "object": {
+          "type": "string"
+        },
+        "era": {
+          "type": "string"
+        },
+        "location": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}
