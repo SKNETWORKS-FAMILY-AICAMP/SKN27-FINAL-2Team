@@ -55,7 +55,7 @@ def get_study_plan_config() -> StudyPlanConfig:
         default_daily_minutes=60,
         default_average_seconds_per_question=180,
         minimum_question_count=1,
-        maximum_question_count=50,
+        maximum_question_count=10,
         weekly_review_question_count=50,
         weekly_review_minutes=80,
         short_term_days=7,

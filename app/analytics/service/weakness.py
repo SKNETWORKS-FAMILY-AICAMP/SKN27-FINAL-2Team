@@ -28,6 +28,8 @@ class WeaknessConfig:
     stable_threshold: float
     trend_window_days: int
     trend_threshold: float
+    trend_minimum_sample: int
+    trend_sample_balance_ratio: float
     output_precision: int
     status_insufficient: str
     status_weak: str
@@ -62,6 +64,8 @@ def get_weakness_config() -> WeaknessConfig:
         stable_threshold=0.20,
         trend_window_days=14,
         trend_threshold=0.10,
+        trend_minimum_sample=6,
+        trend_sample_balance_ratio=0.5,
         output_precision=4,
         status_insufficient="INSUFFICIENT",
         status_weak="WEAK",
@@ -224,11 +228,15 @@ def determine_trend(
     previous_total: int,
     config: WeaknessConfig | None = None,
 ) -> dict[str, object]:
+    """두 구간의 취약 지표를 비교해 추세를 판정한다.
+
+    비교 대상은 윌슨 하한이고, 하한은 표본 수가 늘어나는 것만으로도 올라간다.
+    두 구간의 표본 수가 크게 다르면 실력 변화가 아니라 표본 변화를 재게 되어
+    판정이 실제 성적과 반대로 나올 수 있다. 그래서 표본이 충분하고 두 구간의
+    크기가 비슷할 때만 판정하고, 아니면 판단을 보류한다.
+    """
     resolved_config = config or get_weakness_config()
-    if (
-        recent_total < resolved_config.minimum_effective_sample
-        or previous_total < resolved_config.minimum_effective_sample
-    ):
+    if not _is_trend_comparable(recent_total, previous_total, resolved_config):
         return {
             "trend": resolved_config.trend_unknown,
             "trendDelta": None,
@@ -262,6 +270,22 @@ def determine_trend(
     }
 
 
+def _is_trend_comparable(
+    recent_total: int,
+    previous_total: int,
+    config: WeaknessConfig,
+) -> bool:
+    """두 구간을 비교해도 되는지 판단한다."""
+    if recent_total < config.trend_minimum_sample:
+        return False
+    elif previous_total < config.trend_minimum_sample:
+        return False
+    larger = max(recent_total, previous_total)
+    if larger <= 0:
+        return False
+    return min(recent_total, previous_total) / larger >= config.trend_sample_balance_ratio
+
+
 def get_status_class(status: str) -> str:
     return status.lower()
 
@@ -292,6 +316,8 @@ def _get_group_value(record: Mapping[str, object], field_name: str) -> object:
     candidate_keys = [normalized_field]
     if normalized_field == "qType":
         candidate_keys.extend(("q_type", "question_type"))
+    elif normalized_field == "coreConcept":
+        candidate_keys.extend(("core_concept", "question__core_concept"))
     return _get_record_value(record, *candidate_keys)
 
 

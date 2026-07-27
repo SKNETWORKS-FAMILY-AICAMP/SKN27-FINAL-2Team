@@ -1675,6 +1675,26 @@ body {
   box-shadow: 0 34px 100px rgba(18, 59, 6, 0.32);
 }
 
+@media (prefers-reduced-motion: no-preference) {
+  .problem-picker-modal:not([hidden]) .problem-picker-dialog {
+    animation: problem-picker-in 220ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  }
+
+  .chat-stream > .message:last-child {
+    animation: chat-message-in 180ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  }
+}
+
+@keyframes problem-picker-in {
+  from { opacity: 0; transform: translateY(12px) scale(.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes chat-message-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 .problem-picker-head {
   display: flex;
   align-items: flex-start;
@@ -2588,4 +2608,23 @@ body:has(.chat-page) { overflow: hidden; }
   .chat-page .composer { padding: 8px 12px 12px !important; }
   .chat-page .composer-box { grid-template-columns: minmax(0, 1fr) 46px !important; }
   .chat-page .problem-picker-trigger { height: 36px !important; min-height: 36px !important; }
+}
+
+/* ponytail: collapsed mode is a single-column workspace, so content keeps its normal center. */
+@media (min-width: 901px) {
+  .chat-page .chat-layout.is-sidebar-collapsed {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .chat-page .chat-layout.is-sidebar-collapsed .chat-panel {
+    grid-column: 1 !important;
+  }
+
+  .chat-page .chat-layout.is-sidebar-collapsed .chat-stream {
+    padding-inline: max(46px, calc((100% - 960px) / 2)) !important;
+  }
+
+  .chat-page .chat-layout.is-sidebar-collapsed .composer {
+    padding-inline: max(52px, calc((100% - 960px) / 2)) !important;
+  }
 }

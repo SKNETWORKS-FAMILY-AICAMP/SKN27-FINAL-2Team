@@ -1,0 +1,275 @@
+/* 주간 리포트 패널.
+   기존 mypage.css 를 건드리지 않도록 별도 파일로 둔다.
+   색·그림자·모서리는 mypage.css 의 CSS 변수를 그대로 쓴다. */
+
+.weekly-report-panel {
+  margin-bottom: 18px;
+  padding: 24px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: var(--shadow);
+}
+
+.weekly-report-panel .panel-heading {
+  align-items: center;
+}
+
+.weekly-report-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  padding: 4px 12px;
+  background: #fdf3e3;
+  color: #8a6a3a;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+/* HTML hidden 속성이 display 선언에 덮이지 않도록 한다. */
+.weekly-report-status[hidden] {
+  display: none;
+}
+
+.weekly-report-status::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: weekly-report-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes weekly-report-pulse {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 1; }
+}
+
+.weekly-report-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
+  margin-bottom: 18px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.weekly-report-metrics article {
+  display: grid;
+  align-content: center;
+  gap: 5px;
+  min-height: 78px;
+  padding: 14px 18px;
+  border-right: 1px solid var(--line);
+}
+
+.weekly-report-metrics article:last-child {
+  border-right: 0;
+}
+
+.weekly-report-metrics span {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.weekly-report-metrics strong {
+  color: #2f241b;
+  font-size: 23px;
+  line-height: 1.2;
+  font-weight: 900;
+  overflow-wrap: anywhere;
+}
+
+/* "비교할 이전 평가가 없습니다." 처럼 문장이 들어오면 숫자 크기를 줄인다. */
+.weekly-report-metrics strong:not(:has(+ *)) {
+  font-size: clamp(15px, 2.1vw, 23px);
+}
+
+.weekly-report-comment {
+  margin: 0 0 16px;
+  border-left: 3px solid var(--accent);
+  padding-left: 14px;
+  color: #46372b;
+  font-size: 15px;
+  line-height: 1.6;
+  font-weight: 700;
+}
+
+.weekly-report-tips {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 18px;
+  padding: 0;
+  list-style: none;
+}
+
+.weekly-report-tips li {
+  position: relative;
+  border-radius: 8px;
+  padding: 11px 14px 11px 34px;
+  /* --accent-soft 는 #fff 라 흰 패널과 구분되지 않는다. 페이지 배경 톤을 쓴다. */
+  background: #faf6ef;
+  border: 1px solid var(--line);
+  color: #46372b;
+  font-size: 14px;
+  line-height: 1.5;
+  font-weight: 700;
+}
+
+.weekly-report-tips li::before {
+  content: "✓";
+  position: absolute;
+  left: 14px;
+  color: var(--accent);
+  font-weight: 900;
+}
+
+.weekly-report-targets + .weekly-report-targets {
+  margin-top: 14px;
+}
+
+.weekly-report-targets h3 {
+  margin: 0 0 8px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.weekly-report-targets ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.weekly-report-targets li {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 5px 13px;
+  color: #60704f;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+/* 아직 문구가 없는 상태 */
+.weekly-report-body[data-status="pending"] .weekly-report-comment,
+.weekly-report-body[data-status="running"] .weekly-report-comment {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.weekly-report-empty p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+@media (max-width: 720px) {
+  .weekly-report-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .weekly-report-metrics article {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .weekly-report-metrics article:last-child {
+    border-bottom: 0;
+  }
+}
+
+/* 취약 영역에 붙는 출제 경향·추세 표시 */
+.weekly-report-targets .trend-badge,
+.weekly-report-targets .concept-count {
+  margin-left: 6px;
+  border-radius: 999px;
+  padding: 1px 7px;
+  background: var(--point);
+  color: #7a5a2e;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.weekly-report-targets .trend-mark {
+  margin-left: 5px;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.weekly-report-targets .trend-mark.worse {
+  color: var(--accent);
+}
+
+.weekly-report-targets .trend-mark.better {
+  color: var(--green);
+}
+
+/* 최근 출제 경향 TOP5 */
+.weekly-report-trends {
+  margin-top: 18px;
+  border-top: 1px solid var(--line);
+  padding-top: 16px;
+}
+
+.weekly-report-trends h3 {
+  margin: 0 0 10px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.weekly-report-trends h3 span {
+  color: #a08c72;
+  font-weight: 700;
+}
+
+.weekly-report-trends ol {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: trend;
+}
+
+.weekly-report-trends li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  counter-increment: trend;
+  font-size: 13px;
+  font-weight: 700;
+  color: #46372b;
+}
+
+.weekly-report-trends li::before {
+  content: counter(trend);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--line);
+  color: #6b5a48;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.weekly-report-trends li span {
+  flex: 1;
+}
+
+.weekly-report-trends li b {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+}

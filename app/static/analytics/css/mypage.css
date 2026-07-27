@@ -150,6 +150,19 @@ a {
   background: transparent;
 }
 
+@media (hover: hover) and (pointer: fine) {
+  .improvement-card,
+  .mypage .planner-panel {
+    transition: translate 200ms cubic-bezier(0.23, 1, 0.32, 1), box-shadow 200ms ease;
+  }
+
+  .improvement-card:hover,
+  .mypage .planner-panel:hover {
+    translate: 0 -3px;
+    box-shadow: 0 16px 30px rgba(64, 43, 20, .12);
+  }
+}
+
 .improvement-card + .improvement-card {
   border-left: 1px solid #eee3d3;
 }
@@ -2024,7 +2037,6 @@ body.modal-open {
 .mypage .planner-day-top span { font-size: 15px !important; }
 .mypage .planner-day-top strong { font-size: 25px !important; }
 .mypage .planner-extra { min-width: 104px; min-height: 34px; border-radius: 999px; font-size: 13px; }
-.mypage .planner-date-change { min-width: 112px; min-height: 34px; border: 1px solid #ddc6b1; border-radius: 999px; background: #fffdfa; color: #5d5043; font-size: 13px; font-weight: 900; cursor: pointer; }
 .mypage .planner-board, .mypage .planner-day { overflow: visible; }
 .mypage .planner-day-actions { position: relative; z-index: 3; }
 .mypage .planner-extra:disabled:hover::after,

@@ -50,6 +50,32 @@ class NoteMypage(models.Model):
         db_table = 'note_mypage'
 
 
+class MlTrendTop5(models.Model):
+    trend_id = models.BigAutoField(primary_key=True)
+    target_round = models.IntegerField()
+    recent5_rounds = models.CharField(max_length=20)
+    source = models.CharField(max_length=50)
+    source_name = models.CharField(max_length=100, blank=True, null=True)
+    usage_text = models.CharField(max_length=255, blank=True, null=True)
+    trend_type = models.CharField(max_length=50)
+    rank_no = models.IntegerField()
+    era = models.CharField(max_length=50, blank=True, null=True)
+    topic_train = models.CharField(max_length=50, blank=True, null=True)
+    topic = models.CharField(max_length=50, blank=True, null=True)
+    topic_summary = models.CharField(max_length=255, blank=True, null=True)
+    label = models.CharField(max_length=100, blank=True, null=True)
+    combo_label = models.CharField(max_length=100, blank=True, null=True)
+    combo_label_with_topic = models.CharField(max_length=255, blank=True, null=True)
+    count_value = models.IntegerField()
+    ratio = models.FloatField(blank=True, null=True)
+    ratio_percent = models.FloatField(blank=True, null=True)
+    created_at = models.DateTimeField()
+
+    class Meta:
+        managed = False
+        db_table = 'ml_trend_top5'
+
+
 class Analytics(models.Model):
     analytics_id = models.BigAutoField(primary_key=True)
     session = models.ForeignKey(SolveSessions, models.DO_NOTHING, blank=True, null=True)
