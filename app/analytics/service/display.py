@@ -265,9 +265,15 @@ def build_planner_summary(study_plans, today, plan_generation_available=True):
     create_plan_confirm = ""
     if has_active_plan:
         create_plan_confirm = "기존 학습계획을 보관하고 다음 7일 계획을 만들까요?"
+    active_study_plan_id = ""
+    if has_active_plan:
+        active_study_plan_id = study_plans[0].get("studyPlanId") or ""
     return {
         "month_label": f"{selected_date.year}년 {selected_date.month:02d}월",
         "day_label": f"{selected_date.month:02d}월 {selected_date.day:02d}일",
+        # 계획 재생성 버튼이 "어느 계획을 대체할지" 를 서버에 알려야 한다.
+        # 이 값이 없으면 생성 서비스가 활성 계획과 None 을 비교해 무반응이 된다.
+        "active_study_plan_id": active_study_plan_id,
         "progress": build_planner_progress_summary(study_plans),
         "today_key": today_key,
         "selected_key": selected_key,

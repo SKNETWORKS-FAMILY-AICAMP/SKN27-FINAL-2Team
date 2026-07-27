@@ -263,6 +263,9 @@ def wrong_rate_period_item_questions(request):
 def create_study_plan_view(request):
     data = get_json_request_data(request)
     source_study_plan_id = data.get("sourceStudyPlanId")
+    if source_study_plan_id is None:
+        # 폼 전송은 본문이 JSON 이 아니라 get_json_request_data 가 빈 값을 준다.
+        source_study_plan_id = request.POST.get("sourceStudyPlanId")
     if source_study_plan_id is not None:
         try:
             source_study_plan_id = int(source_study_plan_id)

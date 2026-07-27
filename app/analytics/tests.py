@@ -334,6 +334,8 @@ class PlannerDisplayTests(SimpleTestCase):
         self.assertTrue(summary["can_create_plan"])
         self.assertFalse(summary["show_add_extra_study"])
         self.assertEqual(summary["create_plan_label"], "다음 7일 계획 만들기")
+        # 버튼이 대체 대상 계획 ID 를 함께 보내지 않으면 생성 서비스가 무반응이 된다.
+        self.assertEqual(summary["active_study_plan_id"], 1)
         self.assertIn("미응시", weekly_item["meta"])
 
     def test_future_plan_dates_remain_visible(self):
