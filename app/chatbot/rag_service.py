@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+import os
 from collections.abc import Iterator
 from concurrent.futures import ThreadPoolExecutor
 from typing import Any
@@ -46,6 +47,11 @@ INSUFFICIENT_ANSWER_TERMS = (
 IMAGE_REQUEST_TERMS_PATTERN = r"(사진|이미지|그림|도판|자료|조회|보여줘|보여달라|보여줄래|찾아줘|가져와|띄워줘|좀|의|에|대한|관련)"
 SHORT_FACT_TERMS = ("이름", "본명", "시호")
 SHORT_FACT_QUESTION_TERMS = ("뭐야", "무엇", "누구", "알려")
+
+
+def use_timeline_sources() -> bool:
+    # ponytail: source-limited RAGAS must not mix in unfiltered timeline snippets.
+    return not bool(os.getenv("RAG_ALLOWED_SOURCE_TYPES", "").strip())
 
 
 def normalize_intent(intent: str | None, answer_format: str) -> str:
@@ -351,7 +357,8 @@ def stream_concept_rag_answer(
     retriever = PgVectorHybridRetriever()
     results = retriever.search(search_question, top_k=max(top_k, 8 if graph_context and graph_context.get("keywords") else top_k))
     sources = [result_to_payload(result) for result in results]
-    sources.extend(search_timeline_sources(search_question))
+    if use_timeline_sources():
+        sources.extend(search_timeline_sources(search_question))
     retrieval_debug = build_retrieval_debug(search_seed, search_question, sources, graph_context)
     if not has_enough_evidence(results, "concept"):
         yield {"type": "done", "data": not_found_answer(question, "concept", graph_context)}
@@ -421,7 +428,7 @@ def build_history_rag_answer(
     retriever = PgVectorHybridRetriever()
     results = retriever.search(search_question, top_k=max(top_k, 8 if graph_context and graph_context.get("keywords") else top_k))
     sources = [result_to_payload(result) for result in results]
-    timeline_sources = search_timeline_sources(search_question)
+    timeline_sources = search_timeline_sources(search_question) if use_timeline_sources() else []
     sources.extend(timeline_sources)
     retrieval_debug = build_retrieval_debug(search_seed, search_question, sources, graph_context)
 
@@ -521,7 +528,8 @@ def stream_question_rag_answer(
     if not results:
         results = retriever.search(search_question, top_k=top_k)
     sources = [result_to_payload(result) for result in results]
-    sources.extend(search_timeline_sources(search_question))
+    if use_timeline_sources():
+        sources.extend(search_timeline_sources(search_question))
     retrieval_debug = build_retrieval_debug(search_seed, search_question, sources, graph_context)
     if not has_enough_evidence(results, "question"):
         yield {"type": "done", "data": not_found_answer(question, "question", graph_context)}

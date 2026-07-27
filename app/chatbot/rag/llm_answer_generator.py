@@ -85,6 +85,14 @@ class LLMConfig:
     provider: str = "openai"
 
 
+PROMPT_SNIPPET_MAX_CHARS = 160
+
+
+def prompt_snippet(value: object) -> str:
+    text = str(value or "").strip()
+    return text if len(text) <= PROMPT_SNIPPET_MAX_CHARS else text[: PROMPT_SNIPPET_MAX_CHARS - 1].rstrip() + "…"
+
+
 def load_llm_env() -> None:
     load_dotenv()
 
@@ -99,7 +107,7 @@ def compact_source(source: dict[str, Any], index: int) -> str:
         f"title: {source.get('title', '')}",
         f"source_type: {source.get('source_type', '')}",
         f"source_name: {source.get('source_name', '')}",
-        f"snippet: {source.get('snippet', '')}",
+        f"snippet: {prompt_snippet(source.get('snippet'))}",
     ]
     if source_url:
         parts.append(f"source_url: {source_url}")

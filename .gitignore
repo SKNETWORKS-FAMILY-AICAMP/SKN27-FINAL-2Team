@@ -295,6 +295,9 @@ $RECYCLE.BIN/
 
 postgres_data/
 
+# Local PostgreSQL backup artifacts
+artifacts/
+
 # Neo4j preprocessing generated CSV files
 etl/preprocessing/neo4j/**/*.csv
 !etl/preprocessing/neo4j/seed/

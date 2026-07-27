@@ -117,7 +117,14 @@ def main() -> None:
     parser.add_argument("--intent", default="concept", choices=["concept", "question", "image"])
     parser.add_argument("--answer-format", default="structured", choices=["structured", "text"])
     parser.add_argument("--top-k", type=int, default=20)
+    parser.add_argument("--warmup", action="store_true", help="Load the reranker once before measuring.")
     args = parser.parse_args()
+
+    if args.warmup:
+        print("warming_up_reranker=true")
+        PgVectorHybridRetriever().search(args.question, top_k=args.top_k)
+        retriever_module.cached_pg_search.cache_clear()
+        retriever_module.embed_query.cache_clear()
 
     result = measure(args.question, args.intent, args.answer_format, args.top_k)
     for key, value in result.items():
