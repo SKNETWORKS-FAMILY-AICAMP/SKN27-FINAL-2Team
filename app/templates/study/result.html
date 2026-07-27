@@ -129,7 +129,7 @@
         <button class="outline-button" id="prevQuestion" type="button">이전 문제</button>
         <button class="outline-button" id="nextQuestion" type="button">다음 문제</button>
         <button class="primary-button" id="askChatbot" type="button">챗봇에게 질문</button>
-        <button class="primary-button" id="noteSaveButton" type="button">오답노트에 추가</button>
+        <button class="primary-button" id="noteSaveButton" type="button">노트에 추가</button>
         <a class="outline-button" href="/user/wrong-note/">노트에서 보기</a>
         <span class="note-save-status" id="noteSaveStatus" aria-live="polite"></span>
       </nav>
@@ -517,7 +517,7 @@
       if (!noteSaveButton) return;
       const questionId = questionIdOf(currentIndex);
       const isSaved = questionId !== null && savedQuestionIds.has(questionId);
-      noteSaveButton.textContent = isSaved ? "저장됨" : "오답노트에 추가";
+      noteSaveButton.textContent = isSaved ? "저장됨" : "노트에 추가";
       noteSaveButton.disabled = isSaved;
       noteSaveStatus.textContent = message || (isSaved ? "이 문항은 노트에 저장되어 있습니다." : "");
     }
