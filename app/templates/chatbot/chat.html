@@ -193,7 +193,7 @@
           foundation_explanation: options.foundationExplanation === true,
         };
         if (intent === "concept" || intent === "question") {
-          const data = await streamConceptAnswer(payload, loading, intent === "question" ? "문제 해설" : "개념 정리", intent === "question" ? problemTitleFromContext(question) : "");
+          const data = await streamConceptAnswer(payload, loading, intent === "question" ? "문제 해설" : "개념 정리", intent === "question" ? problemTitleFromContext(question) : "", options.problemImagePath || "");
           data.intent = intent;
           addMessageToActiveSession({ sender: "bot", data, intent });
           return;
@@ -219,14 +219,15 @@
         addMessageToActiveSession({ sender: "bot", data, intent });
       } catch (error) {
         loading.remove();
-        appendErrorMessage("네트워크 오류가 발생했습니다.", error.message);
+        const message = error.message || "네트워크 오류가 발생했습니다.";
+        appendErrorMessage(message === "RAG 답변 생성 중 오류가 발생했습니다." ? message : "네트워크 오류가 발생했습니다.", message === "RAG 답변 생성 중 오류가 발생했습니다." ? "" : message);
       } finally {
         sendButton.disabled = false;
         input.focus();
       }
     }
 
-    async function streamConceptAnswer(payload, loading, label = "개념 정리", problemTitle = "") {
+    async function streamConceptAnswer(payload, loading, label = "개념 정리", problemTitle = "", problemImagePath = "") {
       const response = await fetch("{% url 'chatbot:rag_chat_stream_api' %}", {
         method: "POST",
         headers: { "Content-Type": "application/json", "X-CSRFToken": csrfToken },
@@ -237,7 +238,7 @@
         throw new Error(data.error || "답변 생성에 실패했습니다.");
       }
       loading.remove();
-      const view = appendStreamingStructuredMessage(label, problemTitle);
+      const view = appendStreamingStructuredMessage(label, problemTitle, problemImagePath);
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let buffer = "";
@@ -298,12 +299,12 @@
       (note.querySelector(".sources") || note).before(button);
     }
 
-    function appendStreamingStructuredMessage(label = "개념 정리", problemTitle = "") {
+    function appendStreamingStructuredMessage(label = "개념 정리", problemTitle = "", problemImagePath = "") {
       const wrapper = document.createElement("div");
       wrapper.className = "message bot";
       wrapper.innerHTML = `
         <div class="avatar"><img src="/static/images/chatbot_label.png" alt="himate" /></div>
-        <div class="bubble bot-bubble"><div class="bot-label"><span class="bot-dot"></span><span>${escapeHtml(label)}</span></div><article class="note ${label === "문제 해설" ? "problem-note" : ""}">${problemTitle ? `<p class="selected-problem-title">선택 문제 · ${escapeHtml(problemTitle)}</p>` : ""}<h1 class="title"></h1><p class="summary"></p><div class="stream-sections"></div></article></div>`;
+        <div class="bubble bot-bubble"><div class="bot-label"><span class="bot-dot"></span><span>${escapeHtml(label)}</span></div><article class="note ${label === "문제 해설" ? "problem-note" : ""}">${problemTitle ? `<p class="selected-problem-title">선택 문제 · ${escapeHtml(problemTitle)}</p>` : ""}${problemImagePath ? `<img class="selected-problem-image" src="${escapeHtml(assetUrl(problemImagePath))}" alt="선택 문항 자료 이미지">` : ""}<h1 class="title"></h1><p class="summary"></p><div class="stream-sections"></div></article></div>`;
       chatStream.appendChild(wrapper);
       const note = wrapper.querySelector(".note");
       const sections = wrapper.querySelector(".stream-sections");
@@ -484,6 +485,12 @@
       return value ? `${value}번` : "미응답";
     }
 
+    function assetUrl(path) {
+      if (!path) return "";
+      if (/^(https?:)?\/\//.test(path) || path.startsWith("/")) return path;
+      return `/${path}`;
+    }
+
     function selectProblemForChat(problem) {
       closeProblemPicker();
       appendProblemActionMessage(problem);
@@ -517,6 +524,7 @@
         prompt,
         "",
         problem.passage ? `[지문]\n${problem.passage}` : "",
+        problem.image_caption ? `[자료 설명]\n${problem.image_caption}` : "",
         `[문제] ${problem.content || ""}`,
         options ? `[보기]\n${options}` : "",
         `[내 답] ${answerLabel(problem.selected_no)}`,
@@ -545,6 +553,7 @@
         return `
           <li class="${selected ? "selected" : ""} ${correct ? "correct" : ""}">
             <span>${escapeHtml(option.choice_no)}. ${escapeHtml(option.content)}</span>
+            ${option.choice_image_path ? `<img class="selected-problem-choice-image" src="${escapeHtml(assetUrl(option.choice_image_path))}" alt="${escapeHtml(option.choice_no)}번 선택지 이미지">` : ""}
             <em>${selected ? "내 답" : ""}${selected && correct ? " · " : ""}${correct ? "정답" : ""}</em>
           </li>
         `;
@@ -557,6 +566,7 @@
               ${escapeHtml(problem.number)}번 · ${escapeHtml(problem.era || "-")} · ${escapeHtml(problem.topic || "-")}
             </div>
             ${problem.passage ? `<p class="selected-problem-passage">${escapeHtml(problem.passage)}</p>` : ""}
+            ${problem.question_image_path ? `<img class="selected-problem-image" src="${escapeHtml(assetUrl(problem.question_image_path))}" alt="선택 문항 자료 이미지">` : ""}
             <strong class="selected-problem-title">${escapeHtml(problem.content || "문제 내용 없음")}</strong>
             ${options ? `<ol class="selected-problem-options">${options}</ol>` : ""}
             <div class="selected-problem-answer">
@@ -612,7 +622,7 @@
           submitChatQuestion(
             buildProblemContext(problem, fixedProblemSolvePrompt()),
             "문제 풀이보기",
-            { intent: "question", historyContext: "문제 풀이보기", problemSessionId: problem.session_id },
+            { intent: "question", historyContext: "문제 풀이보기", problemSessionId: problem.session_id, problemImagePath: problem.question_image_path },
           );
         });
       });

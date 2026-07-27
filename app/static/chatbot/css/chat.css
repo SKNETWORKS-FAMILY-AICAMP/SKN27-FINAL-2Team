@@ -1866,6 +1866,17 @@ body {
   line-height: 1.4;
 }
 
+.selected-problem-image,
+.selected-problem-choice-image {
+  display: block;
+  width: min(100%, 520px);
+  max-height: 360px;
+  margin: 0 auto;
+  border: 1px solid #dfe8db;
+  border-radius: 8px;
+  object-fit: contain;
+}
+
 .selected-problem-options {
   display: grid;
   gap: 4px;
