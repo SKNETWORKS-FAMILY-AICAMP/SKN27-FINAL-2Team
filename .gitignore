@@ -323,4 +323,4 @@ etl/preprocessing/history/processed/aks_encyclopedia.chunks.jsonl
 etl/preprocessing/history/processed/aks_encyclopedia.documents.jsonl
 
 # Question generation runtime outputs
-question_generation/outputs/
+ai/question_generation/outputs/
