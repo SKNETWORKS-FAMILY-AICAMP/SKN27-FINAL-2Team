@@ -1,7 +1,7 @@
 # 한국사 사실 그래프 현재 설계 정리
 
 > 상태: `CURRENT-DESIGN + AS-BUILT-MVP`
-> 기준일: 2026-07-27
+> 기준일: 2026-07-28
 > 실제 적재 계약은 `03_fact_graph_release_and_load.md`를 함께 따른다.
 
 ## 1. 결론
@@ -633,33 +633,43 @@ NLP endpoint 타입 검토 후보: 8,354개
 ### 8.10 현재 Fact Graph release
 
 ```text
-release: korean-history-fact-graph-2026-07-27-contextual-v5
-GraphEntity: 19,437개
+release: korean-history-fact-graph-2026-07-28-contextual-v7
+GraphEntity: 19,186개
 CanonicalEntity: 4,786개
-ProvisionalEntity: 14,651개
+ProvisionalEntity: 14,400개
 Fact assertion: 39,836개
-직접 의미 관계: 35,193개
+직접 의미 관계: 35,064개
 EvidenceSpan: 39,945개
-양 endpoint 해소 Fact: 920개
-한쪽 이상 canonical인 terminal Fact: 7,103개
-미해소 endpoint 포함 Fact: 38,916개
+양 endpoint 해소 Fact: 1,083개
+기본 검색 허용 Fact: 920개
+한쪽 이상 canonical인 terminal Fact: 7,235개
+미해소 endpoint 포함 Fact: 38,753개
 ```
 
 직접 의미 관계는 동일 endpoint 쌍과 대칭 관계의 역방향 표현을 통합해
-35,193개가 됐지만 활성 Fact 39,836개와 근거를 보존했다. 이 중
+35,064개가 됐지만 활성 Fact 39,836개와 근거를 보존했다. 이 중
 326개 Fact는 같은 근거·predicate·이름·타입과 유일한 canonical 대표가 확인되어
 endpoint만 canonical로 투영했다. 원본 endpoint ID와 EvidenceSpan은 유지된다.
+추가로 후보 endpoint 276개가 공식 출처 이름·별칭·EntityType과 근거 문맥으로
+유일하게 해소되어 Fact 288개의 endpoint를 canonical로 투영했다. 인물의 단독
+이름은 자동 투영하지 않고, 시대·국가 한정 별칭 또는 이를 포함한 근거가 있을
+때만 허용한다. 이름별 예외는 사용하지 않는다.
 하나의 원본 SourceRecord가 여러 GraphEntity에 속하는 경우와 같은 근거·predicate가
 서로 다른 endpoint 쌍으로 남은 경우는 모두 0건이다. identity
 conflict로 판정된 SourceRecord 1개와 identity redirect 후 자기 관계가 된 Fact를 합쳐
 Fact 16개는 별도 CSV에 격리했다. 검색 가능한 ProvisionalEntity는 0개다.
-v5 CSV와 단위 테스트 11개는 검증했지만 Neo4j 재적재는
+같은 canonical anchor에 연결된 동일 이름·타입 endpoint는 Predicate가 달라도
+`ANCHOR_LOCAL` 노드 하나로 표현한다. 관계 종류와 Fact·Evidence는 합치지 않는다.
+현재 30개 국소 노드가 원본 endpoint 101개를 표현하며, 이 중 4개는 둘 이상의
+Predicate를 유지한다.
+
+v7 CSV 20개는 재생성 해시가 모두 같고 단위 테스트 15개가 통과했지만 Neo4j 재적재는
 아직 실행하지 않았다.
 
-기본 검색은 양 endpoint가 확정된 Fact 920개만 사용한다. terminal 검색은
-한쪽 endpoint가 canonical인 Fact 7,103개까지 허용하되 ProvisionalEntity에서
+기본 검색은 정책을 모두 통과한 Fact 920개만 사용한다. terminal 검색은
+한쪽 endpoint가 canonical인 Fact 7,235개까지 허용하되 ProvisionalEntity에서
 추가 hop으로 진행하지 않는다. 이에 따라 기출 용어의 안전한 사실 연결 범위는
-363개에서 699개로 늘었다.
+기본 364개, terminal 713개로 늘었다.
 
 exact search는 동일 정규화 이름의 canonical 후보가 여러 개인 경우 모두 차단한다.
 승인된 기출 용어가 후보 하나를 유일하게 선택한 경우에만 그 canonical을 대표로
@@ -754,7 +764,7 @@ exact search는 동일 정규화 이름의 canonical 후보가 여러 개인 경
 
 현재 최우선 과제는 다음 세 가지다.
 
-1. terminal 조회 정책을 RAG에 연결해 기출 용어 699개의 사실을 활용한다.
+1. terminal 조회 정책을 RAG에 연결해 기출 용어 713개의 사실을 활용한다.
 2. 사실이 전혀 없는 승인 기출 용어 1,900여 개를 대상으로 공식 문서 Fact를 보강한다.
 3. canonical에서 출발해 허용 관계·근거를 반환하는 RAG 조회 계약을 구현한다.
 

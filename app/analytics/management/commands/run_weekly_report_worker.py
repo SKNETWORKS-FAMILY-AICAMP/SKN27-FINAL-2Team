@@ -26,6 +26,11 @@ from analytics.service.weekly_report.config import (
     get_weekly_report_config,
 )
 from analytics.service.weekly_report.llm import generate_default_report_content
+from analytics.service.weekly_report.next_plan import (
+    NEXT_PLAN_SUCCEEDED,
+    process_next_plan,
+)
+from analytics.service.weekly_report.worker import is_next_plan_recovery_candidate
 
 
 logger = logging.getLogger(__name__)
@@ -71,6 +76,8 @@ def process_one_report(
     if not content.get("fallbackUsed"):
         if not repository.finish_report(study_plan_id, attempt_count, content, clock()):
             logger.info("다른 워커가 먼저 처리했습니다. plan=%s", study_plan_id)
+        # 리포트가 ready 로 확정된 같은 작업에서 다음 계획까지 처리한다.
+        _process_next_plan_safely(study_plan_id, config)
         return READY
     return _record_failure(study_plan_id, attempt_count, "AI_FALLBACK", config, clock, content)
 
@@ -87,6 +94,41 @@ def scan_missing_reports() -> int:
         if created:
             created_count += 1
     return created_count
+
+
+def recover_pending_next_plans(
+    config: WeeklyReportConfig,
+    clock: Callable[[], datetime] = timezone.now,
+) -> int:
+    """생성 직전에 워커가 죽어 pending 으로 남은 다음 계획을 다시 처리한다.
+
+    리포트 상태와 AI 문장은 건드리지 않고 다음 계획 단계만 실행한다.
+    성공한 건수를 돌려준다.
+    """
+    recovered_count = 0
+    now = clock()
+    for candidate in repository.find_next_plan_candidates():
+        report = candidate["report"]
+        if not isinstance(report, Mapping):
+            continue
+        if not is_next_plan_recovery_candidate(report, now):
+            continue
+        code = process_next_plan(int(candidate["studyPlanId"]), config)
+        if code == NEXT_PLAN_SUCCEEDED:
+            recovered_count += 1
+    return recovered_count
+
+
+def _process_next_plan_safely(study_plan_id: int, config: WeeklyReportConfig) -> None:
+    """다음 계획 생성 실패가 리포트 확정 흐름을 깨면 안 되므로 예외를 삼킨다.
+
+    남은 pending 건은 복구 스캔이나 마이페이지 동기화 재확인이 다시 집는다.
+    """
+    try:
+        code = process_next_plan(study_plan_id, config)
+        logger.info("다음 계획 처리 plan=%s 결과=%s", study_plan_id, code)
+    except Exception:
+        logger.exception("다음 계획 처리 실패 plan=%s", study_plan_id)
 
 
 def _record_failure(
@@ -109,6 +151,8 @@ def _record_failure(
         fallback_content = content or _build_empty_fallback_content(error_code)
         repository.finish_report(study_plan_id, attempt_count, fallback_content, clock())
         logger.warning("주간 리포트를 기본 문구로 확정 plan=%s", study_plan_id)
+        # 기본 문구 확정도 ready 이므로 다음 계획 처리를 빠뜨리면 안 된다.
+        _process_next_plan_safely(study_plan_id, config)
         return READY
     return RETRIED
 
@@ -160,6 +204,11 @@ class Command(BaseCommand):
                     created_count = scan_missing_reports()
                     if created_count:
                         self.stdout.write(f"[weekly-report] 복구 {created_count}건")
+                    recovered_plan_count = recover_pending_next_plans(config)
+                    if recovered_plan_count:
+                        self.stdout.write(
+                            f"[weekly-report] 다음 계획 복구 {recovered_plan_count}건",
+                        )
             except Exception:
                 logger.exception("워커 루프에서 예외가 발생했습니다. 다음 주기에 계속합니다.")
             if run_once:

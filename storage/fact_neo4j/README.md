@@ -1,6 +1,6 @@
 # Fact Graph Neo4j
 
-> 기준일: 2026-07-27
+> 기준일: 2026-07-28
 
 기존 `skn27-neo4j`와 분리된 사실·근거 그래프다.
 
@@ -23,7 +23,7 @@ Container: skn27-fact-neo4j
 ```
 
 `--load-only`는 `etl/preprocessing/neo4j/output/fact_graph_release`의 최종
-CSV 18개와 `manifest.json`을 사용한다.
+CSV 20개와 `manifest.json`을 사용한다.
 
 상위 전처리 output을 모두 보유하고 release를 재생성할 때:
 
@@ -47,12 +47,12 @@ RETURN type(relation), target, relation.fact_count, relation.evidence_ids
 ## 현재 release
 
 ```text
-graph_release_id = korean-history-fact-graph-2026-07-27-contextual-v1
-GraphEntity = 19,447
-Fact = 39,852
-direct semantic relation = 39,745
-EvidenceSpan = 39,961
-load verification = PASSED
+graph_release_id = korean-history-fact-graph-2026-07-28-contextual-v7
+GraphEntity = 19,186
+Fact = 39,836
+direct semantic relation = 35,064
+EvidenceSpan = 39,945
+load verification = NOT_RUN
 ```
 
 상세 문서: `docs/neo4j/03_fact_graph_release_and_load.md`

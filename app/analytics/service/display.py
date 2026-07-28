@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 from analytics.service.studyplan import get_study_plan_config
 from analytics.service.weakness import get_status_class, get_weakness_config
@@ -18,12 +18,21 @@ def parse_display_date(raw_date):
     return None
 
 
-def build_planner_summary(study_plans, today, plan_generation_available=True):
+def build_planner_summary(
+    study_plans,
+    today,
+    plan_generation_available=True,
+    history_study_plans=None,
+):
     """
     저장된 학습계획 목록을 마이페이지 달력 표시용 데이터로 변환한다.
 
     날짜별 계획 목록, 완료/예정 날짜 키, 오늘 표시 데이터,
     모달에서 사용할 오늘 학습 항목을 함께 구성한다.
+
+    history_study_plans 는 보관된 지난 계획 DTO 목록이다. 달력 표시에만
+    합쳐지고, 버튼 노출·주간평가 완료 같은 상태 판정은 활성 계획만 쓴다.
+    지난 계획의 항목은 시작·삭제가 불가능한 기록으로만 보여준다.
     """
     achieved_label = "달성"
     default_title = "학습 계획"
@@ -44,8 +53,18 @@ def build_planner_summary(study_plans, today, plan_generation_available=True):
         study_plans,
         weekly_review_block_type,
     )
+    history_plans = list(history_study_plans or [])
+    # 기록은 활성 계획 시작일 전날까지만 보여준다. 재생성으로 보관된 계획에
+    # 남은 미래 날짜 블록이 새 계획 일정과 겹쳐 보이면 안 된다.
+    history_cutoff_date = today + timedelta(days=1)
+    if study_plans:
+        active_plan_start_date = parse_display_date(study_plans[0].get("startDate"))
+        if active_plan_start_date:
+            history_cutoff_date = active_plan_start_date
 
-    for study_plan in study_plans:
+    plan_entries = [(study_plan, False) for study_plan in study_plans]
+    plan_entries += [(study_plan, True) for study_plan in history_plans]
+    for study_plan, is_history_plan in plan_entries:
         study_plan_id = study_plan.get("studyPlanId")
         plan_start_date = parse_display_date(study_plan.get("startDate"))
         plan_end_date = parse_display_date(study_plan.get("endDate"))
@@ -70,6 +89,8 @@ def build_planner_summary(study_plans, today, plan_generation_available=True):
                 date_key = plan_date.isoformat()
 
             blocks = day_plan.get("blocks", [])
+            if is_history_plan and plan_date and plan_date >= history_cutoff_date:
+                continue
             if date_key and plan_date and blocks:
                 plans_by_date.setdefault(date_key, [])
                 for block_index, block in enumerate(blocks):
@@ -110,6 +131,12 @@ def build_planner_summary(study_plans, today, plan_generation_available=True):
                         and not is_achieved
                         and can_delete_more
                     )
+                    if is_history_plan:
+                        # 지난 계획은 기록이다. 보관 계획 블록은 새로 시작할 수
+                        # 없으므로(활성 계획 검증에서 거부) 버튼 자체를 숨긴다.
+                        show_start = False
+                        can_start = False
+                        can_delete = False
                     meta_parts = [status_label]
                     classification = block.get("classification")
                     label = block.get("label")
@@ -203,6 +230,20 @@ def build_planner_summary(study_plans, today, plan_generation_available=True):
     selected_key = get_default_planner_selected_key(display_plans_by_date, today)
     selected_date = date.fromisoformat(selected_key)
     has_active_plan = bool(study_plans)
+    # 상태 판정은 활성 계획 항목만 본다. 기록으로 합친 지난 계획의 완료된
+    # 주간평가가 섞이면 새 계획의 생성 버튼이 잘못 열린다.
+    active_study_plan_id_value = None
+    if has_active_plan:
+        active_study_plan_id_value = study_plans[0].get("studyPlanId")
+    active_plans_by_date = {}
+    for date_key, plan_items in plans_by_date.items():
+        active_items = [
+            item
+            for item in plan_items
+            if item["studyPlanId"] == active_study_plan_id_value
+        ]
+        if active_items:
+            active_plans_by_date[date_key] = active_items
     active_plan_end_date = None
     if has_active_plan:
         active_plan_end_date = parse_display_date(study_plans[0].get("endDate"))
@@ -221,23 +262,28 @@ def build_planner_summary(study_plans, today, plan_generation_available=True):
             config["fallback_daily_available_minutes"],
         )
     )
-    weekly_review_done = has_completed_weekly_review(plans_by_date)
+    weekly_review_done = has_completed_weekly_review(active_plans_by_date)
     is_recoverable_expired_plan = is_expired_active_plan and not weekly_review_done
-    has_weekly_review = has_weekly_review_item(plans_by_date)
-    last_plan_key = get_last_plan_key(plans_by_date)
-    is_empty_active_plan = has_active_plan and not plans_by_date
+    has_weekly_review = has_weekly_review_item(active_plans_by_date)
+    last_plan_key = get_last_plan_key(active_plans_by_date)
+    is_empty_active_plan = has_active_plan and not active_plans_by_date
     is_finished_legacy_plan = (
         has_active_plan
         and not has_weekly_review
         and last_plan_key
         and last_plan_key < today_key
     )
+    # 버튼은 항상 노출한다. 클릭은 활성 계획이 없거나 주간평가를 마친 뒤에만
+    # 허용한다. 다음 계획 자동 생성이 실패(nextPlan failed)해도 주간평가가
+    # 끝난 상태이므로 이 조건이 수동 생성 탈출구가 된다.
+    show_create_plan = plan_generation_available
     can_create_plan = plan_generation_available and (
         not has_active_plan
         or is_finished_legacy_plan
         or is_empty_active_plan
         or is_recoverable_expired_plan
         or is_overloaded_active_plan
+        or weekly_review_done
     )
     show_add_extra_study = (
         plan_generation_available
@@ -255,19 +301,26 @@ def build_planner_summary(study_plans, today, plan_generation_available=True):
             weekly_review_block_type,
         )
     )
-    create_plan_label = ""
+    create_plan_label = "다음 7일 계획 만들기"
     if not has_active_plan or is_empty_active_plan:
         create_plan_label = "7일 계획 만들기"
     elif is_overloaded_active_plan:
         create_plan_label = "학습계획 재생성"
-    elif is_finished_legacy_plan or is_recoverable_expired_plan:
-        create_plan_label = "다음 7일 계획 만들기"
+    create_plan_disabled_message = ""
+    if not can_create_plan:
+        create_plan_disabled_message = "주간 평가를 마치면 다음 계획을 만들 수 있어요."
     create_plan_confirm = ""
     if has_active_plan:
         create_plan_confirm = "기존 학습계획을 보관하고 다음 7일 계획을 만들까요?"
+    active_study_plan_id = ""
+    if has_active_plan:
+        active_study_plan_id = study_plans[0].get("studyPlanId") or ""
     return {
         "month_label": f"{selected_date.year}년 {selected_date.month:02d}월",
         "day_label": f"{selected_date.month:02d}월 {selected_date.day:02d}일",
+        # 계획 재생성 버튼이 "어느 계획을 대체할지" 를 서버에 알려야 한다.
+        # 이 값이 없으면 생성 서비스가 활성 계획과 None 을 비교해 무반응이 된다.
+        "active_study_plan_id": active_study_plan_id,
         "progress": build_planner_progress_summary(study_plans),
         "today_key": today_key,
         "selected_key": selected_key,
@@ -277,11 +330,13 @@ def build_planner_summary(study_plans, today, plan_generation_available=True):
         "is_expired_plan": is_expired_active_plan,
         "is_overloaded_plan": is_overloaded_active_plan,
         "plan_generation_available": plan_generation_available,
+        "show_create_plan": show_create_plan,
         "can_create_plan": can_create_plan,
         "show_add_extra_study": show_add_extra_study,
         "can_add_extra_study": can_add_extra_study,
         "create_plan_label": create_plan_label,
         "create_plan_confirm": create_plan_confirm,
+        "create_plan_disabled_message": create_plan_disabled_message,
         "data": {
             "plansByDate": display_plans_by_date,
             "completedKeys": sorted(completed_keys),

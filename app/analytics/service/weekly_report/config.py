@@ -34,7 +34,11 @@ class WeeklyReportConfig:
     claim_candidate_count: int
     maximum_attempt_count: int
     retry_delays_seconds: tuple[int, ...]
+    next_plan_retry_delay_seconds: int
     completed_session_status: str
+    in_progress_session_status: str
+    weekly_review_session_type: str
+    inline_generation_enabled: bool
     model: str
     forbidden_phrases: tuple[str, ...]
     forbidden_output_tokens: tuple[str, ...]
@@ -52,6 +56,8 @@ class WeeklyReportConfig:
 
 
 def get_weekly_report_config() -> WeeklyReportConfig:
+    # 웹 프로세스가 제출 직후 리포트를 만들지 여부. 별도 워커만 쓰려면 0 으로 끈다.
+    inline_generation_enabled = os.getenv("WEEKLY_REPORT_INLINE_GENERATION", "1") != "0"
     configured_model = os.getenv("WEEKLY_REPORT_LLM_MODEL")
     if not configured_model:
         configured_model = os.getenv("OPENAI_CHAT_MODEL")
@@ -75,18 +81,25 @@ def get_weekly_report_config() -> WeeklyReportConfig:
         maximum_tip_count=4,
         maximum_comment_length=420,
         maximum_tip_length=220,
-        llm_timeout_seconds=60,
-        analyst_maximum_tokens=650,
-        coach_maximum_tokens=650,
-        writer_maximum_tokens=1000,
-        validator_maximum_tokens=450,
-        provider_maximum_retry_count=0,
+        # 추론 모델은 눈에 보이지 않는 추론 토큰도 이 한도에서 함께 쓴다.
+        # 한도가 낮으면 응답이 잘려 LengthFinishReasonError 로 실패한다.
+        llm_timeout_seconds=120,
+        analyst_maximum_tokens=3000,
+        coach_maximum_tokens=3000,
+        writer_maximum_tokens=4000,
+        validator_maximum_tokens=2000,
+        provider_maximum_retry_count=2,
         maximum_revision_count=1,
         stuck_after_seconds=420,
         claim_candidate_count=20,
         maximum_attempt_count=3,
         retry_delays_seconds=(30, 120),
+        # 다음 계획 생성이 일시적 인프라 오류로 밀렸을 때 워커가 다시 시도할 간격.
+        next_plan_retry_delay_seconds=60,
         completed_session_status="completed",
+        in_progress_session_status="in_progress",
+        weekly_review_session_type="diagnostic",
+        inline_generation_enabled=inline_generation_enabled,
         model=configured_model,
         forbidden_phrases=(
             "합격 보장",

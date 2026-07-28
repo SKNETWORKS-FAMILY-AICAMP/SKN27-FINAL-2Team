@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from copy import deepcopy
 from typing import Literal, Mapping, TypedDict
 
@@ -23,6 +24,9 @@ from analytics.service.weekly_report.llm import (
     validate_grounded_statements,
 )
 from analytics.service.weekly_report.service import build_fallback_content
+
+
+logger = logging.getLogger(__name__)
 
 
 class WeeklyReportGraphState(TypedDict, total=False):
@@ -104,6 +108,7 @@ class WeeklyReportGraphWorkflow:
             )
             validated = WeaknessAnalysis.model_validate(analysis)
         except Exception:
+            logger.exception("주간 리포트 weakness_analyst 단계 실패")
             return {
                 "failed_stage": "weakness_analyst",
                 "guard_errors": ["ANALYST_CALL_OR_SCHEMA_ERROR"],
@@ -141,6 +146,7 @@ class WeeklyReportGraphWorkflow:
             )
             validated = StudyCoaching.model_validate(coaching)
         except Exception:
+            logger.exception("주간 리포트 study_coach 단계 실패")
             return {
                 "failed_stage": "study_coach",
                 "guard_errors": ["COACH_CALL_OR_SCHEMA_ERROR"],
@@ -183,6 +189,7 @@ class WeeklyReportGraphWorkflow:
             )
             validated = ReportDraft.model_validate(draft)
         except Exception:
+            logger.exception("주간 리포트 report_writer 단계 실패")
             return {
                 "failed_stage": "report_writer",
                 "guard_errors": ["WRITER_CALL_OR_SCHEMA_ERROR"],
@@ -218,6 +225,7 @@ class WeeklyReportGraphWorkflow:
             )
             validated = ReportCritique.model_validate(critique)
         except Exception:
+            logger.exception("주간 리포트 report_critic 단계 실패")
             return {
                 "failed_stage": "report_critic",
                 "guard_errors": ["CRITIC_CALL_OR_SCHEMA_ERROR"],
@@ -339,4 +347,5 @@ def generate_graph_report_content(
             raise ValueError("주간 리포트 그래프가 최종 content를 반환하지 않았습니다.")
         return deepcopy(dict(content))
     except Exception:
+        logger.exception("주간 리포트 그래프 실행 실패")
         return build_fallback_content(result, resolved_config)

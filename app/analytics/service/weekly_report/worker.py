@@ -10,6 +10,9 @@ from analytics.service.weekly_report.config import (
 )
 
 
+NEXT_PLAN_ACTIONABLE_STATUSES = ("pending", "blocked")
+
+
 def claim_report(
     report: Mapping[str, object],
     now: datetime,
@@ -114,6 +117,85 @@ def is_next_plan_recovery_candidate(
         return False
     available_at = _parse_datetime(worker.get("availableAt"))
     return available_at is None or available_at <= _as_utc(now)
+
+
+def mark_next_plan_succeeded(
+    report: Mapping[str, object],
+    next_study_plan_id: int,
+) -> dict[str, object]:
+    """다음 계획 번호를 기록하고 succeeded 로 확정한다."""
+    return _update_next_plan(report, "succeeded", next_study_plan_id, None)
+
+
+def mark_next_plan_blocked(
+    report: Mapping[str, object],
+    blocked_reason: str,
+) -> dict[str, object]:
+    """진행 중 세션 때문에 다음 계획 생성을 보류한다."""
+    return _update_next_plan(report, "blocked", None, blocked_reason)
+
+
+def mark_next_plan_failed(
+    report: Mapping[str, object],
+    error_code: str,
+) -> dict[str, object]:
+    """후보 부족 같은 영구 오류로 다음 계획 생성을 닫는다."""
+    return _update_next_plan(report, "failed", None, error_code)
+
+
+def defer_next_plan(
+    report: Mapping[str, object],
+    now: datetime,
+    config: WeeklyReportConfig | None = None,
+) -> dict[str, object]:
+    """일시적 인프라 오류다. pending 을 유지하고 실행 가능 시각만 미룬다.
+
+    availableAt 을 미루지 않으면 워커 복구 스캔이 같은 건을 곧바로 다시 잡아
+    오류가 반복되는 동안 루프가 공회전한다.
+    """
+    resolved_config = config or get_weekly_report_config()
+    deferred_report = copy.deepcopy(dict(report))
+    if not _is_next_plan_actionable(deferred_report):
+        return {"changed": False, "report": deferred_report}
+
+    worker = dict(deferred_report.get("worker") or {})
+    worker["availableAt"] = _format_utc(
+        now + timedelta(seconds=resolved_config.next_plan_retry_delay_seconds),
+    )
+    deferred_report["worker"] = worker
+    return {"changed": True, "report": deferred_report}
+
+
+def _update_next_plan(
+    report: Mapping[str, object],
+    status: str,
+    next_study_plan_id: int | None,
+    blocked_reason: str | None,
+) -> dict[str, object]:
+    updated_report = copy.deepcopy(dict(report))
+    if not _is_next_plan_actionable(updated_report):
+        return {"changed": False, "report": updated_report}
+
+    next_plan = dict(updated_report.get("nextPlan") or {})
+    next_plan["status"] = status
+    next_plan["studyPlanId"] = next_study_plan_id
+    next_plan["blockedReason"] = blocked_reason
+    updated_report["nextPlan"] = next_plan
+    return {"changed": True, "report": updated_report}
+
+
+def _is_next_plan_actionable(report: Mapping[str, object]) -> bool:
+    """ready 리포트의 대기·보류 다음 계획만 상태를 바꿀 수 있다.
+
+    succeeded·failed 는 종결 상태다. 여기서 거르지 않으면 늦게 도착한
+    워커·동기화 경합이 이미 만든 계획 번호를 덮어쓴다.
+    """
+    if report.get("status") != "ready":
+        return False
+    next_plan = report.get("nextPlan")
+    if not isinstance(next_plan, Mapping):
+        return False
+    return str(next_plan.get("status") or "") in NEXT_PLAN_ACTIONABLE_STATUSES
 
 
 def _is_stuck(

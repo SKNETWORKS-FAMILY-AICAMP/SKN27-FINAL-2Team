@@ -18,9 +18,18 @@ class FactGraphReleaseTest(unittest.TestCase):
             build_fact_graph_release,
             read_json,
         )
+        from etl.preprocessing.neo4j.runners.report_canonical_duplicate_names import (
+            build_duplicate_name_report,
+        )
 
         config = read_json(neo4j_root / "config" / "fact_graph_release.json")
         cls.config = config
+        cls.release_directory = (
+            neo4j_root / "output" / "fact_graph_release"
+        )
+        cls.build_duplicate_name_report = staticmethod(
+            build_duplicate_name_report
+        )
         cls.package = build_fact_graph_release(
             neo4j_root / "output",
             config,
@@ -79,27 +88,70 @@ class FactGraphReleaseTest(unittest.TestCase):
             "SOURCE_CONFLICT",
         )
 
-    def test_contextual_merge_never_crosses_predicates(self) -> None:
+    def test_contextual_merge_keeps_distinct_relations_on_one_node(
+        self,
+    ) -> None:
         fact_by_id = {
             row["fact_id"]: row
             for row in self.package["facts"]
         }
+        multi_predicate_group_count = 0
         for entity in self.package["entities"]:
             if entity["source_node_kind"] != "CONTEXTUAL_GROUP":
                 continue
-            related_predicates = {
-                fact["predicate"]
+            related_facts = [
+                fact
                 for fact in fact_by_id.values()
                 if entity["entity_id"]
                 in {
                     fact["subject_entity_id"],
                     fact["object_entity_id"],
                 }
+            ]
+            related_predicates = {
+                fact["predicate"]
+                for fact in related_facts
             }
+            expected_predicates = set(
+                json.loads(entity["context_predicates_json"])
+            )
+            related_directions = set()
+            for fact in related_facts:
+                if (
+                    fact["subject_entity_id"]
+                    == entity["context_anchor_id"]
+                    and fact["object_entity_id"]
+                    == entity["entity_id"]
+                ):
+                    related_directions.add("OUT")
+                elif (
+                    fact["object_entity_id"]
+                    == entity["context_anchor_id"]
+                    and fact["subject_entity_id"]
+                    == entity["entity_id"]
+                ):
+                    related_directions.add("IN")
+            expected_directions = set(
+                json.loads(entity["context_directions_json"])
+            )
             self.assertEqual(
                 related_predicates,
-                {entity["context_predicate"]},
+                expected_predicates,
             )
+            self.assertEqual(related_directions, expected_directions)
+            expected_predicate_value = "MULTIPLE"
+            if len(expected_predicates) == 1:
+                expected_predicate_value = next(
+                    iter(expected_predicates)
+                )
+            self.assertEqual(
+                entity["context_predicate"],
+                expected_predicate_value,
+            )
+            if len(expected_predicates) > 1:
+                multi_predicate_group_count += 1
+
+        self.assertGreater(multi_predicate_group_count, 0)
 
     def test_source_node_is_represented_by_at_most_one_entity(self) -> None:
         entity_ids_by_source_node_id: dict[str, set[str]] = defaultdict(set)
@@ -366,6 +418,150 @@ class FactGraphReleaseTest(unittest.TestCase):
                 for row in self.package["entity_names"]
                 if row["target_resolution_status"] == "AMBIGUOUS"
             )
+        )
+
+    def test_candidate_endpoint_resolution_targets_canonical_entities(
+        self,
+    ) -> None:
+        entity_by_id = {
+            row["entity_id"]: row
+            for row in self.package["entities"]
+        }
+        resolved_endpoint_count = 0
+
+        for fact in self.package["facts"]:
+            for side in ("subject", "object"):
+                resolution_method = fact[
+                    f"{side}_endpoint_resolution_method"
+                ]
+                if not resolution_method:
+                    continue
+                resolved_endpoint_count += 1
+                entity = entity_by_id[fact[f"{side}_entity_id"]]
+                self.assertEqual(entity["entity_kind"], "CANONICAL")
+                self.assertEqual(
+                    fact[f"{side}_node_kind"],
+                    self.config["resolved_node_kind"],
+                )
+
+        self.assertGreater(resolved_endpoint_count, 0)
+
+    def test_bare_person_name_is_not_resolved_by_uniqueness(self) -> None:
+        entity_by_id = {
+            row["entity_id"]: row
+            for row in self.package["entities"]
+        }
+        unsafe_resolution_methods = {
+            "UNIQUE_CANONICAL_NAME_TYPE",
+            "UNIQUE_SOURCE_ALIAS_TYPE",
+        }
+        unsafe_person_resolutions = []
+        safe_contextual_person_resolution_count = 0
+
+        for fact in self.package["facts"]:
+            for side in ("subject", "object"):
+                resolution_method = fact[
+                    f"{side}_endpoint_resolution_method"
+                ]
+                if not resolution_method:
+                    continue
+                entity = entity_by_id[fact[f"{side}_entity_id"]]
+                if entity["entity_type"] != "Person":
+                    continue
+                if resolution_method in unsafe_resolution_methods:
+                    unsafe_person_resolutions.append(
+                        fact[f"{side}_source_node_id"]
+                    )
+                if resolution_method in {
+                    "UNIQUE_QUALIFIED_SOURCE_ALIAS_TYPE",
+                    "EVIDENCE_QUALIFIED_SOURCE_ALIAS",
+                }:
+                    safe_contextual_person_resolution_count += 1
+
+        self.assertFalse(unsafe_person_resolutions)
+        self.assertGreater(safe_contextual_person_resolution_count, 0)
+
+    def test_goryeo_taejo_hubaekje_duplicates_are_collapsed(
+        self,
+    ) -> None:
+        goryeo_taejo_term_ids = {
+            row["exam_term_id"]
+            for row in self.package["exam_terms"]
+            if row["term"] == "고려 태조"
+        }
+        goryeo_taejo_canonical_ids = {
+            row["canonical_id"]
+            for row in self.package["exam_term_links"]
+            if row["exam_term_id"] in goryeo_taejo_term_ids
+            and row["match_status"]
+            == self.config["accepted_match_status"]
+        }
+        hubaekje_canonical_ids = {
+            row["entity_id"]
+            for row in self.package["entities"]
+            if row["entity_kind"] == "CANONICAL"
+            and row["display_name"] == "후백제"
+        }
+
+        self.assertEqual(len(goryeo_taejo_canonical_ids), 1)
+        self.assertEqual(len(hubaekje_canonical_ids), 1)
+        matching_relations = [
+            row
+            for row in self.package["semantic_relations"]
+            if row["subject_entity_id"]
+            in goryeo_taejo_canonical_ids
+            and row["predicate"] == "ANNEXED"
+            and row["object_entity_id"] in hubaekje_canonical_ids
+        ]
+        self.assertEqual(len(matching_relations), 1)
+        self.assertGreater(
+            int(matching_relations[0]["fact_count"]),
+            1,
+        )
+
+        duplicate_names = {"고려태조", "후백제"}
+        remaining_provisional_duplicates = [
+            row["entity_id"]
+            for row in self.package["entities"]
+            if row["entity_kind"] != "CANONICAL"
+            and row["normalized_search_text"] in duplicate_names
+        ]
+        self.assertFalse(remaining_provisional_duplicates)
+
+    def test_canonical_duplicate_name_report_includes_eras(
+        self,
+    ) -> None:
+        rows, summary = self.build_duplicate_name_report(
+            self.release_directory
+        )
+        group_ids = {
+            row["duplicate_group_id"]
+            for row in rows
+        }
+
+        self.assertEqual(
+            len(group_ids),
+            summary["duplicate_name_group_count"],
+        )
+        self.assertEqual(
+            len(rows),
+            summary[
+                "canonical_entity_in_duplicate_name_group_count"
+            ],
+        )
+        sejong_rows = [
+            row
+            for row in rows
+            if row["normalized_name"] == "세종"
+        ]
+        self.assertEqual(len(sejong_rows), 2)
+        self.assertEqual(
+            {
+                era_name
+                for row in sejong_rows
+                for era_name in json.loads(row["era_names_json"])
+            },
+            {"삼국시대", "조선"},
         )
 
 

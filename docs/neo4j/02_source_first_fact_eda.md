@@ -147,11 +147,13 @@ anchor끼리 연결된 기존 사실은 299개다.
 이 EDA 이후 최종 정책을 통과한 assertion을 별도 Fact DB에 적재했다.
 
 ```text
-Fact assertion: 39,852개
-직접 의미 관계: 39,745개
-EvidenceSpan: 39,961개
-양 endpoint 해소 Fact: 623개
-미해소 endpoint 포함 Fact: 39,229개
+Fact assertion: 39,836개
+직접 의미 관계: 35,064개
+EvidenceSpan: 39,945개
+양 endpoint 해소 Fact: 1,083개
+기본 검색 허용 Fact: 920개
+terminal Fact: 7,235개
+미해소 endpoint 포함 Fact: 38,753개
 ```
 
 이 문서의 `315개 직접 사실`과 `1,464개 탐색 후보`는 당시 EDA 분모이며 현재

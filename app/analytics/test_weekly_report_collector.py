@@ -6,6 +6,7 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from datetime import date
 from unittest import TestCase
 from unittest.mock import MagicMock, patch
@@ -936,3 +937,145 @@ class StrengthOverlapTests(TestCase):
 
         self.assertEqual(len(result["strengths"]), 1)
         self.assertEqual(result["priorityImprovements"], [])
+
+
+class FindRecoverableSessionsTests(TestCase):
+    """복구 스캔 후보 선별.
+
+    주간복습을 마치지 않은 계획이 후보에 남으면 스캔 주기를 짧게 잡을 수 없다.
+    """
+
+    def find(self, plan_rows, record_rows, plan_item_rows):
+        with patch(f"{MODULE}.repository") as repository_module, \
+                patch(f"{MODULE}.SolveRecords") as solve_records, \
+                patch(f"{MODULE}.StudyPlanMypage") as study_plan_model:
+            repository_module.find_plans_without_report.return_value = plan_rows
+            queryset = solve_records.objects.filter.return_value
+            queryset = queryset.exclude.return_value.exclude.return_value
+            queryset.values.return_value.distinct.return_value = record_rows
+            study_plan_model.objects.filter.return_value.values.return_value = plan_item_rows
+            return collector.find_recoverable_sessions()
+
+    def test_plan_without_a_finished_weekly_review_is_skipped(self) -> None:
+        found = self.find(
+            plan_rows=[{"studyplan_id": 77, "user_id": 1}],
+            record_rows=[],
+            plan_item_rows=[],
+        )
+
+        self.assertEqual(found, [])
+
+    def test_record_from_a_practice_block_is_ignored(self) -> None:
+        found = self.find(
+            plan_rows=[{"studyplan_id": 77, "user_id": 1}],
+            record_rows=[
+                {"studyplan_id": 77, "study_plan_block_id": "practice-1", "session_id": 30},
+            ],
+            plan_item_rows=[
+                {
+                    "studyplan_id": 77,
+                    "study_plan_items": [
+                        {"blocks": [{"blockId": "review-1", "blockType": "weekly_review"}]},
+                    ],
+                },
+            ],
+        )
+
+        self.assertEqual(found, [])
+
+    def test_latest_weekly_review_session_becomes_the_source(self) -> None:
+        found = self.find(
+            plan_rows=[{"studyplan_id": 77, "user_id": 1}],
+            record_rows=[
+                {"studyplan_id": 77, "study_plan_block_id": "review-1", "session_id": 30},
+                {"studyplan_id": 77, "study_plan_block_id": "review-1", "session_id": 41},
+            ],
+            plan_item_rows=[
+                {
+                    "studyplan_id": 77,
+                    "study_plan_items": [
+                        {"blocks": [{"blockId": "review-1", "blockType": "weekly_review"}]},
+                    ],
+                },
+            ],
+        )
+
+        self.assertEqual(
+            found,
+            [{"userId": 1, "studyPlanId": 77, "sourceSessionId": 41}],
+        )
+
+
+class DispatchWeeklyReportTests(TestCase):
+    """주간복습 완료 직후 생성 경로.
+
+    제출 응답을 붙잡으면 안 되므로 생성은 스레드로 빠져야 한다.
+    """
+
+    def dispatch(self, created: bool, inline_enabled: bool = True):
+        from analytics.service.weekly_report import dispatcher
+
+        config = get_weekly_report_config()
+        config = replace(config, inline_generation_enabled=inline_enabled)
+        with patch(f"{MODULE}.enqueue_weekly_report", return_value=created) as enqueue, \
+                patch(
+                    "analytics.service.weekly_report.dispatcher.threading.Thread",
+                ) as thread_class:
+            started = dispatcher.dispatch_weekly_report(1, 30, 77, config=config)
+        return started, enqueue, thread_class
+
+    def test_new_report_starts_a_background_thread(self) -> None:
+        started, enqueue, thread_class = self.dispatch(created=True)
+
+        self.assertTrue(started)
+        self.assertEqual(enqueue.call_args.args, (1, 30, 77))
+        thread_class.return_value.start.assert_called_once()
+
+    def test_duplicate_submission_does_not_generate_again(self) -> None:
+        started, _, thread_class = self.dispatch(created=False)
+
+        self.assertFalse(started)
+        thread_class.assert_not_called()
+
+    def test_disabled_setting_leaves_the_report_to_the_worker(self) -> None:
+        started, _, thread_class = self.dispatch(created=True, inline_enabled=False)
+
+        self.assertTrue(started)
+        thread_class.assert_not_called()
+
+
+class InlineGenerationRetryTests(TestCase):
+    """즉시 생성이 실패했을 때의 재시도.
+
+    한 번만 돌면 리포트가 pending 으로 남아 화면이 '작성 중' 에 갇힌다.
+    """
+
+    def run_background(self, codes):
+        from analytics.service.weekly_report import dispatcher
+
+        config = replace(get_weekly_report_config(), retry_delays_seconds=(0, 0))
+        with patch(
+            "analytics.management.commands.run_weekly_report_worker.process_one_report",
+            side_effect=codes,
+        ) as process, patch(
+            "analytics.service.weekly_report.dispatcher.time.sleep",
+        ) as sleep:
+            dispatcher._generate_in_background(config, 77)
+        return process, sleep
+
+    def test_retries_until_the_report_is_confirmed(self) -> None:
+        process, sleep = self.run_background(["retried", "retried", "ready"])
+
+        self.assertEqual(process.call_count, 3)
+        self.assertEqual(sleep.call_count, 2)
+
+    def test_stops_as_soon_as_it_is_ready(self) -> None:
+        process, sleep = self.run_background(["ready", "retried", "retried"])
+
+        self.assertEqual(process.call_count, 1)
+        sleep.assert_not_called()
+
+    def test_stops_when_another_worker_took_it(self) -> None:
+        process, _ = self.run_background(["idle", "ready", "ready"])
+
+        self.assertEqual(process.call_count, 1)

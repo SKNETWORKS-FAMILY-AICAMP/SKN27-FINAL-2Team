@@ -167,6 +167,27 @@ def find_plans_without_report() -> list[dict[str, object]]:
     )
 
 
+def find_next_plan_candidates() -> list[dict[str, object]]:
+    """리포트는 ready 인데 다음 계획이 pending 으로 남은 행. 복구 스캔이 쓴다.
+
+    다음 계획 생성 직전에 워커가 죽은 건을 다시 집기 위한 조회다.
+    blocked 는 여기서 다루지 않는다. 진행 세션 재확인은 마이페이지 동기화가
+    recheck_user_next_plan 으로 수행한다.
+    """
+    rows = (
+        StudyPlanMypage.objects.filter(
+            weekly_report_data__status="ready",
+            weekly_report_data__nextPlan__status="pending",
+        )
+        .order_by("studyplan_id")
+        .values("studyplan_id", "weekly_report_data")
+    )
+    return [
+        {"studyPlanId": row["studyplan_id"], "report": row["weekly_report_data"]}
+        for row in rows
+    ]
+
+
 def _lock_report(study_plan_id: int) -> dict[str, object] | None:
     """행을 잠그고 최신 리포트를 읽는다.
 

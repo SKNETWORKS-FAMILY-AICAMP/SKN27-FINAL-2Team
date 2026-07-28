@@ -254,61 +254,87 @@ def has_previous_weekly_review(user_id: int, source_session_id: int) -> bool:
     )
 
 
-def find_recoverable_sessions() -> list[dict[str, object]]:
+def find_recoverable_sessions(
+    config: WeeklyReportConfig | None = None,
+) -> list[dict[str, object]]:
     """리포트가 없는 활성 계획 중, 그 계획에서 실제로 주간복습을 마친 건을 돌려준다.
 
-    워커의 복구 스캔이 쓴다. 트리거가 실패해 리포트가 누락된 건을 줍는 용도다.
+    워커의 복구 스캔이 쓴다. 트리거가 없거나 실패한 건을 줍는 용도다.
 
     계획에 연결된 세션만 본다. 사용자의 최근 주간복습 세션을 그대로 가져다
     쓰면, 리포트가 없는 것이 정상인 갓 만든 계획에 지난주 리포트가 얹힌다.
+
+    계획 수와 무관하게 조회는 세 번이다. 스캔 주기를 짧게 잡아도 비용이
+    계획 수에 비례해 늘지 않게 하려는 것이다.
     """
-    recoverable: list[dict[str, object]] = []
-    for plan in repository.find_plans_without_report():
-        study_plan_id = int(plan["studyplan_id"])
-        source_session_id = _find_plan_weekly_review_session(study_plan_id)
-        if source_session_id is None:
-            continue
-        recoverable.append(
-            {
-                "userId": int(plan["user_id"]),
-                "studyPlanId": study_plan_id,
-                "sourceSessionId": source_session_id,
-            }
+    resolved_config = config or get_weekly_report_config()
+    user_by_plan = {
+        int(plan["studyplan_id"]): int(plan["user_id"])
+        for plan in repository.find_plans_without_report()
+    }
+    if not user_by_plan:
+        return []
+
+    # 주간복습을 아직 마치지 않은 계획은 여기서 걸러진다. 계획마다 풀이 기록을
+    # 따로 조회하면 스캔 주기를 줄일수록 쿼리가 계획 수만큼 늘어난다.
+    session_rows = list(
+        SolveRecords.objects.filter(
+            studyplan_id__in=list(user_by_plan),
+            session__status=resolved_config.completed_session_status,
+            session__session_type=resolved_config.weekly_review_session_type,
         )
-    return recoverable
+        .exclude(study_plan_block_id__isnull=True)
+        .exclude(study_plan_block_id="")
+        .values("studyplan_id", "study_plan_block_id", "session_id")
+        .distinct()
+    )
+    if not session_rows:
+        return []
+
+    review_block_ids = _collect_weekly_review_block_ids(
+        {int(row["studyplan_id"]) for row in session_rows},
+    )
+    latest_session_by_plan: dict[int, int] = {}
+    for row in session_rows:
+        study_plan_id = int(row["studyplan_id"])
+        block_id = str(row["study_plan_block_id"])
+        if block_id not in review_block_ids.get(study_plan_id, set()):
+            continue
+        session_id = int(row["session_id"])
+        if session_id > latest_session_by_plan.get(study_plan_id, 0):
+            latest_session_by_plan[study_plan_id] = session_id
+
+    return [
+        {
+            "userId": user_by_plan[study_plan_id],
+            "studyPlanId": study_plan_id,
+            "sourceSessionId": session_id,
+        }
+        for study_plan_id, session_id in sorted(latest_session_by_plan.items())
+    ]
 
 
-def _find_plan_weekly_review_session(study_plan_id: int) -> int | None:
-    """이 계획의 주간복습 블록으로 완료된 세션. 없으면 None."""
+def _collect_weekly_review_block_ids(
+    study_plan_ids: set[int],
+) -> dict[int, set[str]]:
+    """계획별 주간복습 블록 ID. 블록 종류는 JSON 안에 있어 SQL 로는 못 거른다."""
     from analytics.serializers import parse_study_plan_items
     from analytics.service.studyplan import is_weekly_review_plan_block
 
-    study_plan = StudyPlanMypage.objects.filter(studyplan_id=study_plan_id).first()
-    if study_plan is None:
-        return None
-
-    block_ids = [
-        str(block.get("blockId"))
-        for day_plan in parse_study_plan_items(study_plan.study_plan_items)
-        for block in day_plan.get("blocks", [])
-        if block.get("blockId") and is_weekly_review_plan_block(block)
-    ]
-    if not block_ids:
-        return None
-
-    session_id = (
-        SolveRecords.objects.filter(
-            studyplan_id=study_plan_id,
-            study_plan_block_id__in=block_ids,
-            session__status="completed",
-        )
-        .order_by("-session_id")
-        .values_list("session_id", flat=True)
-        .first()
-    )
-    if session_id is None:
-        return None
-    return int(session_id)
+    block_ids_by_plan: dict[int, set[str]] = {}
+    rows = StudyPlanMypage.objects.filter(
+        studyplan_id__in=list(study_plan_ids),
+    ).values("studyplan_id", "study_plan_items")
+    for row in rows:
+        block_ids = {
+            str(block.get("blockId"))
+            for day_plan in parse_study_plan_items(row["study_plan_items"])
+            for block in day_plan.get("blocks", [])
+            if block.get("blockId") and is_weekly_review_plan_block(block)
+        }
+        if block_ids:
+            block_ids_by_plan[int(row["studyplan_id"])] = block_ids
+    return block_ids_by_plan
 
 
 def _build_priority_targets_or_empty(user_id: int, today: date) -> list[object]:

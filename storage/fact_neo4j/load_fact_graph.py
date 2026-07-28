@@ -161,6 +161,8 @@ SET n.display_name = row.display_name,
     n.context_anchor_id = row.context_anchor_id,
     n.context_direction = row.context_direction,
     n.context_predicate = row.context_predicate,
+    n.context_directions_json = row.context_directions_json,
+    n.context_predicates_json = row.context_predicates_json,
     n.lifecycle_status = row.lifecycle_status,
     n.identity_confidence = CASE
         WHEN row.identity_confidence = '' THEN null
@@ -185,8 +187,12 @@ MERGE (n:Fact {fact_id: row.fact_id})
 SET n.predicate = row.predicate,
     n.subject_source_node_id = row.subject_source_node_id,
     n.subject_identity_node_id = row.subject_identity_node_id,
+    n.subject_endpoint_resolution_method =
+        row.subject_endpoint_resolution_method,
     n.object_source_node_id = row.object_source_node_id,
     n.object_identity_node_id = row.object_identity_node_id,
+    n.object_endpoint_resolution_method =
+        row.object_endpoint_resolution_method,
     n.assertion_count = toInteger(row.assertion_count),
     n.relation_status = row.relation_status,
     n.endpoint_status = row.endpoint_status,
@@ -620,6 +626,19 @@ WHERE r.semantic_relation_id IS NOT NULL
 RETURN count(r) AS count
 """
         ).single()["count"],
+        "unsafe_candidate_endpoint_resolution_count": session.run(
+            """
+MATCH (fact:Fact)-[:SUBJECT]->(subject:GraphEntity)
+WHERE fact.subject_endpoint_resolution_method <> ''
+  AND NOT subject:CanonicalEntity
+RETURN count(fact) AS count
+UNION ALL
+MATCH (fact:Fact)-[:OBJECT]->(object:GraphEntity)
+WHERE fact.object_endpoint_resolution_method <> ''
+  AND NOT object:CanonicalEntity
+RETURN count(fact) AS count
+"""
+        ).values(),
         "duplicate_semantic_relation_id_count": session.run(
             """
 MATCH (:GraphEntity)-[r]->(:GraphEntity)
@@ -700,6 +719,12 @@ RETURN count(*) AS count
 """
         ).single()["count"],
     }
+    query_results["unsafe_candidate_endpoint_resolution_count"] = sum(
+        int(row[0])
+        for row in query_results[
+            "unsafe_candidate_endpoint_resolution_count"
+        ]
+    )
 
     expected = {
         "graph_entity_count": statistics["entity_count"],
@@ -720,6 +745,7 @@ RETURN count(*) AS count
         "unsafe_retrieval_relationship_count": 0,
         "unsafe_terminal_relationship_count": 0,
         "unsafe_provisional_traversal_count": 0,
+        "unsafe_candidate_endpoint_resolution_count": 0,
         "duplicate_semantic_relation_id_count": 0,
         "direct_fact_reference_count": statistics["fact_count"],
         "canonical_without_exact_search_key_count": 0,
