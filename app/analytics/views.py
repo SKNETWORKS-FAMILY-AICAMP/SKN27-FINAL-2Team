@@ -41,7 +41,14 @@ from analytics.service.studyplan import (
     get_study_plan_info,
 )
 from analytics.service.study_plan.config import get_study_plan_config
-from analytics.service.study_plan.service import synchronize_active_study_plan
+from analytics.service.study_plan.service import (
+    get_archived_study_plan_dtos,
+    synchronize_active_study_plan,
+)
+from analytics.service.weekly_report.next_plan import (
+    NEXT_PLAN_SUCCEEDED,
+    recheck_user_next_plan,
+)
 from analytics.service.weekly_report.repository import load_report
 from analytics.service.weekly_report.service import render_report_dto
 
@@ -63,6 +70,7 @@ def mypage(request):
         study_plan,
         today,
         plan_generation_available,
+        history_study_plans=get_archived_study_plan_dtos(user_id, today),
     )
     wrong_type_summary = build_wrong_type_summary(request.user, today)
     wrong_rate_summaries = [
@@ -297,12 +305,30 @@ def synchronize_study_plan_view(request):
     except (TypeError, ValueError):
         return JsonResponse({"ok": False}, status=400)
 
+    # 보류·대기 중인 다음 계획을 먼저 재확인한다. 풀이가 끝난 뒤 마이페이지에
+    # 들어오는 이 경로가 blocked 를 풀 수 있는 유일한 지점이다.
+    next_plan_code = recheck_next_plan_safely(request.user.user_id)
     result = synchronize_active_study_plan(request.user.user_id, study_plan_id)
     if result is None:
         return JsonResponse({"ok": False}, status=404)
+    if next_plan_code == NEXT_PLAN_SUCCEEDED:
+        # 새 계획이 생겼으면 넘겨받은 옛 계획 번호 기준 동기화는 changed=False 다.
+        # 화면이 새 계획을 다시 그리도록 changed 를 올려서 돌려준다.
+        result = {**result, "changed": True}
     return JsonResponse(
         {"ok": True, "weeklyReport": get_weekly_report_dto(request.user.user_id), **result},
     )
+
+
+def recheck_next_plan_safely(user_id: int) -> str | None:
+    """다음 계획 재확인 실패가 동기화 응답을 깨면 안 되므로 예외를 삼킨다."""
+    try:
+        return recheck_user_next_plan(user_id)
+    except Exception:
+        logging.getLogger(__name__).exception(
+            "다음 계획 재확인 실패 user=%s", user_id,
+        )
+        return None
 
 
 def get_json_request_data(request):

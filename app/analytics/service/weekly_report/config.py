@@ -34,7 +34,9 @@ class WeeklyReportConfig:
     claim_candidate_count: int
     maximum_attempt_count: int
     retry_delays_seconds: tuple[int, ...]
+    next_plan_retry_delay_seconds: int
     completed_session_status: str
+    in_progress_session_status: str
     weekly_review_session_type: str
     inline_generation_enabled: bool
     model: str
@@ -92,7 +94,10 @@ def get_weekly_report_config() -> WeeklyReportConfig:
         claim_candidate_count=20,
         maximum_attempt_count=3,
         retry_delays_seconds=(30, 120),
+        # 다음 계획 생성이 일시적 인프라 오류로 밀렸을 때 워커가 다시 시도할 간격.
+        next_plan_retry_delay_seconds=60,
         completed_session_status="completed",
+        in_progress_session_status="in_progress",
         weekly_review_session_type="diagnostic",
         inline_generation_enabled=inline_generation_enabled,
         model=configured_model,

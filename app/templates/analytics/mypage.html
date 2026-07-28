@@ -197,7 +197,7 @@
             <p>계획을 세우고, 꾸준히 실천해요.</p>
           </div>
           <img class="planner-flower" src="{% static 'chatbot/assets/chat-floral.png' %}" alt="" aria-hidden="true" />
-          {% if planner_summary.can_create_plan %}
+          {% if planner_summary.show_create_plan %}
             <div class="planner-header-actions">
               <form
                 class="planner-create-form"
@@ -210,7 +210,12 @@
                 {% if planner_summary.active_study_plan_id %}
                   <input type="hidden" name="sourceStudyPlanId" value="{{ planner_summary.active_study_plan_id }}" />
                 {% endif %}
-                <button class="planner-create" type="submit">{{ planner_summary.create_plan_label }}</button>
+                <button
+                  class="planner-create"
+                  type="submit"
+                  data-disabled-message="{{ planner_summary.create_plan_disabled_message }}"
+                  {% if not planner_summary.can_create_plan %}disabled aria-disabled="true"{% endif %}
+                >{{ planner_summary.create_plan_label }}</button>
               </form>
             </div>
           {% endif %}
@@ -246,9 +251,6 @@
               <div>
                 <span id="plannerDayKicker">선택한 날짜</span>
                 <strong id="plannerDayLabel">{{ planner_summary.day_label }}</strong>
-              </div>
-              <div class="planner-day-actions">
-                <button class="planner-date-change" id="plannerDateChange" type="button">학습일 변경</button>
               </div>
             </div>
 
@@ -303,7 +305,6 @@
     const createPlanForm = document.getElementById("createPlanForm");
     const plannerCalendarGrid = document.getElementById("plannerCalendarGrid");
     const plannerMonthLabel = document.getElementById("plannerMonthLabel");
-    const plannerDateChange = document.getElementById("plannerDateChange");
     const prevPlannerMonth = document.getElementById("prevPlannerMonth");
     const nextPlannerMonth = document.getElementById("nextPlannerMonth");
     const plannerDayKicker = document.getElementById("plannerDayKicker");
@@ -318,9 +319,6 @@
     const completedKeys = new Set(plannerData.completedKeys || []);
     const plannedKeys = new Set(plannerData.plannedKeys || []);
     const progressByDate = plannerData.progressByDate || {};
-    plannerDateChange?.addEventListener("click", () => {
-      document.querySelector(".planner-calendar button.selected")?.focus();
-    });
     const getCookie = (name) => {
       const cookies = document.cookie ? document.cookie.split("; ") : [];
       for (const cookie of cookies) {

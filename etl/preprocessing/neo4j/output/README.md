@@ -1,6 +1,6 @@
 # Neo4j 전처리 산출물
 
-> 기준일: 2026-07-27
+> 기준일: 2026-07-28
 
 ## 주요 폴더
 
@@ -46,6 +46,14 @@ EDA는 검토 파일을 만들며 DB에 적재하지 않는다.
 `HAS_MOTHER`로 통합한다. 친생 여부는 `relation_qualifiers_json`과 Neo4j의
 `kinship_kind` 속성에 보존된다.
 
+후보 endpoint는 이름별 예외 없이 공식 출처 이름·별칭·EntityType과 근거
+문맥으로 유일할 때만 CanonicalEntity로 투영한다. 인물의 단독 이름은 자동
+투영하지 않는다.
+
+같은 canonical 인물에 연결된 동일 이름·타입 후보는 `ANCHOR_LOCAL` 노드
+하나로 표현한다. Predicate가 달라도 노드는 공유하지만 관계·Fact·Evidence는
+각각 유지한다.
+
 팀원 적재:
 
 ```powershell
@@ -65,18 +73,29 @@ docker compose --env-file .env -f storage\fact_neo4j\docker-compose.yml up -d
 release 재생성·적재는 상위 input을 모두 가진 환경에서 `--load-only` 없이 실행한다.
 
 ```text
-release = korean-history-fact-graph-2026-07-27-contextual-v5
-GraphEntity = 19,437
+release = korean-history-fact-graph-2026-07-28-contextual-v7
+GraphEntity = 19,186
 CanonicalEntity = 4,786
-ProvisionalEntity = 14,651
+ProvisionalEntity = 14,400
 Fact = 39,836
-direct semantic relation = 35,193
+direct semantic relation = 35,064
 EvidenceSpan = 39,945
 canonical endpoint projected Fact = 326
-terminal retrieval Fact = 7,103
-default fact-covered exam term = 363
-terminal fact-covered exam term = 699
+candidate endpoint resolved Fact = 288
+terminal retrieval Fact = 7,235
+default fact-covered exam term = 364
+terminal fact-covered exam term = 713
 multi-entity source = 0
 duplicate evidence-predicate endpoint group = 0
+CSV reproducibility = 20/20 identical
 load verification = NOT_RUN
 ```
+
+Canonical 동일 이름과 시대 보고서:
+
+```powershell
+.\.venv\Scripts\python.exe etl\preprocessing\neo4j\runners\report_canonical_duplicate_names.py
+```
+
+출력은 `fact_graph_eda/canonical_duplicate_name_eras.csv`와
+`canonical_duplicate_name_era_summary.json`이다.

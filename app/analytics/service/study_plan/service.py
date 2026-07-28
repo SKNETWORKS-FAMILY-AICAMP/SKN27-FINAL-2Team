@@ -82,6 +82,45 @@ def get_active_study_plan_dto(
     )
 
 
+def get_archived_study_plan_dtos(
+    user_id: int,
+    today: date | None = None,
+    limit: int | None = None,
+) -> list[dict[str, object]]:
+    """달력 기록 표시용 보관 계획 DTO 목록. 최신 보관 계획부터 돌려준다.
+
+    표시 전용이다. 보관 계획 블록은 새로 시작할 수 없으므로 화면 쪽에서
+    시작·삭제 버튼을 만들지 않아야 한다.
+    """
+    from analytics.models import StudyPlanMypage
+    from django.utils import timezone
+
+    config = get_study_plan_config()
+    base_date = today or timezone.localdate(
+        timezone=ZoneInfo(config.timezone),
+    )
+    resolved_limit = limit or config.history_display_limit
+    archived_plans = (
+        StudyPlanMypage.objects.filter(user_id=user_id, status="archived")
+        .order_by("-plan_version", "-modified_at")[:resolved_limit]
+    )
+    archived_dtos: list[dict[str, object]] = []
+    for study_plan in archived_plans:
+        completed_ids, in_progress_ids = _get_progress_block_ids(
+            user_id,
+            study_plan.studyplan_id,
+        )
+        archived_dtos.append(
+            build_study_plan_dto(
+                study_plan,
+                base_date,
+                completed_ids,
+                in_progress_ids,
+            )
+        )
+    return archived_dtos
+
+
 def create_personalized_study_plan(
     user_id: int,
     source_study_plan_id: int | None = None,
@@ -546,7 +585,6 @@ def validate_study_plan_block_start(
     ).first()
     if study_plan is None:
         raise StudyPlanBlockNotFound("활성 학습계획을 찾을 수 없습니다.")
-    completed_ids, in_progress_ids = _get_progress_block_ids(user_id, study_plan_id)
     return validate_block_start(
         study_plan.status,
         parse_plan_items(study_plan.study_plan_items),
@@ -556,8 +594,6 @@ def validate_study_plan_block_start(
             timezone=ZoneInfo(get_study_plan_config().timezone),
         ),
         route,
-        completed_ids,
-        in_progress_ids,
     )
 
 
@@ -688,8 +724,6 @@ def validate_block_start(
     block_id: str,
     today: date,
     route: str,
-    completed_block_ids: set[str] | None = None,
-    in_progress_block_ids: set[str] | None = None,
 ) -> dict[str, object]:
     if plan_status != "active":
         raise StudyPlanBlockTerminal("활성 계획의 블록만 새로 시작할 수 있습니다.")
@@ -708,8 +742,8 @@ def validate_block_start(
                 str(block_id),
                 plan_date,
                 today,
-                completed_block_ids or set(),
-                in_progress_block_ids or set(),
+                set(),
+                set(),
             )
             if status in ("completed", "missed", "cancelled"):
                 raise StudyPlanBlockTerminal("종료된 블록은 새로 시작할 수 없습니다.")

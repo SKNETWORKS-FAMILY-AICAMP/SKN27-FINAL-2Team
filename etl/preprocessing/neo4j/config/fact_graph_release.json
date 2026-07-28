@@ -1,6 +1,6 @@
 {
-  "policy_version": "fact-graph-release-v1.5",
-  "graph_release_id": "korean-history-fact-graph-2026-07-27-contextual-v5",
+  "policy_version": "fact-graph-release-v1.7",
+  "graph_release_id": "korean-history-fact-graph-2026-07-28-contextual-v7",
   "graph_release_prefix": "korean-history-fact-graph-",
   "input_paths": {
     "fact_graph_facts": "fact_graph_load/fact_graph_facts.csv",
@@ -10,6 +10,8 @@
     "relation_review_tasks": "internal/model_review/relation_review/relation_review_tasks.jsonl",
     "relation_review_decisions": "internal/model_review/relation_review/relation_review_final_decisions.csv",
     "canonical_entities": "final_identity/neo4j_canonical_entity_nodes.csv",
+    "canonical_registry": "final_identity/canonical_entity_registry.csv",
+    "source_nodes": "source_relationships/source_record_nodes.csv",
     "entity_names": "final_identity/neo4j_entity_name_nodes.csv",
     "entity_name_links": "final_identity/neo4j_name_to_entity_relationships.csv",
     "exam_terms": "final_identity/neo4j_exam_term_nodes.csv",
@@ -24,6 +26,12 @@
     "identity_conflict_decisions": "../config/source_identity_conflict_decisions.json"
   },
   "output_directory": "fact_graph_release",
+  "stale_runtime_artifacts": [
+    "neo4j_load_manifest.json",
+    "pipeline_manifest.json",
+    "neo4j_load_stdout.log",
+    "neo4j_load_stderr.log"
+  ],
   "existing_fact_status": "VERIFIED",
   "accepted_relation_review_statuses": [
     "REVIEWED_APPROVED_ONE_HOP",
@@ -41,7 +49,10 @@
     "anchor_entity_type": "Person",
     "minimum_distinct_source_node_count": 2,
     "minimum_normalized_name_length": 2,
-    "merge_scope": "ANCHOR_PREDICATE_LOCAL"
+    "group_across_predicates": true,
+    "group_across_directions": true,
+    "require_exclusive_source_membership": true,
+    "merge_scope": "ANCHOR_LOCAL"
   },
   "fact_projection_deduplication": {
     "enabled": true,
@@ -52,6 +63,35 @@
       "SOCIAL_ASSOCIATE",
       "SPOUSE_OF"
     ]
+  },
+  "canonical_endpoint_resolution": {
+    "enabled": true,
+    "eligible_node_kinds": [
+      "EXAM_TERM_CANDIDATE",
+      "OPEN_ENTITY_CANDIDATE"
+    ],
+    "require_known_entity_type": true,
+    "allow_unique_canonical_name_type": true,
+    "allow_unique_source_alias_type": true,
+    "allow_evidence_qualified_alias": true,
+    "unique_name_resolution_blocked_entity_types": [
+      "Person"
+    ],
+    "allow_qualified_alias_for_blocked_entity_types": true,
+    "promote_unique_exam_term_alias_links": true,
+    "metadata_name_fields": [
+      "headword",
+      "term_name"
+    ],
+    "metadata_alias_fields": [
+      "aliases"
+    ],
+    "metadata_qualifier_fields": [
+      "remark",
+      "term_remark"
+    ],
+    "generated_match_method": "release_unique_source_alias_type",
+    "generated_match_version": "canonical-endpoint-resolution-v1"
   },
   "terminal_fact_retrieval": {
     "enabled": true,

@@ -57,9 +57,11 @@ class ProcessOneReportTests(TestCase):
         self.clock = MagicMock(side_effect=[CLAIM_TIME, FINISH_TIME])
 
     def run_worker(self, claimed, generator):
-        with patch(f"{MODULE}.repository") as repository_module:
+        with patch(f"{MODULE}.repository") as repository_module, \
+                patch(f"{MODULE}.process_next_plan") as process_next_plan_mock:
             repository_module.claim_next_report.return_value = claimed
             code = process_one_report(self.config, generator, self.clock)
+        self.process_next_plan_mock = process_next_plan_mock
         return code, repository_module
 
     def test_nothing_to_do(self) -> None:
@@ -76,6 +78,28 @@ class ProcessOneReportTests(TestCase):
         self.assertEqual(code, READY)
         repository_module.finish_report.assert_called_once()
         repository_module.retry_report.assert_not_called()
+
+    def test_next_plan_runs_after_ready(self) -> None:
+        """리포트가 ready 로 확정된 같은 작업에서 다음 계획을 처리해야 한다."""
+        generator = MagicMock(return_value=ai_content(fallback_used=False))
+        self.run_worker(build_claimed(1), generator)
+
+        self.process_next_plan_mock.assert_called_once_with(77, self.config)
+
+    def test_next_plan_does_not_run_on_retry(self) -> None:
+        generator = MagicMock(return_value=ai_content(fallback_used=True))
+        code, _ = self.run_worker(build_claimed(1), generator)
+
+        self.assertEqual(code, RETRIED)
+        self.process_next_plan_mock.assert_not_called()
+
+    def test_next_plan_runs_after_fallback_confirmation(self) -> None:
+        """기본 문구로 확정되는 마지막 시도도 ready 이므로 다음 계획을 처리한다."""
+        generator = MagicMock(return_value=ai_content(fallback_used=True))
+        code, _ = self.run_worker(build_claimed(3), generator)
+
+        self.assertEqual(code, READY)
+        self.process_next_plan_mock.assert_called_once_with(77, self.config)
 
     def test_fallback_on_the_first_attempt_is_retried(self) -> None:
         generator = MagicMock(return_value=ai_content(fallback_used=True))

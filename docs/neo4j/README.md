@@ -1,7 +1,7 @@
 # 한국사 사실 그래프 문서
 
 > 상태: `CURRENT`
-> 기준일: 2026-07-27
+> 기준일: 2026-07-28
 
 현재 Neo4j의 목표는 검증된 사실·분류·근거 그래프를 구축하여 RAG가
 같거나 유사한 경로를 공유하는 다른 `CanonicalEntity`를 찾을 수 있게 하는 것이다.
@@ -41,8 +41,9 @@ docker compose --env-file .env -f storage\fact_neo4j\docker-compose.yml up -d
 .\.venv\Scripts\python.exe etl\preprocessing\neo4j\run_fact_graph_load_pipeline.py --load-only
 ```
 
-현재 release는 `GraphEntity 19,447`, `Fact 39,852`, 직접 의미 관계 `39,745`,
-`EvidenceSpan 39,961`이며 적재 검증을 통과했다.
+현재 v7 release는 `GraphEntity 19,186`, `Fact 39,836`, 직접 의미 관계
+`35,064`, `EvidenceSpan 39,945`다. CSV와 단위 테스트는 검증했으며 v7의
+Neo4j 적재 검증은 아직 실행하지 않았다.
 
 ## 레거시
 

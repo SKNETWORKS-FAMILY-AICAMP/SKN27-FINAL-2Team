@@ -29,6 +29,7 @@ class StudyPlanConfig:
     weekly_review_minutes: int
     short_term_days: int
     medium_term_days: int
+    history_display_limit: int
     stable_weakness_threshold: float
     score_ratio: Mapping[int, int]
     strategy_weights: Mapping[str, PriorityWeights]
@@ -60,6 +61,8 @@ def get_study_plan_config() -> StudyPlanConfig:
         weekly_review_minutes=80,
         short_term_days=7,
         medium_term_days=21,
+        # 달력 기록으로 보여줄 보관 계획 개수.
+        history_display_limit=3,
         stable_weakness_threshold=0.20,
         score_ratio={3: 1, 2: 3, 1: 1},
         strategy_weights={

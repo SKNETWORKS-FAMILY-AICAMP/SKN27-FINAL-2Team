@@ -223,7 +223,7 @@ def get_study_plan_config() -> dict[str, object]:
         "weekly_review_minutes": config.weekly_review_minutes,
         "fallback_daily_available_minutes": config.default_daily_minutes,
         "regeneration_overload_multiplier": 2,
-        "history_display_limit": 3,
+        "history_display_limit": config.history_display_limit,
         "daily_delete_limit": 0,
         "daily_delete_count_key": "deletedBlockCount",
         "daily_delete_count_date_key": "deletedBlockCountDate",

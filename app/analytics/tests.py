@@ -385,7 +385,8 @@ class PlannerDisplayTests(SimpleTestCase):
             ["2026-07-13", "2026-07-19"],
         )
 
-    def test_completed_weekly_review_does_not_expose_manual_plan_button(self):
+    def test_completed_weekly_review_enables_manual_plan_button(self):
+        """주간평가 완료 뒤에는 자동 생성이 실패해도 수동 버튼이 탈출구가 된다."""
         today = date(2026, 7, 20)
         study_plans = [
             {
@@ -425,8 +426,161 @@ class PlannerDisplayTests(SimpleTestCase):
         summary = build_planner_summary(study_plans, today)
 
         self.assertTrue(summary["is_expired_plan"])
-        self.assertFalse(summary["can_create_plan"])
+        self.assertTrue(summary["show_create_plan"])
+        self.assertTrue(summary["can_create_plan"])
+        self.assertEqual(summary["create_plan_label"], "다음 7일 계획 만들기")
         self.assertFalse(summary["show_add_extra_study"])
+
+    def test_active_plan_in_progress_locks_manual_plan_button(self):
+        """주간평가 전에는 버튼을 보여주되 클릭을 막는다."""
+        today = date(2026, 7, 14)
+        study_plans = [
+            {
+                "studyPlanId": 1,
+                "startDate": "2026-07-13",
+                "endDate": "2026-07-19",
+                "dailyAvailableMinutes": 60,
+                "plans": [
+                    {
+                        "date": "2026-07-14",
+                        "blocks": [
+                            {
+                                "blockId": "learning",
+                                "blockType": "newWeakness",
+                                "questionCount": 5,
+                                "estimatedMinutes": 60,
+                                "isAchieved": False,
+                            }
+                        ],
+                    },
+                    {
+                        "date": "2026-07-19",
+                        "blocks": [
+                            {
+                                "blockId": "weekly-review",
+                                "blockType": "weekly_review",
+                                "questionCount": 50,
+                                "estimatedMinutes": 80,
+                                "isAchieved": False,
+                            }
+                        ],
+                    },
+                ],
+            }
+        ]
+
+        summary = build_planner_summary(study_plans, today)
+
+        self.assertTrue(summary["show_create_plan"])
+        self.assertFalse(summary["can_create_plan"])
+        self.assertEqual(summary["create_plan_label"], "다음 7일 계획 만들기")
+        self.assertTrue(summary["create_plan_disabled_message"])
+
+    def test_history_plans_appear_on_calendar_without_actions(self):
+        """지난 계획은 달력 기록으로만 보이고 상태 판정을 오염시키지 않는다."""
+        today = date(2026, 7, 22)
+        active_plans = [
+            {
+                "studyPlanId": 2,
+                "startDate": "2026-07-20",
+                "endDate": "2026-07-26",
+                "dailyAvailableMinutes": 60,
+                "plans": [
+                    {
+                        "date": "2026-07-21",
+                        "blocks": [
+                            {
+                                "blockId": "active-learning",
+                                "blockType": "newWeakness",
+                                "questionCount": 5,
+                                "estimatedMinutes": 60,
+                                "isAchieved": False,
+                            }
+                        ],
+                    },
+                    {
+                        "date": "2026-07-26",
+                        "blocks": [
+                            {
+                                "blockId": "active-review",
+                                "blockType": "weekly_review",
+                                "questionCount": 50,
+                                "estimatedMinutes": 80,
+                                "isAchieved": False,
+                            }
+                        ],
+                    },
+                ],
+            }
+        ]
+        history_plans = [
+            {
+                "studyPlanId": 1,
+                "startDate": "2026-07-13",
+                "endDate": "2026-07-19",
+                "dailyAvailableMinutes": 60,
+                "plans": [
+                    {
+                        "date": "2026-07-14",
+                        "blocks": [
+                            {
+                                "blockId": "history-learning",
+                                "blockType": "newWeakness",
+                                "questionCount": 5,
+                                "estimatedMinutes": 60,
+                                "isAchieved": True,
+                            }
+                        ],
+                    },
+                    {
+                        "date": "2026-07-19",
+                        "blocks": [
+                            {
+                                "blockId": "history-review",
+                                "blockType": "weekly_review",
+                                "questionCount": 50,
+                                "estimatedMinutes": 80,
+                                "isAchieved": True,
+                            }
+                        ],
+                    },
+                    {
+                        # 재생성으로 보관된 계획에 남은 새 계획 기간과 겹치는 블록.
+                        "date": "2026-07-21",
+                        "blocks": [
+                            {
+                                "blockId": "history-overlap",
+                                "blockType": "newWeakness",
+                                "questionCount": 5,
+                                "estimatedMinutes": 60,
+                                "isAchieved": False,
+                            }
+                        ],
+                    },
+                ],
+            }
+        ]
+
+        summary = build_planner_summary(
+            active_plans,
+            today,
+            history_study_plans=history_plans,
+        )
+
+        plans_by_date = summary["data"]["plansByDate"]
+        history_item = plans_by_date["2026-07-14"][0]
+        self.assertEqual(history_item["studyPlanId"], 1)
+        self.assertFalse(history_item["showStart"])
+        self.assertIn("2026-07-14", summary["data"]["completedKeys"])
+        # 활성 계획 시작일 이후의 보관 계획 블록은 기록에서 제외한다.
+        overlap_items = plans_by_date.get("2026-07-21", [])
+        self.assertEqual(
+            [item["studyPlanId"] for item in overlap_items],
+            [2],
+        )
+        # 지난 계획의 완료된 주간평가가 활성 계획의 버튼 판정을 열면 안 된다.
+        self.assertFalse(summary["can_create_plan"])
+        self.assertTrue(summary["show_create_plan"])
 
     def test_generation_unavailable_hides_repeated_empty_plan_button(self):
         summary = build_planner_summary(
@@ -435,6 +589,7 @@ class PlannerDisplayTests(SimpleTestCase):
             plan_generation_available=False,
         )
 
+        self.assertFalse(summary["show_create_plan"])
         self.assertFalse(summary["can_create_plan"])
         self.assertFalse(summary["show_add_extra_study"])
 
