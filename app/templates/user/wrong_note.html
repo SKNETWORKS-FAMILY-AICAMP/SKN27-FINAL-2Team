@@ -100,15 +100,15 @@
       <section class="weak-practice-dialog">
         <header>
           <div>
-            <span>Wrong Note Practice</span>
-            <h2 id="weakPracticeTitle">취약 조합 문제 풀이</h2>
+            <span>오답 노트 복습</span>
+            <h2 id="weakPracticeTitle">오답 문제 몰아 풀기</h2>
           </div>
           <button type="button" id="closeWeakPracticeModal" aria-label="닫기">×</button>
         </header>
         <div class="weak-practice-body" id="weakPracticeBody"></div>
         <footer>
           <button class="outline-button" id="cancelWeakPracticeButton" type="button">취소</button>
-          <button class="primary-button" id="startWeakPracticeButton" type="button">문제 생성</button>
+          <button class="primary-button" id="startWeakPracticeButton" type="button">문제 풀이 시작</button>
         </footer>
       </section>
     </div>
@@ -200,21 +200,77 @@
     }
 
     function renderWeakPracticeModal(payload) {
-      const combinations = payload.combinations || [];
+      const availableCount = payload.available_count || 0;
+      const requestedCounts = payload.requested_counts || [10, 30, 50];
+      const includeCorrected = Boolean(payload.include_corrected);
+      const selectedCount = latestWeakPracticeRequest?.count || requestedCounts[0];
       weakPracticeBody.innerHTML = `
-        <p class="weak-practice-summary">오답 기록을 기준으로 취약 조합 ${combinations.length}개를 찾았습니다.</p>
-        <ol class="weak-combo-list">
-          ${combinations.map((combo) => `
-            <li>
-              <strong>${escapeHtml(combo.era)} · ${escapeHtml(combo.topic)} · ${escapeHtml(combo.q_type)}</strong>
-              <span>오답 ${combo.wrong_count}개 / 오답률 ${combo.wrong_rate}% / 추천 ${combo.question_count}문항</span>
-            </li>
-          `).join("")}
-        </ol>
-        <p class="weak-practice-notice">${escapeHtml(payload.fallback_notice || "")}</p>
-        <strong class="weak-practice-total">총 ${payload.total_count || 20}문항을 생성합니다.</strong>
+        <p class="weak-practice-summary">현재 필터 조건에서 오답으로 기록된 문항을 다시 풉니다.</p>
+        <section class="wrong-practice-option-group" aria-label="복습 범위 선택">
+          <strong>복습 범위</strong>
+          <label class="wrong-practice-option">
+            <input type="radio" name="includeCorrected" value="false" ${includeCorrected ? "" : "checked"}>
+            <span>오답 맞춘 문제 제거</span>
+          </label>
+          <label class="wrong-practice-option">
+            <input type="radio" name="includeCorrected" value="true" ${includeCorrected ? "checked" : ""}>
+            <span>오답 맞춘 문제 포함</span>
+          </label>
+        </section>
+        <section class="wrong-practice-option-group" aria-label="문항 수 선택">
+          <strong>문항 수</strong>
+          <div class="wrong-practice-counts">
+            ${requestedCounts.map((count) => `
+              <label class="wrong-practice-option">
+                <input type="radio" name="practiceCount" value="${count}" ${Number(selectedCount) === Number(count) ? "checked" : ""}>
+                <span>${count}문항</span>
+              </label>
+            `).join("")}
+          </div>
+        </section>
+        <p class="weak-practice-notice">최근 풀이에서 맞힌 문항은 기본적으로 제외합니다.</p>
+        <strong class="weak-practice-total">현재 출제 가능 문항: ${availableCount}문항</strong>
       `;
+      weakPracticeBody.querySelectorAll("input[name='includeCorrected']").forEach((input) => {
+        input.addEventListener("change", () => {
+          refreshWeakPracticeAvailability().catch((error) => {
+            alert(error.message || "오답 문항 수를 확인하지 못했습니다.");
+          });
+        });
+      });
+      weakPracticeBody.querySelectorAll("input[name='practiceCount']").forEach((input) => {
+        input.addEventListener("change", () => {
+          latestWeakPracticeRequest.count = Number(input.value);
+          updateWeakPracticeStartState();
+        });
+      });
+      latestWeakPracticeRequest.available_count = availableCount;
+      updateWeakPracticeStartState();
       weakPracticeModal?.classList.remove("is-hidden");
+    }
+
+    function updateWeakPracticeStartState() {
+      if (!latestWeakPracticeRequest) return;
+      const requestedCount = Number(latestWeakPracticeRequest.count || 10);
+      const availableCount = Number(latestWeakPracticeRequest.available_count || 0);
+      startWeakPracticeButton.disabled = availableCount < requestedCount;
+      startWeakPracticeButton.textContent = availableCount < requestedCount
+        ? `문항 부족 (${availableCount}/${requestedCount})`
+        : "문제 풀이 시작";
+    }
+
+    async function refreshWeakPracticeAvailability() {
+      const selectedMode = weakPracticeBody.querySelector("input[name='includeCorrected']:checked");
+      latestWeakPracticeRequest.include_corrected = selectedMode?.value === "true";
+      const query = buildWeakPracticeQuery(latestWeakPracticeRequest);
+      const response = await fetch(`/question/api/wrong-note/recommendation/${query ? `?${query}` : ""}`, {
+        credentials: "same-origin",
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(payload.error || "오답 문항 수를 확인하지 못했습니다.");
+      }
+      renderWeakPracticeModal(payload);
     }
 
     async function hasInProgressPracticeSession() {
@@ -237,7 +293,11 @@
       }
 
       wrongPracticeButton.disabled = true;
-      latestWeakPracticeRequest = weakPracticeParams();
+      latestWeakPracticeRequest = {
+        ...weakPracticeParams(),
+        count: 10,
+        include_corrected: false,
+      };
       try {
         const query = buildWeakPracticeQuery(latestWeakPracticeRequest);
         const response = await fetch(`/question/api/wrong-note/recommendation/${query ? `?${query}` : ""}`, {
@@ -245,11 +305,11 @@
         });
         const payload = await response.json().catch(() => ({}));
         if (!response.ok) {
-          throw new Error(payload.error || "오답 조합을 분석하지 못했습니다.");
+          throw new Error(payload.error || "오답 문항 수를 확인하지 못했습니다.");
         }
         renderWeakPracticeModal(payload);
       } catch (error) {
-        alert(error.message || "오답 조합을 분석하지 못했습니다.");
+        alert(error.message || "오답 문항 수를 확인하지 못했습니다.");
       } finally {
         wrongPracticeButton.disabled = false;
       }
