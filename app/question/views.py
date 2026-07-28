@@ -57,9 +57,7 @@ SCORE_RATIO = {
     2: 3,
     1: 1,
 }
-WRONG_NOTE_TOTAL_COUNT = 20
-WRONG_NOTE_TOP_LIMIT = 5
-WRONG_NOTE_ALLOCATION_BASE = [6, 5, 4, 3, 2]
+WRONG_NOTE_PRACTICE_COUNTS = (10, 30, 50)
 BASIC_SCORE_COUNTS = {3: 10, 2: 30, 1: 10}
 HARD_SCORE_COUNTS = {3: 20, 2: 10, 1: 20}
 DETAIL_DIFFICULTY_RATIOS = {
@@ -1175,150 +1173,52 @@ def _wrong_note_record_queryset(user_id, source):
     return qs
 
 
-def _allocate_wrong_note_counts(combo_count):
-    if combo_count <= 0:
-        return []
-
-    allocations = WRONG_NOTE_ALLOCATION_BASE[:combo_count]
-    total = sum(allocations)
-    index = 0
-    while total < WRONG_NOTE_TOTAL_COUNT:
-        allocations[index % combo_count] += 1
-        total += 1
-        index += 1
-    while total > WRONG_NOTE_TOTAL_COUNT:
-        target_index = max(range(combo_count), key=lambda item: allocations[item])
-        allocations[target_index] -= 1
-        total -= 1
-    return allocations
+def _wrong_note_include_corrected(source):
+    value = _wrong_note_filter_value(source, "include_corrected")
+    return str(value).lower() in {"1", "true", "yes", "on"}
 
 
-def _wrong_note_top_combinations(user_id, source):
-    record_qs = _wrong_note_record_queryset(user_id, source)
-    raw_grouped_rows = list(
-        record_qs.values("era", "topic", "q_type")
-        .annotate(
-            total_count=models.Count("record_id"),
-            wrong_count=models.Count("record_id", filter=models.Q(is_correct=False)),
-        )
-        .filter(wrong_count__gt=0)
-    )
-    grouped_map = {}
-    for row in raw_grouped_rows:
-        key = (row["era"] or "", row["topic"] or "", row["q_type"] or "")
-        grouped = grouped_map.setdefault(
-            key,
-            {
-                "era": key[0],
-                "topic": key[1],
-                "q_type": key[2],
-                "total_count": 0,
-                "wrong_count": 0,
-            },
-        )
-        grouped["total_count"] += row["total_count"] or 0
-        grouped["wrong_count"] += row["wrong_count"] or 0
-    grouped_rows = list(grouped_map.values())
-    grouped_rows.sort(
-        key=lambda row: (
-            -(row["wrong_count"] or 0),
-            -((row["wrong_count"] or 0) / max(row["total_count"] or 1, 1)),
-            row["era"] or "",
-            row["topic"] or "",
-            row["q_type"] or "",
-        )
-    )
+def _wrong_note_question_ids(user_id, source):
+    """현재 오답 노트 필터에서 실제로 틀린 적이 있는 문항 ID를 조회한다.
 
-    allocations = _allocate_wrong_note_counts(min(len(grouped_rows), WRONG_NOTE_TOP_LIMIT))
-    combinations = []
-    for index, row in enumerate(grouped_rows[:WRONG_NOTE_TOP_LIMIT]):
-        wrong_count = row["wrong_count"] or 0
-        total_count = row["total_count"] or 0
-        combinations.append({
-            "rank": index + 1,
-            "era": row["era"] or "",
-            "topic": row["topic"] or "",
-            "q_type": row["q_type"] or "",
-            "wrong_count": wrong_count,
-            "total_count": total_count,
-            "wrong_rate": round((wrong_count / total_count) * 100, 1) if total_count else 0,
-            "question_count": allocations[index],
-        })
-    return combinations
-
-
-def _pick_question_ids(queryset, needed_count, selected_ids, exclude_question_ids):
-    if needed_count <= 0:
-        return []
-
-    candidate_ids = list(
-        queryset.exclude(question_id__in=selected_ids)
-        .exclude(question_id__in=exclude_question_ids)
-        .order_by("question_id")
-        .values_list("question_id", flat=True)
-    )
-    if len(candidate_ids) < needed_count:
-        extra_ids = list(
-            queryset.exclude(question_id__in=selected_ids)
-            .order_by("question_id")
-            .values_list("question_id", flat=True)
-        )
-        candidate_ids = list(dict.fromkeys([*candidate_ids, *extra_ids]))
-
-    if len(candidate_ids) <= needed_count:
-        return candidate_ids
-    return random.sample(candidate_ids, needed_count)
-
-
-def _wrong_note_related_question_ids(combinations, user_id):
-    selected_ids = []
+    기본 모드에서는 전체 풀이 이력의 최신 답안도 확인해 이후에 맞힌 문항을 제외한다.
+    포함 모드에서는 필터 범위 안에서 한 번이라도 틀린 모든 문항을 반환한다.
+    """
+    filtered_record_qs = _wrong_note_record_queryset(user_id, source)
     wrong_question_ids = set(
+        filtered_record_qs.filter(is_correct=False).values_list("question_id", flat=True)
+    )
+    if not wrong_question_ids or _wrong_note_include_corrected(source):
+        return list(wrong_question_ids)
+
+    latest_records = (
         SolveRecords.objects.filter(
             session__user_id=user_id,
             session__status=COMPLETED_SESSION_STATUS,
             selected_no__isnull=False,
-            is_correct=False,
-        ).values_list("question_id", flat=True)
-    )
-    base_qs = _base_question_queryset()
-
-    for combo in combinations:
-        target_count = combo["question_count"]
-        picked_for_combo = []
-        era_values = [combo["era"]]
-        tiers = [
-            base_qs.filter(era__in=era_values, topic=combo["topic"], question_type=combo["q_type"]),
-            base_qs.filter(era__in=era_values, topic=combo["topic"]),
-            base_qs.filter(topic=combo["topic"], question_type=combo["q_type"]),
-            base_qs.filter(era__in=era_values, question_type=combo["q_type"]),
-            base_qs.filter(
-                models.Q(era__in=era_values)
-                | models.Q(topic=combo["topic"])
-                | models.Q(question_type=combo["q_type"])
-            ),
-        ]
-        for tier_qs in tiers:
-            picked_ids = _pick_question_ids(
-                tier_qs,
-                target_count - len(picked_for_combo),
-                selected_ids,
-                wrong_question_ids,
-            )
-            picked_for_combo.extend(picked_ids)
-            selected_ids.extend(picked_ids)
-            if len(picked_for_combo) >= target_count:
-                break
-
-    if len(selected_ids) < WRONG_NOTE_TOTAL_COUNT:
-        selected_ids.extend(
-            _pick_question_ids(
-                base_qs,
-                WRONG_NOTE_TOTAL_COUNT - len(selected_ids),
-                selected_ids,
-                wrong_question_ids,
-            )
+            question_id__in=wrong_question_ids,
         )
-    return selected_ids[:WRONG_NOTE_TOTAL_COUNT]
+        .order_by("question_id", "-session__recorded_date", "-session_id", "-record_id")
+        .values("question_id", "is_correct")
+    )
+    latest_by_question = {}
+    for record in latest_records:
+        latest_by_question.setdefault(record["question_id"], record["is_correct"])
+
+    return [
+        question_id
+        for question_id in wrong_question_ids
+        if latest_by_question.get(question_id) is False
+    ]
+
+
+def _wrong_note_requested_count(source):
+    raw_count = _wrong_note_filter_value(source, "count")
+    try:
+        requested_count = int(raw_count or WRONG_NOTE_PRACTICE_COUNTS[0])
+    except (TypeError, ValueError):
+        return None
+    return requested_count if requested_count in WRONG_NOTE_PRACTICE_COUNTS else None
 
 
 @api_view(["GET"])
@@ -1330,18 +1230,13 @@ def wrong_note_recommendation(request):
             status=status.HTTP_401_UNAUTHORIZED,
         )
 
-    combinations = _wrong_note_top_combinations(user_id, request)
-    if not combinations:
-        return Response(
-            {"error": "추천할 오답 조합이 없습니다."},
-            status=status.HTTP_404_NOT_FOUND,
-        )
+    question_ids = _wrong_note_question_ids(user_id, request)
 
     return Response(
         {
-            "total_count": sum(item["question_count"] for item in combinations),
-            "combinations": combinations,
-            "fallback_notice": "정확히 일치하는 문제가 부족하면 시대/주제/유형 중 일부가 일치하는 문제로 보완됩니다.",
+            "available_count": len(question_ids),
+            "requested_counts": WRONG_NOTE_PRACTICE_COUNTS,
+            "include_corrected": _wrong_note_include_corrected(request),
         },
         status=status.HTTP_200_OK,
     )
@@ -1356,26 +1251,36 @@ def wrong_note_start(request):
             status=status.HTTP_401_UNAUTHORIZED,
         )
 
-    combinations = _wrong_note_top_combinations(user_id, request.data)
-    if not combinations:
+    requested_count = _wrong_note_requested_count(request.data)
+    if requested_count is None:
         return Response(
-            {"error": "추천할 오답 조합이 없습니다."},
+            {"error": "문항 수는 10문항, 30문항, 50문항 중에서 선택해야 합니다."},
             status=status.HTTP_400_BAD_REQUEST,
         )
 
-    selected_ids = _wrong_note_related_question_ids(combinations, user_id)
-    if len(selected_ids) < WRONG_NOTE_TOTAL_COUNT:
+    candidate_ids = _wrong_note_question_ids(user_id, request.data)
+    if len(candidate_ids) < requested_count:
         return Response(
             {
-                "error": "추천 조건에 맞춰 생성할 문제가 부족합니다.",
-                "available_count": len(selected_ids),
-                "requested_count": WRONG_NOTE_TOTAL_COUNT,
+                "error": "현재 조건의 오답 문항 수가 부족합니다.",
+                "available_count": len(candidate_ids),
+                "requested_count": requested_count,
             },
             status=status.HTTP_400_BAD_REQUEST,
         )
 
+    selected_ids = random.sample(candidate_ids, requested_count)
     questions = list(Questions.objects.filter(question_id__in=selected_ids))
     questions.sort(key=lambda question: selected_ids.index(question.question_id))
+    if len(questions) < requested_count:
+        return Response(
+            {
+                "error": "현재 조건의 오답 문항 수가 부족합니다.",
+                "available_count": len(questions),
+                "requested_count": requested_count,
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+        )
     with transaction.atomic():
         _lock_user_for_practice_start(user_id)
         _delete_other_in_progress_sessions(user_id)
@@ -1405,7 +1310,7 @@ def wrong_note_start(request):
         {
             "session_id": session.session_id,
             "total_count": len(questions),
-            "combinations": combinations,
+            "include_corrected": _wrong_note_include_corrected(request.data),
         },
         status=status.HTTP_201_CREATED,
     )
