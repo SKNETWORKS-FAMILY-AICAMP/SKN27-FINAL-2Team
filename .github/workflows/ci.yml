@@ -1,0 +1,71 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - dev
+  pull_request:
+    branches:
+      - dev
+
+permissions:
+  contents: read
+
+env:
+  DJANGO_SECRET_KEY: ${{ secrets.CI_DJANGO_SECRET_KEY }}
+  DJANGO_DEBUG: "false"
+  DJANGO_ALLOWED_HOSTS: ${{ vars.CI_DJANGO_ALLOWED_HOSTS }}
+  DJANGO_CSRF_TRUSTED_ORIGINS: ${{ vars.CI_DJANGO_CSRF_TRUSTED_ORIGINS }}
+
+  POSTGRES_DB: ${{ vars.CI_POSTGRES_DB }}
+  POSTGRES_USER: ${{ vars.CI_POSTGRES_USER }}
+  POSTGRES_PASSWORD: ${{ secrets.CI_POSTGRES_PASSWORD }}
+  POSTGRES_HOST: localhost
+  POSTGRES_PORT: "5432"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_DB: ${{ vars.CI_POSTGRES_DB }}
+          POSTGRES_USER: ${{ vars.CI_POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.CI_POSTGRES_PASSWORD }}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: |
+            requirements/base.txt
+            requirements/dev.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements/dev.txt
+
+      - name: Check Django configuration
+        run: python app/manage.py check
+
+      - name: Check migrations
+        run: python app/manage.py makemigrations --check --dry-run
+
+      - name: Run Django tests
+        run: python app/manage.py test
+
+      - name: Verify Docker build
+        run: docker build -t himate-ci:${{ github.sha }} .

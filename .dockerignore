@@ -1,3 +1,48 @@
+# Git and repository tooling
+.git/
+.github/
+.agents/
+.vscode/
+
+# Secrets and local environments
 .env
+.env.*
 .venv/
+venv/
+env/
+
+# Python caches and test output
+**/__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Generated static files
+app/staticfiles/
+
+# Local databases, dumps, and generated data
+artifacts/
+storage/postgresql/postgres_data/
+storage/neo4j/neo4j_import/
+*.sqlite3
+*.dump
+*.log
+
+# Offline preprocessing and archived sources
+etl/
+archive/
+docs/
+test/
+
+# Local notebooks and editor artifacts
+**/.ipynb_checkpoints/
+.DS_Store
+Thumbs.db
+
+# Files not needed by the production image
+requirements/dev.txt
+README.md
 
