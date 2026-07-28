@@ -1,0 +1,194 @@
+{
+  "pack_id": "image_generation_pack:prehistoric_artifacts:image_material:ki_010_04000",
+  "family_id": "image_choice_pack_v3:prehistoric_artifacts",
+  "era": "선사·초기국가",
+  "service_era": "선사 시대",
+  "service_topic": "문화",
+  "service_question_type": "역사 자료의 분석 및 해석",
+  "service_question_subtype": "시각 자료 해석",
+  "variant_key": "image:image_choice_pack_v3:prehistoric_artifacts:image_material:ki_010_04000",
+  "target_label": "전 덕산 출토 간두령",
+  "topic_type": "문화유산",
+  "question_task": "standard_select",
+  "choice_mode": "image",
+  "stem_pattern": "target_description",
+  "relation_axis_id": "common.definition_feature",
+  "material_type": "자료 제시문",
+  "major_type": "역사 자료의 분석 및 해석",
+  "minor_type": "시각 자료 해석",
+  "difficulty_label": "보통",
+  "question_task_instruction": "검수된 단서를 바탕으로 대상명을 직접 노출하지 않는 지문과 발문을 만들고, 제시된 이미지 중 해당 문화유산을 고르게 한다.",
+  "material_clue_basis": "충남 예산군에 있는 흥선대원군 부친의 무덤 근처 구릉에서 출토되었다고 전해진다. 간두령 1쌍은 각각 높이 14.7㎝와 14.9㎝, 무게 616.5g와 571g로 모습은 같고 크기만 다르다. 몸체와 자루, 2부분으로 되어있고 사이에 갓 모양의 테두리를 두르고 있다. 전체적으로는 포탄 모습이며 비어있는 몸체를 칸막이로 나누어 위에는 청동 구슬을 두었고 아래에는 공간을 남겨 소리가 잘 울릴 수 있도록 하였다. 1990년 ‘전 덕산 청동방울 일괄’이라는 명칭으로 국보 제255호로 지정되었다.",
+  "material_evidence_chunks": [
+    {
+      "snippet": "충남 예산군에 있는 흥선대원군 부친의 무덤 근처 구릉에서 출토되었다고 전해진다. 간두령 1쌍은 각각 높이 14.7㎝와 14.9㎝, 무게 616.5g와 571g로 모습은 같고 크기만 다르다. 몸체와 자루, 2부분으로 되어있고 사이에 갓 모양의 테두리를 두르고 있다. 전체적으로는 포탄 모습이며 비어있는 몸체를 칸막이로 나누어 위에는 청동 구슬을 두었고 아래에는 공간을 남겨 소리가 잘 울릴 수 있도록 하였다. 1990년 ‘전 덕산 청동방울 일괄’이라는 명칭으로 국보 제255호로 지정되었다.",
+      "chunk_id": "ki_010_04000_chunk_0000",
+      "article_id": "image_material:ki_010_04000",
+      "exact_text": "충남 예산군에 있는 흥선대원군 부친의 무덤 근처 구릉에서 출토되었다고 전해진다. 간두령 1쌍은 각각 높이 14.7㎝와 14.9㎝, 무게 616.5g와 571g로 모습은 같고 크기만 다르다. 몸체와 자루, 2부분으로 되어있고 사이에 갓 모양의 테두리를 두르고 있다. 전체적으로는 포탄 모습이며 비어있는 몸체를 칸막이로 나누어 위에는 청동 구슬을 두었고 아래에는 공간을 남겨 소리가 잘 울릴 수 있도록 하였다. 1990년 ‘전 덕산 청동방울 일괄’이라는 명칭으로 국보 제255호로 지정되었다.",
+      "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_010_04000&whereStr=",
+      "section_path": [
+        "검수된 이미지 식별 단서"
+      ]
+    }
+  ],
+  "material_fact_semantically_distinct": true,
+  "status": "rag_ready",
+  "semantic_status": "pass",
+  "items": [
+    {
+      "slot_no": 0,
+      "role": "answer",
+      "basis_item_id": "clue:766a640832b0",
+      "article_id": "image_material:ki_010_04000",
+      "truth_owner_label": "전 덕산 출토 간두령",
+      "fact_basis": "충남 예산군에 있는 흥선대원군 부친의 무덤 근처 구릉에서 출토되었다고 전해진다. 간두령 1쌍은 각각 높이 14.7㎝와 14.9㎝, 무게 616.5g와 571g로 모습은 같고 크기만 다르다. 몸체와 자루, 2부분으로 되어있고 사이에 갓 모양의 테두리를 두르고 있다. 전체적으로는 포탄 모습이며 비어있는 몸체를 칸막이로 나누어 위에는 청동 구슬을 두었고 아래에는 공간을 남겨 소리가 잘 울릴 수 있도록 하였다. 1990년 ‘전 덕산 청동방울 일괄’이라는 명칭으로 국보 제255호로 지정되었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_010_04000_chunk_0000",
+          "article_id": "image_material:ki_010_04000",
+          "snippet": "충남 예산군에 있는 흥선대원군 부친의 무덤 근처 구릉에서 출토되었다고 전해진다. 간두령 1쌍은 각각 높이 14.7㎝와 14.9㎝, 무게 616.5g와 571g로 모습은 같고 크기만 다르다. 몸체와 자루, 2부분으로 되어있고 사이에 갓 모양의 테두리를 두르고 있다. 전체적으로는 포탄 모습이며 비어있는 몸체를 칸막이로 나누어 위에는 청동 구슬을 두었고 아래에는 공간을 남겨 소리가 잘 울릴 수 있도록 하였다. 1990년 ‘전 덕산 청동방울 일괄’이라는 명칭으로 국보 제255호로 지정되었다.",
+          "exact_text": "충남 예산군에 있는 흥선대원군 부친의 무덤 근처 구릉에서 출토되었다고 전해진다. 간두령 1쌍은 각각 높이 14.7㎝와 14.9㎝, 무게 616.5g와 571g로 모습은 같고 크기만 다르다. 몸체와 자루, 2부분으로 되어있고 사이에 갓 모양의 테두리를 두르고 있다. 전체적으로는 포탄 모습이며 비어있는 몸체를 칸막이로 나누어 위에는 청동 구슬을 두었고 아래에는 공간을 남겨 소리가 잘 울릴 수 있도록 하였다. 1990년 ‘전 덕산 청동방울 일괄’이라는 명칭으로 국보 제255호로 지정되었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_010_04000&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_010_04000_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_04000.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_04000.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_010_04000&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유물",
+        "category_sub": "의례용품",
+        "internal_owner_title": "전 덕산 출토 간두령",
+        "owner_id": "image_material:ki_010_04000"
+      }
+    },
+    {
+      "slot_no": 1,
+      "role": "distractor",
+      "basis_item_id": "clue:96ce0be01838",
+      "article_id": "image_material:ki_010_04100",
+      "truth_owner_label": "전 덕산 출토 팔주령",
+      "fact_basis": "충남 예산군에 있는 흥선대원군 부친의 무덤 근처 구릉에서 출토되었다고 전해진다. 팔주령 1쌍은 지름이 각각 14.4㎝와 14.3㎝이며, 모서리 끝에는 똑같이 작은 방울 8개가 달려 있다. 각 방울은 모두 지름이 2.4㎝이고, 타원형 구멍이 4개씩 있다. 몸체 바깥쪽에 점선이 2∼3줄 있고, 가운데에는 십(十)자 문양이 있는데 이것은 태양을 상징하는 것으로 보인다. 그리고 몸체 뒷면에는 [ ]모양의 꼭지가 달려 있다. 1990년 ‘전 덕산 청동방울 일괄’이라는 명칭으로 국보 제255호로 지정되었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_010_04100_chunk_0000",
+          "article_id": "image_material:ki_010_04100",
+          "snippet": "충남 예산군에 있는 흥선대원군 부친의 무덤 근처 구릉에서 출토되었다고 전해진다. 팔주령 1쌍은 지름이 각각 14.4㎝와 14.3㎝이며, 모서리 끝에는 똑같이 작은 방울 8개가 달려 있다. 각 방울은 모두 지름이 2.4㎝이고, 타원형 구멍이 4개씩 있다. 몸체 바깥쪽에 점선이 2∼3줄 있고, 가운데에는 십(十)자 문양이 있는데 이것은 태양을 상징하는 것으로 보인다. 그리고 몸체 뒷면에는 [ ]모양의 꼭지가 달려 있다. 1990년 ‘전 덕산 청동방울 일괄’이라는 명칭으로 국보 제255호로 지정되었다.",
+          "exact_text": "충남 예산군에 있는 흥선대원군 부친의 무덤 근처 구릉에서 출토되었다고 전해진다. 팔주령 1쌍은 지름이 각각 14.4㎝와 14.3㎝이며, 모서리 끝에는 똑같이 작은 방울 8개가 달려 있다. 각 방울은 모두 지름이 2.4㎝이고, 타원형 구멍이 4개씩 있다. 몸체 바깥쪽에 점선이 2∼3줄 있고, 가운데에는 십(十)자 문양이 있는데 이것은 태양을 상징하는 것으로 보인다. 그리고 몸체 뒷면에는 [ ]모양의 꼭지가 달려 있다. 1990년 ‘전 덕산 청동방울 일괄’이라는 명칭으로 국보 제255호로 지정되었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_010_04100&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_010_04100_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_04100.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_04100.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_010_04100&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유물",
+        "category_sub": "의례용품",
+        "internal_owner_title": "전 덕산 출토 팔주령",
+        "owner_id": "image_material:ki_010_04100"
+      }
+    },
+    {
+      "slot_no": 2,
+      "role": "distractor",
+      "basis_item_id": "clue:cd24279b7246",
+      "article_id": "image_material:ki_010_04400",
+      "truth_owner_label": "전 영암 출토 세형동검 거푸집",
+      "fact_basis": "전남 영암에서 출토되었다고 전해지는 철기시대 초기의 청동기 거푸집이다. 두 쪽을 합쳐 사용하게 되어 있으며, 한쪽의 크기가 34.5㎝×7.4㎝×4㎝이다. 이 거푸집에서 만들 수 있는 동검의 길이는 33㎝이다. 한쪽 면만 사용했으며, 많이 사용하여 돌이 까맣게 타 있고 부분적으로 떨어진 곳도 있다. 검신의 모양을 보면 제2절대는 분명하게 나타나 있으나, 제1절대는 완만하게 곡선을 이루고 있다. 두 쪽을 조합할 때 정확하게 맞추기 위하여 경부(莖部) 쪽에 2개의 합치선을 그어 놓았다. 1986년 국보 제231호로 지정되었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_010_04400_chunk_0000",
+          "article_id": "image_material:ki_010_04400",
+          "snippet": "전남 영암에서 출토되었다고 전해지는 철기시대 초기의 청동기 거푸집이다. 두 쪽을 합쳐 사용하게 되어 있으며, 한쪽의 크기가 34.5㎝×7.4㎝×4㎝이다. 이 거푸집에서 만들 수 있는 동검의 길이는 33㎝이다. 한쪽 면만 사용했으며, 많이 사용하여 돌이 까맣게 타 있고 부분적으로 떨어진 곳도 있다. 검신의 모양을 보면 제2절대는 분명하게 나타나 있으나, 제1절대는 완만하게 곡선을 이루고 있다. 두 쪽을 조합할 때 정확하게 맞추기 위하여 경부(莖部) 쪽에 2개의 합치선을 그어 놓았다. 1986년 국보 제231호로 지정되었다.",
+          "exact_text": "전남 영암에서 출토되었다고 전해지는 철기시대 초기의 청동기 거푸집이다. 두 쪽을 합쳐 사용하게 되어 있으며, 한쪽의 크기가 34.5㎝×7.4㎝×4㎝이다. 이 거푸집에서 만들 수 있는 동검의 길이는 33㎝이다. 한쪽 면만 사용했으며, 많이 사용하여 돌이 까맣게 타 있고 부분적으로 떨어진 곳도 있다. 검신의 모양을 보면 제2절대는 분명하게 나타나 있으나, 제1절대는 완만하게 곡선을 이루고 있다. 두 쪽을 조합할 때 정확하게 맞추기 위하여 경부(莖部) 쪽에 2개의 합치선을 그어 놓았다. 1986년 국보 제231호로 지정되었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_010_04400&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_010_04400_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_04400.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_04400.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_010_04400&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유물",
+        "category_sub": "과학·기술용품",
+        "internal_owner_title": "전 영암 출토 세형동검 거푸집",
+        "owner_id": "image_material:ki_010_04400"
+      }
+    },
+    {
+      "slot_no": 3,
+      "role": "distractor",
+      "basis_item_id": "clue:da300df51132",
+      "article_id": "image_material:ki_010_00600",
+      "truth_owner_label": "충북 단양 수양개 유적에서 출토된 긁개",
+      "fact_basis": "충청북도 단양 수양개 유적에서 출토된 구석기시대의 긁개이다. 길이 5.8cm, 너비 4.8cm, 두께 1.1cm이다. 긁개는 돌의 가장자리를 연속적으로 떼어내 직선날, 볼록날, 오목날을 가파르게 만든 석기이다. 가죽이나 나무를 다루는데 주로 사용되었을 것으로 추정된다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_010_00600_chunk_0000",
+          "article_id": "image_material:ki_010_00600",
+          "snippet": "충청북도 단양 수양개 유적에서 출토된 구석기시대의 긁개이다. 길이 5.8cm, 너비 4.8cm, 두께 1.1cm이다. 긁개는 돌의 가장자리를 연속적으로 떼어내 직선날, 볼록날, 오목날을 가파르게 만든 석기이다. 가죽이나 나무를 다루는데 주로 사용되었을 것으로 추정된다.",
+          "exact_text": "충청북도 단양 수양개 유적에서 출토된 구석기시대의 긁개이다. 길이 5.8cm, 너비 4.8cm, 두께 1.1cm이다. 긁개는 돌의 가장자리를 연속적으로 떼어내 직선날, 볼록날, 오목날을 가파르게 만든 석기이다. 가죽이나 나무를 다루는데 주로 사용되었을 것으로 추정된다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_010_00600&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_010_00600_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_00600.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_00600.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_010_00600&whereStr=",
+        "image_source": "e뮤지엄(국립청주박물관)",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유물",
+        "category_sub": "생활용품",
+        "internal_owner_title": "충북 단양 수양개 유적에서 출토된 긁개",
+        "owner_id": "image_material:ki_010_00600"
+      }
+    },
+    {
+      "slot_no": 4,
+      "role": "distractor",
+      "basis_item_id": "clue:c880e875f0eb",
+      "article_id": "image_material:ki_010_01000",
+      "truth_owner_label": "강원 양양 오산리 출토 덧무늬토기",
+      "fact_basis": "덧무늬토기는 한국 신석기시대의 가장 이른 시기로 편년 되는 토기이다. 융기문토기라고도 불리며, 그릇의 표면에 점토 띠를 덧붙여 각종 문양 효과를 나타낸 것이다. 사진의 토기는 구연부와 평행한 여섯 개의 점토 띠가 둘려 있다. 전체적인 형상이 발형이고, 밑바닥이 평저로, 덧무늬토기의 전형에 가깝다. 덧무늬토기는 주로 남해안 지역에서 많이 출토되지만, 강원 양양 오산리 유적 역시 덧무늬토기가 출토되는 대표적인 유적 가운데 하나이다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_010_01000_chunk_0000",
+          "article_id": "image_material:ki_010_01000",
+          "snippet": "덧무늬토기는 한국 신석기시대의 가장 이른 시기로 편년 되는 토기이다. 융기문토기라고도 불리며, 그릇의 표면에 점토 띠를 덧붙여 각종 문양 효과를 나타낸 것이다. 사진의 토기는 구연부와 평행한 여섯 개의 점토 띠가 둘려 있다. 전체적인 형상이 발형이고, 밑바닥이 평저로, 덧무늬토기의 전형에 가깝다. 덧무늬토기는 주로 남해안 지역에서 많이 출토되지만, 강원 양양 오산리 유적 역시 덧무늬토기가 출토되는 대표적인 유적 가운데 하나이다.",
+          "exact_text": "덧무늬토기는 한국 신석기시대의 가장 이른 시기로 편년 되는 토기이다. 융기문토기라고도 불리며, 그릇의 표면에 점토 띠를 덧붙여 각종 문양 효과를 나타낸 것이다. 사진의 토기는 구연부와 평행한 여섯 개의 점토 띠가 둘려 있다. 전체적인 형상이 발형이고, 밑바닥이 평저로, 덧무늬토기의 전형에 가깝다. 덧무늬토기는 주로 남해안 지역에서 많이 출토되지만, 강원 양양 오산리 유적 역시 덧무늬토기가 출토되는 대표적인 유적 가운데 하나이다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_010_01000&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_010_01000_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_01000.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_01000.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_010_01000&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유물",
+        "category_sub": "생활용품",
+        "internal_owner_title": "강원 양양 오산리 출토 덧무늬토기",
+        "owner_id": "image_material:ki_010_01000"
+      }
+    }
+  ]
+}

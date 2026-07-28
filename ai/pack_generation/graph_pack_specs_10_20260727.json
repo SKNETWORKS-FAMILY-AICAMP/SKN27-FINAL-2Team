@@ -1,0 +1,374 @@
+{
+  "packs": [
+    {
+      "anchor_node_id": "topic:person",
+      "candidate_hops": 1,
+      "topic_id": "topic:person",
+      "era_id": "era:three_kingdoms",
+      "era": "고대",
+      "service_era": "삼국 시대",
+      "era_criteria": "고구려·백제·신라가 병존한 삼국시대의 사실만 선택한다.",
+      "owner_type": "Person",
+      "rag_owner_type": "인물",
+      "relation_axis_id": "person.activity_achievement",
+      "topic_type": "인물",
+      "service_topic": "인물",
+      "difficulty": 1,
+      "question_frames": [
+        {
+          "question_task": "standard_select",
+          "stem_pattern": "target_description",
+          "material_type": "자료 제시문",
+          "major_type": "역사 자료의 분석 및 해석",
+          "minor_type": "자료 기반 시대·대상 추론",
+          "answer_owner_scope": "material_target",
+          "question_task_instruction": "material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",
+          "distractor_type": "same_category_wrong_target"
+        },
+        {
+          "question_task": "standard_select",
+          "stem_pattern": "activity_achievement",
+          "material_type": "짧은 설명 자료",
+          "major_type": "역사 지식의 이해",
+          "minor_type": "기본 사실·개념 확인",
+          "answer_owner_scope": "material_target",
+          "question_task_instruction": "material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",
+          "distractor_type": "same_category_wrong_target"
+        }
+      ]
+    },
+    {
+      "anchor_node_id": "topic:person",
+      "candidate_hops": 1,
+      "topic_id": "topic:person",
+      "era_id": "era:north_south_states",
+      "era": "고대",
+      "service_era": "남북국 시대",
+      "era_criteria": "신라의 삼국 통일 이후부터 후삼국 성립 이전까지의 인물 활동 사실만 선택한다.",
+      "owner_type": "Person",
+      "rag_owner_type": "인물",
+      "relation_axis_id": "person.activity_achievement",
+      "topic_type": "인물",
+      "service_topic": "인물",
+      "difficulty": 1,
+      "question_frames": [
+        {
+          "question_task": "standard_select",
+          "stem_pattern": "target_description",
+          "material_type": "자료 제시문",
+          "major_type": "역사 자료의 분석 및 해석",
+          "minor_type": "자료 기반 시대·대상 추론",
+          "answer_owner_scope": "material_target",
+          "question_task_instruction": "material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",
+          "distractor_type": "same_category_wrong_target"
+        },
+        {
+          "question_task": "standard_select",
+          "stem_pattern": "activity_achievement",
+          "material_type": "짧은 설명 자료",
+          "major_type": "역사 지식의 이해",
+          "minor_type": "기본 사실·개념 확인",
+          "answer_owner_scope": "material_target",
+          "question_task_instruction": "material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",
+          "distractor_type": "same_category_wrong_target"
+        }
+      ]
+    },
+    {
+      "anchor_node_id": "topic:institutional_system",
+      "candidate_hops": 1,
+      "topic_id": "topic:institutional_system",
+      "era_id": "era:goryeo",
+      "era": "고려",
+      "service_era": "고려",
+      "era_criteria": "고려 건국부터 멸망까지의 제도·개념 사실만 선택한다.",
+      "owner_type": "Concept",
+      "rag_owner_type": "개념",
+      "relation_axis_id": "common.definition_feature",
+      "topic_type": "제도",
+      "service_topic": "제도",
+      "difficulty": 1,
+      "question_frames": [
+        {
+          "question_task": "standard_select",
+          "stem_pattern": "target_description",
+          "material_type": "자료 제시문",
+          "major_type": "역사 자료의 분석 및 해석",
+          "minor_type": "자료 기반 시대·대상 추론",
+          "answer_owner_scope": "material_target",
+          "question_task_instruction": "material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",
+          "distractor_type": "same_category_wrong_target"
+        },
+        {
+          "question_task": "standard_select",
+          "stem_pattern": "target_description",
+          "material_type": "탐구 자료",
+          "major_type": "역사 탐구의 설계 및 수행",
+          "minor_type": "자료 수집·검색 방법",
+          "answer_owner_scope": "material_target",
+          "question_task_instruction": "material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",
+          "distractor_type": "same_category_wrong_target"
+        }
+      ]
+    },
+    {
+      "anchor_node_id": "canonical:person:a3752f2c-4a68-49b4-8968-d70f3f2e9052",
+      "candidate_hops": 2,
+      "topic_id": "topic:person",
+      "era_id": "era:joseon",
+      "era": "조선",
+      "service_era": "조선",
+      "era_criteria": "조선 건국 이후부터 1876년 개항 이전까지의 사실만 선택한다.",
+      "owner_type": "Person",
+      "rag_owner_type": "인물",
+      "relation_axis_id": "person.activity_achievement",
+      "topic_type": "인물",
+      "service_topic": "인물",
+      "difficulty": 2,
+      "question_frames": [
+        {
+          "question_task": "standard_select",
+          "stem_pattern": "target_description",
+          "material_type": "자료 제시문",
+          "major_type": "역사 자료의 분석 및 해석",
+          "minor_type": "자료 기반 시대·대상 추론",
+          "answer_owner_scope": "material_target",
+          "question_task_instruction": "material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",
+          "distractor_type": "same_category_wrong_target"
+        },
+        {
+          "question_task": "standard_select",
+          "stem_pattern": "activity_achievement",
+          "material_type": "짧은 설명 자료",
+          "major_type": "역사 지식의 이해",
+          "minor_type": "기본 사실·개념 확인",
+          "answer_owner_scope": "material_target",
+          "question_task_instruction": "material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",
+          "distractor_type": "same_category_wrong_target"
+        }
+      ]
+    },
+    {
+      "anchor_node_id": "canonical:event:84af2848-a0c4-4292-a50a-e371a25b9750",
+      "candidate_hops": 2,
+      "topic_id": "topic:event",
+      "era_id": "era:joseon",
+      "era": "조선",
+      "service_era": "조선",
+      "era_criteria": "조선 건국 이후부터 1876년 개항 이전까지의 사건 사실만 선택한다.",
+      "owner_type": "Event",
+      "rag_owner_type": "사건",
+      "relation_axis_id": "event.development",
+      "topic_type": "사건",
+      "service_topic": "사건",
+      "difficulty": 2,
+      "question_frames": [
+        {
+          "question_task": "standard_select",
+          "stem_pattern": "target_description",
+          "material_type": "자료 제시문",
+          "major_type": "역사 자료의 분석 및 해석",
+          "minor_type": "자료 기반 시대·대상 추론",
+          "answer_owner_scope": "material_target",
+          "question_task_instruction": "material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",
+          "distractor_type": "same_category_wrong_target"
+        },
+        {
+          "question_task": "standard_select",
+          "stem_pattern": "target_description",
+          "material_type": "탐구 자료",
+          "major_type": "역사 탐구의 설계 및 수행",
+          "minor_type": "자료 수집·검색 방법",
+          "answer_owner_scope": "material_target",
+          "question_task_instruction": "material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",
+          "distractor_type": "same_category_wrong_target"
+        }
+      ]
+    },
+    {
+      "anchor_node_id": "canonical:organization:611fa397-7e00-4dd9-9164-e317891910a0",
+      "candidate_hops": 2,
+      "topic_id": "topic:society",
+      "era_id": "era:japanese_colonial",
+      "era": "일제강점기",
+      "service_era": "일제 강점기",
+      "era_criteria": "1910년 국권 피탈 이후부터 1945년 광복 이전까지의 단체 활동 사실만 선택한다.",
+      "owner_type": "Organization",
+      "rag_owner_type": "단체",
+      "relation_axis_id": "organization.activity",
+      "topic_type": "집단",
+      "service_topic": "사회",
+      "difficulty": 2,
+      "question_frames": [
+        {
+          "question_task": "standard_select",
+          "stem_pattern": "target_description",
+          "material_type": "자료 제시문",
+          "major_type": "역사 자료의 분석 및 해석",
+          "minor_type": "자료 기반 시대·대상 추론",
+          "answer_owner_scope": "material_target",
+          "question_task_instruction": "material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",
+          "distractor_type": "same_category_wrong_target"
+        },
+        {
+          "question_task": "standard_select",
+          "stem_pattern": "target_description",
+          "material_type": "탐구 자료",
+          "major_type": "역사 탐구의 설계 및 수행",
+          "minor_type": "자료 수집·검색 방법",
+          "answer_owner_scope": "material_target",
+          "question_task_instruction": "material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",
+          "distractor_type": "same_category_wrong_target"
+        }
+      ]
+    },
+    {
+      "anchor_node_id": "canonical:person:9a34af4f-dae2-45f2-9443-e6f3f346923a",
+      "candidate_hops": 2,
+      "topic_id": "topic:person",
+      "era_id": "era:modern",
+      "era": "현대",
+      "service_era": "현대",
+      "era_criteria": "1945년 광복 이후 대한민국 현대사의 인물 활동 사실만 선택한다.",
+      "owner_type": "Person",
+      "rag_owner_type": "인물",
+      "relation_axis_id": "person.activity_achievement",
+      "topic_type": "인물",
+      "service_topic": "인물",
+      "difficulty": 2,
+      "question_frames": [
+        {
+          "question_task": "standard_select",
+          "stem_pattern": "target_description",
+          "material_type": "자료 제시문",
+          "major_type": "역사 자료의 분석 및 해석",
+          "minor_type": "자료 기반 시대·대상 추론",
+          "answer_owner_scope": "material_target",
+          "question_task_instruction": "material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",
+          "distractor_type": "same_category_wrong_target"
+        },
+        {
+          "question_task": "standard_select",
+          "stem_pattern": "activity_achievement",
+          "material_type": "짧은 설명 자료",
+          "major_type": "역사 지식의 이해",
+          "minor_type": "기본 사실·개념 확인",
+          "answer_owner_scope": "material_target",
+          "question_task_instruction": "material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",
+          "distractor_type": "same_category_wrong_target"
+        }
+      ]
+    },
+    {
+      "anchor_node_id": "canonical:person:3e7d4fd2-5079-40a1-b656-b3f91ac0641e",
+      "candidate_hops": 3,
+      "topic_id": "topic:person",
+      "era_id": "era:opening_ports",
+      "era": "개항기·대한제국",
+      "service_era": "개항기",
+      "era_criteria": "1876년 개항 이후부터 1910년 국권 피탈 이전까지의 인물 활동 사실만 선택한다.",
+      "owner_type": "Person",
+      "rag_owner_type": "인물",
+      "relation_axis_id": "person.activity_achievement",
+      "topic_type": "인물",
+      "service_topic": "인물",
+      "difficulty": 3,
+      "question_frames": [
+        {
+          "question_task": "standard_select",
+          "stem_pattern": "target_description",
+          "material_type": "자료 제시문",
+          "major_type": "역사 자료의 분석 및 해석",
+          "minor_type": "자료 기반 시대·대상 추론",
+          "answer_owner_scope": "material_target",
+          "question_task_instruction": "material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",
+          "distractor_type": "same_category_wrong_target"
+        },
+        {
+          "question_task": "standard_select",
+          "stem_pattern": "activity_achievement",
+          "material_type": "짧은 설명 자료",
+          "major_type": "역사 지식의 이해",
+          "minor_type": "기본 사실·개념 확인",
+          "answer_owner_scope": "material_target",
+          "question_task_instruction": "material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",
+          "distractor_type": "same_category_wrong_target"
+        }
+      ]
+    },
+    {
+      "anchor_node_id": "canonical:concept:06d61689-0bcc-41d1-8f72-02f565c4dd14",
+      "candidate_hops": 3,
+      "topic_id": "topic:institutional_system",
+      "era_id": "era:joseon",
+      "era": "조선",
+      "service_era": "조선",
+      "era_criteria": "조선 건국 이후부터 1876년 개항 이전까지의 제도·개념 사실만 선택한다.",
+      "owner_type": "Concept",
+      "rag_owner_type": "개념",
+      "relation_axis_id": "common.definition_feature",
+      "topic_type": "제도",
+      "service_topic": "제도",
+      "difficulty": 3,
+      "question_frames": [
+        {
+          "question_task": "standard_select",
+          "stem_pattern": "target_description",
+          "material_type": "자료 제시문",
+          "major_type": "역사 자료의 분석 및 해석",
+          "minor_type": "자료 기반 시대·대상 추론",
+          "answer_owner_scope": "material_target",
+          "question_task_instruction": "material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",
+          "distractor_type": "same_category_wrong_target"
+        },
+        {
+          "question_task": "standard_select",
+          "stem_pattern": "target_description",
+          "material_type": "탐구 자료",
+          "major_type": "역사 탐구의 설계 및 수행",
+          "minor_type": "자료 수집·검색 방법",
+          "answer_owner_scope": "material_target",
+          "question_task_instruction": "material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",
+          "distractor_type": "same_category_wrong_target"
+        }
+      ]
+    },
+    {
+      "anchor_node_id": "canonical:person:31f8c879-8873-4d64-950b-6d06637f45dd",
+      "candidate_hops": 3,
+      "topic_id": "topic:person",
+      "era_id": "era:japanese_colonial",
+      "era": "일제강점기",
+      "service_era": "일제 강점기",
+      "era_criteria": "1910년 국권 피탈 이후부터 1945년 광복 이전까지의 인물 활동 사실만 선택한다.",
+      "owner_type": "Person",
+      "rag_owner_type": "인물",
+      "relation_axis_id": "person.activity_achievement",
+      "topic_type": "인물",
+      "service_topic": "인물",
+      "difficulty": 3,
+      "question_frames": [
+        {
+          "question_task": "standard_select",
+          "stem_pattern": "target_description",
+          "material_type": "자료 제시문",
+          "major_type": "역사 자료의 분석 및 해석",
+          "minor_type": "자료 기반 시대·대상 추론",
+          "answer_owner_scope": "material_target",
+          "question_task_instruction": "material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",
+          "distractor_type": "same_category_wrong_target"
+        },
+        {
+          "question_task": "standard_select",
+          "stem_pattern": "activity_achievement",
+          "material_type": "짧은 설명 자료",
+          "major_type": "역사 지식의 이해",
+          "minor_type": "기본 사실·개념 확인",
+          "answer_owner_scope": "material_target",
+          "question_task_instruction": "material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",
+          "distractor_type": "same_category_wrong_target"
+        }
+      ]
+    }
+  ]
+}

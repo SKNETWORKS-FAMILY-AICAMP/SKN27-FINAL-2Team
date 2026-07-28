@@ -74,6 +74,7 @@ class FixedChoiceTest(unittest.TestCase):
         record = records_from_assembled({"question": question})[0]
         messages = build_messages("unused rubric", record)
         self.assertNotIn("choice_quality_score", messages[1]["content"])
+        self.assertIn("지문의 화자·시제·서술 형식이 일관되는지", messages[1]["content"])
         parsed = normalize_gate({
             "evaluation_profile": "fixed_choice",
             "gate_result": "PASS",

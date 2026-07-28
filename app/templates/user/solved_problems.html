@@ -4,8 +4,8 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>himate | 내가 푼 문제</title>
-  <link rel="stylesheet" href="/static/user/css/solved_problems.css?v=question-jump-toggle-3" />
-  <link rel="stylesheet" href="../../static/user/css/solved_problems.css?v=question-jump-toggle-3" />
+  <link rel="stylesheet" href="/static/user/css/solved_problems.css?v=question-jump-toggle-13" />
+  <link rel="stylesheet" href="../../static/user/css/solved_problems.css?v=question-jump-toggle-13" />
   <link rel="stylesheet" href="/static/himate.css" />
   <link rel="stylesheet" href="/static/layout.css" />
 </head>
@@ -63,6 +63,10 @@
           </div>
           <h2 id="questionTitle">문제를 불러오는 중입니다.</h2>
           <p id="questionMeta"></p>
+          <div class="result-question-image-wrap" id="questionImageWrap" hidden>
+            <img class="result-question-image" id="questionImage" alt="문항 자료 이미지">
+            <button type="button" class="result-question-zoom" id="questionImageZoom" aria-label="문항 자료 이미지 확대"><img src="/static/images/zoom-in.png" alt=""></button>
+          </div>
           <ol class="choice-review" id="choiceReview"></ol>
         </section>
 
@@ -88,6 +92,13 @@
         </nav>
       </section>
 
+      <section class="image-preview" id="imagePreview" role="dialog" aria-modal="true" aria-label="이미지 확대" hidden>
+        <button class="image-preview-backdrop" id="imagePreviewBackdrop" type="button" aria-label="이미지 확대 닫기"></button>
+        <figure class="image-preview-content">
+          <button class="image-preview-close" id="imagePreviewClose" type="button" aria-label="닫기">×</button>
+          <img id="imagePreviewImage" alt="확대된 선택지 이미지" />
+        </figure>
+      </section>
       {{ record_payload|json_script:"recordPayload" }}
       <script>
         const records = JSON.parse(document.getElementById("recordPayload").textContent);
@@ -102,6 +113,9 @@
         const questionType = document.getElementById("questionType");
         const questionTitle = document.getElementById("questionTitle");
         const questionMeta = document.getElementById("questionMeta");
+        const questionImage = document.getElementById("questionImage");
+        const questionImageWrap = document.getElementById("questionImageWrap");
+        const questionImageZoom = document.getElementById("questionImageZoom");
         const choiceReview = document.getElementById("choiceReview");
         const explanation = document.getElementById("explanation");
         const choiceExplanation = document.getElementById("choiceExplanation");
@@ -121,6 +135,25 @@
 
         function answerLabel(value) {
           return value ? `${value}번` : "미응답";
+        }
+
+        function assetUrl(path) {
+          if (!path) return "";
+          if (/^https:\/\/contents\.history\.go\.kr\/data\/img\//.test(path)) {
+            return `{% url 'chatbot:image_proxy' %}?url=${encodeURIComponent(path)}`;
+          }
+          return /^(https?:)?\/\//.test(path) || path.startsWith("/") ? path : `/${path}`;
+        }
+
+        function openImagePreview(src, alt) {
+          imagePreviewImage.src = src;
+          imagePreviewImage.alt = alt;
+          imagePreview.hidden = false;
+        }
+
+        function closeImagePreview() {
+          imagePreview.hidden = true;
+          imagePreviewImage.removeAttribute("src");
         }
 
         function renderJump() {
@@ -151,12 +184,24 @@
           questionType.textContent = record.question_type;
           questionTitle.textContent = record.content;
           questionMeta.textContent = `${record.era} · ${record.topic} · ${record.time_spent}`;
+          questionImageWrap.hidden = !record.question_image_path;
+          questionImage.src = record.question_image_path ? assetUrl(record.question_image_path) : "";
+          questionImageZoom.dataset.image = questionImage.src;
+          questionImageZoom.dataset.alt = "문항 자료 이미지";
+          choiceReview.classList.toggle("has-image-choices", record.options.some((option) => option.choice_image_path));
           choiceReview.innerHTML = record.options.map((option) => {
             const classes = [
               option.choice_no === record.answer_no ? "correct" : "",
               option.choice_no === record.selected_no ? "selected" : "",
+              option.choice_image_path ? "has-image" : "",
             ].filter(Boolean).join(" ");
-            return `<li class="${classes}"><span>${option.choice_no}</span><b>${option.content}</b></li>`;
+            const image = option.choice_image_path
+              ? `<img class="result-choice-image" src="${assetUrl(option.choice_image_path)}" alt="${option.choice_no}번 선택지 이미지">`
+              : "";
+            const zoom = option.choice_image_path
+              ? `<button type="button" class="result-choice-zoom" data-image="${assetUrl(option.choice_image_path)}" data-alt="${option.choice_no}번 선택지 이미지" aria-label="${option.choice_no}번 선택지 이미지 확대"><img src="/static/images/zoom-in.png" alt=""></button>`
+              : "";
+            return `<li class="${classes}"><span>${option.choice_no}</span><div>${image}<b>${option.content}</b></div>${zoom}</li>`;
           }).join("");
           explanation.textContent = record.answer_explanation || "해설이 등록되지 않았습니다.";
           choiceExplanation.textContent = selectedOption?.choice_explanation || "선택지별 해설이 등록되지 않았습니다.";
@@ -174,6 +219,19 @@
         nextQuestion.addEventListener("click", () => {
           currentIndex = Math.min(records.length - 1, currentIndex + 1);
           renderQuestion();
+        });
+
+        choiceReview.addEventListener("click", (event) => {
+          const button = event.target.closest(".result-choice-zoom");
+          if (button) openImagePreview(button.dataset.image, button.dataset.alt);
+        });
+        questionImageZoom.addEventListener("click", () => openImagePreview(questionImageZoom.dataset.image, questionImageZoom.dataset.alt));
+        const imagePreview = document.getElementById("imagePreview");
+        const imagePreviewImage = document.getElementById("imagePreviewImage");
+        document.getElementById("imagePreviewBackdrop").addEventListener("click", closeImagePreview);
+        document.getElementById("imagePreviewClose").addEventListener("click", closeImagePreview);
+        document.addEventListener("keydown", (event) => {
+          if (event.key === "Escape") closeImagePreview();
         });
 
         renderQuestion();

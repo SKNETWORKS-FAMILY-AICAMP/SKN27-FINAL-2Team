@@ -1,0 +1,194 @@
+{
+  "pack_id": "image_generation_pack:prehistoric_sites:image_material:ki_010_00200",
+  "family_id": "image_choice_pack_v3:prehistoric_sites",
+  "era": "선사·초기국가",
+  "service_era": "선사 시대",
+  "service_topic": "문화",
+  "service_question_type": "역사 자료의 분석 및 해석",
+  "service_question_subtype": "시각 자료 해석",
+  "variant_key": "image:image_choice_pack_v3:prehistoric_sites:image_material:ki_010_00200",
+  "target_label": "충북 제천 점말 동굴",
+  "topic_type": "문화유산",
+  "question_task": "standard_select",
+  "choice_mode": "image",
+  "stem_pattern": "source_inference",
+  "relation_axis_id": "common.definition_feature",
+  "material_type": "자료 제시문",
+  "major_type": "역사 자료의 분석 및 해석",
+  "minor_type": "시각 자료 해석",
+  "difficulty_label": "보통",
+  "question_task_instruction": "검수된 단서를 바탕으로 대상명을 직접 노출하지 않는 지문과 발문을 만들고, 제시된 이미지 중 해당 문화유산을 고르게 한다.",
+  "material_clue_basis": "구석기시대 동굴 유적이다. 조선계 석회암지대에 형성되었으며 용두산 동남향 사면 중간쯤의 병풍바위 끝부분에 위치하고 있다. 발굴 조사 결과, 전기·중기·후기 구석기문화의 뚜렷한 3개의 문화층이 발달되어 있는 것으로 밝혀졌다. 이 동굴유적에서는 털코뿔이·동굴곰·짧은꼬리 원숭이 등의 동물화석 20종과 석기·뼈연모·예술품 및 식물화석 등 풍부한 고고학적 유물이 발견되었다. 2001년 충청북도 기념물 제116호로 지정되었다.",
+  "material_evidence_chunks": [
+    {
+      "snippet": "구석기시대 동굴 유적이다. 조선계 석회암지대에 형성되었으며 용두산 동남향 사면 중간쯤의 병풍바위 끝부분에 위치하고 있다. 발굴 조사 결과, 전기·중기·후기 구석기문화의 뚜렷한 3개의 문화층이 발달되어 있는 것으로 밝혀졌다. 이 동굴유적에서는 털코뿔이·동굴곰·짧은꼬리 원숭이 등의 동물화석 20종과 석기·뼈연모·예술품 및 식물화석 등 풍부한 고고학적 유물이 발견되었다. 2001년 충청북도 기념물 제116호로 지정되었다.",
+      "chunk_id": "ki_010_00200_chunk_0000",
+      "article_id": "image_material:ki_010_00200",
+      "exact_text": "구석기시대 동굴 유적이다. 조선계 석회암지대에 형성되었으며 용두산 동남향 사면 중간쯤의 병풍바위 끝부분에 위치하고 있다. 발굴 조사 결과, 전기·중기·후기 구석기문화의 뚜렷한 3개의 문화층이 발달되어 있는 것으로 밝혀졌다. 이 동굴유적에서는 털코뿔이·동굴곰·짧은꼬리 원숭이 등의 동물화석 20종과 석기·뼈연모·예술품 및 식물화석 등 풍부한 고고학적 유물이 발견되었다. 2001년 충청북도 기념물 제116호로 지정되었다.",
+      "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_010_00200&whereStr=",
+      "section_path": [
+        "검수된 이미지 식별 단서"
+      ]
+    }
+  ],
+  "material_fact_semantically_distinct": true,
+  "status": "rag_ready",
+  "semantic_status": "pass",
+  "items": [
+    {
+      "slot_no": 0,
+      "role": "answer",
+      "basis_item_id": "clue:e9e673fdbe44",
+      "article_id": "image_material:ki_010_00200",
+      "truth_owner_label": "충북 제천 점말 동굴",
+      "fact_basis": "구석기시대 동굴 유적이다. 조선계 석회암지대에 형성되었으며 용두산 동남향 사면 중간쯤의 병풍바위 끝부분에 위치하고 있다. 발굴 조사 결과, 전기·중기·후기 구석기문화의 뚜렷한 3개의 문화층이 발달되어 있는 것으로 밝혀졌다. 이 동굴유적에서는 털코뿔이·동굴곰·짧은꼬리 원숭이 등의 동물화석 20종과 석기·뼈연모·예술품 및 식물화석 등 풍부한 고고학적 유물이 발견되었다. 2001년 충청북도 기념물 제116호로 지정되었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_010_00200_chunk_0000",
+          "article_id": "image_material:ki_010_00200",
+          "snippet": "구석기시대 동굴 유적이다. 조선계 석회암지대에 형성되었으며 용두산 동남향 사면 중간쯤의 병풍바위 끝부분에 위치하고 있다. 발굴 조사 결과, 전기·중기·후기 구석기문화의 뚜렷한 3개의 문화층이 발달되어 있는 것으로 밝혀졌다. 이 동굴유적에서는 털코뿔이·동굴곰·짧은꼬리 원숭이 등의 동물화석 20종과 석기·뼈연모·예술품 및 식물화석 등 풍부한 고고학적 유물이 발견되었다. 2001년 충청북도 기념물 제116호로 지정되었다.",
+          "exact_text": "구석기시대 동굴 유적이다. 조선계 석회암지대에 형성되었으며 용두산 동남향 사면 중간쯤의 병풍바위 끝부분에 위치하고 있다. 발굴 조사 결과, 전기·중기·후기 구석기문화의 뚜렷한 3개의 문화층이 발달되어 있는 것으로 밝혀졌다. 이 동굴유적에서는 털코뿔이·동굴곰·짧은꼬리 원숭이 등의 동물화석 20종과 석기·뼈연모·예술품 및 식물화석 등 풍부한 고고학적 유물이 발견되었다. 2001년 충청북도 기념물 제116호로 지정되었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_010_00200&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_010_00200_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_00200.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_00200.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_010_00200&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유적",
+        "category_sub": "자연지물",
+        "internal_owner_title": "충북 제천 점말 동굴",
+        "owner_id": "image_material:ki_010_00200"
+      }
+    },
+    {
+      "slot_no": 1,
+      "role": "distractor",
+      "basis_item_id": "clue:6b3eed354357",
+      "article_id": "image_material:ki_010_00800",
+      "truth_owner_label": "강원 양양 오산리 신석기시대 유적",
+      "fact_basis": "신석기시대의 주거지 유적이다. 유적 가운데 A지구의 2·3·4호 주거지에서는 많은 생활 도구뿐만 아니라 석기작업을 위한 작업대, 석재, 석편들이 출토되었기 때문에 주거와 작업에 병행을 위한 시설로 추정되는 반면, 1·6·7·8호 주거지는 내부보다는 그 바깥이 작업공간으로 활용되었고, 주거지 내부는 잠자리와 식사를 위한 시설 혹은 저장 시설 등으로 추정된다. 1997년 사적 제394호로 지정되었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_010_00800_chunk_0000",
+          "article_id": "image_material:ki_010_00800",
+          "snippet": "신석기시대의 주거지 유적이다. 유적 가운데 A지구의 2·3·4호 주거지에서는 많은 생활 도구뿐만 아니라 석기작업을 위한 작업대, 석재, 석편들이 출토되었기 때문에 주거와 작업에 병행을 위한 시설로 추정되는 반면, 1·6·7·8호 주거지는 내부보다는 그 바깥이 작업공간으로 활용되었고, 주거지 내부는 잠자리와 식사를 위한 시설 혹은 저장 시설 등으로 추정된다. 1997년 사적 제394호로 지정되었다.",
+          "exact_text": "신석기시대의 주거지 유적이다. 유적 가운데 A지구의 2·3·4호 주거지에서는 많은 생활 도구뿐만 아니라 석기작업을 위한 작업대, 석재, 석편들이 출토되었기 때문에 주거와 작업에 병행을 위한 시설로 추정되는 반면, 1·6·7·8호 주거지는 내부보다는 그 바깥이 작업공간으로 활용되었고, 주거지 내부는 잠자리와 식사를 위한 시설 혹은 저장 시설 등으로 추정된다. 1997년 사적 제394호로 지정되었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_010_00800&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_010_00800_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_00800.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_00800.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_010_00800&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유적",
+        "category_sub": "주거시설",
+        "internal_owner_title": "강원 양양 오산리 신석기시대 유적",
+        "owner_id": "image_material:ki_010_00800"
+      }
+    },
+    {
+      "slot_no": 2,
+      "role": "distractor",
+      "basis_item_id": "clue:faa789dbbefc",
+      "article_id": "image_material:ki_010_00900",
+      "truth_owner_label": "강원 양양 오산리 신석기시대 복원 움집",
+      "fact_basis": "신석기시대의 주거지 유적이다. 형태는 모두 원형에 가까운 지상 가옥이며, 바닥은 3∼10㎝ 두께로 잔자갈이 섞인 점토를 여러 겹 다져 만들었다. 화덕자리는 대부분 주거지 중앙에 한 개씩 만들었고, 주거지 내부 중앙에 기둥을 받쳤던 것으로 보이는 받침돌이 발견되기도 하였다. 주거지의 크기는 대체로 10㎡ 내외이지만, 30㎡가 넘은 넓은 크기도 있었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_010_00900_chunk_0000",
+          "article_id": "image_material:ki_010_00900",
+          "snippet": "신석기시대의 주거지 유적이다. 형태는 모두 원형에 가까운 지상 가옥이며, 바닥은 3∼10㎝ 두께로 잔자갈이 섞인 점토를 여러 겹 다져 만들었다. 화덕자리는 대부분 주거지 중앙에 한 개씩 만들었고, 주거지 내부 중앙에 기둥을 받쳤던 것으로 보이는 받침돌이 발견되기도 하였다. 주거지의 크기는 대체로 10㎡ 내외이지만, 30㎡가 넘은 넓은 크기도 있었다.",
+          "exact_text": "신석기시대의 주거지 유적이다. 형태는 모두 원형에 가까운 지상 가옥이며, 바닥은 3∼10㎝ 두께로 잔자갈이 섞인 점토를 여러 겹 다져 만들었다. 화덕자리는 대부분 주거지 중앙에 한 개씩 만들었고, 주거지 내부 중앙에 기둥을 받쳤던 것으로 보이는 받침돌이 발견되기도 하였다. 주거지의 크기는 대체로 10㎡ 내외이지만, 30㎡가 넘은 넓은 크기도 있었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_010_00900&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_010_00900_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_00900.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_00900.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_010_00900&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유적",
+        "category_sub": "주거시설",
+        "internal_owner_title": "강원 양양 오산리 신석기시대 복원 움집",
+        "owner_id": "image_material:ki_010_00900"
+      }
+    },
+    {
+      "slot_no": 3,
+      "role": "distractor",
+      "basis_item_id": "clue:478cf53848ac",
+      "article_id": "image_material:ki_010_02300",
+      "truth_owner_label": "부여 송국리 유적",
+      "fact_basis": "부여 송국리 유적은 대표적인 청동기시대 주거지 유적이다. 하천과 평지에 인접한 낮은 구릉과 대지 위에 100여 기 이상의 집터가 있었을 것으로 추정된다. 특징 가운데 하나는 마을 전체가 목책, 즉 통나무 장벽으로 둘러싸여 있는 점이다. 목책은 서쪽으로 돌출된 가지능선에서 시작되어 유적이 분포하는 구릉을 둘러싸는 대규모 시설로, 내부 면적이 작게는 300,000㎡, 크게는 610,000㎡에 이를 것으로 예측된다. 1976년 사적 제249호로 지정되었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_010_02300_chunk_0000",
+          "article_id": "image_material:ki_010_02300",
+          "snippet": "부여 송국리 유적은 대표적인 청동기시대 주거지 유적이다. 하천과 평지에 인접한 낮은 구릉과 대지 위에 100여 기 이상의 집터가 있었을 것으로 추정된다. 특징 가운데 하나는 마을 전체가 목책, 즉 통나무 장벽으로 둘러싸여 있는 점이다. 목책은 서쪽으로 돌출된 가지능선에서 시작되어 유적이 분포하는 구릉을 둘러싸는 대규모 시설로, 내부 면적이 작게는 300,000㎡, 크게는 610,000㎡에 이를 것으로 예측된다. 1976년 사적 제249호로 지정되었다.",
+          "exact_text": "부여 송국리 유적은 대표적인 청동기시대 주거지 유적이다. 하천과 평지에 인접한 낮은 구릉과 대지 위에 100여 기 이상의 집터가 있었을 것으로 추정된다. 특징 가운데 하나는 마을 전체가 목책, 즉 통나무 장벽으로 둘러싸여 있는 점이다. 목책은 서쪽으로 돌출된 가지능선에서 시작되어 유적이 분포하는 구릉을 둘러싸는 대규모 시설로, 내부 면적이 작게는 300,000㎡, 크게는 610,000㎡에 이를 것으로 예측된다. 1976년 사적 제249호로 지정되었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_010_02300&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_010_02300_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_02300.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_02300.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_010_02300&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유적",
+        "category_sub": "주거시설",
+        "internal_owner_title": "부여 송국리 유적",
+        "owner_id": "image_material:ki_010_02300"
+      }
+    },
+    {
+      "slot_no": 4,
+      "role": "distractor",
+      "basis_item_id": "clue:c18dd3e81da4",
+      "article_id": "image_material:ki_010_02100",
+      "truth_owner_label": "강화 부근리 고인돌",
+      "fact_basis": "청동기시대의 고인돌 유적이다. 강화 부근리에는 40여기의 고인돌이 산재하는데, 그 중 강화 부근리 고인돌의 규모가 가장 크다. 북방식 혹은 탁자식 고인돌의 형태이다. 전체 높이는 2.6m이고, 덮개돌은 길이 6.5m, 너비 5.2m, 두께 1.2m의 화강암으로 되어 있다. 1964년 사적 제137호로 지정되었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_010_02100_chunk_0000",
+          "article_id": "image_material:ki_010_02100",
+          "snippet": "청동기시대의 고인돌 유적이다. 강화 부근리에는 40여기의 고인돌이 산재하는데, 그 중 강화 부근리 고인돌의 규모가 가장 크다. 북방식 혹은 탁자식 고인돌의 형태이다. 전체 높이는 2.6m이고, 덮개돌은 길이 6.5m, 너비 5.2m, 두께 1.2m의 화강암으로 되어 있다. 1964년 사적 제137호로 지정되었다.",
+          "exact_text": "청동기시대의 고인돌 유적이다. 강화 부근리에는 40여기의 고인돌이 산재하는데, 그 중 강화 부근리 고인돌의 규모가 가장 크다. 북방식 혹은 탁자식 고인돌의 형태이다. 전체 높이는 2.6m이고, 덮개돌은 길이 6.5m, 너비 5.2m, 두께 1.2m의 화강암으로 되어 있다. 1964년 사적 제137호로 지정되었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_010_02100&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_010_02100_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_02100.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_010/ki_010_02100.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_010_02100&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유적",
+        "category_sub": "무덤",
+        "internal_owner_title": "강화 부근리 고인돌",
+        "owner_id": "image_material:ki_010_02100"
+      }
+    }
+  ]
+}

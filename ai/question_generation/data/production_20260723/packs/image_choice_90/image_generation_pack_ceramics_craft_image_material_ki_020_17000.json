@@ -1,0 +1,194 @@
+{
+  "pack_id": "image_generation_pack:ceramics_craft:image_material:ki_020_17000",
+  "family_id": "image_choice_pack_v3:ceramics_craft",
+  "era": "고대",
+  "service_era": "삼국 시대",
+  "service_topic": "문화",
+  "service_question_type": "역사 자료의 분석 및 해석",
+  "service_question_subtype": "시각 자료 해석",
+  "variant_key": "image:image_choice_pack_v3:ceramics_craft:image_material:ki_020_17000",
+  "target_label": "함안 말이산 고분 출토 아라가야 굽다리접시",
+  "topic_type": "문화유산",
+  "question_task": "standard_select",
+  "choice_mode": "image",
+  "stem_pattern": "source_inference",
+  "relation_axis_id": "common.definition_feature",
+  "material_type": "자료 제시문",
+  "major_type": "역사 자료의 분석 및 해석",
+  "minor_type": "시각 자료 해석",
+  "difficulty_label": "어려움",
+  "question_task_instruction": "검수된 단서를 바탕으로 대상명을 직접 노출하지 않는 지문과 발문을 만들고, 제시된 이미지 중 해당 문화유산을 고르게 한다.",
+  "material_clue_basis": "함안 말이산 고분에서 출토된 아라가야의 각종 굽다리접시(高杯)이다. 아라가야 고배는 5세기 전반에는 높이 15㎝ 전후로 크고, 다양한 형태가 제작되었는데 특히 투창과 대각의 형태가 다양하다. 삼각형투창고배, 화염형투창고배, 긴 세장방형의 투창이 상하 일렬로 배치된 이단일렬투창고배, 상하 엇갈리게 배치된 이단교호투창고배(二段交互透窓高杯) 등이 있다. 특히 화염형투창고배는 함안 분지를 중심으로 분포하는 특징적인 토기로 아라가야를 대표하는 토기로 알려져 있다.",
+  "material_evidence_chunks": [
+    {
+      "snippet": "함안 말이산 고분에서 출토된 아라가야의 각종 굽다리접시(高杯)이다. 아라가야 고배는 5세기 전반에는 높이 15㎝ 전후로 크고, 다양한 형태가 제작되었는데 특히 투창과 대각의 형태가 다양하다. 삼각형투창고배, 화염형투창고배, 긴 세장방형의 투창이 상하 일렬로 배치된 이단일렬투창고배, 상하 엇갈리게 배치된 이단교호투창고배(二段交互透窓高杯) 등이 있다. 특히 화염형투창고배는 함안 분지를 중심으로 분포하는 특징적인 토기로 아라가야를 대표하는 토기로 알려져 있다.",
+      "chunk_id": "ki_020_17000_chunk_0000",
+      "article_id": "image_material:ki_020_17000",
+      "exact_text": "함안 말이산 고분에서 출토된 아라가야의 각종 굽다리접시(高杯)이다. 아라가야 고배는 5세기 전반에는 높이 15㎝ 전후로 크고, 다양한 형태가 제작되었는데 특히 투창과 대각의 형태가 다양하다. 삼각형투창고배, 화염형투창고배, 긴 세장방형의 투창이 상하 일렬로 배치된 이단일렬투창고배, 상하 엇갈리게 배치된 이단교호투창고배(二段交互透窓高杯) 등이 있다. 특히 화염형투창고배는 함안 분지를 중심으로 분포하는 특징적인 토기로 아라가야를 대표하는 토기로 알려져 있다.",
+      "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_020_17000&whereStr=",
+      "section_path": [
+        "검수된 이미지 식별 단서"
+      ]
+    }
+  ],
+  "material_fact_semantically_distinct": true,
+  "status": "rag_ready",
+  "semantic_status": "pass",
+  "items": [
+    {
+      "slot_no": 0,
+      "role": "answer",
+      "basis_item_id": "clue:8f34de4adebe",
+      "article_id": "image_material:ki_020_17000",
+      "truth_owner_label": "함안 말이산 고분 출토 아라가야 굽다리접시",
+      "fact_basis": "함안 말이산 고분에서 출토된 아라가야의 각종 굽다리접시(高杯)이다. 아라가야 고배는 5세기 전반에는 높이 15㎝ 전후로 크고, 다양한 형태가 제작되었는데 특히 투창과 대각의 형태가 다양하다. 삼각형투창고배, 화염형투창고배, 긴 세장방형의 투창이 상하 일렬로 배치된 이단일렬투창고배, 상하 엇갈리게 배치된 이단교호투창고배(二段交互透窓高杯) 등이 있다. 특히 화염형투창고배는 함안 분지를 중심으로 분포하는 특징적인 토기로 아라가야를 대표하는 토기로 알려져 있다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_020_17000_chunk_0000",
+          "article_id": "image_material:ki_020_17000",
+          "snippet": "함안 말이산 고분에서 출토된 아라가야의 각종 굽다리접시(高杯)이다. 아라가야 고배는 5세기 전반에는 높이 15㎝ 전후로 크고, 다양한 형태가 제작되었는데 특히 투창과 대각의 형태가 다양하다. 삼각형투창고배, 화염형투창고배, 긴 세장방형의 투창이 상하 일렬로 배치된 이단일렬투창고배, 상하 엇갈리게 배치된 이단교호투창고배(二段交互透窓高杯) 등이 있다. 특히 화염형투창고배는 함안 분지를 중심으로 분포하는 특징적인 토기로 아라가야를 대표하는 토기로 알려져 있다.",
+          "exact_text": "함안 말이산 고분에서 출토된 아라가야의 각종 굽다리접시(高杯)이다. 아라가야 고배는 5세기 전반에는 높이 15㎝ 전후로 크고, 다양한 형태가 제작되었는데 특히 투창과 대각의 형태가 다양하다. 삼각형투창고배, 화염형투창고배, 긴 세장방형의 투창이 상하 일렬로 배치된 이단일렬투창고배, 상하 엇갈리게 배치된 이단교호투창고배(二段交互透窓高杯) 등이 있다. 특히 화염형투창고배는 함안 분지를 중심으로 분포하는 특징적인 토기로 아라가야를 대표하는 토기로 알려져 있다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_020_17000&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_020_17000_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_020/ki_020_17000.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_020/ki_020_17000.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_020_17000&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유물",
+        "category_sub": "공예",
+        "internal_owner_title": "함안 말이산 고분 출토 아라가야 굽다리접시",
+        "owner_id": "image_material:ki_020_17000"
+      }
+    },
+    {
+      "slot_no": 1,
+      "role": "distractor",
+      "basis_item_id": "clue:1c48481f79a5",
+      "article_id": "image_material:ki_020_16200",
+      "truth_owner_label": "부산 복천동 고분 출토 각종 가야토기",
+      "fact_basis": "부산 복천동 고분군 22호분에서 출토된 각종 가야 토기류이다. 굽다리접시(고배), 목항아리(장경호), 토제 등잔을 비롯한 4~5세기 낙동강 하류 지역의 특징적인 토기들을 확인할 수 있다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_020_16200_chunk_0000",
+          "article_id": "image_material:ki_020_16200",
+          "snippet": "부산 복천동 고분군 22호분에서 출토된 각종 가야 토기류이다. 굽다리접시(고배), 목항아리(장경호), 토제 등잔을 비롯한 4~5세기 낙동강 하류 지역의 특징적인 토기들을 확인할 수 있다.",
+          "exact_text": "부산 복천동 고분군 22호분에서 출토된 각종 가야 토기류이다. 굽다리접시(고배), 목항아리(장경호), 토제 등잔을 비롯한 4~5세기 낙동강 하류 지역의 특징적인 토기들을 확인할 수 있다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_020_16200&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_020_16200_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_020/ki_020_16200.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_020/ki_020_16200.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_020_16200&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유물",
+        "category_sub": "공예",
+        "internal_owner_title": "부산 복천동 고분 출토 각종 가야토기",
+        "owner_id": "image_material:ki_020_16200"
+      }
+    },
+    {
+      "slot_no": 2,
+      "role": "distractor",
+      "basis_item_id": "clue:d8e1f88f1582",
+      "article_id": "image_material:ki_020_16100",
+      "truth_owner_label": "부산 복천동 11호분 출토 거북장식 원통형 기대와 단경호",
+      "fact_basis": "부산 복천동 11호분에서 출토되었다. 정식 명칭은 ‘부산 복천동 11호분 출토 토기 거북장식 원통형 기대 및 단경호(釜山 福泉洞 十一號墳 出土 陶器 龜裝飾 圓筒形 器臺 및 短頸壺)’이다. 기대 중앙 부분에 거북이 토우 한 마리가 부착되어 있으며, 통형 그릇받침 위에 목이 낮은 도기(陶器) 항아리가 올려 있던 상태 그대로 출토된 희귀한 사례이다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_020_16100_chunk_0000",
+          "article_id": "image_material:ki_020_16100",
+          "snippet": "부산 복천동 11호분에서 출토되었다. 정식 명칭은 ‘부산 복천동 11호분 출토 토기 거북장식 원통형 기대 및 단경호(釜山 福泉洞 十一號墳 出土 陶器 龜裝飾 圓筒形 器臺 및 短頸壺)’이다. 기대 중앙 부분에 거북이 토우 한 마리가 부착되어 있으며, 통형 그릇받침 위에 목이 낮은 도기(陶器) 항아리가 올려 있던 상태 그대로 출토된 희귀한 사례이다.",
+          "exact_text": "부산 복천동 11호분에서 출토되었다. 정식 명칭은 ‘부산 복천동 11호분 출토 토기 거북장식 원통형 기대 및 단경호(釜山 福泉洞 十一號墳 出土 陶器 龜裝飾 圓筒形 器臺 및 短頸壺)’이다. 기대 중앙 부분에 거북이 토우 한 마리가 부착되어 있으며, 통형 그릇받침 위에 목이 낮은 도기(陶器) 항아리가 올려 있던 상태 그대로 출토된 희귀한 사례이다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_020_16100&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_020_16100_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_020/ki_020_16100.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_020/ki_020_16100.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_020_16100&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유물",
+        "category_sub": "공예",
+        "internal_owner_title": "부산 복천동 11호분 출토 거북장식 원통형 기대와 단경호",
+        "owner_id": "image_material:ki_020_16100"
+      }
+    },
+    {
+      "slot_no": 3,
+      "role": "distractor",
+      "basis_item_id": "clue:fc9b58c2edf5",
+      "article_id": "image_material:ki_020_11450",
+      "truth_owner_label": "계림로30호 출토 토우장식 항아리",
+      "fact_basis": "경주 미추왕릉지구 계림로 30호에서 출토된 토우 장식 토기이다. 높이 34cm, 구경 23cm 내외의 장경호로 4개의 돌출선이 목 부분에 둘러져 있다. 어깨와 목 부위에 5cm 정도의 작은 토우들이 붙어 있다. 토우는 개구리, 새, 거북이, 사람 등이 있다. 이러한 토우 장식 그릇은 제사와 같은 특수한 용도를 위해 제작되었으리라 추정되며, 토우들은 생산력과 관련하여 다산과 풍요를 기원하는 의도를 반영하는 것으로 보고 있다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_020_11450_chunk_0000",
+          "article_id": "image_material:ki_020_11450",
+          "snippet": "경주 미추왕릉지구 계림로 30호에서 출토된 토우 장식 토기이다. 높이 34cm, 구경 23cm 내외의 장경호로 4개의 돌출선이 목 부분에 둘러져 있다. 어깨와 목 부위에 5cm 정도의 작은 토우들이 붙어 있다. 토우는 개구리, 새, 거북이, 사람 등이 있다. 이러한 토우 장식 그릇은 제사와 같은 특수한 용도를 위해 제작되었으리라 추정되며, 토우들은 생산력과 관련하여 다산과 풍요를 기원하는 의도를 반영하는 것으로 보고 있다.",
+          "exact_text": "경주 미추왕릉지구 계림로 30호에서 출토된 토우 장식 토기이다. 높이 34cm, 구경 23cm 내외의 장경호로 4개의 돌출선이 목 부분에 둘러져 있다. 어깨와 목 부위에 5cm 정도의 작은 토우들이 붙어 있다. 토우는 개구리, 새, 거북이, 사람 등이 있다. 이러한 토우 장식 그릇은 제사와 같은 특수한 용도를 위해 제작되었으리라 추정되며, 토우들은 생산력과 관련하여 다산과 풍요를 기원하는 의도를 반영하는 것으로 보고 있다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_020_11450&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_020_11450_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_020/ki_020_11450.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_020/ki_020_11450.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_020_11450&whereStr=",
+        "image_source": "국립경주박물관",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유물",
+        "category_sub": "의례용품",
+        "internal_owner_title": "계림로30호 출토 토우장식 항아리",
+        "owner_id": "image_material:ki_020_11450"
+      }
+    },
+    {
+      "slot_no": 4,
+      "role": "distractor",
+      "basis_item_id": "clue:dca94b49bcb0",
+      "article_id": "image_material:ki_040_08300",
+      "truth_owner_label": "청자 상감국화모란유로죽문 매병 및 죽찰(매병)",
+      "fact_basis": "충청남도 태안군 근흥면 마도 해역의 마도 2호선에서 수중 발굴된 매병이다. 12세기 후반~13세기 초반에 제작된 것으로 추정된다. 고려시대 매병의 이름과 용도를 알려주는 죽찰이 함께 출토되었다. 2012년 보물 제1783호로 지정되었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_040_08300_chunk_0000",
+          "article_id": "image_material:ki_040_08300",
+          "snippet": "충청남도 태안군 근흥면 마도 해역의 마도 2호선에서 수중 발굴된 매병이다. 12세기 후반~13세기 초반에 제작된 것으로 추정된다. 고려시대 매병의 이름과 용도를 알려주는 죽찰이 함께 출토되었다. 2012년 보물 제1783호로 지정되었다.",
+          "exact_text": "충청남도 태안군 근흥면 마도 해역의 마도 2호선에서 수중 발굴된 매병이다. 12세기 후반~13세기 초반에 제작된 것으로 추정된다. 고려시대 매병의 이름과 용도를 알려주는 죽찰이 함께 출토되었다. 2012년 보물 제1783호로 지정되었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_040_08300&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_040_08300_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_040/ki_040_08300.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_040/ki_040_08300.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_040_08300&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유물",
+        "category_sub": "공예",
+        "internal_owner_title": "청자 상감국화모란유로죽문 매병 및 죽찰(매병)",
+        "owner_id": "image_material:ki_040_08300"
+      }
+    }
+  ]
+}

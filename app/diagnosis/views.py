@@ -13,10 +13,16 @@ from analytics.models import Analytics
 from analytics.models import StudyPlanMypage
 from analytics.serializers import parse_study_plan_items
 from analytics.service.analysis_snapshot import create_session_snapshot
+from analytics.service.study_plan import (
+    StudyPlanBlockNotDue,
+    StudyPlanBlockTerminal,
+    validate_study_plan_block_start,
+)
 from analytics.service.studyplan import (
     complete_study_plan_block_by_id,
     is_weekly_review_plan_block,
 )
+from analytics.service.weekly_report.collector import enqueue_weekly_report
 from question.models import (
     QuestionOptions,
     Questions,
@@ -116,12 +122,15 @@ def _complete_weekly_review_block_for_session(session, user_id):
     if error or block is None:
         return None
 
-    return complete_study_plan_block_by_id(
+    completed_plan = complete_study_plan_block_by_id(
         user_id,
         ref["studyplan_id"],
         ref["study_plan_block_id"],
         True,
     )
+    if completed_plan is not None:
+        enqueue_weekly_report(user_id, session.session_id, ref["studyplan_id"])
+    return completed_plan
 
 
 def _has_solve_sessions_review_type():
@@ -204,6 +213,30 @@ def diagnosis_start(request):
     )
     if block_error:
         return Response(block_error, status=status.HTTP_400_BAD_REQUEST)
+    if weekly_review_block:
+        try:
+            weekly_review_block = validate_study_plan_block_start(
+                user_id,
+                studyplan_id,
+                study_plan_block_id,
+                "diagnosis",
+            )
+        except StudyPlanBlockTerminal:
+            return Response(
+                {
+                    "code": "BLOCK_TERMINAL",
+                    "error": "종료된 블록은 새로 시작할 수 없습니다.",
+                },
+                status=status.HTTP_409_CONFLICT,
+            )
+        except StudyPlanBlockNotDue:
+            return Response(
+                {
+                    "code": "BLOCK_NOT_DUE",
+                    "error": "오늘 예정된 블록만 시작할 수 있습니다.",
+                },
+                status=status.HTTP_409_CONFLICT,
+            )
     review_type = "weekly_review" if weekly_review_block else None
     has_review_type = _has_solve_sessions_review_type()
 

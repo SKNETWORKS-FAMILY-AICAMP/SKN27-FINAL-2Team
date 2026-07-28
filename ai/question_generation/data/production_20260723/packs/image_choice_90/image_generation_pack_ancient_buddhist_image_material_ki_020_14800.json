@@ -1,0 +1,194 @@
+{
+  "pack_id": "image_generation_pack:ancient_buddhist:image_material:ki_020_14800",
+  "family_id": "image_choice_pack_v3:ancient_buddhist",
+  "era": "고대",
+  "service_era": "삼국 시대",
+  "service_topic": "문화",
+  "service_question_type": "역사 자료의 분석 및 해석",
+  "service_question_subtype": "시각 자료 해석",
+  "variant_key": "image:image_choice_pack_v3:ancient_buddhist:image_material:ki_020_14800",
+  "target_label": "경주 배동 석조여래삼존입상",
+  "topic_type": "문화유산",
+  "question_task": "standard_select",
+  "choice_mode": "image",
+  "stem_pattern": "inquiry_topic",
+  "relation_axis_id": "common.definition_feature",
+  "material_type": "탐구 자료",
+  "major_type": "역사 자료의 분석 및 해석",
+  "minor_type": "시각 자료 해석",
+  "difficulty_label": "어려움",
+  "question_task_instruction": "검수된 단서를 바탕으로 대상명을 직접 노출하지 않는 지문과 발문을 만들고, 제시된 이미지 중 해당 문화유산을 고르게 한다.",
+  "material_clue_basis": "경주 배동 석조여래삼존입상(慶州拜洞石造如來三尊立像)은 신라시대 불상이다. 경주시 내남면 용장리에 세워져 있다. 원래는 경주 남산 기슭에 흩어져 있던 것을 1923년 지금의 자리로 옮겨온 것이다. 기본 양식이 똑같아 처음부터 삼존불(三尊佛)로 모셔졌던 것으로 추정된다. 높이는 본존불이 2.78m, 좌협시보살이 2.35m, 우협시보살이 2.93m이다. 7세기 초기의 작품으로 추정된다. 1963년 보물 제63호로 지정되었다.",
+  "material_evidence_chunks": [
+    {
+      "snippet": "경주 배동 석조여래삼존입상(慶州拜洞石造如來三尊立像)은 신라시대 불상이다. 경주시 내남면 용장리에 세워져 있다. 원래는 경주 남산 기슭에 흩어져 있던 것을 1923년 지금의 자리로 옮겨온 것이다. 기본 양식이 똑같아 처음부터 삼존불(三尊佛)로 모셔졌던 것으로 추정된다. 높이는 본존불이 2.78m, 좌협시보살이 2.35m, 우협시보살이 2.93m이다. 7세기 초기의 작품으로 추정된다. 1963년 보물 제63호로 지정되었다.",
+      "chunk_id": "ki_020_14800_chunk_0000",
+      "article_id": "image_material:ki_020_14800",
+      "exact_text": "경주 배동 석조여래삼존입상(慶州拜洞石造如來三尊立像)은 신라시대 불상이다. 경주시 내남면 용장리에 세워져 있다. 원래는 경주 남산 기슭에 흩어져 있던 것을 1923년 지금의 자리로 옮겨온 것이다. 기본 양식이 똑같아 처음부터 삼존불(三尊佛)로 모셔졌던 것으로 추정된다. 높이는 본존불이 2.78m, 좌협시보살이 2.35m, 우협시보살이 2.93m이다. 7세기 초기의 작품으로 추정된다. 1963년 보물 제63호로 지정되었다.",
+      "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_020_14800&whereStr=",
+      "section_path": [
+        "검수된 이미지 식별 단서"
+      ]
+    }
+  ],
+  "material_fact_semantically_distinct": true,
+  "status": "rag_ready",
+  "semantic_status": "pass",
+  "items": [
+    {
+      "slot_no": 0,
+      "role": "answer",
+      "basis_item_id": "clue:6b512689b5a3",
+      "article_id": "image_material:ki_020_14800",
+      "truth_owner_label": "경주 배동 석조여래삼존입상",
+      "fact_basis": "경주 배동 석조여래삼존입상(慶州拜洞石造如來三尊立像)은 신라시대 불상이다. 경주시 내남면 용장리에 세워져 있다. 원래는 경주 남산 기슭에 흩어져 있던 것을 1923년 지금의 자리로 옮겨온 것이다. 기본 양식이 똑같아 처음부터 삼존불(三尊佛)로 모셔졌던 것으로 추정된다. 높이는 본존불이 2.78m, 좌협시보살이 2.35m, 우협시보살이 2.93m이다. 7세기 초기의 작품으로 추정된다. 1963년 보물 제63호로 지정되었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_020_14800_chunk_0000",
+          "article_id": "image_material:ki_020_14800",
+          "snippet": "경주 배동 석조여래삼존입상(慶州拜洞石造如來三尊立像)은 신라시대 불상이다. 경주시 내남면 용장리에 세워져 있다. 원래는 경주 남산 기슭에 흩어져 있던 것을 1923년 지금의 자리로 옮겨온 것이다. 기본 양식이 똑같아 처음부터 삼존불(三尊佛)로 모셔졌던 것으로 추정된다. 높이는 본존불이 2.78m, 좌협시보살이 2.35m, 우협시보살이 2.93m이다. 7세기 초기의 작품으로 추정된다. 1963년 보물 제63호로 지정되었다.",
+          "exact_text": "경주 배동 석조여래삼존입상(慶州拜洞石造如來三尊立像)은 신라시대 불상이다. 경주시 내남면 용장리에 세워져 있다. 원래는 경주 남산 기슭에 흩어져 있던 것을 1923년 지금의 자리로 옮겨온 것이다. 기본 양식이 똑같아 처음부터 삼존불(三尊佛)로 모셔졌던 것으로 추정된다. 높이는 본존불이 2.78m, 좌협시보살이 2.35m, 우협시보살이 2.93m이다. 7세기 초기의 작품으로 추정된다. 1963년 보물 제63호로 지정되었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_020_14800&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_020_14800_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_020/ki_020_14800.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_020/ki_020_14800.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_020_14800&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유물",
+        "category_sub": "불교미술",
+        "internal_owner_title": "경주 배동 석조여래삼존입상",
+        "owner_id": "image_material:ki_020_14800"
+      }
+    },
+    {
+      "slot_no": 1,
+      "role": "distractor",
+      "basis_item_id": "clue:8258a3e768c6",
+      "article_id": "image_material:ki_030_03000",
+      "truth_owner_label": "경주 석굴암 본존불상",
+      "fact_basis": "석굴암 본존불상은 석굴암 석굴 주실(主室)의 중앙에 위치한 불상이다. 연꽃 모양의 석련대(石蓮臺) 위에 결가부좌하여 안치되어 있다. 가늘게 뜨고 있는 눈과 엷은 미소를 띤 입술, 오뚝한 코, 길게 늘어진 귀 등 부처님의 근엄하면서도 자비로운 표정을 잘 묘사하였다. 머리는 굽타식의 나발(螺髮)을 올려 세밀하게 조각하였다. 전체 높이는 약 3.4m, 대좌 높이는 1.6m이다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_030_03000_chunk_0000",
+          "article_id": "image_material:ki_030_03000",
+          "snippet": "석굴암 본존불상은 석굴암 석굴 주실(主室)의 중앙에 위치한 불상이다. 연꽃 모양의 석련대(石蓮臺) 위에 결가부좌하여 안치되어 있다. 가늘게 뜨고 있는 눈과 엷은 미소를 띤 입술, 오뚝한 코, 길게 늘어진 귀 등 부처님의 근엄하면서도 자비로운 표정을 잘 묘사하였다. 머리는 굽타식의 나발(螺髮)을 올려 세밀하게 조각하였다. 전체 높이는 약 3.4m, 대좌 높이는 1.6m이다.",
+          "exact_text": "석굴암 본존불상은 석굴암 석굴 주실(主室)의 중앙에 위치한 불상이다. 연꽃 모양의 석련대(石蓮臺) 위에 결가부좌하여 안치되어 있다. 가늘게 뜨고 있는 눈과 엷은 미소를 띤 입술, 오뚝한 코, 길게 늘어진 귀 등 부처님의 근엄하면서도 자비로운 표정을 잘 묘사하였다. 머리는 굽타식의 나발(螺髮)을 올려 세밀하게 조각하였다. 전체 높이는 약 3.4m, 대좌 높이는 1.6m이다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_030_03000&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_030_03000_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_030/ki_030_03000.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_030/ki_030_03000.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_030_03000&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유물",
+        "category_sub": "불교미술",
+        "internal_owner_title": "경주 석굴암 본존불상",
+        "owner_id": "image_material:ki_030_03000"
+      }
+    },
+    {
+      "slot_no": 2,
+      "role": "distractor",
+      "basis_item_id": "clue:06f31b2c2585",
+      "article_id": "image_material:ki_030_03100",
+      "truth_owner_label": "경주 석굴암 금강역사상",
+      "fact_basis": "석굴암 금강역사상은 본존불이 있는 굴의 입구 좌우 양쪽에 배치되어 있다. 금강역사(金剛力士) 또는 인왕역사(仁王力士)라고 부른다. 그들의 머리 뒤에 있는 원형의 두광은 그들이 단순히 힘센 자가 아니라, 신성한 지혜를 고루 갖춘 존재임을 표시하는 것이다. 무서운 표정을 하고 있으면서도 악의가 느껴지지 않는 얼굴은 신라 무인의 모습을 연상시킨다. 중국이나 일본의 금강역사상에서는 볼 수 없는 특징이다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_030_03100_chunk_0000",
+          "article_id": "image_material:ki_030_03100",
+          "snippet": "석굴암 금강역사상은 본존불이 있는 굴의 입구 좌우 양쪽에 배치되어 있다. 금강역사(金剛力士) 또는 인왕역사(仁王力士)라고 부른다. 그들의 머리 뒤에 있는 원형의 두광은 그들이 단순히 힘센 자가 아니라, 신성한 지혜를 고루 갖춘 존재임을 표시하는 것이다. 무서운 표정을 하고 있으면서도 악의가 느껴지지 않는 얼굴은 신라 무인의 모습을 연상시킨다. 중국이나 일본의 금강역사상에서는 볼 수 없는 특징이다.",
+          "exact_text": "석굴암 금강역사상은 본존불이 있는 굴의 입구 좌우 양쪽에 배치되어 있다. 금강역사(金剛力士) 또는 인왕역사(仁王力士)라고 부른다. 그들의 머리 뒤에 있는 원형의 두광은 그들이 단순히 힘센 자가 아니라, 신성한 지혜를 고루 갖춘 존재임을 표시하는 것이다. 무서운 표정을 하고 있으면서도 악의가 느껴지지 않는 얼굴은 신라 무인의 모습을 연상시킨다. 중국이나 일본의 금강역사상에서는 볼 수 없는 특징이다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_030_03100&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_030_03100_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_030/ki_030_03100.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_030/ki_030_03100.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_030_03100&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유물",
+        "category_sub": "불교미술",
+        "internal_owner_title": "경주 석굴암 금강역사상",
+        "owner_id": "image_material:ki_030_03100"
+      }
+    },
+    {
+      "slot_no": 3,
+      "role": "distractor",
+      "basis_item_id": "clue:ab8d53e03860",
+      "article_id": "image_material:ki_030_01800",
+      "truth_owner_label": "경주 남산 칠불암 마애불상군",
+      "fact_basis": "경상북도 경주시 남산동 남산에 소재한 마애불이다. 8세기경 제작된 것으로 추정되며, 남산에 남아있는 불상 중 상태가 가장 양호하다. 동쪽을 향한 넓은 바위 면에 삼존상을, 그 앞 돌기둥의 사면에 사방불을 조각하였다. 마애삼존상의 본존상은 높이가 2.7m 정도이며, 연화대 위에 결가부좌를 앉아 항마촉지인의 수인을 취하고 있다. 좌우협시보살상은 몸체를 본존 쪽으로 틀어 서 있으며, 각각 정병과 연꽃을 손에 쥐고 있다. 높이는 2.1m 정도이다. 사방불은 동면상이 1.18m, 서면상이 1.13m, 남면상이 1m, 북면상이 72cm로 상의 크기는 모두 다르다. 동면상의 경우 왼손에 약합을 들고 있어 약사여래로 추정된다. 1963년 보물로 지정되었다가 2009년 국보로 지정되었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_030_01800_chunk_0000",
+          "article_id": "image_material:ki_030_01800",
+          "snippet": "경상북도 경주시 남산동 남산에 소재한 마애불이다. 8세기경 제작된 것으로 추정되며, 남산에 남아있는 불상 중 상태가 가장 양호하다. 동쪽을 향한 넓은 바위 면에 삼존상을, 그 앞 돌기둥의 사면에 사방불을 조각하였다. 마애삼존상의 본존상은 높이가 2.7m 정도이며, 연화대 위에 결가부좌를 앉아 항마촉지인의 수인을 취하고 있다. 좌우협시보살상은 몸체를 본존 쪽으로 틀어 서 있으며, 각각 정병과 연꽃을 손에 쥐고 있다. 높이는 2.1m 정도이다. 사방불은 동면상이 1.18m, 서면상이 1.13m, 남면상이 1m, 북면상이 72cm로 상의 크기는 모두 다르다. 동면상의 경우 왼손에 약합을 들고 있어 약사여래로 추정된다. 1963년 보물로 지정되었다가 2009년 국보로 지정되었다.",
+          "exact_text": "경상북도 경주시 남산동 남산에 소재한 마애불이다. 8세기경 제작된 것으로 추정되며, 남산에 남아있는 불상 중 상태가 가장 양호하다. 동쪽을 향한 넓은 바위 면에 삼존상을, 그 앞 돌기둥의 사면에 사방불을 조각하였다. 마애삼존상의 본존상은 높이가 2.7m 정도이며, 연화대 위에 결가부좌를 앉아 항마촉지인의 수인을 취하고 있다. 좌우협시보살상은 몸체를 본존 쪽으로 틀어 서 있으며, 각각 정병과 연꽃을 손에 쥐고 있다. 높이는 2.1m 정도이다. 사방불은 동면상이 1.18m, 서면상이 1.13m, 남면상이 1m, 북면상이 72cm로 상의 크기는 모두 다르다. 동면상의 경우 왼손에 약합을 들고 있어 약사여래로 추정된다. 1963년 보물로 지정되었다가 2009년 국보로 지정되었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_030_01800&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_030_01800_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_030/ki_030_01800.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_030/ki_030_01800.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_030_01800&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유물",
+        "category_sub": "불교미술",
+        "internal_owner_title": "경주 남산 칠불암 마애불상군",
+        "owner_id": "image_material:ki_030_01800"
+      }
+    },
+    {
+      "slot_no": 4,
+      "role": "distractor",
+      "basis_item_id": "clue:7e6713633996",
+      "article_id": "image_material:ki_030_02000",
+      "truth_owner_label": "경주 남산 신선암 마애보살반가상",
+      "fact_basis": "경상북도 경주시 남산 신선암에 위치한다. 암면을 경사지게 다듬어 얕은 감실을 마련하고 상을 조각하였다. 상 위에는 가로 1.54m, 세로 10.5m, 깊이 6cm의 홈이 남아있는데, 빗물이나 햇빛을 막기 위한 처마가 있었던 것으로 추정된다. 상의 전체 높이는 1.4m이다. 머리에 삼면보관을 쓰고, 귀걸이와 구슬목걸이로 장식한 것을 통해 보살상임을 알 수 있다. 어깨는 연꽃으로 장식한 수발이 덮여있는데, 이는 다른 불상에서는 찾아보기 어려운 것이다. 오른손에는 꽃(보상화)을 잡고 있으며, 왼손은 설법인을 취한 채 가슴께까지 들고 있다. 8세기 중~후반에 조성된 것으로 추정된다. 보물로 지정되었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_030_02000_chunk_0000",
+          "article_id": "image_material:ki_030_02000",
+          "snippet": "경상북도 경주시 남산 신선암에 위치한다. 암면을 경사지게 다듬어 얕은 감실을 마련하고 상을 조각하였다. 상 위에는 가로 1.54m, 세로 10.5m, 깊이 6cm의 홈이 남아있는데, 빗물이나 햇빛을 막기 위한 처마가 있었던 것으로 추정된다. 상의 전체 높이는 1.4m이다. 머리에 삼면보관을 쓰고, 귀걸이와 구슬목걸이로 장식한 것을 통해 보살상임을 알 수 있다. 어깨는 연꽃으로 장식한 수발이 덮여있는데, 이는 다른 불상에서는 찾아보기 어려운 것이다. 오른손에는 꽃(보상화)을 잡고 있으며, 왼손은 설법인을 취한 채 가슴께까지 들고 있다. 8세기 중~후반에 조성된 것으로 추정된다. 보물로 지정되었다.",
+          "exact_text": "경상북도 경주시 남산 신선암에 위치한다. 암면을 경사지게 다듬어 얕은 감실을 마련하고 상을 조각하였다. 상 위에는 가로 1.54m, 세로 10.5m, 깊이 6cm의 홈이 남아있는데, 빗물이나 햇빛을 막기 위한 처마가 있었던 것으로 추정된다. 상의 전체 높이는 1.4m이다. 머리에 삼면보관을 쓰고, 귀걸이와 구슬목걸이로 장식한 것을 통해 보살상임을 알 수 있다. 어깨는 연꽃으로 장식한 수발이 덮여있는데, 이는 다른 불상에서는 찾아보기 어려운 것이다. 오른손에는 꽃(보상화)을 잡고 있으며, 왼손은 설법인을 취한 채 가슴께까지 들고 있다. 8세기 중~후반에 조성된 것으로 추정된다. 보물로 지정되었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_030_02000&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_030_02000_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_030/ki_030_02000.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_030/ki_030_02000.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_030_02000&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유물",
+        "category_sub": "불교미술",
+        "internal_owner_title": "경주 남산 신선암 마애보살반가상",
+        "owner_id": "image_material:ki_030_02000"
+      }
+    }
+  ]
+}

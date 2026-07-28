@@ -1,0 +1,194 @@
+{
+  "pack_id": "image_generation_pack:goryeo_buddhist:image_material:ki_040_01900",
+  "family_id": "image_choice_pack_v3:goryeo_buddhist",
+  "era": "고려",
+  "service_era": "고려",
+  "service_topic": "문화",
+  "service_question_type": "역사 자료의 분석 및 해석",
+  "service_question_subtype": "시각 자료 해석",
+  "variant_key": "image:image_choice_pack_v3:goryeo_buddhist:image_material:ki_040_01900",
+  "target_label": "강릉 한송사지 석조보살좌상",
+  "topic_type": "문화유산",
+  "question_task": "standard_select",
+  "choice_mode": "image",
+  "stem_pattern": "target_description",
+  "relation_axis_id": "common.definition_feature",
+  "material_type": "자료 제시문",
+  "major_type": "역사 자료의 분석 및 해석",
+  "minor_type": "시각 자료 해석",
+  "difficulty_label": "어려움",
+  "question_task_instruction": "검수된 단서를 바탕으로 대상명을 직접 노출하지 않는 지문과 발문을 만들고, 제시된 이미지 중 해당 문화유산을 고르게 한다.",
+  "material_clue_basis": "강원도 강릉시 남항진동 한송사터에서 발견된 10세기 고려 보살상이다. 1912년에 일본으로 반출되었다가 1965년 한일협정에 따라 반환되었고, 현재 국립춘천박물관에 소장되어 있다. 높이는 92.4cm이고, 흰 대리석으로 제작되었다. 둥근 얼굴, 원통형 보관(寶冠), 상투 모양 머리[肉髻], 목의 세 주름[三道]이 특징이다. 백호가 소실되면서 생긴 흔적과 잘린 머리를 붙인 흔적이 남아 있다. 『가정집(稼亭集)』과 『동문선(東文選)』의 기록으로 보아 문수보살상으로 추정된다. 1967년 국보 제124호로 지정되었다.",
+  "material_evidence_chunks": [
+    {
+      "snippet": "강원도 강릉시 남항진동 한송사터에서 발견된 10세기 고려 보살상이다. 1912년에 일본으로 반출되었다가 1965년 한일협정에 따라 반환되었고, 현재 국립춘천박물관에 소장되어 있다. 높이는 92.4cm이고, 흰 대리석으로 제작되었다. 둥근 얼굴, 원통형 보관(寶冠), 상투 모양 머리[肉髻], 목의 세 주름[三道]이 특징이다. 백호가 소실되면서 생긴 흔적과 잘린 머리를 붙인 흔적이 남아 있다. 『가정집(稼亭集)』과 『동문선(東文選)』의 기록으로 보아 문수보살상으로 추정된다. 1967년 국보 제124호로 지정되었다.",
+      "chunk_id": "ki_040_01900_chunk_0000",
+      "article_id": "image_material:ki_040_01900",
+      "exact_text": "강원도 강릉시 남항진동 한송사터에서 발견된 10세기 고려 보살상이다. 1912년에 일본으로 반출되었다가 1965년 한일협정에 따라 반환되었고, 현재 국립춘천박물관에 소장되어 있다. 높이는 92.4cm이고, 흰 대리석으로 제작되었다. 둥근 얼굴, 원통형 보관(寶冠), 상투 모양 머리[肉髻], 목의 세 주름[三道]이 특징이다. 백호가 소실되면서 생긴 흔적과 잘린 머리를 붙인 흔적이 남아 있다. 『가정집(稼亭集)』과 『동문선(東文選)』의 기록으로 보아 문수보살상으로 추정된다. 1967년 국보 제124호로 지정되었다.",
+      "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_040_01900&whereStr=",
+      "section_path": [
+        "검수된 이미지 식별 단서"
+      ]
+    }
+  ],
+  "material_fact_semantically_distinct": true,
+  "status": "rag_ready",
+  "semantic_status": "pass",
+  "items": [
+    {
+      "slot_no": 0,
+      "role": "answer",
+      "basis_item_id": "clue:9ae138ba62ec",
+      "article_id": "image_material:ki_040_01900",
+      "truth_owner_label": "강릉 한송사지 석조보살좌상",
+      "fact_basis": "강원도 강릉시 남항진동 한송사터에서 발견된 10세기 고려 보살상이다. 1912년에 일본으로 반출되었다가 1965년 한일협정에 따라 반환되었고, 현재 국립춘천박물관에 소장되어 있다. 높이는 92.4cm이고, 흰 대리석으로 제작되었다. 둥근 얼굴, 원통형 보관(寶冠), 상투 모양 머리[肉髻], 목의 세 주름[三道]이 특징이다. 백호가 소실되면서 생긴 흔적과 잘린 머리를 붙인 흔적이 남아 있다. 『가정집(稼亭集)』과 『동문선(東文選)』의 기록으로 보아 문수보살상으로 추정된다. 1967년 국보 제124호로 지정되었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_040_01900_chunk_0000",
+          "article_id": "image_material:ki_040_01900",
+          "snippet": "강원도 강릉시 남항진동 한송사터에서 발견된 10세기 고려 보살상이다. 1912년에 일본으로 반출되었다가 1965년 한일협정에 따라 반환되었고, 현재 국립춘천박물관에 소장되어 있다. 높이는 92.4cm이고, 흰 대리석으로 제작되었다. 둥근 얼굴, 원통형 보관(寶冠), 상투 모양 머리[肉髻], 목의 세 주름[三道]이 특징이다. 백호가 소실되면서 생긴 흔적과 잘린 머리를 붙인 흔적이 남아 있다. 『가정집(稼亭集)』과 『동문선(東文選)』의 기록으로 보아 문수보살상으로 추정된다. 1967년 국보 제124호로 지정되었다.",
+          "exact_text": "강원도 강릉시 남항진동 한송사터에서 발견된 10세기 고려 보살상이다. 1912년에 일본으로 반출되었다가 1965년 한일협정에 따라 반환되었고, 현재 국립춘천박물관에 소장되어 있다. 높이는 92.4cm이고, 흰 대리석으로 제작되었다. 둥근 얼굴, 원통형 보관(寶冠), 상투 모양 머리[肉髻], 목의 세 주름[三道]이 특징이다. 백호가 소실되면서 생긴 흔적과 잘린 머리를 붙인 흔적이 남아 있다. 『가정집(稼亭集)』과 『동문선(東文選)』의 기록으로 보아 문수보살상으로 추정된다. 1967년 국보 제124호로 지정되었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_040_01900&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_040_01900_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_040/ki_040_01900.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_040/ki_040_01900.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_040_01900&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유물",
+        "category_sub": "불교미술",
+        "internal_owner_title": "강릉 한송사지 석조보살좌상",
+        "owner_id": "image_material:ki_040_01900"
+      }
+    },
+    {
+      "slot_no": 1,
+      "role": "distractor",
+      "basis_item_id": "clue:b9cc2931011b",
+      "article_id": "image_material:ki_040_01300",
+      "truth_owner_label": "논산 개태사지 석조여래삼존입상",
+      "fact_basis": "충청남도 논산시 연산면 천호리 개태사의 극락전에 건립된 불상이다. 태조가 후삼국 통일을 기념하기 위해 개태사를 창건할 때 조성되어 940년(태조 23)에 완공되었다. 중앙의 본존불(높이 4.15m)과 좌협시 보살상(높이 3.53m), 우협시 보살상(높이 3.46m)으로 구성되어 있다. 불상은 짧은 코와 인중, 미소 띤 입, 넓은 뺨의 형태를 띠고 있으며, 나말여초 불상의 특징을 잘 보여준다. 1963년 보물 제219호로 지정되었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_040_01300_chunk_0000",
+          "article_id": "image_material:ki_040_01300",
+          "snippet": "충청남도 논산시 연산면 천호리 개태사의 극락전에 건립된 불상이다. 태조가 후삼국 통일을 기념하기 위해 개태사를 창건할 때 조성되어 940년(태조 23)에 완공되었다. 중앙의 본존불(높이 4.15m)과 좌협시 보살상(높이 3.53m), 우협시 보살상(높이 3.46m)으로 구성되어 있다. 불상은 짧은 코와 인중, 미소 띤 입, 넓은 뺨의 형태를 띠고 있으며, 나말여초 불상의 특징을 잘 보여준다. 1963년 보물 제219호로 지정되었다.",
+          "exact_text": "충청남도 논산시 연산면 천호리 개태사의 극락전에 건립된 불상이다. 태조가 후삼국 통일을 기념하기 위해 개태사를 창건할 때 조성되어 940년(태조 23)에 완공되었다. 중앙의 본존불(높이 4.15m)과 좌협시 보살상(높이 3.53m), 우협시 보살상(높이 3.46m)으로 구성되어 있다. 불상은 짧은 코와 인중, 미소 띤 입, 넓은 뺨의 형태를 띠고 있으며, 나말여초 불상의 특징을 잘 보여준다. 1963년 보물 제219호로 지정되었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_040_01300&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_040_01300_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_040/ki_040_01300.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_040/ki_040_01300.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_040_01300&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유물",
+        "category_sub": "불교미술",
+        "internal_owner_title": "논산 개태사지 석조여래삼존입상",
+        "owner_id": "image_material:ki_040_01300"
+      }
+    },
+    {
+      "slot_no": 2,
+      "role": "distractor",
+      "basis_item_id": "clue:12f59461a5cc",
+      "article_id": "image_material:ki_040_01700",
+      "truth_owner_label": "하남 하사창동 철조석가여래좌상",
+      "fact_basis": "경기도 하남시 하사창동의 사찰터에서 발굴된 10세기 고려 불상이다. 발굴 당시 행정 구역이 경기도 광주군 동부면 춘궁리였으므로 ‘광주 춘궁리 철불’이라고도 한다. 소라 모양 머리[螺髮], 머리 구슬[髻珠], 둥근 얼굴, 치켜 올라간 눈, 선명한 눈썹, 목의 세 갈래 주름[三道]이 특징이다. 경주 불국사 석굴암 본존불(국보 제24호)과 유사하여 8세기 신라의 불상 양식을 충실히 따른 것을 알 수 있다. 불상의 목이 정확하게 구분되어 있지 않은 점은 고려 초기 불상의 양식을 보여준다. 1963년 보물 제332호로 지정되었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_040_01700_chunk_0000",
+          "article_id": "image_material:ki_040_01700",
+          "snippet": "경기도 하남시 하사창동의 사찰터에서 발굴된 10세기 고려 불상이다. 발굴 당시 행정 구역이 경기도 광주군 동부면 춘궁리였으므로 ‘광주 춘궁리 철불’이라고도 한다. 소라 모양 머리[螺髮], 머리 구슬[髻珠], 둥근 얼굴, 치켜 올라간 눈, 선명한 눈썹, 목의 세 갈래 주름[三道]이 특징이다. 경주 불국사 석굴암 본존불(국보 제24호)과 유사하여 8세기 신라의 불상 양식을 충실히 따른 것을 알 수 있다. 불상의 목이 정확하게 구분되어 있지 않은 점은 고려 초기 불상의 양식을 보여준다. 1963년 보물 제332호로 지정되었다.",
+          "exact_text": "경기도 하남시 하사창동의 사찰터에서 발굴된 10세기 고려 불상이다. 발굴 당시 행정 구역이 경기도 광주군 동부면 춘궁리였으므로 ‘광주 춘궁리 철불’이라고도 한다. 소라 모양 머리[螺髮], 머리 구슬[髻珠], 둥근 얼굴, 치켜 올라간 눈, 선명한 눈썹, 목의 세 갈래 주름[三道]이 특징이다. 경주 불국사 석굴암 본존불(국보 제24호)과 유사하여 8세기 신라의 불상 양식을 충실히 따른 것을 알 수 있다. 불상의 목이 정확하게 구분되어 있지 않은 점은 고려 초기 불상의 양식을 보여준다. 1963년 보물 제332호로 지정되었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_040_01700&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_040_01700_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_040/ki_040_01700.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_040/ki_040_01700.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_040_01700&whereStr=",
+        "image_source": "e뮤지엄(국립중앙박물관)",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유물",
+        "category_sub": "불교미술",
+        "internal_owner_title": "하남 하사창동 철조석가여래좌상",
+        "owner_id": "image_material:ki_040_01700"
+      }
+    },
+    {
+      "slot_no": 3,
+      "role": "distractor",
+      "basis_item_id": "clue:a7fe3ee1135b",
+      "article_id": "image_material:ki_040_02900",
+      "truth_owner_label": "하남 교산동에 위치한 고려 마애약사여래 좌상",
+      "fact_basis": "977년(경종) 조성된 고려 초기 불상이다. 전체 높이는 93cm이다. 중생의 모든 병을 고쳐준다는 약사여래불이 연꽃 위에 앉아 있다. 오른쪽 벽면에 ‘太平二年丁丑七月九日古石佛在如賜乙 重脩爲今上皇帝萬歲願(태평 2년 정축 7월 29일에 옛 석불이 계시거늘 중수하여 금상 황제의 만세를 기원한다)’라는 글자가 새겨져 있어 정확한 조성 시기를 알 수 있다. 1989년 보물로 지정되었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_040_02900_chunk_0000",
+          "article_id": "image_material:ki_040_02900",
+          "snippet": "977년(경종) 조성된 고려 초기 불상이다. 전체 높이는 93cm이다. 중생의 모든 병을 고쳐준다는 약사여래불이 연꽃 위에 앉아 있다. 오른쪽 벽면에 ‘太平二年丁丑七月九日古石佛在如賜乙 重脩爲今上皇帝萬歲願(태평 2년 정축 7월 29일에 옛 석불이 계시거늘 중수하여 금상 황제의 만세를 기원한다)’라는 글자가 새겨져 있어 정확한 조성 시기를 알 수 있다. 1989년 보물로 지정되었다.",
+          "exact_text": "977년(경종) 조성된 고려 초기 불상이다. 전체 높이는 93cm이다. 중생의 모든 병을 고쳐준다는 약사여래불이 연꽃 위에 앉아 있다. 오른쪽 벽면에 ‘太平二年丁丑七月九日古石佛在如賜乙 重脩爲今上皇帝萬歲願(태평 2년 정축 7월 29일에 옛 석불이 계시거늘 중수하여 금상 황제의 만세를 기원한다)’라는 글자가 새겨져 있어 정확한 조성 시기를 알 수 있다. 1989년 보물로 지정되었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_040_02900&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_040_02900_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_040/ki_040_02900.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_040/ki_040_02900.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_040_02900&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유물",
+        "category_sub": "불교미술",
+        "internal_owner_title": "하남 교산동에 위치한 고려 마애약사여래 좌상",
+        "owner_id": "image_material:ki_040_02900"
+      }
+    },
+    {
+      "slot_no": 4,
+      "role": "distractor",
+      "basis_item_id": "clue:ba0c8371e940",
+      "article_id": "image_material:ki_040_07700",
+      "truth_owner_label": "안동 이천동 마애여래입상",
+      "fact_basis": "경상북도 안동시 이천동 태화산에 위치한 11세기 고려 석불 입상이다. 전체 높이는 12.38m이다. 자연석 벽면에 불상의 몸을 조각하고, 그 위로 2.43m의 머리를 따로 올려 제작하였다. 둥근 얼굴, 소라 머리[螺髮], 상투 모양 머리[肉髻], 이마 중앙의 백호(白毫), 목의 세 주름[三道]이 특징이다. 머리 앞쪽은 완전한 형태로 남아 있으나, 뒤쪽은 파손되었다. 양손의 위치로 보아 아미타여래(阿彌陀如來)상으로 여겨진다. 1963년 보물 제115호로 지정되었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_040_07700_chunk_0000",
+          "article_id": "image_material:ki_040_07700",
+          "snippet": "경상북도 안동시 이천동 태화산에 위치한 11세기 고려 석불 입상이다. 전체 높이는 12.38m이다. 자연석 벽면에 불상의 몸을 조각하고, 그 위로 2.43m의 머리를 따로 올려 제작하였다. 둥근 얼굴, 소라 머리[螺髮], 상투 모양 머리[肉髻], 이마 중앙의 백호(白毫), 목의 세 주름[三道]이 특징이다. 머리 앞쪽은 완전한 형태로 남아 있으나, 뒤쪽은 파손되었다. 양손의 위치로 보아 아미타여래(阿彌陀如來)상으로 여겨진다. 1963년 보물 제115호로 지정되었다.",
+          "exact_text": "경상북도 안동시 이천동 태화산에 위치한 11세기 고려 석불 입상이다. 전체 높이는 12.38m이다. 자연석 벽면에 불상의 몸을 조각하고, 그 위로 2.43m의 머리를 따로 올려 제작하였다. 둥근 얼굴, 소라 머리[螺髮], 상투 모양 머리[肉髻], 이마 중앙의 백호(白毫), 목의 세 주름[三道]이 특징이다. 머리 앞쪽은 완전한 형태로 남아 있으나, 뒤쪽은 파손되었다. 양손의 위치로 보아 아미타여래(阿彌陀如來)상으로 여겨진다. 1963년 보물 제115호로 지정되었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_040_07700&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_040_07700_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_040/ki_040_07700.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_040/ki_040_07700.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_040_07700&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유물",
+        "category_sub": "불교미술",
+        "internal_owner_title": "안동 이천동 마애여래입상",
+        "owner_id": "image_material:ki_040_07700"
+      }
+    }
+  ]
+}

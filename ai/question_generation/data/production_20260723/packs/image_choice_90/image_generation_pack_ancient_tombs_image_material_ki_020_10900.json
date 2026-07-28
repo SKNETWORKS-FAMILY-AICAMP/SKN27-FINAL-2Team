@@ -1,0 +1,194 @@
+{
+  "pack_id": "image_generation_pack:ancient_tombs:image_material:ki_020_10900",
+  "family_id": "image_choice_pack_v3:ancient_tombs",
+  "era": "고대",
+  "service_era": "삼국 시대",
+  "service_topic": "문화",
+  "service_question_type": "역사 자료의 분석 및 해석",
+  "service_question_subtype": "시각 자료 해석",
+  "variant_key": "image:image_choice_pack_v3:ancient_tombs:image_material:ki_020_10900",
+  "target_label": "경주 금령총",
+  "topic_type": "문화유산",
+  "question_task": "standard_select",
+  "choice_mode": "image",
+  "stem_pattern": "source_inference",
+  "relation_axis_id": "common.definition_feature",
+  "material_type": "자료 제시문",
+  "major_type": "역사 자료의 분석 및 해석",
+  "minor_type": "시각 자료 해석",
+  "difficulty_label": "보통",
+  "question_task_instruction": "검수된 단서를 바탕으로 대상명을 직접 노출하지 않는 지문과 발문을 만들고, 제시된 이미지 중 해당 문화유산을 고르게 한다.",
+  "material_clue_basis": "금령총(金鈴塚)은 돌무지덧널무덤으로 6세기 초엽으로 추정된다. 부장품 가운데 금제 방울이 들어 있어서 ‘금령총’이라 한다. 주요 부장품으로는 그림이 그려진 백화수피제(白樺樹皮製) 채양과 관모(冠帽)·금동제 신발·은제 허리띠와 띠드리개, 각종 마구 및 철제무기, 금동제합(金銅製盒), 쇠솥, 각종 그림이 그려진 칠기(漆器), 유리잔, 기마인물상(騎馬人物像) 토기, 배모양 토기 등 특수형 토기와 장식토기 등 모두 11점의 토기가 있다. 2011년 경주 평야 한복판에 인접해 있는 신라시대의 고분군과 함께 사적 제512호 지정되었다.",
+  "material_evidence_chunks": [
+    {
+      "snippet": "금령총(金鈴塚)은 돌무지덧널무덤으로 6세기 초엽으로 추정된다. 부장품 가운데 금제 방울이 들어 있어서 ‘금령총’이라 한다. 주요 부장품으로는 그림이 그려진 백화수피제(白樺樹皮製) 채양과 관모(冠帽)·금동제 신발·은제 허리띠와 띠드리개, 각종 마구 및 철제무기, 금동제합(金銅製盒), 쇠솥, 각종 그림이 그려진 칠기(漆器), 유리잔, 기마인물상(騎馬人物像) 토기, 배모양 토기 등 특수형 토기와 장식토기 등 모두 11점의 토기가 있다. 2011년 경주 평야 한복판에 인접해 있는 신라시대의 고분군과 함께 사적 제512호 지정되었다.",
+      "chunk_id": "ki_020_10900_chunk_0000",
+      "article_id": "image_material:ki_020_10900",
+      "exact_text": "금령총(金鈴塚)은 돌무지덧널무덤으로 6세기 초엽으로 추정된다. 부장품 가운데 금제 방울이 들어 있어서 ‘금령총’이라 한다. 주요 부장품으로는 그림이 그려진 백화수피제(白樺樹皮製) 채양과 관모(冠帽)·금동제 신발·은제 허리띠와 띠드리개, 각종 마구 및 철제무기, 금동제합(金銅製盒), 쇠솥, 각종 그림이 그려진 칠기(漆器), 유리잔, 기마인물상(騎馬人物像) 토기, 배모양 토기 등 특수형 토기와 장식토기 등 모두 11점의 토기가 있다. 2011년 경주 평야 한복판에 인접해 있는 신라시대의 고분군과 함께 사적 제512호 지정되었다.",
+      "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_020_10900&whereStr=",
+      "section_path": [
+        "검수된 이미지 식별 단서"
+      ]
+    }
+  ],
+  "material_fact_semantically_distinct": true,
+  "status": "rag_ready",
+  "semantic_status": "pass",
+  "items": [
+    {
+      "slot_no": 0,
+      "role": "answer",
+      "basis_item_id": "clue:5b03a721ebc3",
+      "article_id": "image_material:ki_020_10900",
+      "truth_owner_label": "경주 금령총",
+      "fact_basis": "금령총(金鈴塚)은 돌무지덧널무덤으로 6세기 초엽으로 추정된다. 부장품 가운데 금제 방울이 들어 있어서 ‘금령총’이라 한다. 주요 부장품으로는 그림이 그려진 백화수피제(白樺樹皮製) 채양과 관모(冠帽)·금동제 신발·은제 허리띠와 띠드리개, 각종 마구 및 철제무기, 금동제합(金銅製盒), 쇠솥, 각종 그림이 그려진 칠기(漆器), 유리잔, 기마인물상(騎馬人物像) 토기, 배모양 토기 등 특수형 토기와 장식토기 등 모두 11점의 토기가 있다. 2011년 경주 평야 한복판에 인접해 있는 신라시대의 고분군과 함께 사적 제512호 지정되었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_020_10900_chunk_0000",
+          "article_id": "image_material:ki_020_10900",
+          "snippet": "금령총(金鈴塚)은 돌무지덧널무덤으로 6세기 초엽으로 추정된다. 부장품 가운데 금제 방울이 들어 있어서 ‘금령총’이라 한다. 주요 부장품으로는 그림이 그려진 백화수피제(白樺樹皮製) 채양과 관모(冠帽)·금동제 신발·은제 허리띠와 띠드리개, 각종 마구 및 철제무기, 금동제합(金銅製盒), 쇠솥, 각종 그림이 그려진 칠기(漆器), 유리잔, 기마인물상(騎馬人物像) 토기, 배모양 토기 등 특수형 토기와 장식토기 등 모두 11점의 토기가 있다. 2011년 경주 평야 한복판에 인접해 있는 신라시대의 고분군과 함께 사적 제512호 지정되었다.",
+          "exact_text": "금령총(金鈴塚)은 돌무지덧널무덤으로 6세기 초엽으로 추정된다. 부장품 가운데 금제 방울이 들어 있어서 ‘금령총’이라 한다. 주요 부장품으로는 그림이 그려진 백화수피제(白樺樹皮製) 채양과 관모(冠帽)·금동제 신발·은제 허리띠와 띠드리개, 각종 마구 및 철제무기, 금동제합(金銅製盒), 쇠솥, 각종 그림이 그려진 칠기(漆器), 유리잔, 기마인물상(騎馬人物像) 토기, 배모양 토기 등 특수형 토기와 장식토기 등 모두 11점의 토기가 있다. 2011년 경주 평야 한복판에 인접해 있는 신라시대의 고분군과 함께 사적 제512호 지정되었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_020_10900&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_020_10900_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_020/ki_020_10900.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_020/ki_020_10900.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_020_10900&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유적",
+        "category_sub": "무덤",
+        "internal_owner_title": "경주 금령총",
+        "owner_id": "image_material:ki_020_10900"
+      }
+    },
+    {
+      "slot_no": 1,
+      "role": "distractor",
+      "basis_item_id": "clue:6235d9eab02e",
+      "article_id": "image_material:ki_020_11500",
+      "truth_owner_label": "경주 호우총",
+      "fact_basis": "호우총(壺杅塚)은 경주시의 경주 대릉원 일원에 있는 신라시대의 고분이다. 1946년 국립박물관이 은령총(銀鈴塚)과 함께 발굴하였다. 한국인에 의해 최초로 발굴된 유적으로 전형적인 신라 돌무지덧널무덤이다. 고구려 광개토대왕을 기념하는 명문이 새겨진 청동 호우(壺杅)가 출토되어 호우총이라 불리게 되었다. 2011년 경주 평야 한복판에 인접해 있는 신라시대의 고분군과 함께 사적 제512호 지정되었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_020_11500_chunk_0000",
+          "article_id": "image_material:ki_020_11500",
+          "snippet": "호우총(壺杅塚)은 경주시의 경주 대릉원 일원에 있는 신라시대의 고분이다. 1946년 국립박물관이 은령총(銀鈴塚)과 함께 발굴하였다. 한국인에 의해 최초로 발굴된 유적으로 전형적인 신라 돌무지덧널무덤이다. 고구려 광개토대왕을 기념하는 명문이 새겨진 청동 호우(壺杅)가 출토되어 호우총이라 불리게 되었다. 2011년 경주 평야 한복판에 인접해 있는 신라시대의 고분군과 함께 사적 제512호 지정되었다.",
+          "exact_text": "호우총(壺杅塚)은 경주시의 경주 대릉원 일원에 있는 신라시대의 고분이다. 1946년 국립박물관이 은령총(銀鈴塚)과 함께 발굴하였다. 한국인에 의해 최초로 발굴된 유적으로 전형적인 신라 돌무지덧널무덤이다. 고구려 광개토대왕을 기념하는 명문이 새겨진 청동 호우(壺杅)가 출토되어 호우총이라 불리게 되었다. 2011년 경주 평야 한복판에 인접해 있는 신라시대의 고분군과 함께 사적 제512호 지정되었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_020_11500&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_020_11500_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_020/ki_020_11500.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_020/ki_020_11500.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_020_11500&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유적",
+        "category_sub": "무덤",
+        "internal_owner_title": "경주 호우총",
+        "owner_id": "image_material:ki_020_11500"
+      }
+    },
+    {
+      "slot_no": 2,
+      "role": "distractor",
+      "basis_item_id": "clue:dcd16df9bf93",
+      "article_id": "image_material:ki_020_04200",
+      "truth_owner_label": "광주 월계동 장고분",
+      "fact_basis": "광주광역시 광산구에 있는 삼국시대의 무덤이다. 원형의 분구에 방형 혹은 삼각형의 단상부가 합쳐진 모양이 ‘장고’와 비슷하다고 하여 장고분이라 부른다. 일본의 ‘전방후원분’과도 비슷한 형태를 가지고 있다. 당시 한반도 남부와 일본과의 문화 교류와 사람의 이동을 알려주는 중요한 유적이다. 1994년 광주광역시 기념물 제20호로 지정되었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_020_04200_chunk_0000",
+          "article_id": "image_material:ki_020_04200",
+          "snippet": "광주광역시 광산구에 있는 삼국시대의 무덤이다. 원형의 분구에 방형 혹은 삼각형의 단상부가 합쳐진 모양이 ‘장고’와 비슷하다고 하여 장고분이라 부른다. 일본의 ‘전방후원분’과도 비슷한 형태를 가지고 있다. 당시 한반도 남부와 일본과의 문화 교류와 사람의 이동을 알려주는 중요한 유적이다. 1994년 광주광역시 기념물 제20호로 지정되었다.",
+          "exact_text": "광주광역시 광산구에 있는 삼국시대의 무덤이다. 원형의 분구에 방형 혹은 삼각형의 단상부가 합쳐진 모양이 ‘장고’와 비슷하다고 하여 장고분이라 부른다. 일본의 ‘전방후원분’과도 비슷한 형태를 가지고 있다. 당시 한반도 남부와 일본과의 문화 교류와 사람의 이동을 알려주는 중요한 유적이다. 1994년 광주광역시 기념물 제20호로 지정되었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_020_04200&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_020_04200_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_020/ki_020_04200.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_020/ki_020_04200.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_020_04200&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유적",
+        "category_sub": "무덤",
+        "internal_owner_title": "광주 월계동 장고분",
+        "owner_id": "image_material:ki_020_04200"
+      }
+    },
+    {
+      "slot_no": 3,
+      "role": "distractor",
+      "basis_item_id": "clue:bbe3841fe27f",
+      "article_id": "image_material:ki_020_04000",
+      "truth_owner_label": "나주 복암리 고분군",
+      "fact_basis": "나주 복암리에 있는 삼국시대 무덤들이다. 하나의 봉분(3호분)에서만 41기의 다양한 무덤이 발견되었다. 무덤의 형태는 독무덤(옹관묘), 구덩식돌방무덤(수혈식석실묘), 돌덧널무덤(석관묘), 굴식돌방무덤(횡혈식석실묘), 앞트기식돌방무덤(횡구식석실묘)들로 다양하다. 출토 유물은 금동제 신발, 관모, 고리자루큰칼(삼엽환두대도)를 비롯하여 여러 종류의 유물이 출토되어 죽은 사람의 신분이 최고 지배층임을 보여준다. 4세기 돌무덤에서 6세기 말∼7세기 초의 굴식돌방무덤까지 볼 수 있다. 1998년 사적 제404호로 지정되었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_020_04000_chunk_0000",
+          "article_id": "image_material:ki_020_04000",
+          "snippet": "나주 복암리에 있는 삼국시대 무덤들이다. 하나의 봉분(3호분)에서만 41기의 다양한 무덤이 발견되었다. 무덤의 형태는 독무덤(옹관묘), 구덩식돌방무덤(수혈식석실묘), 돌덧널무덤(석관묘), 굴식돌방무덤(횡혈식석실묘), 앞트기식돌방무덤(횡구식석실묘)들로 다양하다. 출토 유물은 금동제 신발, 관모, 고리자루큰칼(삼엽환두대도)를 비롯하여 여러 종류의 유물이 출토되어 죽은 사람의 신분이 최고 지배층임을 보여준다. 4세기 돌무덤에서 6세기 말∼7세기 초의 굴식돌방무덤까지 볼 수 있다. 1998년 사적 제404호로 지정되었다.",
+          "exact_text": "나주 복암리에 있는 삼국시대 무덤들이다. 하나의 봉분(3호분)에서만 41기의 다양한 무덤이 발견되었다. 무덤의 형태는 독무덤(옹관묘), 구덩식돌방무덤(수혈식석실묘), 돌덧널무덤(석관묘), 굴식돌방무덤(횡혈식석실묘), 앞트기식돌방무덤(횡구식석실묘)들로 다양하다. 출토 유물은 금동제 신발, 관모, 고리자루큰칼(삼엽환두대도)를 비롯하여 여러 종류의 유물이 출토되어 죽은 사람의 신분이 최고 지배층임을 보여준다. 4세기 돌무덤에서 6세기 말∼7세기 초의 굴식돌방무덤까지 볼 수 있다. 1998년 사적 제404호로 지정되었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_020_04000&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_020_04000_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_020/ki_020_04000.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_020/ki_020_04000.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_020_04000&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유적",
+        "category_sub": "무덤",
+        "internal_owner_title": "나주 복암리 고분군",
+        "owner_id": "image_material:ki_020_04000"
+      }
+    },
+    {
+      "slot_no": 4,
+      "role": "distractor",
+      "basis_item_id": "clue:4f0aafc4256a",
+      "article_id": "image_material:ki_020_06800",
+      "truth_owner_label": "부여 능산리 고분군",
+      "fact_basis": "부여 능산리 산의 남쪽 경사면에 있는 백제 무덤들이다. 총 7기로, 겉모습은 모두 원형봉토분이고, 내부는 널길이 붙은 굴식돌방무덤(횡혈식 석실분)으로 뚜껑 돌 아래는 모두 지하에 만들었다. 능산리 무덤들은 일찍이 도굴되어 두개골 파편·도칠목관편·금동투조식금구·금동화형좌금구 등 약간의 유물만 수습되었다. 무덤들 서쪽에서는 절터가 발굴되어 백제금동대향로(국보 제287호)와 백제창왕명석조사리감(국보 제288호)이 출토되었는데, 이로 인해서 능산리 무덤들이 왕실 무덤 지역이라는 것을 재확인시켜 주었다. 1963년 사적 제14호로 지정되었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_020_06800_chunk_0000",
+          "article_id": "image_material:ki_020_06800",
+          "snippet": "부여 능산리 산의 남쪽 경사면에 있는 백제 무덤들이다. 총 7기로, 겉모습은 모두 원형봉토분이고, 내부는 널길이 붙은 굴식돌방무덤(횡혈식 석실분)으로 뚜껑 돌 아래는 모두 지하에 만들었다. 능산리 무덤들은 일찍이 도굴되어 두개골 파편·도칠목관편·금동투조식금구·금동화형좌금구 등 약간의 유물만 수습되었다. 무덤들 서쪽에서는 절터가 발굴되어 백제금동대향로(국보 제287호)와 백제창왕명석조사리감(국보 제288호)이 출토되었는데, 이로 인해서 능산리 무덤들이 왕실 무덤 지역이라는 것을 재확인시켜 주었다. 1963년 사적 제14호로 지정되었다.",
+          "exact_text": "부여 능산리 산의 남쪽 경사면에 있는 백제 무덤들이다. 총 7기로, 겉모습은 모두 원형봉토분이고, 내부는 널길이 붙은 굴식돌방무덤(횡혈식 석실분)으로 뚜껑 돌 아래는 모두 지하에 만들었다. 능산리 무덤들은 일찍이 도굴되어 두개골 파편·도칠목관편·금동투조식금구·금동화형좌금구 등 약간의 유물만 수습되었다. 무덤들 서쪽에서는 절터가 발굴되어 백제금동대향로(국보 제287호)와 백제창왕명석조사리감(국보 제288호)이 출토되었는데, 이로 인해서 능산리 무덤들이 왕실 무덤 지역이라는 것을 재확인시켜 주었다. 1963년 사적 제14호로 지정되었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_020_06800&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_020_06800_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_020/ki_020_06800.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_020/ki_020_06800.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_020_06800&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유적",
+        "category_sub": "무덤",
+        "internal_owner_title": "부여 능산리 고분군",
+        "owner_id": "image_material:ki_020_06800"
+      }
+    }
+  ]
+}

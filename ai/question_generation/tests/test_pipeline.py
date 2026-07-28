@@ -517,6 +517,8 @@ class QuestionBankPipelineTest(unittest.TestCase):
         self.assertIn("2점은 대표 추론", messages[-1]["content"])
         self.assertIn("target_score 2·3점은 가까운 오답 수만으로", messages[-1]["content"])
         self.assertIn("Gate 번호만으로 repair target을 고정하지 말고", messages[-1]["content"])
+        self.assertIn("지문의 화자·시제·서술 형식이 일관되는지", messages[-1]["content"])
+        self.assertIn("지시어의 대상 또는 행동 주체가 불명확하면 G2", messages[-1]["content"])
         self.assertIn("주어·서술어 호응, 조사·목적어 결합", messages[-1]["content"])
         self.assertIn("선지 원문 그대로 성립하는지를 판정", messages[-1]["content"])
         self.assertIn("오답 선지가 비문이면 해당 choice를 지정", messages[-1]["content"])

@@ -1,0 +1,194 @@
+{
+  "pack_id": "image_generation_pack:joseon_architecture:image_material:ki_050_13700",
+  "family_id": "image_choice_pack_v3:joseon_architecture",
+  "era": "조선",
+  "service_era": "조선",
+  "service_topic": "문화",
+  "service_question_type": "역사 자료의 분석 및 해석",
+  "service_question_subtype": "시각 자료 해석",
+  "variant_key": "image:image_choice_pack_v3:joseon_architecture:image_material:ki_050_13700",
+  "target_label": "안동 병산서원",
+  "topic_type": "문화유산",
+  "question_task": "standard_select",
+  "choice_mode": "image",
+  "stem_pattern": "target_description",
+  "relation_axis_id": "common.definition_feature",
+  "material_type": "자료 제시문",
+  "major_type": "역사 자료의 분석 및 해석",
+  "minor_type": "시각 자료 해석",
+  "difficulty_label": "보통",
+  "question_task_instruction": "검수된 단서를 바탕으로 대상명을 직접 노출하지 않는 지문과 발문을 만들고, 제시된 이미지 중 해당 문화유산을 고르게 한다.",
+  "material_clue_basis": "병산서원(屛山書院)은 조선 전기 학자인 류성룡의 학행을 추모하기 위해 세운 서원이다. 본래 안동 지역 풍산 류씨(豐山柳氏)의 자제들을 교육했던 풍악서당(豊岳書堂)에서 출발하였다. 1613년(광해군 3) 정경세 등 지역 유림의 주도로 위패 봉안 시설인 존덕사(尊德祠)가 창건되었고, 1863년(철종 4) ‘병산(屛山)’으로 사액 되었다. 고종대 서원철폐령 당시 훼철되지 않은 전국 47개 서원 가운데 하나이다. 1978년 사적 제260호로 지정되었으며, 2019년 ‘한국의 서원’ 중 하나로 유네스코 세계유산에 등재되었다.",
+  "material_evidence_chunks": [
+    {
+      "snippet": "병산서원(屛山書院)은 조선 전기 학자인 류성룡의 학행을 추모하기 위해 세운 서원이다. 본래 안동 지역 풍산 류씨(豐山柳氏)의 자제들을 교육했던 풍악서당(豊岳書堂)에서 출발하였다. 1613년(광해군 3) 정경세 등 지역 유림의 주도로 위패 봉안 시설인 존덕사(尊德祠)가 창건되었고, 1863년(철종 4) ‘병산(屛山)’으로 사액 되었다. 고종대 서원철폐령 당시 훼철되지 않은 전국 47개 서원 가운데 하나이다. 1978년 사적 제260호로 지정되었으며, 2019년 ‘한국의 서원’ 중 하나로 유네스코 세계유산에 등재되었다.",
+      "chunk_id": "ki_050_13700_chunk_0000",
+      "article_id": "image_material:ki_050_13700",
+      "exact_text": "병산서원(屛山書院)은 조선 전기 학자인 류성룡의 학행을 추모하기 위해 세운 서원이다. 본래 안동 지역 풍산 류씨(豐山柳氏)의 자제들을 교육했던 풍악서당(豊岳書堂)에서 출발하였다. 1613년(광해군 3) 정경세 등 지역 유림의 주도로 위패 봉안 시설인 존덕사(尊德祠)가 창건되었고, 1863년(철종 4) ‘병산(屛山)’으로 사액 되었다. 고종대 서원철폐령 당시 훼철되지 않은 전국 47개 서원 가운데 하나이다. 1978년 사적 제260호로 지정되었으며, 2019년 ‘한국의 서원’ 중 하나로 유네스코 세계유산에 등재되었다.",
+      "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_13700&whereStr=",
+      "section_path": [
+        "검수된 이미지 식별 단서"
+      ]
+    }
+  ],
+  "material_fact_semantically_distinct": true,
+  "status": "rag_ready",
+  "semantic_status": "pass",
+  "items": [
+    {
+      "slot_no": 0,
+      "role": "answer",
+      "basis_item_id": "clue:7d0fa54a9249",
+      "article_id": "image_material:ki_050_13700",
+      "truth_owner_label": "안동 병산서원",
+      "fact_basis": "병산서원(屛山書院)은 조선 전기 학자인 류성룡의 학행을 추모하기 위해 세운 서원이다. 본래 안동 지역 풍산 류씨(豐山柳氏)의 자제들을 교육했던 풍악서당(豊岳書堂)에서 출발하였다. 1613년(광해군 3) 정경세 등 지역 유림의 주도로 위패 봉안 시설인 존덕사(尊德祠)가 창건되었고, 1863년(철종 4) ‘병산(屛山)’으로 사액 되었다. 고종대 서원철폐령 당시 훼철되지 않은 전국 47개 서원 가운데 하나이다. 1978년 사적 제260호로 지정되었으며, 2019년 ‘한국의 서원’ 중 하나로 유네스코 세계유산에 등재되었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_050_13700_chunk_0000",
+          "article_id": "image_material:ki_050_13700",
+          "snippet": "병산서원(屛山書院)은 조선 전기 학자인 류성룡의 학행을 추모하기 위해 세운 서원이다. 본래 안동 지역 풍산 류씨(豐山柳氏)의 자제들을 교육했던 풍악서당(豊岳書堂)에서 출발하였다. 1613년(광해군 3) 정경세 등 지역 유림의 주도로 위패 봉안 시설인 존덕사(尊德祠)가 창건되었고, 1863년(철종 4) ‘병산(屛山)’으로 사액 되었다. 고종대 서원철폐령 당시 훼철되지 않은 전국 47개 서원 가운데 하나이다. 1978년 사적 제260호로 지정되었으며, 2019년 ‘한국의 서원’ 중 하나로 유네스코 세계유산에 등재되었다.",
+          "exact_text": "병산서원(屛山書院)은 조선 전기 학자인 류성룡의 학행을 추모하기 위해 세운 서원이다. 본래 안동 지역 풍산 류씨(豐山柳氏)의 자제들을 교육했던 풍악서당(豊岳書堂)에서 출발하였다. 1613년(광해군 3) 정경세 등 지역 유림의 주도로 위패 봉안 시설인 존덕사(尊德祠)가 창건되었고, 1863년(철종 4) ‘병산(屛山)’으로 사액 되었다. 고종대 서원철폐령 당시 훼철되지 않은 전국 47개 서원 가운데 하나이다. 1978년 사적 제260호로 지정되었으며, 2019년 ‘한국의 서원’ 중 하나로 유네스코 세계유산에 등재되었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_13700&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_050_13700_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_050/ki_050_13700.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_050/ki_050_13700.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_13700&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유적",
+        "category_sub": "교육시설",
+        "internal_owner_title": "안동 병산서원",
+        "owner_id": "image_material:ki_050_13700"
+      }
+    },
+    {
+      "slot_no": 1,
+      "role": "distractor",
+      "basis_item_id": "clue:8d2ae4f6ea02",
+      "article_id": "image_material:ki_050_13400",
+      "truth_owner_label": "영주 소수서원",
+      "fact_basis": "소수서원(紹修書院)은 고려 말 주자학을 전래한 안향의 학행을 추모하기 위해 세운 서원이다. 조선 최초의 사액서원으로 1542년(중종 37) 주세붕이 세운 회헌사(晦軒祠)에서 출발했으며 이듬해 백운동서원(白雲洞書院)으로 개편되었다. 1550년(명종 5) ‘소수(紹修)’로 사액되었다. 고종대 서원철폐령 당시 훼철되지 않은 전국 47개 서원 가운데 하나이다. 안향을 비롯해 안축, 안보, 주세붕이 배향되어 있다. 1963년 사적 제55호로 지정되었으며, 2019년 ‘한국의 서원’ 중 하나로 유네스코 세계유산에 등재되었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_050_13400_chunk_0000",
+          "article_id": "image_material:ki_050_13400",
+          "snippet": "소수서원(紹修書院)은 고려 말 주자학을 전래한 안향의 학행을 추모하기 위해 세운 서원이다. 조선 최초의 사액서원으로 1542년(중종 37) 주세붕이 세운 회헌사(晦軒祠)에서 출발했으며 이듬해 백운동서원(白雲洞書院)으로 개편되었다. 1550년(명종 5) ‘소수(紹修)’로 사액되었다. 고종대 서원철폐령 당시 훼철되지 않은 전국 47개 서원 가운데 하나이다. 안향을 비롯해 안축, 안보, 주세붕이 배향되어 있다. 1963년 사적 제55호로 지정되었으며, 2019년 ‘한국의 서원’ 중 하나로 유네스코 세계유산에 등재되었다.",
+          "exact_text": "소수서원(紹修書院)은 고려 말 주자학을 전래한 안향의 학행을 추모하기 위해 세운 서원이다. 조선 최초의 사액서원으로 1542년(중종 37) 주세붕이 세운 회헌사(晦軒祠)에서 출발했으며 이듬해 백운동서원(白雲洞書院)으로 개편되었다. 1550년(명종 5) ‘소수(紹修)’로 사액되었다. 고종대 서원철폐령 당시 훼철되지 않은 전국 47개 서원 가운데 하나이다. 안향을 비롯해 안축, 안보, 주세붕이 배향되어 있다. 1963년 사적 제55호로 지정되었으며, 2019년 ‘한국의 서원’ 중 하나로 유네스코 세계유산에 등재되었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_13400&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_050_13400_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_050/ki_050_13400.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_050/ki_050_13400.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_13400&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유적",
+        "category_sub": "교육시설",
+        "internal_owner_title": "영주 소수서원",
+        "owner_id": "image_material:ki_050_13400"
+      }
+    },
+    {
+      "slot_no": 2,
+      "role": "distractor",
+      "basis_item_id": "clue:248ea4043015",
+      "article_id": "image_material:ki_050_01700",
+      "truth_owner_label": "서울 사직단",
+      "fact_basis": "사직단(社稷壇)은 토지와 곡식의 신을 제사하는 공간으로 1394년(태조 3) 건립되었다. 사직의 제사는 농사의 풍요와 백성들의 안녕을 기원하는 것이 궁극적인 목적이었기 때문에 조선시대 국가가 주관하는 제사 중 가장 중요한 대사(大祀)로 분류되었다. 각 지방에도 사직단이 건립되었는데 기능은 서울의 것과 같다. 1963년 서울의 사직단은 사적 제121호로, 대문은 보물 제177호로 지정되었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_050_01700_chunk_0000",
+          "article_id": "image_material:ki_050_01700",
+          "snippet": "사직단(社稷壇)은 토지와 곡식의 신을 제사하는 공간으로 1394년(태조 3) 건립되었다. 사직의 제사는 농사의 풍요와 백성들의 안녕을 기원하는 것이 궁극적인 목적이었기 때문에 조선시대 국가가 주관하는 제사 중 가장 중요한 대사(大祀)로 분류되었다. 각 지방에도 사직단이 건립되었는데 기능은 서울의 것과 같다. 1963년 서울의 사직단은 사적 제121호로, 대문은 보물 제177호로 지정되었다.",
+          "exact_text": "사직단(社稷壇)은 토지와 곡식의 신을 제사하는 공간으로 1394년(태조 3) 건립되었다. 사직의 제사는 농사의 풍요와 백성들의 안녕을 기원하는 것이 궁극적인 목적이었기 때문에 조선시대 국가가 주관하는 제사 중 가장 중요한 대사(大祀)로 분류되었다. 각 지방에도 사직단이 건립되었는데 기능은 서울의 것과 같다. 1963년 서울의 사직단은 사적 제121호로, 대문은 보물 제177호로 지정되었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_01700&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_050_01700_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_050/ki_050_01700.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_050/ki_050_01700.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_01700&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유적",
+        "category_sub": "천문·의례시설",
+        "internal_owner_title": "서울 사직단",
+        "owner_id": "image_material:ki_050_01700"
+      }
+    },
+    {
+      "slot_no": 3,
+      "role": "distractor",
+      "basis_item_id": "clue:272e7b2ff05d",
+      "article_id": "image_material:ki_050_01400",
+      "truth_owner_label": "종묘",
+      "fact_basis": "종묘(宗廟)는 조선 왕조의 역대 국왕과 왕비의 신주를 모신 제향 공간이다. 1392년(태조 1) 개성에 처음 건립되었다가, 1395년(태조 4) 한양 천도와 함께 오늘날의 자리로 이전했다. 크게 중심 건물인 정전과 또 다른 사당인 영녕전으로 구성되어 있다. 종묘의 제사는 1년에 다섯 차례 진행되었는데, 국가가 주관하는 가장 중요한 제사로서 대사(大祀)에 속했다. 현재는 5월 첫째 주 일요일과 11월 첫째 주 토요일에 제례를 진행한다. 1963년 사적 제125호로 지정되었으며, 1995년 유네스코 세계유산에 등재되었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_050_01400_chunk_0000",
+          "article_id": "image_material:ki_050_01400",
+          "snippet": "종묘(宗廟)는 조선 왕조의 역대 국왕과 왕비의 신주를 모신 제향 공간이다. 1392년(태조 1) 개성에 처음 건립되었다가, 1395년(태조 4) 한양 천도와 함께 오늘날의 자리로 이전했다. 크게 중심 건물인 정전과 또 다른 사당인 영녕전으로 구성되어 있다. 종묘의 제사는 1년에 다섯 차례 진행되었는데, 국가가 주관하는 가장 중요한 제사로서 대사(大祀)에 속했다. 현재는 5월 첫째 주 일요일과 11월 첫째 주 토요일에 제례를 진행한다. 1963년 사적 제125호로 지정되었으며, 1995년 유네스코 세계유산에 등재되었다.",
+          "exact_text": "종묘(宗廟)는 조선 왕조의 역대 국왕과 왕비의 신주를 모신 제향 공간이다. 1392년(태조 1) 개성에 처음 건립되었다가, 1395년(태조 4) 한양 천도와 함께 오늘날의 자리로 이전했다. 크게 중심 건물인 정전과 또 다른 사당인 영녕전으로 구성되어 있다. 종묘의 제사는 1년에 다섯 차례 진행되었는데, 국가가 주관하는 가장 중요한 제사로서 대사(大祀)에 속했다. 현재는 5월 첫째 주 일요일과 11월 첫째 주 토요일에 제례를 진행한다. 1963년 사적 제125호로 지정되었으며, 1995년 유네스코 세계유산에 등재되었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_01400&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_050_01400_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_050/ki_050_01400.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_050/ki_050_01400.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_01400&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유적",
+        "category_sub": "천문·의례시설",
+        "internal_owner_title": "종묘",
+        "owner_id": "image_material:ki_050_01400"
+      }
+    },
+    {
+      "slot_no": 4,
+      "role": "distractor",
+      "basis_item_id": "clue:93709beb21a4",
+      "article_id": "image_material:ki_050_03000",
+      "truth_owner_label": "숭례문",
+      "fact_basis": "숭례문(崇禮門)은 1398년(태조 7) 완성된 한양도성의 정문으로, 남쪽에 위치하고 있어 남대문으로도 불린다. 다른 문들과 달리 세로로 쓰인 것이 특징이다. 『지봉유설』에는 양녕대군이 ‘숭례문’이라는 현판을 썼다고 기록되어 있다. 2008년 방화로 일부가 불에 탔고 복원 공사 끝에 2013년 준공되었다. 본래 성곽과 연결되어 있었지만 개항기 이후 도시 개발과 일본에 의해 훼손되었고 현재는 일부만을 복원했다. 1962년 국보 제1호로 지정되었다.",
+      "evidence_chunks": [
+        {
+          "chunk_id": "ki_050_03000_chunk_0000",
+          "article_id": "image_material:ki_050_03000",
+          "snippet": "숭례문(崇禮門)은 1398년(태조 7) 완성된 한양도성의 정문으로, 남쪽에 위치하고 있어 남대문으로도 불린다. 다른 문들과 달리 세로로 쓰인 것이 특징이다. 『지봉유설』에는 양녕대군이 ‘숭례문’이라는 현판을 썼다고 기록되어 있다. 2008년 방화로 일부가 불에 탔고 복원 공사 끝에 2013년 준공되었다. 본래 성곽과 연결되어 있었지만 개항기 이후 도시 개발과 일본에 의해 훼손되었고 현재는 일부만을 복원했다. 1962년 국보 제1호로 지정되었다.",
+          "exact_text": "숭례문(崇禮門)은 1398년(태조 7) 완성된 한양도성의 정문으로, 남쪽에 위치하고 있어 남대문으로도 불린다. 다른 문들과 달리 세로로 쓰인 것이 특징이다. 『지봉유설』에는 양녕대군이 ‘숭례문’이라는 현판을 썼다고 기록되어 있다. 2008년 방화로 일부가 불에 탔고 복원 공사 끝에 2013년 준공되었다. 본래 성곽과 연결되어 있었지만 개항기 이후 도시 개발과 일본에 의해 훼손되었고 현재는 일부만을 복원했다. 1962년 국보 제1호로 지정되었다.",
+          "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_03000&whereStr="
+        }
+      ],
+      "status": "rag_ready",
+      "semantic_status": "pass",
+      "image": {
+        "image_chunk_id": "ki_050_03000_chunk_0000",
+        "original_image_url": "https://contents.history.go.kr/data/img/ki/ki_050/ki_050_03000.jpg",
+        "thumbnail_url": "https://contents.history.go.kr/data/img/ki/ki_050/ki_050_03000.thumbnail.jpg",
+        "source_url": "https://contents.history.go.kr/front/ki/viewAjax.do?levelId=ki_050_03000&whereStr=",
+        "image_source": "문화재청 국가문화유산포털",
+        "usage_status": "allowlisted_in_current_image_rag",
+        "category_main": "유적",
+        "category_sub": "궁궐·성",
+        "internal_owner_title": "숭례문",
+        "owner_id": "image_material:ki_050_03000"
+      }
+    }
+  ]
+}

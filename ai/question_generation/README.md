@@ -12,6 +12,8 @@ packs/
   chronology_10.json
   image_passage_10/
   image_choice_27/
+  image_choice_90/
+  image_choice_117_manifest.json
 questions/
   standard_305/
   chronology_and_image_75/
@@ -20,7 +22,11 @@ questions/
 - `standard_305`: 일반 선택형 295문항과 이미지 자료형 10문항
 - `chronology_and_image_75`: 연대기형 50문항과 이미지 선지형 25문항
 - 이미지 파일은 복제하지 않고 원본 문제와 Pack에 기록된 `https://contents.history.go.kr/` URL을 사용합니다.
+- `image_choice_90`은 기존 3팩과 겹치지 않는 10팩·고유 이미지 90개이며, `image_choice_117_manifest.json`으로 기존 27개 회전 입력과 함께 사용합니다.
 - 실행 로그, 평가 checkpoint, API 응답 원문은 재적재에 필요하지 않아 포함하지 않습니다.
+
+Fact Graph 기반 10팩과 최종 50문항은 `data/production_20260727`에 있습니다.
+DB 적재 명령은 해당 폴더의 `README.md`를 따릅니다.
 
 서비스 DB에 넣기 전에는 반드시 `--dry-run`으로 중복과 입력 계약을 확인합니다.
 

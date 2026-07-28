@@ -199,22 +199,54 @@ def _problem_context_value(question: str, label: str) -> str:
     return match.group(1).strip() if match else ""
 
 
-def build_problem_option_queries(question: str) -> list[str]:
+def normalize_choice_explanations(value: dict[int, str] | None) -> dict[int, str]:
+    return {
+        int(number): str(explanation).strip()
+        for number, explanation in (value or {}).items()
+        if str(explanation or "").strip()
+    }
+
+
+def add_choice_explanation_context(question: str, choice_explanations: dict[int, str]) -> str:
+    if not choice_explanations:
+        return question
+    rows = "\n".join(
+        f"{number}. {explanation}"
+        for number, explanation in sorted(choice_explanations.items())
+    )
+    return f"{question}\n\n[DB 선지별 해설]\n{rows}"
+
+
+def build_problem_option_queries(
+    question: str,
+    choice_explanations: dict[int, str] | None = None,
+) -> list[str]:
     problem = _problem_context_value(question, "문제")
     passage = _problem_context_value(question, "지문")
     category = _problem_context_value(question, "분류")
     options = _problem_context_value(question, "보기")
     context = re.sub(r"\s+", " ", " ".join(value for value in (passage, problem, category) if value)).strip()
-    if not context or not options:
+    if not context:
         return []
     selected = re.search(r"(\d+)\s*번", _problem_context_value(question, "내 답"))
     choices = dict(re.findall(r"(?m)^\s*(\d+)\.\s*(.+)$", options))
     selected_choice = choices.get(selected.group(1)) if selected else None
-    return [context, f"{context} {selected_choice}".strip()] if selected_choice else [context]
+    queries = [context]
+    if selected_choice:
+        queries.append(f"{context} {selected_choice}".strip())
+    queries.extend(
+        f"{context} {explanation}"
+        for explanation in normalize_choice_explanations(choice_explanations).values()
+    )
+    return list(dict.fromkeys(queries))
 
 
-def search_problem_option_sources(retriever: PgVectorHybridRetriever, question: str) -> list[Any]:
-    queries = build_problem_option_queries(question)
+def search_problem_option_sources(
+    retriever: PgVectorHybridRetriever,
+    question: str,
+    choice_explanations: dict[int, str] | None = None,
+) -> list[Any]:
+    queries = build_problem_option_queries(question, choice_explanations)
     if not queries:
         return []
     with ThreadPoolExecutor(max_workers=min(len(queries), 5)) as executor:
@@ -403,6 +435,7 @@ def build_history_rag_answer(
     top_k: int = 20,
     history: list[dict[str, Any]] | None = None,
     explanation_level: str = "",
+    choice_explanations: dict[int, str] | None = None,
 ) -> dict[str, Any]:
     intent = normalize_intent(intent, answer_format)
     conversation_history = normalize_history(history)
@@ -423,10 +456,20 @@ def build_history_rag_answer(
         else None
     )
     search_question = build_enriched_question(search_seed, graph_context) if graph_context else search_seed
-    generation_question = search_seed if is_contextual_follow_up else question
+    resolved_choice_explanations = normalize_choice_explanations(choice_explanations)
+    generation_question = add_choice_explanation_context(
+        search_seed if is_contextual_follow_up else question,
+        resolved_choice_explanations,
+    )
 
     retriever = PgVectorHybridRetriever()
-    results = retriever.search(search_question, top_k=max(top_k, 8 if graph_context and graph_context.get("keywords") else top_k))
+    results = (
+        search_problem_option_sources(retriever, search_question, resolved_choice_explanations)
+        if intent == "question"
+        else []
+    )
+    if not results:
+        results = retriever.search(search_question, top_k=max(top_k, 8 if graph_context and graph_context.get("keywords") else top_k))
     sources = [result_to_payload(result) for result in results]
     timeline_sources = search_timeline_sources(search_question) if use_timeline_sources() else []
     sources.extend(timeline_sources)
@@ -517,44 +560,77 @@ def stream_question_rag_answer(
     top_k: int = 8,
     history: list[dict[str, Any]] | None = None,
     explanation_level: str = "",
+    choice_explanations: dict[int, str] | None = None,
 ) -> Iterator[dict[str, Any]]:
     conversation_history = normalize_history(history)
     search_seed = build_search_question(question, conversation_history, "question")
     is_contextual_follow_up = search_seed != question
     graph_context = build_graph_context(search_seed, limit=8, max_hop=graph_hop_for_question(search_seed)) if should_use_graph_context(search_seed, "question") else None
     search_question = build_enriched_question(search_seed, graph_context) if graph_context else search_seed
+    resolved_choice_explanations = normalize_choice_explanations(choice_explanations)
+    generation_question = add_choice_explanation_context(question, resolved_choice_explanations)
     retriever = PgVectorHybridRetriever()
-    results = search_problem_option_sources(retriever, search_question)
+    results = search_problem_option_sources(retriever, search_question, resolved_choice_explanations)
     if not results:
         results = retriever.search(search_question, top_k=top_k)
     sources = [result_to_payload(result) for result in results]
     if use_timeline_sources():
         sources.extend(search_timeline_sources(search_question))
     retrieval_debug = build_retrieval_debug(search_seed, search_question, sources, graph_context)
-    if not has_enough_evidence(results, "question"):
+    if not has_enough_evidence(results, "question") and not (
+        explanation_level == "core" and resolved_choice_explanations
+    ):
         yield {"type": "done", "data": not_found_answer(question, "question", graph_context)}
         return
 
     generator = LLMAnswerGenerator.from_env()
     answer = {"answer_type": "follow_up_explanation", "title": "문제 해설", "summary": "", "sections": [], "exam_points": [], "highlights": [], "source_titles": []}
     current_section = None
-    for event in generator.generate_structured_stream(question, sources, follow_up=True, history=conversation_history, explanation_level=explanation_level):
+    fixed_choice_section = False
+    choice_section_emitted = False
+    for event in generator.generate_structured_stream(generation_question, sources, follow_up=True, history=conversation_history, explanation_level=explanation_level):
         if event["type"] == "meta":
             answer["title"] = str(event.get("title") or answer["title"])
             answer["summary"] = sanitize_answer(str(event.get("summary") or ""))
         elif event["type"] == "section":
             current_section = {"heading": str(event.get("heading") or ""), "items": []}
             answer["sections"].append(current_section)
+            fixed_choice_section = (
+                explanation_level == "core"
+                and bool(resolved_choice_explanations)
+                and "선지 판단" in current_section["heading"]
+            )
+            if fixed_choice_section:
+                choice_section_emitted = True
+                yield event
+                for number, explanation in sorted(resolved_choice_explanations.items()):
+                    row = {"type": "row", "term": f"{number}번", "content": explanation}
+                    current_section["items"].append({"term": row["term"], "content": explanation})
+                    yield row
+                continue
         elif event["type"] == "row" and current_section is not None:
+            if fixed_choice_section:
+                continue
             current_section["items"].append({"term": str(event.get("term") or ""), "content": str(event.get("content") or "")})
         elif event["type"] == "sources":
             answer["source_titles"] = event.get("source_titles") if isinstance(event.get("source_titles"), list) else []
+        elif event["type"] == "done" and explanation_level == "core" and resolved_choice_explanations and not choice_section_emitted:
+            current_section = {"heading": "2. 선지 판단", "items": []}
+            answer["sections"].append(current_section)
+            yield {"type": "section", "heading": current_section["heading"]}
+            for number, explanation in sorted(resolved_choice_explanations.items()):
+                row = {"type": "row", "term": f"{number}번", "content": explanation}
+                current_section["items"].append({"term": row["term"], "content": explanation})
+                yield row
         if event["type"] != "done":
             yield event
     structured_answer = normalize_structured_answer(answer)
     result = {
         "question": question, "mode": mode, "intent": "question", "answer_format": "structured", "answer": None,
-        "structured_answer": structured_answer, "not_found": is_insufficient_structured_answer(structured_answer),
+        "structured_answer": structured_answer,
+        "not_found": is_insufficient_structured_answer(structured_answer) and not (
+            explanation_level == "core" and resolved_choice_explanations
+        ),
         "explanation_level": explanation_level,
         "llm": {"provider": generator.config.provider, "model": generator.config.model, "temperature": generator.config.temperature},
         "sources": sources, "graph_context": graph_context, "search_seed": search_seed,
