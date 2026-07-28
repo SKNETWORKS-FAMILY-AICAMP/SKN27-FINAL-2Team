@@ -370,3 +370,5 @@ ai/ml_question/train_question_quality_*.ipynb
 
 # Question generation runtime outputs
 ai/question_generation/outputs/
+
+app/staticfiles/
