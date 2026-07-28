@@ -99,16 +99,40 @@ def build_study_plan_dto(
     normalized_plan_status = plan_status
     if plan_status == "deleted":
         normalized_plan_status = "legacy_deleted"
+    start_date_text = _format_date(_get_value(study_plan, "start_date"))
+    end_date_text = _format_date(_get_value(study_plan, "end_date"))
     return {
         "studyPlanId": _get_value(study_plan, "studyplan_id"),
         "status": normalized_plan_status,
         "planVersion": int(_get_value(study_plan, "plan_version") or 1),
         "summary": str(summary_data.get("summary") or ""),
-        "startDate": _format_date(_get_value(study_plan, "start_date")),
-        "endDate": _format_date(_get_value(study_plan, "end_date")),
+        "startDate": start_date_text,
+        "endDate": end_date_text,
         "completionRate": round(completion_rate, 4),
+        # 마이페이지 플래너 상단의 "현재 계획 진행률" 이 이 값을 읽는다.
+        # 완료율 정의(완료한 일반 학습 블록 ÷ 전체 일반 학습 블록)와 같다.
+        "progress": {
+            "targetCount": total_count,
+            "achievedCount": completed_count,
+            "remainingCount": max(total_count - completed_count, 0),
+            "completionRate": round(completion_rate, 4),
+            "completionPercent": round(completion_rate * 100),
+            "periodLabel": _build_period_label(start_date_text, end_date_text),
+        },
         "plans": plans,
     }
+
+
+def _build_period_label(
+    start_date_text: str | None,
+    end_date_text: str | None,
+) -> str:
+    if not start_date_text or not end_date_text:
+        return "기간 미정"
+    return (
+        f"{start_date_text[5:7]}.{start_date_text[8:10]}"
+        f" ~ {end_date_text[5:7]}.{end_date_text[8:10]}"
+    )
 
 
 def normalize_block_type(block: Mapping[str, object]) -> str:

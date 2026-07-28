@@ -476,6 +476,43 @@ class PlannerDisplayTests(SimpleTestCase):
         self.assertEqual(summary["create_plan_label"], "다음 7일 계획 만들기")
         self.assertTrue(summary["create_plan_disabled_message"])
 
+    def test_dto_progress_feeds_planner_progress_summary(self):
+        """DTO 에 progress 가 없으면 진행률이 항상 0% 로 고정된다."""
+        from analytics.service.study_plan.dto import build_study_plan_dto
+
+        today = date(2026, 7, 22)
+        study_plan_row = {
+            "studyplan_id": 1,
+            "status": "active",
+            "plan_version": 1,
+            "study_plans": "{}",
+            "start_date": "2026-07-20",
+            "end_date": "2026-07-26",
+            "study_plan_items": [
+                {
+                    "date": "2026-07-20",
+                    "blocks": [
+                        {"blockId": "done", "blockType": "practice", "questionCount": 5},
+                        {"blockId": "todo", "blockType": "practice", "questionCount": 5},
+                    ],
+                },
+                {
+                    "date": "2026-07-26",
+                    "blocks": [
+                        {"blockId": "review", "blockType": "weekly_review", "questionCount": 50},
+                    ],
+                },
+            ],
+        }
+
+        dto = build_study_plan_dto(study_plan_row, today, {"done"}, set())
+        summary = build_planner_summary([dto], today)
+
+        self.assertEqual(summary["progress"]["targetCount"], 2)
+        self.assertEqual(summary["progress"]["achievedCount"], 1)
+        self.assertEqual(summary["progress"]["completionPercent"], 50)
+        self.assertEqual(summary["progress"]["periodLabel"], "07.20 ~ 07.26")
+
     def test_history_plans_appear_on_calendar_without_actions(self):
         """지난 계획은 달력 기록으로만 보이고 상태 판정을 오염시키지 않는다."""
         today = date(2026, 7, 22)
