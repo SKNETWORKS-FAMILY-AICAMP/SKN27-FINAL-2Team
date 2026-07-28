@@ -16,24 +16,38 @@ concurrency:
 
 env:
   AWS_REGION: ${{ vars.AWS_REGION }}
+  AWS_DEPLOY_ROLE_ARN: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
   ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}
-  ECS_CLUSTER: ${{ vars.ECS_CLUSTER }}
-  ECS_SERVICE: ${{ vars.ECS_WEB_SERVICE }}
-  ECS_TASK_FAMILY: ${{ vars.ECS_WEB_TASK_FAMILY }}
-  ECS_CONTAINER_NAME: ${{ vars.ECS_WEB_CONTAINER_NAME }}
 
 jobs:
-  deploy:
+  build-and-push:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    outputs:
+      ecr_registry: ${{ steps.ecr.outputs.registry }}
+      image_uri: ${{ steps.image.outputs.image_uri }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v6
 
+      - name: Validate image build variables
+        run: |
+          for variable_name in \
+            AWS_REGION \
+            AWS_DEPLOY_ROLE_ARN \
+            ECR_REPOSITORY
+          do
+            if [ -z "${!variable_name}" ]; then
+              echo "::error::Missing GitHub variable: ${variable_name}"
+              exit 1
+            fi
+          done
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v6
         with:
-          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          role-to-assume: ${{ env.AWS_DEPLOY_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Login to Amazon ECR
@@ -48,27 +62,105 @@ jobs:
           IMAGE_URI="${ECR_REGISTRY}/${ECR_REPOSITORY}:${GITHUB_SHA}"
           docker build -t "${IMAGE_URI}" .
           docker push "${IMAGE_URI}"
-          echo "image=${IMAGE_URI}" >> "${GITHUB_OUTPUT}"
+          echo "image_uri=${IMAGE_URI}" >> "${GITHUB_OUTPUT}"
 
-      - name: Download current task definition
+  deploy-to-ec2:
+    if: github.ref == 'refs/heads/main' && vars.EC2_INSTANCE_ID != ''
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    env:
+      EC2_INSTANCE_ID: ${{ vars.EC2_INSTANCE_ID }}
+      EC2_WEB_CONTAINER_NAME: ${{ vars.EC2_WEB_CONTAINER_NAME }}
+      EC2_WEB_HOST_PORT: ${{ vars.EC2_WEB_HOST_PORT }}
+      EC2_WEB_CONTAINER_PORT: ${{ vars.EC2_WEB_CONTAINER_PORT }}
+      EC2_WEB_ENV_FILE: ${{ vars.EC2_WEB_ENV_FILE }}
+      ECR_REGISTRY: ${{ needs.build-and-push.outputs.ecr_registry }}
+      IMAGE_URI: ${{ needs.build-and-push.outputs.image_uri }}
+
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ env.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Validate EC2 deployment variables
         run: |
-          aws ecs describe-task-definition \
-            --task-definition "${ECS_TASK_FAMILY}" \
-            --query taskDefinition \
-            > task-definition.json
+          for variable_name in \
+            EC2_INSTANCE_ID \
+            EC2_WEB_CONTAINER_NAME \
+            EC2_WEB_HOST_PORT \
+            EC2_WEB_CONTAINER_PORT \
+            EC2_WEB_ENV_FILE \
+            ECR_REGISTRY \
+            IMAGE_URI
+          do
+            if [ -z "${!variable_name}" ]; then
+              echo "::error::Missing GitHub variable: ${variable_name}"
+              exit 1
+            fi
+          done
 
-      - name: Set new image
-        id: task-definition
-        uses: aws-actions/amazon-ecs-render-task-definition@v1
-        with:
-          task-definition: task-definition.json
-          container-name: ${{ env.ECS_CONTAINER_NAME }}
-          image: ${{ steps.image.outputs.image }}
+      - name: Deploy image to GPU EC2 with SSM
+        run: |
+          SSM_PARAMETERS="$(
+            jq -nc \
+              --arg region "${AWS_REGION}" \
+              --arg registry "${ECR_REGISTRY}" \
+              --arg image "${IMAGE_URI}" \
+              --arg container "${EC2_WEB_CONTAINER_NAME}" \
+              --arg host_port "${EC2_WEB_HOST_PORT}" \
+              --arg container_port "${EC2_WEB_CONTAINER_PORT}" \
+              --arg env_file "${EC2_WEB_ENV_FILE}" \
+              '{
+                commands: [
+                  "set -eu",
+                  (
+                    "aws ecr get-login-password --region "
+                    + ($region | @sh)
+                    + " | docker login --username AWS --password-stdin "
+                    + ($registry | @sh)
+                  ),
+                  ("docker pull " + ($image | @sh)),
+                  (
+                    "docker rm -f "
+                    + ($container | @sh)
+                    + " 2>/dev/null || true"
+                  ),
+                  (
+                    "docker run -d --name "
+                    + ($container | @sh)
+                    + " --restart unless-stopped --env-file "
+                    + ($env_file | @sh)
+                    + " -p "
+                    + (($host_port + ":" + $container_port) | @sh)
+                    + " "
+                    + ($image | @sh)
+                  )
+                ]
+              }'
+          )"
 
-      - name: Deploy ECS service
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
-        with:
-          task-definition: ${{ steps.task-definition.outputs.task-definition }}
-          cluster: ${{ env.ECS_CLUSTER }}
-          service: ${{ env.ECS_SERVICE }}
-          wait-for-service-stability: true
+          COMMAND_ID="$(
+            aws ssm send-command \
+              --instance-ids "${EC2_INSTANCE_ID}" \
+              --document-name "AWS-RunShellScript" \
+              --comment "Deploy HiMate web ${GITHUB_SHA}" \
+              --parameters "${SSM_PARAMETERS}" \
+              --query "Command.CommandId" \
+              --output text
+          )"
+
+          if ! aws ssm wait command-executed \
+            --command-id "${COMMAND_ID}" \
+            --instance-id "${EC2_INSTANCE_ID}"
+          then
+            aws ssm get-command-invocation \
+              --command-id "${COMMAND_ID}" \
+              --instance-id "${EC2_INSTANCE_ID}"
+            exit 1
+          fi
+
+          aws ssm get-command-invocation \
+            --command-id "${COMMAND_ID}" \
+            --instance-id "${EC2_INSTANCE_ID}"
