@@ -29,7 +29,7 @@
       "command": [
         "/bin/sh",
         "-c",
-        "python app/manage.py check --deploy --fail-level ERROR && python app/manage.py check_database_schema && python app/manage.py migrate --noinput"
+        "python app/manage.py check --deploy --fail-level ERROR && python app/manage.py migrate --noinput && python app/manage.py check_database_schema"
       ],
       "linuxParameters": {
         "initProcessEnabled": true,
@@ -93,66 +93,6 @@
           "valueFrom": "__ECS_SSM_PARAMETER_PREFIX__/POSTGRES_REQUIRED_TABLES"
         },
         {
-          "name": "NEO4J_URI",
-          "valueFrom": "__ECS_SSM_PARAMETER_PREFIX__/NEO4J_URI"
-        },
-        {
-          "name": "NEO4J_USER",
-          "valueFrom": "__ECS_SSM_PARAMETER_PREFIX__/NEO4J_USER"
-        },
-        {
-          "name": "NEO4J_PASSWORD",
-          "valueFrom": "__ECS_SSM_PARAMETER_PREFIX__/NEO4J_PASSWORD"
-        },
-        {
-          "name": "NEO4J_CONNECT_TIMEOUT_SECONDS",
-          "valueFrom": "__ECS_SSM_PARAMETER_PREFIX__/NEO4J_CONNECT_TIMEOUT_SECONDS"
-        },
-        {
-          "name": "EMBEDDING_MODEL",
-          "valueFrom": "__ECS_SSM_PARAMETER_PREFIX__/EMBEDDING_MODEL"
-        },
-        {
-          "name": "EMBEDDING_DIMENSIONS",
-          "valueFrom": "__ECS_SSM_PARAMETER_PREFIX__/EMBEDDING_DIMENSIONS"
-        },
-        {
-          "name": "OPENAI_API_KEY",
-          "valueFrom": "__ECS_SSM_PARAMETER_PREFIX__/OPENAI_API_KEY"
-        },
-        {
-          "name": "OPENAI_CHAT_MODEL",
-          "valueFrom": "__ECS_SSM_PARAMETER_PREFIX__/OPENAI_CHAT_MODEL"
-        },
-        {
-          "name": "EMAIL_BACKEND",
-          "valueFrom": "__ECS_SSM_PARAMETER_PREFIX__/EMAIL_BACKEND"
-        },
-        {
-          "name": "DEFAULT_FROM_EMAIL",
-          "valueFrom": "__ECS_SSM_PARAMETER_PREFIX__/DEFAULT_FROM_EMAIL"
-        },
-        {
-          "name": "EMAIL_HOST",
-          "valueFrom": "__ECS_SSM_PARAMETER_PREFIX__/EMAIL_HOST"
-        },
-        {
-          "name": "EMAIL_PORT",
-          "valueFrom": "__ECS_SSM_PARAMETER_PREFIX__/EMAIL_PORT"
-        },
-        {
-          "name": "EMAIL_HOST_USER",
-          "valueFrom": "__ECS_SSM_PARAMETER_PREFIX__/EMAIL_HOST_USER"
-        },
-        {
-          "name": "EMAIL_HOST_PASSWORD",
-          "valueFrom": "__ECS_SSM_PARAMETER_PREFIX__/EMAIL_HOST_PASSWORD"
-        },
-        {
-          "name": "EMAIL_USE_TLS",
-          "valueFrom": "__ECS_SSM_PARAMETER_PREFIX__/EMAIL_USE_TLS"
-        },
-        {
           "name": "DJANGO_SECRET_KEY",
           "valueFrom": "__ECS_SSM_PARAMETER_PREFIX__/DJANGO_SECRET_KEY"
         },
@@ -163,10 +103,6 @@
         {
           "name": "DJANGO_ALLOWED_HOSTS",
           "valueFrom": "__ECS_SSM_PARAMETER_PREFIX__/DJANGO_ALLOWED_HOSTS"
-        },
-        {
-          "name": "DJANGO_HEALTHCHECK_HOST",
-          "valueFrom": "__ECS_SSM_PARAMETER_PREFIX__/DJANGO_HEALTHCHECK_HOST"
         },
         {
           "name": "DJANGO_CSRF_TRUSTED_ORIGINS",
