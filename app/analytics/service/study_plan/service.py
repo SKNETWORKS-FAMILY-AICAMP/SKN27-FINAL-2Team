@@ -585,6 +585,7 @@ def validate_study_plan_block_start(
     ).first()
     if study_plan is None:
         raise StudyPlanBlockNotFound("활성 학습계획을 찾을 수 없습니다.")
+    completed_ids, in_progress_ids = _get_progress_block_ids(user_id, study_plan_id)
     return validate_block_start(
         study_plan.status,
         parse_plan_items(study_plan.study_plan_items),
@@ -594,6 +595,8 @@ def validate_study_plan_block_start(
             timezone=ZoneInfo(get_study_plan_config().timezone),
         ),
         route,
+        completed_block_ids=completed_ids,
+        in_progress_block_ids=in_progress_ids,
     )
 
 
@@ -724,6 +727,8 @@ def validate_block_start(
     block_id: str,
     today: date,
     route: str,
+    completed_block_ids: set[str] | None = None,
+    in_progress_block_ids: set[str] | None = None,
 ) -> dict[str, object]:
     if plan_status != "active":
         raise StudyPlanBlockTerminal("활성 계획의 블록만 새로 시작할 수 있습니다.")
@@ -737,13 +742,16 @@ def validate_block_start(
             expected_route = "question"
             if block_type == "weekly_review":
                 expected_route = "diagnosis"
+            # 블록 완료 여부는 계획 JSON 뿐 아니라 solve_records 진행 상태에서도
+            # 파생되므로, 넘겨받은 진행 집합으로 판정한다. 완료가 진행 중보다
+            # 우선한다(normalize_block_status 내부 순서).
             status = normalize_block_status(
                 block,
                 str(block_id),
                 plan_date,
                 today,
-                set(),
-                set(),
+                completed_block_ids or set(),
+                in_progress_block_ids or set(),
             )
             if status in ("completed", "missed", "cancelled"):
                 raise StudyPlanBlockTerminal("종료된 블록은 새로 시작할 수 없습니다.")

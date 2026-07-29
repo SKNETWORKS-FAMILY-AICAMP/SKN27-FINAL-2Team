@@ -63,16 +63,18 @@ class WeaknessCoreTests(TestCase):
         self.assertAlmostEqual(row["weaknessScore"], 0.6468, places=4)
 
     def test_old_records_decay_below_minimum_sample(self) -> None:
+        # lookback 28일 창의 끝자락 기록은 감쇠 가중치가 0.5^(27/14) ≈ 0.26 이라
+        # 원본 10건이어도 유효 표본이 최소 기준(3.0) 아래로 내려간다.
         today = date(2026, 7, 20)
-        recorded_date = today - timedelta(days=60)
+        recorded_date = today - timedelta(days=27)
         records = [
             {
                 "recordedDate": recorded_date,
-                "isCorrect": index >= 14,
+                "isCorrect": index >= 7,
                 "era": "조선",
                 "topic": "정치",
             }
-            for index in range(20)
+            for index in range(10)
         ]
         row = build_weakness_rows(records, ("era", "topic"), today)[0]
 

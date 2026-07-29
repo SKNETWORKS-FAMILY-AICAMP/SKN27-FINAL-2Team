@@ -26,7 +26,7 @@ load_dotenv(BASE_DIR.parent / '.env')
 SECRET_KEY = os.environ['DJANGO_SECRET_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG =  os.getenv("DJANGO_DEBUG", "false").lower() == "true"
+DEBUG = os.getenv("DJANGO_DEBUG", "false").lower() == "true"
 
 ALLOWED_HOSTS = [
     host.strip()
@@ -39,6 +39,29 @@ CSRF_TRUSTED_ORIGINS = [
     for origin in os.getenv("DJANGO_CSRF_TRUSTED_ORIGINS", "").split(",")
     if origin.strip()
 ]
+
+SECURE_PROXY_SSL_HEADER = None
+if os.getenv("DJANGO_TRUST_X_FORWARDED_PROTO", "false").lower() == "true":
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+SECURE_SSL_REDIRECT = (
+    os.getenv("DJANGO_SECURE_SSL_REDIRECT", "false").lower() == "true"
+)
+SECURE_REDIRECT_EXEMPT = [r"^health/$"]
+SESSION_COOKIE_SECURE = (
+    os.getenv("DJANGO_SESSION_COOKIE_SECURE", "false").lower() == "true"
+)
+CSRF_COOKIE_SECURE = (
+    os.getenv("DJANGO_CSRF_COOKIE_SECURE", "false").lower() == "true"
+)
+SECURE_HSTS_SECONDS = int(os.getenv("DJANGO_SECURE_HSTS_SECONDS", "0"))
+SECURE_HSTS_INCLUDE_SUBDOMAINS = (
+    os.getenv("DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS", "false").lower()
+    == "true"
+)
+SECURE_HSTS_PRELOAD = (
+    os.getenv("DJANGO_SECURE_HSTS_PRELOAD", "false").lower() == "true"
+)
 
 # Application definition
 
@@ -101,6 +124,11 @@ DATABASES = {
         'PASSWORD': os.getenv('POSTGRES_PASSWORD', 'himate1234'),
         'HOST': os.getenv('POSTGRES_HOST', 'localhost'),
         'PORT': os.getenv('POSTGRES_PORT', '5432'),
+        'OPTIONS': {
+            'connect_timeout': int(
+                os.getenv('POSTGRES_CONNECT_TIMEOUT_SECONDS', '5')
+            ),
+        },
     }
 }
 
