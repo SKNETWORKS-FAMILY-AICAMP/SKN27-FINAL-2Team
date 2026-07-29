@@ -1,8 +1,9 @@
 import json
 from concurrent.futures import ThreadPoolExecutor
-from types import SimpleNamespace
-from unittest.mock import patch
+from types import ModuleType, SimpleNamespace
+from unittest.mock import MagicMock, patch
 
+from django.core.cache import cache
 from django.test import RequestFactory, TestCase
 from django.urls import reverse
 
@@ -13,7 +14,7 @@ from .rag_service import (
     stream_concept_rag_answer,
     stream_question_rag_answer,
 )
-from .views import proxied_image_path, rag_chat_api, rag_chat_stream_api
+from .views import _chat_request_blocked, proxied_image_path, rag_chat_api, rag_chat_stream_api
 
 
 class ChatbotApiTests(TestCase):
@@ -33,6 +34,20 @@ class ChatbotApiTests(TestCase):
     def test_top_k_rejects_invalid_value(self):
         response = rag_chat_api(self.request({"question": "세종대왕", "top_k": "abc"}))
         self.assertEqual(response.status_code, 400)
+
+    def test_chat_rate_limit_blocks_request_over_limit(self):
+        request = self.request({"question": "세종대왕"})
+        request.user.user_id = 987654321
+        cache_key = f"chat-rate:{request.user.user_id}"
+        cache.delete(cache_key)
+        self.addCleanup(cache.delete, cache_key)
+
+        for _attempt in range(20):
+            self.assertIsNone(_chat_request_blocked(request, "세종대왕", []))
+
+        response = _chat_request_blocked(request, "세종대왕", [])
+        self.assertIsNotNone(response)
+        self.assertEqual(response.status_code, 429)
 
     def test_solved_problem_images_use_local_proxy(self):
         value = proxied_image_path("https://contents.history.go.kr/data/img/ki/test.jpg")
@@ -96,7 +111,22 @@ class ChatbotApiTests(TestCase):
 
     def test_parallel_reranker_loads_once(self):
         model = object()
-        with patch.object(reranker, "_reranker", None), patch.object(reranker, "_reranker_loaded", False), patch("sentence_transformers.CrossEncoder", return_value=model) as cross_encoder:
+        sentence_transformers_module = ModuleType("sentence_transformers")
+        cross_encoder = MagicMock(return_value=model)
+        sentence_transformers_module.CrossEncoder = cross_encoder
+
+        with patch.dict(
+            "sys.modules",
+            {"sentence_transformers": sentence_transformers_module},
+        ), patch.object(
+            reranker,
+            "_reranker",
+            None,
+        ), patch.object(
+            reranker,
+            "_reranker_loaded",
+            False,
+        ):
             with ThreadPoolExecutor(max_workers=2) as executor:
                 loaded = list(executor.map(lambda _: reranker.get_reranker(), range(2)))
         self.assertEqual(loaded, [model, model])

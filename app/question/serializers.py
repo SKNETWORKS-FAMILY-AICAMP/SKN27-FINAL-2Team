@@ -7,7 +7,6 @@ class ChoiceData(serializers.Serializer):
     choice_no = serializers.IntegerField()
     content = serializers.CharField()
     choice_image_path = serializers.CharField(allow_blank=True, allow_null=True, required=False)
-    choice_explanation = serializers.CharField(allow_blank=True, allow_null=True, required=False)
 
 
 # 문제 1개의 기본 응답 형식
@@ -22,9 +21,6 @@ class QuestionData(serializers.Serializer):
     topic = serializers.CharField()
     question_type = serializers.CharField()
     question_subtype = serializers.CharField()
-    answer_no = serializers.IntegerField()
-    answer_explanation = serializers.CharField(allow_blank=True, allow_null=True, required=False)
-    core_concept = serializers.CharField(allow_blank=True, allow_null=True, required=False)
     choices = ChoiceData(many=True)
 
 

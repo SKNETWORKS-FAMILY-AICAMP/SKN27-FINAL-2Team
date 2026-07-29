@@ -22,7 +22,10 @@
       </nav>
       <nav class="header-actions" aria-label="계정 메뉴">
         {% if request.user.is_authenticated %}
-          <a class="ghost-button" href="/user/logout/">로그아웃</a>
+      <form class="logout-form" method="post" action="{% url 'user:logout' %}">
+        {% csrf_token %}
+        <button class="ghost-button" type="submit">로그아웃</button>
+      </form>
         {% else %}
           <a class="pill-button" href="/user/login/">로그인</a>
         {% endif %}

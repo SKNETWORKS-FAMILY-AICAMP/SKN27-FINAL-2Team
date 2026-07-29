@@ -5,11 +5,68 @@ from django.test import SimpleTestCase
 from rest_framework.test import APIRequestFactory, force_authenticate
 
 from analytics.service.study_plan import StudyPlanBlockNotDue, StudyPlanBlockTerminal
+from .serializers import DiagnosisStartResponseSerializer
 from .views import (
     _complete_weekly_review_block_for_session,
     _get_expected_grade,
     diagnosis_start,
 )
+
+
+class DiagnosisResponseSecurityTest(SimpleTestCase):
+    def test_start_response_omits_choice_explanation(self) -> None:
+        serializer = DiagnosisStartResponseSerializer(
+            {
+                "session_id": 1,
+                "total_count": 1,
+                "time_limit_sec": 60,
+                "questions": [
+                    {
+                        "question_id": 1,
+                        "content": "문제",
+                        "passage": "",
+                        "image_caption": "",
+                        "visual_note": "",
+                        "question_image_path": "",
+                        "q_score": 2,
+                        "era": "조선",
+                        "topic": "정치",
+                        "question_type": "개념",
+                        "question_subtype": "기본",
+                        "choices": [
+                            {
+                                "choice_id": 10,
+                                "choice_no": 1,
+                                "content": "선택지",
+                                "choice_image_path": "",
+                                "choice_explanation": "노출되면 안 되는 해설",
+                            }
+                        ],
+                    }
+                ],
+            }
+        )
+
+        choice = serializer.data["questions"][0]["choices"][0]
+        self.assertNotIn("choice_explanation", choice)
+
+
+class DiagnosisPageAuthenticationTest(SimpleTestCase):
+    def test_diagnosis_pages_redirect_anonymous_user_to_login(self) -> None:
+        protected_paths = (
+            "/diagnosis/",
+            "/diagnosis/exam/",
+            "/diagnosis/result/",
+        )
+
+        for protected_path in protected_paths:
+            with self.subTest(path=protected_path):
+                response = self.client.get(protected_path)
+
+                self.assertEqual(response.status_code, 302)
+                self.assertTrue(
+                    response.url.startswith("/user/login/?next="),
+                )
 
 
 class ExpectedGradeTest(SimpleTestCase):

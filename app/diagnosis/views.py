@@ -1,12 +1,13 @@
 import random
 from datetime import datetime, timezone
 
-# from django.contrib.auth.decorators import login_required  # TODO: 인증 연동 후 활성화
+from django.contrib.auth.decorators import login_required
 from django.db import models, transaction
 from django.db import connection
 from django.shortcuts import render
 from rest_framework import status
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from analytics.models import Analytics
@@ -145,17 +146,17 @@ def _has_solve_sessions_review_type():
 
 # ── 페이지 뷰 (템플릿) ──────────────────────────────────────────────────────────
 
-# @login_required  # TODO: 인증 연동 후 활성화
+@login_required
 def diagnosis_intro(request):
     return render(request, "diagnosis/intro.html")
 
 
-# @login_required  # TODO: 인증 연동 후 활성화
+@login_required
 def diagnosis_exam(request):
     return render(request, "question/question_exam.html", {"exam_mode": "diagnostic"})
 
 
-# @login_required  # TODO: 인증 연동 후 활성화
+@login_required
 def diagnosis_result(request):
     return render(request, "study/result.html", {"result_mode": "diagnostic"})
 
@@ -163,6 +164,7 @@ def diagnosis_result(request):
 # ── API: 안내 정보 ──────────────────────────────────────────────────────────────
 
 @api_view(["GET"])
+@permission_classes([AllowAny])
 def diagnosis_info(request):
     """
     GET /api/diagnosis/info/
@@ -189,10 +191,7 @@ def diagnosis_start(request):
     """
     POST /api/diagnosis/start/
     세션 생성 + 문제 DIAGNOSIS_QUESTION_COUNT개 랜덤 선택 + 선택지 셔플 반환
-
-    TODO: 인증 연동 필요 - request.user.user_id 로 교체
     """
-    # TODO: 인증 연동 필요 - 아래 user_id를 request.user.user_id 로 교체
     if not request.user.is_authenticated:
         return Response(
             {"error": "로그인이 필요한 기능입니다."},
@@ -306,7 +305,6 @@ def diagnosis_start(request):
                 "choice_no": idx,
                 "content": opt.content,
                 "choice_image_path": getattr(opt, "choice_image_path", ""),
-                "choice_explanation": getattr(opt, "choice_explanation", ""),
             })
 
         serialized_questions.append({
@@ -496,7 +494,6 @@ def _serialize_diagnosis_session_questions(records):
                 "choice_no": option.choice_no,
                 "content": option.content,
                 "choice_image_path": getattr(option, "choice_image_path", ""),
-                "choice_explanation": option.choice_explanation,
             }
             for option in options
         ]
@@ -673,9 +670,16 @@ def diagnosis_result_api(request, session_id):
     GET /api/diagnosis/result/<session_id>/
     예상 수준 + 시대별/유형별 분석 반환
     """
+    if not request.user.is_authenticated:
+        return Response(
+            {"error": "로그인이 필요한 기능입니다."},
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
     try:
         session = SolveSessions.objects.get(
-            session_id=session_id, session_type="diagnostic"
+            session_id=session_id,
+            user_id=request.user.user_id,
+            session_type="diagnostic",
         )
     except SolveSessions.DoesNotExist:
         return Response(
@@ -859,10 +863,17 @@ def diagnosis_explanation(request, session_id, question_id):
     GET /api/diagnosis/result/<session_id>/explanation/<question_id>/
     문항별 해설 + 챗봇 연결 URL
     """
+    if not request.user.is_authenticated:
+        return Response(
+            {"error": "로그인이 필요한 기능입니다."},
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
     # 세션 확인
     try:
         session = SolveSessions.objects.get(
-            session_id=session_id, session_type="diagnostic"
+            session_id=session_id,
+            user_id=request.user.user_id,
+            session_type="diagnostic",
         )
     except SolveSessions.DoesNotExist:
         return Response(

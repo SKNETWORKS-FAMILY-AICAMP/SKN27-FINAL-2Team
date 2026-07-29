@@ -48,9 +48,12 @@ class UserAccounts(models.Model):
 
 class EmailVerificationCode(models.Model):
     email = models.EmailField(max_length=255, db_index=True)
-    code = models.CharField(max_length=10)
+    # 평문이 아니라 make_password 해시를 저장하므로 길이를 넓힌다.
+    # DB 컬럼도 함께 넓혀야 한다(user/migrations 의 RunSQL 참고).
+    code = models.CharField(max_length=128)
     purpose = models.CharField(max_length=20, default='register')
     is_used = models.BooleanField(default=False)
+    attempt_count = models.PositiveSmallIntegerField(default=0)
     created_at = models.DateTimeField(default=timezone.now)
     expires_at = models.DateTimeField(blank=True, null=True)
     used_at = models.DateTimeField(blank=True, null=True)

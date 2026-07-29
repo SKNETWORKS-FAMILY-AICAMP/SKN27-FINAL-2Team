@@ -10,6 +10,7 @@ from typing import Any
 import psycopg2
 from dotenv import load_dotenv
 from openai import OpenAI
+from psycopg2.extensions import connection as PsycopgConnection
 from psycopg2.extras import RealDictCursor
 
 from .korean_tokenizer import mecab_search_tokens
@@ -53,13 +54,22 @@ def load_env() -> None:
     load_dotenv(PROJECT_ROOT / ".env")
 
 
-def connect_db():
+def connect_db() -> PsycopgConnection:
+    connection_options: dict[str, object] = {
+        "host": os.environ["POSTGRES_HOST"],
+        "port": int(os.environ["POSTGRES_PORT"]),
+        "dbname": os.environ["POSTGRES_DB"],
+        "user": os.environ["POSTGRES_USER"],
+        "password": os.environ["POSTGRES_PASSWORD"],
+        "connect_timeout": int(os.environ["POSTGRES_CONNECT_TIMEOUT_SECONDS"]),
+        "sslmode": os.environ["POSTGRES_SSLMODE"],
+    }
+    ssl_root_certificate = os.getenv("POSTGRES_SSLROOTCERT", "").strip()
+    if ssl_root_certificate:
+        connection_options["sslrootcert"] = ssl_root_certificate
+
     return psycopg2.connect(
-        host=os.getenv("POSTGRES_HOST", "localhost"),
-        port=int(os.getenv("POSTGRES_PORT", "5432")),
-        dbname=os.getenv("POSTGRES_DB", "history_rag"),
-        user=os.getenv("POSTGRES_USER", "himate"),
-        password=os.getenv("POSTGRES_PASSWORD", "himate1234"),
+        **connection_options,
     )
 
 

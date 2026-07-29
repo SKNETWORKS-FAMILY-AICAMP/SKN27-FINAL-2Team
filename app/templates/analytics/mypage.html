@@ -23,7 +23,10 @@
     </nav>
     <nav class="header-actions" aria-label="계정 메뉴">
       <a class="outline-button" href="{% url 'user:profile_edit' %}">정보 수정</a>
-      <a class="ghost-button" href="{% url 'user:logout' %}">로그아웃</a>
+      <form class="logout-form" method="post" action="{% url 'user:logout' %}">
+        {% csrf_token %}
+        <button class="ghost-button" type="submit">로그아웃</button>
+      </form>
     </nav>
   </header>
 

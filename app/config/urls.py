@@ -18,10 +18,11 @@ from django.contrib import admin
 from django.urls import include, path
 from django.views.generic.base import RedirectView
 
-from config.health import health_check
+from config.health import health_check, liveness
 
 urlpatterns = [
     path('health/', health_check, name='health'),
+    path('health/live/', liveness, name='liveness'),
     path('favicon.ico', RedirectView.as_view(url='/static/images/favicon.png', permanent=True)),
     path('', include('pages.urls')),
     path('admin/', admin.site.urls),

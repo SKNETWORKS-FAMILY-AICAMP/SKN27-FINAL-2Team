@@ -19,6 +19,32 @@ from dotenv import load_dotenv
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR.parent / '.env')
 
+
+def load_secrets_file() -> None:
+    """비밀값을 컨테이너 환경변수 대신 파일에서 읽어 os.environ 에 채운다.
+
+    --env-file 로 넘긴 비밀값은 docker inspect 의 Config.Env 에 남아 root·
+    docker 그룹 사용자에게 노출된다. SECRETS_FILE 가 가리키는 read-only
+    마운트 파일에서 읽으면 inspect 출력에는 경로만 남는다. 이미 설정된
+    환경변수가 우선하도록 setdefault 를 쓴다.
+    """
+    secrets_path = os.getenv('SECRETS_FILE')
+    if not secrets_path:
+        return
+
+    with open(secrets_path, encoding='utf-8') as secrets_stream:
+        for raw_line in secrets_stream:
+            line = raw_line.rstrip('\r\n')
+            if not line or line.startswith('#') or '=' not in line:
+                continue
+            key, _, value = line.partition('=')
+            normalized_key = key.strip()
+            if normalized_key:
+                os.environ.setdefault(normalized_key, value)
+
+
+load_secrets_file()
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
@@ -47,28 +73,31 @@ CSRF_TRUSTED_ORIGINS = [
     if origin.strip()
 ]
 
+def env_bool(name: str, default: bool) -> bool:
+    return os.getenv(name, "true" if default else "false").lower() == "true"
+
+
 SECURE_PROXY_SSL_HEADER = None
-if os.getenv("DJANGO_TRUST_X_FORWARDED_PROTO", "false").lower() == "true":
+if env_bool("DJANGO_TRUST_X_FORWARDED_PROTO", False):
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
-SECURE_SSL_REDIRECT = (
-    os.getenv("DJANGO_SECURE_SSL_REDIRECT", "false").lower() == "true"
+# 보안 기본값은 운영(DEBUG=False)에서 켜진 상태가 되도록 DEBUG 반대값을 쓴다.
+# 로컬 개발(DEBUG=True)은 http 라 기본이 꺼져 있고, 필요하면 env 로 개별 조정한다.
+secure_default = not DEBUG
+SECURE_SSL_REDIRECT = env_bool("DJANGO_SECURE_SSL_REDIRECT", secure_default)
+# 헬스체크는 내부 http 로 들어오므로 https 강제 리다이렉트에서 제외한다.
+SECURE_REDIRECT_EXEMPT = [r"^health/"]
+SESSION_COOKIE_SECURE = env_bool("DJANGO_SESSION_COOKIE_SECURE", secure_default)
+CSRF_COOKIE_SECURE = env_bool("DJANGO_CSRF_COOKIE_SECURE", secure_default)
+# 운영 기본 1년. 서브도메인·preload 는 되돌리기 어려워 opt-in 으로 남긴다.
+default_hsts_seconds = 31536000 if secure_default else 0
+SECURE_HSTS_SECONDS = int(
+    os.getenv("DJANGO_SECURE_HSTS_SECONDS", str(default_hsts_seconds))
 )
-SECURE_REDIRECT_EXEMPT = [r"^health/$"]
-SESSION_COOKIE_SECURE = (
-    os.getenv("DJANGO_SESSION_COOKIE_SECURE", "false").lower() == "true"
+SECURE_HSTS_INCLUDE_SUBDOMAINS = env_bool(
+    "DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS", False
 )
-CSRF_COOKIE_SECURE = (
-    os.getenv("DJANGO_CSRF_COOKIE_SECURE", "false").lower() == "true"
-)
-SECURE_HSTS_SECONDS = int(os.getenv("DJANGO_SECURE_HSTS_SECONDS", "0"))
-SECURE_HSTS_INCLUDE_SUBDOMAINS = (
-    os.getenv("DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS", "false").lower()
-    == "true"
-)
-SECURE_HSTS_PRELOAD = (
-    os.getenv("DJANGO_SECURE_HSTS_PRELOAD", "false").lower() == "true"
-)
+SECURE_HSTS_PRELOAD = env_bool("DJANGO_SECURE_HSTS_PRELOAD", False)
 
 # Application definition
 
@@ -126,14 +155,24 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('POSTGRES_DB', 'history_rag'),
-        'USER': os.getenv('POSTGRES_USER', 'himate'),
-        'PASSWORD': os.getenv('POSTGRES_PASSWORD', 'himate1234'),
+        'NAME': os.environ['POSTGRES_DB'],
+        'USER': os.environ['POSTGRES_USER'],
+        # 기본값을 두지 않는다. 미주입 시 약한 고정 계정으로 붙는 것을 막기 위해
+        # 환경변수가 없으면 기동 단계에서 실패시킨다.
+        'PASSWORD': os.environ['POSTGRES_PASSWORD'],
         'HOST': os.getenv('POSTGRES_HOST', 'localhost'),
         'PORT': os.getenv('POSTGRES_PORT', '5432'),
         'OPTIONS': {
             'connect_timeout': int(
                 os.getenv('POSTGRES_CONNECT_TIMEOUT_SECONDS', '5')
+            ),
+            'sslmode': os.getenv('POSTGRES_SSLMODE', 'prefer'),
+            **(
+                {
+                    'sslrootcert': os.environ['POSTGRES_SSLROOTCERT'],
+                }
+                if os.getenv('POSTGRES_SSLROOTCERT')
+                else {}
             ),
         },
     }
@@ -191,6 +230,30 @@ STORAGES = {
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# 워커 간 공유가 필요한 레이트리밋·헬스 캐시용.
+# Redis 없이 기존 Postgres 에 캐시 테이블(himate_cache)을 둔다.
+# LocMemCache 와 달리 gunicorn 워커 전체가 같은 카운터를 본다.
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'himate_cache',
+    },
+}
+
+# DRF 기본 권한을 인증 필수로 둔다. 게스트 공개 엔드포인트만 뷰에서
+# @permission_classes([AllowAny]) 로 명시적으로 연다. 이렇게 하면 새 API 가
+# 권한을 빠뜨려도 기본이 차단이라 안전하다.
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+    # 미인증 요청을 403 대신 401 로 반환해 프런트의 로그인 유도와 맞춘다.
+    'EXCEPTION_HANDLER': 'config.drf.api_exception_handler',
+}
 
 AUTHENTICATION_BACKENDS = [
     'user.backends.UserAccountsBackend',

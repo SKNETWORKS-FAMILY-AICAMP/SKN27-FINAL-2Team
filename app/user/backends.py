@@ -1,6 +1,8 @@
 from datetime import timedelta
 
-from django.contrib.auth.hashers import check_password
+from django.contrib.auth.hashers import check_password, make_password
+from django.db.models import F
+from django.http import HttpRequest
 from django.utils import timezone
 
 from .models import UserAccounts
@@ -9,7 +11,14 @@ from .models import UserAccounts
 class UserAccountsBackend:
     """Authenticate against the existing user_accounts table."""
 
-    def authenticate(self, request, username=None, email=None, password=None, **kwargs):
+    def authenticate(
+        self,
+        request: HttpRequest | None,
+        username: str | None = None,
+        email: str | None = None,
+        password: str | None = None,
+        **kwargs: object,
+    ) -> UserAccounts | None:
         email = (email or username or "").strip().lower()
         if not email or not password:
             return None
@@ -17,8 +26,10 @@ class UserAccountsBackend:
         try:
             user = UserAccounts.objects.get(email=email, deleted_at__isnull=True)
         except UserAccounts.DoesNotExist:
+            make_password(password)
             return None
 
+        password_matches = check_password(password, user.password_hash)
         if user.is_locked:
             if user.locked_at and timezone.now() - user.locked_at > timedelta(minutes=30):
                 user.is_locked = False
@@ -31,14 +42,8 @@ class UserAccountsBackend:
         if user.status != "active":
             return None
 
-        if not check_password(password, user.password_hash):
-            user.login_fail_count = (user.login_fail_count or 0) + 1
-            update_fields = ["login_fail_count"]
-            if user.login_fail_count >= 5:
-                user.is_locked = True
-                user.locked_at = timezone.now()
-                update_fields.extend(["is_locked", "locked_at"])
-            user.save(update_fields=update_fields)
+        if not password_matches:
+            self._register_login_failure(user)
             return None
 
         if user.login_fail_count or user.is_locked:
@@ -49,7 +54,13 @@ class UserAccountsBackend:
 
         return user
 
-    def get_user(self, user_id):
+    def _register_login_failure(self, user: UserAccounts) -> None:
+        """실패 횟수는 기록하되 외부 요청만으로 계정을 잠그지는 않는다."""
+        UserAccounts.objects.filter(pk=user.pk).update(
+            login_fail_count=F("login_fail_count") + 1,
+        )
+
+    def get_user(self, user_id: int) -> UserAccounts | None:
         try:
             return UserAccounts.objects.get(user_id=user_id, deleted_at__isnull=True)
         except UserAccounts.DoesNotExist:

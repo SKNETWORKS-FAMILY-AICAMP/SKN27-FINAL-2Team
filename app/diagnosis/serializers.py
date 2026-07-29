@@ -14,12 +14,11 @@ class DiagnosisStartRequestSerializer(serializers.Serializer):
     )
 
 
-class ChoiceSerializer(serializers.Serializer):
+class ActiveChoiceSerializer(serializers.Serializer):
     choice_id = serializers.IntegerField()
     choice_no = serializers.IntegerField()   # 셔플 후 표시 번호
     content = serializers.CharField()
     choice_image_path = serializers.CharField(allow_blank=True, allow_null=True, required=False)
-    choice_explanation = serializers.CharField(allow_blank=True, allow_null=True, required=False)
 
 
 class DiagnosisQuestionSerializer(serializers.Serializer):
@@ -34,7 +33,7 @@ class DiagnosisQuestionSerializer(serializers.Serializer):
     topic = serializers.CharField()
     question_type = serializers.CharField()
     question_subtype = serializers.CharField(allow_blank=True, allow_null=True, required=False)
-    choices = ChoiceSerializer(many=True)
+    choices = ActiveChoiceSerializer(many=True)
 
 
 class DiagnosisStartResponseSerializer(serializers.Serializer):
@@ -101,6 +100,10 @@ class DiagnosisResultResponseSerializer(serializers.Serializer):
 
 # ── Explanation ────────────────────────────────────────────────────────────────
 
+class ExplanationChoiceSerializer(ActiveChoiceSerializer):
+    choice_explanation = serializers.CharField(allow_blank=True, allow_null=True, required=False)
+
+
 class DiagnosisExplanationResponseSerializer(serializers.Serializer):
     question_id = serializers.IntegerField()
     content = serializers.CharField()
@@ -117,7 +120,7 @@ class DiagnosisExplanationResponseSerializer(serializers.Serializer):
     answer_explanation = serializers.CharField(allow_null=True)
     core_concept = serializers.CharField(allow_blank=True, allow_null=True, required=False)
     time_spent_ms = serializers.IntegerField(allow_null=True, required=False)
-    choices = ChoiceSerializer(many=True)          # 원래 순서 (choice_no 기준)
+    choices = ExplanationChoiceSerializer(many=True)  # 원래 순서 (choice_no 기준)
     user_choice_no = serializers.IntegerField(allow_null=True)
     user_choice_id = serializers.IntegerField(allow_null=True, required=False)
     is_correct = serializers.BooleanField()

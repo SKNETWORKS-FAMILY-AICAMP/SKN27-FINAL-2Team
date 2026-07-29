@@ -144,6 +144,11 @@ a {
   gap: 10px !important;
 }
 
+.logout-form {
+  display: inline-flex;
+  margin: 0;
+}
+
 .pill-button,
 .ghost-button,
 .outline-button,

@@ -6,14 +6,19 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-from django.http import HttpResponse, JsonResponse, StreamingHttpResponse
 from django.contrib.auth.decorators import login_required
-from django.urls import reverse
+from django.core.cache import cache
+from django.db import connection, transaction
+from django.http import (
+    HttpRequest,
+    HttpResponse,
+    JsonResponse,
+    StreamingHttpResponse,
+)
 from django.shortcuts import render
+from django.urls import reverse
 from django.utils import timezone
-from django.db import transaction
-from django.views.decorators.http import require_GET
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_GET, require_POST
 
 from question.models import QuestionOptions, SolveRecords
 from user.views import build_session_display_map
@@ -23,6 +28,50 @@ from .rag_service import build_history_rag_answer, stream_concept_rag_answer, st
 
 
 logger = logging.getLogger(__name__)
+
+
+def _chat_request_blocked(
+    request: HttpRequest,
+    question: str,
+    history: list[object],
+) -> JsonResponse | None:
+    """챗봇 입력 크기와 사용자별 호출 빈도를 제한한다.
+
+    반환이 JsonResponse 면 그대로 응답하고 None 이면 통과. 공유 캐시
+    (DatabaseCache)라 gunicorn 워커 전체에 같은 한도가 적용된다.
+    """
+    maximum_question_chars = 2000
+    maximum_history_items = 20
+    maximum_history_chars = 12000
+    maximum_calls_per_window = 20
+    window_seconds = 60
+
+    if len(question) > maximum_question_chars:
+        return JsonResponse(
+            {"error": "질문이 너무 깁니다. 2000자 이내로 입력해 주세요."},
+            status=400,
+        )
+    if isinstance(history, list):
+        if len(history) > maximum_history_items:
+            return JsonResponse({"error": "대화 기록이 너무 깁니다."}, status=400)
+        if sum(len(str(item)) for item in history) > maximum_history_chars:
+            return JsonResponse({"error": "대화 기록이 너무 깁니다."}, status=400)
+
+    cache_key = f"chat-rate:{request.user.user_id}"
+    with transaction.atomic():
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT pg_advisory_xact_lock(hashtextextended(%s, 0))",
+                [cache_key],
+            )
+        call_count = cache.get(cache_key, 0)
+        if call_count >= maximum_calls_per_window:
+            return JsonResponse(
+                {"error": "요청이 너무 잦습니다. 잠시 후 다시 시도해 주세요."},
+                status=429,
+            )
+        cache.set(cache_key, call_count + 1, window_seconds)
+    return None
 
 
 def proxied_image_path(value: object) -> str:
@@ -122,6 +171,9 @@ def rag_chat_api(request):
     conversation_history = payload.get("conversation_history")
     if not isinstance(conversation_history, list):
         conversation_history = []
+    chat_block = _chat_request_blocked(request, question, conversation_history)
+    if chat_block is not None:
+        return chat_block
     try:
         problem_session_id = int(payload.get("problem_session_id"))
     except (TypeError, ValueError):
@@ -174,6 +226,9 @@ def rag_chat_stream_api(request):
     session_id = str(payload.get("session_id") or "").strip()
     display_question = str(payload.get("display_question") or question).strip()
     history = payload.get("conversation_history") if isinstance(payload.get("conversation_history"), list) else []
+    chat_block = _chat_request_blocked(request, question, history)
+    if chat_block is not None:
+        return chat_block
     try:
         problem_session_id = int(payload.get("problem_session_id"))
     except (TypeError, ValueError):
@@ -279,16 +334,39 @@ def solved_problem_options_api(request):
     return JsonResponse({"problems": problems}, json_dumps_params={"ensure_ascii": False})
 
 
+class _NoRedirectHandler(urllib.request.HTTPRedirectHandler):
+    """리다이렉트를 따라가지 않는다. 허용 호스트에 open redirect 가 있어도
+    내부 주소로 우회(SSRF)하지 못하게 막는다."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        return None
+
+
+def _is_allowed_image_url(url: str) -> bool:
+    parsed = urllib.parse.urlparse(url)
+    if parsed.scheme != "https" or parsed.netloc != "contents.history.go.kr":
+        return False
+
+    return parsed.path.startswith("/data/img/")
+
+
 @login_required
 @require_GET
 def image_proxy(request):
-    url = (request.GET.get("url") or "").strip()
-    parsed = urllib.parse.urlparse(url)
-    if parsed.scheme != "https" or parsed.netloc != "contents.history.go.kr":
-        return JsonResponse({"error": "허용되지 않은 이미지 URL입니다."}, status=400)
-    if not parsed.path.startswith("/data/img/"):
-        return JsonResponse({"error": "허용되지 않은 이미지 경로입니다."}, status=400)
+    maximum_bytes = 10 * 1024 * 1024
+    timeout_seconds = 15
+    allowed_content_types = {
+        "image/gif",
+        "image/jpeg",
+        "image/png",
+        "image/webp",
+    }
 
+    url = (request.GET.get("url") or "").strip()
+    if not _is_allowed_image_url(url):
+        return JsonResponse({"error": "허용되지 않은 이미지 URL입니다."}, status=400)
+
+    opener = urllib.request.build_opener(_NoRedirectHandler)
     try:
         req = urllib.request.Request(
             url,
@@ -297,11 +375,23 @@ def image_proxy(request):
                 "Referer": "https://contents.history.go.kr/",
             },
         )
-        with urllib.request.urlopen(req, timeout=45) as response:
-            content = response.read()
-            content_type = response.headers.get("Content-Type", "image/jpeg")
+        with opener.open(req, timeout=timeout_seconds) as response:
+            content_type = response.headers.get("Content-Type", "")
+            normalized_content_type = content_type.partition(";")[0].strip().lower()
+            if normalized_content_type not in allowed_content_types:
+                return JsonResponse({"error": "이미지가 아닌 응답입니다."}, status=502)
+            # 크기 상한을 두고 한도를 넘으면 중단해 메모리 고갈을 막는다.
+            content = response.read(maximum_bytes + 1)
+            if len(content) > maximum_bytes:
+                return JsonResponse({"error": "이미지 용량이 너무 큽니다."}, status=502)
+    except urllib.error.HTTPError as error:
+        # 리다이렉트(3xx)는 위 핸들러가 막아 여기서 오류로 떨어진다.
+        logger.warning("이미지 프록시 거부 status=%s", error.code)
+        return JsonResponse({"error": "이미지를 불러오지 못했습니다."}, status=502)
     except (urllib.error.URLError, TimeoutError):
         logger.exception("이미지 프록시 요청 실패")
         return JsonResponse({"error": "이미지를 불러오지 못했습니다."}, status=502)
 
-    return HttpResponse(content, content_type=content_type)
+    response = HttpResponse(content, content_type=normalized_content_type)
+    response["X-Content-Type-Options"] = "nosniff"
+    return response

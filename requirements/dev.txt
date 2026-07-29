@@ -1,10 +1,9 @@
 -r base.txt
 
 langchain-community==0.4.2
-langsmith
-ragas
+langsmith==0.10.1
+ragas==0.4.3
 kiwipiepy==0.23.2
-sentence-transformers==5.6.0
 
 jupyter==1.1.1
 pandas==3.0.3

@@ -8,7 +8,8 @@ from django.db import models, transaction
 from django.shortcuts import render
 from django.utils import timezone
 from rest_framework import status
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from analytics.service.analysis_snapshot import create_session_snapshot
@@ -259,7 +260,7 @@ def _display_choice_no(choices, choice_id):
 def _serialize_questions(questions, seed_key):
     serialized_questions = []
     for question in questions:
-        choices, answer_no, _options = _shuffled_choices_for_question(question, seed_key)
+        choices, _answer_no, _options = _shuffled_choices_for_question(question, seed_key)
         serialized_questions.append({
             "question_id": question.question_id,
             "content": question.content,
@@ -271,9 +272,6 @@ def _serialize_questions(questions, seed_key):
             "topic": question.topic,
             "question_type": question.question_type,
             "question_subtype": question.question_subtype,
-            "answer_no": answer_no,
-            "answer_explanation": question.answer_explanation,
-            "core_concept": question.core_concept,
             "choices": choices,
         })
     return serialized_questions
@@ -285,7 +283,7 @@ def _serialize_session_questions(records):
     serialized_questions = []
     for record in records:
         question = record.question
-        choices, answer_no, options = _shuffled_choices_for_question(
+        choices, _answer_no, options = _shuffled_choices_for_question(
             question,
             record.session_id,
         )
@@ -308,9 +306,6 @@ def _serialize_session_questions(records):
             "topic": question.topic,
             "question_type": question.question_type,
             "question_subtype": question.question_subtype,
-            "answer_no": answer_no,
-            "answer_explanation": question.answer_explanation,
-            "core_concept": question.core_concept,
             "choices": choices,
             "selected_choice_id": selected_choice_id,
             "selected_choice_no": _display_choice_no(choices, selected_choice_id),
@@ -624,6 +619,7 @@ def _score_counts_for_generation_mode(data):
 # - GET은 문제 생성 화면의 선택 조건 목록을 제공한다.
 # - POST는 생성 모드와 조건에 맞는 문제를 뽑아 풀이 세션을 만든다.
 @api_view(["GET"])
+@permission_classes([AllowAny])
 # 문제 생성 화면에서 사용할 필터 조건 목록을 제공한다.
 def question_filters(request):
     qs = _base_question_queryset()
@@ -645,6 +641,7 @@ def question_filters(request):
 
 
 @api_view(["POST"])
+@permission_classes([AllowAny])
 # 선택한 조건으로 문제를 생성한다.
 # 로그인 사용자는 풀이 세션을 DB에 저장하고, 비로그인 사용자는 오늘의 고정 10문항만 반환한다.
 def question_start(request):

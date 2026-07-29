@@ -11,10 +11,17 @@ case "${WEB_CONTAINER_PORT}" in
     ;;
 esac
 
-python app/manage.py collectstatic --noinput
-
 if [ "${1:-}" = "gunicorn" ]; then
-  set -- "$@" --bind "0.0.0.0:${WEB_CONTAINER_PORT}"
+  # 기본이 sync 1 worker 라 SSE 스트리밍이나 이미지 프록시 한 건이
+  # 전체 요청을 막을 수 있다. gthread 다중 워커로 동시성을 확보한다.
+  # 값은 인스턴스 사양에 맞춰 env 로 조정한다.
+  set -- "$@" \
+    --bind "0.0.0.0:${WEB_CONTAINER_PORT}" \
+    --worker-class "${GUNICORN_WORKER_CLASS:-gthread}" \
+    --workers "${GUNICORN_WORKERS:-3}" \
+    --threads "${GUNICORN_THREADS:-4}" \
+    --timeout "${GUNICORN_TIMEOUT:-120}" \
+    --graceful-timeout "${GUNICORN_GRACEFUL_TIMEOUT:-30}"
 fi
 
 exec "$@"

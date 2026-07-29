@@ -21,7 +21,10 @@
       <a class="active" href="/analytics/mypage/">나의 학습실</a>
     </nav>
     <nav class="header-actions" aria-label="계정 메뉴">
-      <a class="ghost-button" href="/user/logout/">로그아웃</a>
+      <form class="logout-form" method="post" action="{% url 'user:logout' %}">
+        {% csrf_token %}
+        <button class="ghost-button" type="submit">로그아웃</button>
+      </form>
     </nav>
   </header>
 
@@ -189,20 +192,48 @@
           questionImageZoom.dataset.image = questionImage.src;
           questionImageZoom.dataset.alt = "문항 자료 이미지";
           choiceReview.classList.toggle("has-image-choices", record.options.some((option) => option.choice_image_path));
-          choiceReview.innerHTML = record.options.map((option) => {
+          choiceReview.replaceChildren();
+          record.options.forEach((option) => {
             const classes = [
               option.choice_no === record.answer_no ? "correct" : "",
               option.choice_no === record.selected_no ? "selected" : "",
               option.choice_image_path ? "has-image" : "",
             ].filter(Boolean).join(" ");
-            const image = option.choice_image_path
-              ? `<img class="result-choice-image" src="${assetUrl(option.choice_image_path)}" alt="${option.choice_no}번 선택지 이미지">`
-              : "";
-            const zoom = option.choice_image_path
-              ? `<button type="button" class="result-choice-zoom" data-image="${assetUrl(option.choice_image_path)}" data-alt="${option.choice_no}번 선택지 이미지" aria-label="${option.choice_no}번 선택지 이미지 확대"><img src="/static/images/zoom-in.png" alt=""></button>`
-              : "";
-            return `<li class="${classes}"><span>${option.choice_no}</span><div>${image}<b>${option.content}</b></div>${zoom}</li>`;
-          }).join("");
+            const item = document.createElement("li");
+            item.className = classes;
+
+            const number = document.createElement("span");
+            number.textContent = option.choice_no;
+            item.append(number);
+
+            const content = document.createElement("div");
+            if (option.choice_image_path) {
+              const image = document.createElement("img");
+              image.className = "result-choice-image";
+              image.src = assetUrl(option.choice_image_path);
+              image.alt = `${option.choice_no}번 선택지 이미지`;
+              content.append(image);
+            }
+            const text = document.createElement("b");
+            text.textContent = option.content;
+            content.append(text);
+            item.append(content);
+
+            if (option.choice_image_path) {
+              const zoom = document.createElement("button");
+              zoom.type = "button";
+              zoom.className = "result-choice-zoom";
+              zoom.dataset.image = assetUrl(option.choice_image_path);
+              zoom.dataset.alt = `${option.choice_no}번 선택지 이미지`;
+              zoom.setAttribute("aria-label", `${option.choice_no}번 선택지 이미지 확대`);
+              const icon = document.createElement("img");
+              icon.src = "/static/images/zoom-in.png";
+              icon.alt = "";
+              zoom.append(icon);
+              item.append(zoom);
+            }
+            choiceReview.append(item);
+          });
           explanation.textContent = record.answer_explanation || "해설이 등록되지 않았습니다.";
           choiceExplanation.textContent = selectedOption?.choice_explanation || "선택지별 해설이 등록되지 않았습니다.";
           coreConcept.textContent = record.core_concept || "핵심 개념이 등록되지 않았습니다.";

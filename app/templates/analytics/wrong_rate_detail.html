@@ -20,7 +20,10 @@
       <a class="active" href="{% url 'analytics:mypage' %}">나의 학습실</a>
     </nav>
     <nav class="header-actions" aria-label="계정 메뉴">
-      <a class="ghost-button" href="{% url 'user:logout' %}">로그아웃</a>
+      <form class="logout-form" method="post" action="{% url 'user:logout' %}">
+        {% csrf_token %}
+        <button class="ghost-button" type="submit">로그아웃</button>
+      </form>
     </nav>
   </header>
 

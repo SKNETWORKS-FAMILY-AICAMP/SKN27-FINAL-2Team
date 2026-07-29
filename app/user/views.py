@@ -1,5 +1,6 @@
 import json
 import random
+import secrets
 import smtplib
 from collections import defaultdict
 from datetime import date
@@ -8,11 +9,15 @@ from datetime import timedelta
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.hashers import make_password
+from django.contrib.auth.hashers import check_password, make_password
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
+from django.db import connection, transaction
 from django.http import JsonResponse
-from django.shortcuts import redirect, render
 from django.utils import timezone
+from django.shortcuts import redirect, render
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 
 from analytics.models import StudyPlanMypage
@@ -120,16 +125,29 @@ def build_session_display_map(user, sessions):
     return display_map
 
 
+def _safe_next_url(request, raw_next: str) -> str:
+    """오픈 리다이렉트 방지. 같은 호스트의 상대 경로만 허용한다."""
+    default_url = "/analytics/mypage/"
+    if raw_next and url_has_allowed_host_and_scheme(
+        raw_next,
+        allowed_hosts={request.get_host()},
+        require_https=request.is_secure(),
+    ):
+        return raw_next
+
+    return default_url
+
+
 def login_page(request):
     if request.method == "POST":
         email = (request.POST.get("email") or "").strip().lower()
         password = request.POST.get("password") or ""
         remember = request.POST.get("remember")
-        next_url = request.GET.get("next") or "/analytics/mypage/"
+        next_url = _safe_next_url(request, request.GET.get("next") or "")
 
         user = authenticate(request, email=email, password=password)
         if user is None:
-            messages.error(request, "이메일 또는 비밀번호를 확인해 주세요. 5회 실패 시 30분간 잠깁니다.")
+            messages.error(request, "이메일 또는 비밀번호를 확인해 주세요.")
         else:
             login(request, user)
             if not remember:
@@ -140,6 +158,21 @@ def login_page(request):
     return render(request, "user/login.html")
 
 
+def _password_validation_error(password: str, email: str, nickname: str) -> str:
+    """AUTH_PASSWORD_VALIDATORS 로 비밀번호를 검증하고, 위반 시 안내 문구를 만든다.
+
+    통과하면 빈 문자열을 돌려준다. 사용자 속성(이메일·닉네임)과의 유사도
+    검증을 위해 아직 저장 전인 임시 UserAccounts 인스턴스를 넘긴다.
+    """
+    candidate_user = UserAccounts(email=email, nickname=nickname)
+    try:
+        validate_password(password, user=candidate_user)
+    except ValidationError as error:
+        return " ".join(error.messages)
+
+    return ""
+
+
 def register_page(request):
     if request.method == "POST":
         email = (request.POST.get("email") or "").strip().lower()
@@ -147,21 +180,53 @@ def register_page(request):
         password = request.POST.get("password") or ""
         password_confirm = request.POST.get("password_confirm") or ""
         code = (request.POST.get("verification_code") or "").strip()
+        password_error = _password_validation_error(password, email, nickname)
 
         if not email or not nickname or not password or not password_confirm:
             messages.error(request, "이메일, 닉네임, 비밀번호를 모두 입력해 주세요.")
+            return render(request, "user/register.html")
         elif len(nickname) > 30:
             messages.error(request, "닉네임은 30자 이내로 입력해 주세요.")
+            return render(request, "user/register.html")
         elif UserAccounts.objects.filter(nickname=nickname, deleted_at__isnull=True).exists():
             messages.error(request, "이미 사용 중인 닉네임입니다.")
+            return render(request, "user/register.html")
         elif password != password_confirm:
             messages.error(request, "비밀번호 확인이 일치하지 않습니다.")
+            return render(request, "user/register.html")
         elif UserAccounts.objects.filter(email=email, deleted_at__isnull=True).exists():
             messages.error(request, "이미 가입된 이메일입니다.")
-        elif not _is_valid_verification_code(email, code):
+            return render(request, "user/register.html")
+        elif password_error:
+            messages.error(request, password_error)
+            return render(request, "user/register.html")
+
+        verification, attempt_exceeded = _check_verification_code(email, code)
+        if attempt_exceeded:
+            messages.error(request, "인증 시도가 많습니다. 잠시 후 다시 시도해 주세요.")
+            return render(request, "user/register.html")
+        elif verification is None:
             messages.error(request, "이메일 인증번호가 올바르지 않거나 만료되었습니다.")
-        else:
-            now = timezone.now()
+            return render(request, "user/register.html")
+
+        now = timezone.now()
+        with transaction.atomic():
+            locked_verification = (
+                EmailVerificationCode.objects.select_for_update()
+                .filter(
+                    pk=verification.pk,
+                    is_used=False,
+                    expires_at__gt=now,
+                )
+                .first()
+            )
+            if locked_verification is None:
+                messages.error(
+                    request,
+                    "이메일 인증번호가 이미 사용되었거나 만료되었습니다.",
+                )
+                return render(request, "user/register.html")
+
             user = UserAccounts.objects.create(
                 email=email,
                 password_hash=make_password(password),
@@ -174,12 +239,35 @@ def register_page(request):
                 updated_at=now,
                 deleted_at=None,
             )
-            _consume_verification_code(email, code)
-            login(request, user, backend="user.backends.UserAccountsBackend")
-            messages.success(request, "회원가입과 이메일 인증이 완료되었습니다.")
-            return redirect("/analytics/mypage/")
+            locked_verification.mark_used()
+        login(request, user, backend="user.backends.UserAccountsBackend")
+        messages.success(request, "회원가입과 이메일 인증이 완료되었습니다.")
+        return redirect("/analytics/mypage/")
 
     return render(request, "user/register.html")
+
+
+def _verification_send_rate_limit_message(email: str, now) -> str:
+    """같은 이메일로 인증번호를 너무 자주·많이 보내는 것을 막는다.
+
+    DB 의 발급 이력(created_at)을 세므로 gunicorn 워커가 여러 개여도 함께
+    적용된다. 통과하면 빈 문자열을 돌려준다.
+    """
+    resend_cooldown_seconds = 60
+    hourly_limit = 5
+    recent_codes = EmailVerificationCode.objects.filter(
+        email=email,
+        purpose="register",
+        created_at__gt=now - timedelta(hours=1),
+    )
+    if recent_codes.filter(
+        created_at__gt=now - timedelta(seconds=resend_cooldown_seconds),
+    ).exists():
+        return "인증번호는 1분에 한 번만 보낼 수 있습니다. 잠시 후 다시 시도해 주세요."
+    if recent_codes.count() >= hourly_limit:
+        return "인증번호 발송 횟수가 많습니다. 1시간 후 다시 시도해 주세요."
+
+    return ""
 
 
 @require_POST
@@ -188,23 +276,37 @@ def send_verification_code(request):
     if not email:
         return JsonResponse({"ok": False, "message": "이메일을 입력해 주세요."}, status=400)
 
+    sent_message = "인증번호를 발송했습니다. 5분 안에 입력해 주세요."
+    # 가입 여부를 응답으로 구분할 수 없게 한다(계정 존재 여부 열거 방지).
+    # 이미 가입된 이메일이면 실제 발송 없이 같은 성공 문구만 돌려준다.
     if UserAccounts.objects.filter(email=email, deleted_at__isnull=True).exists():
-        return JsonResponse({"ok": False, "message": "이미 가입된 이메일입니다."}, status=400)
+        return JsonResponse({"ok": True, "message": sent_message})
 
     now = timezone.now()
-    code = f"{random.randint(0, 999999):06d}"
-    EmailVerificationCode.objects.filter(
-        email=email,
-        purpose="register",
-        is_used=False,
-    ).update(is_used=True, used_at=now)
-    verification = EmailVerificationCode.objects.create(
-        email=email,
-        code=code,
-        purpose="register",
-        created_at=now,
-        expires_at=now + timedelta(minutes=5),
-    )
+    code = f"{secrets.randbelow(1000000):06d}"
+    with transaction.atomic():
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT pg_advisory_xact_lock(hashtextextended(%s, 0))",
+                [f"email-verification:{email}"],
+            )
+
+        rate_limit_message = _verification_send_rate_limit_message(email, now)
+        if rate_limit_message:
+            return JsonResponse({"ok": False, "message": rate_limit_message}, status=429)
+
+        EmailVerificationCode.objects.filter(
+            email=email,
+            purpose="register",
+            is_used=False,
+        ).update(is_used=True, used_at=now)
+        verification = EmailVerificationCode.objects.create(
+            email=email,
+            code=make_password(code),
+            purpose="register",
+            created_at=now,
+            expires_at=now + timedelta(minutes=5),
+        )
 
     try:
         send_mail(
@@ -233,7 +335,7 @@ def send_verification_code(request):
             status=502,
         )
 
-    return JsonResponse({"ok": True, "message": "인증번호를 발송했습니다. 5분 안에 입력해 주세요."})
+    return JsonResponse({"ok": True, "message": sent_message})
 
 
 @require_POST
@@ -252,7 +354,13 @@ def check_nickname(request):
 def verify_verification_code(request):
     email = _extract_email(request)
     code = _extract_code(request)
-    if _is_valid_verification_code(email, code):
+    verification, attempt_exceeded = _check_verification_code(email, code)
+    if attempt_exceeded:
+        return JsonResponse(
+            {"ok": False, "message": "인증 시도가 많습니다. 잠시 후 다시 시도해 주세요."},
+            status=429,
+        )
+    elif verification is not None:
         return JsonResponse({"ok": True, "message": "이메일 인증이 확인되었습니다."})
     return JsonResponse(
         {"ok": False, "message": "인증번호가 올바르지 않거나 만료되었습니다."},
@@ -260,6 +368,7 @@ def verify_verification_code(request):
     )
 
 
+@require_POST
 def logout_page(request):
     logout(request)
     messages.success(request, "로그아웃되었습니다.")
@@ -579,25 +688,34 @@ def _extract_nickname(request):
     return (request.POST.get("nickname") or "").strip()
 
 
-def _is_valid_verification_code(email, code):
+def _check_verification_code(
+    email: str,
+    code: str,
+) -> tuple[EmailVerificationCode | None, bool]:
+    """인증코드를 검사하고 실패 횟수를 DB에 원자적으로 기록한다."""
     if not email or not code:
-        return False
-    return EmailVerificationCode.objects.filter(
-        email=email,
-        code=code,
-        purpose="register",
-        is_used=False,
-        expires_at__gt=timezone.now(),
-    ).exists()
+        return None, False
 
+    maximum_attempts = 10
+    with transaction.atomic():
+        verification = (
+            EmailVerificationCode.objects.select_for_update()
+            .filter(
+                email=email,
+                purpose="register",
+                is_used=False,
+                expires_at__gt=timezone.now(),
+            )
+            .order_by("-created_at")
+            .first()
+        )
+        if verification is None:
+            return None, False
+        elif verification.attempt_count >= maximum_attempts:
+            return None, True
+        elif check_password(code, verification.code):
+            return verification, False
 
-def _consume_verification_code(email, code):
-    verification = EmailVerificationCode.objects.filter(
-        email=email,
-        code=code,
-        purpose="register",
-        is_used=False,
-        expires_at__gt=timezone.now(),
-    ).order_by("-created_at").first()
-    if verification:
-        verification.mark_used()
+        verification.attempt_count += 1
+        verification.save(update_fields=["attempt_count"])
+        return None, verification.attempt_count >= maximum_attempts
