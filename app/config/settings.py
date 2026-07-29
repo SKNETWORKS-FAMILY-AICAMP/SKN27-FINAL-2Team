@@ -141,7 +141,7 @@ DATABASES = {
         'CONN_MAX_AGE': int(os.getenv('POSTGRES_CONN_MAX_AGE', '0')),
         'OPTIONS': {
             'connect_timeout': int(
-                os.getenv('POSTGRES_CONNECT_TIMEOUT_SECONDS', '5')
+                os.getenv('POSTGRES_CONNECT_TIMEOUT_SECONDS', '30')
             ),
             'sslmode': os.getenv('POSTGRES_SSLMODE', 'prefer'),
             **(
