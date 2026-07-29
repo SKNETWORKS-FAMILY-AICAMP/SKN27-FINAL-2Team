@@ -610,7 +610,7 @@
               submitChatQuestion(
                 buildProblemCustomQuestion(problem, customQuestion),
                 customQuestion,
-                { intent: "question", historyContext: customQuestion, problemSessionId: problem.session_id, problemRecordId: problem.record_id },
+                { intent: "question", historyContext: customQuestion, problemSessionId: problem.session_id, problemRecordId: problem.record_id, foundationExplanation: problem.foundation_explanation === true },
               );
               inlineInput.value = "";
             };
@@ -629,7 +629,7 @@
           submitChatQuestion(
             buildProblemContext(problem, fixedProblemSolvePrompt()),
             "문제 풀이보기",
-            { intent: "question", historyContext: "문제 풀이보기", problemSessionId: problem.session_id, problemRecordId: problem.record_id, problemImagePath: problem.question_image_path || problem.questionImagePath },
+            { intent: "question", historyContext: "문제 풀이보기", problemSessionId: problem.session_id, problemRecordId: problem.record_id, problemImagePath: problem.question_image_path || problem.questionImagePath, foundationExplanation: problem.foundation_explanation === true },
           );
         });
       });

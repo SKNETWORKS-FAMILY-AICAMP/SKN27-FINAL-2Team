@@ -2149,7 +2149,7 @@ main > *:not(.page-title):not(.hero):not(.cta-section)
 
   .exam-page .choice-list.visual-image-choices .choice-image {
     width: calc(100% - 38px) !important;
-    max-height: 120px !important;
+    max-height: 140px !important;
   }
 }
 

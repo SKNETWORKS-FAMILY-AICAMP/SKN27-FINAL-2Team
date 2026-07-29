@@ -676,6 +676,7 @@
         is_correct: question.isCorrect,
         answer_explanation: question.answerExplanation || "",
         core_concept: question.coreConcept || "",
+        foundation_explanation: RESULT_MODE === "diagnostic" && Number(resultPayload?.totalScore || 0) < 60,
         options: (question.choices || []).map((choice) => ({
           choice_no: choice.choiceNo,
           content: choice.content,

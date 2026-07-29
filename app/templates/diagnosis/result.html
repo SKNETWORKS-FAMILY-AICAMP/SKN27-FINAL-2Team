@@ -293,6 +293,7 @@
         is_correct: exp.is_correct,
         answer_explanation: exp.answer_explanation || "",
         core_concept: exp.core_concept || "",
+        foundation_explanation: Number(resultData?.total_score || 0) < 60,
         options: (exp.choices || []).map((choice) => ({
           choice_no: choice.choice_no,
           content: choice.content,
