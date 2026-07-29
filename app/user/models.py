@@ -5,7 +5,8 @@ from django.utils import timezone
 class UserAccounts(models.Model):
     user_id = models.BigAutoField(primary_key=True)
     email = models.CharField(max_length=255, unique=True)
-    password_hash = models.CharField(max_length=255)
+    # 소셜 로그인 사용자는 비밀번호가 없으므로 null 허용.
+    password_hash = models.CharField(max_length=255, blank=True, null=True)
     nickname = models.CharField(max_length=50, blank=True, null=True)
     login_fail_count = models.IntegerField(default=0)
     is_locked = models.BooleanField(default=False)
@@ -21,6 +22,9 @@ class UserAccounts(models.Model):
         default=1.0,
     )
     exam_date = models.DateField(blank=True, null=True)
+    # 소셜 로그인 식별. (provider, provider_id) 조합으로 계정을 찾는다.
+    provider = models.CharField(max_length=20, blank=True, null=True)
+    provider_id = models.CharField(max_length=255, blank=True, null=True)
 
     class Meta:
         managed = False

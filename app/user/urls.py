@@ -1,6 +1,6 @@
 from django.urls import path
 
-from . import views
+from . import oauth, views
 
 
 app_name = "user"
@@ -8,10 +8,8 @@ app_name = "user"
 urlpatterns = [
     path("login/", views.login_page, name="login"),
     path("logout/", views.logout_page, name="logout"),
-    path("register/", views.register_page, name="register"),
-    path("send-verification-code/", views.send_verification_code, name="send_verification_code"),
-    path("verify-verification-code/", views.verify_verification_code, name="verify_verification_code"),
-    path("check-nickname/", views.check_nickname, name="check_nickname"),
+    path("oauth/<str:provider>/login/", oauth.oauth_login, name="oauth_login"),
+    path("oauth/<str:provider>/callback/", oauth.oauth_callback, name="oauth_callback"),
     path("profile/edit/", views.profile_edit, name="profile_edit"),
     path("solved-problems/", views.solved_problems, name="solved_problems"),
     path("wrong-note/", views.wrong_note, name="wrong_note"),

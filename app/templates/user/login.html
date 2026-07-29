@@ -31,7 +31,7 @@
 
         <div class="login-heading">
           <h1>로그인</h1>
-          <p>이메일 아이디로 로그인하고 학습을 이어가세요.</p>
+          <p>소셜 계정으로 간편하게 시작하세요.</p>
         </div>
 
         {% if messages %}
@@ -41,33 +41,18 @@
             {% endif %}
           {% endfor %}
         {% endif %}
+        {% if request.GET.error %}
+          <p class="auth-message warn">로그인에 실패했어요. 다시 시도해 주세요.</p>
+        {% endif %}
 
-        <form class="login-form" action="#" method="post">
-          {% csrf_token %}
-          <label class="field">
-            <span>이메일 아이디</span>
-            <input type="email" name="email" autocomplete="email" placeholder="example@email.com" required />
-          </label>
-
-          <label class="field">
-            <span>비밀번호</span>
-            <input type="password" name="password" autocomplete="current-password" placeholder="비밀번호를 입력하세요" required />
-          </label>
-
-          <div class="form-row">
-            <label class="remember">
-              <input type="checkbox" name="remember" />
-              <span>로그인 상태 유지</span>
-            </label>
-            <a class="find-link" href="#">비밀번호 찾기</a>
-          </div>
-
-          <button class="login-button" type="submit">로그인</button>
-
-          <div class="divider"><span>아직 회원이 아니신가요?</span></div>
-
-          <a class="signup-button" href="/user/register/">회원가입</a>
-        </form>
+        <div class="social-login">
+          <a class="social-button" href="/user/oauth/google/login/"
+             style="display:flex;align-items:center;justify-content:center;gap:8px;height:48px;border-radius:8px;margin-bottom:10px;font-weight:600;text-decoration:none;background:#fff;color:#333;border:1px solid #dadce0;">Google로 계속하기</a>
+          <a class="social-button" href="/user/oauth/kakao/login/"
+             style="display:flex;align-items:center;justify-content:center;gap:8px;height:48px;border-radius:8px;margin-bottom:10px;font-weight:600;text-decoration:none;background:#FEE500;color:#191600;">카카오로 계속하기</a>
+          <a class="social-button" href="/user/oauth/naver/login/"
+             style="display:flex;align-items:center;justify-content:center;gap:8px;height:48px;border-radius:8px;font-weight:600;text-decoration:none;background:#03C75A;color:#fff;">네이버로 계속하기</a>
+        </div>
       </div>
 
       
