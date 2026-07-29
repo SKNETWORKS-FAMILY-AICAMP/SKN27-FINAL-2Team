@@ -37,22 +37,25 @@ GitHub Actions는 `dev`, `main` push와 Pull Request에서 다음 항목만 검�
 
 ```text
 Route53 → Elastic IP → Public EC2 / ECS on EC2
-                         ├─ Nginx HTTPS → Gunicorn/Django
-                         └─ Neo4j Community + EBS
+                         └─ Nginx HTTPS → Gunicorn/Django
 
 Django → Private Aurora PostgreSQL Serverless v2
+Django → Main Neo4j AuraDB Free
 CodePipeline → CodeBuild → ECR → ECS Standard Deploy
-EventBridge → RunPod Serverless
+
+문제 생성 배치(추가 구축)
+EventBridge → 임시 Fact EC2/ECS → Fact Neo4j → RunPod Serverless → EC2 중지
 ```
 
-- ALB와 NAT Gateway 없이 단일 EC2로 비용 절감
+- ALB와 NAT Gateway 없이 단일 Web EC2로 비용 절감
 - ECS Task는 `bridge` 네트워크 사용
 - 앱·Nginx 이미지는 Git commit SHA immutable tag와 digest로 배포
 - ECR Basic scan on push 결과로 취약점 gate 적용
 - Parameter Store 값을 ECS secret 환경변수로 주입
 - Nginx와 Django는 비루트, read-only root filesystem으로 실행
 - Nginx HTTPS 인증서는 EC2 Certbot이 자동 갱신
-- Neo4j 데이터는 별도 EBS에 저장
+- 챗봇용 Main Neo4j는 AuraDB Free에서 상시 운영
+- 문제 생성용 Fact Neo4j는 별도 임시 EC2에서만 실행
 
 상세 설정과 적용 순서는
 [deployment/ecs/README.md](deployment/ecs/README.md)를 참고하세요.
