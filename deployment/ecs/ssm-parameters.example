@@ -1,39 +1,45 @@
-# EC2의 EC2_WEB_ENV_FILE 경로에 복사한 뒤 실제 값으로 변경합니다.
-# 비밀값은 이 파일에 넣지 않고 SSM Parameter Store SecureString으로 관리합니다.
-# EC2_WEB_SSM_PARAMETER_PREFIX가 /himate/prod라면 다음 이름으로 생성합니다.
-# /himate/prod/POSTGRES_PASSWORD
-# /himate/prod/NEO4J_PASSWORD
-# /himate/prod/OPENAI_API_KEY
-# /himate/prod/DJANGO_SECRET_KEY
-# /himate/prod/EMAIL_HOST_PASSWORD
+# 같은 리전의 Parameter Store에 /himate/prod/<변수명>으로 생성합니다.
+# 비밀번호·API 키·DJANGO_SECRET_KEY·NEO4J_AUTH는 SecureString을 사용합니다.
+# RunPod 항목은 EventBridge 대상 구현에서 필요할 때만 사용하고 Web Task에는
+# 주입하지 않습니다.
 
 POSTGRES_DB=replace_with_database_name
-POSTGRES_HOST=replace_with_reachable_database_host
+POSTGRES_HOST=replace_with_aurora_cluster_endpoint
 POSTGRES_USER=replace_with_database_user
+POSTGRES_PASSWORD=replace_with_secure_password
 POSTGRES_PORT=5432
 POSTGRES_CONNECT_TIMEOUT_SECONDS=5
+POSTGRES_CONN_MAX_AGE=0
 POSTGRES_SSLMODE=verify-full
 POSTGRES_SSLROOTCERT=/etc/ssl/certs/aws-rds-global-bundle.pem
 POSTGRES_REQUIRED_TABLES=user_accounts,questions,question_options,exam_data,chat_sessions,chat_messages,solve_sessions,solve_records,analytics,note_mypage,study_plan_mypage,email_verification_codes,ml_trend_top5
 
-NEO4J_URI=bolt+s://replace_with_reachable_neo4j_host:7687
+NEO4J_URI=bolt://replace_with_ec2_private_ipv4:7687
 NEO4J_USER=neo4j
+NEO4J_PASSWORD=replace_with_secure_password
+NEO4J_AUTH=neo4j/replace_with_the_same_secure_password
 NEO4J_CONNECT_TIMEOUT_SECONDS=3
 
 EMBEDDING_MODEL=text-embedding-3-small
 EMBEDDING_DIMENSIONS=1536
-OPENAI_CHAT_MODEL=replace_with_chat_model
+OPENAI_API_KEY=replace_with_secure_api_key
+OPENAI_CHAT_MODEL=replace_with_model_name
+RUNPOD_ENDPOINT_ID=replace_with_serverless_endpoint_id
+RUNPOD_API_KEY=replace_with_secure_api_key
+RUNPOD_SLLM_MODEL=replace_with_runpod_model_name
 
 EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
 DEFAULT_FROM_EMAIL=replace_with_sender_address
 EMAIL_HOST=replace_with_smtp_host
 EMAIL_PORT=587
 EMAIL_HOST_USER=replace_with_smtp_user
+EMAIL_HOST_PASSWORD=replace_with_secure_password
 EMAIL_USE_TLS=true
 
+DJANGO_SECRET_KEY=replace_with_at_least_50_random_characters
 DJANGO_DEBUG=false
 DJANGO_ALLOWED_HOSTS=replace_with_service_domain
-DJANGO_HEALTHCHECK_HOST=replace_with_service_domain
+DJANGO_HEALTHCHECK_HOST=localhost
 DJANGO_CSRF_TRUSTED_ORIGINS=https://replace_with_service_domain
 DJANGO_TRUST_X_FORWARDED_PROTO=true
 DJANGO_SECURE_SSL_REDIRECT=true
@@ -42,7 +48,3 @@ DJANGO_CSRF_COOKIE_SECURE=true
 DJANGO_SECURE_HSTS_SECONDS=3600
 DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS=false
 DJANGO_SECURE_HSTS_PRELOAD=false
-
-# 컨테이너 안에서 localhost는 EC2 호스트나 다른 컨테이너를 가리키지 않습니다.
-# 외부 DB는 접근 가능한 DNS를 사용하세요.
-# 같은 EC2의 DB 컨테이너는 공통 Docker network에 연결하고 서비스명을 사용하세요.

@@ -1,0 +1,115 @@
+{
+  "family": "himate-prod-neo4j",
+  "networkMode": "bridge",
+  "requiresCompatibilities": [
+    "EC2"
+  ],
+  "executionRoleArn": "__ECS_TASK_EXECUTION_ROLE_ARN__",
+  "runtimePlatform": {
+    "cpuArchitecture": "X86_64",
+    "operatingSystemFamily": "LINUX"
+  },
+  "containerDefinitions": [
+    {
+      "name": "himate-neo4j",
+      "image": "neo4j:5.26.28-community@sha256:362542416de6c09a971484d1893878016cc3b5cdec166e54b1c824a220ecd6b9",
+      "essential": true,
+      "cpu": 512,
+      "memory": 1536,
+      "memoryReservation": 1280,
+      "readonlyRootFilesystem": false,
+      "user": "7474:7474",
+      "stopTimeout": 120,
+      "portMappings": [
+        {
+          "name": "bolt",
+          "containerPort": 7687,
+          "hostPort": 7687,
+          "protocol": "tcp"
+        }
+      ],
+      "environment": [
+        {
+          "name": "NEO4J_server_memory_heap_initial__size",
+          "value": "384m"
+        },
+        {
+          "name": "NEO4J_server_memory_heap_max__size",
+          "value": "512m"
+        },
+        {
+          "name": "NEO4J_server_memory_pagecache_size",
+          "value": "384m"
+        },
+        {
+          "name": "NEO4J_dbms_memory_transaction_total_max",
+          "value": "256m"
+        },
+        {
+          "name": "TZ",
+          "value": "Asia/Seoul"
+        }
+      ],
+      "secrets": [
+        {
+          "name": "NEO4J_AUTH",
+          "valueFrom": "__ECS_SSM_PARAMETER_PREFIX__/NEO4J_AUTH"
+        }
+      ],
+      "mountPoints": [
+        {
+          "sourceVolume": "himate-neo4j-data",
+          "containerPath": "/data",
+          "readOnly": false
+        },
+        {
+          "sourceVolume": "himate-neo4j-logs",
+          "containerPath": "/logs",
+          "readOnly": false
+        }
+      ],
+      "linuxParameters": {
+        "initProcessEnabled": true,
+        "capabilities": {
+          "drop": [
+            "ALL"
+          ]
+        }
+      },
+      "healthCheck": {
+        "command": [
+          "CMD-SHELL",
+          "cypher-shell -u neo4j -p \"${NEO4J_AUTH#*/}\" 'RETURN 1' > /dev/null || exit 1"
+        ],
+        "interval": 15,
+        "timeout": 10,
+        "retries": 8,
+        "startPeriod": 60
+      },
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/himate-prod-neo4j",
+          "awslogs-region": "__AWS_REGION__",
+          "awslogs-stream-prefix": "neo4j",
+          "mode": "non-blocking",
+          "max-buffer-size": "25m"
+        }
+      }
+    }
+  ],
+  "volumes": [
+    {
+      "name": "himate-neo4j-data",
+      "host": {
+        "sourcePath": "__EC2_NEO4J_DATA_PATH__"
+      }
+    },
+    {
+      "name": "himate-neo4j-logs",
+      "host": {
+        "sourcePath": "__EC2_NEO4J_LOGS_PATH__"
+      }
+    }
+  ]
+}

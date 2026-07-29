@@ -1,0 +1,147 @@
+worker_processes auto;
+pid /tmp/nginx.pid;
+error_log /dev/stderr warn;
+
+events {
+    worker_connections 1024;
+}
+
+http {
+    include /etc/nginx/mime.types;
+    default_type application/octet-stream;
+
+    log_format main '$remote_addr - $remote_user [$time_local] "$request" '
+                    '$status $body_bytes_sent "$http_referer" '
+                    '"$http_user_agent"';
+    access_log /dev/stdout main;
+
+    client_body_temp_path /tmp/client_temp;
+    proxy_temp_path /tmp/proxy_temp;
+    fastcgi_temp_path /tmp/fastcgi_temp;
+    uwsgi_temp_path /tmp/uwsgi_temp;
+    scgi_temp_path /tmp/scgi_temp;
+
+    sendfile on;
+    keepalive_timeout 65;
+    server_tokens off;
+
+    limit_req_zone $binary_remote_addr zone=himate_auth:10m rate=5r/m;
+    limit_req_zone $binary_remote_addr zone=himate_general:10m rate=30r/s;
+
+    upstream himate_web {
+        server __NGINX_UPSTREAM_HOST__:__NGINX_UPSTREAM_PORT__;
+        keepalive 32;
+    }
+
+    server {
+        listen __NGINX_HTTP_LISTEN_PORT__;
+        server_name __NGINX_SERVER_NAME__;
+
+        location ^~ /.well-known/acme-challenge/ {
+            root /var/www/certbot;
+            default_type text/plain;
+            try_files $uri =404;
+        }
+
+        location = /health/live/ {
+            allow 127.0.0.1;
+            deny all;
+
+            proxy_pass http://himate_web;
+            proxy_http_version 1.1;
+            proxy_set_header Host localhost;
+            proxy_set_header X-Forwarded-For $remote_addr;
+            proxy_set_header X-Forwarded-Proto http;
+            proxy_set_header Connection "";
+            access_log off;
+        }
+
+        location / {
+            return 308 https://__NGINX_SERVER_NAME__$request_uri;
+        }
+    }
+
+    server {
+        listen __NGINX_HTTPS_LISTEN_PORT__ ssl;
+        server_name __NGINX_SERVER_NAME__;
+
+        ssl_certificate __NGINX_TLS_CERTIFICATE_PATH__;
+        ssl_certificate_key __NGINX_TLS_PRIVATE_KEY_PATH__;
+        ssl_protocols TLSv1.2 TLSv1.3;
+        ssl_session_cache shared:SSL:10m;
+        ssl_session_timeout 1d;
+        ssl_session_tickets off;
+
+        client_max_body_size 12m;
+
+        location = /health/live/ {
+            allow 127.0.0.1;
+            deny all;
+
+            proxy_pass http://himate_web;
+            proxy_http_version 1.1;
+            proxy_set_header Host localhost;
+            proxy_set_header X-Forwarded-For $remote_addr;
+            proxy_set_header X-Forwarded-Proto https;
+            proxy_set_header Connection "";
+            access_log off;
+        }
+
+        location = /health/ {
+            allow 127.0.0.1;
+            deny all;
+
+            proxy_pass http://himate_web;
+            proxy_http_version 1.1;
+            proxy_set_header Host localhost;
+            proxy_set_header X-Forwarded-For $remote_addr;
+            proxy_set_header X-Forwarded-Proto https;
+            proxy_set_header Connection "";
+            access_log off;
+        }
+
+        location ~ ^/(user/(login|register|send-verification-code|verify-verification-code|check-nickname)/|admin/login/)$ {
+            limit_req zone=himate_auth burst=10 nodelay;
+            limit_req_status 429;
+
+            proxy_pass http://himate_web;
+            proxy_http_version 1.1;
+            proxy_set_header Host __NGINX_SERVER_NAME__;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $remote_addr;
+            proxy_set_header X-Forwarded-Proto https;
+            proxy_set_header Connection "";
+        }
+
+        location = /chatbot/api/rag/stream/ {
+            limit_req zone=himate_general burst=60 nodelay;
+            limit_req_status 429;
+
+            proxy_pass http://himate_web;
+            proxy_http_version 1.1;
+            proxy_set_header Host __NGINX_SERVER_NAME__;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $remote_addr;
+            proxy_set_header X-Forwarded-Proto https;
+            proxy_set_header Connection "";
+            proxy_buffering off;
+            proxy_cache off;
+            proxy_read_timeout 130s;
+            proxy_send_timeout 130s;
+        }
+
+        location / {
+            limit_req zone=himate_general burst=60 nodelay;
+            limit_req_status 429;
+
+            proxy_pass http://himate_web;
+            proxy_http_version 1.1;
+            proxy_set_header Host __NGINX_SERVER_NAME__;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $remote_addr;
+            proxy_set_header X-Forwarded-Proto https;
+            proxy_set_header Connection "";
+            proxy_read_timeout 130s;
+        }
+    }
+}

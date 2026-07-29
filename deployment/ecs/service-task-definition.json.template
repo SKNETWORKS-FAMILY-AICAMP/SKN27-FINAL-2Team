@@ -1,0 +1,345 @@
+{
+  "family": "himate-prod-web",
+  "networkMode": "bridge",
+  "requiresCompatibilities": [
+    "EC2"
+  ],
+  "executionRoleArn": "__ECS_TASK_EXECUTION_ROLE_ARN__",
+  "taskRoleArn": "__ECS_TASK_ROLE_ARN__",
+  "runtimePlatform": {
+    "cpuArchitecture": "X86_64",
+    "operatingSystemFamily": "LINUX"
+  },
+  "containerDefinitions": [
+    {
+      "name": "himate-web",
+      "image": "__APP_IMAGE_URI__",
+      "essential": true,
+      "cpu": 768,
+      "memory": 1280,
+      "memoryReservation": 1024,
+      "readonlyRootFilesystem": true,
+      "user": "app",
+      "stopTimeout": 30,
+      "linuxParameters": {
+        "initProcessEnabled": true,
+        "capabilities": {
+          "drop": [
+            "ALL"
+          ]
+        },
+        "tmpfs": [
+          {
+            "containerPath": "/tmp",
+            "size": 128,
+            "mountOptions": [
+              "rw",
+              "noexec",
+              "nosuid",
+              "nodev"
+            ]
+          }
+        ]
+      },
+      "secrets": [
+        {
+          "name": "POSTGRES_DB",
+          "valueFrom": "/himate/prod/POSTGRES_DB"
+        },
+        {
+          "name": "POSTGRES_HOST",
+          "valueFrom": "/himate/prod/POSTGRES_HOST"
+        },
+        {
+          "name": "POSTGRES_USER",
+          "valueFrom": "/himate/prod/POSTGRES_USER"
+        },
+        {
+          "name": "POSTGRES_PASSWORD",
+          "valueFrom": "/himate/prod/POSTGRES_PASSWORD"
+        },
+        {
+          "name": "POSTGRES_PORT",
+          "valueFrom": "/himate/prod/POSTGRES_PORT"
+        },
+        {
+          "name": "POSTGRES_CONNECT_TIMEOUT_SECONDS",
+          "valueFrom": "/himate/prod/POSTGRES_CONNECT_TIMEOUT_SECONDS"
+        },
+        {
+          "name": "POSTGRES_CONN_MAX_AGE",
+          "valueFrom": "/himate/prod/POSTGRES_CONN_MAX_AGE"
+        },
+        {
+          "name": "POSTGRES_SSLMODE",
+          "valueFrom": "/himate/prod/POSTGRES_SSLMODE"
+        },
+        {
+          "name": "POSTGRES_SSLROOTCERT",
+          "valueFrom": "/himate/prod/POSTGRES_SSLROOTCERT"
+        },
+        {
+          "name": "POSTGRES_REQUIRED_TABLES",
+          "valueFrom": "/himate/prod/POSTGRES_REQUIRED_TABLES"
+        },
+        {
+          "name": "NEO4J_URI",
+          "valueFrom": "/himate/prod/NEO4J_URI"
+        },
+        {
+          "name": "NEO4J_USER",
+          "valueFrom": "/himate/prod/NEO4J_USER"
+        },
+        {
+          "name": "NEO4J_PASSWORD",
+          "valueFrom": "/himate/prod/NEO4J_PASSWORD"
+        },
+        {
+          "name": "NEO4J_CONNECT_TIMEOUT_SECONDS",
+          "valueFrom": "/himate/prod/NEO4J_CONNECT_TIMEOUT_SECONDS"
+        },
+        {
+          "name": "EMBEDDING_MODEL",
+          "valueFrom": "/himate/prod/EMBEDDING_MODEL"
+        },
+        {
+          "name": "EMBEDDING_DIMENSIONS",
+          "valueFrom": "/himate/prod/EMBEDDING_DIMENSIONS"
+        },
+        {
+          "name": "OPENAI_API_KEY",
+          "valueFrom": "/himate/prod/OPENAI_API_KEY"
+        },
+        {
+          "name": "OPENAI_CHAT_MODEL",
+          "valueFrom": "/himate/prod/OPENAI_CHAT_MODEL"
+        },
+        {
+          "name": "EMAIL_BACKEND",
+          "valueFrom": "/himate/prod/EMAIL_BACKEND"
+        },
+        {
+          "name": "DEFAULT_FROM_EMAIL",
+          "valueFrom": "/himate/prod/DEFAULT_FROM_EMAIL"
+        },
+        {
+          "name": "EMAIL_HOST",
+          "valueFrom": "/himate/prod/EMAIL_HOST"
+        },
+        {
+          "name": "EMAIL_PORT",
+          "valueFrom": "/himate/prod/EMAIL_PORT"
+        },
+        {
+          "name": "EMAIL_HOST_USER",
+          "valueFrom": "/himate/prod/EMAIL_HOST_USER"
+        },
+        {
+          "name": "EMAIL_HOST_PASSWORD",
+          "valueFrom": "/himate/prod/EMAIL_HOST_PASSWORD"
+        },
+        {
+          "name": "EMAIL_USE_TLS",
+          "valueFrom": "/himate/prod/EMAIL_USE_TLS"
+        },
+        {
+          "name": "DJANGO_SECRET_KEY",
+          "valueFrom": "/himate/prod/DJANGO_SECRET_KEY"
+        },
+        {
+          "name": "DJANGO_DEBUG",
+          "valueFrom": "/himate/prod/DJANGO_DEBUG"
+        },
+        {
+          "name": "DJANGO_ALLOWED_HOSTS",
+          "valueFrom": "/himate/prod/DJANGO_ALLOWED_HOSTS"
+        },
+        {
+          "name": "DJANGO_HEALTHCHECK_HOST",
+          "valueFrom": "/himate/prod/DJANGO_HEALTHCHECK_HOST"
+        },
+        {
+          "name": "DJANGO_CSRF_TRUSTED_ORIGINS",
+          "valueFrom": "/himate/prod/DJANGO_CSRF_TRUSTED_ORIGINS"
+        },
+        {
+          "name": "DJANGO_TRUST_X_FORWARDED_PROTO",
+          "valueFrom": "/himate/prod/DJANGO_TRUST_X_FORWARDED_PROTO"
+        },
+        {
+          "name": "DJANGO_SECURE_SSL_REDIRECT",
+          "valueFrom": "/himate/prod/DJANGO_SECURE_SSL_REDIRECT"
+        },
+        {
+          "name": "DJANGO_SESSION_COOKIE_SECURE",
+          "valueFrom": "/himate/prod/DJANGO_SESSION_COOKIE_SECURE"
+        },
+        {
+          "name": "DJANGO_CSRF_COOKIE_SECURE",
+          "valueFrom": "/himate/prod/DJANGO_CSRF_COOKIE_SECURE"
+        },
+        {
+          "name": "DJANGO_SECURE_HSTS_SECONDS",
+          "valueFrom": "/himate/prod/DJANGO_SECURE_HSTS_SECONDS"
+        },
+        {
+          "name": "DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS",
+          "valueFrom": "/himate/prod/DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS"
+        },
+        {
+          "name": "DJANGO_SECURE_HSTS_PRELOAD",
+          "valueFrom": "/himate/prod/DJANGO_SECURE_HSTS_PRELOAD"
+        }
+      ],
+      "healthCheck": {
+        "command": [
+          "CMD-SHELL",
+          "python -c \"import os, urllib.request; request = urllib.request.Request('http://127.0.0.1:8000/health/live/', headers={'Host': os.environ['DJANGO_HEALTHCHECK_HOST']}); urllib.request.urlopen(request, timeout=4)\""
+        ],
+        "interval": 15,
+        "timeout": 5,
+        "retries": 4,
+        "startPeriod": 60
+      },
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/himate-prod-web",
+          "awslogs-region": "__AWS_REGION__",
+          "awslogs-stream-prefix": "app",
+          "mode": "non-blocking",
+          "max-buffer-size": "25m"
+        }
+      }
+    },
+    {
+      "name": "himate-nginx",
+      "image": "__NGINX_IMAGE_URI__",
+      "essential": true,
+      "cpu": 128,
+      "memory": 256,
+      "memoryReservation": 128,
+      "readonlyRootFilesystem": true,
+      "user": "101:101",
+      "links": [
+        "himate-web"
+      ],
+      "dependsOn": [
+        {
+          "containerName": "himate-web",
+          "condition": "HEALTHY"
+        }
+      ],
+      "portMappings": [
+        {
+          "name": "http",
+          "containerPort": 8080,
+          "hostPort": 80,
+          "protocol": "tcp"
+        },
+        {
+          "name": "https",
+          "containerPort": 8443,
+          "hostPort": 443,
+          "protocol": "tcp"
+        }
+      ],
+      "environment": [
+        {
+          "name": "NGINX_SERVER_NAME",
+          "value": "__SERVICE_DOMAIN__"
+        },
+        {
+          "name": "NGINX_UPSTREAM_HOST",
+          "value": "himate-web"
+        },
+        {
+          "name": "NGINX_UPSTREAM_PORT",
+          "value": "8000"
+        },
+        {
+          "name": "NGINX_HTTP_LISTEN_PORT",
+          "value": "8080"
+        },
+        {
+          "name": "NGINX_HTTPS_LISTEN_PORT",
+          "value": "8443"
+        },
+        {
+          "name": "NGINX_TLS_CERTIFICATE_PATH",
+          "value": "/run/secrets/tls/fullchain.pem"
+        },
+        {
+          "name": "NGINX_TLS_PRIVATE_KEY_PATH",
+          "value": "/run/secrets/tls/privkey.pem"
+        }
+      ],
+      "mountPoints": [
+        {
+          "sourceVolume": "himate-tls",
+          "containerPath": "/run/secrets/tls",
+          "readOnly": true
+        },
+        {
+          "sourceVolume": "himate-certbot-webroot",
+          "containerPath": "/var/www/certbot",
+          "readOnly": true
+        }
+      ],
+      "linuxParameters": {
+        "initProcessEnabled": true,
+        "capabilities": {
+          "drop": [
+            "ALL"
+          ]
+        },
+        "tmpfs": [
+          {
+            "containerPath": "/tmp",
+            "size": 64,
+            "mountOptions": [
+              "rw",
+              "noexec",
+              "nosuid",
+              "nodev"
+            ]
+          }
+        ]
+      },
+      "healthCheck": {
+        "command": [
+          "CMD-SHELL",
+          "wget -q -O /dev/null http://127.0.0.1:8080/health/live/ || exit 1"
+        ],
+        "interval": 15,
+        "timeout": 5,
+        "retries": 4,
+        "startPeriod": 30
+      },
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/himate-prod-web",
+          "awslogs-region": "__AWS_REGION__",
+          "awslogs-stream-prefix": "nginx",
+          "mode": "non-blocking",
+          "max-buffer-size": "25m"
+        }
+      }
+    }
+  ],
+  "volumes": [
+    {
+      "name": "himate-tls",
+      "host": {
+        "sourcePath": "__EC2_TLS_RUNTIME_PATH__"
+      }
+    },
+    {
+      "name": "himate-certbot-webroot",
+      "host": {
+        "sourcePath": "__EC2_CERTBOT_WEBROOT_PATH__"
+      }
+    }
+  ]
+}

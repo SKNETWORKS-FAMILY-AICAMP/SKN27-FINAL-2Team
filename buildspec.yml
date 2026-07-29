@@ -15,26 +15,14 @@ phases:
           ECR_REPOSITORY
           ECR_MAX_CRITICAL_FINDINGS
           ECR_MAX_HIGH_FINDINGS
-          EC2_WEB_CONTAINER_NAME
-          EC2_WEB_DOCKER_NETWORK
-          EC2_WEB_BIND_HOST
-          EC2_WEB_HOST_PORT
-          EC2_WEB_CONTAINER_PORT
-          EC2_WEB_ENV_FILE
-          EC2_WEB_SSM_PARAMETER_PREFIX
-          EC2_WEB_HEALTH_TIMEOUT_SECONDS
-          EC2_WEB_HEALTH_POLL_SECONDS
-          EC2_WEB_MEMORY_LIMIT
-          EC2_WEB_CPU_LIMIT
-          EC2_WEB_PIDS_LIMIT
-          EC2_WEB_TMPFS_SIZE
-          EC2_WEB_SERVER_NAME
-          EC2_WEB_NGINX_CONFIG_PATH
-          EC2_WEB_TLS_CERTIFICATE_PATH
-          EC2_WEB_TLS_PRIVATE_KEY_PATH
-          EC2_WEB_CERTBOT_WEBROOT
-          EC2_WEB_CERTBOT_RENEWAL_HOOK_PATH
-          EC2_WEB_PRIVATE_NETWORK_CIDR
+          ECS_APP_CONTAINER_NAME
+          ECS_NGINX_CONTAINER_NAME
+          ECS_CLUSTER
+          ECS_MIGRATION_TASK_FAMILY
+          ECS_TASK_EXECUTION_ROLE_ARN
+          ECS_TASK_ROLE_ARN
+          ECS_SSM_PARAMETER_PREFIX
+          ECS_LOG_GROUP
         )
 
         for variable_name in "${required_variables[@]}"; do
@@ -60,108 +48,51 @@ phases:
           exit 1
         fi
 
-        if [[ ! "${EC2_WEB_CONTAINER_NAME}" =~ ^[A-Za-z0-9][A-Za-z0-9_.-]*$ ]]; then
-          echo "EC2_WEB_CONTAINER_NAME has an invalid Docker container name." >&2
-          exit 1
-        fi
-
-        if [[ ! "${EC2_WEB_DOCKER_NETWORK}" =~ ^[A-Za-z0-9][A-Za-z0-9_.-]*$ ]]; then
-          echo "EC2_WEB_DOCKER_NETWORK has an invalid Docker network name." >&2
-          exit 1
-        fi
-
-        if [[ "${EC2_WEB_BIND_HOST}" != "127.0.0.1" ]]; then
-          echo "EC2_WEB_BIND_HOST must be 127.0.0.1 behind the local HTTPS proxy." >&2
-          exit 1
-        fi
-
-        if [[ ! "${EC2_WEB_HOST_PORT}" =~ ^[0-9]+$ ]] \
-          || (( EC2_WEB_HOST_PORT < 1 || EC2_WEB_HOST_PORT > 65535 )); then
-          echo "EC2_WEB_HOST_PORT must be between 1 and 65535." >&2
-          exit 1
-        fi
-
-        if [[ ! "${EC2_WEB_CONTAINER_PORT}" =~ ^[0-9]+$ ]] \
-          || (( EC2_WEB_CONTAINER_PORT < 1 || EC2_WEB_CONTAINER_PORT > 65535 )); then
-          echo "EC2_WEB_CONTAINER_PORT must be between 1 and 65535." >&2
-          exit 1
-        fi
-
-        if [[ ! "${EC2_WEB_ENV_FILE}" =~ ^/[A-Za-z0-9._/-]+$ ]]; then
-          echo "EC2_WEB_ENV_FILE must be an absolute Linux path without whitespace." >&2
-          exit 1
-        fi
-
-        if [[ ! "${EC2_WEB_SSM_PARAMETER_PREFIX}" =~ ^/[A-Za-z0-9_.-]+(/[A-Za-z0-9_.-]+)*$ ]]; then
-          echo "EC2_WEB_SSM_PARAMETER_PREFIX must be an absolute SSM parameter path." >&2
-          exit 1
-        fi
-
-        if [[ ! "${EC2_WEB_SERVER_NAME}" =~ ^[A-Za-z0-9]([A-Za-z0-9.-]*[A-Za-z0-9])?$ ]]; then
-          echo "EC2_WEB_SERVER_NAME must be one explicit DNS name." >&2
-          exit 1
-        fi
-
-        nginx_path_variables=(
-          EC2_WEB_NGINX_CONFIG_PATH
-          EC2_WEB_TLS_CERTIFICATE_PATH
-          EC2_WEB_TLS_PRIVATE_KEY_PATH
-          EC2_WEB_CERTBOT_WEBROOT
-          EC2_WEB_CERTBOT_RENEWAL_HOOK_PATH
-        )
-
-        for variable_name in "${nginx_path_variables[@]}"; do
-          if [[ ! "${!variable_name}" =~ ^/[A-Za-z0-9._/-]+$ ]]; then
-            echo "${variable_name} must be an absolute Linux path without whitespace." >&2
+        for container_name in \
+          "${ECS_APP_CONTAINER_NAME}" \
+          "${ECS_NGINX_CONTAINER_NAME}"; do
+          if [[ ! "${container_name}" =~ ^[A-Za-z0-9][A-Za-z0-9_-]{0,254}$ ]]; then
+            echo "ECS container names contain unsupported characters." >&2
             exit 1
           fi
         done
 
-        if [[ ! "${EC2_WEB_PRIVATE_NETWORK_CIDR}" =~ ^([0-9]{1,3}[.]){3}[0-9]{1,3}/([0-9]|[12][0-9]|3[0-2])$ ]]; then
-          echo "EC2_WEB_PRIVATE_NETWORK_CIDR must be an IPv4 CIDR." >&2
+        if [[ ! "${ECS_CLUSTER}" =~ ^[A-Za-z0-9_-]{1,255}$ ]] \
+          || [[ ! "${ECS_MIGRATION_TASK_FAMILY}" =~ ^[A-Za-z0-9_-]{1,255}$ ]]; then
+          echo "ECS cluster and task family names contain unsupported characters." >&2
           exit 1
         fi
 
-        if [[ ! "${EC2_WEB_HEALTH_TIMEOUT_SECONDS}" =~ ^[0-9]+$ ]] \
-          || (( EC2_WEB_HEALTH_TIMEOUT_SECONDS < 60 \
-            || EC2_WEB_HEALTH_TIMEOUT_SECONDS > 240 )); then
-          echo "EC2_WEB_HEALTH_TIMEOUT_SECONDS must be between 60 and 240." >&2
+        role_arn_pattern='^arn:(aws|aws-us-gov|aws-cn):iam::[0-9]{12}:role/[A-Za-z0-9+=,.@_/-]+$'
+        if [[ ! "${ECS_TASK_EXECUTION_ROLE_ARN}" =~ ${role_arn_pattern} ]] \
+          || [[ ! "${ECS_TASK_ROLE_ARN}" =~ ${role_arn_pattern} ]]; then
+          echo "ECS task role values must be full IAM role ARNs." >&2
           exit 1
         fi
 
-        if [[ ! "${EC2_WEB_HEALTH_POLL_SECONDS}" =~ ^[0-9]+$ ]] \
-          || (( EC2_WEB_HEALTH_POLL_SECONDS < 1 \
-            || EC2_WEB_HEALTH_POLL_SECONDS > 30 )); then
-          echo "EC2_WEB_HEALTH_POLL_SECONDS must be between 1 and 30." >&2
+        if [[ ! "${ECS_SSM_PARAMETER_PREFIX}" =~ ^/[A-Za-z0-9_.-]+(/[A-Za-z0-9_.-]+)*$ ]]; then
+          echo "ECS_SSM_PARAMETER_PREFIX must be an absolute SSM parameter path." >&2
           exit 1
         fi
 
-        if (( EC2_WEB_HEALTH_POLL_SECONDS >= EC2_WEB_HEALTH_TIMEOUT_SECONDS )); then
-          echo "EC2_WEB_HEALTH_POLL_SECONDS must be shorter than the health timeout." >&2
+        if [[ ! "${ECS_LOG_GROUP}" =~ ^/[A-Za-z0-9_./#-]+$ ]]; then
+          echo "ECS_LOG_GROUP contains unsupported characters." >&2
           exit 1
         fi
 
-        if [[ ! "${EC2_WEB_MEMORY_LIMIT}" =~ ^[1-9][0-9]*(m|g)$ ]] \
-          || [[ ! "${EC2_WEB_TMPFS_SIZE}" =~ ^[1-9][0-9]*(m|g)$ ]]; then
-          echo "Docker memory and tmpfs limits must use a positive m or g suffix." >&2
-          exit 1
-        fi
-
-        if [[ ! "${EC2_WEB_CPU_LIMIT}" =~ ^[0-9]+([.][0-9]+)?$ ]] \
-          || [[ "${EC2_WEB_CPU_LIMIT}" =~ ^0+([.]0+)?$ ]]; then
-          echo "EC2_WEB_CPU_LIMIT must be a positive number." >&2
-          exit 1
-        fi
-
-        if [[ ! "${EC2_WEB_PIDS_LIMIT}" =~ ^[0-9]+$ ]] \
-          || (( EC2_WEB_PIDS_LIMIT < 32 || EC2_WEB_PIDS_LIMIT > 4096 )); then
-          echo "EC2_WEB_PIDS_LIMIT must be between 32 and 4096." >&2
-          exit 1
-        fi
+        for command_name in aws chmod docker grep mktemp openssl python3 sed sha256sum; do
+          if ! command -v "${command_name}" > /dev/null 2>&1; then
+            echo "Required CodeBuild command is not installed: ${command_name}" >&2
+            exit 1
+          fi
+        done
 
         umask 077
         docker_config_directory="$(mktemp -d)"
         ecr_check_error_file=""
+        migration_run_output=""
+        migration_task_file=""
+        nginx_test_tls_directory=""
         test_database_container=""
         test_network=""
         export DOCKER_CONFIG="${docker_config_directory}"
@@ -178,7 +109,15 @@ phases:
           fi
           rm -f -- \
             "${ecr_check_error_file:-}" \
+            "${migration_run_output:-}" \
+            "${migration_task_file:-}" \
             "${docker_config_directory}/config.json"
+          if [[ -n "${nginx_test_tls_directory}" ]]; then
+            rm -f -- \
+              "${nginx_test_tls_directory}/fullchain.pem" \
+              "${nginx_test_tls_directory}/privkey.pem"
+            rmdir -- "${nginx_test_tls_directory}" > /dev/null 2>&1 || true
+          fi
           rmdir -- "${docker_config_directory}" > /dev/null 2>&1 || true
         }
 
@@ -203,48 +142,24 @@ phases:
           exit 1
         fi
 
-        registry_scan_type="$(
-          aws ecr get-registry-scanning-configuration \
+        repository_scan_on_push="$(
+          aws ecr describe-repositories \
             --region "${AWS_DEFAULT_REGION}" \
-            --query "scanningConfiguration.scanType" \
+            --repository-names "${ECR_REPOSITORY}" \
+            --query "repositories[0].imageScanningConfiguration.scanOnPush" \
             --output text
         )"
-        if [[ "${registry_scan_type}" != "ENHANCED" ]]; then
-          echo "ECR enhanced scanning must be enabled for the registry." >&2
+        if [[ "${repository_scan_on_push,,}" != "true" ]]; then
+          echo "ECR repository scan on push must be enabled." >&2
           exit 1
         fi
 
         image_tag="${CODEBUILD_RESOLVED_SOURCE_VERSION,,}"
+        nginx_image_tag="${image_tag}-nginx"
         ecr_registry="${aws_account_id}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com"
-        tagged_image_uri="${ecr_registry}/${ECR_REPOSITORY}:${image_tag}"
-        ecr_check_error_file="$(mktemp)"
-        image_exists="false"
-        image_missing="false"
-
-        if aws ecr describe-images \
-          --region "${AWS_DEFAULT_REGION}" \
-          --repository-name "${ECR_REPOSITORY}" \
-          --image-ids "imageTag=${image_tag}" \
-          > /dev/null 2> "${ecr_check_error_file}"; then
-          image_exists="true"
-        elif grep -q "ImageNotFoundException" "${ecr_check_error_file}"; then
-          image_missing="true"
-        fi
-
-        if [[ "${image_exists}" == "true" ]]; then
-          echo "Reusing existing immutable ECR image: ${tagged_image_uri}"
-        elif [[ "${image_missing}" == "true" ]]; then
-          echo "Building ECR image: ${tagged_image_uri}"
-        fi
-
-        if [[ "${image_exists}" != "true" && "${image_missing}" != "true" ]]; then
-          cat "${ecr_check_error_file}" >&2
-          rm -f "${ecr_check_error_file}"
-          exit 1
-        fi
-
-        rm -f "${ecr_check_error_file}"
-        ecr_check_error_file=""
+        repository_uri="${ecr_registry}/${ECR_REPOSITORY}"
+        app_tagged_image_uri="${repository_uri}:${image_tag}"
+        nginx_tagged_image_uri="${repository_uri}:${nginx_image_tag}"
 
         aws ecr get-login-password \
           --region "${AWS_DEFAULT_REGION}" \
@@ -253,24 +168,56 @@ phases:
             --password-stdin \
             "${ecr_registry}"
 
-        if [[ "${image_missing}" == "true" ]]; then
-          docker build \
-            --label "org.opencontainers.image.revision=${image_tag}" \
-            --tag "${tagged_image_uri}" \
-            .
-        elif [[ "${image_exists}" == "true" ]]; then
-          docker pull "${tagged_image_uri}"
-        fi
+        prepare_image() {
+          local context_path="$1"
+          local dockerfile_path="$2"
+          local image_uri="$3"
+          local image_tag_value="$4"
+          local -n image_state_reference="$5"
 
-        image_revision="$(
-          docker image inspect \
-            --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' \
-            "${tagged_image_uri}"
-        )"
-        if [[ "${image_revision}" != "${image_tag}" ]]; then
-          echo "Container image revision label does not match the source commit." >&2
-          exit 1
-        fi
+          ecr_check_error_file="$(mktemp)"
+          if aws ecr describe-images \
+            --region "${AWS_DEFAULT_REGION}" \
+            --repository-name "${ECR_REPOSITORY}" \
+            --image-ids "imageTag=${image_tag_value}" \
+            > /dev/null 2> "${ecr_check_error_file}"; then
+            image_state_reference="existing"
+            echo "Reusing existing immutable ECR image: ${image_uri}"
+            docker pull "${image_uri}"
+          elif grep -q "ImageNotFoundException" "${ecr_check_error_file}"; then
+            image_state_reference="new"
+            echo "Building ECR image: ${image_uri}"
+            docker build \
+              --label "org.opencontainers.image.revision=${image_tag}" \
+              --file "${dockerfile_path}" \
+              --tag "${image_uri}" \
+              "${context_path}"
+          else
+            cat "${ecr_check_error_file}" >&2
+            exit 1
+          fi
+
+          rm -f "${ecr_check_error_file}"
+          ecr_check_error_file=""
+
+          image_revision="$(
+            docker image inspect \
+              --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' \
+              "${image_uri}"
+          )"
+          if [[ "${image_revision}" != "${image_tag}" ]]; then
+            echo "Container image revision label does not match the source commit: ${image_uri}" >&2
+            exit 1
+          fi
+        }
+
+        app_image_state=""
+        prepare_image \
+          "." \
+          "Dockerfile" \
+          "${app_tagged_image_uri}" \
+          "${image_tag}" \
+          app_image_state
 
         test_network="himate-build-${image_tag:0:12}"
         test_database_container="${test_network}-postgres"
@@ -317,6 +264,7 @@ phases:
           --env "DJANGO_SECRET_KEY=${test_secret_key}"
           --env "DJANGO_DEBUG=false"
           --env "DJANGO_ALLOWED_HOSTS=localhost,testserver"
+          --env "DJANGO_HEALTHCHECK_HOST=localhost"
           --env "DJANGO_CSRF_TRUSTED_ORIGINS=https://localhost"
           --env "DJANGO_SECURE_SSL_REDIRECT=false"
           --env "POSTGRES_DB=${test_database_name}"
@@ -335,19 +283,19 @@ phases:
           --rm \
           --network "${test_network}" \
           "${test_environment[@]}" \
-          "${tagged_image_uri}" \
+          "${app_tagged_image_uri}" \
           python app/manage.py check
         docker run \
           --rm \
           --network "${test_network}" \
           "${test_environment[@]}" \
-          "${tagged_image_uri}" \
+          "${app_tagged_image_uri}" \
           python app/manage.py makemigrations --check --dry-run
         docker run \
           --rm \
           --network "${test_network}" \
           "${test_environment[@]}" \
-          "${tagged_image_uri}" \
+          "${app_tagged_image_uri}" \
           python app/manage.py test \
             diagnosis \
             chatbot \
@@ -358,12 +306,54 @@ phases:
             config.test_database_schema \
             --noinput
 
-        if [[ "${image_missing}" == "true" ]]; then
-          docker push "${tagged_image_uri}"
-        fi
-        docker logout "${ecr_registry}" > /dev/null 2>&1 || true
+        nginx_image_state=""
+        prepare_image \
+          "deployment/nginx" \
+          "deployment/nginx/Dockerfile" \
+          "${nginx_tagged_image_uri}" \
+          "${nginx_image_tag}" \
+          nginx_image_state
 
-        image_digest="$(
+        nginx_test_tls_directory="$(mktemp -d)"
+        openssl req \
+          -x509 \
+          -newkey rsa:2048 \
+          -nodes \
+          -days 1 \
+          -subj "/CN=example.com" \
+          -keyout "${nginx_test_tls_directory}/privkey.pem" \
+          -out "${nginx_test_tls_directory}/fullchain.pem" \
+          > /dev/null 2>&1
+        chmod 0444 \
+          "${nginx_test_tls_directory}/fullchain.pem" \
+          "${nginx_test_tls_directory}/privkey.pem"
+
+        docker run \
+          --rm \
+          --network none \
+          --read-only \
+          --tmpfs "/tmp:rw,nosuid,nodev,noexec,size=64m" \
+          --cap-drop ALL \
+          --security-opt no-new-privileges:true \
+          --volume "${nginx_test_tls_directory}:/run/secrets/tls:ro" \
+          --env "NGINX_SERVER_NAME=example.com" \
+          --env "NGINX_UPSTREAM_HOST=127.0.0.1" \
+          --env "NGINX_UPSTREAM_PORT=8000" \
+          --env "NGINX_HTTP_LISTEN_PORT=8080" \
+          --env "NGINX_HTTPS_LISTEN_PORT=8443" \
+          --env "NGINX_TLS_CERTIFICATE_PATH=/run/secrets/tls/fullchain.pem" \
+          --env "NGINX_TLS_PRIVATE_KEY_PATH=/run/secrets/tls/privkey.pem" \
+          "${nginx_tagged_image_uri}" \
+          --test
+
+        if [[ "${app_image_state}" == "new" ]]; then
+          docker push "${app_tagged_image_uri}"
+        fi
+        if [[ "${nginx_image_state}" == "new" ]]; then
+          docker push "${nginx_tagged_image_uri}"
+        fi
+
+        app_image_digest="$(
           aws ecr describe-images \
             --region "${AWS_DEFAULT_REGION}" \
             --repository-name "${ECR_REPOSITORY}" \
@@ -371,106 +361,168 @@ phases:
             --query "imageDetails[0].imageDigest" \
             --output text
         )"
+        nginx_image_digest="$(
+          aws ecr describe-images \
+            --region "${AWS_DEFAULT_REGION}" \
+            --repository-name "${ECR_REPOSITORY}" \
+            --image-ids "imageTag=${nginx_image_tag}" \
+            --query "imageDetails[0].imageDigest" \
+            --output text
+        )"
 
-        if [[ ! "${image_digest}" =~ ^sha256:[0-9a-f]{64}$ ]]; then
-          echo "ECR returned an invalid image digest." >&2
-          exit 1
-        fi
+        for image_digest_value in \
+          "${app_image_digest}" \
+          "${nginx_image_digest}"; do
+          if [[ ! "${image_digest_value}" =~ ^sha256:[0-9a-f]{64}$ ]]; then
+            echo "ECR returned an invalid image digest." >&2
+            exit 1
+          fi
+        done
 
-        image_uri="${ecr_registry}/${ECR_REPOSITORY}@${image_digest}"
-        echo "Waiting for ECR image scanning: ${image_uri}"
-        scan_status=""
-        scan_completed_at=""
-        for _attempt in $(seq 1 60); do
-          if scan_details="$(
+        app_image_uri="${repository_uri}@${app_image_digest}"
+        nginx_image_uri="${repository_uri}@${nginx_image_digest}"
+
+        wait_for_image_scan() {
+          local image_digest_value="$1"
+          local image_label="$2"
+          local scan_completed_at=""
+          local scan_status=""
+
+          echo "Waiting for ECR image scanning: ${image_label}"
+          for _attempt in $(seq 1 60); do
+            if scan_details="$(
+              aws ecr describe-image-scan-findings \
+                --region "${AWS_DEFAULT_REGION}" \
+                --repository-name "${ECR_REPOSITORY}" \
+                --image-id "imageDigest=${image_digest_value}" \
+                --query "[imageScanStatus.status, imageScanFindings.imageScanCompletedAt]" \
+                --output text \
+                2> /dev/null
+            )"; then
+              read -r scan_status scan_completed_at <<< "${scan_details}"
+              if [[ ( "${scan_status}" == "COMPLETE" || "${scan_status}" == "ACTIVE" ) \
+                && -n "${scan_completed_at}" \
+                && "${scan_completed_at}" != "None" ]]; then
+                break
+              elif [[ "${scan_status}" == "FAILED" \
+                || "${scan_status}" == "UNSUPPORTED_IMAGE" \
+                || "${scan_status}" == "SCAN_ELIGIBILITY_EXPIRED" \
+                || "${scan_status}" == "FINDINGS_UNAVAILABLE" \
+                || "${scan_status}" == "LIMIT_EXCEEDED" \
+                || "${scan_status}" == "IMAGE_ARCHIVED" ]]; then
+                echo "ECR image scan failed for ${image_label}: ${scan_status}" >&2
+                exit 1
+              fi
+            fi
+            sleep 5
+          done
+
+          if [[ ( "${scan_status}" != "COMPLETE" && "${scan_status}" != "ACTIVE" ) \
+            || -z "${scan_completed_at}" \
+            || "${scan_completed_at}" == "None" ]]; then
+            echo "ECR image scan did not become ready: ${image_label}" >&2
+            exit 1
+          fi
+
+          scan_counts="$(
             aws ecr describe-image-scan-findings \
               --region "${AWS_DEFAULT_REGION}" \
               --repository-name "${ECR_REPOSITORY}" \
-              --image-id "imageDigest=${image_digest}" \
-              --query "[imageScanStatus.status, imageScanFindings.imageScanCompletedAt]" \
-              --output text \
-              2> /dev/null
-          )"; then
-            read -r scan_status scan_completed_at <<< "${scan_details}"
-            if [[ ( "${scan_status}" == "COMPLETE" || "${scan_status}" == "ACTIVE" ) \
-              && -n "${scan_completed_at}" \
-              && "${scan_completed_at}" != "None" ]]; then
-              break
-            elif [[ "${scan_status}" == "FAILED" \
-              || "${scan_status}" == "UNSUPPORTED_IMAGE" \
-              || "${scan_status}" == "SCAN_ELIGIBILITY_EXPIRED" \
-              || "${scan_status}" == "FINDINGS_UNAVAILABLE" \
-              || "${scan_status}" == "LIMIT_EXCEEDED" \
-              || "${scan_status}" == "IMAGE_ARCHIVED" ]]; then
-              echo "ECR image scan failed with status: ${scan_status}" >&2
-              exit 1
-            fi
-          fi
-          sleep 5
-        done
-        if [[ ( "${scan_status}" != "COMPLETE" && "${scan_status}" != "ACTIVE" ) \
-          || -z "${scan_completed_at}" \
-          || "${scan_completed_at}" == "None" ]]; then
-          echo "ECR image scan did not become ready." >&2
-          exit 1
-        fi
+              --image-id "imageDigest=${image_digest_value}" \
+              --query '[imageScanFindings.findingSeverityCounts.CRITICAL || `0`, imageScanFindings.findingSeverityCounts.HIGH || `0`]' \
+              --output text
+          )"
+          read -r critical_findings high_findings <<< "${scan_counts}"
 
-        scan_counts="$(
-          aws ecr describe-image-scan-findings \
-            --region "${AWS_DEFAULT_REGION}" \
-            --repository-name "${ECR_REPOSITORY}" \
-            --image-id "imageDigest=${image_digest}" \
-            --query '[imageScanFindings.findingSeverityCounts.CRITICAL || `0`, imageScanFindings.findingSeverityCounts.HIGH || `0`]' \
+          if [[ ! "${critical_findings}" =~ ^[0-9]+$ ]] \
+            || [[ ! "${high_findings}" =~ ^[0-9]+$ ]]; then
+            echo "ECR returned invalid vulnerability counts: ${image_label}" >&2
+            exit 1
+          fi
+
+          if (( critical_findings > ECR_MAX_CRITICAL_FINDINGS )) \
+            || (( high_findings > ECR_MAX_HIGH_FINDINGS )); then
+            echo \
+              "ECR vulnerability gate failed for ${image_label}: critical=${critical_findings}, high=${high_findings}" \
+              >&2
+            exit 1
+          fi
+        }
+
+        wait_for_image_scan "${app_image_digest}" "Django application"
+        wait_for_image_scan "${nginx_image_digest}" "Nginx proxy"
+
+        migration_task_file="$(mktemp)"
+        sed \
+          -e "s|__ECS_MIGRATION_TASK_FAMILY__|${ECS_MIGRATION_TASK_FAMILY}|g" \
+          -e "s|__ECS_TASK_EXECUTION_ROLE_ARN__|${ECS_TASK_EXECUTION_ROLE_ARN}|g" \
+          -e "s|__ECS_TASK_ROLE_ARN__|${ECS_TASK_ROLE_ARN}|g" \
+          -e "s|__ECS_APP_CONTAINER_NAME__|${ECS_APP_CONTAINER_NAME}|g" \
+          -e "s|__APP_IMAGE_URI__|${app_image_uri}|g" \
+          -e "s|__ECS_SSM_PARAMETER_PREFIX__|${ECS_SSM_PARAMETER_PREFIX}|g" \
+          -e "s|__ECS_LOG_GROUP__|${ECS_LOG_GROUP}|g" \
+          -e "s|__AWS_REGION__|${AWS_DEFAULT_REGION}|g" \
+          deployment/ecs/migration-task-definition.json.template \
+          > "${migration_task_file}"
+
+        python3 -m json.tool "${migration_task_file}" > /dev/null
+        migration_task_definition_arn="$(
+          aws ecs register-task-definition \
+            --cli-input-json "file://${migration_task_file}" \
+            --query "taskDefinition.taskDefinitionArn" \
             --output text
         )"
-        read -r critical_findings high_findings <<< "${scan_counts}"
 
-        if [[ ! "${critical_findings}" =~ ^[0-9]+$ ]] \
-          || [[ ! "${high_findings}" =~ ^[0-9]+$ ]]; then
-          echo "ECR returned invalid vulnerability counts." >&2
+        migration_run_output="$(mktemp)"
+        aws ecs run-task \
+          --cluster "${ECS_CLUSTER}" \
+          --launch-type EC2 \
+          --task-definition "${migration_task_definition_arn}" \
+          --count 1 \
+          --started-by "codebuild-${image_tag:0:12}" \
+          > "${migration_run_output}"
+
+        migration_task_arn="$(
+          python3 -c \
+            'import json, sys; payload = json.load(open(sys.argv[1], encoding="utf-8")); tasks = payload.get("tasks", []); print(tasks[0]["taskArn"] if tasks else "")' \
+            "${migration_run_output}"
+        )"
+        if [[ -z "${migration_task_arn}" ]]; then
+          echo "ECS migration task did not start." >&2
+          cat "${migration_run_output}" >&2
           exit 1
         fi
 
-        if (( critical_findings > ECR_MAX_CRITICAL_FINDINGS )) \
-          || (( high_findings > ECR_MAX_HIGH_FINDINGS )); then
-          echo \
-            "ECR vulnerability gate failed: critical=${critical_findings}, high=${high_findings}" \
+        aws ecs wait tasks-stopped \
+          --cluster "${ECS_CLUSTER}" \
+          --tasks "${migration_task_arn}"
+
+        migration_exit_code="$(
+          aws ecs describe-tasks \
+            --cluster "${ECS_CLUSTER}" \
+            --tasks "${migration_task_arn}" \
+            --query "tasks[0].containers[?name=='${ECS_APP_CONTAINER_NAME}']|[0].exitCode" \
+            --output text
+        )"
+        if [[ "${migration_exit_code}" != "0" ]]; then
+          echo "ECS migration task failed with exit code: ${migration_exit_code}" >&2
+          aws ecs describe-tasks \
+            --cluster "${ECS_CLUSTER}" \
+            --tasks "${migration_task_arn}" \
+            --output json \
             >&2
           exit 1
         fi
 
-        printf '%s\n' \
-          "AWS_REGION=${AWS_DEFAULT_REGION}" \
-          "ECR_REGISTRY=${ecr_registry}" \
-          "IMAGE_TAG=${image_tag}" \
-          "IMAGE_DIGEST=${image_digest}" \
-          "IMAGE_URI=${image_uri}" \
-          "EC2_WEB_CONTAINER_NAME=${EC2_WEB_CONTAINER_NAME}" \
-          "EC2_WEB_DOCKER_NETWORK=${EC2_WEB_DOCKER_NETWORK}" \
-          "EC2_WEB_BIND_HOST=${EC2_WEB_BIND_HOST}" \
-          "EC2_WEB_HOST_PORT=${EC2_WEB_HOST_PORT}" \
-          "EC2_WEB_CONTAINER_PORT=${EC2_WEB_CONTAINER_PORT}" \
-          "EC2_WEB_ENV_FILE=${EC2_WEB_ENV_FILE}" \
-          "EC2_WEB_SSM_PARAMETER_PREFIX=${EC2_WEB_SSM_PARAMETER_PREFIX}" \
-          "EC2_WEB_HEALTH_TIMEOUT_SECONDS=${EC2_WEB_HEALTH_TIMEOUT_SECONDS}" \
-          "EC2_WEB_HEALTH_POLL_SECONDS=${EC2_WEB_HEALTH_POLL_SECONDS}" \
-          "EC2_WEB_MEMORY_LIMIT=${EC2_WEB_MEMORY_LIMIT}" \
-          "EC2_WEB_CPU_LIMIT=${EC2_WEB_CPU_LIMIT}" \
-          "EC2_WEB_PIDS_LIMIT=${EC2_WEB_PIDS_LIMIT}" \
-          "EC2_WEB_TMPFS_SIZE=${EC2_WEB_TMPFS_SIZE}" \
-          "EC2_WEB_SERVER_NAME=${EC2_WEB_SERVER_NAME}" \
-          "EC2_WEB_NGINX_CONFIG_PATH=${EC2_WEB_NGINX_CONFIG_PATH}" \
-          "EC2_WEB_TLS_CERTIFICATE_PATH=${EC2_WEB_TLS_CERTIFICATE_PATH}" \
-          "EC2_WEB_TLS_PRIVATE_KEY_PATH=${EC2_WEB_TLS_PRIVATE_KEY_PATH}" \
-          "EC2_WEB_CERTBOT_WEBROOT=${EC2_WEB_CERTBOT_WEBROOT}" \
-          "EC2_WEB_CERTBOT_RENEWAL_HOOK_PATH=${EC2_WEB_CERTBOT_RENEWAL_HOOK_PATH}" \
-          "EC2_WEB_PRIVATE_NETWORK_CIDR=${EC2_WEB_PRIVATE_NETWORK_CIDR}" \
-          > deployment/release.env
+        printf \
+          '[{"name":"%s","imageUri":"%s"},{"name":"%s","imageUri":"%s"}]\n' \
+          "${ECS_APP_CONTAINER_NAME}" \
+          "${app_image_uri}" \
+          "${ECS_NGINX_CONTAINER_NAME}" \
+          "${nginx_image_uri}" \
+          > imagedefinitions.json
 
 artifacts:
   files:
-    - deployspec.yml
-    - deployment/deploy.sh
-    - deployment/nginx.conf.template
-    - deployment/release.env
-  discard-paths: no
+    - imagedefinitions.json
+  discard-paths: yes

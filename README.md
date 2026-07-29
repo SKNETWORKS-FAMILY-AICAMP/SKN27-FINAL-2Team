@@ -1,112 +1,58 @@
-# -SKN27-FINAL-2Team
+# SKN27-FINAL-2Team · HiMate
 
-# python 3.12
+Python 3.12와 Django 6 기반 한국사 학습 서비스입니다.
 
-# 폴더구조
+## 주요 디렉터리
 
 ```text
-SKN27-FINAL-2Team/
-|-- README.md
-|-- requirements.txt
-|-- ai/
-|   |-- llm/
-|   |-- ml/
-|   `-- models/
-|-- app/
-|   |-- README.md
-|   |-- manage.py
-|   |-- config/
-|   |   |-- settings.py
-|   |   |-- urls.py
-|   |   |-- asgi.py
-|   |   `-- wsgi.py
-|   |-- user/
-|   |-- chatbot/
-|   |-- analytics/
-|   |-- diagnosis/
-|   `-- question/
-|-- docs/
-|   |-- README.md
-|   |-- setup-guide.md
-|   `-- image/
-|-- etl/
-|   |-- README.md
-|   |-- crawling/
-|   `-- exam_question_pipeline/
-|-- storage/
-|   |-- README.md
-|   |-- postgre/
-|   `-- neo4j/
-`-- test/
-    |-- README.md
-    |-- CJ/
-    |-- HS/
-    |-- MK/
-    `-- YJ/
+app/          Django 애플리케이션
+ai/           LLM·ML 및 문제 생성 코드
+etl/          수집·전처리 파이프라인
+storage/      로컬 PostgreSQL·Neo4j 개발 구성
+test/         개별 실험 및 평가 테스트
+deployment/   AWS ECS와 Nginx 배포 설정
 ```
 
-- `ai/`: LLM, ML, 모델 파일 작업 공간
-- `app/`: Django 프로젝트 및 서비스 앱
-- `docs/`: 프로젝트 문서와 이미지 자료
-- `etl/`: 크롤링 및 문제 데이터 파이프라인 작업 공간
-- `storage/`: 저장소 작업 공간
-- `test/`: 팀원별 테스트 작업 공간
+## 로컬 개발
+
+로컬 개발은 저장소 루트의 `.env`를 사용합니다. `.env`는 비밀값이므로 Git과
+Docker build context에서 제외됩니다.
+
+```powershell
+.\.venv\Scripts\python.exe app\manage.py check
+.\.venv\Scripts\python.exe app\manage.py test
+```
+
+## CI
+
+GitHub Actions는 `dev`, `main` push와 Pull Request에서 다음 항목만 검증합니다.
+운영 배포는 수행하지 않습니다.
+
+- PostgreSQL 기반 Django 테스트
+- Neo4j mock 회귀 테스트
+- 임시 Neo4j 서비스 통합 테스트
+- 운영 Docker 이미지 빌드
 
 ## 운영 배포
 
-운영 배포는 CodePipeline → CodeBuild → ECR → EC2 Docker 순서로 실행합니다.
+```text
+Route53 → Elastic IP → Public EC2 / ECS on EC2
+                         ├─ Nginx HTTPS → Gunicorn/Django
+                         └─ Neo4j Community + EBS
 
-- 일반 설정: EC2의 `EC2_WEB_ENV_FILE`에 저장
-- 비밀값: SSM Parameter Store `SecureString`에 저장
-- SSM 경로: CodeBuild의 `EC2_WEB_SSM_PARAMETER_PREFIX`로 지정
-- 비밀값 전달: EC2의 임시 파일에서 전용 Docker volume으로 옮긴 뒤 `app` 사용자만 읽기
-- 이미지: Git SHA 태그와 revision label을 검증한 뒤 취약점 검사를 통과한 digest로 배포
-- ECR: tag immutability와 Enhanced Scanning이 켜져 있지 않으면 빌드 중단
-- 배포 게이트: Django 설정·마이그레이션·테스트를 통과해야 ECR push 진행
-- 웹 포트: EC2의 `127.0.0.1`에만 연결하고 로컬 HTTPS proxy를 통해 공개
-- Nginx: 배포 artifact의 템플릿을 실제 EC2 설정으로 생성한 뒤 `nginx -t`와 reload 실행
-- 인증서: 기존 Certbot 인증서와 systemd 갱신 timer를 확인하고 갱신 후 Nginx reload hook 설치
+Django → Private Aurora PostgreSQL Serverless v2
+CodePipeline → CodeBuild → ECR → ECS Standard Deploy
+EventBridge → RunPod Serverless
+```
 
-GitHub Actions의 `uses`는 움직일 수 있는 버전 tag 대신 전체 commit SHA로
-고정합니다. Docker base·CI service image도 움직일 수 있는 tag와 함께
-내용 기반 `sha256` digest를 지정하여 항상 검토한 코드와 이미지를 실행합니다.
+- ALB와 NAT Gateway 없이 단일 EC2로 비용 절감
+- ECS Task는 `bridge` 네트워크 사용
+- 앱·Nginx 이미지는 Git commit SHA immutable tag와 digest로 배포
+- ECR Basic scan on push 결과로 취약점 gate 적용
+- Parameter Store 값을 ECS secret 환경변수로 주입
+- Nginx와 Django는 비루트, read-only root filesystem으로 실행
+- Nginx HTTPS 인증서는 EC2 Certbot이 자동 갱신
+- Neo4j 데이터는 별도 EBS에 저장
 
-예를 들어 prefix가 `/himate/prod`이면 다음 SecureString이 필요합니다.
-
-- `/himate/prod/POSTGRES_PASSWORD`
-- `/himate/prod/NEO4J_PASSWORD`
-- `/himate/prod/OPENAI_API_KEY`
-- `/himate/prod/DJANGO_SECRET_KEY`
-- `/himate/prod/EMAIL_HOST_PASSWORD`
-
-EC2 Instance Role에는 위 경로의 `ssm:GetParameter` 권한과, 고객 관리형 KMS 키를
-사용하는 경우 해당 키의 `kms:Decrypt` 권한이 필요합니다.
-CodeBuild Role에는 ECR push·조회 권한 외에
-`ecr:GetRegistryScanningConfiguration` 권한도 필요합니다.
-
-운영 환경파일은 PostgreSQL `verify-full`, Neo4j의 인증서 검증 TLS 주소
-(`bolt+s://` 또는 `neo4j+s://`), SMTP backend와 HTTPS 보안 설정을 사용해야 합니다.
-운영 이미지는 AWS 공식 RDS global CA bundle을
-`/etc/ssl/certs/aws-rds-global-bundle.pem`에 포함합니다.
-
-CodeBuild 프로젝트에는 다음 Nginx 배포 변수도 설정해야 합니다.
-
-- `EC2_WEB_SERVER_NAME`: 실제 단일 도메인
-- `EC2_WEB_NGINX_CONFIG_PATH`: 실제 Nginx server 설정 경로
-- `EC2_WEB_TLS_CERTIFICATE_PATH`: Certbot `fullchain.pem` 경로
-- `EC2_WEB_TLS_PRIVATE_KEY_PATH`: Certbot `privkey.pem` 경로
-- `EC2_WEB_CERTBOT_WEBROOT`: ACME challenge webroot
-- `EC2_WEB_CERTBOT_RENEWAL_HOOK_PATH`: 인증서 갱신 후 Nginx reload hook 경로
-- `EC2_WEB_PRIVATE_NETWORK_CIDR`: readiness 접근을 허용할 VPC CIDR
-
-첫 배포 전에는 다음 준비가 끝나 있어야 합니다.
-
-1. 기존 PostgreSQL schema와 데이터를 RDS에 import합니다. 프로젝트의 운영
-   모델은 `managed=False`이므로 Django가 빈 RDS에 원본 테이블을 만들지 않습니다.
-2. EC2에 Nginx와 Certbot을 설치하고 최초 인증서를 발급합니다.
-3. `certbot.timer` 또는 `snap.certbot.renew.timer`가 설치되어 있는지 확인합니다.
-4. EC2 Docker network와 일반 운영 환경파일을 생성합니다.
-
-배포 스크립트는 migration을 기록하기 전에 `check_database_schema`를 실행하므로,
-필수 테이블이 하나라도 없으면 기존 컨테이너를 교체하지 않고 배포를 중단합니다.
-
+상세 설정과 적용 순서는
+[deployment/ecs/README.md](deployment/ecs/README.md)를 참고하세요.

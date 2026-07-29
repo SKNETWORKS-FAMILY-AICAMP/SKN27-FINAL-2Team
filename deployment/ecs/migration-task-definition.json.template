@@ -1,0 +1,210 @@
+{
+  "family": "__ECS_MIGRATION_TASK_FAMILY__",
+  "networkMode": "bridge",
+  "requiresCompatibilities": [
+    "EC2"
+  ],
+  "executionRoleArn": "__ECS_TASK_EXECUTION_ROLE_ARN__",
+  "taskRoleArn": "__ECS_TASK_ROLE_ARN__",
+  "runtimePlatform": {
+    "cpuArchitecture": "X86_64",
+    "operatingSystemFamily": "LINUX"
+  },
+  "containerDefinitions": [
+    {
+      "name": "__ECS_APP_CONTAINER_NAME__",
+      "image": "__APP_IMAGE_URI__",
+      "essential": true,
+      "cpu": 256,
+      "memory": 768,
+      "memoryReservation": 512,
+      "readonlyRootFilesystem": true,
+      "user": "app",
+      "command": [
+        "/bin/sh",
+        "-c",
+        "python app/manage.py check --deploy --fail-level ERROR && python app/manage.py check_database_schema && python app/manage.py migrate --noinput"
+      ],
+      "linuxParameters": {
+        "initProcessEnabled": true,
+        "capabilities": {
+          "drop": [
+            "ALL"
+          ]
+        },
+        "tmpfs": [
+          {
+            "containerPath": "/tmp",
+            "size": 128,
+            "mountOptions": [
+              "rw",
+              "noexec",
+              "nosuid",
+              "nodev"
+            ]
+          }
+        ]
+      },
+      "secrets": [
+        {
+          "name": "POSTGRES_DB",
+          "valueFrom": "__ECS_SSM_PARAMETER_PREFIX__/POSTGRES_DB"
+        },
+        {
+          "name": "POSTGRES_HOST",
+          "valueFrom": "__ECS_SSM_PARAMETER_PREFIX__/POSTGRES_HOST"
+        },
+        {
+          "name": "POSTGRES_USER",
+          "valueFrom": "__ECS_SSM_PARAMETER_PREFIX__/POSTGRES_USER"
+        },
+        {
+          "name": "POSTGRES_PASSWORD",
+          "valueFrom": "__ECS_SSM_PARAMETER_PREFIX__/POSTGRES_PASSWORD"
+        },
+        {
+          "name": "POSTGRES_PORT",
+          "valueFrom": "__ECS_SSM_PARAMETER_PREFIX__/POSTGRES_PORT"
+        },
+        {
+          "name": "POSTGRES_CONNECT_TIMEOUT_SECONDS",
+          "valueFrom": "__ECS_SSM_PARAMETER_PREFIX__/POSTGRES_CONNECT_TIMEOUT_SECONDS"
+        },
+        {
+          "name": "POSTGRES_CONN_MAX_AGE",
+          "valueFrom": "__ECS_SSM_PARAMETER_PREFIX__/POSTGRES_CONN_MAX_AGE"
+        },
+        {
+          "name": "POSTGRES_SSLMODE",
+          "valueFrom": "__ECS_SSM_PARAMETER_PREFIX__/POSTGRES_SSLMODE"
+        },
+        {
+          "name": "POSTGRES_SSLROOTCERT",
+          "valueFrom": "__ECS_SSM_PARAMETER_PREFIX__/POSTGRES_SSLROOTCERT"
+        },
+        {
+          "name": "POSTGRES_REQUIRED_TABLES",
+          "valueFrom": "__ECS_SSM_PARAMETER_PREFIX__/POSTGRES_REQUIRED_TABLES"
+        },
+        {
+          "name": "NEO4J_URI",
+          "valueFrom": "__ECS_SSM_PARAMETER_PREFIX__/NEO4J_URI"
+        },
+        {
+          "name": "NEO4J_USER",
+          "valueFrom": "__ECS_SSM_PARAMETER_PREFIX__/NEO4J_USER"
+        },
+        {
+          "name": "NEO4J_PASSWORD",
+          "valueFrom": "__ECS_SSM_PARAMETER_PREFIX__/NEO4J_PASSWORD"
+        },
+        {
+          "name": "NEO4J_CONNECT_TIMEOUT_SECONDS",
+          "valueFrom": "__ECS_SSM_PARAMETER_PREFIX__/NEO4J_CONNECT_TIMEOUT_SECONDS"
+        },
+        {
+          "name": "EMBEDDING_MODEL",
+          "valueFrom": "__ECS_SSM_PARAMETER_PREFIX__/EMBEDDING_MODEL"
+        },
+        {
+          "name": "EMBEDDING_DIMENSIONS",
+          "valueFrom": "__ECS_SSM_PARAMETER_PREFIX__/EMBEDDING_DIMENSIONS"
+        },
+        {
+          "name": "OPENAI_API_KEY",
+          "valueFrom": "__ECS_SSM_PARAMETER_PREFIX__/OPENAI_API_KEY"
+        },
+        {
+          "name": "OPENAI_CHAT_MODEL",
+          "valueFrom": "__ECS_SSM_PARAMETER_PREFIX__/OPENAI_CHAT_MODEL"
+        },
+        {
+          "name": "EMAIL_BACKEND",
+          "valueFrom": "__ECS_SSM_PARAMETER_PREFIX__/EMAIL_BACKEND"
+        },
+        {
+          "name": "DEFAULT_FROM_EMAIL",
+          "valueFrom": "__ECS_SSM_PARAMETER_PREFIX__/DEFAULT_FROM_EMAIL"
+        },
+        {
+          "name": "EMAIL_HOST",
+          "valueFrom": "__ECS_SSM_PARAMETER_PREFIX__/EMAIL_HOST"
+        },
+        {
+          "name": "EMAIL_PORT",
+          "valueFrom": "__ECS_SSM_PARAMETER_PREFIX__/EMAIL_PORT"
+        },
+        {
+          "name": "EMAIL_HOST_USER",
+          "valueFrom": "__ECS_SSM_PARAMETER_PREFIX__/EMAIL_HOST_USER"
+        },
+        {
+          "name": "EMAIL_HOST_PASSWORD",
+          "valueFrom": "__ECS_SSM_PARAMETER_PREFIX__/EMAIL_HOST_PASSWORD"
+        },
+        {
+          "name": "EMAIL_USE_TLS",
+          "valueFrom": "__ECS_SSM_PARAMETER_PREFIX__/EMAIL_USE_TLS"
+        },
+        {
+          "name": "DJANGO_SECRET_KEY",
+          "valueFrom": "__ECS_SSM_PARAMETER_PREFIX__/DJANGO_SECRET_KEY"
+        },
+        {
+          "name": "DJANGO_DEBUG",
+          "valueFrom": "__ECS_SSM_PARAMETER_PREFIX__/DJANGO_DEBUG"
+        },
+        {
+          "name": "DJANGO_ALLOWED_HOSTS",
+          "valueFrom": "__ECS_SSM_PARAMETER_PREFIX__/DJANGO_ALLOWED_HOSTS"
+        },
+        {
+          "name": "DJANGO_HEALTHCHECK_HOST",
+          "valueFrom": "__ECS_SSM_PARAMETER_PREFIX__/DJANGO_HEALTHCHECK_HOST"
+        },
+        {
+          "name": "DJANGO_CSRF_TRUSTED_ORIGINS",
+          "valueFrom": "__ECS_SSM_PARAMETER_PREFIX__/DJANGO_CSRF_TRUSTED_ORIGINS"
+        },
+        {
+          "name": "DJANGO_TRUST_X_FORWARDED_PROTO",
+          "valueFrom": "__ECS_SSM_PARAMETER_PREFIX__/DJANGO_TRUST_X_FORWARDED_PROTO"
+        },
+        {
+          "name": "DJANGO_SECURE_SSL_REDIRECT",
+          "valueFrom": "__ECS_SSM_PARAMETER_PREFIX__/DJANGO_SECURE_SSL_REDIRECT"
+        },
+        {
+          "name": "DJANGO_SESSION_COOKIE_SECURE",
+          "valueFrom": "__ECS_SSM_PARAMETER_PREFIX__/DJANGO_SESSION_COOKIE_SECURE"
+        },
+        {
+          "name": "DJANGO_CSRF_COOKIE_SECURE",
+          "valueFrom": "__ECS_SSM_PARAMETER_PREFIX__/DJANGO_CSRF_COOKIE_SECURE"
+        },
+        {
+          "name": "DJANGO_SECURE_HSTS_SECONDS",
+          "valueFrom": "__ECS_SSM_PARAMETER_PREFIX__/DJANGO_SECURE_HSTS_SECONDS"
+        },
+        {
+          "name": "DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS",
+          "valueFrom": "__ECS_SSM_PARAMETER_PREFIX__/DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS"
+        },
+        {
+          "name": "DJANGO_SECURE_HSTS_PRELOAD",
+          "valueFrom": "__ECS_SSM_PARAMETER_PREFIX__/DJANGO_SECURE_HSTS_PRELOAD"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "__ECS_LOG_GROUP__",
+          "awslogs-region": "__AWS_REGION__",
+          "awslogs-stream-prefix": "migration",
+          "mode": "non-blocking",
+          "max-buffer-size": "25m"
+        }
+      }
+    }
+  ]
+}

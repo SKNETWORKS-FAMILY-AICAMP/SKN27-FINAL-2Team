@@ -373,7 +373,8 @@ ai/question_generation/outputs/
 
 app/staticfiles/
 
-# Generated CodePipeline release metadata
-deployment/release.env
+# Generated CodePipeline/ECS deployment metadata
+imagedefinitions.json
+deployment/ecs/rendered-*.json
 
 
