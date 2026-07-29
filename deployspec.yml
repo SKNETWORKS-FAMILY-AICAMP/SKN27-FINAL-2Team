@@ -1,0 +1,7 @@
+version: 0.1
+
+scripts:
+  AfterDeploy:
+    - location: deployment/deploy.sh
+      timeout: 300
+      runas: root

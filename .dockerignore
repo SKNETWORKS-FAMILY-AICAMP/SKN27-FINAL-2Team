@@ -45,4 +45,6 @@ Thumbs.db
 # Files not needed by the production image
 requirements/dev.txt
 README.md
-
+buildspec.yml
+deployspec.yml
+deployment/

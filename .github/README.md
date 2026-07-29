@@ -1,6 +1,33 @@
-# workflows/
- - ci.yml
- dev 테스트용//코드검증
- - deploy.yml
- main -> ERC -> ECS //운영 배포
+# GitHub Actions
+
+## CI
+
+`.github/workflows/ci.yml`은 `dev`, `main` 브랜치의 코드를 검증한다.
+
+- `dev`, `main` 브랜치 push 시 실행
+- `dev`, `main` 브랜치를 대상으로 하는 Pull Request 생성·변경 시 실행
+- `test`: PostgreSQL을 사용한 Django 검사·테스트와 Docker 이미지 빌드 확인
+- `neo4j-regression`: `test/MK/test_neo4j`의 mock 기반 회귀 테스트 실행
+- `neo4j-integration`: 임시 Neo4j 서비스를 띄워 `graph_service`의 실제 쿼리와 연결 확인
+
+CI에서는 이미지를 ECR에 올리거나 운영 서버에 배포하지 않는다.
+
+CodePipeline 배포 전에 CI 통과를 강제하려면 GitHub 브랜치 보호 규칙 또는
+CodePipeline 안의 별도 테스트 단계를 설정해야 한다.
+
+## 운영 배포
+
+운영 배포는 GitHub Actions를 사용하지 않는다.
+
+```text
+CodePipeline
+  → CodeBuild
+  → ECR
+  → CodePipeline EC2 Deploy
+  → EC2 Docker 컨테이너
+```
+
+배포 관련 파일은 저장소 루트의 `buildspec.yml`, `deployspec.yml`과
+`deployment/deploy.sh`이다. CodePipeline의 소스 브랜치와 대상 EC2 설정은
+AWS에서 관리한다.
 

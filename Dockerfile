@@ -12,6 +12,10 @@ RUN pip install --no-cache-dir --upgrade pip \
 
 COPY . .
 
+RUN chmod +x /code/docker/entrypoint.sh
+
 EXPOSE 8000
+
+ENTRYPOINT ["/code/docker/entrypoint.sh"]
 
 CMD ["gunicorn", "--chdir", "app", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--access-logfile", "-", "--error-logfile", "-"]

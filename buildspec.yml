@@ -1,0 +1,121 @@
+version: 0.2
+
+env:
+  shell: bash
+
+phases:
+  build:
+    commands:
+      - |
+        set -euo pipefail
+
+        required_variables=(
+          AWS_DEFAULT_REGION
+          CODEBUILD_RESOLVED_SOURCE_VERSION
+          ECR_REPOSITORY
+          EC2_WEB_CONTAINER_NAME
+          EC2_WEB_HOST_PORT
+          EC2_WEB_CONTAINER_PORT
+          EC2_WEB_ENV_FILE
+        )
+
+        for variable_name in "${required_variables[@]}"; do
+          if [[ -z "${!variable_name:-}" ]]; then
+            echo "Missing CodeBuild environment variable: ${variable_name}" >&2
+            exit 1
+          fi
+        done
+
+        if [[ ! "${CODEBUILD_RESOLVED_SOURCE_VERSION}" =~ ^[0-9a-fA-F]{7,64}$ ]]; then
+          echo "CODEBUILD_RESOLVED_SOURCE_VERSION must be a Git commit SHA." >&2
+          exit 1
+        fi
+
+        if [[ ! "${ECR_REPOSITORY}" =~ ^[a-z0-9]+([._/-][a-z0-9]+)*$ ]]; then
+          echo "ECR_REPOSITORY has an invalid repository name." >&2
+          exit 1
+        fi
+
+        if [[ ! "${EC2_WEB_CONTAINER_NAME}" =~ ^[A-Za-z0-9][A-Za-z0-9_.-]*$ ]]; then
+          echo "EC2_WEB_CONTAINER_NAME has an invalid Docker container name." >&2
+          exit 1
+        fi
+
+        if [[ ! "${EC2_WEB_HOST_PORT}" =~ ^[0-9]+$ ]] \
+          || (( EC2_WEB_HOST_PORT < 1 || EC2_WEB_HOST_PORT > 65535 )); then
+          echo "EC2_WEB_HOST_PORT must be between 1 and 65535." >&2
+          exit 1
+        fi
+
+        if [[ ! "${EC2_WEB_CONTAINER_PORT}" =~ ^[0-9]+$ ]] \
+          || (( EC2_WEB_CONTAINER_PORT < 1 || EC2_WEB_CONTAINER_PORT > 65535 )); then
+          echo "EC2_WEB_CONTAINER_PORT must be between 1 and 65535." >&2
+          exit 1
+        fi
+
+        if [[ ! "${EC2_WEB_ENV_FILE}" =~ ^/[A-Za-z0-9._/-]+$ ]]; then
+          echo "EC2_WEB_ENV_FILE must be an absolute Linux path without whitespace." >&2
+          exit 1
+        fi
+
+        aws_account_id="$(
+          aws sts get-caller-identity \
+            --query "Account" \
+            --output text
+        )"
+        image_tag="${CODEBUILD_RESOLVED_SOURCE_VERSION,,}"
+        ecr_registry="${aws_account_id}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com"
+        image_uri="${ecr_registry}/${ECR_REPOSITORY}:${image_tag}"
+        ecr_check_error_file="$(mktemp)"
+        image_exists="false"
+        image_missing="false"
+
+        if aws ecr describe-images \
+          --region "${AWS_DEFAULT_REGION}" \
+          --repository-name "${ECR_REPOSITORY}" \
+          --image-ids "imageTag=${image_tag}" \
+          > /dev/null 2> "${ecr_check_error_file}"; then
+          image_exists="true"
+        elif grep -q "ImageNotFoundException" "${ecr_check_error_file}"; then
+          image_missing="true"
+        fi
+
+        if [[ "${image_exists}" == "true" ]]; then
+          echo "Reusing existing immutable ECR image: ${image_uri}"
+        elif [[ "${image_missing}" == "true" ]]; then
+          echo "Building ECR image: ${image_uri}"
+          aws ecr get-login-password \
+            --region "${AWS_DEFAULT_REGION}" \
+            | docker login \
+              --username AWS \
+              --password-stdin \
+              "${ecr_registry}"
+          docker build --tag "${image_uri}" .
+          docker push "${image_uri}"
+          docker logout "${ecr_registry}" > /dev/null 2>&1 || true
+        fi
+
+        if [[ "${image_exists}" != "true" && "${image_missing}" != "true" ]]; then
+          cat "${ecr_check_error_file}" >&2
+          rm -f "${ecr_check_error_file}"
+          exit 1
+        fi
+
+        rm -f "${ecr_check_error_file}"
+
+        printf '%s\n' \
+          "AWS_REGION=${AWS_DEFAULT_REGION}" \
+          "ECR_REGISTRY=${ecr_registry}" \
+          "IMAGE_TAG=${image_tag}" \
+          "IMAGE_URI=${image_uri}" \
+          "EC2_WEB_CONTAINER_NAME=${EC2_WEB_CONTAINER_NAME}" \
+          "EC2_WEB_HOST_PORT=${EC2_WEB_HOST_PORT}" \
+          "EC2_WEB_CONTAINER_PORT=${EC2_WEB_CONTAINER_PORT}" \
+          "EC2_WEB_ENV_FILE=${EC2_WEB_ENV_FILE}" \
+          > deployment/release.env
+
+artifacts:
+  files:
+    - deployspec.yml
+    - deployment/**/*
+  discard-paths: no

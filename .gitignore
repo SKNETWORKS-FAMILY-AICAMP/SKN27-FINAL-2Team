@@ -372,3 +372,8 @@ ai/ml_question/train_question_quality_*.ipynb
 ai/question_generation/outputs/
 
 app/staticfiles/
+
+# Generated CodePipeline release metadata
+deployment/release.env
+
+
