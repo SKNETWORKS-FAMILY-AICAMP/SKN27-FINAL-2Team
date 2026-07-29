@@ -22,7 +22,7 @@ class ChatbotApiTests(TestCase):
         self.factory = RequestFactory()
 
     def test_prompt_snippet_is_capped(self):
-        snippet = prompt_snippet("가" * 200)
+        snippet = prompt_snippet("가" * 300)
         self.assertEqual(len(snippet), PROMPT_SNIPPET_MAX_CHARS)
         self.assertTrue(snippet.endswith("…"))
 
