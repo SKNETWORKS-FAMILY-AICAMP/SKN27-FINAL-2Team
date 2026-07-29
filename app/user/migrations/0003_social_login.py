@@ -22,8 +22,22 @@ class Migration(migrations.Migration):
                  "ADD COLUMN IF NOT EXISTS provider varchar(20);", None),
                 ("ALTER TABLE IF EXISTS user_accounts "
                  "ADD COLUMN IF NOT EXISTS provider_id varchar(255);", None),
-                ("CREATE UNIQUE INDEX IF NOT EXISTS user_accounts_provider_uidx "
-                 "ON user_accounts (provider, provider_id) WHERE provider IS NOT NULL;", None),
+                (
+                    """
+                    DO $$
+                    BEGIN
+                        IF to_regclass('user_accounts') IS NOT NULL THEN
+                            EXECUTE
+                                'CREATE UNIQUE INDEX IF NOT EXISTS '
+                                'user_accounts_provider_uidx '
+                                'ON user_accounts (provider, provider_id) '
+                                'WHERE provider IS NOT NULL';
+                        END IF;
+                    END;
+                    $$;
+                    """,
+                    None,
+                ),
             ],
             reverse_sql=[
                 ("DROP INDEX IF EXISTS user_accounts_provider_uidx;", None),
