@@ -408,8 +408,12 @@ def stream_concept_rag_answer(
             current_section = {"heading": str(event.get("heading") or ""), "items": []}
             answer["sections"].append(current_section)
         elif event_type == "row" and current_section is not None:
-            row = {"term": str(event.get("term") or ""), "content": str(event.get("content") or "")}
+            content = sanitize_answer(str(event.get("content") or ""))
+            if not content:
+                continue
+            row = {"term": str(event.get("term") or ""), "content": content}
             current_section["items"].append(row)
+            event = {**event, "content": content}
         elif event_type == "sources":
             answer["source_titles"] = event.get("source_titles") if isinstance(event.get("source_titles"), list) else []
         if event_type != "done":
@@ -611,7 +615,11 @@ def stream_question_rag_answer(
         elif event["type"] == "row" and current_section is not None:
             if fixed_choice_section:
                 continue
-            current_section["items"].append({"term": str(event.get("term") or ""), "content": str(event.get("content") or "")})
+            content = sanitize_answer(str(event.get("content") or ""))
+            if not content:
+                continue
+            current_section["items"].append({"term": str(event.get("term") or ""), "content": content})
+            event = {**event, "content": content}
         elif event["type"] == "sources":
             answer["source_titles"] = event.get("source_titles") if isinstance(event.get("source_titles"), list) else []
         elif event["type"] == "done" and explanation_level == "core" and resolved_choice_explanations and not choice_section_emitted:
