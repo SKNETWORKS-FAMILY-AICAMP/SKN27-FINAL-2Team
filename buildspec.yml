@@ -388,10 +388,13 @@ phases:
           local image_digest_value="$1"
           local image_label="$2"
           local scan_completed_at=""
+          local scan_details=""
+          local scan_error_file=""
           local scan_status=""
 
           echo "Waiting for ECR image scanning: ${image_label}"
           for _attempt in $(seq 1 60); do
+            scan_error_file="$(mktemp)"
             if scan_details="$(
               aws ecr describe-image-scan-findings \
                 --region "${AWS_DEFAULT_REGION}" \
@@ -399,8 +402,10 @@ phases:
                 --image-id "imageDigest=${image_digest_value}" \
                 --query "[imageScanStatus.status, imageScanFindings.imageScanCompletedAt]" \
                 --output text \
-                2> /dev/null
+                2> "${scan_error_file}"
             )"; then
+              rm -f "${scan_error_file}"
+              scan_error_file=""
               read -r scan_status scan_completed_at <<< "${scan_details}"
               if [[ ( "${scan_status}" == "COMPLETE" || "${scan_status}" == "ACTIVE" ) \
                 && -n "${scan_completed_at}" \
@@ -415,6 +420,22 @@ phases:
                 echo "ECR image scan failed for ${image_label}: ${scan_status}" >&2
                 exit 1
               fi
+            elif grep -q "ScanNotFoundException" "${scan_error_file}"; then
+              scan_status="PENDING"
+              scan_completed_at=""
+              rm -f "${scan_error_file}"
+              scan_error_file=""
+            else
+              echo "Unable to retrieve ECR scan status for ${image_label}." >&2
+              cat "${scan_error_file}" >&2
+              rm -f "${scan_error_file}"
+              scan_error_file=""
+              exit 1
+            fi
+
+            if (( _attempt == 1 || _attempt % 6 == 0 )); then
+              echo \
+                "ECR scan status for ${image_label}: status=${scan_status:-UNKNOWN}, completed_at=${scan_completed_at:-None}"
             fi
             sleep 5
           done
