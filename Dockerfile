@@ -25,6 +25,6 @@ USER app
 ENTRYPOINT ["/code/docker/entrypoint.sh"]
 
 HEALTHCHECK --interval=15s --timeout=5s --start-period=30s --retries=4 \
-    CMD python -c "import os, urllib.request; urllib.request.urlopen(f\"http://127.0.0.1:{os.environ['WEB_CONTAINER_PORT']}/health/\", timeout=4)"
+    CMD python -c "import os, urllib.request; request = urllib.request.Request(f\"http://127.0.0.1:{os.environ['WEB_CONTAINER_PORT']}/health/\", headers={\"Host\": os.environ['DJANGO_HEALTHCHECK_HOST']}); urllib.request.urlopen(request, timeout=4)"
 
 CMD ["gunicorn", "--chdir", "app", "config.wsgi:application", "--access-logfile", "-", "--error-logfile", "-"]

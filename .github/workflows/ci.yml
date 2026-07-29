@@ -70,7 +70,12 @@ jobs:
         run: python app/manage.py collectstatic --noinput
 
       - name: Run Django tests
-        run: python app/manage.py test
+        run: >-
+          python app/manage.py test
+          diagnosis
+          chatbot
+          analytics
+          config.test_health
 
       - name: Verify Docker build
         run: docker build -t himate-ci:${{ github.sha }} .

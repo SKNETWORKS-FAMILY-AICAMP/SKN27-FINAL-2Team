@@ -6,11 +6,15 @@
 
 - `dev`, `main` 브랜치 push 시 실행
 - `dev`, `main` 브랜치를 대상으로 하는 Pull Request 생성·변경 시 실행
-- `test`: PostgreSQL을 사용한 Django 검사·테스트와 Docker 이미지 빌드 확인
+- `test`: PostgreSQL을 사용한 Django 앱 테스트와 Docker 이미지 빌드 확인
 - `neo4j-regression`: `test/MK/test_neo4j`의 mock 기반 회귀 테스트 실행
 - `neo4j-integration`: 임시 Neo4j 서비스를 띄워 `graph_service`의 실제 쿼리와 연결 확인
 
 CI에서는 이미지를 ECR에 올리거나 운영 서버에 배포하지 않는다.
+
+`python app/manage.py test`만 실행하면 현재 프로젝트 구조에서는 테스트를 찾지
+못하므로, CI는 `diagnosis`, `chatbot`, `analytics`, `config.test_health`를
+명시하여 실행한다.
 
 CodePipeline 배포 전에 CI 통과를 강제하려면 GitHub 브랜치 보호 규칙 또는
 CodePipeline 안의 별도 테스트 단계를 설정해야 한다.

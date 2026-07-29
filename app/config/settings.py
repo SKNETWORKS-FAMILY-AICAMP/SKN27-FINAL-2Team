@@ -34,6 +34,13 @@ ALLOWED_HOSTS = [
     if host.strip()
 ]
 
+DJANGO_HEALTHCHECK_HOST = os.getenv(
+    "DJANGO_HEALTHCHECK_HOST",
+    "",
+).strip()
+if DJANGO_HEALTHCHECK_HOST and DJANGO_HEALTHCHECK_HOST not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(DJANGO_HEALTHCHECK_HOST)
+
 CSRF_TRUSTED_ORIGINS = [
     origin.strip()
     for origin in os.getenv("DJANGO_CSRF_TRUSTED_ORIGINS", "").split(",")
