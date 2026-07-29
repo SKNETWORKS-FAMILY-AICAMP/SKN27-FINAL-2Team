@@ -1,0 +1,10 @@
+#!/bin/bash
+
+set -euo pipefail
+
+cat <<'EOF' >> /etc/ecs/ecs.config
+ECS_CLUSTER=__ECS_CLUSTER__
+ECS_ENABLE_TASK_IAM_ROLE=true
+ECS_CONTAINER_INSTANCE_PROPAGATE_TAGS_FROM=ec2_instance
+ECS_INSTANCE_ATTRIBUTES={"himate.workload":"web"}
+EOF

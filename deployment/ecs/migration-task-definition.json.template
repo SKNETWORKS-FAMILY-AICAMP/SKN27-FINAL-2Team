@@ -10,14 +10,20 @@
     "cpuArchitecture": "X86_64",
     "operatingSystemFamily": "LINUX"
   },
+  "placementConstraints": [
+    {
+      "type": "memberOf",
+      "expression": "attribute:himate.workload == web"
+    }
+  ],
   "containerDefinitions": [
     {
       "name": "__ECS_APP_CONTAINER_NAME__",
       "image": "__APP_IMAGE_URI__",
       "essential": true,
       "cpu": 256,
-      "memory": 768,
-      "memoryReservation": 512,
+      "memory": 512,
+      "memoryReservation": 384,
       "readonlyRootFilesystem": true,
       "user": "app",
       "command": [

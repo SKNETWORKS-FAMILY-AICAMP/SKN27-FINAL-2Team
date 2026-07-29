@@ -1,5 +1,5 @@
 {
-  "family": "himate-prod-neo4j",
+  "family": "himate-prod-fact-neo4j",
   "networkMode": "bridge",
   "requiresCompatibilities": [
     "EC2"
@@ -9,9 +9,15 @@
     "cpuArchitecture": "X86_64",
     "operatingSystemFamily": "LINUX"
   },
+  "placementConstraints": [
+    {
+      "type": "memberOf",
+      "expression": "attribute:himate.workload == fact-batch"
+    }
+  ],
   "containerDefinitions": [
     {
-      "name": "himate-neo4j",
+      "name": "himate-fact-neo4j",
       "image": "neo4j:5.26.28-community@sha256:362542416de6c09a971484d1893878016cc3b5cdec166e54b1c824a220ecd6b9",
       "essential": true,
       "cpu": 512,
@@ -53,17 +59,17 @@
       "secrets": [
         {
           "name": "NEO4J_AUTH",
-          "valueFrom": "__ECS_SSM_PARAMETER_PREFIX__/NEO4J_AUTH"
+          "valueFrom": "__ECS_SSM_PARAMETER_PREFIX__/FACT_NEO4J_AUTH"
         }
       ],
       "mountPoints": [
         {
-          "sourceVolume": "himate-neo4j-data",
+          "sourceVolume": "himate-fact-neo4j-data",
           "containerPath": "/data",
           "readOnly": false
         },
         {
-          "sourceVolume": "himate-neo4j-logs",
+          "sourceVolume": "himate-fact-neo4j-logs",
           "containerPath": "/logs",
           "readOnly": false
         }
@@ -89,7 +95,7 @@
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
-          "awslogs-group": "/ecs/himate-prod-neo4j",
+          "awslogs-group": "/ecs/himate-prod-fact-neo4j",
           "awslogs-region": "__AWS_REGION__",
           "awslogs-stream-prefix": "neo4j",
           "mode": "non-blocking",
@@ -100,15 +106,15 @@
   ],
   "volumes": [
     {
-      "name": "himate-neo4j-data",
+      "name": "himate-fact-neo4j-data",
       "host": {
-        "sourcePath": "__EC2_NEO4J_DATA_PATH__"
+        "sourcePath": "__EC2_FACT_NEO4J_DATA_PATH__"
       }
     },
     {
-      "name": "himate-neo4j-logs",
+      "name": "himate-fact-neo4j-logs",
       "host": {
-        "sourcePath": "__EC2_NEO4J_LOGS_PATH__"
+        "sourcePath": "__EC2_FACT_NEO4J_LOGS_PATH__"
       }
     }
   ]

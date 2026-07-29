@@ -9,9 +9,48 @@ from unittest.mock import patch
 from etl.preprocessing.neo4j.run_fact_graph_load_pipeline import (
     run_fact_graph_load_pipeline,
 )
+from storage.fact_neo4j.load_fact_graph import load_connection_config
 
 
 class FactGraphLoadPipelineTest(unittest.TestCase):
+    def test_connection_config_uses_remote_fact_neo4j_uri(self) -> None:
+        with TemporaryDirectory() as temporary_directory, patch.dict(
+            "os.environ",
+            {
+                "FACT_NEO4J_URI": (
+                    "neo4j+s://example.databases.neo4j.io"
+                ),
+                "FACT_NEO4J_USER": "neo4j",
+                "FACT_NEO4J_PASSWORD": "test-password",
+                "FACT_NEO4J_BOLT_PORT": "9999",
+            },
+            clear=True,
+        ):
+            connection = load_connection_config(Path(temporary_directory))
+
+        self.assertEqual(
+            connection,
+            {
+                "uri": "neo4j+s://example.databases.neo4j.io",
+                "user": "neo4j",
+                "password": "test-password",
+            },
+        )
+
+    def test_connection_config_keeps_local_port_fallback(self) -> None:
+        with TemporaryDirectory() as temporary_directory, patch.dict(
+            "os.environ",
+            {
+                "NEO4J_USER": "neo4j",
+                "NEO4J_PASSWORD": "test-password",
+                "FACT_NEO4J_BOLT_PORT": "8765",
+            },
+            clear=True,
+        ):
+            connection = load_connection_config(Path(temporary_directory))
+
+        self.assertEqual(connection["uri"], "bolt://localhost:8765")
+
     def test_rejects_non_positive_batch_size(self) -> None:
         with TemporaryDirectory() as temporary_directory:
             temporary_path = Path(temporary_directory)

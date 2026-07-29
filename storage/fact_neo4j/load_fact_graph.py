@@ -21,9 +21,12 @@ def read_csv_rows(path: Path) -> list[dict[str, str]]:
 
 def load_connection_config(project_root: Path) -> dict[str, str]:
     load_dotenv(project_root / ".env")
+    uri = os.getenv("FACT_NEO4J_URI")
     user = os.getenv("FACT_NEO4J_USER") or os.getenv("NEO4J_USER")
     password = os.getenv("FACT_NEO4J_PASSWORD") or os.getenv("NEO4J_PASSWORD")
-    port = os.getenv("FACT_NEO4J_BOLT_PORT") or "7688"
+    if not uri:
+        port = os.getenv("FACT_NEO4J_BOLT_PORT") or "7688"
+        uri = f"bolt://localhost:{port}"
     missing = [
         name
         for name, value in (
@@ -37,7 +40,7 @@ def load_connection_config(project_root: Path) -> dict[str, str]:
             "Missing Neo4j connection settings: " + ", ".join(missing)
         )
     return {
-        "uri": f"bolt://localhost:{port}",
+        "uri": uri,
         "user": str(user),
         "password": str(password),
     }

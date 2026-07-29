@@ -10,17 +10,33 @@
     "cpuArchitecture": "X86_64",
     "operatingSystemFamily": "LINUX"
   },
+  "placementConstraints": [
+    {
+      "type": "memberOf",
+      "expression": "attribute:himate.workload == web"
+    }
+  ],
   "containerDefinitions": [
     {
       "name": "himate-web",
       "image": "__APP_IMAGE_URI__",
       "essential": true,
-      "cpu": 768,
-      "memory": 1280,
-      "memoryReservation": 1024,
+      "cpu": 512,
+      "memory": 1024,
+      "memoryReservation": 768,
       "readonlyRootFilesystem": true,
       "user": "app",
       "stopTimeout": 30,
+      "environment": [
+        {
+          "name": "GUNICORN_WORKERS",
+          "value": "2"
+        },
+        {
+          "name": "GUNICORN_THREADS",
+          "value": "4"
+        }
+      ],
       "linuxParameters": {
         "initProcessEnabled": true,
         "capabilities": {
@@ -216,9 +232,9 @@
       "name": "himate-nginx",
       "image": "__NGINX_IMAGE_URI__",
       "essential": true,
-      "cpu": 128,
-      "memory": 256,
-      "memoryReservation": 128,
+      "cpu": 64,
+      "memory": 128,
+      "memoryReservation": 64,
       "readonlyRootFilesystem": true,
       "user": "101:101",
       "links": [

@@ -183,16 +183,19 @@ def oauth_callback(request, provider):
         return redirect("/user/login/?error=state")
 
     try:
-        token_data = _post_form(
-            config["token_url"],
-            {
-                "grant_type": "authorization_code",
-                "code": code,
-                "client_id": config["client_id"],
-                "client_secret": config["client_secret"],
-                "redirect_uri": config["redirect_uri"],
-            },
-        )
+        token_params = {
+            "grant_type": "authorization_code",
+            "code": code,
+            "client_id": config["client_id"],
+            "redirect_uri": config["redirect_uri"],
+        }
+        # 카카오는 client_secret 미사용 앱에 빈 값을 보내면 거부하므로 있을 때만 넣는다.
+        if config["client_secret"]:
+            token_params["client_secret"] = config["client_secret"]
+        # 네이버는 토큰 교환 단계에서도 state 를 요구한다.
+        if provider == "naver":
+            token_params["state"] = state
+        token_data = _post_form(config["token_url"], token_params)
         access_token = token_data.get("access_token")
         if not access_token:
             return redirect("/user/login/?error=token")
@@ -205,6 +208,9 @@ def oauth_callback(request, provider):
         return redirect("/user/login/?error=profile")
 
     user = _find_or_create_social_user(provider, provider_id, email, nickname)
+    # 비활성/삭제 계정은 로그인 차단(소셜 경로엔 authenticate 검사가 없으므로 직접 확인).
+    if user.status != "active" or user.deleted_at is not None:
+        return redirect("/user/login/?error=inactive")
     login(request, user, backend="user.backends.UserAccountsBackend")
 
     next_url = request.session.pop("oauth_next", "") or settings.LOGIN_REDIRECT_URL
