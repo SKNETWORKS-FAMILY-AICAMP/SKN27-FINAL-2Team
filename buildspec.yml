@@ -520,7 +520,10 @@ phases:
           "${app_image_uri}" \
           "${ECS_NGINX_CONTAINER_NAME}" \
           "${nginx_image_uri}" \
-          > imagedefinitions.json
+          > "${CODEBUILD_SRC_DIR}/imagedefinitions.json"
+
+        test -s "${CODEBUILD_SRC_DIR}/imagedefinitions.json"
+        echo "Created ECS deployment artifact: ${CODEBUILD_SRC_DIR}/imagedefinitions.json"
 
 artifacts:
   files:
