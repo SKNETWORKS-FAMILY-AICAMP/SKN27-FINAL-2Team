@@ -51,14 +51,12 @@ class MypageServiceTests(SimpleTestCase):
         self.assertEqual(summary["avg_session_time"], "02:06")
 
 
-    @patch("analytics.service.mypage.get_completed_weekly_review_sessions")
     @patch("analytics.service.mypage.get_recent_wrong_rate_period")
     @patch("analytics.service.mypage.get_completed_records")
     def test_wrong_type_summary_exposes_recent_records(
         self,
         get_completed_records_mock,
         get_recent_wrong_rate_period_mock,
-        get_completed_weekly_review_sessions_mock,
     ):
         today = date(2026, 7, 13)
         period = {
@@ -75,7 +73,6 @@ class MypageServiceTests(SimpleTestCase):
             {"q_type": None, "total": 1, "wrong": 1},
         ]
         get_completed_records_mock.return_value = completed_records
-        get_completed_weekly_review_sessions_mock.return_value.last.return_value = None
         user = SimpleNamespace(user_id=7)
 
         summary = build_wrong_type_summary(user, today)
@@ -92,53 +89,46 @@ class MypageServiceTests(SimpleTestCase):
         self.assertEqual(summary["period_label"], period["label"])
         self.assertEqual(summary["source"], "recent_learning")
 
-    @patch("analytics.service.mypage.get_completed_weekly_review_sessions")
     @patch("analytics.service.mypage.get_recent_wrong_rate_period")
     @patch("analytics.service.mypage.get_completed_records")
-    def test_wrong_type_summary_prefers_latest_weekly_review(
+    def test_wrong_rate_summary_merges_rows_sharing_display_label(
         self,
         get_completed_records_mock,
         get_recent_wrong_rate_period_mock,
-        get_completed_weekly_review_sessions_mock,
     ):
-        latest_weekly_review = SimpleNamespace(
-            session_id=20,
-            recorded_date=date(2026, 7, 13),
-        )
-        get_completed_weekly_review_sessions_mock.return_value.last.return_value = (
-            latest_weekly_review
-        )
+        today = date(2026, 7, 13)
         get_recent_wrong_rate_period_mock.return_value = {
             "startDate": date(2026, 7, 7),
-            "endDate": date(2026, 7, 13),
+            "endDate": today,
             "label": "최근 7일",
         }
         completed_records = Mock()
-        weekly_records = completed_records.filter.return_value
-        grouped_records = weekly_records.values.return_value
+        grouped_records = completed_records.filter.return_value.values.return_value
         grouped_records.annotate.return_value = [
-            {"q_type": "사료", "total": 10, "wrong": 4},
+            {"era": "고구려", "total": 4, "wrong": 3},
+            {"era": "삼국시대", "total": 6, "wrong": 1},
         ]
         get_completed_records_mock.return_value = completed_records
 
-        summary = build_wrong_type_summary(
+        summary = build_wrong_rate_summary(
             SimpleNamespace(user_id=7),
-            date(2026, 7, 13),
+            "era",
+            today,
         )
 
-        completed_records.filter.assert_called_once_with(session=latest_weekly_review)
-        self.assertEqual(summary["period_label"], "07.13 주간평가")
-        self.assertEqual(summary["source"], "weekly_review")
+        self.assertEqual(len(summary["items"]), 1)
+        self.assertEqual(summary["items"][0]["label"], "삼국시대")
+        self.assertEqual(summary["items"][0]["total"], 10)
+        self.assertEqual(summary["items"][0]["wrong"], 4)
+        self.assertEqual(summary["items"][0]["rate"], 40)
         self.assertEqual(summary["overall_rate"], 40)
 
-    @patch("analytics.service.mypage.get_completed_weekly_review_sessions")
     @patch("analytics.service.mypage.get_recent_wrong_rate_period")
     @patch("analytics.service.mypage.get_completed_records")
     def test_wrong_rate_summary_uses_classification_display_label(
         self,
         get_completed_records_mock,
         get_recent_wrong_rate_period_mock,
-        get_completed_weekly_review_sessions_mock,
     ):
         today = date(2026, 7, 13)
         get_recent_wrong_rate_period_mock.return_value = {
@@ -152,7 +142,6 @@ class MypageServiceTests(SimpleTestCase):
             {"era": "\uc870\uc120\uc2dc\ub300", "total": 2, "wrong": 1},
         ]
         get_completed_records_mock.return_value = completed_records
-        get_completed_weekly_review_sessions_mock.return_value.last.return_value = None
 
         summary = build_wrong_rate_summary(
             SimpleNamespace(user_id=7),

@@ -421,7 +421,7 @@ def _get_generation_reason(priority_targets) -> str | None:
 
 
 def _completed_records(user_id: int):
-    """전체 완료 기록. build_weakness_rows 가 자체 90일 필터를 걸므로 자르지 않는다."""
+    """전체 완료 기록. build_weakness_rows 가 자체 lookback 필터를 걸므로 자르지 않는다."""
     return SolveRecords.objects.filter(
         session__user_id=user_id,
         session__status="completed",

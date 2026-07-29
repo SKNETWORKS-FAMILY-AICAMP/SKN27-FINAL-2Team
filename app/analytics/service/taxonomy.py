@@ -75,6 +75,11 @@ def normalize_classification_value(
     display_value = str(value or "").strip()
     if not display_value:
         return resolved_config.unclassified_value
+    if display_value == resolved_config.unclassified_label:
+        # 화면 라벨("미분류")로 되돌아온 값도 내부 미분류 값으로 정규화한다.
+        # 통계 쪽 groupKeyId(표시 라벨 기반)와 취약 판정 쪽 groupKeyId(원본 값
+        # 기반)가 같은 키로 만나야 미분류 항목에도 취약 배지가 붙는다.
+        return resolved_config.unclassified_value
 
     aliases: Mapping[str, tuple[str, ...]] = {}
     if normalized_field == "era":

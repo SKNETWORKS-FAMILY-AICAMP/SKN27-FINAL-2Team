@@ -9,7 +9,6 @@ from analytics.service.analytics import (
     get_diagnosis_improvement_summary,
     get_completed_records,
     get_completed_sessions,
-    get_completed_weekly_review_sessions,
     get_recent_wrong_rate_period,
     get_weekly_practice_summary,
 )
@@ -141,23 +140,20 @@ def build_wrong_type_summary(user, today=None):
 
 
 def build_wrong_rate_summary(user, field, today=None):
-    """최근 풀이의 지정 분류별 오답률 요약을 만든다."""
+    """최근 7일 완료 기록의 지정 분류별 오답률 요약을 만든다.
+
+    상세 페이지(wrong_rate_detail)와 같은 최근 7일 기준을 쓴다. 예전에는
+    최신 주간평가 세션을 우선했지만, 두 화면의 수치가 달라져 통일했다.
+    """
     unclassified_label = "미분류"
     period = get_recent_wrong_rate_period(today)
     completed_records = get_completed_records(user.user_id)
-    latest_weekly_review = get_completed_weekly_review_sessions(user.user_id).last()
-    record_scope = completed_records
     period_label = period["label"]
     source = "recent_learning"
-    if latest_weekly_review is not None:
-        record_scope = completed_records.filter(session=latest_weekly_review)
-        period_label = f"{latest_weekly_review.recorded_date.strftime('%m.%d')} 주간평가"
-        source = "weekly_review"
-    elif latest_weekly_review is None:
-        record_scope = completed_records.filter(
-            session__recorded_date__gte=period["startDate"],
-            session__recorded_date__lte=period["endDate"],
-        )
+    record_scope = completed_records.filter(
+        session__recorded_date__gte=period["startDate"],
+        session__recorded_date__lte=period["endDate"],
+    )
 
     rows = (
         record_scope
@@ -168,28 +164,30 @@ def build_wrong_rate_summary(user, field, today=None):
         )
     )
 
-    items = []
+    # DB 는 원본 값 기준으로 그룹핑하므로, 정규화 후 같은 라벨이 되는 값
+    # (예: era "고구려" → "삼국시대")을 라벨 기준으로 다시 합친다. 상세
+    # 페이지(build_classification_group_summaries)와 같은 병합 기준이다.
+    summary_map = {}
     total_count = 0
     wrong_count = 0
     for row in rows:
         total = row["total"] or 0
         wrong = row["wrong"] or 0
+        if field in {"era", "topic"}:
+            label = get_classification_display_label(field, row[field])
+        elif field not in {"era", "topic"}:
+            label = row[field] or unclassified_label
 
         total_count += total
         wrong_count += wrong
-        items.append(
-            {
-                "label": (
-                    get_classification_display_label(field, row[field])
-                    if field in {"era", "topic"}
-                    else row[field] or unclassified_label
-                ),
-                "total": total,
-                "wrong": wrong,
-                "rate": calculate_percent_rate(wrong, total),
-            }
-        )
+        entry = summary_map.setdefault(label, {"label": label, "total": 0, "wrong": 0})
+        entry["total"] += total
+        entry["wrong"] += wrong
 
+    items = [
+        {**entry, "rate": calculate_percent_rate(entry["wrong"], entry["total"])}
+        for entry in summary_map.values()
+    ]
     sorted_items = sorted(
         items,
         key=lambda item: (-item["rate"], -item["total"], item["label"]),
@@ -251,7 +249,7 @@ def build_weakness_summary(user, today=None):
     return {
         "items": visible_items,
         "has_records": bool(items),
-        "period_label": "최근 학습 기준",
+        "period_label": f"최근 {config['lookback_days']}일 기준",
         "empty_title": "아직 취약으로 판단할 데이터가 부족해요",
         "empty_description": "문제를 더 풀면 분석이 정확해져요.",
     }

@@ -55,8 +55,10 @@ class WeaknessConfig:
 
 def get_weakness_config() -> WeaknessConfig:
     return WeaknessConfig(
-        version="weakness-v2",
-        lookback_days=90,
+        version="weakness-v3",
+        # 판정 기간. 90일은 오래된 기록이 배지에 남아 최근 실력과 어긋나서
+        # 최근 4주(추세 비교 창 14일 x 2와 같은 폭)로 줄였다.
+        lookback_days=28,
         half_life_days=14,
         minimum_effective_sample=3.0,
         wilson_z=1.28,

@@ -72,12 +72,18 @@ def calculate_record_based_plan_progress(
     completion_rate = float(study_plan.completion_rate or 0.0)
     start_date = getattr(study_plan, "start_date", None)
     end_date = getattr(study_plan, "end_date", None)
+    achieved_count = None
     active_plan = get_active_study_plan_dto(user_id)
     if active_plan and active_plan.get("studyPlanId") == study_plan.studyplan_id:
         plan_items = active_plan.get("plans", [])
         completion_rate = float(active_plan.get("completionRate") or 0.0)
         start_date = active_plan.get("startDate") or start_date
         end_date = active_plan.get("endDate") or end_date
+        active_progress = active_plan.get("progress") or {}
+        if active_progress.get("achievedCount") is not None:
+            # DTO 가 실제 완료 블록 수를 들고 있으면 그대로 쓴다.
+            # 완료율(소수 4자리 반올림)에서 역산하면 오차가 생길 수 있다.
+            achieved_count = int(active_progress["achievedCount"])
 
     target_count = sum(
         1
@@ -85,7 +91,9 @@ def calculate_record_based_plan_progress(
         for block in day_plan.get("blocks", [])
         if is_completion_block(block)
     )
-    achieved_count = round(target_count * completion_rate)
+    if achieved_count is None:
+        # 보관된 계획은 완료 수가 따로 저장되지 않아 완료율에서 역산한다.
+        achieved_count = round(target_count * completion_rate)
     return {
         "summary": {
             "targetCount": target_count,
