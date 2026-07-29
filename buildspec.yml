@@ -113,6 +113,7 @@ phases:
             "${migration_task_file:-}" \
             "${docker_config_directory}/config.json"
           if [[ -n "${nginx_test_tls_directory}" ]]; then
+            chmod 0700 "${nginx_test_tls_directory}" > /dev/null 2>&1 || true
             rm -f -- \
               "${nginx_test_tls_directory}/fullchain.pem" \
               "${nginx_test_tls_directory}/privkey.pem"
@@ -327,6 +328,7 @@ phases:
         chmod 0444 \
           "${nginx_test_tls_directory}/fullchain.pem" \
           "${nginx_test_tls_directory}/privkey.pem"
+        chmod 0555 "${nginx_test_tls_directory}"
 
         docker run \
           --rm \
