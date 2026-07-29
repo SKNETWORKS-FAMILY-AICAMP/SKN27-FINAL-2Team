@@ -2,17 +2,30 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock, patch
 
-from django.core.cache import cache
+from django.core.cache import caches
 from django.http import HttpRequest
-from django.test import TestCase, override_settings
+from django.test import SimpleTestCase, override_settings
 
-from config.health import health_check
+from config.health import health_check, liveness
 
 
 @override_settings(DEBUG=True)
-class HealthCheckTest(TestCase):
+class HealthCheckTest(SimpleTestCase):
     def setUp(self) -> None:
-        cache.clear()
+        caches["healthcheck"].clear()
+
+    @patch("config.health.GraphDatabase.driver")
+    @patch("config.health.connection")
+    def test_liveness_does_not_access_dependencies(
+        self,
+        connection_mock: MagicMock,
+        driver_mock: MagicMock,
+    ) -> None:
+        response = liveness(HttpRequest())
+
+        self.assertEqual(response.status_code, 200)
+        connection_mock.cursor.assert_not_called()
+        driver_mock.assert_not_called()
 
     @override_settings(ALLOWED_HOSTS=["health.example.com"])
     @patch.dict(

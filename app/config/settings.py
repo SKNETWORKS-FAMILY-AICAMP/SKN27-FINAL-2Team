@@ -216,6 +216,12 @@ CACHES = {
         'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
         'LOCATION': 'himate_cache',
     },
+    # 준비 상태 캐시는 PostgreSQL을 사용하지 않는다. DB 캐시를 사용하면
+    # /health/ 호출 자체가 Aurora Serverless의 auto-pause를 방해할 수 있다.
+    'healthcheck': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'himate-healthcheck',
+    },
 }
 
 # DRF 기본 권한을 인증 필수로 둔다. 게스트 공개 엔드포인트만 뷰에서

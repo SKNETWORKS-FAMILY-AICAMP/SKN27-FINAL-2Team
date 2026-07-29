@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 
 from django.conf import settings
-from django.core.cache import cache
+from django.core.cache import caches
 from django.db import connection
 from django.http import HttpRequest, JsonResponse
 from neo4j import GraphDatabase
@@ -100,11 +100,16 @@ def health_check(request: HttpRequest) -> JsonResponse:
     DB·Neo4j 를 매번 두드리지 않게 한다."""
     cache_seconds = int(os.getenv("HEALTH_READINESS_CACHE_SECONDS", "10"))
     cache_key = "health-readiness"
-    cached = cache.get(cache_key) if cache_seconds > 0 else None
+    health_cache = caches["healthcheck"]
+    cached = health_cache.get(cache_key) if cache_seconds > 0 else None
     if cached is None:
         service_status, http_status = _compute_readiness()
         if cache_seconds > 0:
-            cache.set(cache_key, (service_status, http_status), cache_seconds)
+            health_cache.set(
+                cache_key,
+                (service_status, http_status),
+                cache_seconds,
+            )
     else:
         service_status, http_status = cached
 
