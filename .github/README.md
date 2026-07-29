@@ -31,3 +31,11 @@ CodePipeline
 `deployment/deploy.sh`이다. CodePipeline의 소스 브랜치와 대상 EC2 설정은
 AWS에서 관리한다.
 
+배포 스크립트는 새 이미지로 Django 운영 설정과 migration을 검사한 뒤 컨테이너를
+교체한다. `/health/`에서 PostgreSQL과 Neo4j 연결이 모두 확인되어야 배포가
+성공하며, 실패하면 이전 이미지를 다시 실행한다.
+
+EC2 환경파일은 `deployment/ec2.env.example`을 참고하되 실제 비밀값은 저장소에
+커밋하지 않는다. CodeBuild에는 `EC2_WEB_HEALTH_TIMEOUT_SECONDS`와
+`EC2_WEB_HEALTH_POLL_SECONDS`, `EC2_WEB_DOCKER_NETWORK`도 설정해야 한다.
+

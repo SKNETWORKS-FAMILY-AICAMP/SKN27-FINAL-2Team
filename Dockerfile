@@ -2,6 +2,7 @@ FROM python:3.12-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
+ENV WEB_CONTAINER_PORT=8000
 
 WORKDIR /code
 
@@ -12,10 +13,18 @@ RUN pip install --no-cache-dir --upgrade pip \
 
 COPY . .
 
-RUN chmod +x /code/docker/entrypoint.sh
+RUN addgroup --system app \
+    && adduser --system --ingroup app app \
+    && chmod +x /code/docker/entrypoint.sh \
+    && chown -R app:app /code
 
 EXPOSE 8000
 
+USER app
+
 ENTRYPOINT ["/code/docker/entrypoint.sh"]
 
-CMD ["gunicorn", "--chdir", "app", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--access-logfile", "-", "--error-logfile", "-"]
+HEALTHCHECK --interval=15s --timeout=5s --start-period=30s --retries=4 \
+    CMD python -c "import os, urllib.request; urllib.request.urlopen(f\"http://127.0.0.1:{os.environ['WEB_CONTAINER_PORT']}/health/\", timeout=4)"
+
+CMD ["gunicorn", "--chdir", "app", "config.wsgi:application", "--access-logfile", "-", "--error-logfile", "-"]
