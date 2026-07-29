@@ -328,7 +328,7 @@ phases:
         chmod 0444 \
           "${nginx_test_tls_directory}/fullchain.pem" \
           "${nginx_test_tls_directory}/privkey.pem"
-        chmod 0555 "${nginx_test_tls_directory}"
+        chmod 0511 "${nginx_test_tls_directory}"
 
         docker run \
           --rm \
