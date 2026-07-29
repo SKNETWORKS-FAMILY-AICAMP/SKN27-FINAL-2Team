@@ -318,6 +318,7 @@ phases:
           --env "DJANGO_DEBUG=false"
           --env "DJANGO_ALLOWED_HOSTS=localhost,testserver"
           --env "DJANGO_CSRF_TRUSTED_ORIGINS=https://localhost"
+          --env "DJANGO_SECURE_SSL_REDIRECT=false"
           --env "POSTGRES_DB=${test_database_name}"
           --env "POSTGRES_HOST=${test_database_container}"
           --env "POSTGRES_USER=${test_database_user}"
