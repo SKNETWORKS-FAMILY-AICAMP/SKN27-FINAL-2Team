@@ -400,6 +400,7 @@ phases:
                 --region "${AWS_DEFAULT_REGION}" \
                 --repository-name "${ECR_REPOSITORY}" \
                 --image-id "imageDigest=${image_digest_value}" \
+                --no-paginate \
                 --query "[imageScanStatus.status, imageScanFindings.imageScanCompletedAt]" \
                 --output text \
                 2> "${scan_error_file}"
@@ -452,6 +453,7 @@ phases:
               --region "${AWS_DEFAULT_REGION}" \
               --repository-name "${ECR_REPOSITORY}" \
               --image-id "imageDigest=${image_digest_value}" \
+              --no-paginate \
               --query '[imageScanFindings.findingSeverityCounts.CRITICAL || `0`, imageScanFindings.findingSeverityCounts.HIGH || `0`]' \
               --output text
           )"
