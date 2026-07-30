@@ -25,7 +25,7 @@ def get_analysis_scope_chart_data(user_id, today=None):
         build_analysis_scope_chart_group(
             "session",
             "세션별",
-            "세션별 오답률",
+            "평가별 오답률",
             "완료된 세션을 시간순으로 비교합니다.",
             get_session_scope_chart_bars(user_id),
         ),

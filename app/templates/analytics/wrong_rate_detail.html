@@ -171,15 +171,19 @@
                       <span class="scope-point-value">{{ bar.chartValueLabel }}</span>
                       <span class="scope-point-dot" aria-hidden="true"></span>
                       <strong>{{ bar.label }}</strong>
-                      {% if bar.description %}
+                      {% if bar.dateKey %}
+                        <p>오답률</p>
+                      {% elif bar.description %}
                         <p>{{ bar.description }}</p>
                       {% endif %}
+                      {% if not bar.dateKey %}
                       {% if bar.detailLine or bar.subDetailLine %}
                         <small>
                           {% if bar.detailLine %}{{ bar.detailLine }}{% endif %}
                           {% if bar.detailLine and bar.subDetailLine %}<br />{% endif %}
                           {% if bar.subDetailLine %}{{ bar.subDetailLine }}{% endif %}
                         </small>
+                      {% endif %}
                       {% endif %}
                     </article>
                   {% endfor %}
