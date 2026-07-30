@@ -1,5 +1,9 @@
 FROM nginxinc/nginx-unprivileged:1.29.5-alpine@sha256:42a7d7f2ee23e9f5a1dcdf3647ba5c585bbd18f79e79cd817e70e8cd61c55779
 
+USER root
+
+RUN apk upgrade --no-cache
+
 COPY --chown=101:101 nginx.conf.template /etc/nginx/nginx.conf.template
 COPY --chown=101:101 --chmod=0555 entrypoint.sh /usr/local/bin/himate-nginx-entrypoint
 
