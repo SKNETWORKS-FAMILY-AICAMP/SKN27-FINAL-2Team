@@ -131,6 +131,34 @@
           "valueFrom": "/himate/prod/OPENAI_CHAT_MODEL"
         },
         {
+          "name": "OAUTH_REDIRECT_BASE_URL",
+          "valueFrom": "/himate/prod/OAUTH_REDIRECT_BASE_URL"
+        },
+        {
+          "name": "GOOGLE_OAUTH_CLIENT_ID",
+          "valueFrom": "/himate/prod/GOOGLE_OAUTH_CLIENT_ID"
+        },
+        {
+          "name": "GOOGLE_OAUTH_CLIENT_SECRET",
+          "valueFrom": "/himate/prod/GOOGLE_OAUTH_CLIENT_SECRET"
+        },
+        {
+          "name": "KAKAO_OAUTH_CLIENT_ID",
+          "valueFrom": "/himate/prod/KAKAO_OAUTH_CLIENT_ID"
+        },
+        {
+          "name": "KAKAO_OAUTH_CLIENT_SECRET",
+          "valueFrom": "/himate/prod/KAKAO_OAUTH_CLIENT_SECRET"
+        },
+        {
+          "name": "NAVER_OAUTH_CLIENT_ID",
+          "valueFrom": "/himate/prod/NAVER_OAUTH_CLIENT_ID"
+        },
+        {
+          "name": "NAVER_OAUTH_CLIENT_SECRET",
+          "valueFrom": "/himate/prod/NAVER_OAUTH_CLIENT_SECRET"
+        },
+        {
           "name": "EMAIL_BACKEND",
           "valueFrom": "/himate/prod/EMAIL_BACKEND"
         },
