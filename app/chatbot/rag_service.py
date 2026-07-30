@@ -288,6 +288,8 @@ def recent_topic_from_history(history: list[dict[str, str]], question: str) -> s
 def build_search_question(question: str, history: list[dict[str, str]], intent: str = "concept") -> str:
     if not history:
         return question
+    if intent == "question" and "[문제]" in question:
+        return question
     if intent == "question" and not is_problem_context_question(question):
         return question
     needs_context = intent == "question" and is_problem_context_question(question)

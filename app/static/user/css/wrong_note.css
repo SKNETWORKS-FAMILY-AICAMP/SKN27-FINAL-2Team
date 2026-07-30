@@ -92,7 +92,7 @@ select {
 .view-toggle button.active {
   border-color: var(--green);
   background: var(--green);
-  color: var(--lime);
+  color: #fff;
 }
 
 .note-workspace {
