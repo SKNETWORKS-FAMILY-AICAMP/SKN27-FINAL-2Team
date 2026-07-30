@@ -274,12 +274,31 @@ phases:
           --env "POSTGRES_PASSWORD=${test_database_password}"
           --env "POSTGRES_PORT=5432"
           --env "POSTGRES_SSLMODE=disable"
+          --env "POSTGRES_REQUIRED_TABLES=user_accounts,questions,question_options,exam_data,chat_sessions,chat_messages,solve_sessions,solve_records,analytics,note_mypage,study_plan_mypage,email_verification_codes,ml_trend_top5"
           --env "NEO4J_URI=bolt://localhost:7687"
           --env "NEO4J_USER=neo4j"
           --env "NEO4J_PASSWORD=codebuild-neo4j-password"
           --env "OPENAI_API_KEY=codebuild-openai-key"
         )
 
+        docker run \
+          --rm \
+          --network "${test_network}" \
+          "${test_environment[@]}" \
+          "${app_tagged_image_uri}" \
+          python app/manage.py apply_database_schema
+        docker run \
+          --rm \
+          --network "${test_network}" \
+          "${test_environment[@]}" \
+          "${app_tagged_image_uri}" \
+          python app/manage.py migrate --noinput
+        docker run \
+          --rm \
+          --network "${test_network}" \
+          "${test_environment[@]}" \
+          "${app_tagged_image_uri}" \
+          python app/manage.py check_database_schema
         docker run \
           --rm \
           --network "${test_network}" \
@@ -304,6 +323,7 @@ phases:
             question \
             user \
             config.test_health \
+            config.test_apply_database_schema \
             config.test_database_schema \
             --noinput
 
