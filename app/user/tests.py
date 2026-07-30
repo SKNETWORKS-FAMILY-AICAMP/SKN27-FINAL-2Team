@@ -1,10 +1,11 @@
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
-from django.test import TestCase
+from django.test import SimpleTestCase, TestCase
 from django.urls import reverse
 
 from .backends import UserAccountsBackend
 from .models import UserAccounts
+from .oauth import _find_or_create_social_user
 
 
 class AuthenticationSecurityTests(TestCase):
@@ -29,3 +30,29 @@ class AuthenticationSecurityTests(TestCase):
 
         self.assertEqual(self.client.get(logout_url).status_code, 405)
         self.assertEqual(self.client.post(logout_url).status_code, 302)
+
+
+class OAuthAccountTest(SimpleTestCase):
+    def test_social_nickname_is_limited_to_database_length(self) -> None:
+        provider_query = MagicMock()
+        provider_query.first.return_value = None
+        email_query = MagicMock()
+        email_query.exists.return_value = False
+
+        with patch(
+            "user.oauth.UserAccounts.objects.filter",
+            side_effect=[provider_query, email_query],
+        ), patch(
+            "user.oauth.UserAccounts.objects.create",
+        ) as create_user:
+            _find_or_create_social_user(
+                provider="google",
+                provider_id="provider-user-id",
+                email="social@example.com",
+                nickname="가" * 50,
+            )
+
+        self.assertEqual(
+            create_user.call_args.kwargs["nickname"],
+            "가" * 30,
+        )

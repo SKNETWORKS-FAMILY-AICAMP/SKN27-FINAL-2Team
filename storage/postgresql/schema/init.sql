@@ -18,19 +18,25 @@ CREATE SCHEMA IF NOT EXISTS rag;
 CREATE TABLE IF NOT EXISTS user_accounts (
     user_id          BIGSERIAL       PRIMARY KEY,
     email            VARCHAR(255)    NOT NULL UNIQUE,
-    password_hash    VARCHAR(255)    NOT NULL,
+    password_hash    VARCHAR(255)    NULL,
     nickname         VARCHAR(30)     NOT NULL,
+    provider         VARCHAR(20)     NULL,
+    provider_id      VARCHAR(255)    NULL,
     login_fail_count INT             NOT NULL DEFAULT 0,
     is_locked        BOOLEAN         NOT NULL DEFAULT FALSE,
-    locked_at        TIMESTAMP       NULL,
+    locked_at        TIMESTAMPTZ     NULL,
     status           VARCHAR(20)     NOT NULL DEFAULT 'active',
-    created_at       TIMESTAMP       NOT NULL DEFAULT NOW(),
-    updated_at       TIMESTAMP       NOT NULL DEFAULT NOW(),
-    deleted_at       TIMESTAMP       NULL,
-    last_login       TIMESTAMP       NULL,
+    created_at       TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
+    updated_at       TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
+    deleted_at       TIMESTAMPTZ     NULL,
+    last_login       TIMESTAMPTZ     NULL,
     daily_available_hours   DECIMAL(3,1)    NOT NULL DEFAULT 1.0,
     exam_date               DATE            NULL
 );
+
+CREATE UNIQUE INDEX IF NOT EXISTS user_accounts_provider_uidx
+    ON user_accounts(provider, provider_id)
+    WHERE provider IS NOT NULL;
 
 -- 2. 문제 본문
 -- 문제 생성/풀이 화면에서 사용하는 문항 단위 데이터입니다.
@@ -92,8 +98,8 @@ CREATE TABLE IF NOT EXISTS exam_data (
     q_score                    INT             NULL,
     has_image                  BOOLEAN         NOT NULL DEFAULT FALSE,
     image_meta_json            JSONB           NOT NULL DEFAULT '{}'::jsonb,
-    created_at                 TIMESTAMP       NOT NULL DEFAULT NOW(),
-    updated_at                 TIMESTAMP       NOT NULL DEFAULT NOW(),
+    created_at                 TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
+    updated_at                 TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
     answer_explanation         TEXT            NULL,
     choice_explanations_json   JSONB           NOT NULL DEFAULT '{}'::jsonb,
     explanation_source         VARCHAR(50)     NULL
@@ -110,7 +116,7 @@ CREATE TABLE IF NOT EXISTS chat_sessions (
     chat_type   VARCHAR(20)     NOT NULL,
     turn_count  INT             NOT NULL DEFAULT 0,
     status      VARCHAR(20)     NOT NULL DEFAULT 'active',
-    created_at  TIMESTAMP       NOT NULL DEFAULT NOW(),
+    created_at  TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
     user_id     BIGINT          NOT NULL REFERENCES user_accounts(user_id) ON DELETE CASCADE
 );
 
@@ -121,7 +127,7 @@ CREATE TABLE IF NOT EXISTS chat_messages (
     sender_type VARCHAR(10)     NOT NULL,                  -- 'user' | 'ai'
     content     TEXT            NOT NULL,
     used_tokens INT             NULL,
-    created_at  TIMESTAMP       NOT NULL DEFAULT NOW()
+    created_at  TIMESTAMPTZ     NOT NULL DEFAULT NOW()
 );
 
 -- 6. 풀이 세션
@@ -162,7 +168,7 @@ CREATE TABLE IF NOT EXISTS solve_records (
     is_correct      BOOLEAN         NOT NULL DEFAULT FALSE, -- 정답 여부
     time_spent_ms   INT             NULL,                  -- 해당 문제 풀이 시간(ms)
     is_saved        BOOLEAN         NOT NULL DEFAULT FALSE, -- 사용자가 노트에 별도로 저장한 문제인지 여부
-    saved_at        TIMESTAMP       NULL,                  -- 노트 저장 시각. 저장하지 않은 문제는 NULL
+    saved_at        TIMESTAMPTZ     NULL,                  -- 노트 저장 시각. 저장하지 않은 문제는 NULL
     studyplan_id    BIGINT          NULL,                  -- 학습계획에서 시작한 풀이일 때 연결되는 study_plan_mypage ID
     study_plan_block_id VARCHAR(36) NULL,                  -- 학습계획 JSON 블록(blockId)과 연결되는 값
     q_type          VARCHAR(20)     NOT NULL,              -- 문제 대유형 스냅샷
@@ -191,15 +197,15 @@ CREATE TABLE IF NOT EXISTS analytics (
     wrong_rate          DOUBLE PRECISION NOT NULL DEFAULT 0,
     period_start        DATE            NULL,
     period_end          DATE            NULL,
-    created_at          TIMESTAMP       NOT NULL DEFAULT NOW()
+    created_at          TIMESTAMPTZ     NOT NULL DEFAULT NOW()
 );
 
 -- 9. 오답노트
 CREATE TABLE IF NOT EXISTS note_mypage (
     note_id             BIGSERIAL       PRIMARY KEY,
     user_id             BIGINT          NOT NULL REFERENCES user_accounts(user_id) ON DELETE CASCADE,
-    created_at          TIMESTAMP       NOT NULL DEFAULT NOW(),
-    modified_at         TIMESTAMP       NOT NULL DEFAULT NOW(),
+    created_at          TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
+    modified_at         TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
     title               VARCHAR(50)     NOT NULL,
     era                 VARCHAR(50)     NULL,
     topic               VARCHAR(50)     NULL,
@@ -216,8 +222,8 @@ CREATE TABLE IF NOT EXISTS study_plan_mypage (
     user_id             BIGINT          NOT NULL REFERENCES user_accounts(user_id) ON DELETE CASCADE,
     study_plans         TEXT            NULL,              -- 학습/통계 목표
     study_plan_items    TEXT            NULL,              -- 날짜별 학습 목록. JSON 형태 권장
-    created_at          TIMESTAMP       NOT NULL DEFAULT NOW(),
-    modified_at         TIMESTAMP       NOT NULL DEFAULT NOW(),
+    created_at          TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
+    modified_at         TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
     status              VARCHAR(20)     NOT NULL DEFAULT 'active', -- 계획 상태: active | archived | deleted
     plan_version        INT             NOT NULL DEFAULT 1,        -- 사용자별 계획 버전
     start_date          DATE            NULL,                      -- 계획 시작일
@@ -244,12 +250,13 @@ CREATE UNIQUE INDEX IF NOT EXISTS study_plan_mypage_user_active_uidx
 CREATE TABLE IF NOT EXISTS email_verification_codes (
     id          BIGSERIAL       PRIMARY KEY,
     email       VARCHAR(255)    NOT NULL,
-    code        VARCHAR(6)      NOT NULL,
+    code        VARCHAR(128)    NOT NULL,
     purpose     VARCHAR(20)     NOT NULL DEFAULT 'register',
     is_used     BOOLEAN         NOT NULL DEFAULT FALSE,
-    expires_at  TIMESTAMP       NOT NULL,
-    created_at  TIMESTAMP       NOT NULL DEFAULT NOW(),
-    used_at     TIMESTAMP       NULL
+    attempt_count SMALLINT      NOT NULL DEFAULT 0,
+    expires_at  TIMESTAMPTZ     NOT NULL,
+    created_at  TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
+    used_at     TIMESTAMPTZ     NULL
 );
 
 -- 12. ML trend TOP5 data
@@ -274,7 +281,7 @@ CREATE TABLE IF NOT EXISTS ml_trend_top5 (
     count_value            INT             NOT NULL,
     ratio                  DOUBLE PRECISION NULL,
     ratio_percent          DOUBLE PRECISION NULL,
-    created_at             TIMESTAMP       NOT NULL DEFAULT NOW(),
+    created_at             TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
     CONSTRAINT ml_trend_top5_source_check
         CHECK (source IN ('recent5_actual', 'predicted', 'actual')),
     CONSTRAINT ml_trend_top5_trend_type_check

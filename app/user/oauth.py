@@ -126,7 +126,7 @@ def _find_or_create_social_user(
     if not resolved_email or UserAccounts.objects.filter(email=resolved_email).exists():
         # 이메일 미제공(카카오 등)이거나 이미 쓰는 이메일이면 합성 주소를 쓴다.
         resolved_email = f"{provider}_{provider_id}@social.himate"
-    resolved_nickname = (nickname or f"{provider}_{provider_id[:8]}")[:50]
+    resolved_nickname = (nickname or f"{provider}_{provider_id[:8]}")[:30]
 
     now = timezone.now()
     return UserAccounts.objects.create(
