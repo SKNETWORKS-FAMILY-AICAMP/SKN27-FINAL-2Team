@@ -47,7 +47,7 @@
 
         <section class="session-overview" aria-label="세션 요약">
           <article><span>문항 묶음</span><strong>{{ selected_session.total_count }}문항</strong></article>
-          <article><span>상태</span><strong>{{ selected_session.status }}</strong></article>
+          <article><span>상태</span><strong>{{ selected_session_status_label }}</strong></article>
           <article><span>점수</span><strong>{{ selected_session.total_score|default:"0" }}</strong></article>
           <article><span>풀이시간</span><strong id="sessionElapsed">-</strong></article>
         </section>
@@ -289,7 +289,7 @@
                 <div><dt>문항 수</dt><dd>{{ item.session.total_count }}문항</dd></div>
                 <div><dt>정답률</dt><dd>{{ item.answer_rate }}%</dd></div>
                 <div><dt>풀이시간</dt><dd>{{ item.elapsed_time }}</dd></div>
-                <div><dt>상태</dt><dd>{{ item.session.status }}</dd></div>
+                <div><dt>상태</dt><dd>{{ item.status_label }}</dd></div>
               </dl>
             </a>
           {% empty %}

@@ -356,6 +356,7 @@ def solved_problems(request):
                 "elapsed_time": _format_duration(session.elapsed_sec),
                 "display_date": display.get("date", ""),
                 "display_title": display.get("title", "풀이 기록"),
+                "status_label": "완료" if session.status == "completed" else "미완료",
                 "is_active": selected_session and session.session_id == selected_session.session_id,
             }
         )
@@ -411,6 +412,7 @@ def solved_problems(request):
         {
             "session_cards": session_cards,
             "selected_session": selected_session,
+            "selected_session_status_label": "완료" if selected_session and selected_session.status == "completed" else "미완료",
             "selected_session_display": session_display_map.get(selected_session.session_id) if selected_session else None,
             "record_cards": record_cards,
             "record_payload": record_payload,

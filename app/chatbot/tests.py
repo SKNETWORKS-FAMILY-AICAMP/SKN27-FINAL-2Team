@@ -10,6 +10,7 @@ from django.urls import reverse
 from .rag.llm_answer_generator import CONCEPT_STREAM_STRUCTURED_SYSTEM_PROMPT, CORE_STREAM_STRUCTURED_SYSTEM_PROMPT, FOUNDATION_EXPLANATION_SYSTEM_PROMPT, LLMAnswerGenerator, PROMPT_SNIPPET_MAX_CHARS, normalize_structured_answer, prompt_snippet, sanitize_answer
 from .rag import reranker
 from .rag_service import (
+    build_search_question,
     build_problem_option_queries,
     stream_concept_rag_answer,
     stream_question_rag_answer,
@@ -80,6 +81,11 @@ class ChatbotApiTests(TestCase):
         self.assertTrue(all("수가 고구려를 침공했다" in query and "이후 사실은" in query for query in queries))
         self.assertTrue(any("을지문덕" in query for query in queries))
         self.assertTrue(any("살수 대첩" in query for query in queries))
+
+    def test_problem_context_does_not_use_previous_chat_topic(self):
+        question = "[문제] 미우라 공사의 정책 결과는?\n[보기]\n3. 을미사변\n[사용자 질문] 3번 선지 설명해줘"
+        history = [{"role": "user", "content": "계해약조를 설명해줘"}]
+        self.assertEqual(build_search_question(question, history, "question"), question)
 
     def test_core_problem_stream_uses_db_choice_explanations_verbatim(self):
         result = SimpleNamespace(chunk_id=1, score=1.0)
