@@ -11,10 +11,10 @@
 
 | 이름 | 역할 | 담당 |
 | --- | --- | --- |
-| 김민경 | PM · Backend · Infra | GraphDB 설계·구현, 학습 계획 및 주간 리포트 Multi-Agent, 대시보드·분석 API/화면, AWS 배포 인프라 및 환경 설정 |
-| 박창제 | APM · AI/ML · Full-stack | 한능검 기출 수집·통계 데이터 구축, 출제 경향 예측 ML 모델링, 맞춤 문제 추천·진단·문제풀이 API 및 화면, 오답노트, 추천·학습계획 통합 |
-| 권환성 | AI/RAG · Data · Full-stack | PostgreSQL·pgvector 임베딩, 한국사 학습자료 수집·전처리, RAG 검색·챗봇 답변·GraphDB 연동, 챗봇·진단 화면 및 연동 검증 |
-| 주연중 | sLLM · Backend · Frontend | 파인튜닝 데이터셋 구성 및 LLM 모델 학습·검증, 회원가입·로그인·인증 API, 로그인 화면, 사용자 데이터 연동 |
+| 김&#8288;민&#8288;경 | PM · Backend · Infra | GraphDB 설계·구현, 학습 계획 및 주간 리포트 Multi-Agent, 대시보드·분석 API/화면, AWS 배포 인프라 및 환경 설정 |
+| 박&#8288;창&#8288;제 | APM · AI/ML · Full-stack | 한능검 기출 수집·통계 데이터 구축, 출제 경향 예측 ML 모델링, 맞춤 문제 추천·진단·문제풀이 API 및 화면, 오답노트, 추천·학습계획 통합 |
+| 권&#8288;환&#8288;성 | AI/RAG · Data · Full-stack | PostgreSQL·pgvector 임베딩, 한국사 학습자료 수집·전처리, RAG 검색·챗봇 답변·GraphDB 연동, 챗봇·진단 화면 및 연동 검증 |
+| 주&#8288;연&#8288;중 | sLLM · Backend · Frontend | 파인튜닝 데이터셋 구성 및 LLM 모델 학습·검증, 회원가입·로그인·인증 API, 로그인 화면, 사용자 데이터 연동 |
 
 > 공동 수행: MVP 범위 확정, 와이어프레임·테이블 스키마 설계, 업무 스터디, 중간·최종 발표
 
@@ -333,12 +333,12 @@ erDiagram
 
 | 화면 | 미리보기 |
 | --- | --- |
-| 진단평가 | ![진단평가](docs/readme-images/00-diagnosis-evaluation.png) |
-| 취약점 분석 | ![취약점 분석](docs/readme-images/01-weakness-analysis.png) |
-| 학습 플래너 | ![학습 플래너](docs/readme-images/02-learning-planner.png) |
-| 맞춤 문제 설정 | ![맞춤 문제 설정](docs/readme-images/03-custom-question-settings.png) |
-| AI 챗봇 | ![AI 챗봇](docs/readme-images/04-ai-chatbot.png) |
-| 오답 노트 | ![오답 노트](docs/readme-images/05-wrong-note.png) |
+| 진&#8288;단평&#8288;가 | ![진단평가](docs/readme-images/00-diagnosis-evaluation.png) |
+| 취&#8288;약&#8288;점 분&#8288;석 | ![취약점 분석](docs/readme-images/01-weakness-analysis.png) |
+| 학&#8288;습 플&#8288;래&#8288;너 | ![학습 플래너](docs/readme-images/02-learning-planner.png) |
+| 맞&#8288;춤 문&#8288;제 설&#8288;정 | ![맞춤 문제 설정](docs/readme-images/03-custom-question-settings.png) |
+| A&#8288;I 챗&#8288;봇 | ![AI 챗봇](docs/readme-images/04-ai-chatbot.png) |
+| 오&#8288;답 노&#8288;트 | ![오답 노트](docs/readme-images/05-wrong-note.png) |
 
 ---
 
