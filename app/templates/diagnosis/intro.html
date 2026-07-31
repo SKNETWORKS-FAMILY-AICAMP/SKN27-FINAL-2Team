@@ -72,6 +72,9 @@
   </main>
 
   <script>
+    const DIAGNOSIS_STORAGE_KEY = "diagnosisSession:{{ request.user.user_id|escapejs }}";
+    sessionStorage.removeItem("diagnosisSession");
+
     document.querySelectorAll("img[data-fallback-src]").forEach((image) => {
       image.addEventListener("error", () => {
         if (image.dataset.fallbackTried) return;
@@ -109,7 +112,7 @@
 
         const data = await res.json();
         data.startedAt = Date.now();
-        sessionStorage.setItem("diagnosisSession", JSON.stringify(data));
+        sessionStorage.setItem(DIAGNOSIS_STORAGE_KEY, JSON.stringify(data));
         window.location.href = "/diagnosis/exam/";
       } catch (e) {
         alert(`진단평가를 시작할 수 없습니다: ${e.message}`);

@@ -47,23 +47,23 @@ class DiagnosisStartResponseSerializer(serializers.Serializer):
 
 class AnswerItemSerializer(serializers.Serializer):
     """단일 답안"""
-    question_id = serializers.IntegerField()
+    question_id = serializers.IntegerField(min_value=1)
     selected_no = serializers.IntegerField(
-        required=False, allow_null=True, default=None
+        required=False, allow_null=True, default=None, min_value=1
     )
     choice_id = serializers.IntegerField(
-        required=False, allow_null=True, default=None
+        required=False, allow_null=True, default=None, min_value=1
     )  # 미응답 시 null
     time_spent_ms = serializers.IntegerField(
-        required=False, allow_null=True, default=None
+        required=False, allow_null=True, default=None, min_value=0
     )
 
 
 class DiagnosisSubmitRequestSerializer(serializers.Serializer):
     """POST /api/diagnosis/submit/"""
-    session_id = serializers.IntegerField()
-    elapsed_sec = serializers.IntegerField()
-    answers = AnswerItemSerializer(many=True)
+    session_id = serializers.IntegerField(min_value=1)
+    elapsed_sec = serializers.IntegerField(min_value=0)
+    answers = AnswerItemSerializer(many=True, allow_empty=False)
 
 
 class DiagnosisSubmitResponseSerializer(serializers.Serializer):

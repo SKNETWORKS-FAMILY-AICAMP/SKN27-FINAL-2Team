@@ -120,6 +120,11 @@
   {{ note_payload|json_script:"notePayload" }}
 
   <script>
+    const QUESTION_CONDITION_STORAGE_KEY = "questionGenerationCondition:{{ request.user.user_id|escapejs }}";
+    const QUESTION_PROGRESS_STORAGE_KEY = "questionInProgress:{{ request.user.user_id|escapejs }}";
+    sessionStorage.removeItem("questionGenerationCondition");
+    localStorage.removeItem("questionInProgress");
+
     const payload = JSON.parse(document.getElementById("notePayload").textContent);
     let records = payload.records || [];
     const sessions = payload.sessions || [];
@@ -343,8 +348,8 @@
         if (!response.ok) {
           throw new Error(payload.error || "문제를 생성하지 못했습니다.");
         }
-        localStorage.removeItem("questionInProgress");
-        sessionStorage.removeItem("questionGenerationCondition");
+        localStorage.removeItem(QUESTION_PROGRESS_STORAGE_KEY);
+        sessionStorage.removeItem(QUESTION_CONDITION_STORAGE_KEY);
         window.location.href = `/question/exam/?resume=1&session_id=${payload.session_id}`;
       } catch (error) {
         alert(error.message || "문제를 생성하지 못했습니다.");

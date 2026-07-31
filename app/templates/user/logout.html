@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>로그아웃 | himate</title>
+  <noscript>
+    <meta http-equiv="refresh" content="0;url={{ redirect_url }}" />
+  </noscript>
+</head>
+<body>
+  <p>로그아웃 중입니다.</p>
+  <a href="{{ redirect_url }}">홈으로 이동</a>
+  <script>
+    (() => {
+      const storageScope = "{{ storage_scope|escapejs }}";
+      const scopedStorageKeys = [
+        `questionResult:${storageScope}`,
+        `questionInProgress:${storageScope}`,
+        `diagnosisSession:${storageScope}`,
+        `questionGenerationCondition:${storageScope}`,
+        `himate_chat_sessions:${storageScope}`,
+        `chatbotProblemContext:${storageScope}`,
+      ];
+      const legacyStorageKeys = [
+        "questionResult",
+        "questionInProgress",
+        "diagnosisSession",
+        "questionGenerationCondition",
+        "studyPlanQuestionCondition",
+        "himate_chat_sessions",
+        "chatbotProblemContext",
+      ];
+
+      try {
+        [localStorage, sessionStorage].forEach((storage) => {
+          [...scopedStorageKeys, ...legacyStorageKeys].forEach((key) => {
+            storage.removeItem(key);
+          });
+        });
+      } catch (error) {
+        console.warn("브라우저 저장 데이터 정리에 실패했습니다.", error);
+      }
+      window.location.replace("{{ redirect_url|escapejs }}");
+    })();
+  </script>
+</body>
+</html>

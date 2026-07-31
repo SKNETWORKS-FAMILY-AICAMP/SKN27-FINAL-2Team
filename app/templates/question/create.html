@@ -179,6 +179,13 @@
 
   {{ planner_data|json_script:"planner-data" }}
   <script>
+    const QUESTION_CONDITION_STORAGE_KEY = "questionGenerationCondition:{{ request.user.user_id|escapejs }}";
+    const QUESTION_PROGRESS_STORAGE_KEY = "questionInProgress:{{ request.user.user_id|escapejs }}";
+    sessionStorage.removeItem("questionGenerationCondition");
+    sessionStorage.removeItem("studyPlanQuestionCondition");
+    localStorage.removeItem("questionGenerationCondition");
+    localStorage.removeItem("questionInProgress");
+
     const rows = document.querySelectorAll(".condition-row");
     const resetButton = document.getElementById("resetButton");
     const selectAllButton = document.getElementById("selectAllButton");
@@ -333,10 +340,9 @@
           const plan = selectablePlans[Number(button.dataset.planIndex)];
           if (!plan) return;
           const condition = buildStudyPlanCondition(plan);
-          sessionStorage.setItem("questionGenerationCondition", JSON.stringify(condition));
-          sessionStorage.setItem("studyPlanQuestionCondition", JSON.stringify(condition));
-          localStorage.removeItem("questionGenerationCondition");
-          localStorage.removeItem("questionInProgress");
+          sessionStorage.setItem(QUESTION_CONDITION_STORAGE_KEY, JSON.stringify(condition));
+          localStorage.removeItem(QUESTION_CONDITION_STORAGE_KEY);
+          localStorage.removeItem(QUESTION_PROGRESS_STORAGE_KEY);
           window.location.href = "/question/exam/?new=1";
         });
       });
@@ -436,9 +442,9 @@
         if (!shouldCreateNew) return;
       }
 
-      sessionStorage.setItem("questionGenerationCondition", JSON.stringify(condition));
-      localStorage.removeItem("questionGenerationCondition");
-      localStorage.removeItem("questionInProgress");
+      sessionStorage.setItem(QUESTION_CONDITION_STORAGE_KEY, JSON.stringify(condition));
+      localStorage.removeItem(QUESTION_CONDITION_STORAGE_KEY);
+      localStorage.removeItem(QUESTION_PROGRESS_STORAGE_KEY);
       window.location.href = "/question/exam/?new=1";
     });
 

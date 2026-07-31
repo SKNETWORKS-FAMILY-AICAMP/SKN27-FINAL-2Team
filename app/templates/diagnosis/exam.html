@@ -81,6 +81,9 @@
   </main>
 
   <script>
+    const DIAGNOSIS_STORAGE_KEY = "diagnosisSession:{{ request.user.user_id|escapejs }}";
+    sessionStorage.removeItem("diagnosisSession");
+
     document.querySelectorAll("img[data-fallback-src]").forEach((image) => {
       image.addEventListener("error", () => {
         if (image.dataset.fallbackTried) return;
@@ -97,7 +100,7 @@
     }
 
     // ── 세션 데이터 로드 ──────────────────────────────────────────────────────────
-    const sessionData = JSON.parse(sessionStorage.getItem("diagnosisSession") || "null");
+    const sessionData = JSON.parse(sessionStorage.getItem(DIAGNOSIS_STORAGE_KEY) || "null");
     if (!sessionData || !sessionData.questions) {
       alert("세션 정보가 없습니다. 다시 시작해 주세요.");
       window.location.href = "/diagnosis/";
@@ -243,7 +246,7 @@
           throw new Error(err.error || "서버 오류");
         }
 
-        sessionStorage.removeItem("diagnosisSession");
+        sessionStorage.removeItem(DIAGNOSIS_STORAGE_KEY);
         window.location.href = `/diagnosis/result/?session_id=${SESSION_ID}`;
       } catch (e) {
         alert(`제출 중 오류가 발생했습니다: ${e.message}`);

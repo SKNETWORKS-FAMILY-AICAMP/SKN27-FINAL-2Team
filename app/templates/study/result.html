@@ -174,7 +174,9 @@
   <script>
     const RESULT_MODE = "{{ result_mode|default:'practice' }}";
     const CHATBOT_CONTEXT_STORAGE_KEY = "chatbotProblemContext:{{ request.user.user_id|escapejs }}";
+    const QUESTION_RESULT_STORAGE_KEY = "questionResult:{{ request.user.user_id|escapejs }}";
     const SESSION_TYPE = RESULT_MODE === "diagnostic" ? "diagnostic" : "practice";
+    localStorage.removeItem("questionResult");
     let resultPayload = null;
     let questions = [];
     let savedQuestionIds = new Set();
@@ -397,7 +399,7 @@
     }
 
     async function loadPracticeResult() {
-      const saved = JSON.parse(localStorage.getItem("questionResult") || "null");
+      const saved = JSON.parse(localStorage.getItem(QUESTION_RESULT_STORAGE_KEY) || "null");
       const sessionId = saved?.sessionId || saved?.session_id || null;
 
       if (sessionId) {
@@ -729,8 +731,8 @@
         }
         savedQuestionIds.add(questionId);
         if (RESULT_MODE === "practice") {
-          const saved = JSON.parse(localStorage.getItem("questionResult") || "{}");
-          localStorage.setItem("questionResult", JSON.stringify({
+          const saved = JSON.parse(localStorage.getItem(QUESTION_RESULT_STORAGE_KEY) || "{}");
+          localStorage.setItem(QUESTION_RESULT_STORAGE_KEY, JSON.stringify({
             ...saved,
             savedQuestionIds: [...savedQuestionIds],
           }));

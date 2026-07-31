@@ -1,6 +1,38 @@
-from django.test import SimpleTestCase
+from types import SimpleNamespace
+
+from django.template.loader import render_to_string
+from django.test import RequestFactory, SimpleTestCase
 
 from .serializers import SavedSessionResponse, StartQuestionsResponse
+
+
+class QuestionPageStorageIsolationTest(SimpleTestCase):
+    def setUp(self) -> None:
+        self.factory = RequestFactory()
+
+    def render_exam_for_user(self, user_id: int) -> str:
+        request = self.factory.get("/question/exam/")
+        request.user = SimpleNamespace(is_authenticated=True, user_id=user_id)
+        return render_to_string(
+            "question/question_exam.html",
+            {"exam_mode": "practice"},
+            request=request,
+        )
+
+    def test_exam_storage_keys_are_scoped_by_user(self) -> None:
+        first_user_page = self.render_exam_for_user(101)
+        second_user_page = self.render_exam_for_user(202)
+
+        self.assertIn('const STORAGE_SCOPE = "101";', first_user_page)
+        self.assertIn('const STORAGE_SCOPE = "202";', second_user_page)
+        self.assertIn(
+            "const progressStorageKey = `questionInProgress:${STORAGE_SCOPE}`;",
+            first_user_page,
+        )
+        self.assertIn(
+            "const resultStorageKey = `questionResult:${STORAGE_SCOPE}`;",
+            first_user_page,
+        )
 
 
 class ActiveQuestionResponseSecurityTest(SimpleTestCase):

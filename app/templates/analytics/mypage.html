@@ -303,6 +303,14 @@
 
   {{ planner_data|json_script:"planner-data" }}
   <script>
+    const DIAGNOSIS_STORAGE_KEY = "diagnosisSession:{{ request.user.user_id|escapejs }}";
+    const QUESTION_CONDITION_STORAGE_KEY = "questionGenerationCondition:{{ request.user.user_id|escapejs }}";
+    const QUESTION_PROGRESS_STORAGE_KEY = "questionInProgress:{{ request.user.user_id|escapejs }}";
+    sessionStorage.removeItem("diagnosisSession");
+    sessionStorage.removeItem("questionGenerationCondition");
+    localStorage.removeItem("questionGenerationCondition");
+    localStorage.removeItem("questionInProgress");
+
     const createPlanForm = document.getElementById("createPlanForm");
     const plannerCalendarGrid = document.getElementById("plannerCalendarGrid");
     const plannerMonthLabel = document.getElementById("plannerMonthLabel");
@@ -545,7 +553,7 @@
         }
 
         payload.startedAt = Date.now();
-        sessionStorage.setItem("diagnosisSession", JSON.stringify(payload));
+        sessionStorage.setItem(DIAGNOSIS_STORAGE_KEY, JSON.stringify(payload));
         window.location.href = "/diagnosis/exam/";
       } catch (error) {
         button.disabled = false;
@@ -639,9 +647,9 @@
           return;
         }
 
-        sessionStorage.removeItem("questionGenerationCondition");
-        localStorage.removeItem("questionGenerationCondition");
-        localStorage.removeItem("questionInProgress");
+        sessionStorage.removeItem(QUESTION_CONDITION_STORAGE_KEY);
+        localStorage.removeItem(QUESTION_CONDITION_STORAGE_KEY);
+        localStorage.removeItem(QUESTION_PROGRESS_STORAGE_KEY);
         if (payload.adjustment_message) {
           alert(payload.adjustment_message);
         }

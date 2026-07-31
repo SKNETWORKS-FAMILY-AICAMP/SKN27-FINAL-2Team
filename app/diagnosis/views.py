@@ -334,6 +334,7 @@ def diagnosis_start(request):
 # ── API: 답안 제출 ──────────────────────────────────────────────────────────────
 
 @api_view(["POST"])
+@transaction.atomic
 def diagnosis_submit(request):
     """
     POST /api/diagnosis/submit/
@@ -358,10 +359,16 @@ def diagnosis_submit(request):
     elapsed_sec = data["elapsed_sec"]
     answers = data["answers"]
     user_id = request.user.user_id
+    question_ids = [answer["question_id"] for answer in answers]
+    if len(question_ids) != len(set(question_ids)):
+        return Response(
+            {"error": "중복된 문항 답안이 포함되어 있습니다."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
     # 세션 확인
     try:
-        session = SolveSessions.objects.get(
+        session = SolveSessions.objects.select_for_update().get(
             session_id=session_id,
             user_id=user_id,
             session_type="diagnostic",
@@ -372,74 +379,75 @@ def diagnosis_submit(request):
             status=status.HTTP_404_NOT_FOUND,
         )
 
-    if session.status == "completed":
+    if session.status != "in_progress":
         return Response(
             {"error": "이미 제출된 세션입니다."},
             status=status.HTTP_400_BAD_REQUEST,
         )
 
-    # 문제 정보 일괄 조회
-    question_ids = [a["question_id"] for a in answers]
-    questions_map = {
-        q.question_id: q
-        for q in Questions.objects.filter(question_id__in=question_ids)
-    }
     # 선택지 정보 일괄 조회 (choice_id -> QuestionOptions)
     options_map = {
         opt.choice_id: opt
-        for opt in QuestionOptions.objects.filter(question_id__in=question_ids)
+        for opt in QuestionOptions.objects.filter(
+            question_id__in=question_ids,
+            choice_id__in=[
+                answer["choice_id"]
+                for answer in answers
+                if answer.get("choice_id") is not None
+            ],
+        )
     }
 
-    # solve_records 생성 + 점수 계산
+    # 세션에 배정된 문항만 잠근 뒤 제출 목록과 정확히 일치하는지 확인한다.
     existing_records = {
         record.question_id: record
-        for record in SolveRecords.objects.filter(session=session, question_id__in=question_ids)
+        for record in SolveRecords.objects.select_for_update()
+        .select_related("question")
+        .filter(session=session)
     }
-    study_plan_ref = _session_study_plan_ref(session) or {}
+    expected_question_ids = set(existing_records)
+    if set(question_ids) != expected_question_ids:
+        return Response(
+            {
+                "error": "제출 답안 목록이 세션 문항과 일치하지 않습니다.",
+                "expected_count": len(expected_question_ids),
+                "submitted_count": len(question_ids),
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+        )
     records_to_update = []
-    records_to_create = []
     total_score = 0
     correct_count = 0
 
     for ans in answers:
         q_id = ans["question_id"]
         choice_id = ans["choice_id"]
-        displayed_no = ans.get("selected_no")
         time_spent_ms = ans.get("time_spent_ms")
 
-        q = questions_map.get(q_id)
-        if not q:
-            continue
+        record = existing_records.get(q_id)
+        if record is None:
+            return Response(
+                {"error": "세션 문항 기록을 찾을 수 없습니다."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        q = record.question
 
         # choice_id -> selected_no (choice_no) 변환
         selected_no = None
         is_correct = False
         if choice_id is not None:
             opt = options_map.get(choice_id)
-            if opt:
-                selected_no = displayed_no or opt.choice_no
-                is_correct = opt.is_answer
+            if opt is None or opt.question_id != q_id:
+                return Response(
+                    {"error": "선택지가 세션 문항에 속하지 않습니다."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            selected_no = opt.choice_no
+            is_correct = opt.is_answer
 
         if is_correct:
             total_score += q.q_score
             correct_count += 1
-
-        record = existing_records.get(q_id)
-        if record is None:
-            records_to_create.append(SolveRecords(
-                session=session,
-                question=q,
-                selected_no=selected_no,
-                is_correct=is_correct,
-                time_spent_ms=time_spent_ms,
-                q_type=q.question_type,
-                topic=q.topic,
-                era=q.era,
-                q_score=q.q_score,
-                studyplan_id=study_plan_ref.get("studyplan_id"),
-                study_plan_block_id=study_plan_ref.get("study_plan_block_id"),
-            ))
-            continue
 
         record.selected_no = selected_no
         record.is_correct = is_correct
@@ -450,9 +458,7 @@ def diagnosis_submit(request):
         record.q_score = q.q_score
         records_to_update.append(record)
 
-    # 진단 시작 시 만들어 둔 빈 records는 업데이트하고, 예외적으로 누락된 문항은 새로 생성한다.
-    if records_to_create:
-        SolveRecords.objects.bulk_create(records_to_create)
+    # 진단 시작 시 만들어 둔 세션 records만 업데이트한다.
     if records_to_update:
         SolveRecords.objects.bulk_update(
             records_to_update,
@@ -462,10 +468,17 @@ def diagnosis_submit(request):
     answer_rate = round(correct_count / len(answers), 4) if answers else 0.0
 
     session.status = "completed"
-    session.elapsed_sec = elapsed_sec
+    session.elapsed_sec = min(elapsed_sec, DIAGNOSIS_TIME_LIMIT_SEC)
     session.total_score = total_score
     session.answer_rate = answer_rate
-    session.save()
+    session.save(
+        update_fields=[
+            "status",
+            "elapsed_sec",
+            "total_score",
+            "answer_rate",
+        ]
+    )
     # 완료된 세션 기록을 기준으로 overall/era/type/topic 분석 스냅샷을 저장한다.
     create_session_snapshot(session.session_id)
     _complete_weekly_review_block_for_session(session, user_id)

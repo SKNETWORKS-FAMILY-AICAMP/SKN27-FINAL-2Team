@@ -1,7 +1,7 @@
 from types import SimpleNamespace
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
-from django.test import SimpleTestCase
+from django.test import SimpleTestCase, TestCase
 from rest_framework.test import APIRequestFactory, force_authenticate
 
 from analytics.service.study_plan import StudyPlanBlockNotDue, StudyPlanBlockTerminal
@@ -10,7 +10,150 @@ from .views import (
     _complete_weekly_review_block_for_session,
     _get_expected_grade,
     diagnosis_start,
+    diagnosis_submit,
 )
+
+
+class DiagnosisSubmitSecurityTest(TestCase):
+    def request(self, answers: list[dict]) -> object:
+        request = APIRequestFactory().post(
+            "/api/diagnosis/submit/",
+            {
+                "session_id": 55,
+                "elapsed_sec": 120,
+                "answers": answers,
+            },
+            format="json",
+        )
+        force_authenticate(
+            request,
+            user=SimpleNamespace(user_id=1, is_authenticated=True),
+        )
+        return request
+
+    @patch("diagnosis.views._complete_weekly_review_block_for_session")
+    @patch("diagnosis.views.create_session_snapshot")
+    @patch("diagnosis.views.SolveRecords.objects.bulk_update")
+    @patch("diagnosis.views.QuestionOptions.objects.filter")
+    @patch("diagnosis.views.Questions.objects.filter")
+    @patch("diagnosis.views.SolveRecords.objects.select_for_update")
+    @patch("diagnosis.views.SolveSessions.objects.select_for_update")
+    def test_rejects_choice_from_another_question(
+        self,
+        select_session: MagicMock,
+        select_records: MagicMock,
+        filter_questions: MagicMock,
+        filter_options: MagicMock,
+        _bulk_update: MagicMock,
+        _create_snapshot: MagicMock,
+        _complete_review: MagicMock,
+    ) -> None:
+        question = self.question()
+        session = self.session()
+        record = self.record(question)
+        select_session.return_value.get.return_value = session
+        select_records.return_value.select_related.return_value.filter.return_value = [record]
+        filter_questions.return_value = [question]
+        filter_options.return_value = []
+
+        response = diagnosis_submit(
+            self.request(
+                [
+                    {
+                        "question_id": 1,
+                        "choice_id": 999,
+                        "selected_no": 1,
+                        "time_spent_ms": 1000,
+                    }
+                ]
+            )
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data["error"], "선택지가 세션 문항에 속하지 않습니다.")
+
+    @patch("diagnosis.views._complete_weekly_review_block_for_session")
+    @patch("diagnosis.views.create_session_snapshot")
+    @patch("diagnosis.views.SolveRecords.objects.bulk_update")
+    @patch("diagnosis.views.QuestionOptions.objects.filter")
+    @patch("diagnosis.views.Questions.objects.filter")
+    @patch("diagnosis.views.SolveRecords.objects.select_for_update")
+    @patch("diagnosis.views.SolveSessions.objects.select_for_update")
+    def test_uses_server_choice_number_and_completes_once(
+        self,
+        select_session: MagicMock,
+        select_records: MagicMock,
+        filter_questions: MagicMock,
+        filter_options: MagicMock,
+        bulk_update: MagicMock,
+        create_snapshot: MagicMock,
+        _complete_review: MagicMock,
+    ) -> None:
+        question = self.question()
+        session = self.session()
+        record = self.record(question)
+        option = SimpleNamespace(
+            choice_id=10,
+            question_id=1,
+            choice_no=3,
+            is_answer=True,
+        )
+        select_session.return_value.get.return_value = session
+        select_records.return_value.select_related.return_value.filter.return_value = [record]
+        filter_questions.return_value = [question]
+        filter_options.return_value = [option]
+
+        response = diagnosis_submit(
+            self.request(
+                [
+                    {
+                        "question_id": 1,
+                        "choice_id": 10,
+                        "selected_no": 1,
+                        "time_spent_ms": 1000,
+                    }
+                ]
+            )
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(record.selected_no, 3)
+        self.assertTrue(record.is_correct)
+        self.assertEqual(session.status, "completed")
+        bulk_update.assert_called_once()
+        create_snapshot.assert_called_once_with(55)
+
+    def question(self) -> SimpleNamespace:
+        return SimpleNamespace(
+            question_id=1,
+            q_score=2,
+            question_type="concept",
+            topic="politics",
+            era="joseon",
+        )
+
+    def record(self, question: SimpleNamespace) -> SimpleNamespace:
+        return SimpleNamespace(
+            question_id=question.question_id,
+            question=question,
+            q_score=question.q_score,
+            selected_no=None,
+            is_correct=False,
+            time_spent_ms=None,
+            q_type=question.question_type,
+            topic=question.topic,
+            era=question.era,
+        )
+
+    def session(self) -> SimpleNamespace:
+        return SimpleNamespace(
+            session_id=55,
+            status="in_progress",
+            elapsed_sec=None,
+            total_score=None,
+            answer_rate=None,
+            save=MagicMock(),
+        )
 
 
 class DiagnosisResponseSecurityTest(SimpleTestCase):

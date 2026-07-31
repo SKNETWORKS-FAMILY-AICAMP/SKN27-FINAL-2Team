@@ -15,6 +15,7 @@ from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
 from django.db import connection, transaction
 from django.http import JsonResponse
+from django.urls import reverse
 from django.utils import timezone
 from django.shortcuts import redirect, render
 from django.utils.http import url_has_allowed_host_and_scheme
@@ -146,9 +147,17 @@ def login_page(request):
 
 @require_POST
 def logout_page(request):
+    storage_scope = str(request.user.user_id) if request.user.is_authenticated else ""
     logout(request)
     messages.success(request, "로그아웃되었습니다.")
-    return redirect("/")
+    return render(
+        request,
+        "user/logout.html",
+        {
+            "redirect_url": reverse("pages:index"),
+            "storage_scope": storage_scope,
+        },
+    )
 
 @login_required
 def profile_edit(request):

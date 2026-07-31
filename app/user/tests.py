@@ -29,7 +29,11 @@ class AuthenticationSecurityTests(TestCase):
         logout_url = reverse("user:logout")
 
         self.assertEqual(self.client.get(logout_url).status_code, 405)
-        self.assertEqual(self.client.post(logout_url).status_code, 302)
+        response = self.client.post(logout_url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "questionResult:")
+        self.assertContains(response, 'window.location.replace("/")')
 
 
 class OAuthAccountTest(SimpleTestCase):

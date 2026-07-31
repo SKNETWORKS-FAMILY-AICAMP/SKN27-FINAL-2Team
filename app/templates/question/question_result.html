@@ -131,7 +131,9 @@
 
   <script>
     const CHATBOT_CONTEXT_STORAGE_KEY = "chatbotProblemContext:{{ request.user.user_id|escapejs }}";
-    const saved = JSON.parse(localStorage.getItem("questionResult") || "null");
+    const QUESTION_RESULT_STORAGE_KEY = "questionResult:{{ request.user.user_id|escapejs }}";
+    localStorage.removeItem("questionResult");
+    const saved = JSON.parse(localStorage.getItem(QUESTION_RESULT_STORAGE_KEY) || "null");
     if (!saved?.questions?.length) {
       alert("풀이 결과가 없습니다. 문제를 먼저 생성해 주세요.");
       window.location.href = "/question/";
@@ -397,7 +399,7 @@
           throw new Error(result.error || "노트 저장에 실패했습니다.");
         }
         savedQuestionIds.add(questionId);
-        localStorage.setItem("questionResult", JSON.stringify({
+        localStorage.setItem(QUESTION_RESULT_STORAGE_KEY, JSON.stringify({
           ...saved,
           savedQuestionIds: [...savedQuestionIds],
         }));
