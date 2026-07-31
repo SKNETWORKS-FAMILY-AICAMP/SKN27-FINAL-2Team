@@ -1,19 +1,9 @@
 # SKN27-FINAL-2Team HiMate
 
-### AI 기반 맞춤형 한국사 학습 메이트
+# AI 기반 맞춤형 한국사 학습 메이트
 
 > 진단평가부터 맞춤 문제풀이, 오답 분석, 학습 계획, 출제 경향 분석,  
 > 근거 기반 AI 챗봇까지 연결하는 한국사 학습 서비스입니다.
-
-![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)
-![Django](https://img.shields.io/badge/Django-6.0.7-092E20?logo=django&logoColor=white)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-pgvector-4169E1?logo=postgresql&logoColor=white)
-![Neo4j](https://img.shields.io/badge/Neo4j-Graph%20DB-4581C3?logo=neo4j&logoColor=white)
-![OpenAI](https://img.shields.io/badge/OpenAI-LLM-412991?logo=openai&logoColor=white)
-![AWS](https://img.shields.io/badge/AWS-ECS%20%7C%20Aurora-FF9900?logo=amazonaws&logoColor=white)
-
----
-
 
 ## 팀 소개
 
