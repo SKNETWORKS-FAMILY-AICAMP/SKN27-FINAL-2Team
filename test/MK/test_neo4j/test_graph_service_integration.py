@@ -17,6 +17,7 @@ from neo4j import Driver, GraphDatabase
 class GraphServiceNeo4jIntegrationTest(unittest.TestCase):
     driver: Driver
     graph_service: ModuleType
+    database: str
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -28,10 +29,11 @@ class GraphServiceNeo4jIntegrationTest(unittest.TestCase):
         uri = os.environ["NEO4J_URI"]
         user = os.environ["NEO4J_USER"]
         password = os.environ["NEO4J_PASSWORD"]
+        cls.database = os.getenv("NEO4J_DATABASE", "neo4j")
         cls.driver = GraphDatabase.driver(uri, auth=(user, password))
         cls.driver.verify_connectivity()
 
-        with cls.driver.session() as session:
+        with cls.driver.session(database=cls.database) as session:
             session.run(
                 """
                 MATCH (node:CiFixture)
@@ -64,7 +66,7 @@ class GraphServiceNeo4jIntegrationTest(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls) -> None:
-        with cls.driver.session() as session:
+        with cls.driver.session(database=cls.database) as session:
             session.run(
                 """
                 MATCH (node:CiFixture)

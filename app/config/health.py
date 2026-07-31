@@ -71,6 +71,9 @@ def _compute_readiness() -> tuple[dict, int]:
     neo4j_uri = os.getenv("NEO4J_URI", "").strip()
     neo4j_user = os.getenv("NEO4J_USER", "").strip()
     neo4j_password = os.getenv("NEO4J_PASSWORD", "").strip()
+    neo4j_database = (
+        os.getenv("NEO4J_DATABASE", "neo4j").strip() or "neo4j"
+    )
     neo4j_timeout_seconds = float(
         os.getenv("NEO4J_CONNECT_TIMEOUT_SECONDS", "3")
     )
@@ -87,6 +90,8 @@ def _compute_readiness() -> tuple[dict, int]:
             connection_timeout=neo4j_timeout_seconds,
         ) as driver:
             driver.verify_connectivity()
+            with driver.session(database=neo4j_database) as session:
+                session.run("RETURN 1").consume()
     except Exception:
         service_status["status"] = "unhealthy"
         service_status["neo4j"] = "unavailable"

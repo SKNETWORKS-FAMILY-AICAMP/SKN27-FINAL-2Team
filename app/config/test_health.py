@@ -34,6 +34,7 @@ class HealthCheckTest(SimpleTestCase):
             "NEO4J_URI": "bolt://neo4j.example.internal:7687",
             "NEO4J_USER": "neo4j",
             "NEO4J_PASSWORD": "test-password",
+            "NEO4J_DATABASE": "health-database",
             "NEO4J_CONNECT_TIMEOUT_SECONDS": "1",
             "POSTGRES_REQUIRED_TABLES": "user_accounts",
         },
@@ -60,6 +61,12 @@ class HealthCheckTest(SimpleTestCase):
             driver_mock.return_value.__enter__
             .return_value.verify_connectivity.assert_called_once_with()
         )
+        (
+            driver_mock.return_value.__enter__
+            .return_value.session.assert_called_once_with(
+                database="health-database"
+            )
+        )
 
     @patch.dict(
         "os.environ",
@@ -67,6 +74,7 @@ class HealthCheckTest(SimpleTestCase):
             "NEO4J_URI": "bolt://neo4j.example.internal:7687",
             "NEO4J_USER": "neo4j",
             "NEO4J_PASSWORD": "test-password",
+            "NEO4J_DATABASE": "health-database",
             "NEO4J_CONNECT_TIMEOUT_SECONDS": "1",
             "POSTGRES_REQUIRED_TABLES": "user_accounts,questions",
         },
@@ -91,6 +99,12 @@ class HealthCheckTest(SimpleTestCase):
         (
             driver_mock.return_value.__enter__
             .return_value.verify_connectivity.assert_called_once_with()
+        )
+        (
+            driver_mock.return_value.__enter__
+            .return_value.session.assert_called_once_with(
+                database="health-database"
+            )
         )
 
     @patch("config.health.connection")
@@ -118,6 +132,7 @@ class HealthCheckTest(SimpleTestCase):
             "NEO4J_URI": "bolt://neo4j.example.internal:7687",
             "NEO4J_USER": "neo4j",
             "NEO4J_PASSWORD": "test-password",
+            "NEO4J_DATABASE": "health-database",
             "NEO4J_CONNECT_TIMEOUT_SECONDS": "1",
             "POSTGRES_REQUIRED_TABLES": "user_accounts,questions",
         },

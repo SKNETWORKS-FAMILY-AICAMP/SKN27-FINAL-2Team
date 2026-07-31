@@ -107,6 +107,10 @@
           "valueFrom": "/himate/prod/NEO4J_USER"
         },
         {
+          "name": "NEO4J_DATABASE",
+          "valueFrom": "/himate/prod/NEO4J_DATABASE"
+        },
+        {
           "name": "NEO4J_PASSWORD",
           "valueFrom": "/himate/prod/NEO4J_PASSWORD"
         },

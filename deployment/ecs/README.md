@@ -26,10 +26,38 @@ AuraDB Free에서 상시 제공하고, Fact Neo4j는 문제 생성 시점에만 
 템플릿까지 반영되어 있다. EventBridge가 Fact EC2를 시작하고 문제 생성 완료 후
 중지하는 자동화는 아직 구현되지 않았다.
 
+## 현재 진행 상태 (2026-07-30)
+
+완료:
+
+- Route53 `himate-edu.com`과 EC2 Elastic IP 연결
+- ECS on EC2 Web Service에서 Django·Nginx 실행
+- CodePipeline → CodeBuild → ECR → ECS 자동 배포
+- Aurora PostgreSQL 연결과 배포 시 Django migration 실행
+- Aurora PostgreSQL 운영 초기 데이터 적재와 필수 데이터 검증
+- Main Neo4j AuraDB 인증·TLS 연결 및 실제 DB 이름 확인
+- Let's Encrypt HTTPS와 Certbot webroot 자동 갱신
+- 외부 `/health/live/` 접근 차단 및 ECS 내부 liveness 검사
+
+남은 작업:
+
+- Main Neo4j AuraDB 그래프 데이터 적재와 챗봇 조회 검증
+- Fact 배치 EC2 생성 및 ECS 클러스터 등록
+- Fact Neo4j 데이터와 EBS 경로 구성
+- 문제 생성 실행 명령과 결과 저장 위치 확정
+- EventBridge의 Fact EC2 시작·배치 실행·완료 후 중지 자동화
+- RunPod Serverless 호출과 실패·재시도 처리
+- 실제 문제 생성 결과의 PostgreSQL 저장 및 서비스 조회 검증
+
+현재 웹 배포가 정상이라고 해서 전체 배포가 끝난 것은 아니다. DB 초기 데이터와
+문제 생성 배치까지 검증해야 운영 구성이 완료된다.
+
 ## Neo4j 역할 분리
 
 - `NEO4J_*`: 챗봇이 사용하는 Main Neo4j AuraDB 연결값
 - `FACT_NEO4J_*`: 문제 생성 배치가 사용하는 임시 Fact Neo4j 연결값
+- AuraDB의 사용자명과 DB 이름은 생성 시 발급된 값을 사용하며
+  `NEO4J_DATABASE`로 대상 DB를 명시한다.
 - Web Task에는 Neo4j 컨테이너를 포함하지 않는다.
 - Fact Neo4j Task는 Web 서비스와 독립적으로 실행·중지한다.
 
@@ -79,7 +107,8 @@ minimum healthy percent `0`, maximum percent `100`으로 설정한다. 배포 �
 - `POSTGRES_CONN_MAX_AGE=0`
 - 운영 Parameter Store prefix: `/himate/prod`
 - 비밀번호와 API Key: Parameter Store `SecureString`
-- Main Neo4j: `/himate/prod/NEO4J_URI`, `NEO4J_USER`, `NEO4J_PASSWORD`
+- Main Neo4j: `/himate/prod/NEO4J_URI`, `NEO4J_USER`, `NEO4J_PASSWORD`,
+  `NEO4J_DATABASE`
 - Fact Neo4j: `/himate/prod/FACT_NEO4J_URI`, `FACT_NEO4J_USER`,
   `FACT_NEO4J_PASSWORD`, `FACT_NEO4J_AUTH`
 - ECS liveness 경로: `/health/live/`
@@ -89,10 +118,13 @@ minimum healthy percent `0`, maximum percent `100`으로 설정한다. 배포 �
 
 1. VPC, Aurora, Parameter Store, IAM을 구성한다.
 2. Web EC2를 `himate.workload=web` 속성으로 ECS 클러스터에 등록한다.
-3. Main Neo4j 데이터를 AuraDB Free에 적재한다.
-4. CodeBuild로 이미지를 ECR에 push한다.
-5. migration Task를 실행한다.
-6. Web ECS Service를 실행하고 HTTPS와 `/health/live/`를 확인한다.
-7. CodePipeline 배포 단계를 연결한다.
-8. 문제 생성 자동화가 필요할 때 Fact 배치 EC2와 데이터 경로를 추가한다.
-9. 문제 생성 실행 명령을 확정한 뒤 EventBridge 시작·중지 자동화를 연결한다.
+3. CodeBuild로 이미지를 ECR에 push한다.
+4. migration Task를 실행한다.
+5. Web ECS Service를 실행하고 HTTPS와 내부 `/health/live/`를 확인한다.
+6. CodePipeline 배포 단계를 연결한다.
+7. Aurora PostgreSQL 운영 초기 데이터를 적재하고 검증한다.
+8. Main Neo4j 데이터를 AuraDB Free에 적재하고 챗봇 조회를 검증한다.
+9. Fact 배치 EC2와 Fact Neo4j 데이터·EBS 경로를 구성한다.
+10. 문제 생성 실행 명령과 결과 저장 방식을 확정한다.
+11. EventBridge, RunPod Serverless, Fact EC2 시작·중지 자동화를 연결한다.
+12. 문제 생성 결과가 PostgreSQL과 웹 서비스에서 정상 조회되는지 검증한다.
