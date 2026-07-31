@@ -1,4 +1,4 @@
-# SKN27-FINAL-2Team · HiMate
+# SKN27-FINAL-2Team 
 
 # HiMate
 
