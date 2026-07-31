@@ -2650,7 +2650,7 @@
       "relation_axis_id": "person.activity_achievement",
       "question_task_instruction": "material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",
       "minor_type": "기본 사실·개념 확인",
-      "material": "당대의 기록에는 김종직의 문하에 들어가 배움을 받은 이가 『소학』의 뜻을 깊이 익혔다고 하였다. 사람들이 그를 소학동자라 부르며 그의 학문 태도를 일컬었다.",
+      "material": "김종직의 문하에서 배움을 받은 한 선비의 행적을 적은 기록에는, 그가 『소학』에 깊이 심취하여 사람들 사이에서 소학동자라는 이름으로 불렸다고 하였다. 글을 남긴 이는 그 별칭과 스승의 이름을 함께 적어 두었다.",
       "material_source": {
         "owner_id": "E0008739",
         "owner_label": "김굉필",
@@ -2661,7 +2661,7 @@
           "encykorea:E0008739:0000"
         ]
       },
-      "question": "다음 자료의 인물에 대한 설명으로 옳은 것은?",
+      "question": "다음 자료에 나타난 인물에 대한 설명으로 옳은 것은?",
       "choices": [
         {
           "text": "최항과 함께 『경국대전』 편찬을 총괄하였다.",
@@ -2826,7 +2826,7 @@
       "relation_axis_id": "person.activity_achievement",
       "question_task_instruction": "material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",
       "minor_type": "기본 사실·개념 확인",
-      "material": "교하를 본관으로 삼은 자반은 보진재와 천은당을 호로 사용하였다. 그의 조부는 좌의정을 지낸 노한이었고, 부친 노물재는 동지돈녕부사로 있었다. 모친은 심온의 딸이었다.",
+      "material": "가계 기록에, 이 사람은 교하를 본관으로 삼고 자는 자반이라 하였다. 보진재와 천은당을 호로 사용하였다. 좌의정 노한의 손자이자 동지돈녕부사 노물재의 아들이며, 어머니가 심온의 딸이고 노균의 증손이라 적었다.",
       "material_source": {
         "owner_id": "E0012775",
         "owner_label": "노사신",
@@ -2999,7 +2999,7 @@
       "relation_axis_id": "person.activity_achievement",
       "question_task_instruction": "material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",
       "minor_type": "자료 기반 시대·대상 추론",
-      "material": "의주 인물의 기록에는 (가)가 전주를 본관으로 하였으며, 의주에서 태어나 주로 그곳에서 활동하였다고 적혀 있다. 자는 경약이고 호는 가포이며, 아버지는 중국 연경을 내왕하던 상인이었다.",
+      "material": "의주 고을에 전하는 인물 기록에는 (가)의 내력이 다음과 같이 적혀 있다. 본관은 전주이며 자는 경약, 호는 가포이다. 부친 임봉핵은 중국 연경을 내왕하던 상인이었고, (가)는 의주에서 태어나 주로 그곳에서 활동하였다.",
       "material_source": {
         "owner_id": "E0047469",
         "owner_label": "임상옥",
@@ -3172,7 +3172,7 @@
       "relation_axis_id": "person.activity_achievement",
       "question_task_instruction": "material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",
       "minor_type": "자료 기반 시대·대상 추론",
-      "material": "문집 목록에 따르면, (가)는 1845년에 사단칠정을 논한 『우기』를 남겼다. 이어 1852년에는 이기와 관련된 기존 견해를 평론한 「이통설」을 지었다.",
+      "material": "문인들이 남긴 기록에 따르면, (가)는 송대 여러 성리학자를 독자적으로 궁리하고 사색하여 학문을 이루었다. 이황·이이 이후 계속된 주리·주기 논쟁을 넘어서 이일분수의 이론으로 독창적인 이의 철학 체계를 세웠다. 사단칠정을 논한 『우기』와 이기에 관해 평론한 「이통설」을 남겼다.",
       "material_source": {
         "owner_id": "E0008426",
         "owner_label": "기정진",
@@ -3345,7 +3345,7 @@
       "relation_axis_id": "person.activity_achievement",
       "question_task_instruction": "material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",
       "minor_type": "기본 사실·개념 확인",
-      "material": "1608년 2월, 선조가 승하한 뒤 그의 둘째 아들이 조선의 제15대 왕으로 즉위하였다. 1623년 3월 반정이 일어나자 그는 폐위되어 군으로 강등되었다.",
+      "material": "선조 8년에 태어난 선조의 첫 후궁 공빈 김씨 소생의 둘째 아들이 1608년 조선의 제15대 왕으로 즉위하였다. 1623년 3월 반정으로 폐위되어 군으로 강등된 그는 제주도 유배지에서 1641년 67세로 생을 마감하였다.",
       "material_source": {
         "owner_id": "E0005335",
         "owner_label": "광해군",
@@ -3356,10 +3356,10 @@
           "encykorea:E0005335:0000"
         ]
       },
-      "question": "다음 자료의 인물이 추진한 정책으로 옳은 것은?",
+      "question": "다음 자료의 인물과 관련된 활동으로 옳은 것은?",
       "choices": [
         {
-          "text": "삼정의 폐단과 그 시정 방책을 담은 『임술의책』을 지었다.",
+          "text": "삼정의 폐단을 지적하고 시정 방책을 제시한 임술의책을 지었다.",
           "is_answer": false,
           "source_role": "distractor_raw",
           "distractor_index": 2,
@@ -3430,7 +3430,7 @@
           "number": 4
         },
         {
-          "text": "유배지 희천에서 조광조에게 학문을 전수하였다.",
+          "text": "희천에서 조광조에게 학문을 전수하였다.",
           "is_answer": false,
           "source_role": "distractor_raw",
           "distractor_index": 3,
@@ -4400,7 +4400,7 @@
       "relation_axis_id": "event.development",
       "question_task_instruction": "material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",
       "minor_type": "자료 기반 시대·대상 추론",
-      "material": "변방의 보고에 따르면, 후금의 세력이 강해져 북방 경비가 나라의 중대한 과제가 되었다. 평안도 영변에 나간 (가)는 부원수의 임무를 맡아 군사를 조련하고 성책을 보수하며 진의 경비를 강화하였다.",
+      "material": "반정 뒤 공신을 정하는 자리에서 (가)는 2등공신에 책봉되었다. 이어 평안도 영변에 나아가 부원수의 임무를 맡았으니, 후금이 강성하여 언제 침략을 받을지 모를 만큼 정세가 긴박하였다. 이에 군사를 조련하고 성책을 보수하며 여러 진의 경비를 강화하게 하였다. 북방의 군대를 직접 지휘하는 일이었다.",
       "material_source": {
         "owner_id": "E0043666",
         "owner_label": "이괄의 난",
@@ -4576,7 +4576,7 @@
       "relation_axis_id": "event.development",
       "question_task_instruction": "material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",
       "minor_type": "자료 기반 시대·대상 추론",
-      "material": "진산에 사는 선비 윤지충과 그의 외종형 권상연은 조상 제사를 금한다는 사목 서한이 전해지자 제사를 폐하고 신주를 불태웠다. 윤지충의 어머니가 죽은 뒤에도 혼백과 신주를 세우지 않은 일이 여론의 비판을 받아 정치적 문제로 번졌다. 이 일을 (가)라 한다.",
+      "material": "진산에 사는 선비 윤지충과 그의 외종형 권상연은 조상 제사를 금하는 사목 서한이 전해지자 제사를 폐하고 신주를 불태웠다. 뒤에 윤지충의 어머니가 세상을 떠났으나, 혼백이나 신주를 세우지 않은 채 장례를 치렀다. 이 일은 여론의 비판을 받아 정치적 문제로 번졌다.",
       "material_source": {
         "owner_id": "E0033544",
         "owner_label": "신해박해",
@@ -4587,10 +4587,10 @@
           "encykorea:E0033544:0002"
         ]
       },
-      "question": "(가)에 대한 설명으로 옳은 것은?",
+      "question": "자료에 나타난 사건의 전개에 대한 설명으로 옳은 것은?",
       "choices": [
         {
-          "text": "성희안, 박원종 등이 연산군의 폐출을 도모하였다.",
+          "text": "성희안, 박원종 등이 거사를 실행하였다.",
           "is_answer": false,
           "source_role": "distractor_raw",
           "distractor_index": 1,
@@ -4608,7 +4608,7 @@
           "number": 1
         },
         {
-          "text": "정문부가 승리하여 관북 지역을 회복하였다.",
+          "text": "정문부가 경성 등지에서 승리하여 관북 지역을 회복하였다.",
           "is_answer": false,
           "source_role": "distractor_raw",
           "distractor_index": 2,
@@ -4643,7 +4643,7 @@
           "number": 3
         },
         {
-          "text": "미군이 초지진에 상륙하여 점거하였다.",
+          "text": "미군이 덕진진과 광성보를 공격하였다.",
           "is_answer": false,
           "source_role": "distractor_raw",
           "distractor_index": 3,
@@ -4662,7 +4662,7 @@
           "number": 4
         },
         {
-          "text": "양헌수가 정족산성에서 승리하였다.",
+          "text": "양헌수가 정족산성에서 프랑스군을 격퇴하였다.",
           "is_answer": false,
           "source_role": "distractor_raw",
           "distractor_index": 4,
@@ -4751,7 +4751,7 @@
       "relation_axis_id": "event.development",
       "question_task_instruction": "material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",
       "minor_type": "자료 기반 시대·대상 추론",
-      "material": "조정에 올린 보고에는 평양 대동강에서 일어난 미국 선박 사건 뒤 미국이 조선의 개항 문제에 관심을 보였다고 하였다. 이후 미국 함대가 강화해협의 수로를 살피려 하자, 손돌목의 강화포대에서 포격이 있었다. 이 일을 (가)라 한다.",
+      "material": "조선 조정에 올린 보고이다. 1866년 평양 대동강에서 제너럴셔먼호 사건이 일어난 뒤, 미국은 조선의 개항 문제에 관심을 보였다. 1871년 미국 함대가 강화해협의 수로를 탐측하려 하자, 손돌목에서 연안 강화포대의 공격으로 처음 군사 충돌이 일어났다. 이를 (가)라 한다.",
       "material_source": {
         "owner_id": "E0032961",
         "owner_label": "신미양요",
@@ -4929,7 +4929,7 @@
       "relation_axis_id": "event.development",
       "question_task_instruction": "material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",
       "minor_type": "자료 수집·검색 방법",
-      "material": "탐구 활동지 1866년 초 천주교 금압령으로 프랑스 선교사와 조선인 천주교 신자들이 희생되었다. 처형을 피한 리델 신부는 중국으로 탈출하여 로즈에게 박해 소식을 알리고 보복 원정을 촉구하였다. 이와 관련된 사건을 조사해 보자.",
+      "material": "탐구 활동 기록 - 1866년 초 금압령으로 프랑스 선교사와 조선인 천주교 신자들이 희생된 일을 조사한다. - 처형을 피한 리델 신부가 중국으로 탈출하여 로즈에게 박해 소식을 알리고 보복 원정을 촉구한 경위를 함께 검색한다.",
       "material_source": {
         "owner_id": "E0023142",
         "owner_label": "병인양요",
@@ -5106,7 +5106,7 @@
       "relation_axis_id": "event.development",
       "question_task_instruction": "material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",
       "minor_type": "자료 기반 시대·대상 추론",
-      "material": "조정 기록에 따르면, 1868년 독일 상인과 조선을 떠났던 신부가 충청도 덕산에서 남연군의 묘를 파헤치려 하였으나 뜻을 이루지 못하였다. 이 일 뒤 대신들은 서양인에게 호응한 신자들을 잡아 처형하자고 주장하여 (가)가 더욱 심해졌다.",
+      "material": "보고서. 1868년 5월 독일 상인 오페르트와 조선을 탈출한 페롱 신부가 충청도 덕산에서 대원군의 아버지 남연군의 묘를 파헤치려 하였으나 실패하였다. 이에 조정 대신들은 서양인에게 호응한 신자들을 모두 잡아 처형하자고 주장하였다. 그 뒤 (가)은 더욱 심해져 여러 지역의 신자들이 체포되었다.",
       "material_source": {
         "owner_id": "E0023139",
         "owner_label": "병인박해",
@@ -5282,7 +5282,7 @@
       "relation_axis_id": "person.activity_achievement",
       "question_task_instruction": "material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",
       "minor_type": "자료 기반 시대·대상 추론",
-      "material": "기록에 따르면 (가)는 독립협회가 창립될 때 참여하여 초대 회장직을 맡았다. 뒤에 경무사를 지낸 이들과 함께 황제의 양위를 꾀한 일이 드러나자 일본으로 망명하였다.",
+      "material": "당시 조정에서 작성한 인사 문서에는 (가)가 독립협회가 창립될 때 참여하여 초대 회장을 맡았다고 되어 있다. 뒤이어 작성된 치안 보고에는 그가 경무사를 지낸 이들과 황제 양위 모의를 추진하다가 발각된 뒤 일본으로 떠났다고 적혀 있다.",
       "material_source": {
         "owner_id": "E0034503",
         "owner_label": "안경수",
@@ -5293,7 +5293,7 @@
           "encykorea:E0034503:0001"
         ]
       },
-      "question": "(가)에 대한 설명으로 옳은 것은?",
+      "question": "(가) 인물에 대한 설명으로 옳은 것은?",
       "choices": [
         {
           "text": "헤이그 만국 평화 회의 특사로 파견되었다.",
@@ -5455,7 +5455,7 @@
       "relation_axis_id": "person.activity_achievement",
       "question_task_instruction": "material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",
       "minor_type": "자료 기반 시대·대상 추론",
-      "material": "정변 뒤 새로 꾸린 내각의 기록에 (가)가 전후영사 겸 좌포도대장으로 병권을 맡았다고 적었다. 청나라 군대가 곧 개입하여 일이 실패하자, (가)는 동지들과 함께 일본으로 망명하였다.",
+      "material": "망명자에 관한 기록이다. 정변이 사흘 만에 무너지자 (가)는 동지들과 함께 일본으로 건너갔다. 그는 이름을 고친 뒤 명치학원에 들어가 영어를 배우고 미국인 선교사들과 교유하였다. 조선의 송환 시도는 일본 정부의 거부로 이루어지지 않았다.",
       "material_source": {
         "owner_id": "E0020961",
         "owner_label": "박영효",
@@ -5628,7 +5628,7 @@
       "relation_axis_id": "person.activity_achievement",
       "question_task_instruction": "material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",
       "minor_type": "자료 기반 시대·대상 추론",
-      "material": "통감부의 재판 기록에는 세 사람이 궐석재판에서 종신형을 선고받았다고 되어 있다. 동행하던 이준이 현지에서 숨지자 (가)는 그를 묻은 뒤 이상설을 따라 프랑스·영국·미국을 거쳐 러시아로 돌아갔다.",
+      "material": "기록에 따르면, (가) 등에게 일본 통감부의 궐석재판으로 종신징역형이 내려졌다. (가)는 헤이그에서 숨진 이준을 안장한 뒤 이상설을 따라 프랑스·영국·미국을 순방하고 러시아로 돌아갔다. 이후 러시아에서 활동하다 생을 마쳤으나, 말년의 행적은 자세히 전해지지 않는다.",
       "material_source": {
         "owner_id": "E0045403",
         "owner_label": "이위종",
@@ -5801,7 +5801,7 @@
       "relation_axis_id": "person.activity_achievement",
       "question_task_instruction": "material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",
       "minor_type": "기본 사실·개념 확인",
-      "material": "통감이 황제와 함께 평양을 순행한다는 소식에, 몇 동지와 역 부근에서 거사를 준비하였다. 한 인사의 만류로 뜻을 이루지 못한 뒤 원산을 거쳐 연해주로 향하였다.",
+      "material": "미국 노동 이민 모집에 응하여 하와이를 거쳐 건너갔던 인물은, 한일 협약이 강제로 맺어지자 국권 회복을 뜻하며 귀국하였다. 뒤에 이토가 순종과 평양을 순행한다는 소식을 듣고 동지들과 평양역 부근에서 거사를 준비하였으나, 안창호의 만류로 원산을 거쳐 연해주로 갔다.",
       "material_source": {
         "owner_id": "E0045731",
         "owner_label": "이재명",
@@ -5812,7 +5812,7 @@
           "encykorea:E0045731:0000"
         ]
       },
-      "question": "자료의 인물에 대한 설명으로 옳은 것은?",
+      "question": "이 인물의 활동으로 옳은 것은?",
       "choices": [
         {
           "text": "헤이그 만국 평화 회의 특사로 파견되었다.",
@@ -5974,7 +5974,7 @@
       "relation_axis_id": "person.activity_achievement",
       "question_task_instruction": "material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",
       "minor_type": "자료 기반 시대·대상 추론",
-      "material": "관안에는 (가)가 곡산군수와 덕원부사를 지낸 뒤 대사성을 거쳐 의주 통상 사무를 맡았다고 적혀 있다. 뒤에 홍주목사로 나갔을 때 황간·청풍에서 민란이 일어나 안핵사로 파견되었다.",
+      "material": "관원 인사 기록에는 1877년 (가)를 황해도 곡산군수로 제수하였다고 되어 있다. 그 뒤 덕원부사를 지냈으며, 1883년에는 의주 통상 사무를 맡아 살피는 감리로 임명한 내력이 함께 실려 있다. 해당 관리의 관직 변동은 이와 같이 차례로 기록되었다.",
       "material_source": {
         "owner_id": "E0008828",
         "owner_label": "김기수",
@@ -6147,7 +6147,7 @@
       "relation_axis_id": "organization.activity",
       "question_task_instruction": "material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",
       "minor_type": "자료 기반 시대·대상 추론",
-      "material": "1911년 5월 재연해주 민족운동 지도자들이 (가)를 결성하였다. 초대 회장에는 최재형, 부회장에는 홍범도가 선임되었으며, 러시아 당국의 공인을 얻었다.",
+      "material": "재연해주 민족운동 지도자들은 1911년 5월 (가)를 결성하였다. 창립 때 최재형을 회장으로, 홍범도를 부회장으로 선임하고 러시아 당국의 공인을 얻었다. 같은 해 12월 총회에서는 회칙을 고쳐 회의 조직을 의사부와 집행부로 나누고, 이상설과 이종호에게 회무를 맡겼다.",
       "material_source": {
         "owner_id": "E0006988",
         "owner_label": "권업회",
@@ -6322,7 +6322,7 @@
       "relation_axis_id": "organization.activity",
       "question_task_instruction": "material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",
       "minor_type": "자료 수집·검색 방법",
-      "material": "만주 독립운동 단체 통합 조사 활동지 - 1929년 신민부 민정위원회 측·참의부 일부 계열·정의부 일부 계열이 군정위원회 성격의 조직을 결성한 경위를 찾는다. - 이 조직이 5월 중앙집행위원회를 구성하고 본부를 길림에서 흥경으로 옮긴 기록을 확인한다.",
+      "material": "만주 지역 독립운동 단체 조사 기록 - 1929년 신민부 민정위원회 측과 참의부·정의부 일부 계열이 군정위원회 성격의 조직을 결성하였다. - 그해 5월 중앙집행위원회를 구성하고 본부를 길림에서 흥경으로 옮겼다. 조사어: 흥경, 중앙집행위원회",
       "material_source": {
         "owner_id": "E0006303",
         "owner_label": "국민부",
@@ -6498,7 +6498,7 @@
       "relation_axis_id": "organization.activity",
       "question_task_instruction": "material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",
       "minor_type": "자료 기반 시대·대상 추론",
-      "material": "기록에 따르면, 3·1 독립운동 뒤 독립지사들은 1919년 11월 만주 길림성 파호문 밖에 모였다. 이들은 밤새 숙의한 끝에 항일 비밀결사인 (가)를 조직하였다. 창단 당시 단장에는 김원봉이 선출되었다.",
+      "material": "기록에 따르면, 3·1 운동 뒤 해외로 옮겨 간 독립지사들은 강력한 일제의 무력에 맞설 조직을 마련하고자 하였다. 이들은 1919년 11월 만주 길림성 파호문 밖에 모여 밤새 숙의한 끝에 (가)를 항일 비밀결사로 조직하고, 김원봉을 단장으로 선출하였다.",
       "material_source": {
         "owner_id": "E0043334",
         "owner_label": "의열단",
@@ -6676,7 +6676,7 @@
       "relation_axis_id": "organization.activity",
       "question_task_instruction": "material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",
       "minor_type": "자료 수집·검색 방법",
-      "material": "독립운동 단체 탐구 활동지 - 1931년 12월 13일 한 인물의 선서식을 계기로 특무대의 명칭이 사용됨 - 책임자는 김구였으며, 평소에는 정해진 단원을 두지 않고 활동 직전에 가입과 선서를 거치게 함 위 단체의 활동을 조사해 보자.",
+      "material": "독립운동 단체 탐구 활동 - 1931년 12월 13일 한 인물의 선서식을 계기로 특무대의 명칭으로 쓰이기 시작한 단체를 찾아본다. - 단장은 김구였으며, 평소에는 일정한 단원을 편제하지 않고 활동 직전에 가입과 선서를 거쳤던 운영 방식을 조사한다.",
       "material_source": {
         "owner_id": "E0061905",
         "owner_label": "한인애국단",
@@ -6850,7 +6850,7 @@
       "relation_axis_id": "organization.activity",
       "question_task_instruction": "material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",
       "minor_type": "자료 기반 시대·대상 추론",
-      "material": "1927년 9월 6일 조선노농총동맹이 농민동맹과 노동동맹으로 나뉘어 각각의 조직을 결성하였다. 이때 농민동맹의 중앙집행위원장으로 인동철이 선출되고, 중앙집행위원 20명도 함께 뽑혔다.",
+      "material": "1927년 9월 6일 조선노농총동맹은 농민동맹과 노동동맹으로 나뉘었다. 이 분립에 따라 새로 결성된 (가)의 중앙집행위원장으로 인동철이 선출되었으며, 중앙집행위원에는 경기송·장준·정학원·송영섭 등 20명이 선출되었다.",
       "material_source": {
         "owner_id": "E0051974",
         "owner_label": "조선농민총동맹",
@@ -7026,7 +7026,7 @@
       "relation_axis_id": "person.activity_achievement",
       "question_task_instruction": "material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",
       "minor_type": "기본 사실·개념 확인",
-      "material": "국권이 상실된 뒤, 연해주와 간도에 있던 한족을 규합하여 블라디보스토크에서 성명회를 조직하였다. 그보다 앞서 의병을 모아 13도의군을 편성하고, 본국에 사람을 보내 상소를 올렸다.",
+      "material": "연해주 방면에 모인 의병을 규합하여 13도의군을 편성하고, 전 군수 서상진을 본국에 보내어 군자금의 하사 등을 청하는 소를 올리게 하였다. 국권이 상실된 뒤에는 블라디보스토크에서 한족을 규합하여 성명회를 조직하였다.",
       "material_source": {
         "owner_id": "E0044591",
         "owner_label": "이상설",
@@ -7037,7 +7037,7 @@
           "encykorea:E0044591:0003"
         ]
       },
-      "question": "위 인물의 활동으로 옳은 것은?",
+      "question": "다음 활동을 전개한 인물에 대한 설명으로 옳은 것은?",
       "choices": [
         {
           "text": "의성단을 조직하여 국내 친일파를 암살하였다.",
@@ -7202,7 +7202,7 @@
       "relation_axis_id": "person.activity_achievement",
       "question_task_instruction": "material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",
       "minor_type": "자료 기반 시대·대상 추론",
-      "material": "봉오동 전투의 기록이다. 이 전투에서 (가)는 사령관으로서 일본군에 맞서 승리를 거두었다. 그 뒤 (가)는 북간도와 시베리아 등지에서 수천 명의 부하를 거느리고 무장 항일 운동을 계속하였다.",
+      "material": "전투 보고에는 (가)가 봉오동에서 사령관으로 일본군을 맞아 승리를 거두었다고 되어 있다. 그 뒤의 상황을 전한 북간도와 시베리아 일대의 기록에는 이 인물이 수천 명의 부하를 거느리고 각지에서 무장 항일 운동을 계속하였다고 적혀 있다.",
       "material_source": {
         "owner_id": "E0057669",
         "owner_label": "최진동",
@@ -7213,7 +7213,7 @@
           "encykorea:E0057669:0001"
         ]
       },
-      "question": "(가)에 대한 설명으로 옳은 것은?",
+      "question": "(가) 인물에 대한 설명으로 옳은 것은?",
       "choices": [
         {
           "text": "의성단을 조직하여 국내 친일파를 암살하였다.",
@@ -7375,7 +7375,7 @@
       "relation_axis_id": "person.activity_achievement",
       "question_task_instruction": "material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",
       "minor_type": "기본 사실·개념 확인",
-      "material": "전투에서 소모된 병력을 보충하고자 군관학교를 세우고, 교장으로서 독립군을 양성하였다. 흥경성전투·노구대전투·쾌대모자전투에 참여하여 승리를 거두었다.",
+      "material": "보고서에는 전투에서 줄어든 병력을 보충하려 군관학교를 세우고, 교장으로서 독립군을 기르는 데 힘쓴 장수의 행적이 실려 있다. 그는 흥경성 전투와 노구대 전투, 쾌대모자 전투에 참여하여 승리를 거두었다.",
       "material_source": {
         "owner_id": "E0035615",
         "owner_label": "양세봉",
@@ -7386,7 +7386,7 @@
           "encykorea:E0035615:0001"
         ]
       },
-      "question": "위 인물의 활동으로 옳은 것은?",
+      "question": "다음 자료의 인물에 대한 설명으로 옳은 것은?",
       "choices": [
         {
           "is_answer": true,
@@ -7551,7 +7551,7 @@
       "relation_axis_id": "person.activity_achievement",
       "question_task_instruction": "material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",
       "minor_type": "기본 사실·개념 확인",
-      "material": "상하이 임시 정부의 구미위원회 위원장 자격으로 필라델피아에 사무실을 설치하였다. 그곳에서 영문 독립 신문을 간행하여 우리나라의 독립을 알리는 언론·외교 활동에 힘썼다.",
+      "material": "상해에 마련된 정부의 구미위원회 책임자는 필라델피아에 사무실을 두고 영문으로 된 독립신문을 간행하였다. 워싱턴에서 군축을 논의하는 회의가 열리자, 국내 여러 단체의 서명을 모은 연판장을 각국 대표에게 내어 독립을 호소하였다.",
       "material_source": {
         "owner_id": "E0028152",
         "owner_label": "서재필",
@@ -7562,7 +7562,7 @@
           "encykorea:E0028152:0004"
         ]
       },
-      "question": "다음 활동을 전개한 인물에 대한 설명으로 옳은 것은?",
+      "question": "다음 자료의 인물에 대한 설명으로 옳은 것은?",
       "choices": [
         {
           "is_answer": true,
@@ -7727,7 +7727,7 @@
       "relation_axis_id": "person.activity_achievement",
       "question_task_instruction": "material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",
       "minor_type": "자료 기반 시대·대상 추론",
-      "material": "임시의정원 회의 기록에는 (가)가 여러 인사와 함께 제1회 회의에 참여한 사실이 적혀 있다. 이 회의에서 임시헌장 10개 조가 통과되었으며, 뒤이어 대한민국 임시정부가 수립되었다.",
+      "material": "국내 13도 대표가 서울에서 연 국민대회 선임자 명단에는 (가)가 평정관으로 올라 있다. 그해 상하이에 독립지사들이 모인 뒤 열린 첫 임시의정원 회의의 기록은, 그가 여러 인사와 함께 회의를 열고 임시헌장 10개 조를 통과시키는 데 참여하였다고 전한다.",
       "material_source": {
         "owner_id": "E0063363",
         "owner_label": "현순",
@@ -7900,7 +7900,7 @@
       "relation_axis_id": "person.activity_achievement",
       "question_task_instruction": "material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",
       "minor_type": "기본 사실·개념 확인",
-      "material": "프랑스 국립도서관에서 사서로 근무하던 이는 그곳에 소장된 『직지심체요절』을 연구·고증하였다. 그는 이를 1377년 청주 흥덕사에서 금속활자로 인쇄한 세계 최고 금속활자본으로 밝혀 유럽의 전시회에서 공개하였다.",
+      "material": "프랑스 국립도서관 사서로 근무하던 그는, 한국에서 반출되어 소장된 『직지심체요절』을 찾아 연구와 고증을 거쳤다. 1972년 유럽에서 열린 전시회에서 이를 1377년 청주 흥덕사에서 인쇄된 세계 최고 금속활자본으로 공개하였다.",
       "material_source": {
         "owner_id": "E0071550",
         "owner_label": "박병선",
@@ -8077,7 +8077,7 @@
       "relation_axis_id": "person.activity_achievement",
       "question_task_instruction": "material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",
       "minor_type": "자료 기반 시대·대상 추론",
-      "material": "광복 뒤 1945년 12월, 임시정부 요인의 한 사람인 (가)이 귀국하였다. 그는 곧 대한독립촉성국민회의 부회장을 맡았으며, 국민대학의 학장과 자유신문의 사장직도 맡아 활동하였다.",
+      "material": "광복 뒤 조선인민공화국 내각이 편성되었을 때, (가)를 체신부장으로 선임하였다는 기록이 남아 있다. 같은 해 12월 임시정부 요인의 한 사람으로 돌아온 그는 대한독립촉성국민회의 부회장을 맡았으며, 국민대학 학장과 자유신문 사장직도 맡았다.",
       "material_source": {
         "owner_id": "E0033294",
         "owner_label": "신익희",
@@ -8144,7 +8144,7 @@
           "number": 3
         },
         {
-          "text": "외규장각 의궤 발굴 운동을 전개하였다.",
+          "text": "외규장각 의궤를 발굴하고 반환 운동을 전개하였다.",
           "is_answer": false,
           "source_role": "distractor_raw",
           "distractor_index": 4,
@@ -8250,7 +8250,7 @@
       "relation_axis_id": "person.activity_achievement",
       "question_task_instruction": "material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",
       "minor_type": "기본 사실·개념 확인",
-      "material": "기록에 따르면, 광복 뒤 복간된 『동아일보』의 제8대 사장으로 취임한 이는 신탁 통치 문제를 두고 미군정장관과 회담하였다. 그는 그 자리에서 반탁 시위의 정당성을 강조하였다.",
+      "material": "1945년 12월 1일 『동아일보』가 복간되자 제8대 사장으로 취임하였다. 같은 달 28일 신탁통치 문제를 두고 아놀드(A. V. Arnold) 미군정장관과 회담하여 반탁 시위의 정당성을 강조하였다.",
       "material_source": {
         "owner_id": "E0031073",
         "owner_label": "송진우",
@@ -8427,7 +8427,7 @@
       "relation_axis_id": "person.activity_achievement",
       "question_task_instruction": "material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",
       "minor_type": "기본 사실·개념 확인",
-      "material": "1987년 7월, 한 사람의 장례를 민주국민장으로 치렀다. 운구 행렬은 연세대학교 본관과 신촌 로터리를 지나 서울시청과 광화문을 거쳐 광주로 향했고, 전국에서 160만 명의 추모 인파가 모였다.",
+      "material": "1987년 7월 9일, 한 학생의 장례를 민주국민장으로 치르기로 하였다. 운구 행렬은 연세대학교 본관과 신촌 로터리를 거쳐 서울시청과 광화문을 지나 광주로 향하였다. 행렬이 지나는 곳마다 전국에서 모인 160만 명의 추모 인파가 함께하였다.",
       "material_source": {
         "owner_id": "E0079011",
         "owner_label": "이한열",
@@ -8603,7 +8603,7 @@
       "relation_axis_id": "person.activity_achievement",
       "question_task_instruction": "material을 통해 대상·시대·사건을 추론하게 하는 발문을 만들고, answer_fact_basis에 근거한 사실을 정답 선지로 만든다.",
       "minor_type": "자료 기반 시대·대상 추론",
-      "material": "새천년민주당 경선 기록에 따르면, 당원과 국민이 함께 투표하는 국민경선을 거쳐 (가)가 대통령 후보로 선출되었다. 이어 제16대 대통령 선거에서 (가)는 이회창 후보를 근소한 표 차로 이겼다.",
+      "material": "새천년민주당 경선 기록. 당원과 국민이 각각 절반씩 직접 투표하는 국민경선이 제주에서 시작되어 전국 16개 시도를 돌았다. 영남 출신으로 당 주류와 거리가 있던 (가)는 광주 경선 승리 뒤 여러 지역에서 승리하여 서울 경선에서 당의 대통령 후보로 선출되었다.",
       "material_source": {
         "owner_id": "E0078638",
         "owner_label": "노무현",

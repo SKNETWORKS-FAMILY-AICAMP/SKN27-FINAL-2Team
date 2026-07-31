@@ -482,8 +482,8 @@ def invalidate(
         return str(feedback.get(target) or "") if isinstance(feedback, dict) else str(feedback or default_feedback)
 
     def reset(component: dict[str, Any], target: str) -> dict[str, Any]:
-        repairs = int(component.get("evaluation_repairs") or 0) + (1 if evaluation else 0)
-        previous = component.get("response") if evaluation else component.get("previous_response")
+        repairs = int(component.get("evaluation_repairs") or 0) + 1
+        previous = component.get("response") or component.get("previous_response")
         return empty_component(target_feedback(target), repairs, previous)
 
     if state["input"].get("choice_mode") != "generated":
