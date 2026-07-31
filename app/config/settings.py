@@ -103,6 +103,24 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+# Gunicorn/ECS 환경에서도 처리되지 않은 요청 예외와 traceback을 stderr로 남긴다.
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+    },
+}
+
 ROOT_URLCONF = 'config.urls'
 
 TEMPLATES = [
