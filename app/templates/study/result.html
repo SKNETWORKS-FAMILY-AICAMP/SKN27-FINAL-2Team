@@ -173,6 +173,7 @@
   </section>
   <script>
     const RESULT_MODE = "{{ result_mode|default:'practice' }}";
+    const CHATBOT_CONTEXT_STORAGE_KEY = "chatbotProblemContext:{{ request.user.user_id|escapejs }}";
     const SESSION_TYPE = RESULT_MODE === "diagnostic" ? "diagnostic" : "practice";
     let resultPayload = null;
     let questions = [];
@@ -698,7 +699,7 @@
     document.getElementById("prevQuestion").addEventListener("click", () => move(-1));
     document.getElementById("nextQuestion").addEventListener("click", () => move(1));
     document.getElementById("askChatbot").addEventListener("click", () => {
-      sessionStorage.setItem("chatbotProblemContext", JSON.stringify(buildChatProblem(questions[currentIndex])));
+      sessionStorage.setItem(CHATBOT_CONTEXT_STORAGE_KEY, JSON.stringify(buildChatProblem(questions[currentIndex])));
       window.location.href = `/chatbot/?from=${RESULT_MODE}-result`;
     });
     noteSaveButton?.addEventListener("click", async () => {

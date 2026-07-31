@@ -4,7 +4,7 @@ from types import ModuleType, SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 from django.core.cache import cache
-from django.test import RequestFactory, TestCase
+from django.test import RequestFactory, SimpleTestCase, TestCase
 from django.urls import reverse
 
 from .rag.llm_answer_generator import CONCEPT_STREAM_STRUCTURED_SYSTEM_PROMPT, CORE_STREAM_STRUCTURED_SYSTEM_PROMPT, FOUNDATION_EXPLANATION_SYSTEM_PROMPT, LLMAnswerGenerator, PROMPT_SNIPPET_MAX_CHARS, normalize_structured_answer, prompt_snippet, sanitize_answer
@@ -15,7 +15,38 @@ from .rag_service import (
     stream_concept_rag_answer,
     stream_question_rag_answer,
 )
-from .views import _chat_request_blocked, proxied_image_path, rag_chat_api, rag_chat_stream_api
+from .views import _chat_request_blocked, chat_page, proxied_image_path, rag_chat_api, rag_chat_stream_api
+
+
+class ChatPageStorageIsolationTests(SimpleTestCase):
+    def setUp(self) -> None:
+        self.factory = RequestFactory()
+
+    def render_for_user(self, user_id: int) -> str:
+        request = self.factory.get("/chatbot/")
+        request.user = SimpleNamespace(is_authenticated=True, user_id=user_id)
+        return chat_page(request).content.decode()
+
+    def test_browser_storage_keys_are_scoped_by_user(self) -> None:
+        first_user_page = self.render_for_user(101)
+        second_user_page = self.render_for_user(202)
+
+        self.assertIn(
+            'const STORAGE_KEY = "himate_chat_sessions:101";',
+            first_user_page,
+        )
+        self.assertIn(
+            'const STORAGE_KEY = "himate_chat_sessions:202";',
+            second_user_page,
+        )
+        self.assertIn(
+            'const PROBLEM_CONTEXT_STORAGE_KEY = "chatbotProblemContext:101";',
+            first_user_page,
+        )
+        self.assertIn(
+            'localStorage.removeItem("himate_chat_sessions")',
+            first_user_page,
+        )
 
 
 class ChatbotApiTests(TestCase):

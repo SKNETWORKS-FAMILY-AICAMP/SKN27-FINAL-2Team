@@ -130,6 +130,7 @@
   </main>
 
   <script>
+    const CHATBOT_CONTEXT_STORAGE_KEY = "chatbotProblemContext:{{ request.user.user_id|escapejs }}";
     const saved = JSON.parse(localStorage.getItem("questionResult") || "null");
     if (!saved?.questions?.length) {
       alert("풀이 결과가 없습니다. 문제를 먼저 생성해 주세요.");
@@ -366,7 +367,7 @@
     document.getElementById("prevQuestion").addEventListener("click", () => move(-1));
     document.getElementById("nextQuestion").addEventListener("click", () => move(1));
     document.getElementById("askChatbot").addEventListener("click", () => {
-      sessionStorage.setItem("chatbotProblemContext", JSON.stringify(buildChatProblem(currentIndex)));
+      sessionStorage.setItem(CHATBOT_CONTEXT_STORAGE_KEY, JSON.stringify(buildChatProblem(currentIndex)));
       window.location.href = "/chatbot/?from=question-result";
     });
     document.getElementById("pdfSave").addEventListener("click", async () => {

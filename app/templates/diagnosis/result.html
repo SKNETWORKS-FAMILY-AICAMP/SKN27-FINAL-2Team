@@ -132,6 +132,7 @@
   </main>
 
   <script>
+    const CHATBOT_CONTEXT_STORAGE_KEY = "chatbotProblemContext:{{ request.user.user_id|escapejs }}";
     // ── URL에서 session_id 추출 ────────────────────────────────────────────────────
     const params = new URLSearchParams(window.location.search);
     const SESSION_ID = params.get("session_id");
@@ -359,7 +360,7 @@
     document.getElementById("prevQuestion").addEventListener("click", () => move(-1));
     document.getElementById("nextQuestion").addEventListener("click", () => move(1));
     document.getElementById("askChatbot").addEventListener("click", () => {
-      sessionStorage.setItem("chatbotProblemContext", JSON.stringify(buildChatProblem(explanations[currentIndex])));
+      sessionStorage.setItem(CHATBOT_CONTEXT_STORAGE_KEY, JSON.stringify(buildChatProblem(explanations[currentIndex])));
       window.location.href = "/chatbot/?from=diagnosis-result";
     });
     // ── 로드 시작 ─────────────────────────────────────────────────────────────────
