@@ -31,6 +31,15 @@ EMBEDDING_DIMENSIONS=1536
 OPENAI_API_KEY=replace_with_secure_api_key
 OPENAI_CHAT_MODEL=replace_with_model_name
 
+# Web OAuth. Client secrets use SecureString; other values use String.
+OAUTH_REDIRECT_BASE_URL=https://himate-edu.com
+GOOGLE_OAUTH_CLIENT_ID=replace_with_google_client_id
+GOOGLE_OAUTH_CLIENT_SECRET=replace_with_secure_client_secret
+KAKAO_OAUTH_CLIENT_ID=replace_with_kakao_client_id
+KAKAO_OAUTH_CLIENT_SECRET=replace_with_secure_client_secret
+NAVER_OAUTH_CLIENT_ID=replace_with_naver_client_id
+NAVER_OAUTH_CLIENT_SECRET=replace_with_secure_client_secret
+
 # 문제 생성 배치 전용
 RUNPOD_ENDPOINT_ID=replace_with_serverless_endpoint_id
 RUNPOD_API_KEY=replace_with_secure_api_key

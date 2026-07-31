@@ -7,14 +7,14 @@ class UserAccounts(models.Model):
     email = models.CharField(max_length=255, unique=True)
     # 소셜 로그인 사용자는 비밀번호가 없으므로 null 허용.
     password_hash = models.CharField(max_length=255, blank=True, null=True)
-    nickname = models.CharField(max_length=50, blank=True, null=True)
+    nickname = models.CharField(max_length=30)
     login_fail_count = models.IntegerField(default=0)
     is_locked = models.BooleanField(default=False)
     locked_at = models.DateTimeField(blank=True, null=True)
     last_login = models.DateTimeField(blank=True, null=True)
     status = models.CharField(max_length=20, default='active')
-    created_at = models.DateTimeField(blank=True, null=True)
-    updated_at = models.DateTimeField(blank=True, null=True)
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(default=timezone.now)
     deleted_at = models.DateTimeField(blank=True, null=True)
     daily_available_hours = models.DecimalField(
         max_digits=3,
@@ -59,7 +59,7 @@ class EmailVerificationCode(models.Model):
     is_used = models.BooleanField(default=False)
     attempt_count = models.PositiveSmallIntegerField(default=0)
     created_at = models.DateTimeField(default=timezone.now)
-    expires_at = models.DateTimeField(blank=True, null=True)
+    expires_at = models.DateTimeField()
     used_at = models.DateTimeField(blank=True, null=True)
 
     class Meta:

@@ -21,8 +21,8 @@ CREATE TABLE IF NOT EXISTS exam_data (
     q_score                    INT             NULL,
     has_image                  BOOLEAN         NOT NULL DEFAULT FALSE,
     image_meta_json            JSONB           NOT NULL DEFAULT '{}'::jsonb,
-    created_at                 TIMESTAMP       NOT NULL DEFAULT NOW(),
-    updated_at                 TIMESTAMP       NOT NULL DEFAULT NOW(),
+    created_at                 TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
+    updated_at                 TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
     answer_explanation         TEXT            NULL,
     choice_explanations_json   JSONB           NOT NULL DEFAULT '{}'::jsonb,
     explanation_source         VARCHAR(50)     NULL
@@ -111,7 +111,7 @@ ALTER TABLE solve_records
     ADD COLUMN IF NOT EXISTS is_saved BOOLEAN NOT NULL DEFAULT FALSE;
 
 ALTER TABLE solve_records
-    ADD COLUMN IF NOT EXISTS saved_at TIMESTAMP NULL;
+    ADD COLUMN IF NOT EXISTS saved_at TIMESTAMPTZ NULL;
 
 -- solve_records: 학습계획 블록에서 시작한 풀이 기록을 계획/블록에 직접 연결한다.
 ALTER TABLE solve_records
@@ -177,7 +177,7 @@ ALTER TABLE analytics
     ADD COLUMN IF NOT EXISTS wrong_rate DOUBLE PRECISION NOT NULL DEFAULT 0,
     ADD COLUMN IF NOT EXISTS period_start DATE NULL,
     ADD COLUMN IF NOT EXISTS period_end DATE NULL,
-    ADD COLUMN IF NOT EXISTS created_at TIMESTAMP NOT NULL DEFAULT NOW();
+    ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
 
 UPDATE analytics
 SET analysis_unit = CASE classification
@@ -250,6 +250,15 @@ ALTER TABLE user_accounts
     USING daily_available_hours::DECIMAL(3,1),
     ALTER COLUMN daily_available_hours SET DEFAULT 1.0;
 
+ALTER TABLE user_accounts
+    ALTER COLUMN password_hash DROP NOT NULL,
+    ADD COLUMN IF NOT EXISTS provider VARCHAR(20) NULL,
+    ADD COLUMN IF NOT EXISTS provider_id VARCHAR(255) NULL;
+
+CREATE UNIQUE INDEX IF NOT EXISTS user_accounts_provider_uidx
+    ON user_accounts(provider, provider_id)
+    WHERE provider IS NOT NULL;
+
 DO $$
 BEGIN
     IF EXISTS (
@@ -288,7 +297,7 @@ CREATE TABLE IF NOT EXISTS ml_trend_top5 (
     count_value            INT             NOT NULL,
     ratio                  DOUBLE PRECISION NULL,
     ratio_percent          DOUBLE PRECISION NULL,
-    created_at             TIMESTAMP       NOT NULL DEFAULT NOW(),
+    created_at             TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
     CONSTRAINT ml_trend_top5_source_check
         CHECK (source IN ('recent5_actual', 'predicted', 'actual')),
     CONSTRAINT ml_trend_top5_trend_type_check

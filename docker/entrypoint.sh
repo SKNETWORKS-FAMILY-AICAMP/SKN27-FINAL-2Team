@@ -17,6 +17,7 @@ if [ "${1:-}" = "gunicorn" ]; then
   # 값은 인스턴스 사양에 맞춰 env 로 조정한다.
   set -- "$@" \
     --bind "0.0.0.0:${WEB_CONTAINER_PORT}" \
+    --no-control-socket \
     --worker-class "${GUNICORN_WORKER_CLASS:-gthread}" \
     --workers "${GUNICORN_WORKERS:-3}" \
     --threads "${GUNICORN_THREADS:-4}" \

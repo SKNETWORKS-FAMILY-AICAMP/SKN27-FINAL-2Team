@@ -29,7 +29,7 @@
       "command": [
         "/bin/sh",
         "-c",
-        "python app/manage.py check --deploy --fail-level ERROR && python app/manage.py migrate --noinput && python app/manage.py check_database_schema"
+        "python app/manage.py check --deploy --fail-level ERROR && python app/manage.py apply_database_schema && python app/manage.py migrate --noinput && python app/manage.py check_database_schema"
       ],
       "linuxParameters": {
         "initProcessEnabled": true,
