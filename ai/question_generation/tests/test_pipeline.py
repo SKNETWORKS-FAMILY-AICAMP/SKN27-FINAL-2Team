@@ -690,8 +690,10 @@ class QuestionBankPipelineTest(unittest.TestCase):
 
         rules = load_json_dict(Path("ai/question_generation/material_type_prompt_rules.json"))
         prompt_rules = material_type_rules_text(rules, "짧은 설명 자료")
-        self.assertIn("110~180자를 목표", prompt_rules)
-        self.assertIn("절대 허용 범위인 80~240자", prompt_rules)
+        self.assertIn("110~170자를 목표", prompt_rules)
+        self.assertIn("절대 허용 범위인 110~180자", prompt_rules)
+        self.assertIn("절대 허용 범위인 120~240자", material_type_rules_text(rules, "자료 제시문"))
+        self.assertIn("절대 허용 범위인 120~230자", material_type_rules_text(rules, "탐구 자료"))
         too_short = material_type_format_status(
             {"material_type": "짧은 설명 자료", "question_task": "standard_select"},
             "가" * 38 + ". " + "나" * 38 + ".",
@@ -1242,6 +1244,15 @@ class QuestionBankPipelineTest(unittest.TestCase):
         self.assertEqual(component["backend"], "llm_repair")
         self.assertFalse(sllm.called)
         self.assertIn("실패 문장", chat.call_args.kwargs["messages"][-1]["content"])
+
+    def test_local_choice_repair_preserves_attempt_count_and_failed_output(self) -> None:
+        state = new_state(basis_pack(), generation_item(validate_pack(basis_pack())))
+        component = state["components"]["distractors"]["3"]
+        component["response"] = {"json": {"distractor_choice": "한자(漢字) 오류"}}
+        invalidate(state, ["distractor:3"], "choice_has_hanja")
+        repaired = state["components"]["distractors"]["3"]
+        self.assertEqual(repaired["evaluation_repairs"], 1)
+        self.assertEqual(repaired["previous_response"], {"json": {"distractor_choice": "한자(漢字) 오류"}})
 
     def test_choice_model_falls_back_to_llm_after_bounded_sllm_transport_failure(self) -> None:
         component = {"evaluation_repairs": 1, "previous_response": {"json": {"distractor_choice": "실패 문장"}}}
