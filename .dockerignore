@@ -10,6 +10,11 @@
 .venv/
 venv/
 env/
+*.pem
+*.key
+*.p12
+*.pfx
+!docker/certs/aws-rds-global-bundle.pem
 
 # Python caches and test output
 **/__pycache__/

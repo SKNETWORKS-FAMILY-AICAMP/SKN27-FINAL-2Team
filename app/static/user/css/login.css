@@ -36,16 +36,14 @@ input {
   height: 86px;
   display: flex;
   align-items: center;
+  justify-content: center;
   margin: 0 auto 18px;
   overflow: hidden;
-}
-
-.brand img {
-  width: 220px;
-  height: 156px;
-  display: block;
-  object-fit: contain;
-  object-position: center;
+  color: var(--hm-red);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 34px;
+  font-weight: 950;
+  letter-spacing: .06em;
 }
 
 .login-heading {

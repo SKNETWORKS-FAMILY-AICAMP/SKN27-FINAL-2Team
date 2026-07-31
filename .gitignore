@@ -298,6 +298,13 @@ postgres_data/
 # Local PostgreSQL backup artifacts
 artifacts/
 
+# Private keys and certificate bundles
+*.pem
+*.key
+*.p12
+*.pfx
+!docker/certs/aws-rds-global-bundle.pem
+
 # Neo4j preprocessing generated CSV files
 etl/preprocessing/neo4j/**/*.csv
 !etl/preprocessing/neo4j/seed/

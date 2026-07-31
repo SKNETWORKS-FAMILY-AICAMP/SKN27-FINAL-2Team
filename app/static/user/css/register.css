@@ -69,16 +69,14 @@ input {
   height: 78px;
   display: flex;
   align-items: center;
+  justify-content: center;
   margin: 0 auto 12px;
   overflow: hidden;
-}
-
-.brand img {
-  width: 210px;
-  height: 149px;
-  display: block;
-  object-fit: contain;
-  object-position: center;
+  color: var(--hm-red);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 32px;
+  font-weight: 950;
+  letter-spacing: .06em;
 }
 
 .auth-heading {

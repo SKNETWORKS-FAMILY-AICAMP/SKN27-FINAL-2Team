@@ -12,9 +12,7 @@
 </head>
 <body>
   <header class="site-header" aria-label="마이페이지 메뉴">
-    <a class="brand" href="{% url 'pages:index' %}" aria-label="himate 홈">
-      <img src="{% static 'chatbot/assets/logo.png' %}" alt="himate" />
-    </a>
+    <a class="brand" href="{% url 'pages:index' %}" aria-label="himate 홈">himate</a>
     <nav class="main-nav" aria-label="학습 메뉴">
       <a href="{% url 'diagnosis:intro' %}">진단 평가</a>
       <a href="{% url 'question:create' %}">문제 풀이</a>
