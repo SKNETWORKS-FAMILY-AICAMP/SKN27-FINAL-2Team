@@ -139,6 +139,7 @@
     renderSessionList();
     renderActiveSession();
     openPendingProblemContext();
+    restoreSessionsFromServer();
 
     chatSidebarToggle.addEventListener("click", () => {
       const collapsed = chatLayout.classList.toggle("is-sidebar-collapsed");
@@ -859,6 +860,30 @@
 
     function saveSessions() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions.slice(0, 30)));
+    }
+
+    async function restoreSessionsFromServer() {
+      try {
+        const response = await fetch("{% url 'chatbot:chat_sessions_api' %}", { headers: { Accept: "application/json" } });
+        if (!response.ok) return;
+        const data = await response.json();
+        const remoteSessions = Array.isArray(data.sessions)
+          ? data.sessions.filter((session) => Array.isArray(session.messages) && session.messages.length)
+          : [];
+        if (!remoteSessions.length) return;
+        const remoteIds = new Set(remoteSessions.map((session) => session.id));
+        // ponytail: DB 기록을 우선하고, 아직 저장되지 않은 로컬 임시 대화만 남깁니다.
+        sessions = [...remoteSessions, ...sessions.filter((session) => !remoteIds.has(session.id))]
+          .sort((left, right) => String(right.updatedAt || "").localeCompare(String(left.updatedAt || "")))
+          .slice(0, 30);
+        const activeSession = sessions.find((session) => session.id === activeSessionId);
+        if (!activeSession || !activeSession.messages.length) activeSessionId = sessions[0].id;
+        saveSessions();
+        renderSessionList();
+        renderActiveSession();
+      } catch (error) {
+        // DB 조회 실패 시 로컬 대화를 그대로 사용합니다.
+      }
     }
 
     function createSession(title) {
