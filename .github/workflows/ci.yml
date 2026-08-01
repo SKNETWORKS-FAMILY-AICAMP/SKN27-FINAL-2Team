@@ -14,6 +14,7 @@ permissions:
   contents: read
 
 env:
+  DJANGO_SECURE_SSL_REDIRECT: "false"
   DJANGO_SECRET_KEY: ${{ secrets.CI_DJANGO_SECRET_KEY }}
   DJANGO_DEBUG: "false"
   DJANGO_ALLOWED_HOSTS: ${{ vars.CI_DJANGO_ALLOWED_HOSTS }}
