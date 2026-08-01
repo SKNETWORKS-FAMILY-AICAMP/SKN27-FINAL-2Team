@@ -12,10 +12,14 @@ class FactGraphReleaseTest(unittest.TestCase):
     def setUpClass(cls) -> None:
         project_root = Path(__file__).resolve().parents[3]
         neo4j_root = project_root / "etl" / "preprocessing" / "neo4j"
+        fixture_root = (
+            Path(__file__).resolve().parent
+            / "fixtures"
+            / "fact_graph_release"
+        )
         sys.path.insert(0, str(project_root))
 
         from etl.preprocessing.neo4j.fact_retrieval.fact_graph_release import (
-            build_fact_graph_release,
             read_json,
         )
         from etl.preprocessing.neo4j.runners.report_canonical_duplicate_names import (
@@ -24,16 +28,11 @@ class FactGraphReleaseTest(unittest.TestCase):
 
         config = read_json(neo4j_root / "config" / "fact_graph_release.json")
         cls.config = config
-        cls.release_directory = (
-            neo4j_root / "output" / "fact_graph_release"
-        )
+        cls.release_directory = fixture_root / "release"
         cls.build_duplicate_name_report = staticmethod(
             build_duplicate_name_report
         )
-        cls.package = build_fact_graph_release(
-            neo4j_root / "output",
-            config,
-        )
+        cls.package = read_json(fixture_root / "package.json")
 
     def test_quarantined_identity_is_not_an_active_graph_endpoint(self) -> None:
         quarantined_node_id = (

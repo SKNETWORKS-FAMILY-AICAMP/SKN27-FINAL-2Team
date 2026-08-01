@@ -1,0 +1,3 @@
+canonical_id,era_id,verification_status
+ENTITY:DUPLICATE:A,ERA:A,VERIFIED
+ENTITY:DUPLICATE:B,ERA:B,VERIFIED

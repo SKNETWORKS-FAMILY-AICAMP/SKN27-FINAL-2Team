@@ -1,0 +1,21 @@
+problem_id,answer_choice_id,distractor_choice_id,gold_primary_relation_type,gold_secondary_relation_types_json,gold_reason,review_status
+cj_v41_0001,cj_v41_0001:CHOICE:1,cj_v41_0001:CHOICE:2,TIME_SHIFT,[],가락바퀴는 구석기가 아닌 신석기 생활 사실이다.,INITIAL_SEED
+cj_v41_0001,cj_v41_0001:CHOICE:1,cj_v41_0001:CHOICE:3,TIME_SHIFT,[],명도전 교역은 구석기보다 뒤 시기의 경제 활동이다.,INITIAL_SEED
+cj_v41_0001,cj_v41_0001:CHOICE:1,cj_v41_0001:CHOICE:4,TIME_SHIFT,[],철제 농기구 농경은 구석기보다 뒤 시기의 생활 사실이다.,INITIAL_SEED
+cj_v41_0001,cj_v41_0001:CHOICE:1,cj_v41_0001:CHOICE:5,TIME_SHIFT,[],청동 의례 도구 제작은 청동기 시대의 사실이다.,INITIAL_SEED
+cj_v41_0002,cj_v41_0002:CHOICE:2,cj_v41_0002:CHOICE:1,TARGET_SWAP,[],소도는 부여가 아니라 삼한의 제도이다.,INITIAL_SEED
+cj_v41_0002,cj_v41_0002:CHOICE:2,cj_v41_0002:CHOICE:3,TARGET_SWAP,[],민며느리제는 부여가 아니라 옥저의 풍습이다.,INITIAL_SEED
+cj_v41_0002,cj_v41_0002:CHOICE:2,cj_v41_0002:CHOICE:4,TARGET_SWAP,[],책화는 부여가 아니라 동예의 풍습이다.,INITIAL_SEED
+cj_v41_0002,cj_v41_0002:CHOICE:2,cj_v41_0002:CHOICE:5,TARGET_SWAP,[],목지국을 포함한 소국 연맹은 부여가 아니라 삼한 설명이다.,INITIAL_SEED
+cj_v41_0033,cj_v41_0033:CHOICE:3,cj_v41_0033:CHOICE:1,TIME_SHIFT,[],별기군 창설은 대한 제국 수립과 광무개혁보다 앞선 개화 정책이다.,INITIAL_SEED
+cj_v41_0033,cj_v41_0033:CHOICE:3,cj_v41_0033:CHOICE:2,TIME_SHIFT,[],영선사 파견은 대한 제국 수립보다 앞선 개화 정책이다.,INITIAL_SEED
+cj_v41_0033,cj_v41_0033:CHOICE:3,cj_v41_0033:CHOICE:4,TIME_SHIFT,[],육영 공원 설립은 대한 제국 수립보다 앞선 개화 정책이다.,INITIAL_SEED
+cj_v41_0033,cj_v41_0033:CHOICE:3,cj_v41_0033:CHOICE:5,TIME_SHIFT,[],통리기무아문 신설은 대한 제국 수립보다 앞선 개화 정책이다.,INITIAL_SEED
+cj_v41_0037,cj_v41_0037:CHOICE:2,cj_v41_0037:CHOICE:1,TARGET_SWAP,"[""TIME_SHIFT""]",국채 보상 운동 후원은 의열단의 활동이 아니다.,INITIAL_SEED
+cj_v41_0037,cj_v41_0037:CHOICE:2,cj_v41_0037:CHOICE:3,TARGET_SWAP,[],청산리 전투 승리는 의열단이 아닌 독립군 부대의 활동이다.,INITIAL_SEED
+cj_v41_0037,cj_v41_0037:CHOICE:2,cj_v41_0037:CHOICE:4,TARGET_SWAP,[],구미 위원부 설치는 의열단이 아닌 대한민국 임시 정부의 활동이다.,INITIAL_SEED
+cj_v41_0037,cj_v41_0037:CHOICE:2,cj_v41_0037:CHOICE:5,TARGET_SWAP,"[""TIME_SHIFT""]",만민 공동회 개최는 의열단이 아닌 독립 협회의 활동이다.,INITIAL_SEED
+cj_v41_0125,cj_v41_0125:CHOICE:1,cj_v41_0125:CHOICE:2,TIME_SHIFT,"[""CATEGORY_MISMATCH""]",별기군 창설은 갑신정변의 결과가 아니라 그보다 앞선 개화 정책이다.,INITIAL_SEED
+cj_v41_0125,cj_v41_0125:CHOICE:1,cj_v41_0125:CHOICE:3,TIME_SHIFT,[],부산 외 항구 개항도 다른 사건의 결과이지만 갑신정변보다 앞선 강화도 조약의 결과이다.,INITIAL_SEED
+cj_v41_0125,cj_v41_0125:CHOICE:1,cj_v41_0125:CHOICE:4,TIME_SHIFT,"[""CATEGORY_MISMATCH""]",영선사 파견은 갑신정변의 결과가 아니라 그보다 앞선 개화 정책이다.,INITIAL_SEED
+cj_v41_0125,cj_v41_0125:CHOICE:1,cj_v41_0125:CHOICE:5,TIME_SHIFT,"[""CATEGORY_MISMATCH""]",통리기무아문 설치는 갑신정변의 결과가 아니라 그보다 앞선 개화 정책이다.,INITIAL_SEED
