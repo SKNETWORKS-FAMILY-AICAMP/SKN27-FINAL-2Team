@@ -9,6 +9,7 @@ import urllib.request
 from django.contrib.auth.decorators import login_required
 from django.core.cache import cache
 from django.db import connection, transaction
+from django.db.models import Max
 from django.http import (
     HttpRequest,
     HttpResponse,
@@ -102,6 +103,55 @@ def load_problem_choice_explanations(user, record_id: int | None) -> dict[int, s
 @login_required
 def chat_page(request):
     return render(request, "chatbot/chat.html")
+
+
+def _restore_assistant_message(content: str) -> dict:
+    try:
+        value = json.loads(content)
+    except (TypeError, json.JSONDecodeError):
+        value = None
+    if isinstance(value, dict):
+        return value
+    return {"answer": str(content or ""), "answer_format": "text", "intent": "concept"}
+
+
+@login_required
+@require_GET
+def chat_sessions_api(request):
+    sessions = list(
+        ChatSessions.objects.filter(user=request.user)
+        .annotate(last_message_at=Max("chatmessages__created_at"))
+        .filter(last_message_at__isnull=False)
+        .order_by("-last_message_at")[:30]
+    )
+    messages_by_session: dict[str, list[ChatMessages]] = {}
+    session_ids = [session.session_id for session in sessions]
+    for message in (
+        ChatMessages.objects.filter(session_id__in=session_ids)
+        .order_by("session_id", "-created_at", "-message_id")
+    ):
+        messages = messages_by_session.setdefault(message.session_id, [])
+        if len(messages) < 10:
+            messages.append(message)
+
+    restored_sessions = []
+    for session in sessions:
+        messages = []
+        for message in reversed(messages_by_session.get(session.session_id, [])):
+            if message.sender_type == "user":
+                messages.append({"sender": "user", "text": message.content, "createdAt": message.created_at.isoformat()})
+            elif message.sender_type == "assistant":
+                data = _restore_assistant_message(message.content)
+                messages.append({"sender": "bot", "data": data, "intent": data.get("intent"), "createdAt": message.created_at.isoformat()})
+        title = next((message["text"] for message in messages if message["sender"] == "user"), "새 대화")[:24] or "새 대화"
+        restored_sessions.append({
+            "id": session.session_id,
+            "title": title,
+            "createdAt": session.created_at.isoformat(),
+            "updatedAt": session.last_message_at.isoformat(),
+            "messages": messages,
+        })
+    return JsonResponse({"sessions": restored_sessions}, json_dumps_params={"ensure_ascii": False})
 
 
 def save_chat_turn(request, session_id: str, user_content: str, result: dict) -> None:
