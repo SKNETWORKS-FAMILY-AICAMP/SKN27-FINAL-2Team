@@ -11,7 +11,7 @@
 
 | 이름 | 역할 | 담당 |
 | --- | --- | --- |
-| 김&#8288;민&#8288;경 | PM · Backend · Infra · AI · Full-stack | GraphDB 설계·구현, 학습 계획 및 주간 리포트 Multi-Agent, 대시보드·분석 API/화면, AWS 배포 인프라 및 환경 설정 |
+| 김&#8288;민&#8288;경 | PM · Infra · AI · Full-stack | GraphDB 설계·구현, 학습 계획 및 주간 리포트 Multi-Agent, 대시보드·분석 API/화면, AWS 배포 인프라 및 환경 설정 |
 | 박&#8288;창&#8288;제 | APM · AI/ML · Full-stack | 한능검 기출 수집·통계 데이터 구축, 출제 경향 분석 ML 모델링, 생성 문제 검수 ML 모델링, 맞춤 문제 추천·진단·문제풀이 API 및 화면, 오답노트 |
 | 권&#8288;환&#8288;성 | AI/RAG · Data · Full-stack | PostgreSQL·pgvector 임베딩, 한국사 학습자료 수집·전처리, RAG 검색·챗봇 답변·GraphDB 연동, 챗봇·진단 화면 및 연동 검증 |
 | 주&#8288;연&#8288;중 | sLLM · AI · Backend · Frontend | 파인튜닝 데이터셋 구성 및 sLLM 학습·검증, 근거 기반 문제 Pack 설계, 문항 생성·평가·부분 재생성 파이프라인, 생성 문제은행 DB 적재, 회원가입·로그인·인증 API 및 화면 |
