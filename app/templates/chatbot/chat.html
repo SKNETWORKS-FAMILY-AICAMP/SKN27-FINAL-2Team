@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="/static/himate.css" />
   <link rel="stylesheet" href="/static/layout.css" />
   <link rel="stylesheet" href="{% static 'chatbot/css/chat.css' %}?v=hanok-chat-13" />
-  <link rel="stylesheet" href="{% static 'chatbot/css/chat-reference.css' %}?v=11" />
+  <link rel="stylesheet" href="{% static 'chatbot/css/chat-reference.css' %}?v=12" />
 </head>
 <body>
   <main class="chat-page">
@@ -737,7 +737,7 @@
         ? stripSourceSummary(data.answer || data.structured_answer?.summary || "답변을 생성하지 못했습니다.")
         : data.answer || data.structured_answer?.summary || "답변을 생성하지 못했습니다.";
       const content = shouldShowImages
-        ? renderConversationalAnswer(stripImageUrls(cleanImageAnswerTitle(answerText)))
+        ? `<section class="image-description">${renderConversationalAnswer(stripImageUrls(cleanImageAnswerTitle(answerText)))}</section>`
         : shouldShowStructured
         ? renderStructuredAnswer(data.structured_answer, data.sources || [])
         : data.explanation_level === "foundation" ? renderFoundationAnswer(answerText) : renderConversationalAnswer(answerText);
@@ -756,6 +756,15 @@
         </div>
       `;
       chatStream.appendChild(wrapper);
+      wrapper.querySelectorAll(".image-card-zoom").forEach((button) => {
+        button.addEventListener("click", () => openImagePreview(button.dataset.image, button.dataset.alt));
+      });
+      wrapper.querySelectorAll(".image-more-button").forEach((button) => {
+        button.addEventListener("click", () => {
+          button.closest(".image-gallery")?.querySelector(".image-extra-gallery")?.removeAttribute("hidden");
+          button.hidden = true;
+        });
+      });
       addFoundationExplanationButton(wrapper, data, {
         intent,
         question: data.question,
@@ -1187,38 +1196,38 @@
         })
         .slice(0, 4);
       if (!imageSources.length) return "";
+      const renderImageCard = (source) => {
+        const imageUrl = source.thumbnail_url || source.original_image_url;
+        const proxiedUrl = proxiedImageUrl(imageUrl);
+        const previewUrl = proxiedImageUrl(source.original_image_url || imageUrl);
+        const sourceUrl = source.source_url || source.original_image_url || imageUrl;
+        const imageSource = source.metadata?.image?.source || source.source_name || "한국사 이미지 자료";
+        const imageTitle = String(source.title || "이미지 자료").replace(/\s*사진\s*$/u, "");
+        return `
+          <article class="image-card">
+            <header class="image-card-header">
+              <strong>${escapeHtml(imageTitle)}</strong>
+              <button type="button" class="image-card-zoom" data-image="${escapeHtml(previewUrl)}" data-alt="${escapeHtml(imageTitle)}" aria-label="${escapeHtml(imageTitle)} 확대">
+                <img src="/static/images/zoom-in.png" alt="" />
+              </button>
+            </header>
+            <a href="${escapeHtml(sourceUrl)}" target="_blank" rel="noreferrer">
+              <img src="${escapeHtml(proxiedUrl)}" data-original-src="${escapeHtml(imageUrl)}" alt="${escapeHtml(imageTitle)}" loading="lazy" referrerpolicy="no-referrer" onerror="handleImageError(this)" />
+            </a>
+            <div class="image-fallback" hidden>
+              <strong>이미지를 바로 불러오지 못했습니다.</strong>
+              <span>카드를 클릭해 원본 자료를 확인해 주세요.</span>
+            </div>
+            <div class="image-meta"><span>${escapeHtml(imageSource)}</span></div>
+          </article>
+        `;
+      };
+      const [primaryImage, ...moreImages] = imageSources;
 
       return `
         <section class="image-gallery" aria-label="이미지 자료">
-          ${imageSources.map((source) => {
-            const imageUrl = source.thumbnail_url || source.original_image_url;
-            const proxiedUrl = proxiedImageUrl(imageUrl);
-            const sourceUrl = source.source_url || source.original_image_url || imageUrl;
-            const imageSource = source.metadata?.image?.source || source.source_name || "한국사 이미지 자료";
-            const imageTitle = String(source.title || "이미지 자료").replace(/\s*사진\s*$/u, "");
-            return `
-              <article class="image-card">
-                <a href="${escapeHtml(sourceUrl)}" target="_blank" rel="noreferrer">
-                  <img
-                    src="${escapeHtml(proxiedUrl)}"
-                    data-original-src="${escapeHtml(imageUrl)}"
-                    alt="${escapeHtml(imageTitle)}"
-                    loading="lazy"
-                    referrerpolicy="no-referrer"
-                    onerror="handleImageError(this)"
-                  />
-                </a>
-                <div class="image-fallback" hidden>
-                  <strong>이미지를 바로 불러오지 못했습니다.</strong>
-                  <span>카드를 클릭해 원본 자료를 확인해 주세요.</span>
-                </div>
-                <div class="image-meta">
-                  <strong>${escapeHtml(imageTitle)}</strong>
-                  <span>${escapeHtml(imageSource)}</span>
-                </div>
-              </article>
-            `;
-          }).join("")}
+          ${renderImageCard(primaryImage)}
+          ${moreImages.length ? `<button type="button" class="image-more-button">다른 이미지 더 보기 (${moreImages.length})</button><div class="image-extra-gallery" hidden>${moreImages.map(renderImageCard).join("")}</div>` : ""}
         </section>
       `;
     }
