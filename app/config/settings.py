@@ -63,6 +63,9 @@ SECURE_SSL_REDIRECT = env_bool("DJANGO_SECURE_SSL_REDIRECT", secure_default)
 # 헬스체크는 내부 http 로 들어오므로 https 강제 리다이렉트에서 제외한다.
 SECURE_REDIRECT_EXEMPT = [r"^health/"]
 SESSION_COOKIE_SECURE = env_bool("DJANGO_SESSION_COOKIE_SECURE", secure_default)
+# Keep authentication short-lived on shared computers; closing the browser drops the cookie.
+SESSION_COOKIE_AGE = 60 * 60 * 8
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 CSRF_COOKIE_SECURE = env_bool("DJANGO_CSRF_COOKIE_SECURE", secure_default)
 # 운영 기본 1년. 서브도메인·preload 는 되돌리기 어려워 opt-in 으로 남긴다.
 default_hsts_seconds = 31536000 if secure_default else 0
