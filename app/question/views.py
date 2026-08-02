@@ -1,5 +1,6 @@
 import json
 import random
+import re
 from datetime import date
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -217,13 +218,20 @@ def _reference_filter_values(section_name):
 
 # Questions 모델 목록을 문제 생성 API 응답 JSON으로 변환한다.
 # 아직 풀이 전이므로 사용자 선택 답안 정보는 포함하지 않는다.
-def _shuffled_choices_for_question(question, seed_key):
+def _choices_for_question(question, seed_key):
     options = list(
         QuestionOptions.objects.filter(question_id=question.question_id)
         .order_by("choice_no")
     )
-    shuffled_options = options[:]
-    random.Random(f"{seed_key}:{question.question_id}").shuffle(shuffled_options)
+
+    markers = [re.match(r"^\s*\(?([가나다라마])\)", option.content or "") for option in options]
+    if len(options) == 5 and all(markers) and {match.group(1) for match in markers} == set("가나다라마"):
+        display_options = sorted(options, key=lambda option: "가나다라마".index(
+            re.match(r"^\s*\(?([가나다라마])\)", option.content).group(1)
+        ))
+    else:
+        display_options = options[:]
+        random.Random(f"{seed_key}:{question.question_id}").shuffle(display_options)
 
     choices = [
         {
@@ -234,14 +242,10 @@ def _shuffled_choices_for_question(question, seed_key):
             "choice_explanation": option.choice_explanation,
             "is_answer": option.is_answer,
         }
-        for display_no, option in enumerate(shuffled_options, start=1)
+        for display_no, option in enumerate(display_options, start=1)
     ]
     answer_no = next(
-        (
-            display_no
-            for display_no, option in enumerate(shuffled_options, start=1)
-            if option.is_answer
-        ),
+        (display_no for display_no, option in enumerate(display_options, start=1) if option.is_answer),
         question.answer_no,
     )
     return choices, answer_no, options
@@ -260,7 +264,7 @@ def _display_choice_no(choices, choice_id):
 def _serialize_questions(questions, seed_key):
     serialized_questions = []
     for question in questions:
-        choices, _answer_no, _options = _shuffled_choices_for_question(question, seed_key)
+        choices, _answer_no, _options = _choices_for_question(question, seed_key)
         serialized_questions.append({
             "question_id": question.question_id,
             "content": question.content,
@@ -283,10 +287,7 @@ def _serialize_session_questions(records):
     serialized_questions = []
     for record in records:
         question = record.question
-        choices, _answer_no, options = _shuffled_choices_for_question(
-            question,
-            record.session_id,
-        )
+        choices, _answer_no, options = _choices_for_question(question, record.session_id)
         selected_choice_id = None
         if record.selected_no is not None:
             selected = next(
@@ -974,10 +975,7 @@ def question_session_result(request, session_id):
     max_score = 0
     for number, record in enumerate(records, start=1):
         question = record.question
-        choices, answer_no, options = _shuffled_choices_for_question(
-            question,
-            session.session_id,
-        )
+        choices, answer_no, options = _choices_for_question(question, session.session_id)
         selected_option = next(
             (option for option in options if option.choice_no == record.selected_no),
             None,
@@ -1106,10 +1104,7 @@ def question_save_answer(request, session_id):
     if update_session_fields:
         session.save(update_fields=update_session_fields)
 
-    choices, _answer_no, _options = _shuffled_choices_for_question(
-        record.question,
-        session.session_id,
-    )
+    choices, _answer_no, _options = _choices_for_question(record.question, session.session_id)
     selected_display_no = _display_choice_no(choices, selected_choice_id)
 
     serializer = SaveAnswerResponse({
@@ -1400,10 +1395,7 @@ def question_wrong_chat_context(request, session_id):
         if record.is_correct:
             continue
         question = record.question
-        choices, answer_no, options = _shuffled_choices_for_question(
-            question,
-            session.session_id,
-        )
+        choices, answer_no, options = _choices_for_question(question, session.session_id)
         selected_option = next(
             (option for option in options if option.choice_no == record.selected_no),
             None,
