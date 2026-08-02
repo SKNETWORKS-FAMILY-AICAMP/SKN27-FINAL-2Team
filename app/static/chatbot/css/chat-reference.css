@@ -1,7 +1,20 @@
 /* Screenshot-matched chat layout. Deliberately text and CSS only: no logo or image assets. */
 body:has(.chat-page) { overflow: hidden; background: #fbfaf5 !important; }
 .chat-page { height: 100vh; display: grid; grid-template-rows: 76px minmax(0, 1fr); background: #fbfaf5 !important; color: #343530 !important; font-family: "Noto Serif KR", "Nanum Myeongjo", serif !important; }
-.chat-page img:not(.selected-problem-image):not(.selected-problem-choice-image):not([src$="zoom-in.png"]) { display: none !important; }
+.chat-page img:not(.selected-problem-image):not(.selected-problem-choice-image):not(.image-card img):not([src$="zoom-in.png"]) { display: none !important; }
+.chat-page .image-card { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; }
+.chat-page .image-card-header { display: flex; align-items: center; justify-content: space-between; min-height: 42px; padding: 8px 10px 6px 12px; }
+.chat-page .image-card-header strong { color: #4d3524; font-size: 15px; }
+.chat-page .image-card-zoom { width: 30px; height: 30px; display: grid; place-items: center; padding: 6px; border: 1px solid #dfe8db; border-radius: 6px; background: #fff; cursor: pointer; }
+.chat-page .image-card-zoom img { width: 100%; height: 100%; display: block !important; object-fit: contain; }
+.chat-page .image-description { padding: 24px 26px; border: 1px solid #e3d8c7; border-radius: 14px; background: #fffdf9; box-shadow: 0 3px 10px rgba(89, 68, 47, .06); }
+.chat-page .image-description .markdown-answer { padding: 0 !important; font-size: 16px !important; font-weight: 500 !important; line-height: 1.8 !important; }
+.chat-page .image-description h3 { margin: 0 0 14px; color: #355c4b; font-size: 17px; font-weight: 800; }
+.chat-page .image-description h3::before { content: ""; display: inline-block; width: 7px; height: 7px; margin-right: 8px; border-radius: 50%; background: #4f8069; vertical-align: 2px; }
+.chat-page .image-description p { margin: 0; color: #403d37; white-space: normal; word-break: keep-all; }
+.chat-page .image-more-button { justify-self: start; padding: 9px 13px; border: 1px solid #bfcfc4; border-radius: 7px; background: #fffdf9; color: #355c4b; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
+.chat-page .image-extra-gallery { display: grid; gap: 14px; }
+.chat-page .image-extra-gallery[hidden] { display: none; }
 .chat-page .chat-header { display: flex !important; height: 76px !important; min-height: 76px !important; }
 .chat-page .messages { height: auto !important; min-height: 0; padding: 0 !important; overflow: hidden !important; }
 .chat-page .chat-layout { width: 100% !important; height: 100% !important; display: grid !important; grid-template-columns: 358px minmax(0, 1fr) !important; gap: 0 !important; margin: 0 !important; overflow: hidden; border: 1px solid #cbb9a4 !important; border-radius: 8px !important; background-color: #fbfaf5 !important; background-image: radial-gradient(rgba(151,128,99,.12) .65px, transparent .75px) !important; background-size: 10px 10px !important; box-shadow: none !important; }
