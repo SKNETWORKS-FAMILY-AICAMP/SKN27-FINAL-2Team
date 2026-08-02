@@ -364,16 +364,63 @@
       }
 
       try {
-        const response = await fetch("/question/api/start/", {
-          method: "POST",
-          credentials: "same-origin",
-          headers: {
-            "Content-Type": "application/json",
-            "X-CSRFToken": getCookie("csrftoken") || "{{ csrf_token }}",
-          },
-          body: JSON.stringify(conditionToRequest(savedCondition)),
-        });
-        const payload = await response.json();
+        let requestBody = conditionToRequest(savedCondition);
+        let response = null;
+        let payload = null;
+        let partialRetryAttempted = false;
+
+        while (true) {
+          response = await fetch("/question/api/start/", {
+            method: "POST",
+            credentials: "same-origin",
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRFToken": getCookie("csrftoken") || "{{ csrf_token }}",
+            },
+            body: JSON.stringify(requestBody),
+          });
+          payload = await response.json();
+
+          if (response.ok) break;
+          if (payload.error_code !== "insufficient_questions" || partialRetryAttempted) break;
+
+          const availableCount = Number(payload.available_count);
+          const requestedCount = Number(payload.requested_count || requestBody.count);
+          const conditionDetails = (payload.condition_availability || []).map((detail) => {
+            const selectedValues = (detail.selected_values || []).join(", ");
+            return `- ${detail.label} [${selectedValues}] 적용 후: ${detail.available_count}개`;
+          });
+          const scoreDetails = (payload.score_availability || [])
+            .filter((detail) => detail.available_count < detail.requested_count)
+            .map((detail) => (
+              `- ${detail.score}점 문제: 요청 ${detail.requested_count}개 / 가능 ${detail.available_count}개`
+            ));
+          const shortageDetails = [
+            ...(conditionDetails.length ? ["조건 순차 적용 결과", ...conditionDetails] : []),
+            ...(scoreDetails.length ? ["난이도별 부족", ...scoreDetails] : []),
+          ].join("\n");
+          const shortageDetailMessage = shortageDetails ? `\n\n${shortageDetails}` : "";
+          if (!Number.isInteger(availableCount) || availableCount <= 0) {
+            alert(`선택 조건에 맞는 문제가 없습니다. 조건을 다시 선택해 주세요.${shortageDetailMessage}`);
+            window.location.href = "/question/?restore=1";
+            return;
+          }
+
+          const shouldGenerateAvailable = confirm(
+            `선택 조건에 맞는 문제는 ${availableCount}개입니다. 요청한 ${requestedCount}개를 만들 수 없습니다.` +
+            `${shortageDetailMessage}\n\n` +
+            `[확인] ${availableCount}개만 생성\n[취소] 조건 다시 선택`
+          );
+          if (!shouldGenerateAvailable) {
+            window.location.href = "/question/?restore=1";
+            return;
+          }
+
+          requestBody = { ...requestBody, count: availableCount };
+          savedCondition["문제 수"] = String(availableCount);
+          sessionStorage.setItem(conditionStorageKey, JSON.stringify(savedCondition));
+          partialRetryAttempted = true;
+        }
 
         if (!response.ok) {
           const details = [];

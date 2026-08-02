@@ -191,16 +191,6 @@ def _ordered_existing_values(qs, field_name, ordered_values):
     return [value for value in ordered_values if value in existing_values]
 
 
-def _selected_existing_values(qs, field_name, selected_values):
-    existing_values = set(
-        qs.exclude(**{field_name: ""})
-        .exclude(**{field_name: None})
-        .values_list(field_name, flat=True)
-        .distinct()
-    )
-    return [value for value in selected_values if value in existing_values]
-
-
 def _reference_filter_values(section_name):
     try:
         with ERA_REFERENCE_PATH.open(encoding="utf-8-sig") as reference_file:
@@ -439,19 +429,6 @@ def _complete_practice_study_plan_block(session, user_id):
     return complete_study_plan_block_by_id(user_id, study_plan_id, block_id, True)
 
 
-def _question_generation_context_label(data, study_plan_block):
-    if study_plan_block:
-        label = study_plan_block.get("label")
-        if label:
-            return str(label)
-
-    labels = []
-    for key in ("eras", "topics", "question_types", "question_subtypes"):
-        values = data.get(key) or []
-        labels.extend(str(value) for value in values if value)
-    return " · ".join(labels[:3]) if labels else "선택한 조건"
-
-
 # 비로그인 사용자에게 제공할 오늘의 10문항을 결정한다.
 # 같은 날짜에서 항상 같은 문제 세트가 나오고, 날짜가 바뀌면 다른 세트가 나온다.
 def _daily_guest_question_ids(question_ids):
@@ -680,12 +657,12 @@ def question_start(request):
                     status=validation_result["status_code"],
                 )
             study_plan_block = validation_result["block"]
-    generation_context_label = _question_generation_context_label(data, study_plan_block)
-
     qs = _base_question_queryset()
     qs = _apply_study_plan_block_filter(qs, study_plan_block)
     score_counts = {}
     score_counts_error = None
+    condition_availability = []
+    score_availability = []
     if user_id is not None:
         if study_plan_block is not None:
             data["count"] = int(study_plan_block.get("questionCount") or data["count"])
@@ -695,34 +672,40 @@ def question_start(request):
         if score_counts_error:
             return Response(score_counts_error, status=status.HTTP_400_BAD_REQUEST)
 
-    if user_id is not None and study_plan_block is None and data["eras"]:
-        qs = qs.filter(era__in=data["eras"])
-    if user_id is not None and study_plan_block is None and data["topics"]:
-        qs = qs.filter(topic__in=data["topics"])
-    if user_id is not None and study_plan_block is None and data["question_types"]:
-        selected_question_types = _selected_existing_values(
-            qs,
-            "question_type",
-            data["question_types"],
+    if user_id is not None and study_plan_block is None:
+        filter_fields = (
+            ("eras", "era", "시대"),
+            ("topics", "topic", "주제"),
+            ("question_types", "question_type", "대유형"),
+            ("question_subtypes", "question_subtype", "소유형"),
         )
-        if selected_question_types:
-            qs = qs.filter(question_type__in=selected_question_types)
-    if user_id is not None and study_plan_block is None and data["question_subtypes"]:
-        selected_question_subtypes = _selected_existing_values(
-            qs,
-            "question_subtype",
-            data["question_subtypes"],
-        )
-        if selected_question_subtypes:
-            qs = qs.filter(question_subtype__in=selected_question_subtypes)
+        for request_field, model_field, label in filter_fields:
+            selected_values = data[request_field]
+            if not selected_values:
+                continue
+            qs = qs.filter(**{f"{model_field}__in": selected_values})
+            condition_availability.append({
+                "label": label,
+                "selected_values": list(selected_values),
+                "available_count": qs.count(),
+            })
 
     count = sum(score_counts.values()) if user_id is not None else GUEST_DAILY_COUNT
     if user_id is not None:
+        score_availability = [
+            {
+                "score": score,
+                "requested_count": requested_count,
+                "available_count": qs.filter(q_score=score).count(),
+            }
+            for score, requested_count in score_counts.items()
+            if requested_count > 0
+        ]
         selected_scores = list(score_counts.keys())
         qs = qs.filter(q_score__in=selected_scores)
 
     question_ids = list(qs.order_by("question_id").values_list("question_id", flat=True))
-    fallback_messages = []
+    adjustment_messages = []
 
     if user_id is None:
         selected_ids = _daily_guest_question_ids(question_ids)
@@ -745,39 +728,23 @@ def question_start(request):
     else:
         selected_ids, score_error, score_adjustments = _sample_questions_by_score_counts(qs, score_counts)
         if score_error:
-            remaining_count = count - len(selected_ids or [])
-            fallback_qs = (
-                _base_question_queryset()
-                .exclude(question_id__in=selected_ids or [])
-            )
-            fallback_ids = list(fallback_qs.values_list("question_id", flat=True))
-            if len(fallback_ids) < remaining_count:
-                return Response(score_error, status=status.HTTP_400_BAD_REQUEST)
-            selected_ids = (selected_ids or []) + random.sample(fallback_ids, remaining_count)
-            fallback_messages.append(
-                f"{generation_context_label} 문제 생성에 문제 수가 부족하여 랜덤 시대/주제에서 문제를 보충했습니다."
-            )
-        fallback_messages.extend(score_adjustments)
+            score_error["error_code"] = "insufficient_questions"
+            score_error["condition_availability"] = condition_availability
+            score_error["score_availability"] = score_availability
+            return Response(score_error, status=status.HTTP_400_BAD_REQUEST)
+        adjustment_messages.extend(score_adjustments)
 
     if len(selected_ids) < count:
-        remaining_count = count - len(selected_ids)
-        fallback_ids = list(
-            _base_question_queryset()
-            .exclude(question_id__in=selected_ids)
-            .values_list("question_id", flat=True)
-        )
-        if len(fallback_ids) < remaining_count:
-            return Response(
-                {
-                    "error": "조건에 맞는 문제가 부족합니다.",
-                    "available_count": len(selected_ids) + len(fallback_ids),
-                    "requested_count": count,
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        selected_ids.extend(random.sample(fallback_ids, remaining_count))
-        fallback_messages.append(
-            f"{generation_context_label} 문제 생성에 문제 수가 부족하여 랜덤 시대/주제에서 문제를 보충했습니다."
+        return Response(
+            {
+                "error": "조건에 맞는 문제가 부족합니다.",
+                "error_code": "insufficient_questions",
+                "available_count": len(question_ids),
+                "requested_count": count,
+                "condition_availability": condition_availability,
+                "score_availability": score_availability,
+            },
+            status=status.HTTP_400_BAD_REQUEST,
         )
 
     questions = list(Questions.objects.filter(question_id__in=selected_ids))
@@ -813,12 +780,6 @@ def question_start(request):
             ])
 
     choice_seed_key = session.session_id if session else f"guest:{timezone.localdate().isoformat()}"
-    adjustment_messages = []
-    if fallback_messages:
-        adjustment_messages.append(
-            f"{generation_context_label} 문제 생성에 일부 난이도 문제가 부족하여 다른 난이도에서 문제를 사용했습니다."
-        )
-        adjustment_messages.extend(fallback_messages)
     start_question_response = StartQuestionsResponse({
         "session_id": session.session_id if session else None,
         "total_count": count,

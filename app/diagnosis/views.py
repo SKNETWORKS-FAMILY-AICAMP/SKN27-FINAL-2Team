@@ -1,10 +1,12 @@
 import random
-from datetime import datetime, timezone
+from datetime import date
+from zoneinfo import ZoneInfo
 
 from django.contrib.auth.decorators import login_required
 from django.db import models, transaction
 from django.db import connection
 from django.shortcuts import render
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
@@ -19,6 +21,7 @@ from analytics.service.study_plan import (
     StudyPlanBlockTerminal,
     validate_study_plan_block_start,
 )
+from analytics.service.study_plan.config import get_study_plan_config
 from analytics.service.studyplan import (
     complete_study_plan_block_by_id,
     is_weekly_review_plan_block,
@@ -60,6 +63,12 @@ GRADE_THRESHOLDS = [
     (70, "2급"),
     (60, "3급"),
 ]
+
+
+def _get_local_recorded_date() -> date:
+    """학습 기준 시간대의 날짜를 반환한다."""
+    study_plan_timezone = ZoneInfo(get_study_plan_config().timezone)
+    return timezone.localdate(timezone=study_plan_timezone)
 
 
 def _get_expected_grade(total_score: int) -> str:
@@ -264,7 +273,7 @@ def diagnosis_start(request):
         "session_type": "diagnostic",
         "total_count": DIAGNOSIS_QUESTION_COUNT,
         "status": "in_progress",
-        "recorded_date": datetime.now(tz=timezone.utc).date(),
+        "recorded_date": _get_local_recorded_date(),
     }
     if has_review_type:
         session_data["review_type"] = review_type
