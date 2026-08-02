@@ -1,4 +1,5 @@
 import json
+from datetime import datetime, timezone
 from concurrent.futures import ThreadPoolExecutor
 from types import ModuleType, SimpleNamespace
 from unittest.mock import MagicMock, patch
@@ -15,7 +16,7 @@ from .rag_service import (
     stream_concept_rag_answer,
     stream_question_rag_answer,
 )
-from .views import _chat_request_blocked, chat_page, proxied_image_path, rag_chat_api, rag_chat_stream_api
+from .views import _chat_request_blocked, chat_page, chat_sessions_api, proxied_image_path, rag_chat_api, rag_chat_stream_api
 
 
 class ChatPageStorageIsolationTests(SimpleTestCase):
@@ -66,6 +67,26 @@ class ChatbotApiTests(TestCase):
     def test_top_k_rejects_invalid_value(self):
         response = rag_chat_api(self.request({"question": "세종대왕", "top_k": "abc"}))
         self.assertEqual(response.status_code, 400)
+
+    @patch("chatbot.views.ChatMessages.objects.filter")
+    @patch("chatbot.views.ChatSessions.objects.filter")
+    def test_session_restore_scopes_user_and_parses_assistant_json(self, session_filter, message_filter):
+        now = datetime.now(timezone.utc)
+        session_filter.return_value.annotate.return_value.filter.return_value.order_by.return_value.__getitem__.return_value = [
+            SimpleNamespace(session_id="session-1", created_at=now, last_message_at=now)
+        ]
+        message_filter.return_value.order_by.return_value = [
+            SimpleNamespace(session_id="session-1", sender_type="assistant", content=json.dumps({"answer": "세종대왕입니다.", "intent": "concept"}), created_at=now),
+            SimpleNamespace(session_id="session-1", sender_type="user", content="세종대왕 알려줘", created_at=now),
+        ]
+        request = self.factory.get("/chatbot/api/sessions/")
+        request.user = SimpleNamespace(is_authenticated=True, user_id=1)
+
+        response = chat_sessions_api(request)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(json.loads(response.content)["sessions"][0]["messages"][1]["data"]["answer"], "세종대왕입니다.")
+        session_filter.assert_called_once_with(user=request.user)
 
     def test_chat_rate_limit_blocks_request_over_limit(self):
         request = self.request({"question": "세종대왕"})

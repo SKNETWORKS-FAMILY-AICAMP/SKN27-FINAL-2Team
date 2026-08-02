@@ -1,0 +1,333 @@
+{
+  "entities": [
+    {
+      "entity_id": "ENTITY:FOUNDER",
+      "entity_kind": "CANONICAL",
+      "entity_type": "Person",
+      "display_name": "고려 태조",
+      "normalized_search_text": "고려태조",
+      "source_node_ids_json": "[\"ITKC:PERSON:P008139:sha256-2bfbf7f8ab4b1538\"]",
+      "source_node_kind": "CANONICAL",
+      "resolution_status": "RESOLVED",
+      "exact_search_eligible": "true",
+      "context_anchor_id": "",
+      "context_predicate": "",
+      "context_predicates_json": "[]",
+      "context_directions_json": "[]"
+    },
+    {
+      "entity_id": "ENTITY:KINGDOM",
+      "entity_kind": "CANONICAL",
+      "entity_type": "State",
+      "display_name": "후백제",
+      "normalized_search_text": "후백제",
+      "source_node_ids_json": "[\"SRC:KINGDOM\"]",
+      "source_node_kind": "CANONICAL",
+      "resolution_status": "RESOLVED",
+      "exact_search_eligible": "true",
+      "context_anchor_id": "",
+      "context_predicate": "",
+      "context_predicates_json": "[]",
+      "context_directions_json": "[]"
+    },
+    {
+      "entity_id": "ENTITY:CONTEXT",
+      "entity_kind": "CONTEXTUAL",
+      "entity_type": "Concept",
+      "display_name": "Context Group",
+      "normalized_search_text": "contextgroup",
+      "source_node_ids_json": "[\"SRC:CONTEXT\"]",
+      "source_node_kind": "CONTEXTUAL_GROUP",
+      "resolution_status": "UNRESOLVED",
+      "exact_search_eligible": "false",
+      "context_anchor_id": "ENTITY:FOUNDER",
+      "context_predicate": "MULTIPLE",
+      "context_predicates_json": "[\"ALLY\", \"RIVAL\"]",
+      "context_directions_json": "[\"IN\", \"OUT\"]"
+    },
+    {
+      "entity_id": "ENTITY:FRONTIER",
+      "entity_kind": "PROVISIONAL",
+      "entity_type": "Place",
+      "display_name": "Frontier",
+      "normalized_search_text": "frontier",
+      "source_node_ids_json": "[\"SRC:FRONTIER\"]",
+      "source_node_kind": "OFFICIAL_SOURCE",
+      "resolution_status": "UNRESOLVED",
+      "exact_search_eligible": "false",
+      "context_anchor_id": "",
+      "context_predicate": "",
+      "context_predicates_json": "[]",
+      "context_directions_json": "[]"
+    },
+    {
+      "entity_id": "ENTITY:DUPLICATE:A",
+      "entity_kind": "CANONICAL",
+      "entity_type": "Person",
+      "display_name": "세종",
+      "normalized_search_text": "세종",
+      "source_node_ids_json": "[\"SRC:DUPLICATE:A\"]",
+      "source_node_kind": "CANONICAL",
+      "resolution_status": "RESOLVED",
+      "exact_search_eligible": "false",
+      "context_anchor_id": "",
+      "context_predicate": "",
+      "context_predicates_json": "[]",
+      "context_directions_json": "[]"
+    },
+    {
+      "entity_id": "ENTITY:DUPLICATE:B",
+      "entity_kind": "CANONICAL",
+      "entity_type": "Person",
+      "display_name": "세종",
+      "normalized_search_text": "세종",
+      "source_node_ids_json": "[\"SRC:DUPLICATE:B\"]",
+      "source_node_kind": "CANONICAL",
+      "resolution_status": "RESOLVED",
+      "exact_search_eligible": "false",
+      "context_anchor_id": "",
+      "context_predicate": "",
+      "context_predicates_json": "[]",
+      "context_directions_json": "[]"
+    }
+  ],
+  "facts": [
+    {
+      "fact_id": "FACT:ALLY",
+      "subject_entity_id": "ENTITY:FOUNDER",
+      "object_entity_id": "ENTITY:CONTEXT",
+      "predicate": "ALLY",
+      "subject_source_node_id": "SRC:FOUNDER",
+      "object_source_node_id": "SRC:CONTEXT",
+      "subject_identity_node_id": "ENTITY:FOUNDER",
+      "object_identity_node_id": "ENTITY:CONTEXT",
+      "subject_node_kind": "CANONICAL",
+      "object_node_kind": "SOURCE_RECORD",
+      "subject_endpoint_resolution_method": "",
+      "object_endpoint_resolution_method": "",
+      "endpoint_projection_status": "DIRECT",
+      "evidence_ids_json": "[\"EVIDENCE:ALLY\"]"
+    },
+    {
+      "fact_id": "FACT:RIVAL",
+      "subject_entity_id": "ENTITY:CONTEXT",
+      "object_entity_id": "ENTITY:FOUNDER",
+      "predicate": "RIVAL",
+      "subject_source_node_id": "SRC:CONTEXT",
+      "object_source_node_id": "SRC:FOUNDER",
+      "subject_identity_node_id": "ENTITY:CONTEXT",
+      "object_identity_node_id": "ENTITY:FOUNDER",
+      "subject_node_kind": "SOURCE_RECORD",
+      "object_node_kind": "CANONICAL",
+      "subject_endpoint_resolution_method": "",
+      "object_endpoint_resolution_method": "",
+      "endpoint_projection_status": "DIRECT",
+      "evidence_ids_json": "[\"EVIDENCE:RIVAL\"]"
+    },
+    {
+      "fact_id": "FACT:REDIRECTED",
+      "subject_entity_id": "ENTITY:FOUNDER",
+      "object_entity_id": "ENTITY:KINGDOM",
+      "predicate": "FOUNDED",
+      "subject_source_node_id": "ITKC:PERSON:P006075:sha256-2bfbf7f8ab4b1538",
+      "object_source_node_id": "SRC:KINGDOM",
+      "subject_identity_node_id": "ITKC:PERSON:P008139:sha256-2bfbf7f8ab4b1538",
+      "object_identity_node_id": "ENTITY:KINGDOM",
+      "subject_node_kind": "CANONICAL",
+      "object_node_kind": "CANONICAL",
+      "subject_endpoint_resolution_method": "UNIQUE_QUALIFIED_SOURCE_ALIAS_TYPE",
+      "object_endpoint_resolution_method": "",
+      "endpoint_projection_status": "CANONICAL_DUPLICATE_COLLAPSED",
+      "evidence_ids_json": "[\"EVIDENCE:REDIRECTED\"]"
+    },
+    {
+      "fact_id": "FACT:ANNEXED:1",
+      "subject_entity_id": "ENTITY:FOUNDER",
+      "object_entity_id": "ENTITY:KINGDOM",
+      "predicate": "ANNEXED",
+      "subject_source_node_id": "SRC:FOUNDER",
+      "object_source_node_id": "SRC:KINGDOM",
+      "subject_identity_node_id": "ENTITY:FOUNDER",
+      "object_identity_node_id": "ENTITY:KINGDOM",
+      "subject_node_kind": "CANONICAL",
+      "object_node_kind": "CANONICAL",
+      "subject_endpoint_resolution_method": "",
+      "object_endpoint_resolution_method": "",
+      "endpoint_projection_status": "DIRECT",
+      "evidence_ids_json": "[\"EVIDENCE:ANNEXED:1\"]"
+    },
+    {
+      "fact_id": "FACT:ANNEXED:2",
+      "subject_entity_id": "ENTITY:FOUNDER",
+      "object_entity_id": "ENTITY:KINGDOM",
+      "predicate": "ANNEXED",
+      "subject_source_node_id": "SRC:FOUNDER",
+      "object_source_node_id": "SRC:KINGDOM",
+      "subject_identity_node_id": "ENTITY:FOUNDER",
+      "object_identity_node_id": "ENTITY:KINGDOM",
+      "subject_node_kind": "CANONICAL",
+      "object_node_kind": "CANONICAL",
+      "subject_endpoint_resolution_method": "",
+      "object_endpoint_resolution_method": "",
+      "endpoint_projection_status": "DIRECT",
+      "evidence_ids_json": "[\"EVIDENCE:ANNEXED:2\"]"
+    },
+    {
+      "fact_id": "FACT:BORDERED",
+      "subject_entity_id": "ENTITY:FOUNDER",
+      "object_entity_id": "ENTITY:FRONTIER",
+      "predicate": "BORDERED",
+      "subject_source_node_id": "SRC:FOUNDER",
+      "object_source_node_id": "SRC:FRONTIER",
+      "subject_identity_node_id": "ENTITY:FOUNDER",
+      "object_identity_node_id": "ENTITY:FRONTIER",
+      "subject_node_kind": "CANONICAL",
+      "object_node_kind": "OFFICIAL_SOURCE",
+      "subject_endpoint_resolution_method": "",
+      "object_endpoint_resolution_method": "",
+      "endpoint_projection_status": "DIRECT",
+      "evidence_ids_json": "[\"EVIDENCE:BORDERED\"]"
+    }
+  ],
+  "quarantined_facts": [
+    {
+      "quarantined_source_node_ids_json": "[\"ITKC:PERSON:P041198:sha256-2bfbf7f8ab4b1538\"]",
+      "evidence_records_json": "[{\"evidence_id\": \"EVIDENCE:QUARANTINED\"}]",
+      "reason_codes_json": "[\"SOURCE_CONFLICT\"]"
+    },
+    {
+      "quarantined_source_node_ids_json": "[\"ITKC:PERSON:P006075:sha256-2bfbf7f8ab4b1538\"]",
+      "evidence_records_json": "[{\"evidence_id\": \"EVIDENCE:SELF\"}]",
+      "reason_codes_json": "[\"IDENTITY_REDIRECT_SELF_RELATION\"]"
+    }
+  ],
+  "source_records": [
+    {
+      "source_record_id": "ITKC:PERSON:P041198:sha256-2bfbf7f8ab4b1538",
+      "identity_status": "SOURCE_CONFLICT",
+      "preferred_source_node_id": ""
+    },
+    {
+      "source_record_id": "ITKC:PERSON:P006075:sha256-2bfbf7f8ab4b1538",
+      "identity_status": "REDIRECTED",
+      "preferred_source_node_id": "ITKC:PERSON:P008139:sha256-2bfbf7f8ab4b1538"
+    },
+    {
+      "source_record_id": "SRC:CONTEXT",
+      "identity_status": "ACTIVE",
+      "preferred_source_node_id": ""
+    },
+    {
+      "source_record_id": "SRC:FRONTIER",
+      "identity_status": "ACTIVE",
+      "preferred_source_node_id": ""
+    }
+  ],
+  "evidence": [
+    {"evidence_id": "EVIDENCE:ALLY"},
+    {"evidence_id": "EVIDENCE:RIVAL"},
+    {"evidence_id": "EVIDENCE:REDIRECTED"},
+    {"evidence_id": "EVIDENCE:ANNEXED:1"},
+    {"evidence_id": "EVIDENCE:ANNEXED:2"},
+    {"evidence_id": "EVIDENCE:BORDERED"}
+  ],
+  "fact_evidence_links": [
+    {"fact_id": "FACT:ALLY", "evidence_id": "EVIDENCE:ALLY"},
+    {"fact_id": "FACT:RIVAL", "evidence_id": "EVIDENCE:RIVAL"},
+    {"fact_id": "FACT:REDIRECTED", "evidence_id": "EVIDENCE:REDIRECTED"},
+    {"fact_id": "FACT:ANNEXED:1", "evidence_id": "EVIDENCE:ANNEXED:1"},
+    {"fact_id": "FACT:ANNEXED:2", "evidence_id": "EVIDENCE:ANNEXED:2"},
+    {"fact_id": "FACT:BORDERED", "evidence_id": "EVIDENCE:BORDERED"}
+  ],
+  "semantic_relations": [
+    {
+      "subject_entity_id": "ENTITY:FOUNDER",
+      "predicate": "ALLY",
+      "object_entity_id": "ENTITY:CONTEXT",
+      "fact_count": "1",
+      "retrieval_eligible": "false",
+      "terminal_retrieval_eligible": "true",
+      "multi_hop_eligible": "false"
+    },
+    {
+      "subject_entity_id": "ENTITY:CONTEXT",
+      "predicate": "RIVAL",
+      "object_entity_id": "ENTITY:FOUNDER",
+      "fact_count": "1",
+      "retrieval_eligible": "false",
+      "terminal_retrieval_eligible": "true",
+      "multi_hop_eligible": "false"
+    },
+    {
+      "subject_entity_id": "ENTITY:FOUNDER",
+      "predicate": "FOUNDED",
+      "object_entity_id": "ENTITY:KINGDOM",
+      "fact_count": "1",
+      "retrieval_eligible": "true",
+      "terminal_retrieval_eligible": "true",
+      "multi_hop_eligible": "true"
+    },
+    {
+      "subject_entity_id": "ENTITY:FOUNDER",
+      "predicate": "ANNEXED",
+      "object_entity_id": "ENTITY:KINGDOM",
+      "fact_count": "2",
+      "retrieval_eligible": "true",
+      "terminal_retrieval_eligible": "true",
+      "multi_hop_eligible": "true"
+    },
+    {
+      "subject_entity_id": "ENTITY:FOUNDER",
+      "predicate": "BORDERED",
+      "object_entity_id": "ENTITY:FRONTIER",
+      "fact_count": "1",
+      "retrieval_eligible": "false",
+      "terminal_retrieval_eligible": "true",
+      "multi_hop_eligible": "false"
+    }
+  ],
+  "exam_terms": [
+    {
+      "exam_term_id": "TERM:FOUNDER",
+      "term": "고려 태조",
+      "target_resolution_status": "RESOLVED",
+      "exact_search_eligible": "true",
+      "retrieval_eligible": "true",
+      "fact_retrieval_eligible": "true",
+      "terminal_fact_retrieval_eligible": "true"
+    },
+    {
+      "exam_term_id": "TERM:TERMINAL",
+      "term": "Frontier",
+      "target_resolution_status": "UNRESOLVED",
+      "exact_search_eligible": "false",
+      "retrieval_eligible": "false",
+      "fact_retrieval_eligible": "false",
+      "terminal_fact_retrieval_eligible": "true"
+    },
+    {
+      "exam_term_id": "TERM:AMBIGUOUS",
+      "term": "세종",
+      "target_resolution_status": "AMBIGUOUS",
+      "exact_search_eligible": "false",
+      "retrieval_eligible": "false",
+      "fact_retrieval_eligible": "false",
+      "terminal_fact_retrieval_eligible": "false"
+    }
+  ],
+  "exam_term_links": [
+    {
+      "exam_term_id": "TERM:FOUNDER",
+      "canonical_id": "ENTITY:FOUNDER",
+      "match_status": "ACCEPTED"
+    }
+  ],
+  "entity_names": [
+    {
+      "entity_name_id": "NAME:AMBIGUOUS",
+      "target_resolution_status": "AMBIGUOUS",
+      "exact_search_eligible": "false",
+      "retrieval_eligible": "false"
+    }
+  ]
+}
