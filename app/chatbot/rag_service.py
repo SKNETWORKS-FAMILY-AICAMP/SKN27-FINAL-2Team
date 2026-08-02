@@ -357,25 +357,11 @@ def build_image_answer(question: str, sources: list[dict[str, Any]]) -> str:
     image_source = image.get("source") or metadata.get("image_source") or source.get("source_name") or "한국사 이미지 자료"
     snippet = re.sub(r"https?://\S+", "", str(source.get("snippet") or ""))
     snippet = re.sub(r"\s+", " ", snippet.replace(source_title, "", 1)).strip()
-    period = metadata.get("period") or ", ".join(metadata.get("periods") or [])
-    category = metadata.get("category") or " ".join(
-        value for value in (metadata.get("category_main"), metadata.get("category_sub")) if value
-    )
+    snippet = re.sub(r"\s*(?:시대|유형|키워드)\s*[:：].*$", "", snippet).strip()
 
-    lines = [
-        f"# {title}",
-        "",
-        "1. 사진",
-        f"- 자료명: {source_title}",
-        f"- 출처: {image_source}",
-    ]
+    lines = ["## 이미지 정보", f"자료명: {source_title}", f"출처: {image_source}"]
     if snippet:
-        lines.extend(["", "2. 설명", f"- {snippet}"])
-    info = [("시대", period), ("유형", category)]
-    info = [(key, value) for key, value in info if value]
-    if info:
-        lines.extend(["", "3. 자료 정보", "| 항목 | 내용 |", "|---|---|"])
-        lines.extend(f"| {key} | {value} |" for key, value in info)
+        lines.extend(["", "## 자료 설명", *re.split(r"(?<=[.!?])\s+", snippet)])
     return "\n".join(lines)
 
 
