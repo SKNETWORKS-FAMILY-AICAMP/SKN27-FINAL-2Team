@@ -111,6 +111,13 @@
     const TIME_LIMIT = sessionData.time_limit_sec || 4800;
     const startedAt = sessionData.startedAt || Date.now();
 
+    const koreanChoiceOrder = "가나다라마";
+    const choiceOrder = (choice) => {
+      const marker = String(choice.content || "").match(/^\s*\(?([가나다라마])\)/)?.[1];
+      const index = koreanChoiceOrder.indexOf(marker);
+      return index < 0 ? Number.MAX_SAFE_INTEGER : index;
+    };
+
     // API questions → 내부 포맷으로 변환
     const questions = sessionData.questions.map((q) => ({
       question_id: q.question_id,
@@ -118,7 +125,9 @@
       title: q.content,
       source: q.passage || [q.era, q.topic].filter(Boolean).join(" · "),
       q_score: q.q_score,
-      choices: q.choices, // [{choice_id, choice_no, content}]
+      choices: [...q.choices]
+        .sort((a, b) => choiceOrder(a) - choiceOrder(b) || a.choice_no - b.choice_no)
+        .map((choice, index) => ({ ...choice, choice_no: index + 1 })),
     }));
 
     // answers[i] = choice_id (선택한 선택지 ID) or null
