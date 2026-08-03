@@ -63,6 +63,7 @@
             <strong id="questionType">-</strong>
           </div>
           <h2 id="questionTitle">문제를 불러오는 중입니다.</h2>
+          <blockquote class="question-passage" id="questionPassage" hidden></blockquote>
           <p id="questionMeta"></p>
           <div class="result-question-image-wrap" id="questionImageWrap" hidden>
             <img class="result-question-image" id="questionImage" alt="문항 자료 이미지">
@@ -112,6 +113,7 @@
         const userAnswer = document.getElementById("userAnswer");
         const correctAnswer = document.getElementById("correctAnswer");
         const questionType = document.getElementById("questionType");
+        const questionPassage = document.getElementById("questionPassage");
         const questionTitle = document.getElementById("questionTitle");
         const questionMeta = document.getElementById("questionMeta");
         const questionImage = document.getElementById("questionImage");
@@ -183,6 +185,8 @@
           userAnswer.textContent = answerLabel(record.selected_no);
           correctAnswer.textContent = answerLabel(record.answer_no);
           questionType.textContent = record.question_type;
+          questionPassage.hidden = !record.passage;
+          questionPassage.textContent = record.passage || "";
           questionTitle.textContent = record.content;
           questionMeta.textContent = `${record.era} · ${record.topic} · ${record.time_spent}`;
           questionImageWrap.hidden = !record.question_image_path;
