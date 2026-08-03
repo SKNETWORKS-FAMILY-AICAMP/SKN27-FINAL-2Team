@@ -391,6 +391,7 @@ def solved_problems(request):
                 "number": index,
                 "question_id": question.question_id,
                 "content": question.content,
+                "passage": question.passage or "",
                 "question_type": question.question_type,
                 "answer_no": question.answer_no,
                 "answer_explanation": question.answer_explanation,
