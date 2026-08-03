@@ -21,20 +21,24 @@
       "name": "himate-web",
       "image": "__APP_IMAGE_URI__",
       "essential": true,
-      "cpu": 512,
-      "memory": 1024,
-      "memoryReservation": 768,
+      "cpu": 1024,
+      "memory": 6144,
+      "memoryReservation": 4096,
       "readonlyRootFilesystem": true,
       "user": "app",
       "stopTimeout": 30,
       "environment": [
         {
           "name": "GUNICORN_WORKERS",
-          "value": "2"
+          "value": "1"
         },
         {
           "name": "GUNICORN_THREADS",
           "value": "4"
+        },
+        {
+          "name": "RAG_RERANKER_ENABLED",
+          "value": "true"
         }
       ],
       "linuxParameters": {
