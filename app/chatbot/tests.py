@@ -13,6 +13,7 @@ from .rag import reranker
 from .rag_service import (
     build_search_question,
     build_problem_option_queries,
+    exclude_previously_answered_results,
     stream_concept_rag_answer,
     stream_question_rag_answer,
 )
@@ -153,6 +154,14 @@ class ChatbotApiTests(TestCase):
         question = "[문제] 미우라 공사의 정책 결과는?\n[보기]\n3. 을미사변\n[사용자 질문] 3번 선지 설명해줘"
         history = [{"role": "user", "content": "계해약조를 설명해줘"}]
         self.assertEqual(build_search_question(question, history, "question"), question)
+
+    def test_additional_question_excludes_previously_answered_source_title(self):
+        history = [{"role": "assistant", "content": "계해약조와 북방 사민 정책을 시행했어요."}]
+        results = [SimpleNamespace(title="계해약조"), SimpleNamespace(title="훈민정음 창제")]
+
+        filtered = exclude_previously_answered_results(results, "다른 업적 더 알려줘", history)
+
+        self.assertEqual([result.title for result in filtered], ["훈민정음 창제"])
 
     def test_core_problem_stream_uses_db_choice_explanations_verbatim(self):
         result = SimpleNamespace(chunk_id=1, score=1.0)
