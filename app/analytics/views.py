@@ -43,6 +43,7 @@ from analytics.service.studyplan import (
 from analytics.service.study_plan.config import get_study_plan_config
 from analytics.service.study_plan.service import (
     get_archived_study_plan_dtos,
+    has_completed_diagnostic_session,
     synchronize_active_study_plan,
 )
 from analytics.service.weekly_report.next_plan import (
@@ -66,11 +67,13 @@ def mypage(request):
             {"studyPlan": active_plan, "weeklyReport": get_weekly_report_dto(user_id)},
         )
     plan_generation_available = True
+    has_completed_diagnosis = has_completed_diagnostic_session(user_id)
     planner_summary = build_planner_summary(
         study_plan,
         today,
         plan_generation_available,
         history_study_plans=get_archived_study_plan_dtos(user_id, today),
+        has_completed_diagnosis=has_completed_diagnosis,
     )
     wrong_type_summary = build_wrong_type_summary(request.user, today)
     wrong_rate_summaries = [

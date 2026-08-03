@@ -26,6 +26,7 @@ CONTEXT_ONLY_TERMS = ("업적", "정책", "활동", "과학적", "문화적", "�
 CONTEXT_ONLY_FOCUS_TERMS = {"과학적", "문화적", "정치적", "경제적"}
 VAGUE_FOCUS_TERMS = {"뭐가있어", "뭐가있나요", "뭐있어", "뭐있나요"}
 FOLLOW_UP_FOCUS_ONLY_TERMS = CONTEXT_ONLY_FOCUS_TERMS | {"왕"}
+ADDITIONAL_INFORMATION_TERMS = ("다른", "추가")
 KEYWORD_BLOCK_TERMS = ("업적", "정책", "정리", "요약", "설명", "설명해줘", "알려", "누구", "무엇", "뭐", "조회", "역사적", "의미", "어떤", "있는지")
 PERIOD_ONLY_SUFFIXES = ("시대", "전기", "후기")
 RELATION_QUERY_TERMS = ("관계", "관련", "연관", "사이", "부모", "어머니", "아버지", "아들", "딸", "부인", "아내", "남편", "스승", "제자", "문하", "가족")
@@ -312,6 +313,32 @@ def build_search_question(question: str, history: list[dict[str, str]], intent: 
     return f"{recent_user_text} {question}".strip()
 
 
+def is_additional_information_request(question: str, history: list[dict[str, str]]) -> bool:
+    return bool(history) and any(term in question for term in ADDITIONAL_INFORMATION_TERMS)
+
+
+def exclude_previously_answered_results(results: list[Any], question: str, history: list[dict[str, str]]) -> list[Any]:
+    previous_answer = next((item["content"] for item in reversed(history) if item["role"] == "assistant"), "")
+    if not is_additional_information_request(question, history) or not previous_answer:
+        return results
+    filtered = [
+        result for result in results
+        if not (
+            len(str(result.title or "").strip()) >= 2
+            and str(result.title).strip() not in question
+            and str(result.title).strip() in previous_answer
+        )
+    ]
+    # ponytail: 이전 답변과 같은 제목만 빼되, 후보가 모두 사라지면 기존 검색 결과를 유지합니다.
+    return filtered or results
+
+
+def add_new_information_instruction(question: str, history: list[dict[str, str]]) -> str:
+    if not is_additional_information_request(question, history):
+        return question
+    return f"{question}\n\n[이전 답변에 이미 언급된 항목은 반복하지 말고, 검색 근거에서 확인되는 새로운 내용만 설명하세요.]"
+
+
 def is_insufficient_structured_answer(answer: dict[str, Any] | None) -> bool:
     if not answer:
         return False
@@ -376,6 +403,7 @@ def stream_concept_rag_answer(
     search_question = build_enriched_question(search_seed, graph_context) if graph_context else search_seed
     retriever = PgVectorHybridRetriever()
     results = retriever.search(search_question, top_k=max(top_k, 8 if graph_context and graph_context.get("keywords") else top_k))
+    results = exclude_previously_answered_results(results, question, conversation_history)
     sources = [result_to_payload(result) for result in results]
     if use_timeline_sources():
         sources.extend(search_timeline_sources(search_question))
@@ -387,7 +415,8 @@ def stream_concept_rag_answer(
     generator = LLMAnswerGenerator.from_env()
     answer: dict[str, Any] = {"answer_type": "textbook_note", "title": "한국사 개념 정리", "summary": "", "sections": [], "exam_points": [], "highlights": [], "source_titles": []}
     current_section: dict[str, Any] | None = None
-    for event in generator.generate_structured_stream(question, sources, follow_up=is_contextual_follow_up, history=conversation_history, explanation_level="concept"):
+    generation_question = add_new_information_instruction(question, conversation_history)
+    for event in generator.generate_structured_stream(generation_question, sources, follow_up=is_contextual_follow_up, history=conversation_history, explanation_level="concept"):
         event_type = event["type"]
         if event_type == "meta":
             answer["title"] = str(event.get("title") or answer["title"])
@@ -453,6 +482,7 @@ def build_history_rag_answer(
         search_seed if is_contextual_follow_up else question,
         resolved_choice_explanations,
     )
+    generation_question = add_new_information_instruction(generation_question, conversation_history)
 
     retriever = PgVectorHybridRetriever()
     results = (
@@ -462,6 +492,7 @@ def build_history_rag_answer(
     )
     if not results:
         results = retriever.search(search_question, top_k=max(top_k, 8 if graph_context and graph_context.get("keywords") else top_k))
+    results = exclude_previously_answered_results(results, question, conversation_history)
     sources = [result_to_payload(result) for result in results]
     timeline_sources = search_timeline_sources(search_question) if use_timeline_sources() else []
     sources.extend(timeline_sources)

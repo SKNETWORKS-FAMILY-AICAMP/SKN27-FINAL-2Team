@@ -418,9 +418,14 @@
           }
           const data = message.data || {};
           const structured = data.structured_answer || {};
+          const structuredText = [
+            structured.summary,
+            ...(structured.sections || []).flatMap((section) => (section.items || [])
+              .map((item) => `${item.term || ""} ${item.content || ""}`.trim())),
+          ].filter(Boolean).join("\n");
           const botText = data.context
             || data.answer
-            || structured.summary
+            || structuredText
             || structured.title
             || "";
           return { role: "assistant", content: botText };

@@ -1,3 +1,4 @@
+from datetime import date
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
@@ -9,6 +10,7 @@ from .serializers import DiagnosisStartResponseSerializer
 from .views import (
     _complete_weekly_review_block_for_session,
     _get_expected_grade,
+    _get_local_recorded_date,
     diagnosis_start,
     diagnosis_submit,
 )
@@ -218,6 +220,15 @@ class ExpectedGradeTest(SimpleTestCase):
         self.assertEqual(_get_expected_grade(70), "2급")
         self.assertEqual(_get_expected_grade(60), "3급")
         self.assertEqual(_get_expected_grade(59), "탈락")
+
+
+class DiagnosisRecordedDateTest(SimpleTestCase):
+    @patch("diagnosis.views.timezone.localdate", return_value=date(2026, 8, 3))
+    def test_uses_configured_local_timezone(self, localdate: MagicMock) -> None:
+        recorded_date = _get_local_recorded_date()
+
+        self.assertEqual(recorded_date, date(2026, 8, 3))
+        self.assertEqual(str(localdate.call_args.kwargs["timezone"]), "Asia/Seoul")
 
 
 class WeeklyReportEnqueueTest(SimpleTestCase):

@@ -1,5 +1,6 @@
 from datetime import date, datetime, timedelta
 
+from analytics.service.study_plan.service import INITIAL_DIAGNOSIS_REQUIRED_MESSAGE
 from analytics.service.studyplan import get_study_plan_config
 from analytics.service.weakness import get_status_class, get_weakness_config
 
@@ -19,11 +20,12 @@ def parse_display_date(raw_date):
 
 
 def build_planner_summary(
-    study_plans,
-    today,
-    plan_generation_available=True,
-    history_study_plans=None,
-):
+    study_plans: list[dict[str, object]],
+    today: date,
+    plan_generation_available: bool = True,
+    history_study_plans: list[dict[str, object]] | None = None,
+    has_completed_diagnosis: bool = True,
+) -> dict[str, object]:
     """
     저장된 학습계획 목록을 마이페이지 달력 표시용 데이터로 변환한다.
 
@@ -277,7 +279,7 @@ def build_planner_summary(
     # 허용한다. 다음 계획 자동 생성이 실패(nextPlan failed)해도 주간평가가
     # 끝난 상태이므로 이 조건이 수동 생성 탈출구가 된다.
     show_create_plan = plan_generation_available
-    can_create_plan = plan_generation_available and (
+    can_create_plan = plan_generation_available and has_completed_diagnosis and (
         not has_active_plan
         or is_finished_legacy_plan
         or is_empty_active_plan
@@ -307,7 +309,9 @@ def build_planner_summary(
     elif is_overloaded_active_plan:
         create_plan_label = "학습계획 재생성"
     create_plan_disabled_message = ""
-    if not can_create_plan:
+    if not has_completed_diagnosis:
+        create_plan_disabled_message = INITIAL_DIAGNOSIS_REQUIRED_MESSAGE
+    elif not can_create_plan:
         create_plan_disabled_message = "주간 평가를 마치면 다음 계획을 만들 수 있어요."
     create_plan_confirm = ""
     if has_active_plan:
@@ -330,6 +334,7 @@ def build_planner_summary(
         "is_expired_plan": is_expired_active_plan,
         "is_overloaded_plan": is_overloaded_active_plan,
         "plan_generation_available": plan_generation_available,
+        "has_completed_diagnosis": has_completed_diagnosis,
         "show_create_plan": show_create_plan,
         "can_create_plan": can_create_plan,
         "show_add_extra_study": show_add_extra_study,
