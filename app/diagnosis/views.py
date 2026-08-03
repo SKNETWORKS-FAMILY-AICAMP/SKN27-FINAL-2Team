@@ -726,7 +726,7 @@ def diagnosis_result_api(request, session_id):
             status=status.HTTP_400_BAD_REQUEST,
         )
 
-    records = list(SolveRecords.objects.filter(session=session))
+    records = list(SolveRecords.objects.filter(session=session).order_by("record_id"))
     analytics = list(Analytics.objects.filter(session=session))
 
     # 점수 계산
