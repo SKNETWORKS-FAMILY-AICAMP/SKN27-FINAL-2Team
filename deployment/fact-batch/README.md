@@ -8,7 +8,8 @@ EventBridge Scheduler
   → Fact EC2 시작
   → SSM Agent Online 대기
   → Fact 전용 이미지 실행
-  → Fact Neo4j + Aurora 조회
+  → Fact Neo4j + Aurora에서 시대·주제 후보 조회
+  → 검수된 출제 계약으로 spec과 Graph Pack 자동 생성
   → OpenAI + RunPod Serverless 문제 생성
   → S3 검수 경로에 결과 업로드
   → Fact EC2 중지
@@ -22,6 +23,7 @@ EventBridge Scheduler
 
 - `Dockerfile`: Fact 배치 전용 비루트 이미지
 - `entrypoint.sh`: Graph Pack과 문항 생성 실행
+- `../../ai/question_generation/automated_spec_planner.py`: 비대화형 spec 자동 계획
 - `wait_for_dependencies.py`: Aurora와 Fact Neo4j 준비 상태 확인
 - `ssm-command-document.yml`: 실행·S3 업로드 Command 문서
 - `ssm-automation-document.yml`: EC2 시작·Command 실행·EC2 중지 Runbook
@@ -48,14 +50,19 @@ digest가 고정된 URI를 `fact-batch-image.json` 빌드 산출물에 기록한
 
 ## AWS 등록 순서
 
-1. 전용 S3 버킷에 검수된 spec JSON을 업로드한다.
-2. `instance-policy.json.template`의 자리표시자를 바꾸어 Fact EC2 역할에 붙인다.
-3. `ssm-command-document.yml`을 Command 문서
+1. `instance-policy.json.template`의 자리표시자를 바꾸어 Fact EC2 역할에 붙인다.
+2. `ssm-command-document.yml`을 Command 문서
    `Himate-GenerateFactQuestions`로 등록한다.
-4. Automation 역할과 Scheduler 역할을 각 trust/policy 템플릿으로 만든다.
-5. `ssm-automation-document.yml`을 Automation Runbook으로 등록한다.
-6. 먼저 Automation 콘솔에서 수동 실행해 S3 결과와 EC2 자동 중지를 확인한다.
+3. Automation 역할과 Scheduler 역할을 각 trust/policy 템플릿으로 만든다.
+4. `ssm-automation-document.yml`을 Automation Runbook으로 등록한다.
+5. Automation의 `SpecS3Uri`를 비우고 `PackCount`를 지정해 수동 실행한다.
+6. S3 결과와 EC2 자동 중지를 확인한다.
 7. 검증 후 EventBridge Scheduler 대상에 Automation Runbook을 연결한다.
+
+`SpecS3Uri`를 비우면 난이도 1·2·3점을 순환하며 Graph 후보에서 spec을 자동
+계획한다. 검수된 특정 spec을 재사용해야 할 때만 전용 S3 버킷에 업로드하고
+`SpecS3Uri`를 지정한다. 자동 계획은 저장소의 검수 완료 Pack에서 추출한 출제
+계약만 재사용하며 새로운 출제 계약을 임의로 만들지 않는다.
 
 Scheduler 입력에는 ECR 태그 URI가 아니라 `fact-batch-image.json`의 digest URI를
 사용한다. S3 입력·출력 경로와 IAM 정책은 전용 버킷 범위로 제한한다.

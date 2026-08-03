@@ -11,8 +11,9 @@ parameters:
     allowedPattern: '^[0-9]{12}\.dkr\.ecr\.[a-z0-9-]+\.amazonaws\.com/[a-z0-9]+([._/-][a-z0-9]+)*@sha256:[0-9a-f]{64}$'
   SpecS3Uri:
     type: String
-    description: S3 URI of the reviewed Graph Pack specification JSON.
-    allowedPattern: '^s3://[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]/[A-Za-z0-9._/-]+$'
+    description: Optional S3 URI of a reviewed Graph Pack specification JSON. Leave empty for automatic planning.
+    default: ''
+    allowedPattern: '^$|^s3://[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]/[A-Za-z0-9._/-]+$'
   OutputS3Prefix:
     type: String
     description: S3 prefix where review artifacts are uploaded.
@@ -27,6 +28,11 @@ parameters:
     description: Parameter Store path containing production batch settings.
     default: /himate/prod
     allowedPattern: '^/[A-Za-z0-9_.-]+(/[A-Za-z0-9_.-]+)*$'
+  PackCount:
+    type: String
+    description: Number of Graph Packs planned automatically when SpecS3Uri is empty.
+    default: '10'
+    allowedPattern: '^[1-9][0-9]*$'
   VariantsPerPack:
     type: String
     description: Number of question variants generated from each approved pack.
@@ -112,7 +118,14 @@ mainSteps:
           trap 'exit 143' TERM
 
           install -d -m 0750 "${work_directory}/input" "${work_directory}/output"
-          aws s3 cp "${spec_s3_uri}" "${work_directory}/input/spec.json" --only-show-errors
+
+          spec_arguments=()
+          if [[ -n "${spec_s3_uri}" ]]; then
+            aws s3 cp "${spec_s3_uri}" "${work_directory}/input/spec.json" --only-show-errors
+            spec_arguments=(
+              --env FACT_BATCH_SPEC_PATH=/work/input/spec.json
+            )
+          fi
 
           existing_bank_arguments=()
           if [[ -n "${existing_bank_s3_uri}" ]]; then
@@ -175,8 +188,8 @@ mainSteps:
             --cap-drop ALL \
             --security-opt no-new-privileges:true \
             --env-file "${environment_file}" \
-            --env FACT_BATCH_SPEC_PATH=/work/input/spec.json \
             --env FACT_BATCH_OUTPUT_DIR=/work/output \
+            --env 'FACT_BATCH_PACK_COUNT={{ PackCount }}' \
             --env 'FACT_BATCH_VARIANTS_PER_PACK={{ VariantsPerPack }}' \
             --env 'FACT_BATCH_MOCK_EXAM={{ MockExam }}' \
             --env 'FACT_BATCH_MAX_TOTAL_CALLS={{ MaxTotalCalls }}' \
@@ -184,6 +197,7 @@ mainSteps:
             --env 'FACT_BATCH_SEED={{ Seed }}' \
             --env 'FACT_BATCH_DEPENDENCY_TIMEOUT_SECONDS={{ DependencyTimeoutSeconds }}' \
             --env 'FACT_BATCH_DEPENDENCY_RETRY_INTERVAL_SECONDS={{ DependencyRetryIntervalSeconds }}' \
+            "${spec_arguments[@]}" \
             "${existing_bank_arguments[@]}" \
             --volume "${work_directory}:/work:rw" \
             "${image_uri}"

@@ -8,6 +8,7 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV PIP_DISABLE_PIP_VERSION_CHECK=1
 ENV PATH=/opt/venv/bin:$PATH
+ENV FACT_BATCH_CONTRACT_BANK_PATH=/code/ai/question_generation/data/production_20260727/packs/graph_standard_10/pack_bank.json
 
 WORKDIR /code
 

@@ -3,8 +3,9 @@
 set -euo pipefail
 
 required_variables=(
-  FACT_BATCH_SPEC_PATH
   FACT_BATCH_OUTPUT_DIR
+  FACT_BATCH_CONTRACT_BANK_PATH
+  FACT_BATCH_PACK_COUNT
   FACT_BATCH_VARIANTS_PER_PACK
   FACT_BATCH_MOCK_EXAM
   FACT_BATCH_MAX_TOTAL_CALLS
@@ -34,6 +35,7 @@ for variable_name in "${required_variables[@]}"; do
 done
 
 for positive_integer_name in \
+  FACT_BATCH_PACK_COUNT \
   FACT_BATCH_VARIANTS_PER_PACK \
   FACT_BATCH_MAX_TOTAL_CALLS \
   FACT_BATCH_MAX_SECONDS; do
@@ -48,16 +50,12 @@ if [[ ! "${FACT_BATCH_SEED}" =~ ^[0-9]+$ ]]; then
   exit 1
 fi
 
-if [[ ! -f "${FACT_BATCH_SPEC_PATH}" ]]; then
-  echo "Fact batch spec does not exist: ${FACT_BATCH_SPEC_PATH}" >&2
-  exit 1
-fi
-
 pack_model="${OPENAI_PACK_MODEL:-${OPENAI_CHAT_MODEL:-}}"
 if [[ -z "${pack_model}" ]]; then
   echo "OPENAI_PACK_MODEL or OPENAI_CHAT_MODEL is required." >&2
   exit 1
 fi
+pack_plan_model="${OPENAI_PACK_PLAN_MODEL:-${pack_model}}"
 
 umask 077
 mkdir -p "${FACT_BATCH_OUTPUT_DIR}"
@@ -67,9 +65,27 @@ python /code/deployment/fact-batch/wait_for_dependencies.py
 pack_bank_path="${FACT_BATCH_OUTPUT_DIR}/pack_bank.json"
 question_output_directory="${FACT_BATCH_OUTPUT_DIR}/questions"
 usage_manifest_path="${FACT_BATCH_USAGE_MANIFEST_PATH:-${FACT_BATCH_OUTPUT_DIR}/usage_manifest.json}"
+spec_path="${FACT_BATCH_SPEC_PATH:-${FACT_BATCH_OUTPUT_DIR}/planned_spec.json}"
+
+if [[ -n "${FACT_BATCH_SPEC_PATH:-}" ]]; then
+  if [[ ! -f "${FACT_BATCH_SPEC_PATH}" ]]; then
+    echo "Fact batch spec does not exist: ${FACT_BATCH_SPEC_PATH}" >&2
+    exit 1
+  fi
+elif [[ ! -f "${FACT_BATCH_CONTRACT_BANK_PATH}" ]]; then
+  echo "Fact batch contract bank does not exist: ${FACT_BATCH_CONTRACT_BANK_PATH}" >&2
+  exit 1
+elif [[ -f "${FACT_BATCH_CONTRACT_BANK_PATH}" ]]; then
+  python -m ai.question_generation.automated_spec_planner \
+    --output "${spec_path}" \
+    --pack-count "${FACT_BATCH_PACK_COUNT}" \
+    --contract-bank "${FACT_BATCH_CONTRACT_BANK_PATH}" \
+    --model "${pack_plan_model}" \
+    --seed "${FACT_BATCH_SEED}"
+fi
 
 graph_arguments=(
-  --spec "${FACT_BATCH_SPEC_PATH}"
+  --spec "${spec_path}"
   --output "${pack_bank_path}"
   --model "${pack_model}"
 )
