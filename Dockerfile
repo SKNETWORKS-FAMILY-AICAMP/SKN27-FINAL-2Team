@@ -16,7 +16,7 @@ ENV RAG_RERANKER_MODEL=${RAG_RERANKER_MODEL}
 
 WORKDIR /code
 
-COPY requirements/base.txt requirements/prod.txt ./requirements/
+COPY requirements/base.txt requirements/prod.txt requirements/torch-cpu.txt ./requirements/
 
 RUN apt-get update \
     && apt-get upgrade --yes \
@@ -27,6 +27,7 @@ RUN apt-get update \
       python3-venv \
     && python3 -m venv /opt/venv \
     && python -m pip install --no-cache-dir --upgrade pip==26.1.2 \
+    && python -m pip install --no-cache-dir -r requirements/torch-cpu.txt \
     && python -m pip install --no-cache-dir -r requirements/prod.txt \
     && apt-get purge --yes \
       python3-pip-whl \
