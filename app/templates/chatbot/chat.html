@@ -981,7 +981,15 @@
       });
     }
 
-    function deleteSession(sessionId) {
+    async function deleteSession(sessionId) {
+      const response = await fetch(`/chatbot/api/sessions/${encodeURIComponent(sessionId)}/`, {
+        method: "DELETE",
+        headers: { "X-CSRFToken": csrfToken },
+      });
+      if (!response.ok) {
+        appendErrorMessage("채팅을 삭제하지 못했습니다.");
+        return;
+      }
       sessions = sessions.filter((session) => session.id !== sessionId);
       if (!sessions.length) {
         const session = createSession("새 대화");

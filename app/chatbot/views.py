@@ -19,7 +19,7 @@ from django.http import (
 from django.shortcuts import render
 from django.urls import reverse
 from django.utils import timezone
-from django.views.decorators.http import require_GET, require_POST
+from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
 from question.models import QuestionOptions, SolveRecords
 from user.views import build_session_display_map
@@ -152,6 +152,18 @@ def chat_sessions_api(request):
             "messages": messages,
         })
     return JsonResponse({"sessions": restored_sessions}, json_dumps_params={"ensure_ascii": False})
+
+
+@login_required
+@require_http_methods(["DELETE"])
+def chat_session_delete_api(request, session_id):
+    with transaction.atomic():
+        ChatMessages.objects.filter(
+            session__session_id=session_id,
+            session__user=request.user,
+        ).delete()
+        ChatSessions.objects.filter(session_id=session_id, user=request.user).delete()
+    return HttpResponse(status=204)
 
 
 def save_chat_turn(request, session_id: str, user_content: str, result: dict) -> None:
