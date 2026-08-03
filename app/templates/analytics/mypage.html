@@ -7,7 +7,7 @@
   <title>himate | 나의 학습실</title>
   <link rel="stylesheet" href="{% static 'himate.css' %}" />
   <link rel="stylesheet" href="{% static 'layout.css' %}" />
-  <link rel="stylesheet" href="{% static 'analytics/css/mypage.css' %}?v=weakness-item-17" />
+  <link rel="stylesheet" href="{% static 'analytics/css/mypage.css' %}?v=wrong-rate-guide-20" />
   <link rel="stylesheet" href="{% static 'analytics/css/mypage-weekly-report.css' %}?v=weekly-report-1" />
 </head>
 <body>
@@ -18,6 +18,7 @@
       <a href="{% url 'question:create' %}">문제 풀이</a>
       <a href="{% url 'chatbot:chat_page' %}">챗봇</a>
       <a class="active" href="{% url 'analytics:mypage' %}">나의 학습실</a>
+      <a href="{% static 'game/nuuramaesin/index.html' %}" target="_blank" rel="noopener">놀이</a>
     </nav>
     <nav class="header-actions" aria-label="계정 메뉴">
       <a class="outline-button" href="{% url 'user:profile_edit' %}">정보 수정</a>
@@ -143,6 +144,9 @@
           <h2>취약점 분석 <span>{{ weakness_summary.period_label }}</span></h2>
           <a href="{% url 'analytics:wrong_rate_detail' %}">상세 보기</a>
         </div>
+        <p class="weakness-guide">
+          모든 항목이 아니라, 풀이 표본이 충분하고 취약 기준을 충족한 시대·주제만 표시합니다.
+        </p>
         <div class="weak-list">
           {% for item in weakness_summary.items %}
             <div class="weak-item {{ item.status_class }}">
@@ -166,6 +170,9 @@
           <h2 id="wrongRateTitle">{{ wrong_rate_summaries.0.title }} <span id="wrongRatePeriod">{{ wrong_rate_summaries.0.period_label }}</span></h2>
           <button class="wrong-rate-arrow" id="wrongRateNext" type="button" aria-label="다음 오답률 분류">›</button>
         </div>
+        <p class="wrong-rate-guide">
+          최근 7일 동안 실제로 풀이한 항목만 표시합니다.
+        </p>
         {% for summary in wrong_rate_summaries %}
         <div class="donut-layout wrong-rate-slide" data-title="{{ summary.title }}" data-period="{{ summary.period_label }}"{% if not forloop.first %} hidden{% endif %}>
           <ul>
@@ -221,6 +228,13 @@
             </div>
           {% endif %}
         </div>
+
+        {% if not planner_summary.has_completed_diagnosis %}
+          <aside class="planner-prerequisite-notice" aria-label="7일 계획 생성 안내">
+            <span>{{ planner_summary.create_plan_disabled_message }}</span>
+            <a href="{% url 'diagnosis:intro' %}">진단평가 시작</a>
+          </aside>
+        {% endif %}
 
         <section class="planner-progress-summary" aria-label="학습계획 달성률">
           <span>현재 계획 진행률</span>

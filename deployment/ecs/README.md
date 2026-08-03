@@ -4,7 +4,7 @@
 
 ```text
 Route53
-  → Public subnet의 t3.small ECS Container Instance
+  → Public subnet의 t3.large ECS Container Instance
   → Nginx(80/443)
   → Gunicorn/Django(8000)
   → Private Aurora PostgreSQL(5432)
@@ -66,7 +66,7 @@ AuraDB Free에서 상시 제공하고, Fact Neo4j는 문제 생성 시점에만 
 두 종류의 EC2를 같은 ECS 클러스터에 등록하되 인스턴스 속성으로 Task 배치를
 분리한다.
 
-- Web EC2: `t3.small`, `himate.workload=web`
+- Web EC2: `t3.large`, `himate.workload=web`
 - Fact 배치 EC2: 필요할 때만 실행, `himate.workload=fact-batch`
 
 사용자 데이터 템플릿:
@@ -87,12 +87,14 @@ Web과 migration Task는 `himate.workload=web`, Fact Neo4j Task는
 현재 `buildspec.yml`은 Web 이미지 배포와 migration만 수행하며 Fact Neo4j
 Task를 자동 등록하거나 실행하지 않는다.
 
-## t3.small 메모리 기준
+## t3.large 메모리 기준
 
-- Django: hard `1024 MiB`, reservation `768 MiB`
+- Django: hard `6144 MiB`, reservation `4096 MiB`
 - Nginx: hard `128 MiB`, reservation `64 MiB`
 - Migration: hard `512 MiB`, reservation `384 MiB`
-- Gunicorn: worker 2개, worker당 thread 4개
+- Gunicorn: worker 1개, worker당 thread 4개
+- RAG 리랭커: `deployment/ecs/reranker-model.txt`의 모델을 이미지 빌드 중 내려받아
+  읽기 전용 캐시에 포함하고 Web Task에서 활성화한다.
 
 고정 host port `80/443`과 단일 Web EC2를 사용하므로 ECS Service 배포 설정은
 minimum healthy percent `0`, maximum percent `100`으로 설정한다. 배포 중 짧은

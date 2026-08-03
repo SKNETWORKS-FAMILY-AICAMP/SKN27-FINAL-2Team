@@ -284,6 +284,18 @@ class DiagnosisComparisonTests(SimpleTestCase):
 
 
 class PlannerDisplayTests(SimpleTestCase):
+    def test_initial_plan_requires_completed_diagnosis(self):
+        summary = build_planner_summary(
+            [],
+            date(2026, 7, 13),
+            has_completed_diagnosis=False,
+        )
+
+        self.assertTrue(summary["show_create_plan"])
+        self.assertFalse(summary["can_create_plan"])
+        self.assertFalse(summary["has_completed_diagnosis"])
+        self.assertIn("진단평가", summary["create_plan_disabled_message"])
+
     def test_expired_weekly_plan_exposes_next_plan_button(self):
         today = date(2026, 7, 20)
         study_plans = [

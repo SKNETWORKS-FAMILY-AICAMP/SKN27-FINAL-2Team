@@ -17,6 +17,7 @@ from analytics.service.study_plan.planner import (
 )
 from analytics.service.study_plan.dto import build_study_plan_dto
 from analytics.service.study_plan.service import (
+    InitialStudyPlanConfigUnavailable,
     StudyPlanBlockNotDue,
     StudyPlanBlockRouteMismatch,
     StudyPlanBlockTerminal,
@@ -294,6 +295,10 @@ class StudyPlanStateTests(TestCase):
                 return_value=current_plan,
             ),
             patch(
+                "analytics.service.study_plan.service.has_completed_diagnostic_session",
+                return_value=True,
+            ),
+            patch(
                 "analytics.service.study_plan.service.build_user_plan_draft",
             ) as build_draft_mock,
         ):
@@ -304,6 +309,25 @@ class StudyPlanStateTests(TestCase):
             )
 
         self.assertEqual(result, {"changed": False, "studyPlan": current_plan})
+        build_draft_mock.assert_not_called()
+
+    def test_initial_plan_requires_completed_diagnosis(self) -> None:
+        with (
+            patch(
+                "analytics.service.study_plan.service.get_active_study_plan_dto",
+                return_value=None,
+            ),
+            patch(
+                "analytics.service.study_plan.service.has_completed_diagnostic_session",
+                return_value=False,
+            ),
+            patch(
+                "analytics.service.study_plan.service.build_user_plan_draft",
+            ) as build_draft_mock,
+        ):
+            with self.assertRaises(InitialStudyPlanConfigUnavailable):
+                create_personalized_study_plan(user_id=7, today=self.today)
+
         build_draft_mock.assert_not_called()
 
     def test_sync_rolls_over_by_priority_and_is_idempotent(self) -> None:

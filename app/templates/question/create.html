@@ -181,6 +181,7 @@
   <script>
     const QUESTION_CONDITION_STORAGE_KEY = "questionGenerationCondition:{{ request.user.user_id|escapejs }}";
     const QUESTION_PROGRESS_STORAGE_KEY = "questionInProgress:{{ request.user.user_id|escapejs }}";
+    const SHOULD_RESTORE_CONDITION = new URLSearchParams(window.location.search).get("restore") === "1";
     sessionStorage.removeItem("questionGenerationCondition");
     sessionStorage.removeItem("studyPlanQuestionCondition");
     localStorage.removeItem("questionGenerationCondition");
@@ -227,6 +228,35 @@
       return [...rows].find((row) => row.querySelector("h2").textContent.trim() === label);
     }
 
+    function restoreSavedCondition() {
+      if (!SHOULD_RESTORE_CONDITION) return;
+
+      try {
+        const savedCondition = JSON.parse(sessionStorage.getItem(QUESTION_CONDITION_STORAGE_KEY) || "null");
+        if (!savedCondition) return;
+
+        const savedMode = savedCondition.generationMode || "detail";
+        const savedModeInput = document.querySelector(`input[name="questionMode"][value="${savedMode}"]`);
+        if (savedModeInput) savedModeInput.checked = true;
+
+        rows.forEach((row) => {
+          const label = row.querySelector("h2").textContent.trim();
+          const savedValue = savedCondition[label];
+          const savedValues = (Array.isArray(savedValue) ? savedValue : [savedValue])
+            .filter((value) => value !== null && value !== undefined)
+            .map(String);
+          row.querySelectorAll("button").forEach((button) => {
+            button.classList.toggle("selected", savedValues.includes(button.dataset.value));
+          });
+        });
+        updateModeView();
+      } catch (error) {
+        console.error(error);
+      } finally {
+        window.history.replaceState({}, "", "/question/");
+      }
+    }
+
     function renderOptions(row, values) {
       if (!row || !values?.length) return;
 
@@ -263,6 +293,8 @@
         });
       } catch (error) {
         console.error(error);
+      } finally {
+        restoreSavedCondition();
       }
     }
 

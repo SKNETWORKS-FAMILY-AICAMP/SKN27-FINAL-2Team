@@ -32,6 +32,11 @@ from analytics.service.taxonomy import (
 from analytics.service.weakness import build_weakness_rows, get_weakness_config
 
 
+INITIAL_DIAGNOSIS_REQUIRED_MESSAGE = (
+    "맞춤형 7일 계획을 만들려면 진단평가를 먼저 완료해 주세요."
+)
+
+
 class StudyPlanDataIntegrityError(ValueError):
     pass
 
@@ -137,8 +142,23 @@ def create_personalized_study_plan(
         and active_plan.get("studyPlanId") != source_study_plan_id
     ):
         return {"changed": False, "studyPlan": active_plan}
+    if not has_completed_diagnostic_session(user_id):
+        raise InitialStudyPlanConfigUnavailable(
+            INITIAL_DIAGNOSIS_REQUIRED_MESSAGE,
+        )
     draft = build_user_plan_draft(user_id, base_date)
     return finalize_plan_draft(user_id, draft, source_study_plan_id)
+
+
+def has_completed_diagnostic_session(user_id: int) -> bool:
+    """사용자가 완료한 진단평가를 한 번이라도 보유했는지 확인한다."""
+    from question.models import SolveSessions
+
+    return SolveSessions.objects.filter(
+        user_id=user_id,
+        session_type="diagnostic",
+        status="completed",
+    ).exists()
 
 
 def build_plan_targets(

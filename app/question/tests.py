@@ -1,9 +1,12 @@
 from types import SimpleNamespace
+from unittest.mock import MagicMock, patch
 
 from django.template.loader import render_to_string
 from django.test import RequestFactory, SimpleTestCase
+from rest_framework.test import APIRequestFactory, force_authenticate
 
 from .serializers import SavedSessionResponse, StartQuestionsResponse
+from .views import question_start
 
 
 class QuestionPageStorageIsolationTest(SimpleTestCase):
@@ -32,6 +35,79 @@ class QuestionPageStorageIsolationTest(SimpleTestCase):
         self.assertIn(
             "const resultStorageKey = `questionResult:${STORAGE_SCOPE}`;",
             first_user_page,
+        )
+
+    def test_exam_offers_available_count_without_relaxing_conditions(self) -> None:
+        page = self.render_exam_for_user(101)
+
+        self.assertIn('payload.error_code !== "insufficient_questions"', page)
+        self.assertIn('requestBody = { ...requestBody, count: availableCount };', page)
+        self.assertIn('window.location.href = "/question/?restore=1";', page)
+        self.assertIn('"조건 순차 적용 결과"', page)
+        self.assertIn('"난이도별 부족"', page)
+
+
+class QuestionSelectionFilterTest(SimpleTestCase):
+    def setUp(self) -> None:
+        self.factory = APIRequestFactory()
+
+    @patch("question.views._sample_questions_by_score_counts")
+    @patch("question.views._base_question_queryset")
+    def test_shortage_does_not_fill_from_unselected_conditions(
+        self,
+        base_question_queryset: MagicMock,
+        sample_questions: MagicMock,
+    ) -> None:
+        question_queryset = MagicMock()
+        question_queryset.filter.return_value = question_queryset
+        question_queryset.count.return_value = 0
+        question_queryset.order_by.return_value.values_list.return_value = []
+        base_question_queryset.return_value = question_queryset
+        sample_questions.return_value = (
+            [],
+            {
+                "error": "조건에 맞는 문제가 부족합니다.",
+                "available_count": 0,
+                "requested_count": 10,
+            },
+            [],
+        )
+        request = self.factory.post(
+            "/question/api/start/",
+            {
+                "generation_mode": "detail",
+                "eras": ["조선"],
+                "topics": ["정치"],
+                "difficulties": ["중"],
+                "question_types": ["결론의 도출 및 평가"],
+                "question_subtypes": ["사건·자료 순서 배열"],
+                "count": 10,
+            },
+            format="json",
+        )
+        force_authenticate(
+            request,
+            user=SimpleNamespace(is_authenticated=True, user_id=101),
+        )
+
+        response = question_start(request)
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data["error_code"], "insufficient_questions")
+        self.assertEqual(
+            [detail["label"] for detail in response.data["condition_availability"]],
+            ["시대", "주제", "대유형", "소유형"],
+        )
+        self.assertEqual(
+            [detail["score"] for detail in response.data["score_availability"]],
+            [3, 2, 1],
+        )
+        self.assertEqual(base_question_queryset.call_count, 1)
+        question_queryset.filter.assert_any_call(
+            question_type__in=["결론의 도출 및 평가"],
+        )
+        question_queryset.filter.assert_any_call(
+            question_subtype__in=["사건·자료 순서 배열"],
         )
 
 

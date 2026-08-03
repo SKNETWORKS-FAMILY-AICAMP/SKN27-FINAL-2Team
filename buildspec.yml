@@ -80,7 +80,7 @@ phases:
           exit 1
         fi
 
-        for command_name in aws chmod docker grep mktemp openssl python3 sed sha256sum; do
+        for command_name in aws chmod docker grep mktemp openssl python3 sed sha256sum tr; do
           if ! command -v "${command_name}" > /dev/null 2>&1; then
             echo "Required CodeBuild command is not installed: ${command_name}" >&2
             exit 1
@@ -161,6 +161,18 @@ phases:
         repository_uri="${ecr_registry}/${ECR_REPOSITORY}"
         app_tagged_image_uri="${repository_uri}:${image_tag}"
         nginx_tagged_image_uri="${repository_uri}:${nginx_image_tag}"
+        reranker_model_file="deployment/ecs/reranker-model.txt"
+
+        if [[ ! -f "${reranker_model_file}" ]]; then
+          echo "Reranker model configuration is missing: ${reranker_model_file}" >&2
+          exit 1
+        fi
+
+        reranker_model="$(tr -d '\r\n' < "${reranker_model_file}")"
+        if [[ ! "${reranker_model}" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*/[A-Za-z0-9][A-Za-z0-9._-]*$ ]]; then
+          echo "Reranker model configuration is invalid." >&2
+          exit 1
+        fi
 
         aws ecr get-login-password \
           --region "${AWS_DEFAULT_REGION}" \
@@ -175,6 +187,7 @@ phases:
           local image_uri="$3"
           local image_tag_value="$4"
           local -n image_state_reference="$5"
+          local -a build_arguments=("${@:6}")
 
           ecr_check_error_file="$(mktemp)"
           if aws ecr describe-images \
@@ -189,6 +202,7 @@ phases:
             image_state_reference="new"
             echo "Building ECR image: ${image_uri}"
             docker build \
+              "${build_arguments[@]}" \
               --label "org.opencontainers.image.revision=${image_tag}" \
               --file "${dockerfile_path}" \
               --tag "${image_uri}" \
@@ -218,7 +232,8 @@ phases:
           "Dockerfile" \
           "${app_tagged_image_uri}" \
           "${image_tag}" \
-          app_image_state
+          app_image_state \
+          --build-arg "RAG_RERANKER_MODEL=${reranker_model}"
 
         test_network="himate-build-${image_tag:0:12}"
         test_database_container="${test_network}-postgres"

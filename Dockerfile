@@ -7,10 +7,16 @@ ENV PYTHONUNBUFFERED=1
 ENV PIP_DISABLE_PIP_VERSION_CHECK=1
 ENV WEB_CONTAINER_PORT=8000
 ENV PATH=/opt/venv/bin:$PATH
+ENV HF_HOME=/opt/huggingface
+ENV SENTENCE_TRANSFORMERS_HOME=/opt/huggingface
+
+ARG RAG_RERANKER_MODEL
+
+ENV RAG_RERANKER_MODEL=${RAG_RERANKER_MODEL}
 
 WORKDIR /code
 
-COPY requirements/base.txt requirements/prod.txt ./requirements/
+COPY requirements/base.txt requirements/prod.txt requirements/torch-cpu.txt ./requirements/
 
 RUN apt-get update \
     && apt-get upgrade --yes \
@@ -21,6 +27,7 @@ RUN apt-get update \
       python3-venv \
     && python3 -m venv /opt/venv \
     && python -m pip install --no-cache-dir --upgrade pip==26.1.2 \
+    && python -m pip install --no-cache-dir -r requirements/torch-cpu.txt \
     && python -m pip install --no-cache-dir -r requirements/prod.txt \
     && apt-get purge --yes \
       python3-pip-whl \
@@ -29,6 +36,13 @@ RUN apt-get update \
       python3.12-venv \
     && apt-get autoremove --purge --yes \
     && rm -rf /var/lib/apt/lists/*
+
+RUN test -n "${RAG_RERANKER_MODEL}" \
+    && python -c "import os; from sentence_transformers import CrossEncoder; CrossEncoder(os.environ['RAG_RERANKER_MODEL'])" \
+    && chmod -R a-w /opt/huggingface
+
+ENV HF_HUB_OFFLINE=1
+ENV TRANSFORMERS_OFFLINE=1
 
 COPY docker/certs/aws-rds-global-bundle.pem /etc/ssl/certs/aws-rds-global-bundle.pem
 

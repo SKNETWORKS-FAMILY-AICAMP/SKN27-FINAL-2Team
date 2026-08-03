@@ -412,6 +412,23 @@ a {
   gap: 10px;
 }
 
+.weakness-guide {
+  margin: -4px 0 16px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+  word-break: keep-all;
+}
+
+.wrong-rate-guide {
+  margin: -4px 0 16px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+  text-align: center;
+  word-break: keep-all;
+}
+
 .weak-list div {
   display: grid;
   grid-template-columns: 24px 1fr 42px;
@@ -862,6 +879,28 @@ a {
 
 .planner-create-form {
   margin: 0;
+}
+
+.planner-prerequisite-notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+  padding: 14px 16px;
+  border: 1px solid #e4cda7;
+  border-radius: 8px;
+  background: #fff8ea;
+  color: #654c2f;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.planner-prerequisite-notice a {
+  flex: 0 0 auto;
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .planner-progress-summary {
