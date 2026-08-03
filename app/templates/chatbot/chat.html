@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="/static/himate.css" />
   <link rel="stylesheet" href="/static/layout.css" />
   <link rel="stylesheet" href="{% static 'chatbot/css/chat.css' %}?v=hanok-chat-13" />
-  <link rel="stylesheet" href="{% static 'chatbot/css/chat-reference.css' %}?v=12" />
+  <link rel="stylesheet" href="{% static 'chatbot/css/chat-reference.css' %}?v=13" />
 </head>
 <body>
   <main class="chat-page">
@@ -530,7 +530,13 @@
       if (!raw) return;
       sessionStorage.removeItem(PROBLEM_CONTEXT_STORAGE_KEY);
       try {
-        selectProblemForChat(JSON.parse(raw));
+        const problem = JSON.parse(raw);
+        const session = createSession(`${problem.number || "새"}번 문제`);
+        activeSessionId = session.id;
+        saveSessions();
+        renderSessionList();
+        renderActiveSession();
+        selectProblemForChat(problem);
       } catch (error) {
         appendErrorMessage("문제 정보를 불러오지 못했습니다.", error.message);
       }
@@ -880,9 +886,15 @@
           ? data.sessions.filter((session) => Array.isArray(session.messages) && session.messages.length)
           : [];
         if (!remoteSessions.length) return;
+        const localSessions = new Map(sessions.map((session) => [session.id, session]));
         const remoteIds = new Set(remoteSessions.map((session) => session.id));
-        // ponytail: DB 기록을 우선하고, 아직 저장되지 않은 로컬 임시 대화만 남깁니다.
-        sessions = [...remoteSessions, ...sessions.filter((session) => !remoteIds.has(session.id))]
+        sessions = [
+          ...remoteSessions.map((remote) => {
+            const local = localSessions.get(remote.id);
+            return local && String(local.updatedAt) > String(remote.updatedAt) ? local : remote;
+          }),
+          ...sessions.filter((session) => !remoteIds.has(session.id)),
+        ]
           .sort((left, right) => String(right.updatedAt || "").localeCompare(String(left.updatedAt || "")))
           .slice(0, 30);
         const activeSession = sessions.find((session) => session.id === activeSessionId);
