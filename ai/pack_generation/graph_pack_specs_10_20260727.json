@@ -2,7 +2,7 @@
   "packs": [
     {
       "anchor_node_id": "topic:person",
-      "candidate_hops": 1,
+      "candidate_hops": 3,
       "topic_id": "topic:person",
       "era_id": "era:three_kingdoms",
       "era": "고대",
@@ -39,7 +39,7 @@
     },
     {
       "anchor_node_id": "topic:person",
-      "candidate_hops": 1,
+      "candidate_hops": 3,
       "topic_id": "topic:person",
       "era_id": "era:north_south_states",
       "era": "고대",
@@ -76,7 +76,7 @@
     },
     {
       "anchor_node_id": "topic:institutional_system",
-      "candidate_hops": 1,
+      "candidate_hops": 3,
       "topic_id": "topic:institutional_system",
       "era_id": "era:goryeo",
       "era": "고려",
@@ -261,7 +261,7 @@
     },
     {
       "anchor_node_id": "canonical:person:3e7d4fd2-5079-40a1-b656-b3f91ac0641e",
-      "candidate_hops": 3,
+      "candidate_hops": 1,
       "topic_id": "topic:person",
       "era_id": "era:opening_ports",
       "era": "개항기·대한제국",
@@ -298,7 +298,7 @@
     },
     {
       "anchor_node_id": "canonical:concept:06d61689-0bcc-41d1-8f72-02f565c4dd14",
-      "candidate_hops": 3,
+      "candidate_hops": 1,
       "topic_id": "topic:institutional_system",
       "era_id": "era:joseon",
       "era": "조선",
@@ -335,7 +335,7 @@
     },
     {
       "anchor_node_id": "canonical:person:31f8c879-8873-4d64-950b-6d06637f45dd",
-      "candidate_hops": 3,
+      "candidate_hops": 1,
       "topic_id": "topic:person",
       "era_id": "era:japanese_colonial",
       "era": "일제강점기",

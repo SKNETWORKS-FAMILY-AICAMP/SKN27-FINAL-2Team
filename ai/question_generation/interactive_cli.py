@@ -14,7 +14,11 @@ from typing import Any
 from dotenv import load_dotenv
 from neo4j import GraphDatabase
 
-from ai.pack_generation.graph_builder import read_graph_candidates, validate_spec
+from ai.pack_generation.graph_builder import (
+    candidate_hops_for_difficulty,
+    read_graph_candidates,
+    validate_spec,
+)
 from ai.question_generation.core.contracts import V41_TOPIC_TYPES
 from ai.question_generation.core.exam_distribution import ERA_ORDER
 from ai.question_generation.generation.material import chat_json
@@ -323,7 +327,7 @@ def build_planned_spec(
 
     spec = {
         "anchor_node_id": selection["topic_id"],
-        "candidate_hops": selection["difficulty"],
+        "candidate_hops": candidate_hops_for_difficulty(int(selection["difficulty"])),
         "topic_id": selection["topic_id"],
         "era_id": selection["era_id"],
         "era": plan["era"],
@@ -468,13 +472,16 @@ def plan_graph_pack_spec(
         **era,
         **topic,
         "anchor_node_id": topic["topic_id"],
-        "candidate_hops": difficulty,
+        "candidate_hops": candidate_hops_for_difficulty(difficulty),
         "owner_type": owner["owner_type"],
         "difficulty": difficulty,
     }
     candidates = read_graph_candidates(selection)
     if len(candidates) < 9:
-        raise ValueError(f"선택 조건의 {difficulty}홉 Graph+AKS 후보가 {len(candidates)}개뿐입니다.")
+        raise ValueError(
+            f"선택 조건의 {selection['candidate_hops']}홉 Graph+AKS 후보가 "
+            f"{len(candidates)}개뿐입니다."
+        )
     selection["candidate_count"] = len(candidates)
     contracts = planning_contracts(
         [row["article_id"] for row in candidates],

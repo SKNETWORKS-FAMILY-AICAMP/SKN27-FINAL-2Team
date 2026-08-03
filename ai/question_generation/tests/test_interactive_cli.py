@@ -14,7 +14,7 @@ class InteractiveCliTests(unittest.TestCase):
             "topic_name": "인물",
             "era_id": "era:goryeo",
             "owner_type": "Person",
-            "difficulty": 2,
+            "difficulty": 1,
         }
         contracts = {
             "service_eras": ["고려"],
@@ -100,7 +100,7 @@ class InteractiveCliTests(unittest.TestCase):
         spec = build_planned_spec(selection, contracts, plan)
 
         self.assertEqual(spec["anchor_node_id"], "topic:person")
-        self.assertEqual(spec["candidate_hops"], 2)
+        self.assertEqual(spec["candidate_hops"], 3)
         self.assertEqual(spec["era_id"], "era:goryeo")
         self.assertEqual({frame["answer_owner_scope"] for frame in spec["question_frames"]}, {"material_target"})
 

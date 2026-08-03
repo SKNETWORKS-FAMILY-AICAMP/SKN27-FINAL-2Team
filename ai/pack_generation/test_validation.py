@@ -4,7 +4,12 @@ import copy
 import unittest
 
 from ai.pack_generation.builder import validate_pack_bank
-from ai.pack_generation.graph_builder import build_pack, select_review_candidates, validate_spec
+from ai.pack_generation.graph_builder import (
+    build_pack,
+    candidate_hops_for_difficulty,
+    select_review_candidates,
+    validate_spec,
+)
 
 
 def pack() -> dict:
@@ -105,10 +110,14 @@ class PackValidationTest(unittest.TestCase):
         shared_result = build_pack(spec, shared_candidates, shared_review, "test-model")
         self.assertTrue(shared_result["members"][0]["material_fact_semantically_distinct"])
 
-    def test_graph_hops_must_match_difficulty(self) -> None:
+    def test_graph_hops_are_inverse_of_difficulty(self) -> None:
+        self.assertEqual(candidate_hops_for_difficulty(1), 3)
+        self.assertEqual(candidate_hops_for_difficulty(2), 2)
+        self.assertEqual(candidate_hops_for_difficulty(3), 1)
+
         spec = {
             "anchor_node_id": "topic:person",
-            "candidate_hops": 2,
+            "candidate_hops": 1,
             "topic_id": "topic:person",
             "era_id": "era:test",
             "era": "조선",
