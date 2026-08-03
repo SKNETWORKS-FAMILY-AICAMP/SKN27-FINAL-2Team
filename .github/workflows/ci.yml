@@ -82,7 +82,14 @@ jobs:
           config.test_database_schema
 
       - name: Verify Docker build
-        run: docker build -t himate-ci:${{ github.sha }} .
+        shell: bash
+        run: |
+          reranker_model="$(tr -d '\r\n' < deployment/ecs/reranker-model.txt)"
+          test -n "${reranker_model}"
+          docker build \
+            --build-arg "RAG_RERANKER_MODEL=${reranker_model}" \
+            -t himate-ci:${{ github.sha }} \
+            .
 
   neo4j-regression:
     runs-on: ubuntu-latest
