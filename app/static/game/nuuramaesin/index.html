@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>루우래마신</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: #090705; }
+    body { display: grid; place-items: center; color: #f1dfb5; font-family: system-ui, sans-serif; }
+    #game-frame {
+      position: relative;
+      width: min(100vw, calc(100vh * 16 / 9));
+      aspect-ratio: 16 / 9;
+      overflow: hidden;
+      background: #0d0907;
+      box-shadow: 0 0 70px #000, inset 0 0 0 2px #5b351b;
+    }
+    #unity-canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      background: #0d0907;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+    }
+    #loading {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-content: center;
+      gap: 14px;
+      text-align: center;
+      background: radial-gradient(circle, #2b160d 0, #0d0907 68%);
+    }
+    #loading strong { color: #e8ad45; font-size: clamp(22px, 3vw, 42px); letter-spacing: .12em; }
+    #loading span { color: #c9b48b; font-size: clamp(12px, 1.3vw, 17px); }
+    #progress { width: min(46vw, 420px); height: 10px; overflow: hidden; border: 1px solid #8b5b2a; background: #120c08; }
+    #progress-fill { width: 0; height: 100%; background: linear-gradient(90deg, #b43b24, #f2b94f); transition: width .12s linear; }
+    #fullscreen {
+      position: absolute;
+      right: 12px;
+      bottom: 12px;
+      width: 42px;
+      height: 42px;
+      border: 1px solid #a26d32;
+      border-radius: 5px;
+      background: #1c110bcc;
+      color: #f1dfb5;
+      font-size: 24px;
+      cursor: pointer;
+      opacity: .72;
+    }
+    #fullscreen:hover, #fullscreen:focus-visible { opacity: 1; outline: 2px solid #f2b94f; }
+    #warning { position: absolute; inset: 10px 10px auto; z-index: 2; text-align: center; }
+    #warning div { margin-bottom: 4px; padding: 8px; color: #fff; background: #8b2018; }
+  </style>
+</head>
+<body>
+  <main id="game-frame" aria-label="루우래마신 게임">
+    <canvas id="unity-canvas" width="1280" height="720" tabindex="0"></canvas>
+    <div id="loading">
+      <strong>鏤雨來魔神</strong>
+      <span>의병 김씨의 전장을 불러오는 중</span>
+      <div id="progress"><div id="progress-fill"></div></div>
+    </div>
+    <div id="warning" aria-live="polite"></div>
+    <button id="fullscreen" type="button" aria-label="전체 화면">⛶</button>
+  </main>
+  <script>
+    const canvas = document.querySelector("#unity-canvas");
+    const loading = document.querySelector("#loading");
+    const progress = document.querySelector("#progress-fill");
+    const warning = document.querySelector("#warning");
+    const buildUrl = "assets";
+    const assetVersion = encodeURIComponent(new URLSearchParams(location.search).get("v") || "current");
+    const config = {
+      arguments: [],
+      dataUrl: buildUrl + "/WebGL.data.unityweb?v=" + assetVersion,
+      frameworkUrl: buildUrl + "/WebGL.framework.js.unityweb?v=" + assetVersion,
+      codeUrl: buildUrl + "/WebGL.wasm.unityweb?v=" + assetVersion,
+      streamingAssetsUrl: "StreamingAssets",
+      companyName: "DefaultCompany",
+      productName: "Nuuramaesin",
+      productVersion: "1.0",
+      showBanner(message, type) {
+        const item = document.createElement("div");
+        item.textContent = message;
+        warning.appendChild(item);
+        if (type !== "error") setTimeout(() => item.remove(), 5000);
+      }
+    };
+    if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) config.devicePixelRatio = 1;
+    const script = document.createElement("script");
+    script.src = buildUrl + "/WebGL.loader.js?v=" + assetVersion;
+    script.onload = () => createUnityInstance(canvas, config, value => {
+      progress.style.width = `${value * 100}%`;
+    }).then(instance => {
+      loading.remove();
+      document.querySelector("#fullscreen").onclick = () => instance.SetFullscreen(1);
+      canvas.focus();
+    }).catch(message => {
+      loading.querySelector("span").textContent = message;
+    });
+    document.body.appendChild(script);
+  </script>
+</body>
+</html>
