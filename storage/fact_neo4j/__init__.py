@@ -1,0 +1,1 @@
+"""Fact graph storage integration."""
