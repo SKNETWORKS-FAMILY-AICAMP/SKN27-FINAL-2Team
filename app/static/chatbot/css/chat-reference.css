@@ -37,7 +37,7 @@ body:has(.chat-page) { overflow: hidden; background: #fbfaf5 !important; }
 .chat-page .problem-note .foundation-details summary { gap: 7px; margin: 0 0 8px; color: #1e1e1e; font-size: 17px; font-weight: 800; line-height: 1.4; }.chat-page .problem-note .section-number { color: #1e1e1e; font-size: 18px; font-weight: 800; }.chat-page .problem-note table { border-top: 1px solid #cddbd3; border-bottom: 1px solid #cddbd3; background: #fffdf9; }.chat-page .problem-note tr + tr { border-top-color: #e7ece8; }.chat-page .problem-note th,
 .chat-page .problem-note td { padding: 10px 12px; font-size: 14px; line-height: 1.6; color: #1e1e1e; }.chat-page .problem-note th { width: 150px; border-right-color: #e0e8e2; background: #f5f8f5; }.chat-page .problem-note .foundation-details { width: 100%; margin: 0; border-color: #d8e3dc; background: #f8faf8; }.chat-page .problem-note .foundation-details summary { display: flex; align-items: center; padding: 12px 14px; margin: 0; cursor: pointer; }
 .chat-page .chat-stream > .message.bot > .avatar { width: 66px !important; height: 66px !important; display: block !important; overflow: hidden !important; border: 1px solid #e5dccf !important; border-radius: 50% !important; background: #fff !important; }
-.chat-page .chat-stream > .message.bot > .avatar img { width: 100% !important; height: 100% !important; display: block !important; object-fit: contain !important; }
+.chat-page .chat-stream > .message.bot > .avatar.avatar img { width: 100% !important; height: 100% !important; display: block !important; object-fit: contain !important; }
 
 .chat-page .left-sidebar { padding-top: 19px !important; }
 .chat-page .left-sidebar::before { content: none; }
