@@ -78,7 +78,7 @@
             <p id="explanation">-</p>
           </article>
           <article>
-            <h2>선택지 해설</h2>
+            <h2>오답 해설</h2>
             <p id="choiceExplanation">-</p>
           </article>
           <article>
@@ -237,7 +237,11 @@
             choiceReview.append(item);
           });
           explanation.textContent = record.answer_explanation || "해설이 등록되지 않았습니다.";
-          choiceExplanation.textContent = selectedOption?.choice_explanation || "선택지별 해설이 등록되지 않았습니다.";
+          choiceExplanation.textContent = !record.selected_no
+            ? "미응답 문항입니다."
+            : !record.is_correct
+              ? selectedOption?.choice_explanation || "오답 해설이 등록되지 않았습니다."
+              : "정답 처리된 문항입니다.";
           coreConcept.textContent = record.core_concept || "핵심 개념이 등록되지 않았습니다.";
           prevQuestion.disabled = currentIndex === 0;
           nextQuestion.disabled = currentIndex === records.length - 1;
