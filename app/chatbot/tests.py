@@ -16,7 +16,7 @@ from .rag_service import (
     stream_concept_rag_answer,
     stream_question_rag_answer,
 )
-from .views import _chat_request_blocked, chat_page, chat_sessions_api, proxied_image_path, rag_chat_api, rag_chat_stream_api
+from .views import _chat_request_blocked, chat_page, chat_session_delete_api, chat_sessions_api, proxied_image_path, rag_chat_api, rag_chat_stream_api
 
 
 class ChatPageStorageIsolationTests(SimpleTestCase):
@@ -63,6 +63,21 @@ class ChatbotApiTests(TestCase):
         request = self.factory.post("/chatbot/api/rag/", data=json.dumps(payload), content_type="application/json")
         request.user = SimpleNamespace(is_authenticated=True, user_id=1)
         return request
+
+    @patch("chatbot.views.ChatMessages.objects.filter")
+    @patch("chatbot.views.ChatSessions.objects.filter")
+    def test_deleting_session_removes_only_current_users_history(self, session_filter, message_filter):
+        request = self.factory.delete("/chatbot/api/sessions/session-1/")
+        request.user = SimpleNamespace(is_authenticated=True, user_id=1)
+
+        response = chat_session_delete_api(request, "session-1")
+
+        self.assertEqual(response.status_code, 204)
+        message_filter.assert_called_once_with(
+            session__session_id="session-1",
+            session__user=request.user,
+        )
+        session_filter.assert_called_once_with(session_id="session-1", user=request.user)
 
     def test_top_k_rejects_invalid_value(self):
         response = rag_chat_api(self.request({"question": "세종대왕", "top_k": "abc"}))

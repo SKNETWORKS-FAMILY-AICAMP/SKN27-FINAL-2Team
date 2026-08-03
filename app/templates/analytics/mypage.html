@@ -18,6 +18,7 @@
       <a href="{% url 'question:create' %}">문제 풀이</a>
       <a href="{% url 'chatbot:chat_page' %}">챗봇</a>
       <a class="active" href="{% url 'analytics:mypage' %}">나의 학습실</a>
+      <a href="{% static 'game/nuuramaesin/index.html' %}" target="_blank" rel="noopener">놀이</a>
     </nav>
     <nav class="header-actions" aria-label="계정 메뉴">
       <a class="outline-button" href="{% url 'user:profile_edit' %}">정보 수정</a>
