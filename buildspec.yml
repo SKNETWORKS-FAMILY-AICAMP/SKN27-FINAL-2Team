@@ -156,10 +156,12 @@ phases:
         fi
 
         image_tag="${CODEBUILD_RESOLVED_SOURCE_VERSION,,}"
+        fact_batch_image_tag="${image_tag}-fact-batch"
         nginx_image_tag="${image_tag}-nginx"
         ecr_registry="${aws_account_id}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com"
         repository_uri="${ecr_registry}/${ECR_REPOSITORY}"
         app_tagged_image_uri="${repository_uri}:${image_tag}"
+        fact_batch_tagged_image_uri="${repository_uri}:${fact_batch_image_tag}"
         nginx_tagged_image_uri="${repository_uri}:${nginx_image_tag}"
         reranker_model_file="deployment/ecs/reranker-model.txt"
 
@@ -234,6 +236,25 @@ phases:
           "${image_tag}" \
           app_image_state \
           --build-arg "RAG_RERANKER_MODEL=${reranker_model}"
+
+        fact_batch_image_state=""
+        prepare_image \
+          "." \
+          "deployment/fact-batch/Dockerfile" \
+          "${fact_batch_tagged_image_uri}" \
+          "${fact_batch_image_tag}" \
+          fact_batch_image_state
+
+        docker run \
+          --rm \
+          --network none \
+          --read-only \
+          --tmpfs "/tmp:rw,nosuid,nodev,noexec,size=32m" \
+          --cap-drop ALL \
+          --security-opt no-new-privileges:true \
+          --entrypoint python \
+          "${fact_batch_tagged_image_uri}" \
+          -c "from ai.pack_generation.graph_builder import validate_spec; from ai.question_generation.workflows.closed_pack_batch import build_plan"
 
         test_network="himate-build-${image_tag:0:12}"
         test_database_container="${test_network}-postgres"
@@ -386,6 +407,9 @@ phases:
         if [[ "${app_image_state}" == "new" ]]; then
           docker push "${app_tagged_image_uri}"
         fi
+        if [[ "${fact_batch_image_state}" == "new" ]]; then
+          docker push "${fact_batch_tagged_image_uri}"
+        fi
         if [[ "${nginx_image_state}" == "new" ]]; then
           docker push "${nginx_tagged_image_uri}"
         fi
@@ -395,6 +419,14 @@ phases:
             --region "${AWS_DEFAULT_REGION}" \
             --repository-name "${ECR_REPOSITORY}" \
             --image-ids "imageTag=${image_tag}" \
+            --query "imageDetails[0].imageDigest" \
+            --output text
+        )"
+        fact_batch_image_digest="$(
+          aws ecr describe-images \
+            --region "${AWS_DEFAULT_REGION}" \
+            --repository-name "${ECR_REPOSITORY}" \
+            --image-ids "imageTag=${fact_batch_image_tag}" \
             --query "imageDetails[0].imageDigest" \
             --output text
         )"
@@ -409,6 +441,7 @@ phases:
 
         for image_digest_value in \
           "${app_image_digest}" \
+          "${fact_batch_image_digest}" \
           "${nginx_image_digest}"; do
           if [[ ! "${image_digest_value}" =~ ^sha256:[0-9a-f]{64}$ ]]; then
             echo "ECR returned an invalid image digest." >&2
@@ -417,6 +450,7 @@ phases:
         done
 
         app_image_uri="${repository_uri}@${app_image_digest}"
+        fact_batch_image_uri="${repository_uri}@${fact_batch_image_digest}"
         nginx_image_uri="${repository_uri}@${nginx_image_digest}"
 
         wait_for_image_scan() {
@@ -510,6 +544,7 @@ phases:
         }
 
         wait_for_image_scan "${app_image_digest}" "Django application"
+        wait_for_image_scan "${fact_batch_image_digest}" "Fact question-generation batch"
         wait_for_image_scan "${nginx_image_digest}" "Nginx proxy"
 
         migration_task_file="$(mktemp)"
@@ -582,10 +617,19 @@ phases:
           "${nginx_image_uri}" \
           > "${CODEBUILD_SRC_DIR}/imagedefinitions.json"
 
+        printf \
+          '{"imageUri":"%s","sourceRevision":"%s"}\n' \
+          "${fact_batch_image_uri}" \
+          "${image_tag}" \
+          > "${CODEBUILD_SRC_DIR}/fact-batch-image.json"
+
         test -s "${CODEBUILD_SRC_DIR}/imagedefinitions.json"
+        test -s "${CODEBUILD_SRC_DIR}/fact-batch-image.json"
         echo "Created ECS deployment artifact: ${CODEBUILD_SRC_DIR}/imagedefinitions.json"
+        echo "Created Fact batch image artifact: ${CODEBUILD_SRC_DIR}/fact-batch-image.json"
 
 artifacts:
   files:
     - imagedefinitions.json
+    - fact-batch-image.json
   discard-paths: yes
