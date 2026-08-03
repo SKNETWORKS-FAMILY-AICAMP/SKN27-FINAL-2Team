@@ -1,0 +1,145 @@
+schemaVersion: '0.3'
+description: Start the Fact EC2 instance, generate review artifacts, and stop the instance.
+assumeRole: '{{ AutomationAssumeRole }}'
+parameters:
+  AutomationAssumeRole:
+    type: String
+    description: IAM role ARN assumed by Systems Manager Automation.
+    allowedPattern: '^arn:(aws|aws-us-gov|aws-cn):iam::[0-9]{12}:role/[A-Za-z0-9+=,.@_/-]+$'
+  FactInstanceId:
+    type: String
+    description: EC2 instance dedicated to the Fact question-generation workload.
+    allowedPattern: '^i-[0-9a-f]{8,17}$'
+  CommandDocumentName:
+    type: String
+    description: Name of the Command document created from ssm-command-document.yml.
+    default: Himate-GenerateFactQuestions
+    allowedPattern: '^[A-Za-z0-9_.-]{3,128}$'
+  Region:
+    type: String
+    allowedPattern: '^[a-z]{2}(-[a-z]+)+-[0-9]+$'
+  FactBatchImageUri:
+    type: String
+    allowedPattern: '^[0-9]{12}\.dkr\.ecr\.[a-z0-9-]+\.amazonaws\.com/[a-z0-9]+([._/-][a-z0-9]+)*@sha256:[0-9a-f]{64}$'
+  SpecS3Uri:
+    type: String
+    allowedPattern: '^s3://[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]/[A-Za-z0-9._/-]+$'
+  OutputS3Prefix:
+    type: String
+    allowedPattern: '^s3://[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]/[A-Za-z0-9._/-]+$'
+  ExistingBankS3Uri:
+    type: String
+    default: ''
+    allowedPattern: '^$|^s3://[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]/[A-Za-z0-9._/-]+$'
+  ParameterPrefix:
+    type: String
+    default: /himate/prod
+    allowedPattern: '^/[A-Za-z0-9_.-]+(/[A-Za-z0-9_.-]+)*$'
+  VariantsPerPack:
+    type: String
+    default: '1'
+    allowedPattern: '^[1-9][0-9]*$'
+  MockExam:
+    type: String
+    default: 'false'
+    allowedValues:
+      - 'true'
+      - 'false'
+  MaxTotalCalls:
+    type: String
+    default: '28'
+    allowedPattern: '^[1-9][0-9]*$'
+  MaxSeconds:
+    type: String
+    default: '600'
+    allowedPattern: '^[1-9][0-9]*$'
+  DependencyTimeoutSeconds:
+    type: String
+    default: '300'
+    allowedPattern: '^[1-9][0-9]*$'
+  DependencyRetryIntervalSeconds:
+    type: String
+    default: '5'
+    allowedPattern: '^[1-9][0-9]*$'
+  Seed:
+    type: String
+    default: '20260715'
+    allowedPattern: '^[0-9]+$'
+mainSteps:
+  - name: startFactInstance
+    action: aws:changeInstanceState
+    timeoutSeconds: 900
+    maxAttempts: 2
+    onFailure: Abort
+    onCancel: step:stopFactInstance
+    nextStep: waitForSsmOnline
+    inputs:
+      InstanceIds:
+        - '{{ FactInstanceId }}'
+      DesiredState: running
+      FailOnUnexpectedStopped: true
+  - name: waitForSsmOnline
+    action: aws:waitForAwsResourceProperty
+    timeoutSeconds: 600
+    isCritical: true
+    onFailure: step:stopFactInstance
+    onCancel: step:stopFactInstance
+    nextStep: generateReviewArtifacts
+    inputs:
+      Service: ssm
+      Api: DescribeInstanceInformation
+      Filters:
+        - Key: InstanceIds
+          Values:
+            - '{{ FactInstanceId }}'
+      PropertySelector: '$.InstanceInformationList[0].PingStatus'
+      DesiredValues:
+        - Online
+  - name: generateReviewArtifacts
+    action: aws:runCommand
+    timeoutSeconds: 86400
+    isCritical: true
+    onFailure: step:stopFactInstance
+    onCancel: step:stopFactInstance
+    nextStep: stopFactInstance
+    inputs:
+      DocumentName: '{{ CommandDocumentName }}'
+      InstanceIds:
+        - '{{ FactInstanceId }}'
+      Parameters:
+        Region:
+          - '{{ Region }}'
+        FactBatchImageUri:
+          - '{{ FactBatchImageUri }}'
+        SpecS3Uri:
+          - '{{ SpecS3Uri }}'
+        OutputS3Prefix:
+          - '{{ OutputS3Prefix }}'
+        ExistingBankS3Uri:
+          - '{{ ExistingBankS3Uri }}'
+        ParameterPrefix:
+          - '{{ ParameterPrefix }}'
+        VariantsPerPack:
+          - '{{ VariantsPerPack }}'
+        MockExam:
+          - '{{ MockExam }}'
+        MaxTotalCalls:
+          - '{{ MaxTotalCalls }}'
+        MaxSeconds:
+          - '{{ MaxSeconds }}'
+        DependencyTimeoutSeconds:
+          - '{{ DependencyTimeoutSeconds }}'
+        DependencyRetryIntervalSeconds:
+          - '{{ DependencyRetryIntervalSeconds }}'
+        Seed:
+          - '{{ Seed }}'
+  - name: stopFactInstance
+    action: aws:changeInstanceState
+    timeoutSeconds: 900
+    maxAttempts: 2
+    isCritical: true
+    isEnd: true
+    inputs:
+      InstanceIds:
+        - '{{ FactInstanceId }}'
+      DesiredState: stopped

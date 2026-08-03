@@ -1,0 +1,36 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "StartAndStopFactInstance",
+      "Effect": "Allow",
+      "Action": [
+        "ec2:StartInstances",
+        "ec2:StopInstances"
+      ],
+      "Resource": "arn:aws:ec2:__AWS_REGION__:__AWS_ACCOUNT_ID__:instance/__FACT_INSTANCE_ID__"
+    },
+    {
+      "Sid": "ReadFactInstanceState",
+      "Effect": "Allow",
+      "Action": [
+        "ec2:DescribeInstances",
+        "ec2:DescribeInstanceStatus",
+        "ssm:DescribeInstanceInformation",
+        "ssm:GetCommandInvocation",
+        "ssm:ListCommandInvocations",
+        "ssm:ListCommands"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "RunFactCommandDocument",
+      "Effect": "Allow",
+      "Action": "ssm:SendCommand",
+      "Resource": [
+        "arn:aws:ssm:__AWS_REGION__:__AWS_ACCOUNT_ID__:document/__FACT_COMMAND_DOCUMENT_NAME__",
+        "arn:aws:ec2:__AWS_REGION__:__AWS_ACCOUNT_ID__:instance/__FACT_INSTANCE_ID__"
+      ]
+    }
+  ]
+}

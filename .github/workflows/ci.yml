@@ -57,6 +57,7 @@ jobs:
           cache-dependency-path: |
             requirements/base.txt
             requirements/dev.txt
+            requirements/fact-batch.txt
 
       - name: Install dependencies
         run: pip install -r requirements/dev.txt
@@ -90,6 +91,24 @@ jobs:
             --build-arg "RAG_RERANKER_MODEL=${reranker_model}" \
             -t himate-ci:${{ github.sha }} \
             .
+
+      - name: Verify Fact batch Docker build
+        shell: bash
+        run: |
+          docker build \
+            --file deployment/fact-batch/Dockerfile \
+            --tag himate-fact-batch-ci:${{ github.sha }} \
+            .
+          docker run \
+            --rm \
+            --network none \
+            --read-only \
+            --tmpfs /tmp:rw,nosuid,nodev,noexec,size=32m \
+            --cap-drop ALL \
+            --security-opt no-new-privileges:true \
+            --entrypoint python \
+            himate-fact-batch-ci:${{ github.sha }} \
+            -c "from ai.pack_generation.graph_builder import validate_spec; from ai.question_generation.workflows.closed_pack_batch import build_plan"
 
   neo4j-regression:
     runs-on: ubuntu-latest

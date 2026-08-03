@@ -23,8 +23,8 @@ AuraDB Free에서 상시 제공하고, Fact Neo4j는 문제 생성 시점에만 
 실행한다.
 
 현재 저장소에는 Web·migration·Fact Neo4j Task 설정과 인스턴스 사용자 데이터
-템플릿까지 반영되어 있다. EventBridge가 Fact EC2를 시작하고 문제 생성 완료 후
-중지하는 자동화는 아직 구현되지 않았다.
+템플릿이 반영되어 있다. Fact 문제 생성 전용 이미지와 EC2 시작·실행·중지용 SSM
+문서는 `../fact-batch/`에 있으며, AWS 콘솔 등록과 최초 수동 검증이 남아 있다.
 
 ## 현재 진행 상태 (2026-07-30)
 
@@ -44,10 +44,10 @@ AuraDB Free에서 상시 제공하고, Fact Neo4j는 문제 생성 시점에만 
 - Main Neo4j AuraDB 그래프 데이터 적재와 챗봇 조회 검증
 - Fact 배치 EC2 생성 및 ECS 클러스터 등록
 - Fact Neo4j 데이터와 EBS 경로 구성
-- 문제 생성 실행 명령과 결과 저장 위치 확정
-- EventBridge의 Fact EC2 시작·배치 실행·완료 후 중지 자동화
+- Fact 배치 S3 버킷·SSM 문서·IAM 역할 등록
+- SSM Automation 수동 검증 후 EventBridge Scheduler 연결
 - RunPod Serverless 호출과 실패·재시도 처리
-- 실제 문제 생성 결과의 PostgreSQL 저장 및 서비스 조회 검증
+- 검수 완료 문제의 PostgreSQL 적재 및 서비스 조회 검증
 
 현재 웹 배포가 정상이라고 해서 전체 배포가 끝난 것은 아니다. DB 초기 데이터와
 문제 생성 배치까지 검증해야 운영 구성이 완료된다.
@@ -127,6 +127,6 @@ minimum healthy percent `0`, maximum percent `100`으로 설정한다. 배포 �
 7. Aurora PostgreSQL 운영 초기 데이터를 적재하고 검증한다.
 8. Main Neo4j 데이터를 AuraDB Free에 적재하고 챗봇 조회를 검증한다.
 9. Fact 배치 EC2와 Fact Neo4j 데이터·EBS 경로를 구성한다.
-10. 문제 생성 실행 명령과 결과 저장 방식을 확정한다.
-11. EventBridge, RunPod Serverless, Fact EC2 시작·중지 자동화를 연결한다.
-12. 문제 생성 결과가 PostgreSQL과 웹 서비스에서 정상 조회되는지 검증한다.
+10. `../fact-batch/README.md` 순서로 S3·SSM·IAM을 등록하고 수동 실행한다.
+11. EventBridge Scheduler를 SSM Automation에 연결한다.
+12. 검수된 문제만 PostgreSQL에 적재하고 웹 서비스 조회를 검증한다.

@@ -1,0 +1,22 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "StartFactAutomation",
+      "Effect": "Allow",
+      "Action": "ssm:StartAutomationExecution",
+      "Resource": "arn:aws:ssm:__AWS_REGION__:__AWS_ACCOUNT_ID__:automation-definition/__FACT_AUTOMATION_DOCUMENT_NAME__:*"
+    },
+    {
+      "Sid": "PassFactAutomationRole",
+      "Effect": "Allow",
+      "Action": "iam:PassRole",
+      "Resource": "arn:aws:iam::__AWS_ACCOUNT_ID__:role/__FACT_AUTOMATION_ROLE_NAME__",
+      "Condition": {
+        "StringEquals": {
+          "iam:PassedToService": "ssm.amazonaws.com"
+        }
+      }
+    }
+  ]
+}
