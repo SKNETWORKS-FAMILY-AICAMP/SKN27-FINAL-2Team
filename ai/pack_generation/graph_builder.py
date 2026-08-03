@@ -74,6 +74,12 @@ def owner_type_base(value: Any) -> str:
     return compact(value).split("/", 1)[0].split(",", 1)[0]
 
 
+def candidate_hops_for_difficulty(difficulty: int) -> int:
+    if difficulty not in {1, 2, 3}:
+        raise ValueError("difficulty must be 1, 2, or 3")
+    return 4 - difficulty
+
+
 def validate_spec(spec: dict[str, Any]) -> None:
     required = (
         "anchor_node_id",
@@ -95,8 +101,9 @@ def validate_spec(spec: dict[str, Any]) -> None:
         raise ValueError(f"graph pack spec lacks {missing}")
     difficulty = int(spec["difficulty"])
     hops = int(spec["candidate_hops"])
-    if difficulty not in {1, 2, 3} or hops != difficulty:
-        raise ValueError("candidate_hops must match difficulty 1, 2, or 3")
+    expected_hops = candidate_hops_for_difficulty(difficulty)
+    if hops != expected_hops:
+        raise ValueError("candidate_hops must be 3, 2, or 1 for difficulty 1, 2, or 3")
     if spec["topic_type"] not in V41_TOPIC_TYPES:
         raise ValueError("graph pack spec has an invalid topic_type")
     if not isinstance(frames, list) or len(frames) < 2:
