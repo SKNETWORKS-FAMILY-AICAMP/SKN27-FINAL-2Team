@@ -1,6 +1,9 @@
 import random
 from datetime import date
+import re
+from datetime import timezone
 from zoneinfo import ZoneInfo
+
 
 from django.contrib.auth.decorators import login_required
 from django.db import models, transaction
@@ -56,6 +59,7 @@ DIAGNOSIS_ERA_GROUPS = [
     {"eras": ("현대",), "count": 7},
 ]
 DIAGNOSIS_SCORE_COUNTS = {1: 10, 2: 30, 3: 10}
+KOREAN_CHOICE_MARKERS = "가나다라마"
 
 # 예상 수준 기준 (진단평가 총점 100점 기준 취득 점수)
 GRADE_THRESHOLDS = [
@@ -69,6 +73,26 @@ def _get_local_recorded_date() -> date:
     """학습 기준 시간대의 날짜를 반환한다."""
     study_plan_timezone = ZoneInfo(get_study_plan_config().timezone)
     return timezone.localdate(timezone=study_plan_timezone)
+
+
+def _display_choices(question_id, options, seed_key):
+    markers = [re.match(r"^\s*\(?([가나다라마])\)", option.content or "") for option in options]
+    if len(options) == 5 and all(markers) and {match.group(1) for match in markers} == set(KOREAN_CHOICE_MARKERS):
+        display_options = sorted(options, key=lambda option: KOREAN_CHOICE_MARKERS.index(
+            re.match(r"^\s*\(?([가나다라마])\)", option.content).group(1)
+        ))
+    else:
+        display_options = options[:]
+        random.Random(f"{seed_key}:{question_id}").shuffle(display_options)
+    return [
+        {
+            "choice_id": option.choice_id,
+            "choice_no": index,
+            "content": option.content,
+            "choice_image_path": getattr(option, "choice_image_path", ""),
+        }
+        for index, option in enumerate(display_options, start=1)
+    ]
 
 
 def _get_expected_grade(total_score: int) -> str:
@@ -306,15 +330,7 @@ def diagnosis_start(request):
     for q in questions_list:
         options = list(QuestionOptions.objects.filter(question_id=q.question_id).order_by("choice_no"))
 
-        # 셔플 후 표시 번호 재부여
-        choices = []
-        for idx, opt in enumerate(options, start=1):
-            choices.append({
-                "choice_id": opt.choice_id,
-                "choice_no": idx,
-                "content": opt.content,
-                "choice_image_path": getattr(opt, "choice_image_path", ""),
-            })
+        choices = _display_choices(q.question_id, options, session.session_id)
 
         serialized_questions.append({
             "question_id": q.question_id,
@@ -510,15 +526,7 @@ def _serialize_diagnosis_session_questions(records):
             QuestionOptions.objects.filter(question_id=question.question_id)
             .order_by("choice_no")
         )
-        choices = [
-            {
-                "choice_id": option.choice_id,
-                "choice_no": option.choice_no,
-                "content": option.content,
-                "choice_image_path": getattr(option, "choice_image_path", ""),
-            }
-            for option in options
-        ]
+        choices = _display_choices(question.question_id, options, record.session_id)
         selected_choice_id = None
         if record.selected_no is not None:
             selected = next(
@@ -541,7 +549,10 @@ def _serialize_diagnosis_session_questions(records):
             "question_subtype": getattr(question, "question_subtype", ""),
             "choices": choices,
             "selected_choice_id": selected_choice_id,
-            "selected_choice_no": record.selected_no,
+            "selected_choice_no": next(
+                (choice["choice_no"] for choice in choices if choice["choice_id"] == selected_choice_id),
+                None,
+            ),
             "time_spent_ms": record.time_spent_ms,
             "is_answered": record.selected_no is not None,
         })
