@@ -11,7 +11,6 @@ from typing import Any
 
 from dotenv import load_dotenv
 
-from app.chatbot.rag.pgvector_retriever import connect_db
 from ai.question_generation.core.contracts import V41_TOPIC_TYPES
 from ai.question_generation.core.exam_distribution import (
     DIFFICULTY_LABELS,
@@ -20,6 +19,7 @@ from ai.question_generation.core.exam_distribution import (
     official_distribution,
     source_era,
 )
+from storage.postgresql.connection import connect_db
 
 
 AXIS_STEMS = {

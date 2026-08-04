@@ -4,8 +4,9 @@ set -euo pipefail
 
 required_variables=(
   FACT_BATCH_OUTPUT_DIR
-  FACT_BATCH_CONTRACT_BANK_PATH
-  FACT_BATCH_PACK_COUNT
+  FACT_BATCH_SPEC_PATH
+  FACT_BATCH_EXISTING_BANK_PATH
+  FACT_BATCH_PACKS_PER_RUN
   FACT_BATCH_VARIANTS_PER_PACK
   FACT_BATCH_MOCK_EXAM
   FACT_BATCH_MAX_TOTAL_CALLS
@@ -35,7 +36,7 @@ for variable_name in "${required_variables[@]}"; do
 done
 
 for positive_integer_name in \
-  FACT_BATCH_PACK_COUNT \
+  FACT_BATCH_PACKS_PER_RUN \
   FACT_BATCH_VARIANTS_PER_PACK \
   FACT_BATCH_MAX_TOTAL_CALLS \
   FACT_BATCH_MAX_SECONDS; do
@@ -44,6 +45,11 @@ for positive_integer_name in \
     exit 1
   fi
 done
+
+if (( FACT_BATCH_PACKS_PER_RUN > 5 )); then
+  echo "FACT_BATCH_PACKS_PER_RUN must not exceed 5." >&2
+  exit 1
+fi
 
 if [[ ! "${FACT_BATCH_SEED}" =~ ^[0-9]+$ ]]; then
   echo "FACT_BATCH_SEED must be a non-negative integer." >&2
@@ -55,47 +61,43 @@ if [[ -z "${pack_model}" ]]; then
   echo "OPENAI_PACK_MODEL or OPENAI_CHAT_MODEL is required." >&2
   exit 1
 fi
-pack_plan_model="${OPENAI_PACK_PLAN_MODEL:-${pack_model}}"
 
 umask 077
 mkdir -p "${FACT_BATCH_OUTPUT_DIR}"
 
 python /code/deployment/fact-batch/wait_for_dependencies.py
 
-pack_bank_path="${FACT_BATCH_OUTPUT_DIR}/pack_bank.json"
+selected_spec_path="${FACT_BATCH_OUTPUT_DIR}/selected_specs.json"
+selection_manifest_path="${FACT_BATCH_OUTPUT_DIR}/spec-selection-manifest.json"
+pack_bank_path="${FACT_BATCH_OUTPUT_DIR}/new_pack_bank.json"
+cumulative_pack_bank_path="${FACT_BATCH_OUTPUT_DIR}/cumulative_pack_bank.json"
 question_output_directory="${FACT_BATCH_OUTPUT_DIR}/questions"
 usage_manifest_path="${FACT_BATCH_USAGE_MANIFEST_PATH:-${FACT_BATCH_OUTPUT_DIR}/usage_manifest.json}"
-spec_path="${FACT_BATCH_SPEC_PATH:-${FACT_BATCH_OUTPUT_DIR}/planned_spec.json}"
 
-if [[ -n "${FACT_BATCH_SPEC_PATH:-}" ]]; then
-  if [[ ! -f "${FACT_BATCH_SPEC_PATH}" ]]; then
-    echo "Fact batch spec does not exist: ${FACT_BATCH_SPEC_PATH}" >&2
-    exit 1
-  fi
-elif [[ ! -f "${FACT_BATCH_CONTRACT_BANK_PATH}" ]]; then
-  echo "Fact batch contract bank does not exist: ${FACT_BATCH_CONTRACT_BANK_PATH}" >&2
+if [[ ! -f "${FACT_BATCH_EXISTING_BANK_PATH}" ]]; then
+  echo "Existing pack bank does not exist: ${FACT_BATCH_EXISTING_BANK_PATH}" >&2
   exit 1
-elif [[ -f "${FACT_BATCH_CONTRACT_BANK_PATH}" ]]; then
-  python -m ai.question_generation.automated_spec_planner \
-    --output "${spec_path}" \
-    --pack-count "${FACT_BATCH_PACK_COUNT}" \
-    --contract-bank "${FACT_BATCH_CONTRACT_BANK_PATH}" \
-    --model "${pack_plan_model}" \
-    --seed "${FACT_BATCH_SEED}"
 fi
+
+if [[ ! -f "${FACT_BATCH_SPEC_PATH}" ]]; then
+  echo "Approved Fact batch spec does not exist: ${FACT_BATCH_SPEC_PATH}" >&2
+  exit 1
+fi
+
+python -m ai.pack_generation.batch_constraints select \
+  --approved-specs "${FACT_BATCH_SPEC_PATH}" \
+  --existing-bank "${FACT_BATCH_EXISTING_BANK_PATH}" \
+  --output "${selected_spec_path}" \
+  --manifest "${selection_manifest_path}" \
+  --packs-per-run "${FACT_BATCH_PACKS_PER_RUN}" \
+  --maximum-packs-per-run 5
 
 graph_arguments=(
-  --spec "${spec_path}"
+  --spec "${selected_spec_path}"
   --output "${pack_bank_path}"
   --model "${pack_model}"
+  --existing-bank "${FACT_BATCH_EXISTING_BANK_PATH}"
 )
-if [[ -n "${FACT_BATCH_EXISTING_BANK_PATH:-}" ]]; then
-  if [[ ! -f "${FACT_BATCH_EXISTING_BANK_PATH}" ]]; then
-    echo "Existing pack bank does not exist: ${FACT_BATCH_EXISTING_BANK_PATH}" >&2
-    exit 1
-  fi
-  graph_arguments+=(--existing-bank "${FACT_BATCH_EXISTING_BANK_PATH}")
-fi
 
 python -m ai.pack_generation.graph_builder "${graph_arguments[@]}"
 
@@ -117,6 +119,12 @@ fi
 
 python -m ai.question_generation.workflows.closed_pack_batch "${generation_arguments[@]}"
 
+python -m ai.pack_generation.batch_constraints merge \
+  --existing-bank "${FACT_BATCH_EXISTING_BANK_PATH}" \
+  --new-bank "${pack_bank_path}" \
+  --selection-manifest "${selection_manifest_path}" \
+  --output "${cumulative_pack_bank_path}"
+
 python - "${FACT_BATCH_OUTPUT_DIR}" <<'PY'
 from __future__ import annotations
 
@@ -127,6 +135,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 output_directory = Path(sys.argv[1]).resolve()
+selection_manifest = json.loads(
+    (output_directory / "spec-selection-manifest.json").read_text(encoding="utf-8")
+)
 files = []
 for path in sorted(output_directory.rglob("*")):
     if not path.is_file() or path.name == "artifact-manifest.json":
@@ -143,6 +154,8 @@ for path in sorted(output_directory.rglob("*")):
 manifest = {
     "status": "READY_FOR_REVIEW",
     "generated_at": datetime.now(timezone.utc).isoformat(),
+    "selected_spec_ids": selection_manifest["selected_spec_ids"],
+    "remaining_unused_spec_count": selection_manifest["remaining_unused_spec_count"],
     "files": files,
 }
 (output_directory / "artifact-manifest.json").write_text(
@@ -151,4 +164,4 @@ manifest = {
 )
 PY
 
-echo "Fact batch completed. Review artifacts before importing them into the service database."
+echo "Fact batch completed with approved specs. Review artifacts before importing them into the service database."

@@ -254,7 +254,20 @@ phases:
           --security-opt no-new-privileges:true \
           --entrypoint python \
           "${fact_batch_tagged_image_uri}" \
-          -c "from ai.pack_generation.graph_builder import validate_spec; from ai.question_generation.workflows.closed_pack_batch import build_plan"
+          -c "from ai.pack_generation.batch_constraints import select_approved_specs; from ai.pack_generation.graph_builder import validate_spec; from ai.question_generation.workflows.closed_pack_batch import build_plan"
+
+        docker run \
+          --rm \
+          --network none \
+          --read-only \
+          --tmpfs "/tmp:rw,nosuid,nodev,noexec,size=32m" \
+          --cap-drop ALL \
+          --security-opt no-new-privileges:true \
+          --entrypoint python \
+          "${fact_batch_tagged_image_uri}" \
+          -m unittest \
+          ai.pack_generation.test_batch_constraints \
+          ai.pack_generation.test_validation
 
         test_network="himate-build-${image_tag:0:12}"
         test_database_container="${test_network}-postgres"
