@@ -426,6 +426,7 @@ def build_pack(
     digest = hashlib.sha256("\x1f".join(sorted(fact_ids)).encode()).hexdigest()[:20]
     return {
         "family_id": f"graph_pack:{digest}",
+        "source_spec_id": str(spec.get("spec_id") or ""),
         "status": "final_reviewed",
         "difficulty": int(spec["difficulty"]),
         "era": spec["era"],
@@ -435,6 +436,7 @@ def build_pack(
         "question_frames": spec["question_frames"],
         "members": members,
         "graph_source": {
+            "spec_id": str(spec.get("spec_id") or ""),
             "anchor_node_id": spec["anchor_node_id"],
             "candidate_hops": int(spec["candidate_hops"]),
             "topic_id": spec["topic_id"],

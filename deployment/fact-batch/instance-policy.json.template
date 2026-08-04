@@ -27,6 +27,12 @@
       "Resource": "arn:aws:s3:::__FACT_BATCH_BUCKET_NAME__/*"
     },
     {
+      "Sid": "PublishFactBatchSpecExhaustionAlert",
+      "Effect": "Allow",
+      "Action": "sns:Publish",
+      "Resource": "__FACT_BATCH_ALERT_TOPIC_ARN__"
+    },
+    {
       "Sid": "AuthenticateToEcr",
       "Effect": "Allow",
       "Action": "ecr:GetAuthorizationToken",

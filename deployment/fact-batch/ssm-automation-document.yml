@@ -27,14 +27,20 @@ parameters:
   OutputS3Prefix:
     type: String
     allowedPattern: '^s3://[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]/[A-Za-z0-9._/-]+$'
+  AlertTopicArn:
+    type: String
+    allowedPattern: '^arn:(aws|aws-us-gov|aws-cn):sns:[a-z0-9-]+:[0-9]{12}:[A-Za-z0-9_-]{1,256}$'
   ExistingBankS3Uri:
     type: String
-    default: ''
-    allowedPattern: '^$|^s3://[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]/[A-Za-z0-9._/-]+$'
+    allowedPattern: '^s3://[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]/[A-Za-z0-9._/-]+$'
   ParameterPrefix:
     type: String
     default: /himate/prod
     allowedPattern: '^/[A-Za-z0-9_.-]+(/[A-Za-z0-9_.-]+)*$'
+  PacksPerRun:
+    type: String
+    default: '5'
+    allowedPattern: '^[1-5]$'
   VariantsPerPack:
     type: String
     default: '1'
@@ -115,10 +121,14 @@ mainSteps:
           - '{{ SpecS3Uri }}'
         OutputS3Prefix:
           - '{{ OutputS3Prefix }}'
+        AlertTopicArn:
+          - '{{ AlertTopicArn }}'
         ExistingBankS3Uri:
           - '{{ ExistingBankS3Uri }}'
         ParameterPrefix:
           - '{{ ParameterPrefix }}'
+        PacksPerRun:
+          - '{{ PacksPerRun }}'
         VariantsPerPack:
           - '{{ VariantsPerPack }}'
         MockExam:
