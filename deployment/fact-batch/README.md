@@ -10,6 +10,7 @@ EventBridge Scheduler (매주 화요일 00:00, Asia/Seoul)
   → CLI에서 선택·승인한 spec 중 미사용 spec 5개 선택
   → spec 5개로 Graph Pack 5개 생성
   → OpenAI + RunPod Serverless로 문제 생성
+  → 품질 평가와 해설 생성을 통과한 문제를 운영 PostgreSQL에 트랜잭션 적재
   → S3 실행 결과 업로드
   → 누적 Pack Bank 갱신
   → Fact EC2 중지
@@ -27,8 +28,10 @@ EventBridge Scheduler (매주 화요일 00:00, Asia/Seoul)
 - spec 하나는 Pack 하나만 만든다. 생성 Pack 수가 선택 spec 수와 다르면 실패한다.
 - 기존 Pack Bank와 새 Pack 전체를 함께 검증하여 fact 재사용을 막는다.
 - 성공한 실행만 `cumulative_pack_bank.json`을 만들고 S3 누적 Pack Bank를 갱신한다.
-- 결과는 아직 운영 PostgreSQL에 자동 적재하지 않는다. `artifact-manifest.json`이
-  `READY_FOR_REVIEW`인지 확인한 뒤 별도 적재 절차를 수행한다.
+- 전체 생성과 품질 평가가 성공한 경우에만 운영 PostgreSQL에 적재한다.
+- DB 적재 전 동일 입력으로 사전 검증하고, 실제 적재는 하나의 트랜잭션으로 처리한다.
+- `source_key`가 이미 존재하면 새 행을 만들지 않아 같은 실행을 재시도해도 문제가 중복되지 않는다.
+- DB 적재가 끝난 산출물의 `artifact-manifest.json` 상태는 `IMPORTED`이다.
 
 승인 spec이 10개이고 실행당 5개이면 2주간 실행할 수 있다. 세 번째 실행은 새로
 승인된 spec이 추가될 때까지 실패한다.
@@ -62,6 +65,7 @@ S3 버킷 버전 관리를 켜 두면 누적 Pack Bank를 이전 버전으로 �
 - `instance-policy.json.template`: Fact EC2 IAM 정책
 - `automation-role-*.json*`: SSM Automation 역할 정책
 - `scheduler-role-*.json*`: EventBridge Scheduler 역할 정책
+- `scheduler-target-input.json.template`: Scheduler의 SSM Automation 호출 입력
 
 ## Parameter Store
 
@@ -91,8 +95,10 @@ SNS Standard Topic과 이메일 구독을 만든 뒤 Topic ARN을 Automation의
 2. spec 고갈 알림용 SNS Topic과 이메일 구독을 생성한다.
 3. `ssm-command-document.yml`을 Command 문서 `Himate-GenerateFactQuestions`로 등록한다.
 4. `ssm-automation-document.yml`을 Automation Runbook으로 등록한다.
-5. 수동 실행에서 `SpecS3Uri`, `PacksPerRun=5`, `AlertTopicArn`을 지정해 검증한다.
-6. S3 결과와 누적 Pack Bank의 `consumed_spec_ids`를 확인한다.
-7. EventBridge Scheduler에 `cron(0 0 ? * TUE *)`, 시간대 `Asia/Seoul`로 연결한다.
+5. 수동 실행에서 실제 S3 객체의 `SpecS3Uri`, `PacksPerRun=5`, `AlertTopicArn`을 지정해 검증한다.
+6. 운영 DB의 신규 `source_key`, S3 결과의 `db-import-result.json`, 누적 Pack Bank의
+   `consumed_spec_ids`를 확인한다.
+7. `scheduler-target-input.json.template`의 자리표시자를 실제 ARN과 URI로 바꾸고
+   EventBridge Scheduler를 `cron(0 0 ? * TUE *)`, 시간대 `Asia/Seoul`로 연결한다.
 
 Scheduler에는 태그가 아닌 `fact-batch-image.json`의 digest 고정 ECR URI를 넣는다.

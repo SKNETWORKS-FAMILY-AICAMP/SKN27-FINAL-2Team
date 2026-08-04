@@ -1,5 +1,5 @@
 schemaVersion: '0.3'
-description: Start the Fact EC2 instance, generate review artifacts, and stop the instance.
+description: Start the Fact EC2 instance, generate and import validated questions, upload audit artifacts, and stop the instance.
 assumeRole: '{{ AutomationAssumeRole }}'
 parameters:
   AutomationAssumeRole:
@@ -90,7 +90,7 @@ mainSteps:
     isCritical: true
     onFailure: step:stopFactInstance
     onCancel: step:stopFactInstance
-    nextStep: generateReviewArtifacts
+    nextStep: generateAndImportQuestions
     inputs:
       Service: ssm
       Api: DescribeInstanceInformation
@@ -101,7 +101,7 @@ mainSteps:
       PropertySelector: '$.InstanceInformationList[0].PingStatus'
       DesiredValues:
         - Online
-  - name: generateReviewArtifacts
+  - name: generateAndImportQuestions
     action: aws:runCommand
     timeoutSeconds: 86400
     isCritical: true

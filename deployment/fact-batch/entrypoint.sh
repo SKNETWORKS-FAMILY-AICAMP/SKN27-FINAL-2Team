@@ -15,11 +15,15 @@ required_variables=(
   FACT_BATCH_DEPENDENCY_TIMEOUT_SECONDS
   FACT_BATCH_DEPENDENCY_RETRY_INTERVAL_SECONDS
   OPENAI_API_KEY
+  OPENAI_CHAT_MODEL
   POSTGRES_DB
   POSTGRES_HOST
   POSTGRES_USER
   POSTGRES_PASSWORD
   POSTGRES_PORT
+  POSTGRES_CONNECT_TIMEOUT_SECONDS
+  POSTGRES_SSLMODE
+  POSTGRES_SSLROOTCERT
   FACT_NEO4J_URI
   FACT_NEO4J_USER
   FACT_NEO4J_PASSWORD
@@ -109,6 +113,8 @@ generation_arguments=(
   --max-total-calls "${FACT_BATCH_MAX_TOTAL_CALLS}"
   --max-seconds "${FACT_BATCH_MAX_SECONDS}"
   --seed "${FACT_BATCH_SEED}"
+  --evaluate
+  --eval-model "${OPENAI_CHAT_MODEL}"
 )
 if [[ "${FACT_BATCH_MOCK_EXAM}" == "true" ]]; then
   generation_arguments+=(--mock-exam)
@@ -118,6 +124,35 @@ elif [[ "${FACT_BATCH_MOCK_EXAM}" != "false" ]]; then
 fi
 
 python -m ai.question_generation.workflows.closed_pack_batch "${generation_arguments[@]}"
+
+questions_for_import_path="${FACT_BATCH_OUTPUT_DIR}/questions-for-import.json"
+classifications_path="${FACT_BATCH_OUTPUT_DIR}/service-classifications.jsonl"
+explanations_path="${FACT_BATCH_OUTPUT_DIR}/choice-explanations.jsonl"
+db_validation_path="${FACT_BATCH_OUTPUT_DIR}/db-import-validation.json"
+db_import_result_path="${FACT_BATCH_OUTPUT_DIR}/db-import-result.json"
+
+python -m ai.question_generation.postprocess_questions prepare-batch-import \
+  --summary "${question_output_directory}/summary.json" \
+  --questions-output "${questions_for_import_path}" \
+  --classifications-output "${classifications_path}"
+
+python -m ai.question_generation.postprocess_questions explain \
+  --input "${questions_for_import_path}" \
+  --output "${explanations_path}" \
+  --model "${OPENAI_CHAT_MODEL}"
+
+python -m ai.question_generation.postprocess_questions import-db \
+  --input "${questions_for_import_path}" \
+  --explanations "${explanations_path}" \
+  --classifications "${classifications_path}" \
+  --dry-run \
+  --result-output "${db_validation_path}"
+
+python -m ai.question_generation.postprocess_questions import-db \
+  --input "${questions_for_import_path}" \
+  --explanations "${explanations_path}" \
+  --classifications "${classifications_path}" \
+  --result-output "${db_import_result_path}"
 
 python -m ai.pack_generation.batch_constraints merge \
   --existing-bank "${FACT_BATCH_EXISTING_BANK_PATH}" \
@@ -152,7 +187,7 @@ for path in sorted(output_directory.rglob("*")):
     )
 
 manifest = {
-    "status": "READY_FOR_REVIEW",
+    "status": "IMPORTED",
     "generated_at": datetime.now(timezone.utc).isoformat(),
     "selected_spec_ids": selection_manifest["selected_spec_ids"],
     "remaining_unused_spec_count": selection_manifest["remaining_unused_spec_count"],
@@ -164,4 +199,4 @@ manifest = {
 )
 PY
 
-echo "Fact batch completed with approved specs. Review artifacts before importing them into the service database."
+echo "Fact batch completed with approved specs and imported validated questions into the service database."

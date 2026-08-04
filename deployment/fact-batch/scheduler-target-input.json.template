@@ -1,0 +1,23 @@
+{
+  "DocumentName": "__FACT_AUTOMATION_DOCUMENT_NAME__",
+  "Parameters": {
+    "AutomationAssumeRole": ["__FACT_AUTOMATION_ROLE_ARN__"],
+    "FactInstanceId": ["__FACT_INSTANCE_ID__"],
+    "CommandDocumentName": ["__FACT_COMMAND_DOCUMENT_NAME__"],
+    "Region": ["__AWS_REGION__"],
+    "FactBatchImageUri": ["__FACT_BATCH_IMAGE_URI__"],
+    "SpecS3Uri": ["__FACT_APPROVED_SPEC_S3_URI__"],
+    "OutputS3Prefix": ["__FACT_OUTPUT_S3_PREFIX__"],
+    "AlertTopicArn": ["__FACT_BATCH_ALERT_TOPIC_ARN__"],
+    "ExistingBankS3Uri": ["__FACT_EXISTING_BANK_S3_URI__"],
+    "ParameterPrefix": ["/himate/prod"],
+    "PacksPerRun": ["5"],
+    "VariantsPerPack": ["1"],
+    "MockExam": ["false"],
+    "MaxTotalCalls": ["28"],
+    "MaxSeconds": ["600"],
+    "DependencyTimeoutSeconds": ["300"],
+    "DependencyRetryIntervalSeconds": ["5"],
+    "Seed": ["20260715"]
+  }
+}

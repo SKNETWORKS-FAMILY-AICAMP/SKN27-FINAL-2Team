@@ -120,7 +120,8 @@ jobs:
             himate-fact-batch-ci:${{ github.sha }} \
             -m unittest \
             ai.pack_generation.test_batch_constraints \
-            ai.pack_generation.test_validation
+            ai.pack_generation.test_validation \
+            ai.question_generation.tests.test_postprocess_questions
 
   neo4j-regression:
     runs-on: ubuntu-latest
