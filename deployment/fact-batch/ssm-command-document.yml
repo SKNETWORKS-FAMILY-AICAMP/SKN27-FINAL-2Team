@@ -1,5 +1,5 @@
 schemaVersion: '2.2'
-description: Generate HiMate Fact-Graph questions and upload review artifacts to S3.
+description: Generate and validate HiMate Fact-Graph questions, import them into PostgreSQL, and upload audit artifacts to S3.
 parameters:
   Region:
     type: String
@@ -224,5 +224,5 @@ mainSteps:
             --only-show-errors
 
           completed='true'
-          echo "Fact batch review artifacts uploaded to ${destination_uri}"
+          echo "Fact batch audit artifacts uploaded to ${destination_uri}"
           echo "Cumulative pack bank updated at ${existing_bank_s3_uri}"

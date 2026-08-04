@@ -17,6 +17,64 @@ from storage.postgresql.connection import connect_db
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 
+def prepare_batch_import(args: argparse.Namespace) -> int:
+    summary = json.loads(args.summary.read_text(encoding="utf-8"))
+    results = summary.get("results")
+    requested = int(summary.get("requested") or 0)
+    succeeded = int(summary.get("succeeded") or 0)
+    failed = int(summary.get("failed") or 0)
+    evaluation = summary.get("evaluation") or {}
+    if not isinstance(results, list) or requested < 1:
+        raise ValueError("Batch summary does not contain generated questions.")
+    if failed or succeeded != requested or len(results) != requested:
+        raise ValueError("All requested questions must be generated before database import.")
+    if evaluation.get("status") != "PASS":
+        raise ValueError("Question evaluation must pass before database import.")
+
+    questions: list[dict[str, Any]] = []
+    classifications: list[dict[str, str]] = []
+    required_classifications = (
+        "service_era",
+        "service_topic",
+        "service_question_type",
+        "service_question_subtype",
+    )
+    for result in results:
+        checkpoint_path = Path(str(result.get("output") or ""))
+        checkpoint = json.loads(checkpoint_path.read_text(encoding="utf-8"))
+        question = checkpoint.get("question")
+        if checkpoint.get("status") != "complete" or not isinstance(question, dict):
+            raise ValueError(f"Question checkpoint is incomplete: {checkpoint_path}")
+        classification = {
+            name: str(question.get(name) or "").strip()
+            for name in required_classifications
+        }
+        if any(not value for value in classification.values()):
+            raise ValueError(
+                f"Question classification is incomplete: {question.get('variant_key')}"
+            )
+        classifications.append(
+            {
+                "variant_key": str(question.get("variant_key") or ""),
+                **classification,
+            }
+        )
+        questions.append(question)
+
+    load_questions_payload = {"count": len(questions), "questions": questions}
+    args.questions_output.parent.mkdir(parents=True, exist_ok=True)
+    args.questions_output.write_text(
+        json.dumps(load_questions_payload, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+    args.classifications_output.write_text(
+        "".join(json.dumps(row, ensure_ascii=False) + "\n" for row in classifications),
+        encoding="utf-8",
+    )
+    print(json.dumps({"status": "prepared", "count": len(questions)}, ensure_ascii=False))
+    return 0
+
+
 def load_questions(path: Path) -> list[dict[str, Any]]:
     data = json.loads(path.read_text(encoding="utf-8"))
     questions = data.get("questions") if isinstance(data, dict) else None
@@ -263,19 +321,21 @@ def import_db(args: argparse.Namespace) -> int:
             updated = 0
             replaced = 0
             if args.dry_run:
-                print(
-                    json.dumps(
-                        {
-                            "status": "validated",
-                            "count": len(prepared),
-                            "existing_updates": len(existing),
-                            "existing_replacements": len(existing) if args.replace_existing else 0,
-                            "new_inserts": len(keys - existing),
-                            "ml_warning_count": ml_warning_count,
-                        },
-                        ensure_ascii=False,
+                result = {
+                    "status": "validated",
+                    "count": len(prepared),
+                    "existing_updates": len(existing),
+                    "existing_replacements": len(existing) if args.replace_existing else 0,
+                    "new_inserts": len(keys - existing),
+                    "ml_warning_count": ml_warning_count,
+                }
+                result_output = getattr(args, "result_output", None)
+                if result_output:
+                    result_output.write_text(
+                        json.dumps(result, ensure_ascii=False, indent=2),
+                        encoding="utf-8",
                     )
-                )
+                print(json.dumps(result, ensure_ascii=False))
                 return 0
 
             for question, (question_row, option_rows) in zip(questions, prepared):
@@ -315,25 +375,36 @@ def import_db(args: argparse.Namespace) -> int:
                 question_id = cursor.fetchone()[0]
                 cursor.executemany(option_sql, [(question_id, *row) for row in option_rows])
                 inserted += 1
-    print(
-        json.dumps(
-            {
-                "status": "imported",
-                "count": len(prepared),
-                "updated": updated,
-                "replaced": replaced,
-                "inserted": inserted,
-                "ml_warning_count": ml_warning_count,
-            },
-            ensure_ascii=False,
+    result = {
+        "status": "imported",
+        "count": len(prepared),
+        "updated": updated,
+        "replaced": replaced,
+        "inserted": inserted,
+        "ml_warning_count": ml_warning_count,
+    }
+    result_output = getattr(args, "result_output", None)
+    if result_output:
+        result_output.write_text(
+            json.dumps(result, ensure_ascii=False, indent=2),
+            encoding="utf-8",
         )
-    )
+    print(json.dumps(result, ensure_ascii=False))
     return 0
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     subparsers = parser.add_subparsers(dest="command", required=True)
+
+    prepare = subparsers.add_parser(
+        "prepare-batch-import",
+        help="검증을 통과한 배치 결과를 운영 DB 적재 파일로 변환",
+    )
+    prepare.add_argument("--summary", type=Path, required=True)
+    prepare.add_argument("--questions-output", type=Path, required=True)
+    prepare.add_argument("--classifications-output", type=Path, required=True)
+    prepare.set_defaults(func=prepare_batch_import)
 
     explain = subparsers.add_parser("explain", help="선지별 짧은 해설을 JSONL로 생성")
     explain.add_argument("--input", type=Path, required=True)
@@ -350,6 +421,7 @@ def parse_args() -> argparse.Namespace:
     importer.add_argument("--classifications", type=Path, required=True)
     importer.add_argument("--replace-existing", action="store_true")
     importer.add_argument("--dry-run", action="store_true")
+    importer.add_argument("--result-output", type=Path)
     importer.set_defaults(func=import_db)
 
     return parser.parse_args()

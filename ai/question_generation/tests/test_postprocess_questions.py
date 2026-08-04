@@ -12,6 +12,7 @@ from ai.question_generation.postprocess_questions import (
     load_classifications,
     load_explanations,
     load_questions,
+    prepare_batch_import,
 )
 
 
@@ -44,6 +45,50 @@ def sample_question() -> dict:
 
 
 class PostprocessQuestionsTest(unittest.TestCase):
+    def test_prepare_batch_import_requires_passed_evaluation(self) -> None:
+        question = {
+            **sample_question(),
+            "service_era": "고려",
+            "service_topic": "인물",
+            "service_question_type": "역사 자료의 분석 및 해석",
+            "service_question_subtype": "자료 기반 시대·대상 추론",
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            checkpoint = root / "item.json"
+            summary = root / "summary.json"
+            questions_output = root / "questions.json"
+            classifications_output = root / "classifications.jsonl"
+            checkpoint.write_text(
+                json.dumps({"status": "complete", "question": question}, ensure_ascii=False),
+                encoding="utf-8",
+            )
+            summary.write_text(
+                json.dumps(
+                    {
+                        "requested": 1,
+                        "succeeded": 1,
+                        "failed": 0,
+                        "evaluation": {"status": "PASS"},
+                        "results": [{"output": str(checkpoint), "returncode": 0}],
+                    },
+                    ensure_ascii=False,
+                ),
+                encoding="utf-8",
+            )
+            args = SimpleNamespace(
+                summary=summary,
+                questions_output=questions_output,
+                classifications_output=classifications_output,
+            )
+
+            self.assertEqual(prepare_batch_import(args), 0)
+            self.assertEqual(load_questions(questions_output), [question])
+            self.assertEqual(
+                load_classifications(classifications_output)[question["variant_key"]]["service_topic"],
+                "인물",
+            )
+
     def test_load_and_build_db_rows_without_inference(self) -> None:
         question = sample_question()
         explanations = {str(number): f"{number}번 해설" for number in range(1, 6)}

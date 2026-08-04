@@ -85,9 +85,10 @@ HiMate는 진단, 맞춤 문제풀이, 오답 분석, 출제 경향 분석, 학�
 | 맞&#8288;춤 문&#8288;제&#8288;풀&#8288;이 | 시대·주제·유형·난이도를 선택해 원하는 조건의 문제를 풀이합니다. | Django, PostgreSQL |
 | 오&#8288;답&#8288;노&#8288;트 | 풀이 이력과 오답을 저장하고, 오답 문제 중심의 복습을 지원합니다. | PostgreSQL |
 | 학&#8288;습 분&#8288;석 | 시대·주제·유형별 오답률, 정답률, 평균 풀이 시간, 연속 학습일을 제공합니다. | Django, PostgreSQL |
-| 학&#8288;습 계&#8288;획 | 목표 시험일과 진단 결과를 바탕으로 학습 계획과 복습 흐름을 관리합니다. | Multi-Agent, PostgreSQL |
+| 학&#8288;습 계&#8288;획 | 목표 시험일과 진단 결과를 바탕으로 7일 학습 계획과 주간평가 흐름을 관리합니다. | Django, PostgreSQL |
+| 주&#8288;간 리&#8288;포&#8288;트 | 학습 근거를 분석·코칭·작성·비평하는 멀티에이전트가 검증된 피드백을 생성합니다. | LangGraph, LangChain, OpenAI |
 | 출&#8288;제 경&#8288;향 분&#8288;석 | 회차별 기출 통계와 ML 모델을 활용해 출제 경향을 분석합니다. | KLUE/RoBERTa-base, Python, ML |
-| A&#8288;I 한&#8288;국&#8288;사 챗&#8288;봇 | 개념 및 문제 해설 질문에 대해 검색 근거 기반의 답변을 제공합니다. | OpenAI, LangChain, LangGraph |
+| A&#8288;I 한&#8288;국&#8288;사 챗&#8288;봇 | 개념 및 문제 해설 질문에 대해 검색 근거 기반의 답변을 제공합니다. | OpenAI, LangChain, pgvector |
 | 그&#8288;래&#8288;프 문&#8288;맥 보&#8288;강 | 역사 인물·사건·시대의 관계를 탐색해 챗봇 검색 품질을 보강합니다. | Neo4j |
 | 문&#8288;제 생&#8288;성 파&#8288;이&#8288;프&#8288;라&#8288;인 | 검증된 역사 근거로 문제 Pack을 구성하고 문항·선지·해설을 생성한 뒤, 실패한 구성 요소만 부분 재생성합니다. | OpenAI LLM, Fine-tuned sLLM, RAG, Neo4j |
 | 생&#8288;성 문&#8288;제 검&#8288;수 | 생성된 문항을 선지 단위로 검수해 오류 가능성이 높은 선지를 우선 확인하고, 형식·정답 유일성·역사 사실성 검사를 통해 품질을 관리합니다. | KLUE/RoBERTa-base, Python, ML |
@@ -95,38 +96,18 @@ HiMate는 진단, 맞춤 문제풀이, 오답 분석, 출제 경향 분석, 학�
 
 ## 기술 스택
 
-**Backend**  
-![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)
-![Django](https://img.shields.io/badge/Django-6.0-092E20?logo=django&logoColor=white)
-![Django REST Framework](https://img.shields.io/badge/Django_REST_Framework-API-A30000?logo=django&logoColor=white)
-![Gunicorn](https://img.shields.io/badge/Gunicorn-499848?logo=gunicorn&logoColor=white)
+| 구분 | 기술 |
+| --- | --- |
+| Backend | Python 3.12, Django 6.0.7, Django REST Framework 3.17.1, Gunicorn 26.0.0, WhiteNoise 6.12.0 |
+| Frontend | Django Template, HTML5, CSS3, JavaScript |
+| Database | PostgreSQL 16, pgvector, Neo4j 5 Community, Neo4j AuraDB |
+| AI · Agent | OpenAI API 2.43.0, LangChain 1.3.12, LangGraph 1.2.5, `langchain-openai` 1.3.2 |
+| RAG · NLP | Hybrid Retrieval, Sentence Transformers 5.6.0 CrossEncoder, MeCab-ko 1.0.2 |
+| ML · 생성 | KLUE/RoBERTa-base, PyTorch CPU, Fine-tuned sLLM, RunPod Serverless |
+| Web · Container | Docker, Nginx, Certbot, Ubuntu 24.04 기반 비루트 컨테이너 |
+| AWS | Route 53, EC2, ECS on EC2, ECR, Aurora Serverless v2, S3, Systems Manager, EventBridge Scheduler, SNS, CloudWatch, Parameter Store |
+| CI/CD | GitHub Actions, CodePipeline, CodeBuild, ECR image scan |
 
-**Frontend**  
-![HTML5](https://img.shields.io/badge/HTML5-E34F26?logo=html5&logoColor=white)
-![CSS3](https://img.shields.io/badge/CSS3-1572B6?logo=css3&logoColor=white)
-![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&logoColor=black)
-
-**Database**  
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)
-![pgvector](https://img.shields.io/badge/pgvector-Vector_Search-4169E1)
-![Neo4j](https://img.shields.io/badge/Neo4j-AuraDB-4581C3?logo=neo4j&logoColor=white)
-
-**AI · RAG · ML**  
-![OpenAI](https://img.shields.io/badge/OpenAI-API-412991?logo=openai&logoColor=white)
-![LangChain](https://img.shields.io/badge/LangChain-1C3C3C?logo=langchain&logoColor=white)
-![LangGraph](https://img.shields.io/badge/LangGraph-Multi--Agent-1C3C3C)
-![RAG](https://img.shields.io/badge/RAG-pgvector_%2B_BM25-0F766E)
-![MeCab](https://img.shields.io/badge/MeCab--ko-NLP-2563EB)
-![KLUE RoBERTa-base](https://img.shields.io/badge/KLUE%2FRoBERTa--base-ML_Model-7C3AED)
-
-**Infrastructure · CI/CD**  
-![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white)
-![Nginx](https://img.shields.io/badge/Nginx-009639?logo=nginx&logoColor=white)
-![AWS ECS](https://img.shields.io/badge/AWS_ECS-FF9900?logo=amazonaws&logoColor=white)
-![Amazon Aurora](https://img.shields.io/badge/Amazon_Aurora-527FFF?logo=amazonaws&logoColor=white)
-![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-2088FF?logo=githubactions&logoColor=white)
-![AWS CodePipeline](https://img.shields.io/badge/AWS_CodePipeline-FF9900?logo=amazonaws&logoColor=white)
-![Amazon ECR](https://img.shields.io/badge/Amazon_ECR-FF9900?logo=amazonaws&logoColor=white)
 ---
 
 ## 시스템 아키텍처
@@ -152,7 +133,8 @@ flowchart TB
     subgraph DATA["Data Layer"]
         POSTGRES[("PostgreSQL<br/>학습·문제·사용자 데이터")]
         PGVECTOR[("pgvector<br/>한국사 문서 임베딩")]
-        NEO4J[("Neo4j<br/>역사 개체·관계 그래프")]
+        MAIN_GRAPH[("Main Neo4j<br/>정규화 개체·관계")]
+        FACT_GRAPH[("Fact Neo4j<br/>사실·근거·출제 후보")]
     end
 
     DIAGNOSIS --> POSTGRES
@@ -160,7 +142,7 @@ flowchart TB
     TREND --> POSTGRES
     CHATBOT --> POSTGRES
     CHATBOT --> PGVECTOR
-    CHATBOT --> NEO4J
+    CHATBOT --> MAIN_GRAPH
 
     subgraph AI["AI / RAG Layer"]
         RETRIEVAL["Hybrid Retrieval<br/>키워드 + 벡터 검색"]
@@ -169,10 +151,20 @@ flowchart TB
     end
 
     CHATBOT --> RETRIEVAL --> RERANKER --> LLM
-    NEO4J --> RETRIEVAL
+    MAIN_GRAPH --> RETRIEVAL
+
+    subgraph REPORT["Weekly Report Multi-Agent"]
+        ANALYST["Weakness Analyst"] --> COACH["Study Coach"]
+        COACH --> WRITER["Report Writer"]
+        WRITER --> GUARD["Code Guard"]
+        GUARD --> CRITIC["Report Critic"]
+    end
+
+    ANALYTICS --> REPORT
+    REPORT --> POSTGRES
 
     subgraph QGENFLOW["Offline Question Bank Pipeline"]
-        QGRAPH["Fact Neo4j<br/>오답 후보 탐색"]
+        QGRAPH["Fact Neo4j<br/>사실·오답 후보 탐색"]
         QEVIDENCE["RAG<br/>직접 근거 확인"]
         PACK["검수된 9-Fact Pack"]
         QGEN["GPT 지문·발문<br/>sLLM 정답·오답"]
@@ -180,18 +172,20 @@ flowchart TB
         QPOST["ML 2차 검수<br/>해설·서비스 분류"]
     end
 
-    QGRAPH --> QEVIDENCE --> PACK --> QGEN --> QJUDGE --> QPOST --> POSTGRES
+    FACT_GRAPH --> QGRAPH --> QEVIDENCE --> PACK --> QGEN --> QJUDGE --> QPOST --> POSTGRES
 
     subgraph DEPLOY["Deployment"]
         NGINX["Nginx HTTPS"]
         ECS["AWS ECS on EC2"]
         ECR["Amazon ECR"]
-        SSM["AWS SSM Parameter Store"]
+        PARAMETER["SSM Parameter Store"]
+        BATCH["EventBridge + SSM<br/>주간 Fact 배치"]
     end
 
     WEB --> NGINX --> ECS
     ECR --> ECS
-    SSM --> ECS
+    PARAMETER --> ECS
+    BATCH --> FACT_GRAPH
 ```
 
 ---
@@ -218,53 +212,68 @@ flowchart TB
 - 검색 근거가 부족하면 확정적 답변 대신 근거 부족 상태를 안내합니다.
 - 스트리밍 응답을 지원합니다.
 
-### 2. Neo4j 
+### 2. 역할을 분리한 Neo4j 이중 그래프
 
-역사 인물, 사건, 시대, 주제 사이의 관계를 Neo4j에 저장하고 질문의 핵심 용어와 연관된 개체를 탐색합니다. 이 결과를 RAG 검색 질의에 반영해 더 적절한 역사 자료를 찾도록 구성했습니다.
+서비스 검색용 그래프와 문제 생성용 사실 그래프를 서로 다른 데이터베이스로 분리했습니다.
+
+| 그래프 | 운영 위치 | 코드상 역할 |
+| --- | --- | --- |
+| Main Neo4j | Neo4j AuraDB | 정규화된 용어·인물·사건·시대 관계를 조회해 챗봇의 검색어와 관계 문맥을 보강합니다. |
+| Fact Neo4j | Fact EC2의 ECS Task + EBS | 근거가 연결된 사실과 출제 후보를 탐색해 Pack과 오답 후보를 구성합니다. |
+
+Main 그래프는 질문에서 핵심 토큰을 추출하고 `Term`, `Person`, `Event`와 주변 관계를 조회합니다. 결과는 답을 직접 결정하지 않고 PostgreSQL·pgvector 검색을 보강하는 키워드와 관계 요약으로만 사용합니다. 설정이 없거나 조회에 실패하면 그래프 문맥만 비활성화하고 기본 RAG 검색은 계속 동작합니다.
+
+Fact 그래프는 승인된 `CanonicalEntity`와 `ResolvedSearchTerm`만 검색 시작점으로 사용하며, 임시 개체는 자동 다중 홉 탐색에서 제외합니다. 각 관계의 Fact ID와 Evidence를 보존해 문제 생성 단계에서 근거를 다시 확인할 수 있게 했습니다.
 
 ```text
-질문: "세종의 업적 알려줘"
- → 핵심 용어 추출: 세종
- → Neo4j 관계 탐색: 인물 · 정책 · 문화 · 제도
- → 검색 질의 보강
- → 관련 한국사 자료 검색
- → 근거 기반 답변 생성
+사용자 질문 → Main Neo4j 관계 문맥 → pgvector·키워드 검색 → 답변
+승인 spec → Fact Neo4j 후보 탐색 → 직접 근거 확인 → Pack → 문제 생성
 ```
 
-한국사 개체는 같은 이름이 서로 다른 대상을 가리키거나, 같은 대상이 여러 표기로 나타나는 문제가 있습니다.  
-예를 들어 `고종`은 고려 고종과 조선 고종을 모두 의미할 수 있으며, `류성룡`과 `유성룡`은 같은 인물의 다른 표기입니다.
+적재 건수는 실행 시점마다 달라지므로 README에 고정하지 않습니다. Main 그래프는 `neo4j_load_manifest.json`, Fact 그래프는 release `manifest.json`으로 실제 적재 대상을 검증합니다. 상세 내용은 [`storage/neo4j/README.md`](storage/neo4j/README.md)와 [`storage/fact_neo4j/README.md`](storage/fact_neo4j/README.md)를 참고합니다.
 
-이름이 같다는 이유만으로 개체를 자동 병합하지 않고, 여러 근거를 통과한 경우에만 동일 개체로 확정합니다.
+### 3. LangGraph 주간 리포트 멀티에이전트
 
-- **다신호 병합 게이트**: 한자 표기, 생몰년, 시대, 서로 다른 출처의 지지가 동시에 충족될 때만 병합합니다.
-- **충돌 시 보류**: 근거가 하나라도 충돌하면 자동 병합하지 않고 분리된 개체로 유지합니다.
-- **Complete-link 군집화**: `A=B`, `B=C` 관계만으로 `A=C`를 추론하지 않으며, 모든 개체 간 직접 근거가 있을 때만 군집화합니다.
-- **LLM 제안 + 코드 검증**: LLM의 동일 개체 판정은 제안으로만 사용하고, 최종 확정은 코드 규칙이 담당합니다.
+주간평가를 제출하면 결정론적 코드가 평가·계획 이행률·취약 영역·풀이 시간·혼동 관계·최근 출제 경향을 근거 데이터로 수집합니다. 이후 워커가 다음 LangGraph를 실행합니다.
 
-정제된 개체와 관계는 Neo4j에 적재합니다. 이를 통해 챗봇은 질문의 인물·사건·시대 관계를 보조 검색하고, 문제 생성 과정에서는 정답과 같은 시대·유형·관계 경로를 공유하는 대상을 오답 후보로 활용합니다.
+```text
+Weakness Analyst
+ → Study Coach
+ → Report Writer
+ → Code Guard
+ → Report Critic
+ → 최종 리포트
+```
 
-또한 정답 개체와 오답 후보 사이의 그래프 거리(홉 수)를 활용해 난이도를 조절합니다.  
-가까운 관계의 대상은 높은 혼동 가능성을 가진 오답 후보가 되고, 더 먼 관계의 대상은 난이도 조절에 활용됩니다.
+- **Analyst**: 전달받은 근거 범위 안에서 강점과 개선점을 해석합니다.
+- **Coach**: 새 학습 계획을 임의로 만들지 않고 실행 가능한 학습 행동을 제안합니다.
+- **Writer**: 사용자에게 표시할 총평과 팁을 구조화된 스키마로 작성합니다.
+- **Code Guard**: 근거에 없는 숫자, 존재하지 않는 evidence ID, 금지 표현을 코드로 차단합니다.
+- **Critic**: 근거성·표현·실행 가능성을 재검토하고 실패하면 Writer로 되돌립니다.
 
-- 적재 규모: 엔티티 **19,186개**, 사실 데이터 **39,836개**
-- 관계 추출: 공식 역사 자료의 인물·사건 관계, 시소러스 분류, 설명문 근거
-- 검수 원칙: `VERIFIED` 상태와 검색 가능 조건을 통과한 관계만 활용
-- 그래프 관계 검수 결과: 오병합 **0건**, 관계 커버리지 **89.2%**
+스키마 오류, 모델 호출 실패 또는 최대 수정 횟수 초과 시에는 저장된 학습 지표로 만든 기본 문구를 사용합니다. 리포트는 `pending` 상태로 예약되고 별도 `run_weekly_report_worker`가 생성·재시도·복구하므로 평가 제출 요청과 LLM 호출을 분리했습니다. 상세 실행 방법은 [`app/analytics/README.md`](app/analytics/README.md)에 있습니다.
 
+### 4. 마이페이지와 취약점 분석
 
-### 3. 학습 이력 기반 진단·분석
+마이페이지는 현재 로그인 사용자의 완료된 풀이 기록만 조회해 다음 정보를 구성합니다.
 
-진단평가 및 문제풀이 세션을 저장하고 학습자의 결과를 다음과 같이 분석합니다.
+- 이번 주 정답률·풀이 수·평균 문제/세션 시간과 오늘을 포함한 연속 학습일
+- 첫 주에는 직전 진단평가와 주간평가, 이후에는 직전 주간평가와 현재 주간평가 비교
+- 최근 7일 기준 유형·주제·시대별 오답률과 세션·문항 상세 내역
+- 목표 시험일 D-day, 활성 7일 학습 계획, 완료 계획 이력과 주간 리포트
 
-- 시대별 오답률
-- 주제별 오답률
-- 문제 유형별 오답률
-- 정답률 및 평균 풀이 시간
-- 풀이 문제 수와 연속 학습일
-- 진단 결과 변화
-- 학습 계획 이행 현황
+취약점은 단순히 오답률이 높은 항목 하나를 표시하는 방식이 아닙니다. 최근 28일 기록에 14일 반감기 가중치를 적용하고, 표본이 적을 때 과대 판정하지 않도록 Wilson 하한을 취약 점수로 사용합니다.
 
-### 4. 문제 생성 및 검수 파이프라인
+| 판정 | 코드 기준 |
+| --- | --- |
+| 데이터 부족 | 유효 표본이 3 미만 |
+| 취약 `WEAK` | 취약 점수 0.50 이상 |
+| 안정 `STABLE` | 취약 점수 0.20 이하 |
+| 중립 `NEUTRAL` | 취약과 안정 사이 |
+
+마이페이지의 취약점 카드는 `WEAK`인 시대·주제 조합만 점수순으로 최대 10개 표시합니다. 최근 14일과 이전 14일의 표본이 각각 6개 이상이고 표본 수 균형이 맞을 때만 개선·악화 추세를 판정하며, 조건이 부족하면 추세를 단정하지 않습니다. 진단평가나 주간평가가 아직 없을 때는 0으로 오해할 수 있는 수치 대신 다음 행동을 안내합니다.
+
+### 5. 문제 생성 및 검수 파이프라인
 
 서비스가 문제 풀이 요청마다 실시간으로 문항을 생성하는 방식이 아니라, 검증된 역사 근거로 문제은행을 미리 구축하고 사용자의 시대·주제·유형·난이도 조건에 맞춰 문항을 구성하는 방식입니다.
 
@@ -290,9 +299,9 @@ Fact Neo4j에서 관련 후보 탐색
 - **재개 가능한 실행**: 문항별 입력·출력·평가·수리 이력을 체크포인트에 저장하여 중단되더라도 완료 문항을 다시 호출하지 않고 실패 지점부터 재개합니다.
 - **지원 문항 유형**: 일반 선택형, 연대기형, 이미지 자료형, 이미지 선지형을 지원하며 유형·시대·난이도 비율에 맞춘 혼합 모의고사를 구성할 수 있습니다.
 
-현재 서비스 DB에는 생성 문항 **445개**와 선택지 **2,225개**가 적재되어 있습니다. 문항당 선택지 5개·정답 1개 구조, `source_key` 중복, 선지 해설과 서비스 분류의 일치 여부를 적재 전에 검증합니다.
+문항당 선택지 5개·정답 1개 구조, `source_key` 중복, 선지 해설과 서비스 분류의 일치 여부를 적재 전에 검증합니다. 실제 운영 적재 건수는 배치 실행 결과와 DB에서 확인합니다.
 
-### 5. 생성 문제 검수 ML
+### 6. 생성 문제 검수 ML
 
 생성 문제 검수 ML은 문제의 정답을 예측하는 모델이 아니라, **검수자가 우선 확인해야 할 오류 가능성이 높은 선지**를 추천하는 모델입니다.
 
@@ -300,7 +309,7 @@ Fact Neo4j에서 관련 후보 탐색
 - 형식, 정답 유일성, 역사 사실성 등 필수 검사를 통과한 문항만 품질 평가를 진행합니다.
 - 문제가 발생한 지문·발문·정답·오답 선지만 부분 수정하여 재생성 비용과 시간을 줄입니다.
 
-### 6. 최신 트렌드 분석 ML
+### 7. 최신 트렌드 분석 ML
 
 기출문제의 `지문·질문·키워드`를 입력으로 사용해 문항의 **시대(`era`)**, **통합 주제(`topic_train`)**, **세부 주제(`topic`)**를 각각 분류하는 KLUE/RoBERTa-base 모델을 구축했습니다.
 
@@ -336,13 +345,14 @@ Fact Neo4j에서 관련 후보 탐색
 - 교과서 용어 해설
 - 한국사능력검정시험 기출문제
 
-### 이중 데이터베이스 구조
+### 데이터 저장소 구성
 
 | 저장소 | 역할 |
 | --- | --- |
 | PostgreSQL | 사용자, 진단·문제풀이 세션, 답안, 오답노트, 학습 계획, 분석 지표 저장 |
 | pgvector | 한국사 문서 임베딩 저장 및 벡터 유사도 검색 |
-| Neo4j | 인물·사건·시대·주제 등 한국사 개체의 관계 탐색 및 RAG 문맥 보강 |
+| Main Neo4j | 정규화된 용어·인물·사건 관계 탐색 및 챗봇 RAG 문맥 보강 |
+| Fact Neo4j | Evidence가 연결된 사실·관계 탐색 및 문제 Pack 후보 구성 |
 
 ```mermaid
 erDiagram
@@ -431,7 +441,9 @@ SKN27-FINAL-2Team/
 │  ├─ neo4j/                   # Main Neo4j 구성·스키마
 │  └─ fact_neo4j/              # 문제 생성용 Fact Neo4j
 ├─ deployment/
-│  └─ ecs/                     # AWS ECS·Nginx 배포 설정
+│  ├─ ecs/                     # Web·migration·Fact Neo4j ECS 설정
+│  ├─ fact-batch/              # S3·SSM·EventBridge 기반 주간 문제 생성 배치
+│  └─ nginx/                   # HTTPS reverse proxy·Certbot 설정
 ├─ requirements/               # Python 의존성
 ├─ test/                       # 실험, 평가, 회귀·통합 테스트
 ├─ Dockerfile
@@ -472,6 +484,12 @@ POSTGRES_PORT=5432
 NEO4J_URI=bolt://localhost:7687
 NEO4J_USER=neo4j
 NEO4J_PASSWORD=change-me
+NEO4J_DATABASE=neo4j
+
+# 문제 생성용 Fact Neo4j를 로컬에서 실행할 때 사용
+FACT_NEO4J_URI=bolt://localhost:7688
+FACT_NEO4J_USER=neo4j
+FACT_NEO4J_PASSWORD=change-me
 
 OPENAI_API_KEY=your-openai-api-key
 OPENAI_CHAT_MODEL=your-model-name
@@ -482,6 +500,8 @@ OPENAI_CHAT_MODEL=your-model-name
 ```powershell
 docker compose --env-file .env -f storage\postgresql\docker-compose.yml up -d
 docker compose --env-file .env -f storage\neo4j\docker-compose.yml up -d
+# 문제 생성 파이프라인을 실행할 때만 추가
+docker compose --env-file .env -f storage\fact_neo4j\docker-compose.yml up -d
 ```
 
 ### 4. Django 실행
@@ -520,24 +540,35 @@ CI에서는 다음 항목을 검증합니다.
 
 ### 배포
 
-```text
-Route53
- → Elastic IP
- → Public EC2 / ECS on EC2
- → Nginx HTTPS
- → Gunicorn / Django
- → Aurora PostgreSQL Serverless v2 + Neo4j AuraDB
+#### AWS 전체 구성도
 
-CodePipeline
- → CodeBuild
- → Amazon ECR
- → ECS 배포
+![AWS 전체 구성도](docs/image/aws-architecture.png)
+
+```text
+사용자 → Route 53 → Elastic IP → Web EC2의 ECS Service
+                               ├─ Nginx 80/443
+                               └─ Gunicorn/Django 8000
+                                      ├─ Private Aurora PostgreSQL + pgvector
+                                      └─ Main Neo4j AuraDB
+
+GitHub main → CodePipeline → CodeBuild → ECR
+             → Django migration Task → Web ECS Service 배포
+
+EventBridge Scheduler → SSM Automation → Fact EC2 시작
+ → Fact Neo4j + digest 고정 Fact 배치 이미지
+ → OpenAI/RunPod 문제 생성 → Aurora 적재·S3 산출물 저장 → Fact EC2 중지
 ```
 
-- Docker 이미지는 Git Commit SHA 기반 태그로 관리합니다.
-- ECR 이미지 스캔 결과를 배포 검증에 사용합니다.
-- 민감한 환경 변수는 AWS SSM Parameter Store에서 주입합니다.
-- Nginx와 Django 컨테이너는 비루트 및 Read-only Root Filesystem으로 실행합니다.
+- **저비용 네트워크**: 서울 리전의 단일 Public Web EC2와 Elastic IP를 사용하며 ALB와 NAT Gateway는 두지 않습니다. Aurora는 2개 AZ의 Private DB Subnet에 두고 Public Access를 차단합니다.
+- **상시 웹**: `himate.workload=web` 속성의 ECS Container Instance에서 Nginx와 Django를 한 Task로 실행합니다. Nginx가 HTTPS와 reverse proxy를 담당하고 정적 파일은 Django의 WhiteNoise가 제공합니다.
+- **데이터베이스**: Aurora PostgreSQL Serverless v2는 pgvector와 서비스 데이터를 저장하고, Main Neo4j AuraDB는 챗봇 관계 검색을 담당합니다. 자동 일시 중지에 대응하기 위해 DB 연결을 장기 유지하지 않습니다.
+- **CI/CD**: Git commit SHA로 App·Nginx·Fact 배치 이미지를 태깅합니다. ECR은 태그 불변성과 push 스캔을 사용하며 CodeBuild가 이미지·취약점 기준을 검사한 뒤 migration Task와 ECS 배포 산출물을 만듭니다.
+- **주간 문제 생성**: 매주 화요일 00:00 KST에 Scheduler가 SSM Runbook을 호출합니다. 사람이 CLI에서 승인한 spec만 소비하고, Pack·문제 생성과 품질 검증이 모두 성공해야 운영 DB와 누적 S3 Pack Bank를 갱신합니다.
+- **실패 안전성**: 미사용 spec이 부족하면 재사용하지 않고 종료 코드 42로 중단해 SNS 알림을 보냅니다. Automation은 성공·실패·취소 경로에서 Fact EC2를 중지하도록 구성합니다.
+- **보안**: 운영 값은 `/himate/prod/*` Parameter Store 경로에서 주입하며 비밀번호와 API Key는 `SecureString`으로 관리합니다. App·Nginx 컨테이너는 비루트, read-only root filesystem, Linux capability 제거 설정을 사용합니다.
+- **관측**: ECS와 CodeBuild 로그는 CloudWatch에서 확인하고, Fact 배치 실행 결과와 manifest는 S3에 버전별로 보관합니다.
+
+상세 절차와 현재 운영 제약은 [`deployment/ecs/README.md`](deployment/ecs/README.md)와 [`deployment/fact-batch/README.md`](deployment/fact-batch/README.md)를 참고합니다. 저장소에는 실제 비밀번호, API Key, 개인 키를 기록하지 않습니다.
 
 ---
 

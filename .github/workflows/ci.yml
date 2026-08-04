@@ -120,7 +120,19 @@ jobs:
             himate-fact-batch-ci:${{ github.sha }} \
             -m unittest \
             ai.pack_generation.test_batch_constraints \
-            ai.pack_generation.test_validation
+            ai.pack_generation.test_validation \
+            ai.question_generation.tests.test_postprocess_questions
+          docker run \
+            --rm \
+            --network none \
+            --read-only \
+            --tmpfs /tmp:rw,nosuid,nodev,noexec,size=32m \
+            --cap-drop ALL \
+            --security-opt no-new-privileges:true \
+            --workdir /tmp \
+            --entrypoint python \
+            himate-fact-batch-ci:${{ github.sha }} \
+            -c "import runpy; runpy.run_path('/code/deployment/fact-batch/wait_for_dependencies.py', run_name='fact_batch_import_check')"
 
   neo4j-regression:
     runs-on: ubuntu-latest
